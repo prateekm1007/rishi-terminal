@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ function fmt(n: number) {
   if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
   if (n >= 1e9)  return (n / 1e9).toFixed(1) + 'B';
   if (n >= 1e6)  return (n / 1e6).toFixed(1) + 'M';
-  return n.toLocaleString();
+  return n.toLocaleString('en-US');
 }
 
 function rsiColor(rsi: number) {
@@ -155,9 +155,9 @@ export default function Dashboard() {
       {/* GLOBAL QUICK STATS BAR */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(140px, 1fr))', gap:8, marginBottom:24, background:'#09090F', border:'1px solid #1E293B', borderRadius:10, padding:14 }}>
         {[
-          { label:'NIFTY 50',  value: mktSummary.nifty  ? mktSummary.nifty.value.toLocaleString()      : '-', pct: mktSummary.nifty?.changePct },
-          { label:'S&P 500',   value: mktSummary.sp500  ? mktSummary.sp500.value.toLocaleString()      : '-', pct: mktSummary.sp500?.changePct },
-          { label:'GOLD',      value: mktSummary.gold   ? '$' + mktSummary.gold.price.toLocaleString() : '-', pct: mktSummary.gold?.changePct },
+          { label:'NIFTY 50',  value: mktSummary.nifty  ? mktSummary.nifty.value.toLocaleString('en-US')      : '-', pct: mktSummary.nifty?.changePct },
+          { label:'S&P 500',   value: mktSummary.sp500  ? mktSummary.sp500.value.toLocaleString('en-US')      : '-', pct: mktSummary.sp500?.changePct },
+          { label:'GOLD',      value: mktSummary.gold   ? '$' + mktSummary.gold.price.toLocaleString('en-US') : '-', pct: mktSummary.gold?.changePct },
           { label:'CRUDE WTI', value: mktSummary.crude  ? '$' + mktSummary.crude.price                 : '-', pct: mktSummary.crude?.changePct },
           { label:'BTC',       value: '$98,500', pct:  2.45 },
           { label:'USD/INR',   value: '84.28',  pct: -0.12 },
@@ -226,7 +226,7 @@ export default function Dashboard() {
         <div style={{ display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:12, marginBottom:14 }}>
           <div>
             <div style={{ fontFamily:'Cinzel, Georgia', fontSize:17, color:'#F1F5F9', fontWeight:700 }}>{stockData.name}</div>
-            <div style={{ fontSize:11, color:'#475569', marginTop:4 }}>{stockData.sector} · NSE · {stockData.price.toLocaleString()}</div>
+            <div style={{ fontSize:11, color:'#475569', marginTop:4 }}>{stockData.sector} · NSE · {stockData.price.toLocaleString('en-US')}</div>
           </div>
           <div style={{ textAlign:'right' }}>
             <div style={{ fontSize:30, fontWeight:700, color:sc(sotdComposite) }}>{sotdComposite}</div>
@@ -309,13 +309,13 @@ export default function Dashboard() {
                       <div style={{ color:'#F1F5F9', fontWeight:600 }}>{idx.flag} {idx.name}</div>
                       <div style={{ fontSize:9, color:'#334155', marginTop:2 }}>{idx.symbol}</div>
                     </td>
-                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{idx.value.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{idx.value.toLocaleString('en-US')}</td>
                     <td style={{ padding:'11px 14px', color: pos ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos ? '+' : ''}{idx.change.toFixed(1)}</td>
                     <td style={{ padding:'11px 14px', textAlign:'right' }}>
                       <span style={{ color: pos ? '#10B981' : '#EF4444', fontWeight:700 }}>{pos ? '▲' : '▼'} {Math.abs(idx.changePct).toFixed(2)}%</span>
                     </td>
-                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.high52w.toLocaleString()}</td>
-                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.low52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.high52w.toLocaleString('en-US')}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.low52w.toLocaleString('en-US')}</td>
                     <td style={{ padding:'11px 14px', color:'#94A3B8', textAlign:'right' }}>{idx.pe ? idx.pe + 'x' : '—'}</td>
                     <td style={{ padding:'11px 14px', textAlign:'right' }}>
                       <span style={{ background:`${statusColor}15`, border:`1px solid ${statusColor}40`, borderRadius:4, padding:'3px 8px', color:statusColor, fontSize:9, fontWeight:700 }}>{statusLabel}</span>
@@ -372,13 +372,13 @@ export default function Dashboard() {
                       <div style={{ fontSize:9, color:'#334155', marginTop:2 }}>{idx.symbol}</div>
                     </td>
                     <td style={{ padding:'11px 14px', color:'#64748B', fontSize:10 }}>{idx.country}</td>
-                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{idx.value.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{idx.value.toLocaleString('en-US')}</td>
                     <td style={{ padding:'11px 14px', color: pos ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos ? '+' : ''}{idx.change.toFixed(1)}</td>
                     <td style={{ padding:'11px 14px', textAlign:'right' }}>
                       <span style={{ color: pos ? '#10B981' : '#EF4444', fontWeight:700 }}>{pos ? '▲' : '▼'} {Math.abs(idx.changePct).toFixed(2)}%</span>
                     </td>
-                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.high52w.toLocaleString()}</td>
-                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.low52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.high52w.toLocaleString('en-US')}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.low52w.toLocaleString('en-US')}</td>
                     <td style={{ padding:'11px 14px', color:'#94A3B8', textAlign:'right' }}>{idx.pe ? idx.pe + 'x' : '—'}</td>
                     <td style={{ padding:'11px 14px', textAlign:'right' }}>
                       <span style={{ background:`${statusColor}15`, border:`1px solid ${statusColor}40`, borderRadius:4, padding:'3px 8px', color:statusColor, fontSize:9, fontWeight:700 }}>{statusLabel}</span>
@@ -439,14 +439,14 @@ export default function Dashboard() {
                     <td style={{ padding:'11px 14px' }}>
                       <span style={{ fontSize:9, color:'#64748B', background:'#050508', borderRadius:4, padding:'2px 6px' }}>{c.category}</span>
                     </td>
-                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{c.price.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{c.price.toLocaleString('en-US')}</td>
                     <td style={{ padding:'11px 14px', color:'#475569', fontSize:9 }}>{c.unit}</td>
                     <td style={{ padding:'11px 14px', color: pos ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos ? '+' : ''}{c.change.toFixed(2)}</td>
                     <td style={{ padding:'11px 14px', textAlign:'right' }}>
                       <span style={{ color: pos ? '#10B981' : '#EF4444', fontWeight:700 }}>{pos ? '▲' : '▼'} {Math.abs(c.changePct).toFixed(2)}%</span>
                     </td>
-                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{c.high52w.toLocaleString()}</td>
-                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{c.low52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{c.high52w.toLocaleString('en-US')}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{c.low52w.toLocaleString('en-US')}</td>
                     <td style={{ padding:'11px 14px', textAlign:'right', minWidth:110 }}>
                       <div style={{ fontSize:8, color:'#334155', marginBottom:4, display:'flex', justifyContent:'space-between' }}>
                         <span>L</span><span>{pos52.toFixed(0)}%</span><span>H</span>
@@ -580,7 +580,7 @@ export default function Dashboard() {
                 <div style={{ fontSize:8, color:'#334155', marginBottom:4 }}>
                   200D MA:{' '}
                   <span style={{ color: c.price > c.moving200d ? '#10B981' : '#EF4444' }}>
-                    {c.price > c.moving200d ? '▲ ABOVE' : '▼ BELOW'} ${c.moving200d.toLocaleString()}
+                    {c.price > c.moving200d ? '▲ ABOVE' : '▼ BELOW'} ${c.moving200d.toLocaleString('en-US')}
                   </span>
                 </div>
                 <div style={{ fontSize:8, color:'#334155', marginBottom:3 }}>

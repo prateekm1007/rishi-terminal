@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { STOCKS } from '../../data/stocks';
@@ -120,7 +120,7 @@ export default function Watchlist() {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ fontSize: 20, fontWeight: 700, color: sc(composite) }}>{composite}</span>
                     <span style={{ padding: '2px 8px', borderRadius: 3, background: `${SIG[sig]}15`, color: SIG[sig], fontSize: 10 }}>{sig}</span>
-                    <span style={{ fontSize: 18, color: '#F1F5F9' }}>{s.price.toLocaleString()}</span>
+                    <span style={{ fontSize: 18, color: '#F1F5F9' }}>{s.price.toLocaleString('en-US')}</span>
                     <button onClick={() => { setEditNote(editNote === sym ? null : sym); setNoteText(notes[sym] || ''); }}
                       style={{ background: '#1E293B', border: 'none', borderRadius: 4, padding: '4px 8px', color: '#94A3B8', cursor: 'pointer', fontSize: 10 }}>
                       📝

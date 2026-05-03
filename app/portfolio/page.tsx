@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -102,16 +102,16 @@ export default function Portfolio() {
         </div>
         <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 8, padding: 16, textAlign: 'center' }}>
           <div style={{ fontSize: 9, color: '#475569', letterSpacing: 1, marginBottom: 6 }}>TOTAL INVESTED</div>
-          <div style={{ fontSize: 20, color: '#F1F5F9', fontWeight: 700 }}>{Math.round(totalInvested).toLocaleString()}</div>
+          <div style={{ fontSize: 20, color: '#F1F5F9', fontWeight: 700 }}>{Math.round(totalInvested).toLocaleString('en-US')}</div>
         </div>
         <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 8, padding: 16, textAlign: 'center' }}>
           <div style={{ fontSize: 9, color: '#475569', letterSpacing: 1, marginBottom: 6 }}>CURRENT VALUE</div>
-          <div style={{ fontSize: 20, color: '#F1F5F9', fontWeight: 700 }}>{Math.round(totalCurrent).toLocaleString()}</div>
+          <div style={{ fontSize: 20, color: '#F1F5F9', fontWeight: 700 }}>{Math.round(totalCurrent).toLocaleString('en-US')}</div>
         </div>
         <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 8, padding: 16, textAlign: 'center' }}>
           <div style={{ fontSize: 9, color: '#475569', letterSpacing: 1, marginBottom: 6 }}>P&L / RETURN</div>
           <div style={{ fontSize: 20, color: totalPnL >= 0 ? '#10B981' : '#EF4444', fontWeight: 700 }}>
-            {totalPnL >= 0 ? '+' : ''}{Math.round(totalPnL).toLocaleString()}
+            {totalPnL >= 0 ? '+' : ''}{Math.round(totalPnL).toLocaleString('en-US')}
           </div>
           <div style={{ fontSize: 11, color: totalPnL >= 0 ? '#10B981' : '#EF4444', marginTop: 4 }}>
             ({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(1)}%)
@@ -183,10 +183,10 @@ export default function Portfolio() {
                         <div style={{ fontSize: 9, color: '#475569', marginTop: 2 }}>{s.name}</div>
                       </td>
                       <td style={{ padding: '10px 12px', color: '#94A3B8', textAlign: 'right' }}>{h.qty}</td>
-                      <td style={{ padding: '10px 12px', color: '#94A3B8', textAlign: 'right' }}>{h.avgPrice.toLocaleString()}</td>
-                      <td style={{ padding: '10px 12px', color: '#F1F5F9', textAlign: 'right' }}>{s.price.toLocaleString()}</td>
+                      <td style={{ padding: '10px 12px', color: '#94A3B8', textAlign: 'right' }}>{h.avgPrice.toLocaleString('en-US')}</td>
+                      <td style={{ padding: '10px 12px', color: '#F1F5F9', textAlign: 'right' }}>{s.price.toLocaleString('en-US')}</td>
                       <td style={{ padding: '10px 12px', textAlign: 'right' }}>
-                        <div style={{ color: pnl >= 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>{pnl >= 0 ? '+' : ''}{Math.round(pnl).toLocaleString()}</div>
+                        <div style={{ color: pnl >= 0 ? '#10B981' : '#EF4444', fontWeight: 600 }}>{pnl >= 0 ? '+' : ''}{Math.round(pnl).toLocaleString('en-US')}</div>
                         <div style={{ fontSize: 9, color: pnl >= 0 ? '#10B981' : '#EF4444' }}>({pnlPct >= 0 ? '+' : ''}{pnlPct.toFixed(1)}%)</div>
                       </td>
                       <td style={{ padding: '10px 12px', textAlign: 'right' }}>

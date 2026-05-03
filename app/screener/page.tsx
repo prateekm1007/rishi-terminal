@@ -69,7 +69,7 @@ export default function Screener() {
                   </td>
                   <td style={{ padding: '8px 12px', color: '#CBD5E1' }}>{s.name}</td>
                   <td style={{ padding: '8px 12px', color: '#475569' }}>{s.sector}</td>
-                  <td style={{ padding: '8px 12px', color: '#F1F5F9', textAlign: 'right' }}>Rs{s.price.toLocaleString()}</td>
+                  <td style={{ padding: '8px 12px', color: '#F1F5F9', textAlign: 'right' }}>Rs{s.price.toLocaleString('en-US')}</td>
                   <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 700, color: sc(s.composite), fontSize: 13 }}>{s.composite}</td>
                   <td style={{ padding: '8px 12px', textAlign: 'center' }}>
                     <span style={{ padding: '2px 8px', borderRadius: 3, background: SIG[sig] + '15', color: SIG[sig], fontSize: 10 }}>{sig}</span>

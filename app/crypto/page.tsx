@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -63,7 +63,7 @@ export default function CryptoPage() {
               {filtered.map(c => (
                 <tr key={c.symbol} style={{ borderBottom: '1px solid #0F172A' }}>
                   <td style={{ padding: 10 }}>{c.emoji} {c.symbol}</td>
-                  <td style={{ padding: 10, textAlign: 'right', color: '#F1F5F9' }}>${c.price.toLocaleString()}</td>
+                  <td style={{ padding: 10, textAlign: 'right', color: '#F1F5F9' }}>${c.price.toLocaleString('en-US')}</td>
                   <td style={{ padding: 10, textAlign: 'right', color: c.change24h >= 0 ? '#10B981' : '#EF4444' }}>
                     {c.change24h >= 0 ? '+' : ''}{c.change24h.toFixed(2)}%
                   </td>

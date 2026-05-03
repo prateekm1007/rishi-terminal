@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -54,7 +54,7 @@ export default function Compare() {
             <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 16, color: '#F5E6D3', marginBottom: 4 }}>{stock.name}</div>
             <div style={{ fontSize: 10, color: '#475569', marginBottom: 12 }}>{stock.sector} · {stock.exchange}</div>
             <div style={{ fontSize: 42, fontWeight: 700, color: sc(composite), marginBottom: 4 }}>{composite}</div>
-            <div style={{ fontSize: 10, color: sc(composite), marginBottom: 16 }}>{getSig(composite)} · {stock.price.toLocaleString()}</div>
+            <div style={{ fontSize: 10, color: sc(composite), marginBottom: 16 }}>{getSig(composite)} · {stock.price.toLocaleString('en-US')}</div>
             
             {scores.map((s: any) => (
               <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>

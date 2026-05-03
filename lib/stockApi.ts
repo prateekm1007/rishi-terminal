@@ -1,5 +1,20 @@
-﻿export async function fetchStockPrice(symbol: string): Promise<number | null> {
-  const nsSym = `${symbol}.NS`;
+﻿import { validateSymbol, sanitizeSymbol, checkRateLimit } from './security';
+
+export async function fetchStockPrice(symbol: string): Promise<number | null> {
+  // Security: Validate and sanitize input
+  if (!validateSymbol(symbol)) {
+    console.error(`Invalid symbol: ${symbol}`);
+    return null;
+  }
+  
+  // Security: Check rate limit
+  if (!checkRateLimit()) {
+    console.warn('Rate limit exceeded. Please wait before making more requests.');
+    return null;
+  }
+  
+  const sanitized = sanitizeSymbol(symbol);
+  const nsSym = `${sanitized}.NS`;
   const directUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(nsSym)}`;
 
   const extract = (data: any) => {
@@ -16,8 +31,8 @@
       const val = extract(data);
       if (val) return val;
     }
-  } catch {
-    // Direct failed, continue to proxies
+  } catch (err) {
+    console.warn('Direct fetch failed, trying proxies...');
   }
 
   // 2. Try Proxy 1 (allorigins)
@@ -29,8 +44,8 @@
       const val = extract(data);
       if (val) return val;
     }
-  } catch {
-    // Proxy 1 failed
+  } catch (err) {
+    console.warn('Proxy 1 failed, trying proxy 2...');
   }
 
   // 3. Try Proxy 2 (corsproxy.io)
@@ -42,18 +57,21 @@
       const val = extract(data);
       if (val) return val;
     }
-  } catch {
-    // Proxy 2 failed
+  } catch (err) {
+    console.warn('All fetch methods failed');
   }
 
-  // All methods failed. Return null silently so UI falls back to static price.
   return null;
 }
 
 export async function fetchMultipleStocks(symbols: string[]): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
+  
+  // Security: Validate all symbols first
+  const validSymbols = symbols.filter(validateSymbol);
+  
   await Promise.all(
-    symbols.map(async (sym) => {
+    validSymbols.map(async (sym) => {
       const p = await fetchStockPrice(sym);
       if (p != null) out[sym] = p;
     })

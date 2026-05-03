@@ -1,281 +1,674 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect } from 'react';
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { STOCKS } from '../data/stocks';
+import { scoreJhunjhunwala, scoreDamani, scoreBuffett, scoreGraham, scoreLynch, scoreKacholia, scoreKedia, scoreMunger, scoreGreenblatt, scorePabrai } from '../lib/scorers';
+import { sc, getSig } from '../lib/utils';
+import { CRYPTO_ASSETS, FEAR_GREED_INDEX, getCryptoMetrics, MARKET_DOMINANCE } from '../data/crypto';
+import { INDIAN_INDEXES, FOREIGN_INDEXES, COMMODITIES, getMarketSummary } from '../data/markets';
 
-const STOCKS = {
-  TITAN:{name:"Titan Company",sector:"Consumer Durables",price:3200,pe:80,roe:24,mktcap:250000,ocf:3500,rev:38000,revcagr:22,epscagr:25,opm:12,roce:28,de:0.08,fcf:3200,promo:52.9,ca:18000,tl:8000,sh:888,np:2800,dep:450,capex:800,bvps:180},
-  DMART:{name:"Avenue Supermarts",sector:"Retail",price:3400,pe:105,roe:16,mktcap:220000,ocf:4800,rev:42000,revcagr:24,epscagr:22,opm:8,roce:18,de:0.0,fcf:3200,promo:75.2,ca:8500,tl:4200,sh:650,np:2100,dep:1200,capex:2800,bvps:280},
-  HDFCBANK:{name:"HDFC Bank",sector:"Banking",price:1650,pe:18,roe:17,mktcap:1100000,ocf:85000,rev:180000,revcagr:18,epscagr:16,opm:48,roce:18,de:0.0,fcf:75000,promo:26.1,ca:200000,tl:150000,sh:6700,np:40000,dep:2000,capex:3000,bvps:650},
-  TCS:{name:"TCS",sector:"IT Services",price:3600,pe:28,roe:44,mktcap:1300000,ocf:42000,rev:225000,revcagr:10,epscagr:8,opm:25,roce:48,de:0.0,fcf:40000,promo:72.3,ca:95000,tl:35000,sh:3618,np:42000,dep:3200,capex:5500,bvps:200},
-  ASIANPAINT:{name:"Asian Paints",sector:"Paints",price:2900,pe:65,roe:28,mktcap:280000,ocf:4200,rev:32000,revcagr:14,epscagr:12,opm:18,roce:32,de:0.0,fcf:3800,promo:52.7,ca:12000,tl:5000,sh:958,np:3200,dep:420,capex:850,bvps:150},
-  ITC:{name:"ITC Limited",sector:"FMCG",price:420,pe:26,roe:24,mktcap:520000,ocf:18000,rev:65000,revcagr:8,epscagr:10,opm:32,roce:26,de:0.0,fcf:16500,promo:0,ca:45000,tl:20000,sh:12400,np:16000,dep:2800,capex:4500,bvps:95},
-  RELIANCE:{name:"Reliance Industries",sector:"Conglomerate",price:2500,pe:28,roe:14,mktcap:1700000,ocf:55000,rev:850000,revcagr:12,epscagr:14,opm:18,roce:16,de:0.45,fcf:45000,promo:50.3,ca:400000,tl:250000,sh:6800,np:60000,dep:45000,capex:85000,bvps:1100},
-  BAJFINANCE:{name:"Bajaj Finance",sector:"NBFC",price:6800,pe:35,roe:20,mktcap:420000,ocf:32000,rev:42000,revcagr:28,epscagr:26,opm:68,roce:22,de:6.5,fcf:8000,promo:55,ca:180000,tl:140000,sh:618,np:12000,dep:500,capex:1000,bvps:950},
-  MARUTI:{name:"Maruti Suzuki",sector:"Auto",price:10600,pe:29,roe:14,mktcap:320000,ocf:12000,rev:125000,revcagr:6,epscagr:4,opm:10,roce:18,de:0.0,fcf:8500,promo:58.2,ca:42000,tl:18000,sh:302,np:10500,dep:4200,capex:7700,bvps:2200},
-  INFY:{name:"Infosys",sector:"IT Services",price:1550,pe:27,roe:30,mktcap:650000,ocf:28000,rev:145000,revcagr:9,epscagr:7,opm:22,roce:32,de:0.0,fcf:26500,promo:13,ca:72000,tl:28000,sh:4150,np:24000,dep:2900,capex:4400,bvps:180},
-};
+const SCORERS = [scoreJhunjhunwala, scoreDamani, scoreBuffett, scoreGraham, scoreLynch, scoreKacholia, scoreKedia, scoreMunger, scoreGreenblatt, scorePabrai];
+const SCORER_NAMES = ['Jhunjhunwala','Damani','Buffett','Graham','Lynch','Kacholia','Kedia','Munger','Greenblatt','Pabrai'];
 
-const clamp=(v:number,lo=0,hi=100)=>Math.max(lo,Math.min(hi,v));
-const sc=(s:number)=>s>=80?"#10B981":s>=60?"#F59E0B":s>=40?"#818CF8":"#EF4444";
-const lbl=(s:number)=>s>=80?"HIGH":s>=60?"MOD":s>=40?"LOW":"WEAK";
-
-function scoreJhunjhunwala(s:any){
-  const pcf=s.mktcap/s.ocf;
-  const pcfS=pcf>=25&&pcf<=35?100:pcf<25?clamp(100-(25-pcf)*2):clamp(100-(pcf-35)*3);
-  const gS=clamp(Math.min(40,s.revcagr*4)+Math.min(40,s.epscagr*2.67)+Math.min(20,s.opm*1.14));
-  const fcfM=(s.fcf/s.rev)*100;
-  const qS=clamp(Math.min(40,s.roce*2.67)+Math.min(40,s.de<=0.5?40:Math.max(0,40-s.de*80))+Math.min(20,fcfM*2.5));
-  const cvS=clamp(s.promo>=45?100:s.promo*2.22);
-  const total=pcfS*0.25+gS*0.25+qS*0.20+cvS*0.20+50*0.10;
-  return{name:"Jhunjhunwala",full:"Rakesh Jhunjhunwala",label:"Conviction Multibagger",score:Math.round(total),
-    comps:[
-      {label:"P/CF Ratio",v:Math.round(pcfS),wt:25,detail:`${pcf.toFixed(1)}x (ideal 25–35x)`},
-      {label:"Growth Composite",v:Math.round(gS),wt:25,detail:`Rev ${s.revcagr}% · EPS ${s.epscagr}% · OPM ${s.opm}%`},
-      {label:"Quality (ROCE/Debt/FCF)",v:Math.round(qS),wt:20,detail:`ROCE ${s.roce}% · D/E ${s.de} · FCF margin ${fcfM.toFixed(1)}%`},
-      {label:"Promoter Conviction",v:Math.round(cvS),wt:20,detail:`${s.promo}% holding (target >45%)`},
-    ],
-    insight:`P/CF ${pcf.toFixed(1)}x · ${s.revcagr}% rev CAGR · ${s.promo}% promoter. ${total>=75?"High multibagger probability.":"Below conviction threshold."}`};
+function getComposite(sym: string) {
+  const s = STOCKS[sym as keyof typeof STOCKS];
+  if (!s) return 0;
+  return Math.round(SCORERS.map(fn => fn(s)).reduce((a, b) => a + b.score, 0) / SCORERS.length);
 }
 
-function scoreDamani(s:any){
-  const deS=s.de<=0.1?100:s.de<=0.3?70:clamp(100-s.de*100);
-  const roceS=clamp(s.roce>=25?100:s.roce*4);
-  const fcfM=(s.fcf/s.rev)*100;
-  const cfS=clamp(fcfM>=10?100:fcfM*10);
-  const moatS=clamp(s.opm>=15?100:s.opm*6.67);
-  const total=deS*0.30+roceS*0.25+cfS*0.20+moatS*0.15+50*0.10;
-  return{name:"Damani",full:"Radhakishan Damani",label:"Zero-Debt Fortress",score:Math.round(total),
-    comps:[
-      {label:"Zero-Debt Filter",v:Math.round(deS),wt:30,detail:`D/E ${s.de.toFixed(2)} (target ≤0.1)`},
-      {label:"ROCE Sustainability",v:Math.round(roceS),wt:25,detail:`${s.roce}% (target >25%)`},
-      {label:"Cash Flow Predictability",v:Math.round(cfS),wt:20,detail:`FCF margin ${fcfM.toFixed(1)}% (target >10%)`},
-      {label:"Defensive Moat",v:Math.round(moatS),wt:15,detail:`OPM ${s.opm}% (target >15%)`},
-    ],
-    insight:`D/E ${s.de.toFixed(2)} · ROCE ${s.roce}% · FCF margin ${fcfM.toFixed(1)}%. ${s.de<=0.1?"Passes":"Fails"} Damani's zero-debt test.`};
+function fmt(n: number) {
+  if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+  if (n >= 1e9)  return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6)  return (n / 1e6).toFixed(1) + 'M';
+  return n.toLocaleString();
 }
 
-function scoreBuffett(s:any){
-  const roeS=clamp(s.roe>=20?100:s.roe*5);
-  const moatS=clamp(s.opm>=20?100:s.opm*5);
-  const oe=s.np+s.dep-s.capex*0.7;
-  const oeY=(oe/s.mktcap)*100;
-  const oeS=clamp(oeY>=8?100:oeY*12.5);
-  const mgS=clamp(s.promo>=30?100:s.promo*3.33);
-  const total=roeS*0.30+moatS*0.25+oeS*0.20+mgS*0.15+50*0.10;
-  return{name:"Buffett",full:"Warren Buffett",label:"Quality Moat",score:Math.round(total),
-    comps:[
-      {label:"ROE Sustainability",v:Math.round(roeS),wt:30,detail:`${s.roe}% (target >20%)`},
-      {label:"Economic Moat",v:Math.round(moatS),wt:25,detail:`OPM ${s.opm}% (target >20%)`},
-      {label:"Owner Earnings Yield",v:Math.round(oeS),wt:20,detail:`${oeY.toFixed(1)}% (target >8%)`},
-      {label:"Management Skin",v:Math.round(mgS),wt:15,detail:`Promoter ${s.promo}%`},
-    ],
-    insight:`ROE ${s.roe}% · OE yield ${oeY.toFixed(1)}% · OPM ${s.opm}%. ${total>=75?"Wonderful compounder.":"Lacks durable moat."}`};
+function rsiColor(rsi: number) {
+  if (rsi >= 70) return '#EF4444';
+  if (rsi >= 55) return '#F59E0B';
+  return '#10B981';
 }
 
-function scoreGraham(s:any){
-  const ncav=(s.ca-s.tl)/s.sh;
-  const ncavDisc=((ncav-s.price)/s.price)*100;
-  const ncavS=clamp(ncavDisc>=30?100:ncavDisc>0?ncavDisc*3.33:50+ncavDisc);
-  const peS=clamp(s.pe<=15?100:Math.max(0,100-(s.pe-15)*5));
-  const cr=s.ca/Math.max(1,s.tl);
-  const crS=clamp(cr*50);
-  const deS=clamp(s.de<=0.5?100:Math.max(0,100-s.de*100));
-  const total=ncavS*0.40+peS*0.25+crS*0.15+deS*0.20;
-  return{name:"Graham",full:"Benjamin Graham",label:"Deep Value",score:Math.round(total),
-    comps:[
-      {label:"NCAV Discount",v:Math.round(ncavS),wt:40,detail:`NCAV ₹${Math.round(ncav)} vs ₹${s.price} (${ncavDisc>0?"+":""}${Math.round(ncavDisc)}%)`},
-      {label:"P/E Value",v:Math.round(peS),wt:25,detail:`P/E ${s.pe} (target <15)`},
-      {label:"Current Ratio Safety",v:Math.round(crS),wt:15,detail:`Ratio ${cr.toFixed(2)} (target >2)`},
-      {label:"Debt Safety",v:Math.round(deS),wt:20,detail:`D/E ${s.de.toFixed(2)} (target <0.5)`},
-    ],
-    insight:`NCAV ₹${Math.round(ncav)} vs price ₹${s.price} · P/E ${s.pe}. ${ncavDisc>0?"Trading below liquidation value!":"Premium to net assets."}`};
+function macdColor(m: string) {
+  if (m === 'BULLISH') return '#10B981';
+  if (m === 'BEARISH') return '#EF4444';
+  return '#818CF8';
 }
 
-function scoreLynch(s:any){
-  const peg=s.pe/Math.max(1,s.epscagr);
-  const pegS=clamp(peg<=1?100:peg<=1.5?70:Math.max(0,100-(peg-1)*50));
-  const gS=clamp(s.epscagr>=15?100:s.epscagr*6.67);
-  const cfS=s.fcf>0?100:0;
-  const stS=clamp(s.revcagr>=12?100:s.revcagr*8.33);
-  const total=pegS*0.30+gS*0.25+cfS*0.20+stS*0.15+50*0.10;
-  return{name:"Lynch",full:"Peter Lynch",label:"GARP",score:Math.round(total),
-    comps:[
-      {label:"PEG Ratio",v:Math.round(pegS),wt:30,detail:`PEG ${peg.toFixed(2)} (P/E ${s.pe} ÷ ${s.epscagr}% growth)`},
-      {label:"EPS Growth Rate",v:Math.round(gS),wt:25,detail:`${s.epscagr}% CAGR (target >15%)`},
-      {label:"Free Cash Flow",v:Math.round(cfS),wt:20,detail:`₹${Math.round(s.fcf/1000)}K Cr ${s.fcf>0?"positive":"negative"}`},
-      {label:"Revenue Story",v:Math.round(stS),wt:15,detail:`${s.revcagr}% revenue growth`},
-    ],
-    insight:`PEG ${peg.toFixed(2)} · EPS CAGR ${s.epscagr}% · Rev ${s.revcagr}%. ${peg<=1?"Paying below 1x for growth — Lynch's sweet spot.":peg<=1.5?"Reasonable GARP candidate.":"Growth not worth the price."}`};
+function SectionHeader({ emoji, title, subtitle, color }: { emoji: string; title: string; subtitle: string; color: string }) {
+  return (
+    <div style={{ borderTop:'2px solid #1E293B', marginBottom:20, paddingTop:20 }}>
+      <div style={{ fontFamily:'Cinzel, Georgia', fontSize:17, color, letterSpacing:3, fontWeight:700, marginBottom:3 }}>{emoji} {title}</div>
+      <div style={{ fontSize:9, color:'#334155', letterSpacing:2 }}>{subtitle}</div>
+    </div>
+  );
 }
 
-const SCORERS=[scoreJhunjhunwala,scoreDamani,scoreBuffett,scoreGraham,scoreLynch];
-const SIG={BUY:"#10B981",HOLD:"#F59E0B",AVOID:"#EF4444"};
-const getSig=(s:number)=>s>=72?"BUY":s>=52?"HOLD":"AVOID";
+interface TabBarProps {
+  tabs: string[];
+  labels: string[];
+  active: string;
+  onChange: (t: string) => void;
+  color?: string;
+}
 
-export default function RishiTerminal(){
-  const [sel,setSel]=useState("TITAN");
-  const [exp,setExp]=useState<string|null>(null);
-  const [anim,setAnim]=useState(0);
+function TabBar({ tabs, labels, active, onChange, color = '#F59E0B' }: TabBarProps) {
+  return (
+    <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap' }}>
+      {tabs.map((tab, i) => (
+        <button
+          key={tab}
+          onClick={() => onChange(tab)}
+          style={{
+            padding:'7px 14px',
+            background: active === tab ? `${color}15` : '#09090F',
+            border: active === tab ? `1px solid ${color}` : '1px solid #1E293B',
+            borderRadius:6,
+            color: active === tab ? color : '#475569',
+            cursor:'pointer',
+            fontSize:10,
+            letterSpacing:1,
+            fontFamily:'JetBrains Mono, monospace',
+            textTransform:'uppercase' as const,
+          }}
+        >
+          {labels[i]}
+        </button>
+      ))}
+    </div>
+  );
+}
 
-  const stock=STOCKS[sel as keyof typeof STOCKS];
-  const scores=SCORERS.map(fn=>fn(stock));
-  const composite=Math.round(scores.reduce((a,b)=>a+b.score,0)/scores.length);
+export default function Dashboard() {
+  const [time, setTime]                   = useState('');
+  const [search, setSearch]               = useState('');
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [cryptoTab, setCryptoTab]         = useState('overview');
+  const [commTab, setCommTab]             = useState('all');
+  const searchRef = useRef<HTMLDivElement>(null);
 
-  useEffect(()=>{
-    setAnim(0);setExp(null);
-    let n=0;
-    const iv=setInterval(()=>{n=Math.min(n+3,composite);setAnim(n);if(n>=composite)clearInterval(iv);},12);
-    return()=>clearInterval(iv);
-  },[sel,composite]);
+  const allSymbols    = Object.keys(STOCKS);
+  const stockOfDay    = 'TITAN';
+  const stockData     = STOCKS[stockOfDay as keyof typeof STOCKS];
+  const sotdScores    = SCORERS.map((fn, i) => ({ name: SCORER_NAMES[i], score: fn(stockData).score }));
+  const sotdComposite = Math.round(sotdScores.reduce((a, b) => a + b.score, 0) / sotdScores.length);
 
-  const radar=scores.map(s=>({rishi:s.name,score:s.score}));
+  const topBuys = allSymbols
+    .map(sym => ({ sym, score: getComposite(sym) }))
+    .filter(x => x.score >= 65)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
 
-  return(
-    <div style={{fontFamily:"'JetBrains Mono','Courier New',monospace",background:"#050508",color:"#E2E8F0",minHeight:"100vh"}}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap"/>
-      <style>{`
-        .cinzel{font-family:'Cinzel',Georgia,serif}
-        .pulse{animation:pulse 2s infinite}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-        .chip{cursor:pointer;padding:7px 14px;border-radius:5px;border:1px solid #1E293B;background:#09090F;color:#64748B;font-size:11px;letter-spacing:1px;transition:all .2s;font-family:inherit}
-        .chip:hover,.chip.on{background:#F59E0B15;border-color:#F59E0B60;color:#F59E0B}
-        .rcard{background:#09090F;border:1px solid #1E293B;border-radius:7px;padding:16px;cursor:pointer;transition:all .2s}
-        .rcard:hover{background:#0F0F1C;transform:translateY(-2px)}
-        .bar{background:#1E293B;border-radius:2px;height:3px;overflow:hidden}
-        .bar-fill{height:100%;border-radius:2px;transition:width 1s ease}
-        .fade{animation:fade .4s ease}
-        @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-        ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#F59E0B25}
-        @media(max-width:600px){.grid5{grid-template-columns:repeat(2,1fr)!important}.top-grid{grid-template-columns:1fr!important}}
-      `}</style>
+  const cryptoMetrics   = getCryptoMetrics();
+  const mktSummary      = getMarketSummary();
+  const cryptoMoodColor = cryptoMetrics.sentiment === 'BULLISH' ? '#10B981' : cryptoMetrics.sentiment === 'BEARISH' ? '#EF4444' : '#818CF8';
 
-      <div style={{borderBottom:"1px solid #F59E0B18",padding:"13px 22px",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#06060D",position:"sticky",top:0,zIndex:10}}>
+  const filteredComm =
+    commTab === 'metals' ? COMMODITIES.filter(c => c.category === 'Precious Metals' || c.category === 'Base Metals') :
+    commTab === 'energy' ? COMMODITIES.filter(c => c.category === 'Energy') :
+    commTab === 'agri'   ? COMMODITIES.filter(c => c.category === 'Agriculture') :
+    commTab === 'mcx'    ? COMMODITIES.filter(c => c.category === 'MCX India') :
+    COMMODITIES;
+
+  useEffect(() => {
+    const tick = () => setTime(new Date().toLocaleTimeString('en-IN', { timeZone:'Asia/Kolkata', hour12:true }));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    if (search.length < 1) { setSearchResults([]); return; }
+    const q = search.toUpperCase();
+    setSearchResults(
+      allSymbols
+        .filter(s => s.includes(q) || STOCKS[s as keyof typeof STOCKS].name.toUpperCase().includes(q))
+        .slice(0, 6)
+    );
+  }, [search]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchResults([]);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div style={{ fontFamily:'JetBrains Mono, monospace', background:'#050508', color:'#E2E8F0', minHeight:'100vh', padding:24, maxWidth:1400, margin:'0 auto' }}>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap"/>
+
+      {/* HEADER */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>
-          <div className="cinzel" style={{fontSize:17,color:"#F59E0B",letterSpacing:3}}>RISHI TERMINAL 4.0</div>
-          <div style={{fontSize:9,color:"#1E293B",letterSpacing:2,marginTop:1}}>ETERNAL SAGE RESEARCH OPERATING SYSTEM</div>
+          <div style={{ fontFamily:'Cinzel, Georgia', fontSize:22, color:'#F59E0B', letterSpacing:4, fontWeight:700 }}>⚡ RISHI TERMINAL</div>
+          <div style={{ fontSize:9, color:'#334155', letterSpacing:3, marginTop:4 }}>STOCKS · INDEXES · COMMODITIES · CRYPTO</div>
         </div>
-        <div style={{display:"flex",gap:8,alignItems:"center"}}>
-          <div className="pulse" style={{width:5,height:5,borderRadius:"50%",background:"#10B981"}}></div>
-          <span style={{fontSize:10,color:"#10B981",letterSpacing:1}}>LIVE</span>
-          <span style={{fontSize:10,color:"#334155",marginLeft:6}}>5 RISHIS · 10 STOCKS</span>
-          <span style={{padding:"2px 8px",borderRadius:3,background:"#F59E0B10",border:"1px solid #F59E0B25",fontSize:9,color:"#F59E0B80",letterSpacing:1}}>DEMO</span>
+        <div style={{ textAlign:'right' }}>
+          <div style={{ fontSize:14, color:'#F59E0B' }}>🕐 {time} IST</div>
+          <div style={{ fontSize:9, color:'#334155', marginTop:4 }}>NSE · BSE · MCX · GLOBAL</div>
         </div>
       </div>
 
-      <div style={{maxWidth:920,margin:"0 auto",padding:"22px 16px"}}>
-        <div style={{marginBottom:22}}>
-          <div style={{fontSize:9,color:"#1E293B",letterSpacing:2,marginBottom:10}}>SELECT STOCK TO ANALYZE</div>
-          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-            {Object.entries(STOCKS).map(([sym,d])=>(
-              <button key={sym} className={`chip ${sel===sym?"on":""}`} onClick={()=>setSel(sym)}>
-                {sym}<span style={{opacity:.45,fontSize:9,marginLeft:5}}>₹{d.price.toLocaleString()}</span>
-              </button>
-            ))}
+      {/* GLOBAL QUICK STATS BAR */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(140px, 1fr))', gap:8, marginBottom:24, background:'#09090F', border:'1px solid #1E293B', borderRadius:10, padding:14 }}>
+        {[
+          { label:'NIFTY 50',  value: mktSummary.nifty  ? mktSummary.nifty.value.toLocaleString()      : '-', pct: mktSummary.nifty?.changePct },
+          { label:'S&P 500',   value: mktSummary.sp500  ? mktSummary.sp500.value.toLocaleString()      : '-', pct: mktSummary.sp500?.changePct },
+          { label:'GOLD',      value: mktSummary.gold   ? '$' + mktSummary.gold.price.toLocaleString() : '-', pct: mktSummary.gold?.changePct },
+          { label:'CRUDE WTI', value: mktSummary.crude  ? '$' + mktSummary.crude.price                 : '-', pct: mktSummary.crude?.changePct },
+          { label:'BTC',       value: '$98,500', pct:  2.45 },
+          { label:'USD/INR',   value: '84.28',  pct: -0.12 },
+        ].map(item => (
+          <div key={item.label} style={{ textAlign:'center' }}>
+            <div style={{ fontSize:8, color:'#334155', letterSpacing:1, marginBottom:4 }}>{item.label}</div>
+            <div style={{ fontSize:13, color:'#F1F5F9', fontWeight:700 }}>{item.value}</div>
+            {item.pct !== undefined && (
+              <div style={{ fontSize:9, color: item.pct >= 0 ? '#10B981' : '#EF4444', marginTop:2 }}>
+                {item.pct >= 0 ? '▲' : '▼'} {Math.abs(item.pct).toFixed(2)}%
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* SEARCH */}
+      <div ref={searchRef} style={{ position:'relative', marginBottom:24 }}>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="🔍  Search stocks — TITAN, INFY, Reliance..."
+          style={{ width:'100%', background:'#09090F', border:'1px solid #1E293B', borderRadius:8, padding:'11px 16px', color:'#E2E8F0', fontSize:13, fontFamily:'JetBrains Mono, monospace', boxSizing:'border-box', outline:'none' }}
+        />
+        {searchResults.length > 0 && (
+          <div style={{ position:'absolute', top:'110%', left:0, right:0, background:'#09090F', border:'1px solid #1E293B', borderRadius:8, zIndex:100, overflow:'hidden' }}>
+            {searchResults.map(sym => {
+              const s    = STOCKS[sym as keyof typeof STOCKS];
+              const comp = getComposite(sym);
+              return (
+                <Link key={sym} href={`/stock/${sym}`}
+                  style={{ display:'flex', justifyContent:'space-between', padding:'10px 16px', textDecoration:'none', borderBottom:'1px solid #0F172A' }}
+                  onClick={() => { setSearch(''); setSearchResults([]); }}>
+                  <span style={{ color:'#F59E0B', fontWeight:600 }}>{sym}</span>
+                  <span style={{ color:'#64748B', fontSize:11 }}>{s.name}</span>
+                  <span style={{ color:sc(comp), fontWeight:700 }}>{comp}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* QUICK NAV */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(110px, 1fr))', gap:8, marginBottom:28 }}>
+        {[
+          { href:'/screener',  icon:'🔍', label:'Screener'  },
+          { href:'/compare',   icon:'⚖️', label:'Compare'   },
+          { href:'/portfolio', icon:'💼', label:'Portfolio' },
+          { href:'/watchlist', icon:'⭐', label:'Watchlist' },
+          { href:'/rishis',    icon:'🧠', label:'Rishis'    },
+          { href:'/pulse',     icon:'📊', label:'Pulse'     },
+          { href:'/news',      icon:'📰', label:'News'      },
+        ].map(nav => (
+          <Link key={nav.href} href={nav.href}
+            style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'12px 8px', background:'#09090F', border:'1px solid #1E293B', borderRadius:8, textDecoration:'none', color:'#94A3B8', fontSize:11, gap:6 }}>
+            <span style={{ fontSize:18 }}>{nav.icon}</span>
+            {nav.label}
+          </Link>
+        ))}
+      </div>
+
+      {/* STOCK OF THE DAY */}
+      <div style={{ background:'#09090F', border:'1px solid #F59E0B30', borderRadius:12, padding:20, marginBottom:28 }}>
+        <div style={{ fontSize:10, color:'#F59E0B', letterSpacing:2, marginBottom:14, fontWeight:600 }}>⭐ STOCK OF THE DAY — {stockOfDay}</div>
+        <div style={{ display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:12, marginBottom:14 }}>
+          <div>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:17, color:'#F1F5F9', fontWeight:700 }}>{stockData.name}</div>
+            <div style={{ fontSize:11, color:'#475569', marginTop:4 }}>{stockData.sector} · NSE · {stockData.price.toLocaleString()}</div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:30, fontWeight:700, color:sc(sotdComposite) }}>{sotdComposite}</div>
+            <div style={{ fontSize:10, color:sc(sotdComposite), marginTop:2 }}>{getSig(sotdComposite)}</div>
           </div>
         </div>
-
-        <div className="top-grid fade" style={{display:"grid",gridTemplateColumns:"148px 1fr",gap:12,marginBottom:12}}>
-          <div style={{background:"#09090F",border:`2px solid ${sc(composite)}28`,borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,textAlign:"center"}}>
-            <div style={{fontSize:9,color:"#1E293B",letterSpacing:2,marginBottom:8}}>RISHI SCORE</div>
-            <div className="cinzel" style={{fontSize:54,color:sc(composite),lineHeight:1}}>{anim}</div>
-            <div style={{fontSize:9,color:sc(composite),marginTop:4,letterSpacing:1}}>/100</div>
-            <div style={{marginTop:10,padding:"3px 10px",borderRadius:3,background:`${sc(composite)}15`,border:`1px solid ${sc(composite)}40`,fontSize:9,color:sc(composite),letterSpacing:1}}>{lbl(composite)}</div>
-          </div>
-          <div style={{background:"#09090F",border:"1px solid #1E293B",borderRadius:8,padding:18}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
-              <div>
-                <div className="cinzel" style={{fontSize:17,color:"#F5E6D3"}}>{stock.name}</div>
-                <div style={{fontSize:10,color:"#475569",marginTop:3}}>{stock.sector} · NSE</div>
-              </div>
-              <div style={{textAlign:"right"}}>
-                <div style={{fontSize:20,color:"#F1F5F9"}}>₹{stock.price.toLocaleString()}</div>
-                <div style={{fontSize:10,color:"#64748B",marginTop:2}}>P/E {stock.pe}x · ROE {stock.roe}%</div>
-              </div>
-            </div>
-            {scores.map(s=>(
-              <div key={s.name} style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
-                <span style={{fontSize:10,color:"#64748B",width:90,flexShrink:0}}>{s.name}</span>
-                <div className="bar" style={{flex:1}}>
-                  <div className="bar-fill" style={{width:`${s.score}%`,background:sc(s.score)}}></div>
-                </div>
-                <span style={{fontSize:11,color:sc(s.score),width:26,textAlign:"right",fontWeight:600}}>{s.score}</span>
-                <span style={{fontSize:9,padding:"1px 5px",borderRadius:2,background:`${SIG[getSig(s.score) as keyof typeof SIG]}15`,color:SIG[getSig(s.score) as keyof typeof SIG],width:32,textAlign:"center"}}>{getSig(s.score)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div style={{background:"#09090F",border:"1px solid #1E293B",borderRadius:8,padding:16,marginBottom:12}}>
-          <div style={{fontSize:9,color:"#1E293B",letterSpacing:2,marginBottom:4}}>RISHI ALIGNMENT RADAR</div>
-          <ResponsiveContainer width="100%" height={230}>
-            <RadarChart data={radar} cx="50%" cy="50%">
-              <PolarGrid stroke="#131320"/>
-              <PolarAngleAxis dataKey="rishi" tick={{fill:"#64748B",fontSize:10}}/>
-              <PolarRadiusAxis domain={[0,100]} tick={false} axisLine={false}/>
-              <Radar dataKey="score" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.12} strokeWidth={2}/>
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div style={{fontSize:9,color:"#1E293B",letterSpacing:2,marginBottom:10}}>RISHI FORMULA VERDICTS — CLICK ANY CARD TO EXPAND</div>
-        <div className="grid5" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10,marginBottom:12}}>
-          {scores.map(s=>(
-            <div key={s.name} className="rcard" style={{borderLeft:`3px solid ${sc(s.score)}`,borderRadius:"0 7px 7px 0"}} onClick={()=>setExp(exp===s.name?null:s.name)}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}}>
-                <div style={{fontSize:11,color:"#CBD5E1",fontWeight:500}}>{s.full.split(" ").slice(-1)[0]}</div>
-                <div style={{fontSize:20,fontWeight:700,color:sc(s.score)}}>{s.score}</div>
-              </div>
-              <div style={{fontSize:9,color:"#475569",marginBottom:8}}>{s.label}</div>
-              <div className="bar" style={{marginBottom:8}}>
-                <div className="bar-fill" style={{width:`${s.score}%`,background:sc(s.score)}}></div>
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span style={{fontSize:9,padding:"2px 6px",borderRadius:2,background:`${SIG[getSig(s.score) as keyof typeof SIG]}15`,color:SIG[getSig(s.score) as keyof typeof SIG]}}>{getSig(s.score)}</span>
-                <span style={{fontSize:9,color:"#334155"}}>{exp===s.name?"▲":"▼"}</span>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(90px, 1fr))', gap:8 }}>
+          {sotdScores.map(s => (
+            <div key={s.name} style={{ background:'#050508', borderRadius:6, padding:'8px 10px' }}>
+              <div style={{ fontSize:8, color:'#334155', marginBottom:3 }}>{s.name.toUpperCase()}</div>
+              <div style={{ fontSize:14, color:sc(s.score), fontWeight:700 }}>{s.score}</div>
+              <div style={{ height:3, background:'#1E293B', borderRadius:2, marginTop:5 }}>
+                <div style={{ width:`${s.score}%`, height:'100%', background:sc(s.score), borderRadius:2 }}/>
               </div>
             </div>
           ))}
         </div>
+      </div>
 
-        {exp&&(()=>{
-          const s=scores.find(x=>x.name===exp);
-          if(!s)return null;
-          return(
-            <div className="fade" style={{background:"#09090F",border:`1px solid ${sc(s.score)}30`,borderRadius:8,padding:20,marginBottom:12}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-                <div>
-                  <div className="cinzel" style={{fontSize:15,color:"#F5E6D3"}}>{s.full}</div>
-                  <div style={{fontSize:10,color:"#475569",marginTop:2}}>{s.label} Formula</div>
-                </div>
-                <div style={{fontSize:36,color:sc(s.score),fontWeight:700}}>{s.score}<span style={{fontSize:12,color:sc(s.score),opacity:.6}}>/100</span></div>
+      {/* TOP BUY SIGNALS */}
+      <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:20, marginBottom:28 }}>
+        <div style={{ fontSize:10, color:'#10B981', letterSpacing:2, marginBottom:14, fontWeight:600 }}>🏆 TOP BUY SIGNALS</div>
+        {topBuys.map((t, i) => {
+          const s = STOCKS[t.sym as keyof typeof STOCKS];
+          return (
+            <Link key={t.sym} href={`/stock/${t.sym}`}
+              style={{ display:'flex', alignItems:'center', gap:12, padding:'9px 0', borderBottom:'1px solid #0F172A', textDecoration:'none' }}>
+              <span style={{ fontSize:11, color:'#334155', width:16 }}>#{i+1}</span>
+              <span style={{ color:'#F59E0B', fontWeight:700, width:100 }}>{t.sym}</span>
+              <span style={{ color:'#64748B', fontSize:11, flex:1 }}>{s.name}</span>
+              <div style={{ width:80, height:6, background:'#1E293B', borderRadius:3 }}>
+                <div style={{ width:`${t.score}%`, height:'100%', background:sc(t.score), borderRadius:3 }}/>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12,marginBottom:14}}>
-                {s.comps.map((c:any,i:number)=>(
-                  <div key={i} style={{background:"#0A0A16",borderRadius:6,padding:12}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                      <span style={{fontSize:10,color:"#94A3B8"}}>{c.label}</span>
-                      <span style={{fontSize:13,color:sc(c.v),fontWeight:700}}>{c.v}</span>
+              <span style={{ color:sc(t.score), fontWeight:700, width:32, textAlign:'right' }}>{t.score}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* ══════════════════════════════════════════════ */}
+      {/* INDIAN INDEXES                                */}
+      {/* ══════════════════════════════════════════════ */}
+      <SectionHeader emoji="🇮🇳" title="INDIAN INDEXES" subtitle="NSE · BSE · SECTORAL INDICES · INDIA VIX" color="#F59E0B" />
+
+      <div style={{ display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' }}>
+        {[
+          { label:`▲ ${mktSummary.indianUp} Advancing`,  bg:'#10B98115', border:'#10B98130', color:'#10B981' },
+          { label:`▼ ${mktSummary.indianDown} Declining`, bg:'#EF444415', border:'#EF444430', color:'#EF4444' },
+          { label:'🕐 NSE: 09:15 – 15:30 IST',           bg:'#09090F',   border:'#1E293B',   color:'#F59E0B' },
+        ].map(chip => (
+          <div key={chip.label} style={{ background:chip.bg, border:`1px solid ${chip.border}`, borderRadius:6, padding:'6px 14px', fontSize:10, color:chip.color }}>
+            {chip.label}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, overflow:'hidden', marginBottom:28 }}>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+            <thead>
+              <tr style={{ background:'#06060D' }}>
+                {['Index','Value','Change','% Change','52W High','52W Low','P/E','Status'].map(h => (
+                  <th key={h} style={{ padding:'10px 14px', color:'#475569', fontSize:9, textAlign: h === 'Index' ? 'left' : 'right', letterSpacing:1 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {INDIAN_INDEXES.map((idx, i) => {
+                const pos         = idx.changePct >= 0;
+                const isVix       = idx.symbol === 'INDIAVIX';
+                const statusColor = isVix
+                  ? (idx.value < 15 ? '#10B981' : idx.value < 20 ? '#F59E0B' : '#EF4444')
+                  : (pos ? '#10B981' : '#EF4444');
+                const statusLabel = isVix
+                  ? (idx.value < 15 ? 'CALM' : idx.value < 20 ? 'ALERT' : 'FEAR')
+                  : (pos ? 'RISING' : 'FALLING');
+                return (
+                  <tr key={idx.symbol} style={{ borderBottom:'1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#07070E' }}>
+                    <td style={{ padding:'11px 14px' }}>
+                      <div style={{ color:'#F1F5F9', fontWeight:600 }}>{idx.flag} {idx.name}</div>
+                      <div style={{ fontSize:9, color:'#334155', marginTop:2 }}>{idx.symbol}</div>
+                    </td>
+                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{idx.value.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color: pos ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos ? '+' : ''}{idx.change.toFixed(1)}</td>
+                    <td style={{ padding:'11px 14px', textAlign:'right' }}>
+                      <span style={{ color: pos ? '#10B981' : '#EF4444', fontWeight:700 }}>{pos ? '▲' : '▼'} {Math.abs(idx.changePct).toFixed(2)}%</span>
+                    </td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.high52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.low52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#94A3B8', textAlign:'right' }}>{idx.pe ? idx.pe + 'x' : '—'}</td>
+                    <td style={{ padding:'11px 14px', textAlign:'right' }}>
+                      <span style={{ background:`${statusColor}15`, border:`1px solid ${statusColor}40`, borderRadius:4, padding:'3px 8px', color:statusColor, fontSize:9, fontWeight:700 }}>{statusLabel}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════ */}
+      {/* FOREIGN INDEXES                               */}
+      {/* ══════════════════════════════════════════════ */}
+      <SectionHeader emoji="🌍" title="GLOBAL INDEXES" subtitle="USA · EUROPE · ASIA · EMERGING MARKETS" color="#818CF8" />
+
+      <div style={{ display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' }}>
+        {[
+          { label:`▲ ${mktSummary.foreignUp} Advancing`,  bg:'#10B98115', border:'#10B98130', color:'#10B981' },
+          { label:`▼ ${mktSummary.foreignDown} Declining`, bg:'#EF444415', border:'#EF444430', color:'#EF4444' },
+          { label:'🌐 14 Global Exchanges',                bg:'#09090F',   border:'#1E293B',   color:'#818CF8' },
+        ].map(chip => (
+          <div key={chip.label} style={{ background:chip.bg, border:`1px solid ${chip.border}`, borderRadius:6, padding:'6px 14px', fontSize:10, color:chip.color }}>
+            {chip.label}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, overflow:'hidden', marginBottom:28 }}>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+            <thead>
+              <tr style={{ background:'#06060D' }}>
+                {['Index','Country','Value','Change','% Change','52W High','52W Low','P/E','Status'].map(h => (
+                  <th key={h} style={{ padding:'10px 14px', color:'#475569', fontSize:9, textAlign: h === 'Index' || h === 'Country' ? 'left' : 'right', letterSpacing:1 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {FOREIGN_INDEXES.map((idx, i) => {
+                const pos         = idx.changePct >= 0;
+                const isVix       = idx.symbol === 'VIX';
+                const statusColor = isVix
+                  ? (idx.value < 15 ? '#10B981' : idx.value < 25 ? '#F59E0B' : '#EF4444')
+                  : (pos ? '#10B981' : '#EF4444');
+                const statusLabel = isVix
+                  ? (idx.value < 15 ? 'CALM' : idx.value < 25 ? 'ALERT' : 'FEAR')
+                  : (pos ? 'RISING' : 'FALLING');
+                return (
+                  <tr key={idx.symbol} style={{ borderBottom:'1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#07070E' }}>
+                    <td style={{ padding:'11px 14px' }}>
+                      <div style={{ color:'#F1F5F9', fontWeight:600 }}>{idx.flag} {idx.name}</div>
+                      <div style={{ fontSize:9, color:'#334155', marginTop:2 }}>{idx.symbol}</div>
+                    </td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', fontSize:10 }}>{idx.country}</td>
+                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{idx.value.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color: pos ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos ? '+' : ''}{idx.change.toFixed(1)}</td>
+                    <td style={{ padding:'11px 14px', textAlign:'right' }}>
+                      <span style={{ color: pos ? '#10B981' : '#EF4444', fontWeight:700 }}>{pos ? '▲' : '▼'} {Math.abs(idx.changePct).toFixed(2)}%</span>
+                    </td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.high52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{idx.low52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#94A3B8', textAlign:'right' }}>{idx.pe ? idx.pe + 'x' : '—'}</td>
+                    <td style={{ padding:'11px 14px', textAlign:'right' }}>
+                      <span style={{ background:`${statusColor}15`, border:`1px solid ${statusColor}40`, borderRadius:4, padding:'3px 8px', color:statusColor, fontSize:9, fontWeight:700 }}>{statusLabel}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════ */}
+      {/* COMMODITIES                                   */}
+      {/* ══════════════════════════════════════════════ */}
+      <SectionHeader emoji="⚒️" title="COMMODITIES" subtitle="GOLD · CRUDE · BASE METALS · AGRI · MCX INDIA" color="#F97316" />
+
+      <div style={{ display:'flex', gap:10, marginBottom:16, flexWrap:'wrap' }}>
+        {[
+          { label:`▲ ${mktSummary.commUp} Rising`,    bg:'#10B98115', border:'#10B98130', color:'#10B981' },
+          { label:`▼ ${mktSummary.commDown} Falling`, bg:'#EF444415', border:'#EF444430', color:'#EF4444' },
+        ].map(chip => (
+          <div key={chip.label} style={{ background:chip.bg, border:`1px solid ${chip.border}`, borderRadius:6, padding:'6px 14px', fontSize:10, color:chip.color }}>
+            {chip.label}
+          </div>
+        ))}
+      </div>
+
+      <TabBar
+        tabs={['all','metals','energy','agri','mcx']}
+        labels={['All','🥇 Metals','⛽ Energy','🌾 Agriculture','🇮🇳 MCX India']}
+        active={commTab}
+        onChange={setCommTab}
+        color="#F97316"
+      />
+
+      <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, overflow:'hidden', marginBottom:28 }}>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+            <thead>
+              <tr style={{ background:'#06060D' }}>
+                {['Commodity','Category','Price','Unit','Change','% Change','52W High','52W Low','52W Range'].map(h => (
+                  <th key={h} style={{ padding:'10px 14px', color:'#475569', fontSize:9, textAlign: h === 'Commodity' || h === 'Category' || h === 'Unit' ? 'left' : 'right', letterSpacing:1 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredComm.map((c, i) => {
+                const pos   = c.changePct >= 0;
+                const range = c.high52w - c.low52w;
+                const pos52 = range > 0 ? ((c.price - c.low52w) / range) * 100 : 50;
+                return (
+                  <tr key={c.symbol} style={{ borderBottom:'1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#07070E' }}>
+                    <td style={{ padding:'11px 14px' }}>
+                      <div style={{ color:'#F1F5F9', fontWeight:600 }}>{c.emoji} {c.name}</div>
+                      <div style={{ fontSize:9, color:'#334155', marginTop:2 }}>{c.symbol}</div>
+                    </td>
+                    <td style={{ padding:'11px 14px' }}>
+                      <span style={{ fontSize:9, color:'#64748B', background:'#050508', borderRadius:4, padding:'2px 6px' }}>{c.category}</span>
+                    </td>
+                    <td style={{ padding:'11px 14px', color:'#F1F5F9', textAlign:'right', fontWeight:700, fontSize:13 }}>{c.price.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#475569', fontSize:9 }}>{c.unit}</td>
+                    <td style={{ padding:'11px 14px', color: pos ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos ? '+' : ''}{c.change.toFixed(2)}</td>
+                    <td style={{ padding:'11px 14px', textAlign:'right' }}>
+                      <span style={{ color: pos ? '#10B981' : '#EF4444', fontWeight:700 }}>{pos ? '▲' : '▼'} {Math.abs(c.changePct).toFixed(2)}%</span>
+                    </td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{c.high52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', color:'#64748B', textAlign:'right' }}>{c.low52w.toLocaleString()}</td>
+                    <td style={{ padding:'11px 14px', textAlign:'right', minWidth:110 }}>
+                      <div style={{ fontSize:8, color:'#334155', marginBottom:4, display:'flex', justifyContent:'space-between' }}>
+                        <span>L</span><span>{pos52.toFixed(0)}%</span><span>H</span>
+                      </div>
+                      <div style={{ height:5, background:'#1E293B', borderRadius:3, position:'relative' }}>
+                        <div style={{ position:'absolute', left:`${Math.min(95, Math.max(5, pos52))}%`, top:-2, width:9, height:9, borderRadius:'50%', background: pos ? '#10B981' : '#EF4444', transform:'translateX(-50%)' }}/>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════ */}
+      {/* CRYPTO                                        */}
+      {/* ══════════════════════════════════════════════ */}
+      <SectionHeader emoji="🪙" title="CRYPTO MARKETS" subtitle="DIGITAL ASSET INTELLIGENCE · FEAR & GREED · DOMINANCE" color="#818CF8" />
+
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(155px, 1fr))', gap:10, marginBottom:20 }}>
+        {[
+          { label:'Sentiment',     value: cryptoMetrics.sentiment,   color: cryptoMoodColor },
+          { label:'Total Mkt Cap', value: '$' + fmt(cryptoMetrics.totalMarketCap), color:'#F1F5F9' },
+          { label:'24h Volume',    value: '$' + fmt(cryptoMetrics.totalVolume),    color:'#F1F5F9' },
+          { label:'Avg 24h Chg',   value: (cryptoMetrics.avgChange24h >= 0 ? '+' : '') + cryptoMetrics.avgChange24h.toFixed(2) + '%', color: cryptoMetrics.avgChange24h >= 0 ? '#10B981' : '#EF4444' },
+          { label:'Avg RSI',       value: cryptoMetrics.avgRSI.toString(), color: rsiColor(cryptoMetrics.avgRSI) },
+          { label:'BTC Dominance', value: MARKET_DOMINANCE.btc + '%', color:'#F59E0B' },
+          { label:'Gainers / Losers', value: `${cryptoMetrics.gainers}↑  ${cryptoMetrics.losers}↓`, color:'#94A3B8' },
+        ].map(m => (
+          <div key={m.label} style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:10, padding:'12px 14px', textAlign:'center' }}>
+            <div style={{ fontSize:8, color:'#475569', letterSpacing:1, marginBottom:6, textTransform:'uppercase' }}>{m.label}</div>
+            <div style={{ fontSize:16, fontWeight:700, color:m.color, fontFamily:'JetBrains Mono, monospace' }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Fear & Greed */}
+      <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:18, marginBottom:20 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14, flexWrap:'wrap', gap:8 }}>
+          <div style={{ fontSize:10, color:'#818CF8', letterSpacing:2, fontWeight:600 }}>😱 FEAR &amp; GREED INDEX</div>
+          <div style={{ fontSize:20, fontWeight:700, color:'#F59E0B' }}>{FEAR_GREED_INDEX.value} — {FEAR_GREED_INDEX.label}</div>
+        </div>
+        <div style={{ position:'relative', height:24, background:'linear-gradient(90deg, #EF4444 0%, #F59E0B 50%, #10B981 100%)', borderRadius:6, marginBottom:6 }}>
+          <div style={{ position:'absolute', top:-8, left:`${FEAR_GREED_INDEX.value}%`, transform:'translateX(-50%)', fontSize:16 }}>📍</div>
+        </div>
+        <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:'#475569', marginBottom:14 }}>
+          <span>😱 Extreme Fear</span><span>😐 Neutral</span><span>🤑 Extreme Greed</span>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
+          {[
+            { label:'Yesterday', v: FEAR_GREED_INDEX.previousDay   },
+            { label:'Last Week', v: FEAR_GREED_INDEX.previousWeek  },
+            { label:'Last Month',v: FEAR_GREED_INDEX.previousMonth },
+          ].map(f => (
+            <div key={f.label} style={{ background:'#050508', borderRadius:6, padding:'8px 10px', textAlign:'center' }}>
+              <div style={{ fontSize:8, color:'#334155', marginBottom:3 }}>{f.label.toUpperCase()}</div>
+              <div style={{ fontSize:15, fontWeight:700, color: f.v >= 60 ? '#10B981' : f.v >= 40 ? '#F59E0B' : '#EF4444' }}>{f.v}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* BTC Dominance */}
+      <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:18, marginBottom:20 }}>
+        <div style={{ fontSize:10, color:'#818CF8', letterSpacing:2, fontWeight:600, marginBottom:14 }}>📊 MARKET DOMINANCE</div>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {[
+            { label:'Bitcoin',  pct: MARKET_DOMINANCE.btc,    color:'#F59E0B' },
+            { label:'Ethereum', pct: MARKET_DOMINANCE.eth,    color:'#818CF8' },
+            { label:'BNB',      pct: MARKET_DOMINANCE.bnb,    color:'#F97316' },
+            { label:'Others',   pct: MARKET_DOMINANCE.others, color:'#475569' },
+          ].map(d => (
+            <div key={d.label}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                <span style={{ fontSize:10, color:d.color }}>{d.label}</span>
+                <span style={{ fontSize:10, color:'#94A3B8', fontWeight:700 }}>{d.pct}%</span>
+              </div>
+              <div style={{ height:8, background:'#1E293B', borderRadius:4 }}>
+                <div style={{ width:`${d.pct}%`, height:'100%', background:d.color, borderRadius:4 }}/>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Crypto tab switcher */}
+      <TabBar
+        tabs={['overview','table','sectors']}
+        labels={['Overview','Table','Sectors']}
+        active={cryptoTab}
+        onChange={setCryptoTab}
+        color="#818CF8"
+      />
+
+      {/* CRYPTO OVERVIEW */}
+      {cryptoTab === 'overview' && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(210px, 1fr))', gap:12, marginBottom:28 }}>
+          {CRYPTO_ASSETS.map(c => {
+            const pos24 = c.change24h >= 0;
+            const pos7d  = c.change7d  >= 0;
+            return (
+              <div key={c.symbol} style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:10, padding:14 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                  <div>
+                    <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                      <span style={{ fontSize:15 }}>{c.emoji}</span>
+                      <span style={{ color:'#F59E0B', fontWeight:700, fontSize:13 }}>{c.symbol}</span>
                     </div>
-                    <div className="bar" style={{marginBottom:6}}>
-                      <div className="bar-fill" style={{width:`${c.v}%`,background:sc(c.v)}}></div>
+                    <div style={{ fontSize:9, color:'#475569', marginTop:2 }}>{c.name}</div>
+                  </div>
+                  <div style={{ textAlign:'right' }}>
+                    <div style={{ fontSize:11, color:'#F1F5F9', fontWeight:600 }}>${c.price.toLocaleString('en-US', { maximumFractionDigits:4 })}</div>
+                    <div style={{ fontSize:9, color: pos24 ? '#10B981' : '#EF4444', marginTop:2 }}>{pos24 ? '▲' : '▼'} {Math.abs(c.change24h).toFixed(2)}%</div>
+                  </div>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, marginBottom:8 }}>
+                  {[
+                    { label:'7D',   value:(pos7d ? '+' : '') + c.change7d.toFixed(2) + '%', color: pos7d ? '#10B981' : '#EF4444' },
+                    { label:'MCAP', value:'$' + fmt(c.marketCap),   color:'#94A3B8' },
+                    { label:'RSI',  value: c.rsi.toString(),         color: rsiColor(c.rsi) },
+                    { label:'MACD', value: c.macd,                   color: macdColor(c.macd) },
+                  ].map(m => (
+                    <div key={m.label} style={{ background:'#050508', borderRadius:5, padding:'5px 7px' }}>
+                      <div style={{ fontSize:7, color:'#334155' }}>{m.label}</div>
+                      <div style={{ fontSize:10, color:m.color, fontWeight:600 }}>{m.value}</div>
                     </div>
-                    <div style={{fontSize:9,color:"#475569"}}>{c.detail}</div>
-                    <div style={{fontSize:9,color:"#334155",marginTop:4}}>Weight: {c.wt}%</div>
+                  ))}
+                </div>
+                <div style={{ fontSize:8, color:'#334155', marginBottom:4 }}>
+                  200D MA:{' '}
+                  <span style={{ color: c.price > c.moving200d ? '#10B981' : '#EF4444' }}>
+                    {c.price > c.moving200d ? '▲ ABOVE' : '▼ BELOW'} ${c.moving200d.toLocaleString()}
+                  </span>
+                </div>
+                <div style={{ fontSize:8, color:'#334155', marginBottom:3 }}>
+                  From ATH: <span style={{ color:'#EF4444' }}>{c.fromAth.toFixed(1)}%</span>
+                </div>
+                <div style={{ height:4, background:'#1E293B', borderRadius:2 }}>
+                  <div style={{ width:`${Math.max(0, 100 + c.fromAth)}%`, height:'100%', background: Math.abs(c.fromAth) < 20 ? '#10B981' : Math.abs(c.fromAth) < 50 ? '#F59E0B' : '#EF4444', borderRadius:2 }}/>
+                </div>
+                <div style={{ marginTop:6, fontSize:7, color:'#334155' }}>{c.sector} · Vol ${fmt(c.volume24h)}/24h</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* CRYPTO TABLE */}
+      {cryptoTab === 'table' && (
+        <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, overflow:'hidden', marginBottom:28 }}>
+          <div style={{ overflowX:'auto' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+              <thead>
+                <tr style={{ background:'#06060D' }}>
+                  {['#','Coin','Price','24h','7d','Mkt Cap','Volume','RSI','MACD','200D MA','From ATH'].map(h => (
+                    <th key={h} style={{ padding:'10px 12px', color:'#475569', fontSize:9, textAlign: h === '#' || h === 'Coin' ? 'left' : 'right', letterSpacing:1 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {CRYPTO_ASSETS.map((c, i) => {
+                  const pos24 = c.change24h >= 0;
+                  const pos7d  = c.change7d  >= 0;
+                  return (
+                    <tr key={c.symbol} style={{ borderBottom:'1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#07070E' }}>
+                      <td style={{ padding:'10px 12px', color:'#334155', fontSize:10 }}>{i + 1}</td>
+                      <td style={{ padding:'10px 12px' }}>
+                        <span style={{ marginRight:6 }}>{c.emoji}</span>
+                        <span style={{ color:'#F59E0B', fontWeight:700 }}>{c.symbol}</span>
+                        <span style={{ color:'#334155', fontSize:9, marginLeft:6 }}>{c.name}</span>
+                      </td>
+                      <td style={{ padding:'10px 12px', color:'#F1F5F9', textAlign:'right', fontWeight:600 }}>${c.price.toLocaleString('en-US', { maximumFractionDigits:4 })}</td>
+                      <td style={{ padding:'10px 12px', color: pos24 ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos24 ? '+' : ''}{c.change24h.toFixed(2)}%</td>
+                      <td style={{ padding:'10px 12px', color: pos7d  ? '#10B981' : '#EF4444', textAlign:'right', fontWeight:600 }}>{pos7d  ? '+' : ''}{c.change7d.toFixed(2)}%</td>
+                      <td style={{ padding:'10px 12px', color:'#94A3B8', textAlign:'right' }}>${fmt(c.marketCap)}</td>
+                      <td style={{ padding:'10px 12px', color:'#64748B', textAlign:'right' }}>${fmt(c.volume24h)}</td>
+                      <td style={{ padding:'10px 12px', textAlign:'right', color:rsiColor(c.rsi), fontWeight:600 }}>{c.rsi}</td>
+                      <td style={{ padding:'10px 12px', textAlign:'right', color:macdColor(c.macd), fontWeight:700, fontSize:9 }}>{c.macd}</td>
+                      <td style={{ padding:'10px 12px', textAlign:'right', color: c.price > c.moving200d ? '#10B981' : '#EF4444', fontSize:9 }}>{c.price > c.moving200d ? '▲ ABOVE' : '▼ BELOW'}</td>
+                      <td style={{ padding:'10px 12px', textAlign:'right', color:'#EF4444', fontSize:10 }}>{c.fromAth.toFixed(1)}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* CRYPTO SECTORS */}
+      {cryptoTab === 'sectors' && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:14, marginBottom:28 }}>
+          {[...new Set(CRYPTO_ASSETS.map(c => c.sector))].map(sector => {
+            const coins     = CRYPTO_ASSETS.filter(c => c.sector === sector);
+            const avgChange = coins.reduce((s, c) => s + c.change24h, 0) / coins.length;
+            const totalMcap = coins.reduce((s, c) => s + c.marketCap, 0);
+            return (
+              <div key={sector} style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:10, padding:14 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
+                  <div style={{ fontSize:11, color:'#818CF8', fontWeight:700 }}>{sector}</div>
+                  <div style={{ fontSize:10, color: avgChange >= 0 ? '#10B981' : '#EF4444', fontWeight:600 }}>{avgChange >= 0 ? '+' : ''}{avgChange.toFixed(2)}% avg</div>
+                </div>
+                <div style={{ fontSize:9, color:'#334155', marginBottom:8 }}>MCap: ${fmt(totalMcap)}</div>
+                {coins.map(c => (
+                  <div key={c.symbol} style={{ display:'flex', justifyContent:'space-between', padding:'6px 0', borderBottom:'1px solid #0F172A', alignItems:'center' }}>
+                    <span style={{ color:'#F59E0B', fontSize:11 }}>{c.emoji} {c.symbol}</span>
+                    <span style={{ color:'#475569', fontSize:10 }}>${c.price.toLocaleString('en-US', { maximumFractionDigits:4 })}</span>
+                    <span style={{ color: c.change24h >= 0 ? '#10B981' : '#EF4444', fontSize:10, fontWeight:600 }}>{c.change24h >= 0 ? '+' : ''}{c.change24h.toFixed(2)}%</span>
+                    <span style={{ fontSize:9, color:rsiColor(c.rsi) }}>RSI {c.rsi}</span>
                   </div>
                 ))}
               </div>
-              <div style={{padding:"10px 14px",background:"#0A0A16",borderRadius:6,borderLeft:`2px solid ${sc(s.score)}60`}}>
-                <div style={{fontSize:9,color:"#64748B",letterSpacing:1,marginBottom:4}}>KEY INSIGHT</div>
-                <div style={{fontSize:11,color:"#94A3B8",lineHeight:1.7}}>{s.insight}</div>
-              </div>
-            </div>
-          );
-        })()}
-
-        <div style={{marginTop:8,textAlign:"center",fontSize:9,color:"#0F172A",letterSpacing:1}}>
-          NOT INVESTMENT ADVICE · EDUCATIONAL SIMULATION · SEBI COMPLIANT
+            );
+          })}
         </div>
+      )}
+
+      {/* FOOTER */}
+      <div style={{ textAlign:'center', fontSize:9, color:'#0F172A', letterSpacing:1, marginTop:20, paddingTop:20, borderTop:'1px solid #0F172A' }}>
+        NOT INVESTMENT ADVICE · EDUCATIONAL SIMULATION · RISHI TERMINAL v4.0
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { scoreJhunjhunwala, scoreDamani, scoreBuffett, scoreGraham, scoreLynch, 
 import { sc, getSig } from '../lib/utils';
 import { CRYPTO_ASSETS, FEAR_GREED_INDEX, getCryptoMetrics, MARKET_DOMINANCE } from '../data/crypto';
 import { INDIAN_INDEXES, FOREIGN_INDEXES, COMMODITIES, getMarketSummary } from '../data/markets';
+import { getWisdomOfTheDay } from '../lib/wisdom/wisdom-of-day';
 
 const SCORERS = [scoreJhunjhunwala, scoreDamani, scoreBuffett, scoreGraham, scoreLynch, scoreKacholia, scoreKedia, scoreMunger, scoreGreenblatt, scorePabrai];
 const SCORER_NAMES = ['Jhunjhunwala','Damani','Buffett','Graham','Lynch','Kacholia','Kedia','Munger','Greenblatt','Pabrai'];
@@ -24,6 +25,27 @@ function fmt(n: number) {
   return n.toLocaleString('en-US');
 }
 
+/**
+ * Intelligently select stock of the day
+ * Rotate through top quality stocks
+ */
+function getStockOfDay(): string {
+  const today = new Date();
+  const dayOfYear = Math.floor(
+    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  
+  const candidates = Object.keys(STOCKS)
+    .map(sym => ({ sym, score: getComposite(sym) }))
+    .filter(x => x.score >= 65)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10)
+    .map(x => x.sym);
+  
+  if (candidates.length === 0) return 'TITAN';
+  return candidates[dayOfYear % candidates.length];
+}
+
 export default function Dashboard() {
   const [time, setTime] = useState('');
   const [search, setSearch] = useState('');
@@ -32,7 +54,7 @@ export default function Dashboard() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const allSymbols = Object.keys(STOCKS);
-  const stockOfDay = 'TITAN';
+  const stockOfDay = getStockOfDay();
   const stockData = STOCKS[stockOfDay as keyof typeof STOCKS] ?? STOCKS[allSymbols[0]];
 
   const sotdScores = stockData
@@ -50,6 +72,7 @@ export default function Dashboard() {
 
   const cryptoMetrics = getCryptoMetrics();
   const mktSummary = getMarketSummary();
+  const wisdomOfDay = getWisdomOfTheDay();
 
   useEffect(() => {
     const tick = () => setTime(new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }));
@@ -94,12 +117,12 @@ export default function Dashboard() {
                 RISHI TERMINAL
               </h1>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginTop: 4 }}>
-                STOCKS · BONDS · FOREX · CRYPTO · COMMODITIES
+                STOCKS Â· BONDS Â· FOREX Â· CRYPTO Â· COMMODITIES
               </p>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 16, color: 'var(--accent-gold)', fontWeight: 700 }}>{time} IST</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>NSE · BSE · MCX · GLOBAL</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>NSE Â· BSE Â· MCX Â· GLOBAL</div>
             </div>
           </div>
         </div>
@@ -121,7 +144,7 @@ export default function Dashboard() {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>{item.label}</div>
               <div style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 700 }}>{item.value}</div>
               <div style={{ fontSize: 11, color: item.pct >= 0 ? 'var(--accent-green)' : 'var(--accent-red)', marginTop: 4 }}>
-                {item.pct >= 0 ? '▲' : '▼'} {Math.abs(item.pct).toFixed(2)}%
+                {item.pct >= 0 ? 'â–²' : 'â–¼'} {Math.abs(item.pct).toFixed(2)}%
               </div>
             </div>
           ))}
@@ -132,7 +155,7 @@ export default function Dashboard() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search stocks — TITAN, INFY, Reliance..."
+            placeholder="Search stocks â€” TITAN, INFY, Reliance..."
             style={{
               width: '100%', padding: '14px 18px', borderRadius: 10, fontSize: 14,
               background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
@@ -166,16 +189,16 @@ export default function Dashboard() {
         {/* Quick Nav */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 10, marginBottom: 40 }}>
           {[
-            { href: '/screener',    icon: '🔍', label: 'Screener'    },
-            { href: '/compare',     icon: '⚖️',  label: 'Compare'     },
-            { href: '/portfolio',   icon: '💼',  label: 'Portfolio'   },
-            { href: '/watchlist',   icon: '⭐',  label: 'Watchlist'   },
-            { href: '/rishis',      icon: '🧘',  label: 'Rishis'      },
-            { href: '/bonds',       icon: '🏛️',  label: 'Bonds'       },
-            { href: '/forex',       icon: '💱',  label: 'Forex'       },
-            { href: '/news',        icon: '📰',  label: 'News'        },
-            { href: '/commodities', icon: '🛢️',  label: 'Commodities' },
-            { href: '/crypto',      icon: '₿',   label: 'Crypto'      },
+            { href: '/screener',    icon: 'ðŸ“Š', label: 'Screener'    },
+            { href: '/compare',     icon: 'âš–ï¸',  label: 'Compare'     },
+            { href: '/portfolio',   icon: 'ðŸŽ’',  label: 'Portfolio'   },
+            { href: '/watchlist',   icon: 'â­',  label: 'Watchlist'   },
+            { href: '/rishis',      icon: 'ðŸ§˜',  label: 'Rishis'      },
+            { href: '/bonds',       icon: 'ðŸ›ï¸',  label: 'Bonds'       },
+            { href: '/forex',       icon: 'ðŸ’±',  label: 'Forex'       },
+            { href: '/news',        icon: 'ðŸ“°',  label: 'News'        },
+            { href: '/commodities', icon: 'ðŸ›¢ï¸',  label: 'Commodities' },
+            { href: '/crypto',      icon: 'â‚¿',   label: 'Crypto'      },
           ].map(nav => (
             <Link key={nav.href} href={nav.href}
               style={{
@@ -206,12 +229,12 @@ export default function Dashboard() {
           {/* Stock of the Day */}
           <div className="card" style={{ padding: 24 }}>
             <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
-              ⭐ STOCK OF THE DAY — {stockOfDay}
+              â­ STOCK OF THE DAY â€” {stockOfDay}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <div style={{ fontFamily: 'Cinzel, serif', fontSize: 18, color: 'var(--text-primary)', fontWeight: 700 }}>{stockData.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{stockData.sector} · NSE · {stockData.price.toLocaleString('en-US')}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{stockData.sector} Â· NSE Â· {stockData.price.toLocaleString('en-US')}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 36, fontWeight: 700, color: scoreColor(sotdComposite), lineHeight: 1 }}>{sotdComposite}</div>
@@ -234,40 +257,68 @@ export default function Dashboard() {
               background: 'var(--accent-gold)', color: '#000', borderRadius: 8,
               fontWeight: 700, fontSize: 13, textDecoration: 'none',
             }}>
-              Full Deep-Dive →
+              Full Deep-Dive â†’
             </Link>
           </div>
 
-          {/* Top Buy Signals */}
-          <div className="card" style={{ padding: 24 }}>
-            <div style={{ fontSize: 10, color: 'var(--accent-green)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
-              🔥 TOP BUY SIGNALS
+          {/* Wisdom of the Day */}
+          <div className="card" style={{ padding: 24, background: `linear-gradient(135deg, ${wisdomOfDay.color}08 0%, var(--bg-card) 100%)` }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 12, fontWeight: 700 }}>
+              âœ¨ WISDOM OF THE DAY
             </div>
-            {topBuys.map((t, i) => {
-              const s = STOCKS[t.sym as keyof typeof STOCKS];
-              return (
-                <Link key={t.sym} href={`/stock/${t.sym}`}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border-subtle)', textDecoration: 'none' }}>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 20 }}>#{i + 1}</span>
-                  <span style={{ color: 'var(--accent-gold)', fontWeight: 700, width: 90, fontSize: 13 }}>{t.sym}</span>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: 11, flex: 1 }}>{s?.name}</span>
-                  <div style={{ width: 60, height: 5, background: 'var(--border-primary)', borderRadius: 3 }}>
-                    <div style={{ width: `${t.score}%`, height: '100%', background: scoreColor(t.score), borderRadius: 3 }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+              <div style={{ fontSize: 28 }}>{wisdomOfDay.emoji}</div>
+              <div>
+                <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: 16, color: 'var(--text-primary)', fontWeight: 700, margin: '0 0 4px 0' }}>
+                  {wisdomOfDay.title}
+                </h3>
+                {wisdomOfDay.rishi && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    â€” {wisdomOfDay.rishi}
                   </div>
-                  <span style={{ color: scoreColor(t.score), fontWeight: 700, width: 28, textAlign: 'right' }}>{t.score}</span>
-                </Link>
-              );
-            })}
+                )}
+              </div>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, margin: 0 }}>
+              "{wisdomOfDay.body}"
+            </p>
+            <div style={{ marginTop: 16, padding: 12, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${wisdomOfDay.color}` }}>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1 }}>
+                {wisdomOfDay.type.toUpperCase()}
+              </span>
+            </div>
           </div>
+        </div>
+
+        {/* Top Buy Signals */}
+        <div className="card" style={{ padding: 24, marginBottom: 32 }}>
+          <div style={{ fontSize: 10, color: 'var(--accent-green)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
+            ðŸ”¥ TOP BUY SIGNALS
+          </div>
+          {topBuys.map((t, i) => {
+            const s = STOCKS[t.sym as keyof typeof STOCKS];
+            return (
+              <Link key={t.sym} href={`/stock/${t.sym}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border-subtle)', textDecoration: 'none' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 20 }}>#{i + 1}</span>
+                <span style={{ color: 'var(--accent-gold)', fontWeight: 700, width: 90, fontSize: 13 }}>{t.sym}</span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: 11, flex: 1 }}>{s?.name}</span>
+                <div style={{ width: 60, height: 5, background: 'var(--border-primary)', borderRadius: 3 }}>
+                  <div style={{ width: `${t.score}%`, height: '100%', background: scoreColor(t.score), borderRadius: 3 }} />
+                </div>
+                <span style={{ color: scoreColor(t.score), fontWeight: 700, width: 28, textAlign: 'right' }}>{t.score}</span>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Markets Tabs */}
         <div className="card" style={{ padding: 24, marginBottom: 32 }}>
           <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '1px solid var(--border-primary)', paddingBottom: 16 }}>
             {([
-              { key: 'indexes',     label: '🇮🇳 Indian Indexes' },
-              { key: 'commodities', label: '⚡ Commodities'     },
-              { key: 'crypto',      label: '🪙 Crypto'          },
+              { key: 'indexes',     label: 'ðŸ‡®ðŸ‡³ Indian Indexes' },
+              { key: 'commodities', label: 'âš¡ Commodities'     },
+              { key: 'crypto',      label: 'â‚¿ Crypto'          },
             ] as const).map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 style={{
@@ -314,11 +365,11 @@ export default function Dashboard() {
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)' }}>{idx.value.toLocaleString('en-US')}</td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: pos ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                        {pos ? '▲' : '▼'} {Math.abs(idx.changePct).toFixed(2)}%
+                        {pos ? 'â–²' : 'â–¼'} {Math.abs(idx.changePct).toFixed(2)}%
                       </td>
                       <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontSize: 12 }}>{idx.high52w.toLocaleString('en-US')}</td>
                       <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontSize: 12 }}>{idx.low52w.toLocaleString('en-US')}</td>
-                      <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontSize: 12 }}>{idx.pe ? idx.pe + 'x' : '—'}</td>
+                      <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontSize: 12 }}>{idx.pe ? idx.pe + 'x' : 'â€”'}</td>
                       <td style={{ textAlign: 'right' }}>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: `${statusColor}20`, color: statusColor }}>
                           {statusLabel}
@@ -357,10 +408,10 @@ export default function Dashboard() {
                         {c.price.toLocaleString('en-US')} <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{c.unit}</span>
                       </td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: c.changePct >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                        {c.changePct >= 0 ? '▲' : '▼'} {Math.abs(c.changePct).toFixed(2)}%
+                        {c.changePct >= 0 ? 'â–²' : 'â–¼'} {Math.abs(c.changePct).toFixed(2)}%
                       </td>
                       <td style={{ textAlign: 'right', fontSize: 11, color: 'var(--text-muted)' }}>
-                        {c.low52w.toLocaleString()} – {c.high52w.toLocaleString()}
+                        {c.low52w.toLocaleString()} â€” {c.high52w.toLocaleString()}
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
@@ -402,7 +453,7 @@ export default function Dashboard() {
                       ${c.price.toLocaleString('en-US', { maximumFractionDigits: 2 })}
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 700, color: c.change24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                      {c.change24h >= 0 ? '▲' : '▼'} {Math.abs(c.change24h).toFixed(2)}%
+                      {c.change24h >= 0 ? 'â–²' : 'â–¼'} {Math.abs(c.change24h).toFixed(2)}%
                     </td>
                     <td style={{ textAlign: 'right', color: c.change7d >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                       {c.change7d >= 0 ? '+' : ''}{c.change7d.toFixed(2)}%
@@ -429,7 +480,7 @@ export default function Dashboard() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', paddingTop: 24, borderTop: '1px solid var(--border-primary)' }}>
-          NOT INVESTMENT ADVICE · EDUCATIONAL SIMULATION · RISHI TERMINAL v4.0
+          NOT INVESTMENT ADVICE Â· EDUCATIONAL SIMULATION Â· RISHI TERMINAL v4.0
         </div>
 
       </div>

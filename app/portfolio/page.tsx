@@ -21,9 +21,67 @@ export default function PortfolioPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showWeightsModal, setShowWeightsModal] = useState(false);
 
+  // Add Holding Form
+  const [formSymbol, setFormSymbol] = useState('');
+  const [formShares, setFormShares] = useState('');
+  const [formAvgPrice, setFormAvgPrice] = useState('');
+  const [formNotes, setFormNotes] = useState('');
+
   useEffect(() => {
     setPortfolio(loadPortfolio());
   }, []);
+
+  const refreshPortfolio = () => {
+    setPortfolio(loadPortfolio());
+  };
+
+  const handleAddHolding = () => {
+    const symbol = formSymbol.trim().toUpperCase();
+    const shares = parseInt(formShares);
+    const avgPrice = parseFloat(formAvgPrice);
+
+    if (!symbol || !STOCKS[symbol]) {
+      alert('Invalid stock symbol');
+      return;
+    }
+    if (isNaN(shares) || shares <= 0) {
+      alert('Shares must be a positive number');
+      return;
+    }
+    if (isNaN(avgPrice) || avgPrice <= 0) {
+      alert('Average price must be a positive number');
+      return;
+    }
+
+    addHolding({
+      symbol,
+      shares,
+      avgPrice,
+      addedDate: new Date().toISOString(),
+      notes: formNotes.trim() || undefined,
+    });
+
+    setFormSymbol('');
+    setFormShares('');
+    setFormAvgPrice('');
+    setFormNotes('');
+    setShowAddModal(false);
+    refreshPortfolio();
+  };
+
+  const handleWeightChange = (name: string, weight: number) => {
+    if (weight < 0 || weight > 10) {
+      alert('Weight must be between 0 and 10');
+      return;
+    }
+    setCustomWeight(name, weight);
+    refreshPortfolio();
+  };
+
+  const handleRemoveWeight = (name: string) => {
+    removeCustomWeight(name);
+    refreshPortfolio();
+  };
 
   if (!portfolio) {
     return (
@@ -212,7 +270,7 @@ export default function PortfolioPage() {
                           onClick={() => {
                             if (confirm(`Remove ${h.symbol} from portfolio?`)) {
                               removeHolding(h.symbol);
-                              setPortfolio(loadPortfolio());
+                              refreshPortfolio();
                             }
                           }}
                           style={{
@@ -236,6 +294,265 @@ export default function PortfolioPage() {
           </div>
         )}
       </div>
+
+      {/* Add Holding Modal */}
+      {showAddModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: 24,
+        }}>
+          <div className="card" style={{ maxWidth: 500, width: '100%', padding: 32 }}>
+            <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: 24, color: 'var(--text-primary)', marginBottom: 24 }}>
+              Add Holding
+            </h2>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>
+                SYMBOL *
+              </label>
+              <input
+                type="text"
+                placeholder="RELIANCE, TCS, etc."
+                value={formSymbol}
+                onChange={e => setFormSymbol(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 8,
+                  fontSize: 14,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>
+                SHARES *
+              </label>
+              <input
+                type="number"
+                placeholder="100"
+                value={formShares}
+                onChange={e => setFormShares(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 8,
+                  fontSize: 14,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>
+                AVERAGE PRICE () *
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="2500.50"
+                value={formAvgPrice}
+                onChange={e => setFormAvgPrice(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 8,
+                  fontSize: 14,
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>
+                NOTES (OPTIONAL)
+              </label>
+              <textarea
+                placeholder="Why did you buy this?"
+                value={formNotes}
+                onChange={e => setFormNotes(e.target.value)}
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 8,
+                  fontSize: 14,
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={handleAddHolding}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: 'var(--accent-gold)',
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                }}
+              >
+                Add Holding
+              </button>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setFormSymbol('');
+                  setFormShares('');
+                  setFormAvgPrice('');
+                  setFormNotes('');
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Weights Modal */}
+      {showWeightsModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: 24,
+        }}>
+          <div className="card" style={{ maxWidth: 700, width: '100%', padding: 32, maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ fontFamily: 'Cinzel, serif', fontSize: 24, color: 'var(--text-primary)', marginBottom: 12 }}>
+              Custom Rishi Weights
+            </h2>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.6 }}>
+              Personalize consensus scoring by adjusting Rishi weights. Default weights are shown. Your custom weights are saved locally.
+            </p>
+
+            <div style={{ marginBottom: 24 }}>
+              {RISHI_WEIGHT_CONFIG.map(rishi => {
+                const customWeight = portfolio.customWeights.find(w => w.name === rishi.name);
+                const effectiveWeight = customWeight ? customWeight.weight : rishi.weight;
+                const isCustom = !!customWeight;
+
+                return (
+                  <div key={rishi.name} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '12px 16px',
+                    background: isCustom ? 'rgba(255,215,0,0.05)' : 'var(--bg-secondary)',
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    border: isCustom ? '1px solid rgba(255,215,0,0.2)' : '1px solid transparent',
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{rishi.name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        {rishi.tier} · Default: {rishi.weight}
+                      </div>
+                    </div>
+
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      max="10"
+                      value={effectiveWeight}
+                      onChange={e => handleWeightChange(rishi.name, parseFloat(e.target.value) || 0)}
+                      style={{
+                        width: 80,
+                        padding: '8px 12px',
+                        background: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--border-primary)',
+                        borderRadius: 6,
+                        fontSize: 14,
+                        fontWeight: 700,
+                        textAlign: 'center',
+                      }}
+                    />
+
+                    {isCustom && (
+                      <button
+                        onClick={() => handleRemoveWeight(rishi.name)}
+                        style={{
+                          padding: '6px 12px',
+                          background: 'transparent',
+                          color: 'var(--accent-red)',
+                          border: '1px solid var(--accent-red)',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setShowWeightsModal(false)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'var(--accent-gold)',
+                color: '#000',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: 'pointer',
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

@@ -30,7 +30,7 @@ export const JOURNAL_PROMPTS: JournalPrompt[] = [
   { question: 'Is management treating shareholders like partners?', context: 'Capital allocation', philosophy: 'Buffett' },
   { question: 'What is the moat and is it widening?', context: 'Competitive advantage', philosophy: 'Munger' },
   { question: 'Am I acting on fear or greed right now?', context: 'Emotional discipline', philosophy: 'Graham' },
-  { question: 'What do I know that the market doesn't?', context: 'Edge identification', philosophy: 'Pabrai' },
+  { question: 'What do I know that the market does not?', context: 'Edge identification', philosophy: 'Pabrai' },
 ];
 
 /**

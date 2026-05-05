@@ -4,16 +4,19 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { STOCKS } from '../data/stocks';
 import { buildConsensus } from '../lib/consensus';
+import { getCurrentTier, TIER_CONFIG } from '../lib/premium';
 
 export default function Dashboard() {
   const [time, setTime] = useState('');
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [tier, setTier] = useState('seeker');
   const searchRef = useRef<HTMLDivElement>(null);
 
   const allSymbols = Object.keys(STOCKS);
 
   useEffect(() => {
+    setTier(getCurrentTier());
     const tick = () => setTime(new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }));
     tick();
     const t = setInterval(tick, 1000);
@@ -49,14 +52,18 @@ export default function Dashboard() {
   const sotdConsensus = buildConsensus(stockData).consensus;
 
   const wisdomQuotes = [
-    { rishi: 'Warren Buffett', quote: 'The three most important words in investing are margin of safety.', emoji: '🦁' },
-    { rishi: 'Benjamin Graham', quote: 'An investment operation is one which, upon thorough analysis, promises safety of principal and an adequate return.', emoji: '📊' },
-    { rishi: 'Charlie Munger', quote: 'The best thing that happens to us is when a great company gets into temporary trouble.', emoji: '🧠' },
-    { rishi: 'Peter Lynch', quote: 'Know what you own and why you own it.', emoji: '🎯' },
-    { rishi: 'Rakesh Jhunjhunwala', quote: 'I believe in buying quality businesses and holding them for the long term.', emoji: '💎' },
+    { rishi: 'Warren Buffett', quote: 'The three most important words in investing are margin of safety.', emoji: 'B' },
+    { rishi: 'Benjamin Graham', quote: 'An investment operation promises safety of principal and an adequate return.', emoji: 'G' },
+    { rishi: 'Charlie Munger', quote: 'The best thing that happens to us is when a great company gets into temporary trouble.', emoji: 'M' },
+    { rishi: 'Peter Lynch', quote: 'Know what you own and why you own it.', emoji: 'L' },
+    { rishi: 'Rakesh Jhunjhunwala', quote: 'I believe in buying quality businesses and holding them for the long term.', emoji: 'RJ' },
+    { rishi: 'George Soros', quote: 'Markets are constantly in a state of uncertainty and flux. Money is made by discounting the obvious.', emoji: 'GS' },
+    { rishi: 'Radhakishan Damani', quote: 'Buy businesses that are simple to understand and have a long runway of growth.', emoji: 'D' },
   ];
 
-  const dailyWisdom = wisdomQuotes[Math.floor((Date.now() / 86400000) % wisdomQuotes.length)];
+  const dayIndex = Math.floor(Date.now() / 86400000) % wisdomQuotes.length;
+  const dailyWisdom = wisdomQuotes[dayIndex];
+  const tierConfig = TIER_CONFIG[tier as keyof typeof TIER_CONFIG];
 
   return (
     <main className="page-container">
@@ -65,16 +72,31 @@ export default function Dashboard() {
         <div className="content-wrapper" style={{ padding: '0 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
             <div>
-              <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 28, color: 'var(--accent-gold)', letterSpacing: 3, fontWeight: 700 }}>
+              <h1 className="philosophy-heading" style={{ fontSize: 28, color: 'var(--accent-gold)', letterSpacing: 3 }}>
                 RISHI TERMINAL
               </h1>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginTop: 4 }}>
-                RISHIS GUIDE EVERY DECISION - STOCKS - BONDS - FOREX - CRYPTO - COMMODITIES
+                20 RISHIS GUIDE EVERY DECISION - STOCKS - CRYPTO - COMMODITIES
               </p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 16, color: 'var(--accent-gold)', fontWeight: 700 }}>{time} IST</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>NSE - BSE - MCX - GLOBAL</div>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <Link href="/pricing" style={{
+                padding: '6px 14px',
+                background: tier === 'disciple' ? 'rgba(192,132,252,0.15)' : tier === 'student' ? 'rgba(255,215,0,0.15)' : 'var(--bg-secondary)',
+                color: tier === 'disciple' ? '#c084fc' : tier === 'student' ? 'var(--accent-gold)' : 'var(--text-muted)',
+                border: `1px solid ${tier === 'disciple' ? '#c084fc' : tier === 'student' ? 'var(--accent-gold)' : 'var(--border-primary)'}`,
+                borderRadius: 20,
+                fontSize: 11,
+                fontWeight: 700,
+                textDecoration: 'none',
+                letterSpacing: 1,
+              }}>
+                {tierConfig?.label?.toUpperCase() || 'SEEKER'}
+              </Link>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 16, color: 'var(--accent-gold)', fontWeight: 700 }}>{time} IST</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>NSE - BSE - MCX - GLOBAL</div>
+              </div>
             </div>
           </div>
         </div>
@@ -87,11 +109,7 @@ export default function Dashboard() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search stocks - TITAN, INFY, Reliance..."
-            style={{
-              width: '100%', padding: '14px 18px', borderRadius: 10, fontSize: 14,
-              background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
-              color: 'var(--text-primary)', boxSizing: 'border-box',
-            }}
+            style={{ width: '100%', padding: '14px 18px', borderRadius: 10, fontSize: 14, boxSizing: 'border-box' }}
           />
           {searchResults.length > 0 && (
             <div style={{
@@ -125,17 +143,19 @@ export default function Dashboard() {
             { href: '/watchlist',   label: 'Watchlist'   },
             { href: '/rishis',      label: 'Rishis'      },
             { href: '/journal',     label: 'Journal'     },
-            { href: '/bonds',       label: 'Bonds'       },
-            { href: '/forex',       label: 'Forex'       },
-            { href: '/news',        label: 'News'        },
+            { href: '/backtest',    label: 'Backtest'    },
             { href: '/crypto',      label: 'Crypto'      },
+            { href: '/news',        label: 'News'        },
+            { href: '/pricing',     label: 'Upgrade'     },
           ].map(nav => (
             <Link key={nav.href} href={nav.href}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 padding: '14px 8px', borderRadius: 10, textDecoration: 'none',
-                color: 'var(--text-secondary)', fontSize: 11, gap: 6,
-                background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
+                color: nav.href === '/pricing' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                fontSize: 11, gap: 6,
+                background: 'var(--bg-card)',
+                border: nav.href === '/pricing' ? '1px solid rgba(255,215,0,0.3)' : '1px solid var(--border-primary)',
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={e => {
@@ -143,8 +163,8 @@ export default function Dashboard() {
                 (e.currentTarget as HTMLElement).style.color = 'var(--accent-gold)';
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-primary)';
-                (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
+                (e.currentTarget as HTMLElement).style.borderColor = nav.href === '/pricing' ? 'rgba(255,215,0,0.3)' : 'var(--border-primary)';
+                (e.currentTarget as HTMLElement).style.color = nav.href === '/pricing' ? 'var(--accent-gold)' : 'var(--text-secondary)';
               }}
             >
               <span>{nav.label}</span>
@@ -154,53 +174,69 @@ export default function Dashboard() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
 
-          <div className="card" style={{ padding: 24 }}>
-            <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
+          <div className="card card-sacred wisdom-reveal" style={{ padding: 24 }}>
+            <div className="philosophy-subheading" style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16 }}>
               STOCK OF THE DAY - {stockOfDay}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
-                <div style={{ fontFamily: 'Cinzel, serif', fontSize: 18, color: 'var(--text-primary)', fontWeight: 700 }}>{stockData.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{stockData.sector} NSE {stockData.price.toLocaleString('en-US')}</div>
+                <div className="philosophy-subheading" style={{ fontSize: 18, color: 'var(--text-primary)' }}>{stockData.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{stockData.sector} NSE</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 36, fontWeight: 700, color: scoreColor(sotdConsensus), lineHeight: 1 }}>{sotdConsensus}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Rishi Consensus</div>
+                <div className="score-reveal" style={{ fontSize: 36, fontWeight: 700, color: scoreColor(sotdConsensus), lineHeight: 1 }}>{sotdConsensus}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>20 Rishi Consensus</div>
               </div>
             </div>
             <Link href={`/stock/${stockOfDay}`} style={{
               display: 'block', padding: '10px', textAlign: 'center',
               background: 'var(--accent-gold)', color: '#000', borderRadius: 8,
               fontWeight: 700, fontSize: 13, textDecoration: 'none',
+              fontFamily: 'Cinzel, serif', letterSpacing: 1,
             }}>
-              View Full Analysis
+              View Full Rishi Analysis
             </Link>
           </div>
 
-          <div className="card" style={{ padding: 24, background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, var(--bg-card) 100%)' }}>
-            <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 12, fontWeight: 700 }}>
+          <div className="card card-sacred wisdom-reveal-delay-1" style={{ padding: 24 }}>
+            <div className="philosophy-subheading" style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16 }}>
               RISHI WISDOM OF THE DAY
             </div>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-              <div style={{ fontSize: 32 }}>{dailyWisdom.emoji}</div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'flex-start' }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%',
+                background: 'rgba(255,215,0,0.1)',
+                border: '1px solid rgba(255,215,0,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14, fontWeight: 700, color: 'var(--accent-gold)',
+                fontFamily: 'Cinzel, serif', flexShrink: 0,
+              }}>
+                {dailyWisdom.emoji}
+              </div>
               <div>
-                <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: 14, color: 'var(--text-primary)', fontWeight: 700, margin: '0 0 4px 0' }}>
+                <div className="philosophy-subheading" style={{ fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>
                   {dailyWisdom.rishi}
-                </h3>
+                </div>
               </div>
             </div>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
+            <p className="rishi-insight" style={{ fontSize: 13 }}>
               "{dailyWisdom.quote}"
             </p>
-            <Link href="/rishis" style={{ display: 'block', marginTop: 16, fontSize: 12, color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 700 }}>
-              Explore All Rishis
-            </Link>
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <Link href="/rishis" style={{ fontSize: 12, color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 700 }}>
+                Explore All 20 Rishis
+              </Link>
+              <span style={{ color: 'var(--border-primary)' }}>|</span>
+              <Link href="/backtest" style={{ fontSize: 12, color: 'var(--text-muted)', textDecoration: 'none' }}>
+                Backtest this philosophy
+              </Link>
+            </div>
           </div>
         </div>
 
-        <div className="card" style={{ padding: 24, marginBottom: 32 }}>
-          <div style={{ fontSize: 10, color: 'var(--accent-green)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
-            TOP BUY SIGNALS (RISHI CONSENSUS ABOVE 65)
+        <div className="card wisdom-reveal-delay-2" style={{ padding: 24, marginBottom: 32 }}>
+          <div className="philosophy-subheading" style={{ fontSize: 10, color: 'var(--accent-green)', letterSpacing: 2, marginBottom: 16 }}>
+            TOP BUY SIGNALS - RISHI CONSENSUS ABOVE 65
           </div>
           {topBuys.map((t, i) => {
             const s = STOCKS[t.sym as keyof typeof STOCKS];
@@ -208,10 +244,10 @@ export default function Dashboard() {
               <Link key={t.sym} href={`/stock/${t.sym}`}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border-subtle)', textDecoration: 'none' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)', width: 20 }}>#{i + 1}</span>
-                <span style={{ color: 'var(--accent-gold)', fontWeight: 700, width: 90, fontSize: 13 }}>{t.sym}</span>
+                <span style={{ color: 'var(--accent-gold)', fontWeight: 700, width: 100, fontSize: 13, fontFamily: 'Cinzel, serif' }}>{t.sym}</span>
                 <span style={{ color: 'var(--text-secondary)', fontSize: 11, flex: 1 }}>{s?.name}</span>
-                <div style={{ width: 60, height: 5, background: 'var(--border-primary)', borderRadius: 3 }}>
-                  <div style={{ width: `${t.score}%`, height: '100%', background: scoreColor(t.score), borderRadius: 3 }} />
+                <div style={{ width: 80, height: 4, background: 'var(--border-primary)', borderRadius: 3 }}>
+                  <div style={{ width: `${t.score}%`, height: '100%', background: scoreColor(t.score), borderRadius: 3, transition: 'width 0.8s ease' }} />
                 </div>
                 <span style={{ color: scoreColor(t.score), fontWeight: 700, width: 28, textAlign: 'right' }}>{t.score}</span>
               </Link>
@@ -219,29 +255,24 @@ export default function Dashboard() {
           })}
         </div>
 
-        <div className="card" style={{ padding: 24, marginBottom: 32 }}>
-          <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
+        <div className="card wisdom-reveal-delay-3" style={{ padding: 24, marginBottom: 32 }}>
+          <div className="philosophy-subheading" style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16 }}>
             MARKET INDEXES
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
             {[
-              { name: 'NIFTY 50', value: 24850, change: 0.75, href: '/index/NIFTY50' },
-              { name: 'SENSEX', value: 81500, change: 0.68, href: '/index/SENSEX' },
-              { name: 'NIFTY MIDCAP', value: 12450, change: 1.15, href: '/index/NIFTYMIDCAP' },
-              { name: 'SP500', value: 5850, change: 0.78, href: '/index/SP500' },
-              { name: 'NASDAQ', value: 18450, change: 1.22, href: '/index/NASDAQ' },
-              { name: 'DAX', value: 18950, change: 0.45, href: '/index/DAX' },
+              { name: 'NIFTY 50',     value: 24850, change: 0.75, href: '/index/NIFTY50'     },
+              { name: 'SENSEX',       value: 81500, change: 0.68, href: '/index/SENSEX'       },
+              { name: 'NIFTY MIDCAP', value: 12450, change: 1.15, href: '/index/NIFTYMIDCAP'  },
+              { name: 'SP500',        value: 5850,  change: 0.78, href: '/index/SP500'        },
+              { name: 'NASDAQ',       value: 18450, change: 1.22, href: '/index/NASDAQ'       },
+              { name: 'DAX',          value: 18950, change: 0.45, href: '/index/DAX'          },
             ].map(idx => (
               <Link key={idx.name} href={idx.href}
                 style={{
-                  padding: '16px',
-                  background: 'var(--bg-secondary)',
+                  padding: '16px', background: 'var(--bg-secondary)',
                   border: '1px solid var(--border-primary)',
-                  borderRadius: 10,
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  borderRadius: 10, textDecoration: 'none', transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-gold)';
@@ -252,12 +283,8 @@ export default function Dashboard() {
                   (e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)';
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                  {idx.name}
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginTop: 8 }}>
-                  {idx.value.toLocaleString()}
-                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{idx.name}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginTop: 8 }}>{idx.value.toLocaleString()}</div>
                 <div style={{ fontSize: 12, color: idx.change >= 0 ? 'var(--accent-green)' : 'var(--accent-red)', marginTop: 4, fontWeight: 700 }}>
                   {idx.change >= 0 ? '+' : ''}{idx.change.toFixed(2)}%
                 </div>
@@ -267,7 +294,7 @@ export default function Dashboard() {
         </div>
 
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', paddingTop: 24, borderTop: '1px solid var(--border-primary)', marginTop: 32 }}>
-          NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.1
+          NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.1 - 20 RISHIS ACTIVE
         </div>
 
       </div>

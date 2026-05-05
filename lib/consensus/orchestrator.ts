@@ -20,13 +20,10 @@ import { scorePhilipFisher }  from "../scorers/philipfisher";
 import { scoreGreenblatt }    from "../scorers/greenblatt";
 import { scoreJohnTempleton } from "../scorers/templeton";
 import { scoreWalterSchloss } from "../scorers/schloss";
+import { scoreSoros }         from "../scorers/soros";
 
 type ScorerFn = (s: Stock) => RishiScore;
 
-/**
- * Explicit registry - never use dynamic iteration over module exports.
- * Adding a scorer here is deliberate and reviewable.
- */
 const SCORER_REGISTRY: ScorerFn[] = [
   scoreBuffett,
   scoreGraham,
@@ -37,6 +34,7 @@ const SCORER_REGISTRY: ScorerFn[] = [
   scorePabrai,
   scoreHowardMarks,
   scoreSethKlarman,
+  scoreSoros,
   scoreKacholia,
   scoreKedia,
   scorePorinju,
@@ -51,11 +49,6 @@ const SCORER_REGISTRY: ScorerFn[] = [
 
 export const TOTAL_RISHIS = SCORER_REGISTRY.length;
 
-/**
- * Runs all 19 Rishi scorers against a stock.
- * Each score is safety-clamped [0,100].
- * Returns sorted high to low for UI rendering.
- */
 export function runAllScorers(stock: Stock): RishiScore[] {
   return SCORER_REGISTRY
     .map(fn => {

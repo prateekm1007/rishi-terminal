@@ -1,23 +1,16 @@
 import { RishiScore, RishiWeight } from "./types";
 
-/**
- * Rishi Merit Weights
- * Tier 1 Legends:    3.0 - Multi-decade documented track records
- * Tier 2 Masters:    2.0 - Proven philosophy, strong results
- * Tier 3 Specialists: 1.0 - Valid but narrower scope
- *
- * Names must match the `name` field on each RishiScore exactly.
- */
 export const RISHI_WEIGHT_CONFIG: RishiWeight[] = [
   { name: "Buffett",       weight: 3.0, tier: "Legend"     },
   { name: "Graham",        weight: 2.5, tier: "Legend"     },
   { name: "Lynch",         weight: 2.5, tier: "Legend"     },
-  { name: "Damani",        weight: 2.0, tier: "Master"     },
   { name: "Munger",        weight: 2.0, tier: "Master"     },
+  { name: "Damani",        weight: 2.0, tier: "Master"     },
   { name: "Jhunjhunwala",  weight: 2.0, tier: "Master"     },
   { name: "Pabrai",        weight: 2.0, tier: "Master"     },
   { name: "HowardMarks",   weight: 2.0, tier: "Master"     },
   { name: "SethKlarman",   weight: 2.0, tier: "Master"     },
+  { name: "Soros",         weight: 2.0, tier: "Master"     },
   { name: "Kacholia",      weight: 1.0, tier: "Specialist" },
   { name: "Kedia",         weight: 1.0, tier: "Specialist" },
   { name: "Porinju",       weight: 1.0, tier: "Specialist" },
@@ -43,7 +36,7 @@ export function weightedAverage(scores: RishiScore[]): number {
   let totalWeighted = 0;
   let totalWeight   = 0;
   for (const s of scores) {
-    const w    = getWeight(s.name);
+    const w = getWeight(s.name);
     totalWeighted += s.score * w;
     totalWeight   += w;
   }

@@ -9,7 +9,7 @@
 }
 
 /* ============================================
-   DARK THEME — Twitter/X Style
+   DARK THEME
    ============================================ */
 :root,
 [data-theme="dark"] {
@@ -17,46 +17,46 @@
   --bg-secondary:   #16181C;
   --bg-card:        #16181C;
   --bg-hover:       #1C1F23;
-  
+
   --border-primary: #2F3336;
   --border-subtle:  #38393C;
-  
+
   --text-primary:   #E7E9EA;
   --text-secondary: #71767B;
   --text-muted:     #565A5F;
-  
+
   --accent-gold:    #FFD700;
   --accent-green:   #00BA7C;
   --accent-red:     #F4212E;
   --accent-blue:    #1D9BF0;
-  
+
   --sidebar-bg:     #000000;
   --header-bg:      rgba(0,0,0,0.65);
 }
 
 /* ============================================
-   LIGHT THEME — CNN Money Style
+   LIGHT THEME — Parchment Investment Book
    ============================================ */
 [data-theme="light"] {
-  --bg-primary:     #FFFFFF;
-  --bg-secondary:   #F7F7F7;
-  --bg-card:        #FFFFFF;
-  --bg-hover:       #F0F0F0;
-  
-  --border-primary: #CCCCCC;
-  --border-subtle:  #E5E5E5;
-  
-  --text-primary:   #000000;
-  --text-secondary: #333333;
-  --text-muted:     #767676;
-  
-  --accent-gold:    #C78F00;
-  --accent-green:   #008000;
-  --accent-red:     #CC0000;
-  --accent-blue:    #004B87;
-  
-  --sidebar-bg:     #2B2B2B;
-  --header-bg:      rgba(255,255,255,0.95);
+  --bg-primary:     #F5F0E8;
+  --bg-secondary:   #EDE8DC;
+  --bg-card:        #FDFAF4;
+  --bg-hover:       #F0EBE0;
+
+  --border-primary: #C8B89A;
+  --border-subtle:  #D8CCBA;
+
+  --text-primary:   #1A1208;
+  --text-secondary: #4A3728;
+  --text-muted:     #8A7060;
+
+  --accent-gold:    #B8860B;
+  --accent-green:   #2D6A2D;
+  --accent-red:     #8B1A1A;
+  --accent-blue:    #1A3A6B;
+
+  --sidebar-bg:     #2B2416;
+  --header-bg:      rgba(245,240,232,0.95);
 }
 
 /* ============================================
@@ -64,6 +64,7 @@
    ============================================ */
 html {
   scroll-behavior: smooth;
+  data-scroll-behavior: smooth;
 }
 
 body {
@@ -76,7 +77,98 @@ body {
 }
 
 /* ============================================
-   UTILITY CLASSES
+   SACRED ANIMATIONS — Wisdom feels sacred
+   ============================================ */
+@keyframes wisdomReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes scoreCount {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes borderGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(255,215,0,0.0); }
+  50%  { box-shadow: 0 0 12px 2px rgba(255,215,0,0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.wisdom-reveal {
+  animation: wisdomReveal 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.wisdom-reveal-delay-1 { animation: wisdomReveal 0.6s 0.1s cubic-bezier(0.16,1,0.3,1) both; }
+.wisdom-reveal-delay-2 { animation: wisdomReveal 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both; }
+.wisdom-reveal-delay-3 { animation: wisdomReveal 0.6s 0.3s cubic-bezier(0.16,1,0.3,1) both; }
+.wisdom-reveal-delay-4 { animation: wisdomReveal 0.6s 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+.wisdom-reveal-delay-5 { animation: wisdomReveal 0.6s 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+
+.score-reveal {
+  animation: scoreCount 0.5s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.rishi-card-enter {
+  animation: fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+.gold-glow {
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+.shimmer-text {
+  background: linear-gradient(90deg, var(--text-muted) 25%, var(--accent-gold) 50%, var(--text-muted) 75%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ============================================
+   CINZEL PHILOSOPHY SECTIONS
+   ============================================ */
+.philosophy-heading {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.philosophy-subheading {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+}
+
+.rishi-insight {
+  font-style: italic;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  border-left: 2px solid var(--accent-gold);
+  padding-left: 16px;
+  margin: 12px 0;
+}
+
+/* ============================================
+   LAYOUT CLASSES
    ============================================ */
 .page-container {
   min-height: 100vh;
@@ -84,139 +176,168 @@ body {
   color: var(--text-primary);
 }
 
-.page-header {
-  background: var(--header-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 32px 24px;
-}
-
 .content-wrapper {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 0 24px;
 }
 
+.page-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 40px 0;
+}
+
+/* ============================================
+   CARD SYSTEM
+   ============================================ */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-primary);
   border-radius: 12px;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
-  background: var(--bg-hover);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-color: var(--border-subtle);
 }
 
-[data-theme="light"] .card {
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+.card-gold {
+  border-color: rgba(255,215,0,0.3);
+  background: linear-gradient(135deg, rgba(255,215,0,0.03) 0%, var(--bg-card) 100%);
 }
 
-[data-theme="light"] .card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+.card-sacred {
+  border-color: rgba(255,215,0,0.2);
+  background: linear-gradient(135deg, rgba(255,215,0,0.05) 0%, var(--bg-card) 60%, rgba(255,215,0,0.02) 100%);
+  position: relative;
 }
 
-/* Tables */
+.card-sacred::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  border-radius: 12px 12px 0 0;
+}
+
+/* ============================================
+   TABLE SYSTEM
+   ============================================ */
 table {
   width: 100%;
   border-collapse: collapse;
-}
-
-thead tr {
-  background: var(--bg-secondary);
-  border-bottom: 2px solid var(--accent-red);
-}
-
-tbody tr {
-  border-bottom: 1px solid var(--border-subtle);
-  transition: background 0.15s ease;
-}
-
-tbody tr:hover {
-  background: var(--bg-hover);
-}
-
-th {
-  padding: 12px 16px;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-td {
-  padding: 12px 16px;
   font-size: 13px;
 }
 
-/* Score colors */
-.score-high { color: var(--accent-green); }
-.score-mid { color: var(--accent-gold); }
-.score-low { color: var(--accent-red); }
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
-
-/* Buttons */
-button {
+th {
   font-family: 'JetBrains Mono', monospace;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-primary);
 }
 
-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
 }
 
-/* Links */
-a {
-  color: var(--accent-gold);
-  text-decoration: none;
-  transition: color 0.15s ease;
+tr:hover td {
+  background: var(--bg-hover);
 }
 
-a:hover {
-  color: var(--accent-blue);
+tr:last-child td {
+  border-bottom: none;
 }
 
-/* Inputs */
-input, select {
-  font-family: 'JetBrains Mono', monospace;
-  background: var(--bg-card);
+/* ============================================
+   INPUT SYSTEM
+   ============================================ */
+input, select, textarea {
+  background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   color: var(--text-primary);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 2px rgba(255,215,0,0.08);
+}
+
+input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================================
+   BUTTON SYSTEM
+   ============================================ */
+button {
+  font-family: 'JetBrains Mono', monospace;
   transition: all 0.2s ease;
 }
 
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.1);
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-primary); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ============================================
+   SCORE BADGE
+   ============================================ */
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
 }
 
-[data-theme="light"] input:focus,
-[data-theme="light"] select:focus {
-  box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
-  border-color: var(--accent-red);
+.score-high  { background: rgba(0,186,124,0.15);  color: var(--accent-green); }
+.score-mid   { background: rgba(255,215,0,0.15);  color: var(--accent-gold);  }
+.score-low   { background: rgba(244,33,46,0.15);  color: var(--accent-red);   }
+
+/* ============================================
+   TIER BADGES
+   ============================================ */
+.tier-seeker    { color: #71767B; }
+.tier-student   { color: #FFD700; }
+.tier-disciple  { color: #c084fc; }
+
+/* ============================================
+   PARCHMENT TEXTURE (light mode only)
+   ============================================ */
+[data-theme="light"] body {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(139,90,43,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,90,43,0.03) 0%, transparent 50%);
+}
+
+[data-theme="light"] .card {
+  box-shadow: 0 1px 3px rgba(139,90,43,0.08), 0 0 0 1px rgba(200,184,154,0.3);
+}
+
+[data-theme="light"] .card-sacred::before {
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+}
+
+[data-theme="light"] .philosophy-heading {
+  color: var(--text-primary);
+  text-shadow: 0 1px 2px rgba(139,90,43,0.1);
 }

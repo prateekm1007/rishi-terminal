@@ -5,6 +5,7 @@ import { STOCKS } from '../../../data/stocks';
 import { getStockDetail } from '../../../data/stockDetails';
 import { buildConsensus } from '../../../lib/consensus';
 import { generateDialogueSets } from '../../../lib/wisdom/dialogue';
+import { generateWisdomGraph } from '../../../lib/wisdom/graph';
 import { ConsensusHero } from '../../../components/stock/ConsensusHero';
 import { MetricsPanel } from '../../../components/stock/MetricsPanel';
 import { RishiGrid } from '../../../components/stock/RishiGrid';
@@ -18,6 +19,7 @@ import { PeerComparison } from '../../../components/stock/PeerComparison';
 import { AnalystRecommendations } from '../../../components/stock/AnalystRecommendations';
 import { TechnicalIndicators } from '../../../components/stock/TechnicalIndicators';
 import { RishiDialogue } from '../../../components/stock/RishiDialogue';
+import { WisdomGraph } from '../../../components/stock/WisdomGraph';
 import Link from 'next/link';
 
 interface Props {
@@ -45,6 +47,7 @@ function StockContent({ symbol }: { symbol: string }) {
   const consensus = buildConsensus(stock);
   const detail = getStockDetail(upper);
   const dialogues = generateDialogueSets(stock, consensus.scores);
+  const wisdomGraph = generateWisdomGraph(stock);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -70,9 +73,9 @@ function StockContent({ symbol }: { symbol: string }) {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-1">
             {[
-              { key: 'overview', label: '📊 Overview', icon: '' },
-              { key: 'technicals', label: '📈 Technicals', icon: '' },
-              { key: 'dialogue', label: '🧘 Rishi Dialogue', icon: '✨' },
+              { key: 'overview', label: '📊 Overview' },
+              { key: 'technicals', label: '📈 Technicals' },
+              { key: 'dialogue', label: '🧘 Rishi Dialogue' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -98,90 +101,98 @@ function StockContent({ symbol }: { symbol: string }) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
+          
+          {/* Main Content */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+            {activeTab === 'overview' && (
+              <>
+                <ConsensusHero
+                  consensus={consensus.consensus}
+                  category={consensus.category}
+                  tension={consensus.tension}
+                  tensionSpread={consensus.tensionSpread}
+                  totalRishis={consensus.scores.length}
+                  weightedBy={consensus.weightedBy}
+                />
 
-        {activeTab === 'overview' && (
-          <>
-            <ConsensusHero
-              consensus={consensus.consensus}
-              category={consensus.category}
-              tension={consensus.tension}
-              tensionSpread={consensus.tensionSpread}
-              totalRishis={consensus.scores.length}
-              weightedBy={consensus.weightedBy}
-            />
+                <PriceChart symbol={upper} currentPrice={stock.price} />
 
-            <PriceChart symbol={upper} currentPrice={stock.price} />
+                <MetricsPanel stock={stock} />
 
-            <MetricsPanel stock={stock} />
+                <BullBearBar topBull={consensus.topBull} topBear={consensus.topBear} />
 
-            <BullBearBar topBull={consensus.topBull} topBear={consensus.topBear} />
+                {detail && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <QuarterlyChart quarterlyResults={detail.quarterlyResults} />
+                    <ShareholdingChart shareholdingHistory={detail.shareholdingHistory} />
+                  </div>
+                )}
 
-            {detail && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <QuarterlyChart quarterlyResults={detail.quarterlyResults} />
-                <ShareholdingChart shareholdingHistory={detail.shareholdingHistory} />
-              </div>
+                {detail && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <PeerComparison peers={detail.peers} currentStock={stock} />
+                    <AnalystRecommendations analystRecs={detail.analystRecs} currentPrice={stock.price} />
+                  </div>
+                )}
+
+                <PhilosophyRadar scores={consensus.scores} />
+
+                <RishiGrid scores={consensus.scores} />
+              </>
             )}
 
-            {detail && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <PeerComparison peers={detail.peers} currentStock={stock} />
-                <AnalystRecommendations analystRecs={detail.analystRecs} currentPrice={stock.price} />
-              </div>
+            {activeTab === 'technicals' && detail && (
+              <>
+                <PriceChart symbol={upper} currentPrice={stock.price} />
+                <TechnicalIndicators technicals={detail.technicals} />
+                <MetricsPanel stock={stock} />
+              </>
             )}
 
-            <PhilosophyRadar scores={consensus.scores} />
+            {activeTab === 'dialogue' && (
+              <>
+                <div style={{ 
+                  padding: 32, 
+                  background: 'var(--bg-card)', 
+                  border: '1px solid var(--border-primary)', 
+                  borderRadius: 12,
+                }}>
+                  <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>🧘</div>
+                  <h2 style={{ 
+                    fontFamily: 'Cinzel, serif', 
+                    fontSize: 28, 
+                    color: 'var(--accent-gold)', 
+                    textAlign: 'center',
+                    marginBottom: 12,
+                    letterSpacing: 2,
+                  }}>
+                    Rishi Dialogue
+                  </h2>
+                  <p style={{ 
+                    fontSize: 14, 
+                    color: 'var(--text-muted)', 
+                    textAlign: 'center',
+                    maxWidth: 600,
+                    margin: '0 auto',
+                    lineHeight: 1.7,
+                  }}>
+                    Watch legendary investors debate {stock.name} based on their actual scoring logic.
+                  </p>
+                </div>
 
-            <RishiGrid scores={consensus.scores} />
-          </>
-        )}
+                <RishiDialogue dialogues={dialogues} />
+              </>
+            )}
+          </div>
 
-        {activeTab === 'technicals' && detail && (
-          <>
-            <PriceChart symbol={upper} currentPrice={stock.price} />
-            <TechnicalIndicators technicals={detail.technicals} />
-            <MetricsPanel stock={stock} />
-          </>
-        )}
+          {/* Sidebar: Wisdom Graph (always visible) */}
+          <div style={{ position: 'sticky', top: 24, alignSelf: 'flex-start' }}>
+            <WisdomGraph graph={wisdomGraph} />
+          </div>
 
-        {activeTab === 'dialogue' && (
-          <>
-            <div style={{ 
-              padding: 32, 
-              background: 'var(--bg-card)', 
-              border: '1px solid var(--border-primary)', 
-              borderRadius: 12,
-              marginBottom: 32,
-            }}>
-              <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>🧘</div>
-              <h2 style={{ 
-                fontFamily: 'Cinzel, serif', 
-                fontSize: 28, 
-                color: 'var(--accent-gold)', 
-                textAlign: 'center',
-                marginBottom: 12,
-                letterSpacing: 2,
-              }}>
-                Rishi Dialogue
-              </h2>
-              <p style={{ 
-                fontSize: 14, 
-                color: 'var(--text-muted)', 
-                textAlign: 'center',
-                maxWidth: 600,
-                margin: '0 auto',
-                lineHeight: 1.7,
-              }}>
-                Watch legendary investors debate {stock.name} based on their actual scoring logic.
-                These conversations reveal the philosophical tensions between different investment approaches.
-              </p>
-            </div>
-
-            <RishiDialogue dialogues={dialogues} />
-          </>
-        )}
-
+        </div>
       </div>
     </main>
   );

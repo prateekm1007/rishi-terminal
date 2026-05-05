@@ -1,186 +1,89 @@
-import { Stock, RishiScore } from '../types';
+import { Stock } from '../types';
+import { RishiScore } from '../consensus/types';
 
-export interface DialogueLine {
+export interface DialogueSet {
+  id: string;
+  title: string;
+  participants: string[];
+  exchanges: DialogueExchange[];
+  context: string;
+}
+
+export interface DialogueExchange {
   speaker: string;
   text: string;
-  emotion: 'agree' | 'disagree' | 'concern' | 'optimistic' | 'neutral';
+  emotion: 'agreement' | 'disagreement' | 'caution' | 'excitement';
 }
 
-export interface RishiDialogue {
-  topic: string;
-  participants: string[];
-  lines: DialogueLine[];
-  consensus: 'strong' | 'moderate' | 'divided';
-  summary: string;
-}
-
-/**
- * Generate a philosophical dialogue between Rishis about a stock
- * Uses their actual scores and insights to create realistic conversation
- */
-export function generateRishiDialogue(
-  stock: Stock,
-  scores: RishiScore[]
-): RishiDialogue {
-  // Sort by score to get bulls vs bears
-  const sorted = [...scores].sort((a, b) => b.score - a.score);
-  const topBull = sorted[0];
-  const topBear = sorted[sorted.length - 1];
-  const moderate = sorted[Math.floor(sorted.length / 2)];
-
-  // Determine consensus strength
-  const spread = topBull.score - topBear.score;
-  const consensus = spread < 20 ? 'strong' : spread < 40 ? 'moderate' : 'divided';
-
-  // Build dialogue based on actual scores
-  const lines: DialogueLine[] = [];
-
-  // Opening: Bull makes the case
-  lines.push({
-    speaker: topBull.name,
-    text: `I see ${stock.name} as a ${topBull.label.toLowerCase()} opportunity. ${topBull.insight}`,
-    emotion: 'optimistic',
-  });
-
-  // Bear responds with concerns
-  const bearConcerns = topBear.comps
-    .filter(c => c.v < 50)
-    .map(c => c.label)
-    .slice(0, 2);
-
-  if (bearConcerns.length > 0) {
-    lines.push({
-      speaker: topBear.name,
-      text: `I'm cautious here. My concerns are ${bearConcerns.join(' and ')}. ${topBear.insight}`,
-      emotion: 'concern',
+export function generateDialogueSets(stock: Stock, scores: RishiScore[]): DialogueSet[] {
+  const topBull = scores[0];
+  const topBear = scores[scores.length - 1];
+  
+  const sets: DialogueSet[] = [];
+  
+  // Bull vs Bear dialogue
+  if (topBull && topBear && topBull.score - topBear.score > 30) {
+    sets.push({
+      id: 'bull_bear',
+      title: 'The Great Debate',
+      participants: [topBull.full, topBear.full],
+      context: `${topBull.full} sees ${stock.name} scoring ${topBull.score}/100, while ${topBear.full} scores it ${topBear.score}/100`,
+      exchanges: [
+        {
+          speaker: topBull.full,
+          text: topBull.insight,
+          emotion: 'excitement',
+        },
+        {
+          speaker: topBear.full,
+          text: topBear.insight,
+          emotion: 'caution',
+        },
+        {
+          speaker: topBull.full,
+          text: `Look at the ${topBull.comps[0]?.label.toLowerCase()} — ${topBull.comps[0]?.detail}. This is exactly what we should be buying.`,
+          emotion: 'agreement',
+        },
+        {
+          speaker: topBear.full,
+          text: `But you are ignoring the risks. ${topBear.comps[topBear.comps.length - 1]?.detail}. The margin of safety is insufficient.`,
+          emotion: 'disagreement',
+        },
+      ],
     });
   }
-
-  // Moderate voice adds nuance
-  if (moderate && moderate.name !== topBull.name && moderate.name !== topBear.name) {
-    const moderateStance = moderate.score > 60 
-      ? 'I lean positive but see both perspectives.'
-      : moderate.score > 40
-      ? 'This requires careful position sizing.'
-      : 'I would wait for better entry points.';
-
-    lines.push({
-      speaker: moderate.name,
-      text: `${moderateStance} ${moderate.insight}`,
-      emotion: 'neutral',
-    });
-  }
-
-  // Bull addresses bear's concerns
-  const bullStrengths = topBull.comps
-    .filter(c => c.v >= 70)
-    .map(c => c.label)
-    .slice(0, 2);
-
-  if (bullStrengths.length > 0) {
-    lines.push({
-      speaker: topBull.name,
-      text: `But consider the ${bullStrengths.join(' and ')} — these are exceptional. At ${stock.price.toLocaleString()}, the market is undervaluing ${bullStrengths[0].toLowerCase()}.`,
-      emotion: 'agree',
-    });
-  }
-
-  // Bear's final word on valuation
-  if (stock.pe > 30) {
-    lines.push({
-      speaker: topBear.name,
-      text: `The P/E of ${stock.pe}x concerns me. I need margin of safety, and I don't see it at these levels.`,
-      emotion: 'disagree',
-    });
-  }
-
-  // Bull's philosophical close
-  const bullClose = topBull.score >= 80
-    ? 'This is a once-in-a-decade compounder. I would build a position.'
-    : topBull.score >= 65
-    ? 'The odds favor a patient accumulator here.'
-    : 'There is value, but it requires conviction.';
-
-  lines.push({
-    speaker: topBull.name,
-    text: bullClose,
-    emotion: 'optimistic',
-  });
-
-  // Generate summary
-  const summary = consensus === 'strong'
-    ? `Strong ${topBull.score > 70 ? 'bullish' : 'bearish'} consensus. Rishis largely agree on ${stock.name}.`
-    : consensus === 'moderate'
-    ? `Moderate divergence. ${topBull.name} sees opportunity, ${topBear.name} urges caution.`
-    : `Deep philosophical divide. ${topBull.name} scores ${topBull.score}, ${topBear.name} scores ${topBear.score}.`;
-
-  return {
-    topic: `Is ${stock.name} a buy at ${stock.price.toLocaleString()}?`,
-    participants: [topBull.name, topBear.name, moderate?.name].filter(Boolean) as string[],
-    lines,
-    consensus,
-    summary,
-  };
-}
-
-/**
- * Generate multiple dialogue scenarios for a stock
- */
-export function generateDialogueSets(
-  stock: Stock,
-  scores: RishiScore[]
-): RishiDialogue[] {
-  const dialogues: RishiDialogue[] = [];
-
-  // Main dialogue: Top bull vs top bear
-  dialogues.push(generateRishiDialogue(stock, scores));
-
-  // Quality vs Value debate (if we have both types)
-  const qualityRishis = scores.filter(s => 
-    ['Buffett', 'Munger', 'Lynch'].includes(s.name)
-  );
-  const valueRishis = scores.filter(s => 
-    ['Graham', 'Schloss', 'Templeton'].includes(s.name)
-  );
-
-  if (qualityRishis.length > 0 && valueRishis.length > 0) {
-    const qualityAvg = qualityRishis.reduce((sum, s) => sum + s.score, 0) / qualityRishis.length;
-    const valueAvg = valueRishis.reduce((sum, s) => sum + s.score, 0) / valueRishis.length;
-
-    if (Math.abs(qualityAvg - valueAvg) > 15) {
-      const qualityVoice = qualityRishis[0];
-      const valueVoice = valueRishis[0];
-
-      dialogues.push({
-        topic: 'Quality vs Value: Which lens matters more?',
-        participants: [qualityVoice.name, valueVoice.name],
-        lines: [
+  
+  // Consensus agreement (when top 3 agree)
+  if (scores.length >= 3) {
+    const top3 = scores.slice(0, 3);
+    const avgTop3 = Math.round(top3.reduce((sum, s) => sum + s.score, 0) / 3);
+    
+    if (Math.max(...top3.map(s => s.score)) - Math.min(...top3.map(s => s.score)) < 15) {
+      sets.push({
+        id: 'consensus',
+        title: 'The Masters Agree',
+        participants: top3.map(s => s.full),
+        context: `${top3.map(s => s.name).join(', ')} all score ${stock.name} within 15 points`,
+        exchanges: [
           {
-            speaker: qualityVoice.name,
-            text: `I focus on business quality first. ${stock.name}'s ROE of ${stock.roe}% and ROCE of ${stock.roce}% show competitive advantage.`,
-            emotion: 'optimistic',
+            speaker: top3[0].full,
+            text: `This is a ${avgTop3 >= 75 ? 'wonderful' : avgTop3 >= 60 ? 'solid' : 'questionable'} business. ${top3[0].insight}`,
+            emotion: avgTop3 >= 75 ? 'excitement' : 'agreement',
           },
           {
-            speaker: valueVoice.name,
-            text: `But at P/E of ${stock.pe}x, you're paying a premium. I need a margin of safety before I can commit capital.`,
-            emotion: 'concern',
+            speaker: top3[1].full,
+            text: `I concur. ${top3[1].insight}`,
+            emotion: 'agreement',
           },
           {
-            speaker: qualityVoice.name,
-            text: `Quality compounds. If this business can sustain these returns, today's price will look cheap in 5 years.`,
-            emotion: 'agree',
-          },
-          {
-            speaker: valueVoice.name,
-            text: `Perhaps. But I've learned that price paid determines returns. I'll wait for Mr. Market to offer a better deal.`,
-            emotion: 'neutral',
+            speaker: top3[2].full,
+            text: `${avgTop3 >= 75 ? 'We rarely see such alignment. Act with conviction.' : 'Worth monitoring, but stay disciplined.'}`,
+            emotion: avgTop3 >= 75 ? 'excitement' : 'caution',
           },
         ],
-        consensus: 'divided',
-        summary: `Classic quality vs value debate. ${qualityVoice.name} prioritizes moat, ${valueVoice.name} prioritizes price.`,
       });
     }
   }
-
-  return dialogues;
+  
+  return sets;
 }

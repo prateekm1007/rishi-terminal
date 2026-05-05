@@ -1,162 +1,68 @@
 'use client';
 
-import { RishiLens } from '../../lib/wisdom/lens';
+import { LensAnalysis } from '../../lib/wisdom/lens';
 
 interface Props {
-  lens: RishiLens;
-  warning: string | null;
-  opportunity: string | null;
-  keyMetrics: Array<{ label: string; value: string | number; priority: boolean }>;
-  lensInsight: string;
+  analysis: LensAnalysis;
+  rishiName: string;
 }
 
-export function LensInsights({ lens, warning, opportunity, keyMetrics, lensInsight }: Props) {
+export function LensInsights({ analysis, rishiName }: Props) {
   return (
-    <div
-      style={{
-        background: 'var(--bg-card)',
-        border: `2px solid ${lens.colorScheme.primary}`,
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 24,
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          background: lens.colorScheme.primary,
-          padding: '16px 24px',
-          color: '#fff',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 32 }}>{lens.icon}</span>
-          <div>
-            <div style={{ fontSize: 18, fontFamily: 'Cinzel, serif', fontWeight: 700, marginBottom: 4 }}>
-              {lens.fullName} Lens Active
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.9 }}>
-              {lens.philosophy}
-            </div>
-          </div>
-        </div>
+    <div className="card-sacred p-6 space-y-6">
+      <div>
+        <div className="philosophy-heading text-lg mb-2">{rishiName} Verdict</div>
+        <p className="rishi-insight text-sm">{analysis.verdict}</p>
       </div>
 
-      {/* Signals */}
-      <div style={{ padding: 24 }}>
-        {opportunity && (
-          <div
-            style={{
-              background: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: 8,
-              padding: 16,
-              marginBottom: 16,
-            }}
-          >
-            <div style={{ fontSize: 14, color: 'var(--accent-green)', lineHeight: 1.6 }}>
-              {opportunity}
-            </div>
-          </div>
-        )}
-
-        {warning && (
-          <div
-            style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: 8,
-              padding: 16,
-              marginBottom: 16,
-            }}
-          >
-            <div style={{ fontSize: 14, color: 'var(--accent-red)', lineHeight: 1.6 }}>
-              {warning}
-            </div>
-          </div>
-        )}
-
-        {/* Key Metrics */}
-        <div style={{ marginBottom: 16 }}>
-          <div
-            style={{
-              fontSize: 10,
-              fontFamily: 'JetBrains Mono',
-              color: 'var(--text-muted)',
-              marginBottom: 12,
-              letterSpacing: 1,
-            }}
-          >
-            {lens.rishi.toUpperCase()} PRIORITY METRICS
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 12 }}>
-            {keyMetrics.slice(0, 5).map(metric => (
-              <div
-                key={metric.label}
-                style={{
-                  background: 'var(--bg-secondary)',
-                  padding: '12px',
-                  borderRadius: 8,
-                  borderLeft: `3px solid ${lens.colorScheme.accent}`,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 9,
-                    fontFamily: 'JetBrains Mono',
-                    color: 'var(--text-muted)',
-                    marginBottom: 4,
-                  }}
-                >
-                  {metric.label}
-                </div>
-                <div
-                  style={{
-                    fontSize: 18,
-                    fontFamily: 'JetBrains Mono',
-                    fontWeight: 700,
-                    color: lens.colorScheme.primary,
-                  }}
-                >
-                  {typeof metric.value === 'number' ? metric.value.toFixed(1) : metric.value}
-                </div>
+      <div>
+        <div className="text-xs text-muted mb-3">KEY METRICS UNDER THIS LENS:</div>
+        <div className="space-y-2">
+          {analysis.keyMetrics.map((m, i) => (
+            <div key={i} className="flex justify-between items-center p-2 bg-secondary rounded">
+              <span className="text-xs">{m.metric}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold">{m.value}</span>
+                <span className={`text-xs px-2 py-0.5 rounded ${
+                  m.assessment.includes('Excellent') || m.assessment.includes('Attractive') || m.assessment.includes('Conservative') || m.assessment.includes('Strong')
+                    ? 'bg-accent-green/20 text-accent-green'
+                    : m.assessment.includes('Good') || m.assessment.includes('Fair') || m.assessment.includes('Moderate') || m.assessment.includes('Decent')
+                    ? 'bg-accent-gold/20 text-accent-gold'
+                    : 'bg-accent-red/20 text-accent-red'
+                }`}>
+                  {m.assessment}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Lens Insight */}
-        <div
-          style={{
-            background: 'var(--bg-secondary)',
-            padding: 16,
-            borderRadius: 8,
-            borderLeft: `3px solid ${lens.colorScheme.primary}`,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 10,
-              fontFamily: 'JetBrains Mono',
-              color: 'var(--text-muted)',
-              marginBottom: 8,
-              letterSpacing: 1,
-            }}
-          >
-            {lens.rishi.toUpperCase()} INSIGHT
-          </div>
-          <p
-            style={{
-              fontSize: 13,
-              color: 'var(--text-secondary)',
-              lineHeight: 1.7,
-              margin: 0,
-            }}
-          >
-            {lensInsight}
-          </p>
+            </div>
+          ))}
         </div>
       </div>
+
+      <div>
+        <div className="text-xs text-accent-red mb-2">RISKS:</div>
+        <ul className="space-y-1">
+          {analysis.risks.map((r, i) => (
+            <li key={i} className="text-xs text-secondary pl-3 border-l-2 border-accent-red">
+              {r}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <div className="text-xs text-accent-green mb-2">OPPORTUNITIES:</div>
+        <ul className="space-y-1">
+          {analysis.opportunities.map((o, i) => (
+            <li key={i} className="text-xs text-secondary pl-3 border-l-2 border-accent-green">
+              {o}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <blockquote className="border-l-2 border-accent-gold pl-4 italic text-xs text-muted">
+        {analysis.quote}
+      </blockquote>
     </div>
   );
 }

@@ -8,6 +8,215 @@
   padding: 0;
 }
 
+/* ============================================
+   DARK THEME — Twitter/X Style
+   ============================================ */
+:root,
+[data-theme="dark"] {
+  --bg-primary:     #000000;
+  --bg-secondary:   #16181C;
+  --bg-card:        #16181C;
+  --bg-hover:       #1C1F23;
+  
+  --border-primary: #2F3336;
+  --border-subtle:  #38393C;
+  
+  --text-primary:   #E7E9EA;
+  --text-secondary: #71767B;
+  --text-muted:     #565A5F;
+  
+  --accent-gold:    #FFD700;
+  --accent-green:   #00BA7C;
+  --accent-red:     #F4212E;
+  --accent-blue:    #1D9BF0;
+  
+  --sidebar-bg:     #000000;
+  --header-bg:      rgba(0,0,0,0.65);
+}
+
+/* ============================================
+   LIGHT THEME — CNN Money Style
+   ============================================ */
+[data-theme="light"] {
+  --bg-primary:     #FFFFFF;
+  --bg-secondary:   #F7F7F7;
+  --bg-card:        #FFFFFF;
+  --bg-hover:       #F0F0F0;
+  
+  --border-primary: #CCCCCC;
+  --border-subtle:  #E5E5E5;
+  
+  --text-primary:   #000000;
+  --text-secondary: #333333;
+  --text-muted:     #767676;
+  
+  --accent-gold:    #C78F00;
+  --accent-green:   #008000;
+  --accent-red:     #CC0000;
+  --accent-blue:    #004B87;
+  
+  --sidebar-bg:     #2B2B2B;
+  --header-bg:      rgba(255,255,255,0.95);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.page-container {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.page-header {
+  background: var(--header-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 32px 24px;
+}
+
+.content-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  background: var(--bg-hover);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead tr {
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--accent-red);
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s ease;
+}
+
+tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+/* Score colors */
+.score-high { color: var(--accent-green); }
+.score-mid { color: var(--accent-gold); }
+.score-low { color: var(--accent-red); }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Buttons */
+button {
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Links */
+a {
+  color: var(--accent-gold);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--accent-blue);
+}
+
+/* Inputs */
+input, select {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.1);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus {
+  box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
+  border-color: var(--accent-red);
 }

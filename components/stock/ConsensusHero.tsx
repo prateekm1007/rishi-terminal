@@ -12,20 +12,20 @@ interface Props {
 function scoreColor(score: number): string {
   if (score >= 75) return "text-emerald-400";
   if (score >= 55) return "text-yellow-400";
-  return "text-red-400";
+  return "text-brand-red";
 }
 
 function scoreBorderColor(score: number): string {
   if (score >= 75) return "border-emerald-700";
   if (score >= 55) return "border-yellow-700";
-  return "border-red-800";
+  return "border-brand-red/50";
 }
 
 function tensionColor(spread: number): string {
   if (spread < 15) return "text-emerald-500";
   if (spread < 30) return "text-yellow-500";
   if (spread < 50) return "text-orange-500";
-  return "text-red-500";
+  return "text-brand-red";
 }
 
 export function ConsensusHero({
@@ -37,10 +37,9 @@ export function ConsensusHero({
   weightedBy,
 }: Props) {
   return (
-    <div className={`border rounded-lg p-8 bg-zinc-900/50 ${scoreBorderColor(consensus)}`}>
+    <div className={`border rounded-lg p-8 bg-brand-charcoal ${scoreBorderColor(consensus)}`}>
       <div className="flex items-start justify-between flex-wrap gap-6">
 
-        {/* Score Block */}
         <div>
           <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-2">
             Rishi Consensus — {totalRishis} Sages · {weightedBy}
@@ -56,7 +55,6 @@ export function ConsensusHero({
           <p className="text-xl font-cinzel text-zinc-200 mt-2">{category}</p>
         </div>
 
-        {/* Tension Block */}
         <div className="border border-zinc-800 rounded p-4 min-w-[200px]">
           <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-3">
             Philosophy Tension
@@ -66,7 +64,7 @@ export function ConsensusHero({
           </p>
           <div className="mt-3 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-red-500"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-brand-red"
               style={{ width: `${Math.min(tensionSpread, 100)}%` }}
             />
           </div>
@@ -77,7 +75,6 @@ export function ConsensusHero({
 
       </div>
 
-      {/* Score Bar */}
       <div className="mt-6">
         <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
           <div
@@ -86,7 +83,7 @@ export function ConsensusHero({
                 ? "bg-emerald-500"
                 : consensus >= 55
                 ? "bg-yellow-500"
-                : "bg-red-500"
+                : "bg-brand-red"
             }`}
             style={{ width: `${consensus}%` }}
           />

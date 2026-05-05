@@ -1,0 +1,169 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
+import { resolveStock } from "../../../lib/consensus/stockResolver";
+import { buildConsensus } from "../../../lib/consensus/engine";
+import { TOTAL_RISHIS } from "../../../lib/consensus/orchestrator";
+import { ConsensusHero } from "../../../components/stock/ConsensusHero";
+import { RishiGrid } from "../../../components/stock/RishiGrid";
+import { PhilosophyRadar } from "../../../components/stock/PhilosophyRadar";
+import { MetricsPanel } from "../../../components/stock/MetricsPanel";
+import { BullBearBar } from "../../../components/stock/BullBearBar";
+import { ShareButton } from "../../../components/stock/ShareButton";
+import { LivePriceWidget } from "../../../components/stock/LivePriceWidget";
+import { UpgradePrompt } from "../../../components/premium/UpgradePrompt";
+import { canViewDeepDive, recordDeepDiveView, getViewsRemaining } from "../../../lib/premium";
+
+interface Props {
+  params: Promise<{ symbol: string }>;
+}
+
+function StockContent({ symbol }: { symbol: string }) {
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [canView, setCanView] = useState(true);
+
+  useEffect(() => {
+    // Check if user can view
+    const allowed = canViewDeepDive();
+    setCanView(allowed);
+
+    if (allowed) {
+      // Record this view
+      recordDeepDiveView();
+    } else {
+      // Show upgrade prompt
+      setShowUpgrade(true);
+    }
+  }, []);
+
+  const stock = resolveStock(symbol);
+  if (!stock) notFound();
+
+  const report = buildConsensus(stock);
+  const viewsRemaining = getViewsRemaining();
+
+  if (!canView) {
+    return (
+      <>
+        <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🧘</div>
+            <h2 className="font-cinzel text-2xl text-amber-400 mb-2">
+              Daily Limit Reached
+            </h2>
+            <p className="text-zinc-500 font-mono text-sm mb-6">
+              You've used all 5 free deep-dives today
+            </p>
+            <a
+              href="/pricing"
+              className="inline-block bg-amber-600 hover:bg-amber-700 text-black font-bold py-3 px-8 rounded-lg transition-colors font-mono"
+            >
+              Upgrade to Premium
+            </a>
+          </div>
+        </div>
+        {showUpgrade && (
+          <UpgradePrompt
+            reason="limit_reached"
+            onClose={() => setShowUpgrade(false)}
+          />
+        )}
+      </>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-zinc-950 text-zinc-100">
+      {/* Terminal Header */}
+      <div className="border-b border-zinc-800 bg-zinc-900/80 px-6 py-5">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-xs font-mono text-zinc-600 mb-3">
+            <a href="/" className="hover:text-zinc-400 transition-colors">RISHI TERMINAL</a>
+            <span className="mx-2">›</span>
+            <a href="/screener" className="hover:text-zinc-400 transition-colors">SCREENER</a>
+            <span className="mx-2">›</span>
+            <span className="text-zinc-400">{stock.symbol}</span>
+          </p>
+
+          <div className="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <h1 className="font-cinzel text-3xl text-zinc-100 tracking-wide">
+                {stock.name}
+              </h1>
+              <div className="flex items-center gap-3 mt-2 flex-wrap text-sm">
+                <span className="font-mono text-zinc-400">{stock.symbol}</span>
+                <span className="text-zinc-700">·</span>
+                <span className="font-mono text-zinc-400">{stock.exchange}</span>
+                <span className="text-zinc-700">·</span>
+                <span className="font-mono text-zinc-400">{stock.sector}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <LivePriceWidget symbol={stock.symbol} staticPrice={stock.price} />
+              <ShareButton stock={stock} consensus={report.consensus} />
+            </div>
+          </div>
+
+          {/* Data Freshness + Views Remaining */}
+          <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center justify-between flex-wrap gap-3">
+            <p className="text-xs font-mono text-zinc-600">
+              Fundamental data as of Jan 2025 · Prices updated daily
+            </p>
+            {viewsRemaining !== Infinity && (
+              <p className="text-xs font-mono text-amber-500">
+                {viewsRemaining} free views remaining today · <a href="/pricing" className="underline hover:text-amber-400">Upgrade</a>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <ConsensusHero
+          consensus={report.consensus}
+          category={report.category}
+          tension={report.tension}
+          tensionSpread={report.tensionSpread}
+          totalRishis={TOTAL_RISHIS}
+          weightedBy={report.weightedBy}
+        />
+
+        <BullBearBar topBull={report.topBull} topBear={report.topBear} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PhilosophyRadar scores={report.scores} />
+          <MetricsPanel stock={stock} />
+        </div>
+
+        <RishiGrid scores={report.scores} />
+
+        <div className="border-t border-zinc-800 pt-6">
+          <p className="text-xs font-mono text-zinc-600 leading-relaxed">
+            Philosophical analysis only. Not financial advice. Scores are deterministic and based on publicly available data.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function StockDeepDivePage({ params }: Props) {
+  const [symbol, setSymbol] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then(p => setSymbol(p.symbol));
+  }, [params]);
+
+  if (!symbol) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-zinc-500 font-mono">Loading...</div>
+      </div>
+    );
+  }
+
+  return <StockContent symbol={symbol} />;
+}

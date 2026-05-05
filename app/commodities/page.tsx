@@ -1,78 +1,284 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { COMMODITIES } from '../../data/markets';
-import { scoreGoldRishi } from '../../lib/scorers/commodity/gold';
-import { scoreSilverRishi } from '../../lib/scorers/commodity/silver';
-import { scoreCrudeRishi } from '../../lib/scorers/commodity/crude';
-import { sc } from '../../lib/utils';
+import { useState } from "react";
+import Link from "next/link";
+import { COMMODITIES } from "../../data/markets";
+import { scoreJimRogers } from "../../lib/scorers/commodity/jimrogers";
+import { scoreRickRule } from "../../lib/scorers/commodity/rickrule";
+import { scoreDanielYergin } from "../../lib/scorers/commodity/danielyergin";
+import { isPremium } from "../../lib/premium";
+import { UpgradePrompt } from "../../components/premium/UpgradePrompt";
 
-const COMMODITY_GURUS = [
-  { id: 'gold', name: 'Gold Rishi', emoji: '🥇', color: '#F59E0B', scorer: scoreGoldRishi, target: 'GOLD' },
-  { id: 'silver', name: 'Silver Rishi', emoji: '🥈', color: '#94A3B8', scorer: scoreSilverRishi, target: 'SILVER' },
-  { id: 'crude', name: 'Crude Rishi', emoji: '🛢️', color: '#0EA5E9', scorer: scoreCrudeRishi, target: 'WTI' },
+const COMMODITY_RISHIS = [
+  {
+    id: "jimrogers",
+    name: "Jim Rogers",
+    emoji: "🌾",
+    bio: "Co-founded Quantum Fund with Soros. Predicted the 2000s commodities supercycle. Author of Hot Commodities. Believes in owning physical assets over paper.",
+    quote: "Buy commodities. Buy them and put them away.",
+    scorer: scoreJimRogers,
+    target: "GOLD",
+  },
+  {
+    id: "rickrule",
+    name: "Rick Rule",
+    emoji: "🥇",
+    bio: "Legendary resource sector investor. CEO of Sprott. Gold as savings, silver as speculation. Most people are speculating in gold when they should be saving in it.",
+    quote: "Gold is money. Everything else is credit.",
+    scorer: scoreRickRule,
+    target: "SILVER",
+  },
+  {
+    id: "yergin",
+    name: "Daniel Yergin",
+    emoji: "🛢️",
+    bio: "Pulitzer Prize-winning energy historian. Author of The Prize. VP at S&P Global. Energy transition and geopolitical oil expert.",
+    quote: "Oil is the lifeblood of the industrial civilization.",
+    scorer: scoreDanielYergin,
+    target: "WTI",
+  },
 ];
 
+function scoreColor(score: number): string {
+  if (score >= 75) return "var(--accent-green)";
+  if (score >= 55) return "var(--accent-gold)";
+  return "var(--accent-red)";
+}
+
 export default function CommoditiesPage() {
-  const [category, setCategory] = useState('All');
-  const categories = ['All', ...Array.from(new Set(COMMODITIES.map(c => c.category)))];
-  const filtered = category === 'All' ? COMMODITIES : COMMODITIES.filter(c => c.category === category);
+  const [category, setCategory] = useState("All");
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const premium = isPremium();
+
+  const categories = ["All", ...Array.from(new Set(COMMODITIES.map(c => c.category)))];
+  const filtered = category === "All" ? COMMODITIES : COMMODITIES.filter(c => c.category === category);
 
   return (
-    <div style={{ fontFamily: 'JetBrains Mono, monospace', background: '#050508', color: '#E2E8F0', minHeight: '100vh', padding: 24 }}>
-      <Link href="/" style={{ color: '#F59E0B', textDecoration: 'none', fontSize: 12 }}>← Dashboard</Link>
-      <div style={{ fontSize: 22, color: '#F59E0B', marginTop: 20 }}>COMMODITY GURUS</div>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16, marginTop: 24 }}>
-        {COMMODITY_GURUS.map(guru => {
-          const commodity = COMMODITIES.find(c => c.symbol === guru.target);
-          if (!commodity) return null;
-          const result = guru.scorer(commodity);
-          return (
-            <div key={guru.id} style={{ background: '#09090F', border: `2px solid ${guru.color}30`, borderRadius: 12, padding: 20 }}>
-              <div style={{ fontSize: 32 }}>{guru.emoji}</div>
-              <div style={{ fontSize: 16, color: '#F5E6D3', marginTop: 8 }}>{guru.name}</div>
-              <div style={{ fontSize: 36, color: sc(result.score), fontWeight: 700, marginTop: 12 }}>{result.score}</div>
-              <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 12 }}>{result.insight}</div>
+    <main className="page-container">
+
+      {/* Header */}
+      <div className="page-header">
+        <div className="content-wrapper">
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 1 }}>
+            <Link href="/" style={{ color: "var(--accent-gold)" }}>RISHI TERMINAL</Link>
+            <span style={{ margin: "0 8px" }}>›</span>
+            <span>COMMODITIES</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                <span style={{ fontSize: 40 }}>⚒️</span>
+                <h1 style={{ fontFamily: "Cinzel, serif", fontSize: 36, color: "var(--text-primary)" }}>Commodity Rishis</h1>
+              </div>
+              <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 600, lineHeight: 1.6 }}>
+                Jim Rogers · Rick Rule · Daniel Yergin — supercycles, precious metals, and energy geopolitics.
+              </p>
             </div>
-          );
-        })}
+          </div>
+        </div>
       </div>
 
-      <div style={{ marginTop: 32 }}>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-          {categories.map(cat => (
-            <button key={cat} onClick={() => setCategory(cat)}
-              style={{ background: category === cat ? '#F59E0B15' : '#09090F', border: '1px solid #1E293B', borderRadius: 6, padding: '8px 16px', color: category === cat ? '#F59E0B' : '#64748B', fontSize: 11, cursor: 'pointer' }}>
-              {cat}
-            </button>
+      <div className="content-wrapper">
+
+        {/* Quick Stats */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 32 }}>
+          {[
+            { label: "Gold Spot", value: "$2,650/oz", color: "var(--accent-gold)" },
+            { label: "Silver Spot", value: "$32.5/oz", color: "#94A3B8" },
+            { label: "Crude WTI", value: "$72.5/bbl", color: "var(--accent-blue)" },
+            { label: "Tracked", value: `${COMMODITIES.length} assets`, color: "var(--accent-green)" },
+          ].map(stat => (
+            <div key={stat.label} className="card" style={{ padding: 16 }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 6, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: stat.color }}>{stat.value}</div>
+            </div>
           ))}
         </div>
-        
-        <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-            <thead>
-              <tr style={{ background: '#06060D' }}>
-                <th style={{ padding: 10, color: '#475569', textAlign: 'left' }}>Commodity</th>
-                <th style={{ padding: 10, color: '#475569', textAlign: 'right' }}>Price</th>
-                <th style={{ padding: 10, color: '#475569', textAlign: 'right' }}>Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(c => (
-                <tr key={c.symbol} style={{ borderBottom: '1px solid #0F172A' }}>
-                  <td style={{ padding: 10 }}>{c.emoji} {c.name}</td>
-                  <td style={{ padding: 10, textAlign: 'right', color: '#F1F5F9' }}>{c.price} {c.unit}</td>
-                  <td style={{ padding: 10, textAlign: 'right', color: c.changePct >= 0 ? '#10B981' : '#EF4444' }}>
-                    {c.changePct >= 0 ? '+' : ''}{c.changePct.toFixed(2)}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+        {/* Rishi Cards */}
+        <div style={{ marginBottom: 8 }}>
+          <p style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 4 }}>COMMODITY PHILOSOPHERS</p>
+          <h2 style={{ fontFamily: "Cinzel, serif", fontSize: 26, color: "var(--text-primary)", marginBottom: 24 }}>3 Commodity Rishis</h2>
         </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 48 }}>
+          {COMMODITY_RISHIS.map(guru => {
+            const commodity = COMMODITIES.find(c => c.symbol === guru.target);
+            if (!commodity) return null;
+            const result = guru.scorer(commodity);
+            const isExpanded = expandedCard === guru.id;
+
+            return (
+              <div
+                key={guru.id}
+                className="card"
+                style={{ padding: 0, overflow: "hidden", cursor: "pointer" }}
+                onClick={() => setExpandedCard(isExpanded ? null : guru.id)}
+              >
+                {/* Accent bar */}
+                <div style={{ height: 3, background: "linear-gradient(90deg, var(--accent-gold), var(--accent-green))" }} />
+
+                {/* Summary Row */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", flexWrap: "wrap", gap: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <span style={{ fontSize: 40 }}>{guru.emoji}</span>
+                    <div>
+                      <div style={{ fontFamily: "Cinzel, serif", fontSize: 20, color: "var(--text-primary)", marginBottom: 4, fontWeight: 700 }}>
+                        {guru.name}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                        {result.label} · {result.origin} · analyzing {commodity.name}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 48, fontWeight: 900, color: scoreColor(result.score), lineHeight: 1 }}>
+                        {result.score}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)" }}>/100</div>
+                    </div>
+                    <div style={{ width: 100, height: 8, background: "var(--bg-hover)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${result.score}%`, background: scoreColor(result.score), borderRadius: 4 }} />
+                    </div>
+                    <div style={{
+                      fontSize: 14, color: "var(--text-muted)",
+                      transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 0.25s ease",
+                    }}>▼</div>
+                  </div>
+                </div>
+
+                {/* Expanded Content */}
+                {isExpanded && (
+                  <div style={{ borderTop: "1px solid var(--border-primary)", padding: 24 }}>
+
+                    {/* Bio + Quote */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16, marginBottom: 20 }}>
+                      <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18 }}>
+                        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>ABOUT</div>
+                        <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{guru.bio}</p>
+                      </div>
+                      <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18, borderLeft: "3px solid var(--accent-gold)" }}>
+                        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>SIGNATURE QUOTE</div>
+                        <p style={{ fontSize: 14, color: "var(--accent-gold)", fontStyle: "italic", lineHeight: 1.7 }}>"{guru.quote}"</p>
+                      </div>
+                    </div>
+
+                    {/* Current Analysis */}
+                    <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18, marginBottom: 20 }}>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>CURRENT ANALYSIS — {commodity.name} at {commodity.price}{commodity.unit}</div>
+                      <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{result.insight}</p>
+                    </div>
+
+                    {/* Score Components */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+                      {result.comps.map(comp => (
+                        <div key={comp.label} style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 16 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{comp.label}</span>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: scoreColor(comp.v) }}>{comp.v}</span>
+                          </div>
+                          <div style={{ height: 6, background: "var(--bg-hover)", borderRadius: 3, overflow: "hidden", marginBottom: 6 }}>
+                            <div style={{ height: "100%", width: `${comp.v}%`, background: scoreColor(comp.v), borderRadius: 3 }} />
+                          </div>
+                          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{comp.detail}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Commodity Table */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <p style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 4 }}>LIVE PRICES</p>
+              <h2 style={{ fontFamily: "Cinzel, serif", fontSize: 22, color: "var(--text-primary)" }}>All Commodities</h2>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {categories.map(cat => (
+                <button key={cat} onClick={() => setCategory(cat)} style={{
+                  padding: "8px 16px", borderRadius: 8, fontSize: 11,
+                  fontWeight: category === cat ? 700 : 400,
+                  border: category === cat ? "none" : "1px solid var(--border-primary)",
+                  background: category === cat ? "var(--accent-gold)" : "var(--bg-card)",
+                  color: category === cat ? "#000" : "var(--text-muted)",
+                }}>{cat}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{ overflow: "hidden" }}>
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left" }}>Commodity</th>
+                  <th style={{ textAlign: "right" }}>Price</th>
+                  <th style={{ textAlign: "right" }}>Change</th>
+                  <th style={{ textAlign: "right" }}>52W Low</th>
+                  <th style={{ textAlign: "right" }}>52W High</th>
+                  <th style={{ textAlign: "right" }}>52W Position</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(c => {
+                  const range = c.high52w - c.low52w;
+                  const position = range > 0 ? ((c.price - c.low52w) / range) * 100 : 50;
+                  return (
+                    <tr key={c.symbol}>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 22 }}>{c.emoji}</span>
+                          <div>
+                            <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>{c.name}</div>
+                            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{c.symbol} · {c.category}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ textAlign: "right", fontWeight: 700, color: "var(--text-primary)" }}>
+                        {c.price.toLocaleString("en-US")}
+                        <span style={{ fontSize: 10, color: "var(--text-muted)", marginLeft: 4 }}>{c.unit}</span>
+                      </td>
+                      <td style={{ textAlign: "right", fontWeight: 700, color: c.changePct >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>
+                        {c.changePct >= 0 ? "▲" : "▼"} {Math.abs(c.changePct).toFixed(2)}%
+                      </td>
+                      <td style={{ textAlign: "right", fontSize: 12, color: "var(--text-muted)" }}>
+                        {c.low52w.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right", fontSize: 12, color: "var(--text-muted)" }}>
+                        {c.high52w.toLocaleString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+                          <div style={{ width: 80, height: 6, background: "var(--bg-hover)", borderRadius: 3, overflow: "hidden" }}>
+                            <div style={{
+                              height: "100%", width: `${position}%`, borderRadius: 3,
+                              background: position >= 70 ? "var(--accent-green)" : position >= 30 ? "var(--accent-gold)" : "var(--accent-red)",
+                            }} />
+                          </div>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)", minWidth: 32, textAlign: "right" }}>
+                            {position.toFixed(0)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
-    </div>
+
+      {showUpgrade && <UpgradePrompt reason="locked_feature" onClose={() => setShowUpgrade(false)} />}
+    </main>
   );
 }

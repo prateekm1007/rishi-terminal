@@ -1,115 +1,121 @@
-import { notFound } from "next/navigation";
-import { resolveStock } from "../../../lib/consensus/stockResolver";
-import { buildConsensus } from "../../../lib/consensus/engine";
-import { TOTAL_RISHIS } from "../../../lib/consensus/orchestrator";
-import { ConsensusHero } from "../../../components/stock/ConsensusHero";
-import { RishiGrid } from "../../../components/stock/RishiGrid";
-import { PhilosophyRadar } from "../../../components/stock/PhilosophyRadar";
-import { MetricsPanel } from "../../../components/stock/MetricsPanel";
-import { BullBearBar } from "../../../components/stock/BullBearBar";
-import { ShareButton } from "../../../components/stock/ShareButton";
-import { LivePriceWidget } from "../../../components/stock/LivePriceWidget";
+﻿'use client';
+
+import { useState, useEffect } from 'react';
+import { STOCKS } from '../../../data/stocks';
+import { getStockDetail } from '../../../data/stockDetails';
+import { buildConsensus } from '../../../lib/consensus';
+import { ConsensusHero } from '../../../components/stock/ConsensusHero';
+import { MetricsPanel } from '../../../components/stock/MetricsPanel';
+import { RishiGrid } from '../../../components/stock/RishiGrid';
+import { BullBearBar } from '../../../components/stock/BullBearBar';
+import { PhilosophyRadar } from '../../../components/stock/PhilosophyRadar';
+import { LivePriceWidget } from '../../../components/stock/LivePriceWidget';
+import { PriceChart } from '../../../components/stock/PriceChart';
+import { QuarterlyChart } from '../../../components/stock/QuarterlyChart';
+import { ShareholdingChart } from '../../../components/stock/ShareholdingChart';
+import { PeerComparison } from '../../../components/stock/PeerComparison';
+import { AnalystRecommendations } from '../../../components/stock/AnalystRecommendations';
+import { TechnicalIndicators } from '../../../components/stock/TechnicalIndicators';
+import Link from 'next/link';
 
 interface Props {
   params: Promise<{ symbol: string }>;
 }
 
-export async function generateMetadata({ params }: Props) {
-  const { symbol } = await params;
-  const stock = resolveStock(symbol);
-  if (!stock) return { title: "Stock Not Found — Rishi Terminal" };
-  
-  const report = buildConsensus(stock);
-  
-  return {
-    title: `${stock.name} (${stock.symbol}) — Rishi Consensus: ${report.consensus}/100`,
-    description: `19-Rishi philosophical analysis of ${stock.name}. ${report.category}. Deep-dive into quality, value, growth and moat perspectives.`,
-    openGraph: {
-      title: `${stock.name} — Rishi Terminal`,
-      description: `Consensus: ${report.consensus}/100 · ${report.category}`,
-    },
-  };
-}
+function StockContent({ symbol }: { symbol: string }) {
+  const upper = symbol.toUpperCase();
+  const stock = STOCKS[upper as keyof typeof STOCKS];
 
-export default async function StockDeepDivePage({ params }: Props) {
-  const { symbol } = await params;
-  const stock = resolveStock(symbol);
-  if (!stock) notFound();
+  if (!stock) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">📊</div>
+          <h1 className="text-2xl text-zinc-100 mb-2">Stock Not Found</h1>
+          <Link href="/screener" className="text-amber-500 hover:underline">← Back to Screener</Link>
+        </div>
+      </div>
+    );
+  }
 
-  const report = buildConsensus(stock);
+  const consensus = buildConsensus(stock);
+  const detail = getStockDetail(upper);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
-
-      {/* Terminal Header */}
-      <div className="border-b border-zinc-800 bg-zinc-900/80 px-6 py-5">
-        <div className="max-w-7xl mx-auto">
-          
-          <p className="text-xs font-mono text-zinc-600 mb-3">
-            <a href="/" className="hover:text-zinc-400 transition-colors">RISHI TERMINAL</a>
-            <span className="mx-2">›</span>
-            <a href="/screener" className="hover:text-zinc-400 transition-colors">SCREENER</a>
-            <span className="mx-2">›</span>
-            <span className="text-zinc-400">{stock.symbol}</span>
-          </p>
-
-          <div className="flex items-start justify-between flex-wrap gap-4">
+      <div className="border-b border-zinc-800 bg-zinc-900/50">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex justify-between items-start">
             <div>
-              <h1 className="font-cinzel text-3xl text-zinc-100 tracking-wide">
-                {stock.name}
-              </h1>
-              <div className="flex items-center gap-3 mt-2 flex-wrap text-sm">
-                <span className="font-mono text-zinc-400">{stock.symbol}</span>
-                <span className="text-zinc-700">·</span>
-                <span className="font-mono text-zinc-400">{stock.exchange}</span>
-                <span className="text-zinc-700">·</span>
-                <span className="font-mono text-zinc-400">{stock.sector}</span>
+              <div className="flex items-center gap-3 mb-2">
+                <Link href="/screener" className="text-sm text-zinc-500 hover:text-amber-400">← Screener</Link>
+                <span className="text-zinc-700">•</span>
+                <span className="text-xs px-3 py-1 bg-zinc-800 rounded font-mono">{stock.sector}</span>
               </div>
+              <h1 className="text-4xl font-semibold tracking-tight">{stock.name}</h1>
+              <div className="text-zinc-500 mt-1 font-mono text-sm">{upper} • {stock.exchange}</div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <LivePriceWidget symbol={stock.symbol} staticPrice={stock.price} />
-              <ShareButton stock={stock} consensus={report.consensus} />
-            </div>
-          </div>
-
-          {/* Data Freshness Indicator */}
-          <div className="mt-4 pt-3 border-t border-zinc-800">
-            <p className="text-xs font-mono text-zinc-600">
-              Fundamental data as of Jan 2025 · Prices updated daily
-            </p>
+            <LivePriceWidget symbol={upper} staticPrice={stock.price} />
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        
-        <ConsensusHero
-          consensus={report.consensus}
-          category={report.category}
-          tension={report.tension}
-          tensionSpread={report.tensionSpread}
-          totalRishis={TOTAL_RISHIS}
-          weightedBy={report.weightedBy}
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+
+        <ConsensusHero 
+          consensus={consensus.consensus}
+          category={consensus.category}
+          tension={consensus.tension}
+          tensionSpread={consensus.tensionSpread}
+          totalRishis={consensus.scores.length}
+          weightedBy={consensus.weightedBy}
         />
 
-        <BullBearBar topBull={report.topBull} topBear={report.topBear} />
+        <PriceChart symbol={upper} currentPrice={stock.price} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PhilosophyRadar scores={report.scores} />
-          <MetricsPanel stock={stock} />
-        </div>
+        <MetricsPanel stock={stock} />
 
-        <RishiGrid scores={report.scores} />
+        <BullBearBar topBull={consensus.topBull} topBear={consensus.topBear} />
 
-        <div className="border-t border-zinc-800 pt-6">
-          <p className="text-xs font-mono text-zinc-600 leading-relaxed">
-            Philosophical analysis only. Not financial advice. Scores are deterministic and based on publicly available data.
-          </p>
-        </div>
+        {detail && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <QuarterlyChart quarterlyResults={detail.quarterlyResults} />
+            <ShareholdingChart shareholdingHistory={detail.shareholdingHistory} />
+          </div>
+        )}
+
+        {detail && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PeerComparison peers={detail.peers} currentStock={stock} />
+            <AnalystRecommendations analystRecs={detail.analystRecs} currentPrice={stock.price} />
+          </div>
+        )}
+
+        {detail && <TechnicalIndicators technicals={detail.technicals} />}
+
+        <PhilosophyRadar scores={consensus.scores} />
+
+        <RishiGrid scores={consensus.scores} />
 
       </div>
     </main>
   );
+}
+
+export default function StockPage({ params }: Props) {
+  const [symbol, setSymbol] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then(p => setSymbol(p.symbol));
+  }, [params]);
+
+  if (!symbol) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-zinc-500 font-mono">Loading...</div>
+      </div>
+    );
+  }
+
+  return <StockContent symbol={symbol} />;
 }

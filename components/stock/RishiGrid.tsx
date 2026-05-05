@@ -1,6 +1,8 @@
 "use client";
 import { RishiScore } from "../../lib/consensus/types";
 import { RISHI_WEIGHT_CONFIG } from "../../lib/consensus/weights";
+import { getRishisVisible, isPremium } from "../../lib/premium";
+import Link from "next/link";
 
 interface Props {
   scores: RishiScore[];
@@ -31,13 +33,29 @@ function scoreTextColor(score: number): string {
 }
 
 export function RishiGrid({ scores }: Props) {
+  const rishisVisible = getRishisVisible();
+  const premium = isPremium();
+  const visibleScores = premium ? scores : scores.slice(0, rishisVisible);
+  const lockedCount = scores.length - rishisVisible;
+
   return (
     <div>
-      <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-4">
-        All Rishis — Sorted by Conviction
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-widest">
+          All Rishis — Sorted by Conviction
+        </h2>
+        {!premium && (
+          <Link
+            href="/pricing"
+            className="text-xs font-mono text-amber-500 hover:text-amber-400 transition-colors"
+          >
+            Unlock {lockedCount} more Rishis →
+          </Link>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {scores.map((s, i) => {
+        {visibleScores.map((s, i) => {
           const tier = getTier(s.name);
           return (
             <div
@@ -89,6 +107,25 @@ export function RishiGrid({ scores }: Props) {
             </div>
           );
         })}
+
+        {/* Locked Rishis Placeholder */}
+        {!premium && lockedCount > 0 && (
+          <Link
+            href="/pricing"
+            className="border-2 border-dashed border-amber-700/50 bg-zinc-900/20 rounded-lg p-4 hover:border-amber-600 hover:bg-zinc-900/40 transition-all flex flex-col items-center justify-center text-center min-h-[200px] group"
+          >
+            <div className="text-4xl mb-3 opacity-50 group-hover:opacity-100 transition-opacity">🔒</div>
+            <p className="font-cinzel text-amber-400 text-sm mb-2">
+              {lockedCount} More Rishis Locked
+            </p>
+            <p className="text-xs text-zinc-500 font-mono mb-4">
+              Unlock all {scores.length} philosophical perspectives
+            </p>
+            <span className="text-xs font-mono text-amber-500 group-hover:text-amber-400">
+              Upgrade to Premium →
+            </span>
+          </Link>
+        )}
       </div>
     </div>
   );

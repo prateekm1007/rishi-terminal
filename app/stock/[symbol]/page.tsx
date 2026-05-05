@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { STOCKS } from '../../../data/stocks';
-import { getStockDetail } from '../../../data/stockDetails';
+import { generateStockDetail } from '../../../data/stockDetails';
 import { buildConsensus } from '../../../lib/consensus';
 import { generateDialogueSets } from '../../../lib/wisdom/dialogue';
 import { generateWisdomGraph } from '../../../lib/wisdom/graph';
+import { getRishiLens, applyLens } from '../../../lib/wisdom/lens';
 import { ConsensusHero } from '../../../components/stock/ConsensusHero';
 import { MetricsPanel } from '../../../components/stock/MetricsPanel';
 import { RishiGrid } from '../../../components/stock/RishiGrid';
@@ -20,6 +21,8 @@ import { AnalystRecommendations } from '../../../components/stock/AnalystRecomme
 import { TechnicalIndicators } from '../../../components/stock/TechnicalIndicators';
 import { RishiDialogue } from '../../../components/stock/RishiDialogue';
 import { WisdomGraph } from '../../../components/stock/WisdomGraph';
+import { LensSelector } from '../../../components/stock/LensSelector';
+import { LensInsights } from '../../../components/stock/LensInsights';
 import Link from 'next/link';
 
 interface Props {
@@ -28,7 +31,8 @@ interface Props {
 
 function StockContent({ symbol }: { symbol: string }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'technicals' | 'dialogue'>('overview');
-  
+  const [activeLens, setActiveLens] = useState<string | null>(null);
+
   const upper = symbol.toUpperCase();
   const stock = STOCKS[upper as keyof typeof STOCKS];
 
@@ -45,9 +49,14 @@ function StockContent({ symbol }: { symbol: string }) {
   }
 
   const consensus = buildConsensus(stock);
-  const detail = getStockDetail(upper);
+  const detail = generateStockDetail(stock);
   const dialogues = generateDialogueSets(stock, consensus.scores);
   const wisdomGraph = generateWisdomGraph(stock);
+
+  // Get lens-specific data
+  const lens = activeLens ? getRishiLens(activeLens) : null;
+  const lensScore = lens ? consensus.scores.find(s => s.name === lens.rishi) : null;
+  const lensAnalysis = lens && lensScore ? applyLens(stock, lensScore, lens) : null;
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -60,7 +69,9 @@ function StockContent({ symbol }: { symbol: string }) {
                 <span className="text-zinc-700">•</span>
                 <span className="text-xs px-3 py-1 bg-zinc-800 rounded font-mono">{stock.sector}</span>
               </div>
-              <h1 className="text-4xl font-semibold tracking-tight">{stock.name}</h1>
+              <h1 className="text-4xl font-semibold tracking-tight">
+                {lens ? lens.pageTitle(stock.name) : stock.name}
+              </h1>
               <div className="text-zinc-500 mt-1 font-mono text-sm">{upper} • {stock.exchange}</div>
             </div>
             <LivePriceWidget symbol={upper} staticPrice={stock.price} />
@@ -103,9 +114,24 @@ function StockContent({ symbol }: { symbol: string }) {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
-          
+
           {/* Main Content */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+
+            {/* Lens Selector (always visible) */}
+            <LensSelector currentLens={activeLens} onLensChange={setActiveLens} />
+
+            {/* Lens Insights (when active) */}
+            {lens && lensAnalysis && (
+              <LensInsights
+                lens={lens}
+                warning={lensAnalysis.warning}
+                opportunity={lensAnalysis.opportunity}
+                keyMetrics={lensAnalysis.keyMetrics}
+                lensInsight={lensAnalysis.lensInsight}
+              />
+            )}
+
             {activeTab === 'overview' && (
               <>
                 <ConsensusHero
@@ -153,26 +179,26 @@ function StockContent({ symbol }: { symbol: string }) {
 
             {activeTab === 'dialogue' && (
               <>
-                <div style={{ 
-                  padding: 32, 
-                  background: 'var(--bg-card)', 
-                  border: '1px solid var(--border-primary)', 
+                <div style={{
+                  padding: 32,
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-primary)',
                   borderRadius: 12,
                 }}>
                   <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 16 }}>🧘</div>
-                  <h2 style={{ 
-                    fontFamily: 'Cinzel, serif', 
-                    fontSize: 28, 
-                    color: 'var(--accent-gold)', 
+                  <h2 style={{
+                    fontFamily: 'Cinzel, serif',
+                    fontSize: 28,
+                    color: 'var(--accent-gold)',
                     textAlign: 'center',
                     marginBottom: 12,
                     letterSpacing: 2,
                   }}>
                     Rishi Dialogue
                   </h2>
-                  <p style={{ 
-                    fontSize: 14, 
-                    color: 'var(--text-muted)', 
+                  <p style={{
+                    fontSize: 14,
+                    color: 'var(--text-muted)',
                     textAlign: 'center',
                     maxWidth: 600,
                     margin: '0 auto',

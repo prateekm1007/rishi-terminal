@@ -48,6 +48,16 @@ export default function Dashboard() {
   const stockData = STOCKS[stockOfDay];
   const sotdConsensus = buildConsensus(stockData).consensus;
 
+  const wisdomQuotes = [
+    { rishi: 'Warren Buffett', quote: 'The three most important words in investing are margin of safety.', emoji: '🦁' },
+    { rishi: 'Benjamin Graham', quote: 'An investment operation is one which, upon thorough analysis, promises safety of principal and an adequate return.', emoji: '📊' },
+    { rishi: 'Charlie Munger', quote: 'The best thing that happens to us is when a great company gets into temporary trouble.', emoji: '🧠' },
+    { rishi: 'Peter Lynch', quote: 'Know what you own and why you own it.', emoji: '🎯' },
+    { rishi: 'Rakesh Jhunjhunwala', quote: 'I believe in buying quality businesses and holding them for the long term.', emoji: '💎' },
+  ];
+
+  const dailyWisdom = wisdomQuotes[Math.floor((Date.now() / 86400000) % wisdomQuotes.length)];
+
   return (
     <main className="page-container">
 
@@ -59,7 +69,7 @@ export default function Dashboard() {
                 RISHI TERMINAL
               </h1>
               <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginTop: 4 }}>
-                STOCKS - BONDS - FOREX - CRYPTO - COMMODITIES
+                RISHIS GUIDE EVERY DECISION - STOCKS - BONDS - FOREX - CRYPTO - COMMODITIES
               </p>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -142,31 +152,55 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="card" style={{ padding: 24, marginBottom: 32 }}>
-          <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
-            STOCK OF THE DAY - {stockOfDay}
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-            <div>
-              <div style={{ fontFamily: 'Cinzel, serif', fontSize: 18, color: 'var(--text-primary)', fontWeight: 700 }}>{stockData.name}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{stockData.sector} NSE {stockData.price.toLocaleString('en-US')}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
+
+          <div className="card" style={{ padding: 24 }}>
+            <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
+              STOCK OF THE DAY - {stockOfDay}
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 36, fontWeight: 700, color: scoreColor(sotdConsensus), lineHeight: 1 }}>{sotdConsensus}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+              <div>
+                <div style={{ fontFamily: 'Cinzel, serif', fontSize: 18, color: 'var(--text-primary)', fontWeight: 700 }}>{stockData.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{stockData.sector} NSE {stockData.price.toLocaleString('en-US')}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 36, fontWeight: 700, color: scoreColor(sotdConsensus), lineHeight: 1 }}>{sotdConsensus}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Rishi Consensus</div>
+              </div>
             </div>
+            <Link href={`/stock/${stockOfDay}`} style={{
+              display: 'block', padding: '10px', textAlign: 'center',
+              background: 'var(--accent-gold)', color: '#000', borderRadius: 8,
+              fontWeight: 700, fontSize: 13, textDecoration: 'none',
+            }}>
+              View Full Analysis
+            </Link>
           </div>
-          <Link href={`/stock/${stockOfDay}`} style={{
-            display: 'block', padding: '10px', textAlign: 'center',
-            background: 'var(--accent-gold)', color: '#000', borderRadius: 8,
-            fontWeight: 700, fontSize: 13, textDecoration: 'none',
-          }}>
-            Full Deep-Dive
-          </Link>
+
+          <div className="card" style={{ padding: 24, background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, var(--bg-card) 100%)' }}>
+            <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 12, fontWeight: 700 }}>
+              RISHI WISDOM OF THE DAY
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+              <div style={{ fontSize: 32 }}>{dailyWisdom.emoji}</div>
+              <div>
+                <h3 style={{ fontFamily: 'Cinzel, serif', fontSize: 14, color: 'var(--text-primary)', fontWeight: 700, margin: '0 0 4px 0' }}>
+                  {dailyWisdom.rishi}
+                </h3>
+              </div>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
+              "{dailyWisdom.quote}"
+            </p>
+            <Link href="/rishis" style={{ display: 'block', marginTop: 16, fontSize: 12, color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 700 }}>
+              Explore All Rishis
+            </Link>
+          </div>
         </div>
 
         <div className="card" style={{ padding: 24, marginBottom: 32 }}>
           <div style={{ fontSize: 10, color: 'var(--accent-green)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
-            TOP BUY SIGNALS
+            TOP BUY SIGNALS (RISHI CONSENSUS ABOVE 65)
           </div>
           {topBuys.map((t, i) => {
             const s = STOCKS[t.sym as keyof typeof STOCKS];
@@ -185,7 +219,7 @@ export default function Dashboard() {
           })}
         </div>
 
-        <div className="card" style={{ padding: 24 }}>
+        <div className="card" style={{ padding: 24, marginBottom: 32 }}>
           <div style={{ fontSize: 10, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 16, fontWeight: 700 }}>
             MARKET INDEXES
           </div>

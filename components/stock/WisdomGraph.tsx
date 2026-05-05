@@ -1,6 +1,7 @@
 'use client';
 
 import { WisdomGraph, WisdomNode } from '../../lib/wisdom/graph';
+import Link from 'next/link';
 
 interface Props {
   graph: WisdomGraph;
@@ -8,34 +9,37 @@ interface Props {
 
 function getNodeColor(type: WisdomNode['type']): string {
   switch (type) {
-    case 'case_study': return 'var(--accent-gold)';
-    case 'historical': return '#60a5fa';
-    case 'quote': return 'var(--accent-green)';
-    case 'warning': return 'var(--accent-red)';
-    case 'parallel': return '#c084fc';
-    default: return 'var(--text-muted)';
+    case 'case_study':  return '#f59e0b';
+    case 'historical':  return '#60a5fa';
+    case 'quote':       return '#34d399';
+    case 'warning':     return '#f87171';
+    case 'parallel':    return '#c084fc';
+    case 'peer':        return '#94a3b8';
+    default:            return '#71717a';
   }
 }
 
 function getNodeIcon(type: WisdomNode['type']): string {
   switch (type) {
-    case 'case_study': return '📚';
-    case 'historical': return '🏛️';
-    case 'quote': return '💬';
-    case 'warning': return '⚠️';
-    case 'parallel': return '🔗';
-    default: return '•';
+    case 'case_study':  return '📚';
+    case 'historical':  return '🏛';
+    case 'quote':       return '💬';
+    case 'warning':     return '⚠️';
+    case 'parallel':    return '🔗';
+    case 'peer':        return '📊';
+    default:            return '•';
   }
 }
 
 function getNodeLabel(type: WisdomNode['type']): string {
   switch (type) {
-    case 'case_study': return 'CASE STUDY';
-    case 'historical': return 'HISTORICAL';
-    case 'quote': return 'WISDOM';
-    case 'warning': return 'WARNING';
-    case 'parallel': return 'PARALLEL';
-    default: return 'NODE';
+    case 'case_study':  return 'CASE STUDY';
+    case 'historical':  return 'HISTORICAL';
+    case 'quote':       return 'WISDOM';
+    case 'warning':     return 'WARNING';
+    case 'parallel':    return 'PARALLEL';
+    case 'peer':        return 'PEER';
+    default:            return 'NODE';
   }
 }
 
@@ -47,9 +51,10 @@ export function WisdomGraph({ graph }: Props) {
         border: '1px solid var(--border-primary)',
         borderRadius: 12,
         overflow: 'hidden',
+        width: '100%',
       }}
     >
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────── */}
       <div
         style={{
           padding: '20px 24px',
@@ -57,34 +62,35 @@ export function WisdomGraph({ graph }: Props) {
           borderBottom: '1px solid var(--border-primary)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          <div style={{ fontSize: 24 }}>🧠</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <span style={{ fontSize: 22 }}>🧠</span>
           <h3
             style={{
-              fontSize: 18,
+              fontSize: 17,
               fontFamily: 'Cinzel, serif',
               color: 'var(--text-primary)',
               letterSpacing: 1,
+              margin: 0,
             }}
           >
             Wisdom Graph
           </h3>
         </div>
-        
+
         <p
           style={{
             fontSize: 12,
             color: 'var(--text-muted)',
             lineHeight: 1.6,
-            marginBottom: 12,
+            margin: '0 0 12px 0',
           }}
         >
           {graph.summary}
         </p>
 
-        {/* Connections */}
+        {/* Connection pills */}
         {graph.connections.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {graph.connections.map((conn, i) => (
               <div
                 key={i}
@@ -93,10 +99,10 @@ export function WisdomGraph({ graph }: Props) {
                   color: 'var(--text-secondary)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 8,
+                  gap: 6,
                 }}
               >
-                <span style={{ color: 'var(--accent-gold)' }}>→</span>
+                <span style={{ color: '#f59e0b', fontWeight: 700 }}>→</span>
                 {conn}
               </div>
             ))}
@@ -104,22 +110,22 @@ export function WisdomGraph({ graph }: Props) {
         )}
       </div>
 
-      {/* Nodes */}
-      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* ── Wisdom Nodes ───────────────────────────────────── */}
+      <div style={{ padding: '20px 20px 0 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {graph.nodes.map((node, i) => (
           <div
             key={i}
             style={{
               background: 'var(--bg-secondary)',
               borderRadius: 10,
-              padding: 16,
+              padding: '14px 14px 12px 14px',
               borderLeft: `3px solid ${getNodeColor(node.type)}`,
               position: 'relative',
             }}
           >
-            {/* Type Badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <span style={{ fontSize: 16 }}>{getNodeIcon(node.type)}</span>
+            {/* Type badge row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <span style={{ fontSize: 14 }}>{getNodeIcon(node.type)}</span>
               <span
                 style={{
                   fontSize: 9,
@@ -131,7 +137,7 @@ export function WisdomGraph({ graph }: Props) {
               >
                 {getNodeLabel(node.type)}
               </span>
-              
+
               {node.year && (
                 <span
                   style={{
@@ -144,16 +150,41 @@ export function WisdomGraph({ graph }: Props) {
                   {node.year}
                 </span>
               )}
+
+              {/* Relevance circle — only shown when no year */}
+              {!node.year && (
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    fontSize: 9,
+                    fontFamily: 'JetBrains Mono',
+                    color: getNodeColor(node.type),
+                    background: `${getNodeColor(node.type)}18`,
+                    border: `1px solid ${getNodeColor(node.type)}50`,
+                    borderRadius: '50%',
+                    width: 28,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  {node.relevance}
+                </span>
+              )}
             </div>
 
             {/* Title */}
             <h4
               style={{
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: 600,
                 color: 'var(--text-primary)',
-                marginBottom: 8,
+                marginBottom: 6,
                 lineHeight: 1.4,
+                paddingRight: node.year ? 0 : 0,
               }}
             >
               {node.title}
@@ -162,7 +193,7 @@ export function WisdomGraph({ graph }: Props) {
             {/* Content */}
             <p
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 color: 'var(--text-secondary)',
                 lineHeight: 1.6,
                 marginBottom: 10,
@@ -177,75 +208,161 @@ export function WisdomGraph({ graph }: Props) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                fontSize: 11,
-                color: 'var(--text-muted)',
-                fontStyle: 'italic',
+                gap: 8,
               }}
             >
-              <span>{node.source}</span>
+              <span
+                style={{
+                  fontSize: 10,
+                  color: 'var(--text-muted)',
+                  fontStyle: 'italic',
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {node.source}
+              </span>
+
               {node.rishi && (
                 <span
                   style={{
+                    fontSize: 9,
                     fontFamily: 'JetBrains Mono',
-                    fontSize: 10,
                     padding: '2px 8px',
-                    background: `${getNodeColor(node.type)}20`,
+                    background: `${getNodeColor(node.type)}18`,
                     color: getNodeColor(node.type),
                     borderRadius: 4,
-                    fontStyle: 'normal',
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
                   }}
                 >
                   {node.rishi}
                 </span>
               )}
             </div>
-
-            {/* Relevance indicator */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 16,
-                right: 16,
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                background: `${getNodeColor(node.type)}15`,
-                border: `2px solid ${getNodeColor(node.type)}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 10,
-                fontFamily: 'JetBrains Mono',
-                fontWeight: 700,
-                color: getNodeColor(node.type),
-              }}
-            >
-              {node.relevance}
-            </div>
           </div>
         ))}
 
         {graph.nodes.length === 0 && (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: 32,
-              color: 'var(--text-muted)',
-            }}
-          >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🌱</div>
+          <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🌱</div>
             <p style={{ fontSize: 13, lineHeight: 1.6 }}>
-              Wisdom graph is growing. More historical connections and insights will appear as the knowledge base expands.
+              Wisdom graph is growing. More historical connections will appear as the knowledge base expands.
             </p>
           </div>
         )}
       </div>
 
-      {/* Footer Note */}
+      {/* ── Related Stocks ─────────────────────────────────── */}
+      {graph.relatedStocks.length > 0 && (
+        <div
+          style={{
+            margin: '20px 20px 0 20px',
+            background: 'var(--bg-secondary)',
+            borderRadius: 10,
+            overflow: 'hidden',
+            border: '1px solid var(--border-primary)',
+          }}
+        >
+          <div
+            style={{
+              padding: '10px 14px',
+              borderBottom: '1px solid var(--border-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 14 }}>🔗</span>
+            <span
+              style={{
+                fontSize: 10,
+                fontFamily: 'JetBrains Mono',
+                color: 'var(--text-muted)',
+                letterSpacing: 1,
+                fontWeight: 700,
+              }}
+            >
+              RELATED STOCKS
+            </span>
+          </div>
+
+          <div style={{ padding: '8px 0' }}>
+            {graph.relatedStocks.map((s, i) => (
+              <Link
+                key={s.symbol}
+                href={`/stock/${s.symbol.toLowerCase()}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  padding: '10px 14px',
+                  borderBottom: i < graph.relatedStocks.length - 1 ? '1px solid var(--border-primary)' : 'none',
+                  textDecoration: 'none',
+                  transition: 'background 0.15s ease',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(245,158,11,0.06)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontFamily: 'JetBrains Mono',
+                    color: '#f59e0b',
+                    fontWeight: 700,
+                    padding: '2px 6px',
+                    background: 'rgba(245,158,11,0.12)',
+                    borderRadius: 4,
+                    whiteSpace: 'nowrap',
+                    marginTop: 1,
+                  }}
+                >
+                  {s.symbol}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--text-primary)',
+                      fontWeight: 600,
+                      marginBottom: 2,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {s.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: 'var(--text-muted)',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {s.reason}
+                  </div>
+                </div>
+                <span style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 2 }}>→</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Footer ─────────────────────────────────────────── */}
       <div
         style={{
-          padding: '16px 24px',
+          margin: '20px 0 0 0',
+          padding: '14px 24px',
           background: 'var(--bg-secondary)',
           borderTop: '1px solid var(--border-primary)',
           fontSize: 11,

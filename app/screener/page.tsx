@@ -47,7 +47,7 @@ export default function ScreenerPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12 }}>
             {[
               { label: "Strong Buy",  count: stockList.filter(s => s.pe > 0 && s.roe > 15).length,    color: "var(--accent-green)", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.2)" },
-              { label: "High Quality",count: stockList.filter(s => s.roe > 20).length,                 color: "#60a5fa",             bg: "rgba(96,165,250,0.08)", border: "rgba(96,165,250,0.2)" },
+              { label: "High Growth", count: stockList.filter(s => s.epscagr > 15).length,            color: "#60a5fa",             bg: "rgba(96,165,250,0.08)", border: "rgba(96,165,250,0.2)" },
               { label: "Value Plays", count: stockList.filter(s => s.pe < 20 && s.pe > 0).length,     color: "var(--accent-gold)",  bg: "rgba(245,158,11,0.08)", border: "rgba(245,158,11,0.2)" },
               { label: "Large Cap",   count: stockList.filter(s => s.mktcap > 100000).length,          color: "#c084fc",             bg: "rgba(192,132,252,0.08)", border: "rgba(192,132,252,0.2)" },
               { label: "High ROE",    count: stockList.filter(s => s.roe > 25).length,                 color: "var(--accent-green)", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.2)" },

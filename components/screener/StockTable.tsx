@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Stock } from "../../lib/types";
 import { buildConsensus } from "../../lib/consensus";
-import { useTheme } from "../../lib/theme";
 
 interface StockRow extends Stock {
   consensus: number;
@@ -27,8 +26,7 @@ function consensusCategory(score: number): string {
 }
 
 export function StockTable({ stocks }: Props) {
-  const { theme } = useTheme();
-  const dark = theme === "dark";
+  const dark = true;
 
   const [search, setSearch]           = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
@@ -259,7 +257,6 @@ export function StockTable({ stocks }: Props) {
                     </span>
                     <div
                       className="w-16 h-1.5 rounded-full overflow-hidden"
-                      style={{ background: "var(--bg-hover)" }}
                     >
                       <div
                         className="h-full rounded-full"

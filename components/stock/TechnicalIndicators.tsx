@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 interface TechnicalIndicator {
   name: string;
@@ -35,77 +35,163 @@ export function TechnicalIndicators({ technicals }: Props) {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Main Indicators */}
-      <div className="border border-zinc-800 bg-zinc-900/40 rounded-lg p-6">
-        <div className="text-xs font-mono text-zinc-500 mb-6 flex items-center justify-between">
+      <div style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-card)', borderRadius: 12, padding: 24 }}>
+        <div style={{ fontSize: 10, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: 1 }}>
           <span>TECHNICAL INDICATORS</span>
-          <span className="text-emerald-500">8/10 Bullish</span>
+          <span style={{ color: 'var(--accent-green)' }}>8/10 BULLISH</span>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          {technicals.map((tech, i) => {
-            const colors = signalColor(tech.signal);
-            return (
-              <div key={i} className="bg-zinc-950 p-4 rounded border border-zinc-800">
-                <div className="text-xs text-zinc-500 font-mono mb-1">{tech.name}</div>
-                <div className="text-lg font-mono font-bold">{tech.value}</div>
-                <div className={`text-xs mt-2 inline-block px-2 py-1 rounded border ${colors.bg} ${colors.text} ${colors.border}`}>
-                  {tech.signal}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 16 }}>
+          {technicals && technicals.length > 0 ? (
+            technicals.map((tech, i) => {
+              const colors = signalColor(tech.signal);
+              return (
+                <div key={i} style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 10, border: '1px solid var(--border-primary)' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', marginBottom: 8 }}>
+                    {tech.name}
+                  </div>
+                  <div style={{ fontSize: 18, fontFamily: 'JetBrains Mono', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
+                    {tech.value}
+                  </div>
+                  <span style={{
+                    fontSize: 10,
+                    fontFamily: 'JetBrains Mono',
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    background: colors.bg === 'bg-emerald-900/40' ? 'rgba(16,185,129,0.15)' : colors.bg === 'bg-red-900/40' ? 'rgba(239,68,68,0.15)' : 'rgba(217,119,6,0.15)',
+                    color: colors.text === 'text-emerald-400' ? 'var(--accent-green)' : colors.text === 'text-red-400' ? 'var(--accent-red)' : 'var(--accent-gold)',
+                    border: '1px solid',
+                    borderColor: colors.text === 'text-emerald-400' ? 'rgba(16,185,129,0.3)' : colors.text === 'text-red-400' ? 'rgba(239,68,68,0.3)' : 'rgba(217,119,6,0.3)',
+                    fontWeight: 700,
+                    display: 'inline-block',
+                  }}>
+                    {tech.signal}
+                  </span>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>📊</div>
+              <p style={{ fontSize: 13 }}>Technical data unavailable for this stock</p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Moving Averages Table */}
-      <div className="border border-zinc-800 bg-zinc-900/40 rounded-lg p-6">
-        <div className="text-xs font-mono text-zinc-500 mb-4">MOVING AVERAGES</div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-zinc-800">
-              <th className="text-left py-2 font-mono text-xs text-zinc-500">PERIOD</th>
-              <th className="text-right py-2 font-mono text-xs text-zinc-500">VALUE</th>
-              <th className="text-right py-2 font-mono text-xs text-zinc-500">VS PRICE</th>
-              <th className="text-center py-2 font-mono text-xs text-zinc-500">SIGNAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            {movingAvgs.map((ma, i) => {
-              const colors = signalColor(ma.signal);
-              return (
-                <tr key={i} className="border-b border-zinc-800 last:border-0">
-                  <td className="py-3 font-mono text-zinc-300">{ma.period}</td>
-                  <td className="py-3 text-right font-mono">{ma.value}</td>
-                  <td className="py-3 text-right font-mono text-emerald-400">{ma.vsPrice}</td>
-                  <td className="py-3 text-center">
-                    <span className={`text-xs px-3 py-1 rounded border ${colors.bg} ${colors.text} ${colors.border}`}>
-                      {ma.signal}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-card)', borderRadius: 12, padding: 24 }}>
+        <div style={{ fontSize: 10, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 1 }}>
+          MOVING AVERAGES
+        </div>
+        <div style={{ overflowX: 'auto', borderRadius: 10, border: '1px solid var(--border-primary)' }}>
+          <table style={{ width: '100%', fontSize: 13 }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
+                <th style={{ textAlign: 'left', padding: 12, fontFamily: 'JetBrains Mono', fontSize: 10, color: 'var(--text-muted)', fontWeight: 700 }}>PERIOD</th>
+                <th style={{ textAlign: 'right', padding: 12, fontFamily: 'JetBrains Mono', fontSize: 10, color: 'var(--text-muted)', fontWeight: 700 }}>VALUE</th>
+                <th style={{ textAlign: 'right', padding: 12, fontFamily: 'JetBrains Mono', fontSize: 10, color: 'var(--text-muted)', fontWeight: 700 }}>VS PRICE</th>
+                <th style={{ textAlign: 'center', padding: 12, fontFamily: 'JetBrains Mono', fontSize: 10, color: 'var(--text-muted)', fontWeight: 700 }}>SIGNAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {movingAvgs.map((ma, i) => {
+                const colors = signalColor(ma.signal);
+                return (
+                  <tr key={i} style={{ borderBottom: i < movingAvgs.length - 1 ? '1px solid var(--border-primary)' : 'none' }}>
+                    <td style={{ padding: 12, fontFamily: 'JetBrains Mono', color: 'var(--text-primary)' }}>{ma.period}</td>
+                    <td style={{ padding: 12, textAlign: 'right', fontFamily: 'JetBrains Mono', color: 'var(--text-primary)' }}>{ma.value.toLocaleString()}</td>
+                    <td style={{ padding: 12, textAlign: 'right', fontFamily: 'JetBrains Mono', color: 'var(--accent-green)' }}>{ma.vsPrice}</td>
+                    <td style={{ padding: 12, textAlign: 'center' }}>
+                      <span style={{
+                        fontSize: 10,
+                        fontFamily: 'JetBrains Mono',
+                        padding: '4px 12px',
+                        borderRadius: 6,
+                        background: colors.bg === 'bg-emerald-900/40' ? 'rgba(16,185,129,0.15)' : colors.bg === 'bg-red-900/40' ? 'rgba(239,68,68,0.15)' : 'rgba(217,119,6,0.15)',
+                        color: colors.text === 'text-emerald-400' ? 'var(--accent-green)' : colors.text === 'text-red-400' ? 'var(--accent-red)' : 'var(--accent-gold)',
+                        border: '1px solid',
+                        borderColor: colors.text === 'text-emerald-400' ? 'rgba(16,185,129,0.3)' : colors.text === 'text-red-400' ? 'rgba(239,68,68,0.3)' : 'rgba(217,119,6,0.3)',
+                        fontWeight: 700,
+                        display: 'inline-block',
+                      }}>
+                        {ma.signal}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pivot Points */}
-      <div className="border border-zinc-800 bg-zinc-900/40 rounded-lg p-6">
-        <div className="text-xs font-mono text-zinc-500 mb-4">PIVOT POINTS (Standard)</div>
-        <div className="space-y-2">
+      <div style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-card)', borderRadius: 12, padding: 24 }}>
+        <div style={{ fontSize: 10, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 1 }}>
+          PIVOT POINTS (Standard)
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {pivots.map((p, i) => (
-            <div key={i} className="flex items-center justify-between bg-zinc-950 p-3 rounded">
-              <span className={`text-xs font-mono font-bold ${
-                p.type === 'resistance' ? 'text-red-400' : 
-                p.type === 'support' ? 'text-emerald-400' : 
-                'text-amber-400'
-              }`}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', padding: 12, borderRadius: 10 }}>
+              <span style={{
+                fontSize: 10,
+                fontFamily: 'JetBrains Mono',
+                fontWeight: 700,
+                color: p.type === 'resistance' ? 'var(--accent-red)' : p.type === 'support' ? 'var(--accent-green)' : 'var(--accent-gold)',
+              }}>
                 {p.level}
               </span>
-              <span className="font-mono text-sm">{p.value.toLocaleString()}</span>
-              <span className="text-xs text-zinc-500 font-mono uppercase">{p.type}</span>
+              <span style={{ fontFamily: 'JetBrains Mono', fontSize: 14, color: 'var(--text-primary)', fontWeight: 700 }}>
+                {p.value.toLocaleString()}
+              </span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', textTransform: 'uppercase' }}>
+                {p.type}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* RSI, MACD, Bollinger */}
+      <div style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-card)', borderRadius: 12, padding: 24 }}>
+        <div style={{ fontSize: 10, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 1 }}>
+          ADVANCED INDICATORS
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+          {[
+            { name: 'RSI (14)', value: '62', status: 'NEUTRAL', detail: 'Mid-range momentum' },
+            { name: 'MACD', value: 'BULLISH', status: 'BUY', detail: 'Positive divergence' },
+            { name: 'Bollinger Bands', value: 'NORMAL', status: 'NEUTRAL', detail: 'Trading within bands' },
+            { name: 'ADX (14)', value: '28', status: 'BUY', detail: 'Strong trend detected' },
+            { name: 'Stochastic', value: '68', status: 'NEUTRAL', detail: 'Approaching overbought' },
+            { name: 'ATR', value: '45.2', status: 'NEUTRAL', detail: 'Moderate volatility' },
+          ].map((ind, i) => (
+            <div key={i} style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 10, borderLeft: '3px solid var(--accent-gold)' }}>
+              <div style={{ fontSize: 10, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 6 }}>
+                {ind.name}
+              </div>
+              <div style={{ fontSize: 18, fontFamily: 'JetBrains Mono', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+                {ind.value}
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '8px 0 0 0', lineHeight: 1.5 }}>
+                {ind.detail}
+              </p>
+              <span style={{
+                fontSize: 9,
+                fontFamily: 'JetBrains Mono',
+                padding: '3px 8px',
+                borderRadius: 4,
+                marginTop: 8,
+                display: 'inline-block',
+                background: ind.status === 'BUY' ? 'rgba(16,185,129,0.15)' : ind.status === 'SELL' ? 'rgba(239,68,68,0.15)' : 'rgba(217,119,6,0.15)',
+                color: ind.status === 'BUY' ? 'var(--accent-green)' : ind.status === 'SELL' ? 'var(--accent-red)' : 'var(--accent-gold)',
+                fontWeight: 700,
+              }}>
+                {ind.status}
+              </span>
             </div>
           ))}
         </div>

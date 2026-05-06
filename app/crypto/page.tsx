@@ -13,7 +13,7 @@ const CRYPTO_RISHIS = [
   {
     id: "satoshi",
     name: "Satoshi Bodhi",
-    emoji: "₿",
+    emoji: "â‚¿",
     bio: "Sound money maximalist. Bitcoin as the ultimate store of value. Decentralization above all else.",
     quote: "The root problem with conventional currency is all the trust required to make it work.",
     scorer: scoreSatoshiBodhi,
@@ -22,7 +22,7 @@ const CRYPTO_RISHIS = [
   {
     id: "vitalik",
     name: "Vitalik Veda",
-    emoji: "⟠",
+    emoji: "âŸ ",
     bio: "Protocol fundamentalist. Ethereum as world computer. Scalability, security, decentralization trilemma solver.",
     quote: "Whereas most technologies tend to automate workers, blockchains automate away trust.",
     scorer: scoreVitalikVeda,
@@ -31,7 +31,7 @@ const CRYPTO_RISHIS = [
   {
     id: "saylor",
     name: "Michael Saylor",
-    emoji: "🏛️",
+    emoji: "ðŸ›ï¸",
     bio: "Corporate Bitcoin maximalist. Digital property thesis. MicroStrategy Bitcoin treasury architect.",
     quote: "Bitcoin is a bank in cyberspace, run by incorruptible software.",
     scorer: scoreMichaelSaylor,
@@ -64,17 +64,17 @@ export default function CryptoPage() {
         <div className="content-wrapper">
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 1 }}>
             <Link href="/" style={{ color: "var(--accent-gold)" }}>RISHI TERMINAL</Link>
-            <span style={{ margin: "0 8px" }}>›</span>
+            <span style={{ margin: "0 8px" }}>â€º</span>
             <span>CRYPTO</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                <span style={{ fontSize: 40 }}>🪙</span>
+                <span style={{ fontSize: 40 }}>ðŸª™</span>
                 <h1 style={{ fontFamily: "Cinzel, serif", fontSize: 36, color: "var(--text-primary)" }}>Crypto Rishis</h1>
               </div>
               <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 600, lineHeight: 1.6 }}>
-                Satoshi Bodhi · Vitalik Veda · Michael Saylor — three distinct philosophical lenses on digital assets.
+                Satoshi Bodhi Â· Vitalik Veda Â· Michael Saylor â€” three distinct philosophical lenses on digital assets.
               </p>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function CryptoPage() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
             <div>
               <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 4 }}>CRYPTO FEAR & GREED INDEX</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: fgColor }}>{FEAR_GREED_INDEX.value} — {FEAR_GREED_INDEX.label}</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: fgColor }}>{FEAR_GREED_INDEX.value} â€” {FEAR_GREED_INDEX.label}</div>
             </div>
             <div style={{ display: "flex", gap: 20, fontSize: 12, color: "var(--text-muted)" }}>
               <span>Yesterday: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousDay}</strong></span>
@@ -126,7 +126,7 @@ export default function CryptoPage() {
             }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, color: "var(--text-muted)" }}>
-            <span>😱 Extreme Fear</span><span>😐 Neutral</span><span>🤑 Extreme Greed</span>
+            <span>ðŸ˜± Extreme Fear</span><span>ðŸ˜ Neutral</span><span>ðŸ¤‘ Extreme Greed</span>
           </div>
         </div>
 
@@ -153,7 +153,7 @@ export default function CryptoPage() {
                 {/* Accent bar */}
                 <div style={{ height: 3, background: "linear-gradient(90deg, var(--accent-blue), var(--accent-gold))" }} />
 
-                {/* Summary Row — always visible */}
+                {/* Summary Row â€” always visible */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", flexWrap: "wrap", gap: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                     <span style={{ fontSize: 40 }}>{guru.emoji}</span>
@@ -162,7 +162,7 @@ export default function CryptoPage() {
                         {guru.name}
                       </div>
                       <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                        {result.label} · {result.origin}
+                        {result.label} Â· {result.origin}
                       </div>
                     </div>
                   </div>
@@ -186,7 +186,7 @@ export default function CryptoPage() {
                       fontSize: 14, color: "var(--text-muted)",
                       transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
                       transition: "transform 0.25s ease",
-                    }}>▼</div>
+                    }}>â–¼</div>
                   </div>
                 </div>
 
@@ -270,7 +270,11 @@ export default function CryptoPage() {
               </thead>
               <tbody>
                 {filtered.map(c => (
-                  <tr key={c.symbol}>
+                  <tr key={c.symbol} style={{ cursor: 'pointer', transition: 'background 0.15s' }}
+                    onClick={() => window.location.href = `/crypto/${c.symbol}`}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                  >
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <span style={{ fontSize: 22 }}>{c.emoji}</span>
@@ -280,7 +284,7 @@ export default function CryptoPage() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ textAlign: "right", fontWeight: 700, color: "var(--text-primary)" }}>
+                    <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "monospace", fontSize: 14 }}>
                       ${c.price.toLocaleString("en-US", { maximumFractionDigits: 2 })}
                     </td>
                     <td style={{ textAlign: "right", fontWeight: 700, color: c.change24h >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>

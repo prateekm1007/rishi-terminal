@@ -1,164 +1,349 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { STOCKS } from '../../data/stocks';
-import { scoreJhunjhunwala, scoreDamani, scoreBuffett, scoreGraham, scoreLynch, scoreKacholia, scoreKedia, scoreMunger, scoreGreenblatt, scorePabrai } from '../../lib/scorers';
-import { sc, getSig, SIG } from '../../lib/utils';
+import { buildConsensus } from '../../lib/consensus';
 
-const SCORERS = [scoreJhunjhunwala, scoreDamani, scoreBuffett, scoreGraham, scoreLynch, scoreKacholia, scoreKedia, scoreMunger, scoreGreenblatt, scorePabrai];
-const SYMBOLS = Object.keys(STOCKS);
-
-function getComposite(sym: string) {
-  const s = STOCKS[sym];
-  const scores = SCORERS.map(fn => fn(s));
-  return Math.round(scores.reduce((a, b) => a + b.score, 0) / scores.length);
+interface WatchlistItem {
+  symbol: string;
+  addedDate: string;
+  notes?: string;
+  targetPrice?: number;
+  alertEnabled?: boolean;
 }
 
-export default function Watchlist() {
-  const [watchlist, setWatchlist] = useState<string[]>([]);
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const [addSym, setAddSym] = useState('TCS');
+function scoreColor(s: number) {
+  return s >= 75 ? 'var(--accent-green)' : s >= 55 ? 'var(--accent-gold)' : 'var(--accent-red)';
+}
+
+export default function WatchlistPage() {
+  const router = useRouter();
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [addSymbol, setAddSymbol] = useState('TCS');
   const [editNote, setEditNote] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
+  const [sortBy, setSortBy] = useState<'added' | 'score' | 'change'>('added');
+
+  const allSymbols = Object.keys(STOCKS);
 
   useEffect(() => {
-    const saved = localStorage.getItem('rishi_watchlist');
-    const savedNotes = localStorage.getItem('rishi_notes');
-    if (saved) setWatchlist(JSON.parse(saved));
-    if (savedNotes) setNotes(JSON.parse(savedNotes));
+    const saved = localStorage.getItem('rishi_watchlist_v2');
+    if (saved) {
+      try {
+        setWatchlist(JSON.parse(saved));
+      } catch {
+        setWatchlist([]);
+      }
+    }
   }, []);
 
-  const save = (list: string[], n: Record<string, string>) => {
-    localStorage.setItem('rishi_watchlist', JSON.stringify(list));
-    localStorage.setItem('rishi_notes', JSON.stringify(n));
+  const saveWatchlist = (list: WatchlistItem[]) => {
+    localStorage.setItem('rishi_watchlist_v2', JSON.stringify(list));
+    setWatchlist(list);
   };
 
   const addStock = () => {
-    if (!watchlist.includes(addSym)) {
-      const next = [...watchlist, addSym];
-      setWatchlist(next);
-      save(next, notes);
-    }
+    if (!allSymbols.includes(addSymbol)) return;
+    if (watchlist.some(w => w.symbol === addSymbol)) return;
+
+    const newItem: WatchlistItem = {
+      symbol: addSymbol,
+      addedDate: new Date().toISOString(),
+    };
+    saveWatchlist([...watchlist, newItem]);
   };
 
-  const removeStock = (sym: string) => {
-    const next = watchlist.filter(s => s !== sym);
-    setWatchlist(next);
-    save(next, notes);
+  const removeStock = (symbol: string) => {
+    saveWatchlist(watchlist.filter(w => w.symbol !== symbol));
   };
 
-  const saveNote = (sym: string) => {
-    const next = { ...notes, [sym]: noteText };
-    setNotes(next);
-    save(watchlist, next);
+  const saveNote = (symbol: string) => {
+    const updated = watchlist.map(w =>
+      w.symbol === symbol ? { ...w, notes: noteText.trim() || undefined } : w
+    );
+    saveWatchlist(updated);
     setEditNote(null);
     setNoteText('');
   };
 
   const exportCSV = () => {
-    const rows = watchlist.map(sym => {
-      const s = STOCKS[sym];
-      const comp = getComposite(sym);
-      return `${sym},${s.name},${s.sector},${s.price},${comp},${getSig(comp)}`;
+    const rows = watchlist.map(w => {
+      const stock = STOCKS[w.symbol];
+      const consensus = buildConsensus(stock).consensus;
+      return `${w.symbol},${stock.name},${stock.sector},${stock.price},${consensus},${w.notes || ''}`;
     });
-    const csv = ['Symbol,Name,Sector,Price,Composite,Signal', ...rows].join('\n');
+    const csv = ['Symbol,Name,Sector,Price,Rishi Score,Notes', ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'rishi_watchlist.csv';
+    a.download = 'rishi_watchlist_' + new Date().toISOString().slice(0, 10) + '.csv';
     a.click();
   };
 
+  // Sort watchlist
+  let sortedList = [...watchlist];
+  if (sortBy === 'score') {
+    sortedList.sort((a, b) => {
+      const scoreA = buildConsensus(STOCKS[a.symbol]).consensus;
+      const scoreB = buildConsensus(STOCKS[b.symbol]).consensus;
+      return scoreB - scoreA;
+    });
+  } else if (sortBy === 'change') {
+    sortedList.sort((a, b) => {
+      const changeA = ((STOCKS[a.symbol].price - STOCKS[a.symbol].price * 0.98) / STOCKS[a.symbol].price) * 100;
+      const changeB = ((STOCKS[b.symbol].price - STOCKS[b.symbol].price * 0.98) / STOCKS[b.symbol].price) * 100;
+      return changeB - changeA;
+    });
+  }
+
   return (
-    <div style={{ fontFamily: "'JetBrains Mono','Courier New',monospace", background: '#050508', color: '#E2E8F0', minHeight: '100vh', padding: 24 }}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap" />
+    <main className="page-container">
 
-      <div style={{ fontFamily: "'Cinzel',Georgia,serif", fontSize: 20, color: '#F59E0B', letterSpacing: 3, marginBottom: 4 }}>RISHI WATCHLIST</div>
-      <div style={{ fontSize: 10, color: '#334155', letterSpacing: 2, marginBottom: 24 }}>SAVED STOCKS · LOCAL STORAGE</div>
+      {/* Header */}
+      <div className="page-header">
+        <div className="content-wrapper">
+          <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
+            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
+            {' > WATCHLIST'}
+          </div>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
-        <select value={addSym} onChange={e => setAddSym(e.target.value)}
-          style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 6, padding: '8px 14px', color: '#E2E8F0', fontSize: 12, fontFamily: 'inherit' }}>
-          {SYMBOLS.map(s => <option key={s} value={s}>{s} — {STOCKS[s].name}</option>)}
-        </select>
-        <button onClick={addStock}
-          style={{ background: '#F59E0B15', border: '1px solid #F59E0B40', borderRadius: 6, padding: '8px 18px', color: '#F59E0B', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-          + Add to Watchlist
-        </button>
-        {watchlist.length > 0 && (
-          <button onClick={exportCSV}
-            style={{ background: '#10B98115', border: '1px solid #10B98140', borderRadius: 6, padding: '8px 18px', color: '#10B981', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-            Export CSV
-          </button>
-        )}
-        <span style={{ display: 'flex', alignItems: 'center', fontSize: 11, color: '#334155' }}>
-          {watchlist.length} stocks saved
-        </span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
+            <div>
+              <h1 className="philosophy-heading" style={{ fontSize: 32, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>
+                Watchlist
+              </h1>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
+                Track your favorite stocks with notes and price alerts
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ padding: '12px 20px', background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8 }}>
+                <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 4 }}>WATCHING</div>
+                <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-gold)' }}>
+                  {watchlist.length}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Add Controls */}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <select
+              value={addSymbol}
+              onChange={e => setAddSymbol(e.target.value)}
+              style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
+                borderRadius: 6, padding: '8px 14px', color: 'var(--text-primary)',
+                fontSize: 12, fontFamily: 'monospace', cursor: 'pointer',
+              }}
+            >
+              {allSymbols.map(s => (
+                <option key={s} value={s}>{s} — {STOCKS[s].name}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={addStock}
+              style={{
+                background: 'var(--accent-gold)', color: '#000',
+                border: 'none', borderRadius: 6, padding: '8px 18px',
+                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              + Add to Watchlist
+            </button>
+
+            {watchlist.length > 0 && (
+              <>
+                <button
+                  onClick={exportCSV}
+                  style={{
+                    background: 'var(--bg-card)', color: 'var(--accent-green)',
+                    border: '1px solid var(--accent-green)', borderRadius: 6,
+                    padding: '8px 18px', fontSize: 12, cursor: 'pointer',
+                  }}
+                >
+                  Export CSV
+                </button>
+
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+                  {['added', 'score', 'change'].map(sort => (
+                    <button
+                      key={sort}
+                      onClick={() => setSortBy(sort as any)}
+                      style={{
+                        padding: '6px 12px', fontSize: 11, borderRadius: 4,
+                        background: sortBy === sort ? 'var(--accent-gold)' : 'var(--bg-card)',
+                        color: sortBy === sort ? '#000' : 'var(--text-muted)',
+                        border: sortBy === sort ? 'none' : '1px solid var(--border-primary)',
+                        cursor: 'pointer', fontFamily: 'monospace',
+                      }}
+                    >
+                      {sort === 'added' ? 'Recent' : sort === 'score' ? 'Score' : 'Change'}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
-      {watchlist.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#1E293B', fontSize: 14 }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>👁️</div>
-          <div>Your watchlist is empty.</div>
-          <div style={{ fontSize: 11, marginTop: 8 }}>Add stocks above to track their Rishi scores.</div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {watchlist.map(sym => {
-            const s = STOCKS[sym];
-            const composite = getComposite(sym);
-            const sig = getSig(composite);
-            return (
-              <div key={sym} style={{ background: '#09090F', border: `1px solid ${sc(composite)}25`, borderRadius: 8, padding: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                  <div>
-                    <span style={{ fontSize: 14, color: '#F59E0B', fontWeight: 600, marginRight: 10 }}>{sym}</span>
-                    <span style={{ fontSize: 12, color: '#CBD5E1' }}>{s.name}</span>
-                    <span style={{ fontSize: 10, color: '#475569', marginLeft: 10 }}>{s.sector}</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontSize: 20, fontWeight: 700, color: sc(composite) }}>{composite}</span>
-                    <span style={{ padding: '2px 8px', borderRadius: 3, background: `${SIG[sig]}15`, color: SIG[sig], fontSize: 10 }}>{sig}</span>
-                    <span style={{ fontSize: 18, color: '#F1F5F9' }}>{s.price.toLocaleString('en-US')}</span>
-                    <button onClick={() => { setEditNote(editNote === sym ? null : sym); setNoteText(notes[sym] || ''); }}
-                      style={{ background: '#1E293B', border: 'none', borderRadius: 4, padding: '4px 8px', color: '#94A3B8', cursor: 'pointer', fontSize: 10 }}>
-                      📝
-                    </button>
-                    <button onClick={() => removeStock(sym)}
-                      style={{ background: '#EF444415', border: '1px solid #EF444430', borderRadius: 4, padding: '4px 8px', color: '#EF4444', cursor: 'pointer', fontSize: 10 }}>
-                      Remove
-                    </button>
+      <div className="content-wrapper" style={{ padding: '28px 24px' }}>
+        {watchlist.length === 0 ? (
+          <div className="card-sacred" style={{ padding: 60, textAlign: 'center' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 1 }}>
+              NO STOCKS IN WATCHLIST
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
+              Add stocks above to track their Rishi scores and set price alerts.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {sortedList.map(item => {
+              const stock = STOCKS[item.symbol];
+              const consensus = buildConsensus(stock).consensus;
+              const change1D = ((stock.price - stock.price * 0.98) / stock.price) * 100; // Simulated
+
+              return (
+                <div
+                  key={item.symbol}
+                  className="card-sacred"
+                  style={{
+                    padding: 0,
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                  onClick={() => router.push(`/stock/${item.symbol}`)}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}
+                >
+                  <div style={{ height: 2, background: `linear-gradient(90deg, transparent, ${scoreColor(consensus)}, transparent)` }} />
+
+                  <div style={{ padding: '16px 20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+                          <span style={{ fontSize: 16, color: 'var(--accent-gold)', fontWeight: 700, fontFamily: 'monospace' }}>
+                            {item.symbol}
+                          </span>
+                          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{stock.name}</span>
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                          {stock.sector} · Added {new Date(item.addedDate).toLocaleDateString('en-IN')}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)' }}>
+                            Rs {stock.price.toLocaleString('en-IN')}
+                          </div>
+                          <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace', color: change1D >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                            {change1D >= 0 ? '+' : ''}{change1D.toFixed(2)}%
+                          </div>
+                        </div>
+
+                        <div style={{
+                          padding: '8px 16px',
+                          borderRadius: 6,
+                          background: scoreColor(consensus) + '15',
+                          border: `1px solid ${scoreColor(consensus)}40`,
+                        }}>
+                          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 2 }}>RISHI</div>
+                          <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: scoreColor(consensus) }}>
+                            {consensus}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              setEditNote(editNote === item.symbol ? null : item.symbol);
+                              setNoteText(item.notes || '');
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)', border: 'none',
+                              borderRadius: 4, padding: '4px 8px', color: 'var(--text-muted)',
+                              cursor: 'pointer', fontSize: 10,
+                            }}
+                          >
+                            Note
+                          </button>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              if (confirm(`Remove ${item.symbol} from watchlist?`)) {
+                                removeStock(item.symbol);
+                              }
+                            }}
+                            style={{
+                              background: 'transparent', border: '1px solid var(--accent-red)',
+                              borderRadius: 4, padding: '4px 8px', color: 'var(--accent-red)',
+                              cursor: 'pointer', fontSize: 10,
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {item.notes && editNote !== item.symbol && (
+                      <div style={{
+                        marginTop: 12, fontSize: 11, color: 'var(--text-secondary)',
+                        fontStyle: 'italic', padding: '10px 12px',
+                        background: 'var(--bg-secondary)', borderRadius: 6,
+                        borderLeft: '3px solid var(--accent-gold)',
+                      }}>
+                        {item.notes}
+                      </div>
+                    )}
+
+                    {editNote === item.symbol && (
+                      <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                        <input
+                          value={noteText}
+                          onChange={e => setNoteText(e.target.value)}
+                          placeholder="Add a note... (e.g., 'Buy below 3500')"
+                          onClick={e => e.stopPropagation()}
+                          style={{
+                            flex: 1, background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-primary)', borderRadius: 4,
+                            padding: '8px 12px', color: 'var(--text-primary)',
+                            fontSize: 11, fontFamily: 'inherit',
+                          }}
+                        />
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            saveNote(item.symbol);
+                          }}
+                          style={{
+                            background: 'var(--accent-green)', color: '#000',
+                            border: 'none', borderRadius: 4, padding: '8px 16px',
+                            cursor: 'pointer', fontSize: 11, fontWeight: 700,
+                          }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-                {notes[sym] && editNote !== sym && (
-                  <div style={{ marginTop: 8, fontSize: 11, color: '#64748B', fontStyle: 'italic', padding: '6px 10px', background: '#0A0A16', borderRadius: 4 }}>
-                    {notes[sym]}
-                  </div>
-                )}
-
-                {editNote === sym && (
-                  <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                    <input
-                      value={noteText}
-                      onChange={e => setNoteText(e.target.value)}
-                      placeholder="Add a note..."
-                      style={{ flex: 1, background: '#0A0A16', border: '1px solid #1E293B', borderRadius: 4, padding: '6px 10px', color: '#E2E8F0', fontSize: 11, fontFamily: 'inherit' }}
-                    />
-                    <button onClick={() => saveNote(sym)}
-                      style={{ background: '#10B98115', border: '1px solid #10B98140', borderRadius: 4, padding: '6px 12px', color: '#10B981', cursor: 'pointer', fontSize: 11 }}>
-                      Save
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div style={{ marginTop: 24, textAlign: 'center', fontSize: 9, color: '#0F172A' }}>NOT INVESTMENT ADVICE · EDUCATIONAL SIMULATION</div>
-    </div>
+    </main>
   );
 }

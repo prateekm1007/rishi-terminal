@@ -354,7 +354,7 @@ export default function Dashboard() {
           <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
             GLOBAL MARKETS — CLICK TO EXPLORE
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: 16 }}>
             {MARKET_SECTIONS.map(section => (
               <Link
                 key={section.id}

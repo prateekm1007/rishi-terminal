@@ -76,7 +76,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside style={{
+    <aside className="sidebar-desktop" style={{
       width: '220px',
       minWidth: '220px',
       height: '100vh',

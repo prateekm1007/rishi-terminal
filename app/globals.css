@@ -341,3 +341,207 @@ button {
   color: var(--text-primary);
   text-shadow: 0 1px 2px rgba(139,90,43,0.1);
 }
+
+/* ============================================================
+   MOBILE RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* Mobile: 0-768px */
+@media (max-width: 768px) {
+  /* Hide sidebar on mobile, show hamburger */
+  .sidebar-desktop {
+    display: none !important;
+  }
+
+  /* Full width content on mobile */
+  .content-wrapper {
+    padding: 16px !important;
+  }
+
+  .page-header .content-wrapper {
+    padding: 20px 16px !important;
+  }
+
+  /* Stack grid layouts vertically */
+  [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Mobile-friendly cards */
+  .card-sacred,
+  .card {
+    padding: 12px !important;
+  }
+
+  /* Smaller headings */
+  .philosophy-heading {
+    font-size: 20px !important;
+    letter-spacing: 1px !important;
+  }
+
+  h1.philosophy-heading {
+    font-size: 24px !important;
+  }
+
+  /* Stack flex containers */
+  [style*="display: flex"][style*="justifyContent: space-between"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Full width buttons */
+  button,
+  select,
+  input[type="text"],
+  input[type="number"] {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Smaller stat cards */
+  [style*="fontSize: 48"] {
+    font-size: 32px !important;
+  }
+
+  [style*="fontSize: 36"] {
+    font-size: 24px !important;
+  }
+
+  /* Tables scroll horizontally */
+  table {
+    font-size: 11px !important;
+  }
+
+  th, td {
+    padding: 8px 12px !important;
+  }
+
+  /* Hide some columns on mobile */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* Touch-friendly tap targets (min 44px) */
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Sticky header adjustments */
+  [style*="position: sticky"] {
+    position: relative !important;
+  }
+}
+
+/* Tablet: 769px-1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .content-wrapper {
+    max-width: 100%;
+    padding: 20px !important;
+  }
+
+  /* 2-column grid on tablet */
+  [style*="gridTemplateColumns"][style*="auto-fill"],
+  [style*="gridTemplateColumns"][style*="auto-fit"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Desktop: 1025px+ */
+@media (min-width: 1025px) {
+  .content-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}
+
+/* Mobile navigation */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .mobile-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 10px;
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+
+  .mobile-nav-item.active {
+    background: rgba(255, 215, 0, 0.1);
+    color: var(--accent-gold);
+  }
+
+  .mobile-nav-icon {
+    font-size: 18px;
+    font-family: monospace;
+    font-weight: 700;
+  }
+
+  /* Add bottom padding to avoid mobile nav overlap */
+  body {
+    padding-bottom: 80px;
+  }
+}
+
+/* Responsive table wrapper */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .table-responsive table {
+    min-width: 600px;
+  }
+}
+
+/* Mobile-friendly modals */
+@media (max-width: 768px) {
+  [style*="position: fixed"][style*="inset: 0"] > div {
+    max-width: 95% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* Improve touch scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

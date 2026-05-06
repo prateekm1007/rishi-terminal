@@ -1,93 +1,70 @@
-"use client";
+'use client';
+
+import { ConsensusResult } from '../../lib/consensus/types';
 
 interface Props {
-  consensus: number;
-  category: string;
-  tension: string;
-  tensionSpread: number;
-  totalRishis: number;
-  weightedBy: string;
+  consensus: ConsensusResult;
 }
 
-function scoreColor(score: number): string {
-  if (score >= 75) return "text-emerald-400";
-  if (score >= 55) return "text-yellow-400";
-  return "text-brand-red";
-}
+export function ConsensusHero({ consensus }: Props) {
+  const score = consensus.consensus;
 
-function scoreBorderColor(score: number): string {
-  if (score >= 75) return "border-emerald-700";
-  if (score >= 55) return "border-yellow-700";
-  return "border-brand-red/50";
-}
+  const scoreColor = score >= 75 ? '#00BA7C' : score >= 55 ? '#FFD700' : score >= 35 ? '#f59e0b' : '#F4212E';
+  const barColor   = score >= 75 ? '#00BA7C' : score >= 55 ? '#FFD700' : score >= 35 ? '#f59e0b' : '#F4212E';
 
-function tensionColor(spread: number): string {
-  if (spread < 15) return "text-emerald-500";
-  if (spread < 30) return "text-yellow-500";
-  if (spread < 50) return "text-orange-500";
-  return "text-brand-red";
-}
-
-export function ConsensusHero({
-  consensus,
-  category,
-  tension,
-  tensionSpread,
-  totalRishis,
-  weightedBy,
-}: Props) {
   return (
-    <div className={`border rounded-lg p-8 bg-brand-charcoal ${scoreBorderColor(consensus)}`}>
-      <div className="flex items-start justify-between flex-wrap gap-6">
+    <div className="card-sacred" style={{ padding: '28px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
 
-        <div>
-          <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-2">
-            Rishi Consensus — {totalRishis} Sages · {weightedBy}
-          </p>
-          <div className="flex items-end gap-4">
-            <span className={`text-8xl font-mono font-black ${scoreColor(consensus)}`}>
-              {consensus}
-            </span>
-            <div className="pb-3">
-              <span className="text-2xl text-zinc-600 font-mono">/100</span>
-            </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '0.15em', fontFamily: 'Cinzel, serif', marginBottom: '8px' }}>
+            RISHI CONSENSUS
           </div>
-          <p className="text-xl font-cinzel text-zinc-200 mt-2">{category}</p>
+          <div style={{ fontSize: '22px', fontFamily: 'Cinzel, serif', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '10px' }}>
+            {consensus.category}
+          </div>
+          <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
+            <span style={{ color: 'var(--text-muted)' }}>
+              Tension: <span style={{ color: score >= 55 ? '#00BA7C' : '#f59e0b' }}>{consensus.tension}</span>
+            </span>
+            <span style={{ color: 'var(--border-subtle)' }}>•</span>
+            <span style={{ color: 'var(--text-muted)' }}>
+              Spread: <span style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{consensus.tensionSpread.toFixed(0)} pts</span>
+            </span>
+          </div>
         </div>
 
-        <div className="border border-zinc-800 rounded p-4 min-w-[200px]">
-          <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-3">
-            Philosophy Tension
-          </p>
-          <p className={`text-lg font-mono font-semibold ${tensionColor(tensionSpread)}`}>
-            {tension}
-          </p>
-          <div className="mt-3 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-brand-red"
-              style={{ width: `${Math.min(tensionSpread, 100)}%` }}
-            />
+        {/* Big Score */}
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '64px', fontWeight: 900, fontFamily: 'JetBrains Mono, monospace', color: scoreColor, lineHeight: 1 }}>
+            {score}
           </div>
-          <p className="text-xs text-zinc-600 font-mono mt-1">
-            Spread: {tensionSpread} pts
-          </p>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>/ 100</div>
         </div>
 
       </div>
 
-      <div className="mt-6">
-        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-700 ${
-              consensus >= 75
-                ? "bg-emerald-500"
-                : consensus >= 55
-                ? "bg-yellow-500"
-                : "bg-brand-red"
-            }`}
-            style={{ width: `${consensus}%` }}
-          />
-        </div>
+      {/* Score Bar */}
+      <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden', marginBottom: '20px' }}>
+        <div style={{ width: `${score}%`, height: '100%', background: barColor, borderRadius: '3px', transition: 'width 1s ease' }} />
+      </div>
+
+      {/* Stats Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+        {[
+          { label: 'Rishis Analyzed', value: consensus.scores.length.toString(), color: 'var(--text-primary)' },
+          { label: `Top Bull: ${consensus.topBull.name}`, value: consensus.topBull.score.toString(), color: '#00BA7C' },
+          { label: `Top Bear: ${consensus.topBear.name}`, value: consensus.topBear.score.toString(), color: '#F4212E' },
+        ].map((stat, idx) => (
+          <div key={idx} style={{ textAlign: 'center', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'monospace', color: stat.color }}>
+              {stat.value}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              {stat.label}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

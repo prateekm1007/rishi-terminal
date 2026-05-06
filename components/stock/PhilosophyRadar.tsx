@@ -1,129 +1,44 @@
-"use client";
-import { RishiScore } from "../../lib/consensus/types";
+'use client';
+
+import { RishiScore } from '../../lib/types';
+import dynamic from 'next/dynamic';
+
+const RadarChart    = dynamic(() => import('recharts').then(m => m.RadarChart),    { ssr: false });
+const Radar         = dynamic(() => import('recharts').then(m => m.Radar),         { ssr: false });
+const PolarGrid     = dynamic(() => import('recharts').then(m => m.PolarGrid),     { ssr: false });
+const PolarAngleAxis = dynamic(() => import('recharts').then(m => m.PolarAngleAxis), { ssr: false });
+const PolarRadiusAxis = dynamic(() => import('recharts').then(m => m.PolarRadiusAxis), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
 
 interface Props {
   scores: RishiScore[];
 }
 
-const RADAR_RISHIS = [
-  "Buffett",
-  "Graham",
-  "Lynch",
-  "Damani",
-  "Munger",
-  "Pabrai",
-  "HowardMarks",
-  "Greenblatt",
-];
-
-const SIZE    = 300;
-const CENTER  = SIZE / 2;
-const RADIUS  = 110;
-const LEVELS  = 4;
-
-function polarToXY(angleDeg: number, r: number): [number, number] {
-  const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return [CENTER + r * Math.cos(rad), CENTER + r * Math.sin(rad)];
-}
-
 export function PhilosophyRadar({ scores }: Props) {
-  const scoreMap: Record<string, number> = {};
-  for (const s of scores) scoreMap[s.name] = s.score;
+  if (!scores || scores.length === 0) return null;
 
-  const n     = RADAR_RISHIS.length;
-  const step  = 360 / n;
-
-  const dataPoints = RADAR_RISHIS.map((name, i) => {
-    const score = scoreMap[name] ?? 0;
-    const r     = (score / 100) * RADIUS;
-    return polarToXY(i * step, r);
-  });
-
-  const polygonPoints = dataPoints.map(([x, y]) => `${x},${y}`).join(" ");
-
-  const axisLines = RADAR_RISHIS.map((name, i) => {
-    const [x, y] = polarToXY(i * step, RADIUS);
-    const [lx, ly] = polarToXY(i * step, RADIUS + 22);
-    return { x, y, lx, ly, name };
-  });
-
-  const levelPolygons = Array.from({ length: LEVELS }, (_, lvl) => {
-    const r = ((lvl + 1) / LEVELS) * RADIUS;
-    return RADAR_RISHIS.map((_, i) => {
-      const [x, y] = polarToXY(i * step, r);
-      return `${x},${y}`;
-    }).join(" ");
-  });
+  const data = scores.slice(0, 8).map(s => ({
+    name: s.name.length > 8 ? s.name.substring(0, 8) : s.name,
+    value: s.score,
+  }));
 
   return (
-    <div className="border border-zinc-800 bg-zinc-900/40 rounded-lg p-6">
-      <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-4">
-        Philosophy Radar — 8 Key Rishis
-      </p>
-      <div className="flex justify-center">
-        <svg
-          width={SIZE}
-          height={SIZE}
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
-          aria-label="Philosophy radar chart showing scores for 8 key Rishis"
-          role="img"
-        >
-          {/* Grid levels */}
-          {levelPolygons.map((pts, i) => (
-            <polygon
-              key={i}
-              points={pts}
-              fill="none"
-              stroke="#27272a"
-              strokeWidth="1"
-            />
-          ))}
-
-          {/* Axis lines */}
-          {axisLines.map(({ x, y, lx, ly, name }) => (
-            <g key={name}>
-              <line
-                x1={CENTER} y1={CENTER}
-                x2={x}      y2={y}
-                stroke="#3f3f46"
-                strokeWidth="1"
-              />
-              <text
-                x={lx} y={ly}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize="9"
-                fill="#71717a"
-                fontFamily="monospace"
-              >
-                {name}
-              </text>
-            </g>
-          ))}
-
-          {/* Data polygon */}
-          <polygon
-            points={polygonPoints}
-            fill="rgba(16, 185, 129, 0.15)"
-            stroke="#10b981"
-            strokeWidth="1.5"
-          />
-
-          {/* Data points */}
-          {dataPoints.map(([x, y], i) => (
-            <circle
-              key={i}
-              cx={x} cy={y}
-              r="3"
-              fill="#10b981"
-              stroke="#064e3b"
-              strokeWidth="1"
-            />
-          ))}
-
-          {/* Center dot */}
-          <circle cx={CENTER} cy={CENTER} r="2" fill="#3f3f46" />
-        </svg>
+    <div className="card-sacred p-6">
+      <div style={{ fontFamily: 'Cinzel, serif', fontSize: '18px', fontWeight: 700, marginBottom: '24px', color: 'var(--text-primary)' }}>
+        Philosophy Radar
+      </div>
+      <div style={{ width: '100%', height: '320px' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={data} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
+            <PolarGrid stroke="rgba(255,215,0,0.1)" />
+            <PolarAngleAxis dataKey="name" stroke="#71767B" tick={{ fontSize: 11, fill: '#71767B' }} />
+            <PolarRadiusAxis angle={90} domain={[0, 100]} stroke="rgba(255,215,0,0.15)" tick={{ fontSize: 9 }} />
+            <Radar name="Score" dataKey="value" stroke="#FFD700" fill="#FFD700" fillOpacity={0.15} strokeWidth={2} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+      <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '12px' }}>
+        Top 8 Rishis • Distance from center = conviction strength
       </div>
     </div>
   );

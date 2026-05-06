@@ -13,7 +13,7 @@ const COMMODITY_RISHIS = [
   {
     id: "jimrogers",
     name: "Jim Rogers",
-    emoji: "🌾",
+    emoji: "ðŸŒ¾",
     bio: "Co-founded Quantum Fund with Soros. Predicted the 2000s commodities supercycle. Author of Hot Commodities. Believes in owning physical assets over paper.",
     quote: "Buy commodities. Buy them and put them away.",
     scorer: scoreJimRogers,
@@ -22,7 +22,7 @@ const COMMODITY_RISHIS = [
   {
     id: "rickrule",
     name: "Rick Rule",
-    emoji: "🥇",
+    emoji: "ðŸ¥‡",
     bio: "Legendary resource sector investor. CEO of Sprott. Gold as savings, silver as speculation. Most people are speculating in gold when they should be saving in it.",
     quote: "Gold is money. Everything else is credit.",
     scorer: scoreRickRule,
@@ -31,7 +31,7 @@ const COMMODITY_RISHIS = [
   {
     id: "yergin",
     name: "Daniel Yergin",
-    emoji: "🛢️",
+    emoji: "ðŸ›¢ï¸",
     bio: "Pulitzer Prize-winning energy historian. Author of The Prize. VP at S&P Global. Energy transition and geopolitical oil expert.",
     quote: "Oil is the lifeblood of the industrial civilization.",
     scorer: scoreDanielYergin,
@@ -62,17 +62,17 @@ export default function CommoditiesPage() {
         <div className="content-wrapper">
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 1 }}>
             <Link href="/" style={{ color: "var(--accent-gold)" }}>RISHI TERMINAL</Link>
-            <span style={{ margin: "0 8px" }}>›</span>
+            <span style={{ margin: "0 8px" }}>â€º</span>
             <span>COMMODITIES</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                <span style={{ fontSize: 40 }}>⚒️</span>
+                <span style={{ fontSize: 40 }}>âš’ï¸</span>
                 <h1 style={{ fontFamily: "Cinzel, serif", fontSize: 36, color: "var(--text-primary)" }}>Commodity Rishis</h1>
               </div>
               <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 600, lineHeight: 1.6 }}>
-                Jim Rogers · Rick Rule · Daniel Yergin — supercycles, precious metals, and energy geopolitics.
+                Jim Rogers Â· Rick Rule Â· Daniel Yergin â€” supercycles, precious metals, and energy geopolitics.
               </p>
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function CommoditiesPage() {
                         {guru.name}
                       </div>
                       <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                        {result.label} · {result.origin} · analyzing {commodity.name}
+                        {result.label} Â· {result.origin} Â· analyzing {commodity.name}
                       </div>
                     </div>
                   </div>
@@ -147,7 +147,7 @@ export default function CommoditiesPage() {
                       fontSize: 14, color: "var(--text-muted)",
                       transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
                       transition: "transform 0.25s ease",
-                    }}>▼</div>
+                    }}>â–¼</div>
                   </div>
                 </div>
 
@@ -169,7 +169,7 @@ export default function CommoditiesPage() {
 
                     {/* Current Analysis */}
                     <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18, marginBottom: 20 }}>
-                      <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>CURRENT ANALYSIS — {commodity.name} at {commodity.price}{commodity.unit}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>CURRENT ANALYSIS â€” {commodity.name} at {commodity.price}{commodity.unit}</div>
                       <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{result.insight}</p>
                     </div>
 
@@ -232,7 +232,11 @@ export default function CommoditiesPage() {
                   const range = c.high52w - c.low52w;
                   const position = range > 0 ? ((c.price - c.low52w) / range) * 100 : 50;
                   return (
-                    <tr key={c.symbol}>
+                    <tr key={c.symbol} style={{ cursor: 'pointer', transition: 'background 0.15s' }}
+                      onClick={() => window.location.href = `/commodities/${c.symbol}`}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
                       <td>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <span style={{ fontSize: 22 }}>{c.emoji}</span>
@@ -242,9 +246,8 @@ export default function CommoditiesPage() {
                           </div>
                         </div>
                       </td>
-                      <td style={{ textAlign: "right", fontWeight: 700, color: "var(--text-primary)" }}>
-                        {c.price.toLocaleString("en-US")}
-                        <span style={{ fontSize: 10, color: "var(--text-muted)", marginLeft: 4 }}>{c.unit}</span>
+                      <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "monospace", fontSize: 14 }}>
+                        {c.price.toLocaleString("en-US")}<span style={{ fontSize: 11, color: "var(--text-muted)" }}>{c.unit}</span>
                       </td>
                       <td style={{ textAlign: "right", fontWeight: 700, color: c.changePct >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>
                         {c.changePct >= 0 ? "▲" : "▼"} {Math.abs(c.changePct).toFixed(2)}%

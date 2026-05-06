@@ -2,7 +2,7 @@ import { FOREX_PAIRS } from '../../data/forex';
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Forex Dashboard — Rishi Terminal',
+  title: 'Forex Dashboard â€” Rishi Terminal',
   description: 'Currency pairs analyzed through macro-economic Rishi wisdom',
 };
 
@@ -21,14 +21,14 @@ export default function ForexPage() {
           
           <p style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            <span style={{ margin: '0 8px' }}>›</span>
+            <span style={{ margin: '0 8px' }}>â€º</span>
             <span>FOREX</span>
           </p>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 32 }}>
             <div>
               <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 42, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8, lineHeight: 1.1 }}>
-                💱 Forex Dashboard
+                ðŸ’± Forex Dashboard
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
                 Major currency pairs analyzed through macro-economic Rishi perspectives
@@ -99,13 +99,17 @@ export default function ForexPage() {
               </thead>
               <tbody>
                 {pairList.map(pair => {
-                  const volColor = 
+                  const volColor =
                     pair.volatility < 5 ? 'var(--accent-green)' :
                     pair.volatility < 7 ? 'var(--accent-gold)' :
                     'var(--accent-red)';
 
                   return (
-                    <tr key={pair.symbol} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <tr key={pair.symbol} style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s' }}
+                      onClick={() => window.location.href = `/forex/${pair.symbol}`}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
                       <td style={{ padding: '16px 24px' }}>
                         <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, marginBottom: 4 }}>
                           {pair.baseCurrency}/{pair.quoteCurrency}
@@ -121,19 +125,19 @@ export default function ForexPage() {
                       <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--accent-red)' }}>
                         {pair.ask.toFixed(2)}
                       </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 12, color: 'var(--text-muted)' }}>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)' }}>
                         {pair.spread.toFixed(4)}
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)' }}>
                         {pair.forward1M.toFixed(2)}
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px' }}>
-                        <span style={{ 
-                          fontSize: 11, 
-                          fontWeight: 700, 
-                          padding: '4px 10px', 
-                          borderRadius: 6, 
-                          background: `${volColor}20`, 
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          background: `${volColor}20`,
                           color: volColor,
                           fontFamily: 'JetBrains Mono'
                         }}>
@@ -153,7 +157,7 @@ export default function ForexPage() {
 
         {/* Footer Note */}
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border-primary)' }}>
-          FOREX MARKET DATA · RISHI TERMINAL v4.0 · MULTI-ASSET WISDOM OS
+          FOREX MARKET DATA Â· RISHI TERMINAL v4.0 Â· MULTI-ASSET WISDOM OS
         </div>
       </div>
 

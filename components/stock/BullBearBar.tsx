@@ -1,40 +1,51 @@
-"use client";
-import { RishiScore } from "../../lib/consensus/types";
+'use client';
+
+import { RishiScore } from '../../lib/types';
+import { ProgressBar } from './StyleGuide';
 
 interface Props {
   topBull: RishiScore;
   topBear: RishiScore;
+  spread: number;
 }
 
-export function BullBearBar({ topBull, topBear }: Props) {
+export function BullBearBar({ topBull, topBear, spread }: Props) {
+  if (!topBull || !topBear) return null;
+
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="border border-emerald-800 bg-emerald-950/30 rounded p-4">
-        <p className="text-xs text-emerald-500 font-mono uppercase tracking-widest mb-1">
-          Top Bull
-        </p>
-        <p className="text-lg font-cinzel text-emerald-300">{topBull.full}</p>
-        <p className="text-3xl font-mono font-bold text-emerald-400 mt-1">
-          {topBull.score}
-          <span className="text-sm text-emerald-600 ml-1">/100</span>
-        </p>
-        <p className="text-xs text-emerald-600 mt-2 font-mono leading-relaxed">
-          {topBull.insight}
-        </p>
+    <div className="card-sacred p-6">
+      <div className="philosophy-heading text-lg mb-6">Rishis' Consensus</div>
+
+      <div className="grid grid-cols-2 gap-6">
+        {/* Bull */}
+        <div className="p-6 bg-green-500/10 border border-green-500/30 rounded-lg">
+          <div className="text-xs text-green-400 mb-2 font-medium">🐂 TOP BULL</div>
+          <div className="text-3xl font-bold text-green-400 font-mono">{topBull.score}</div>
+          <div className="text-sm font-medium text-primary mt-2">{topBull.full}</div>
+          <div className="text-xs text-muted mt-1">{topBull.label}</div>
+          <div className="rishi-insight text-xs mt-4">{topBull.insight}</div>
+        </div>
+
+        {/* Bear */}
+        <div className="p-6 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <div className="text-xs text-red-400 mb-2 font-medium">🐻 TOP BEAR</div>
+          <div className="text-3xl font-bold text-red-400 font-mono">{topBear.score}</div>
+          <div className="text-sm font-medium text-primary mt-2">{topBear.full}</div>
+          <div className="text-xs text-muted mt-1">{topBear.label}</div>
+          <div className="rishi-insight text-xs mt-4">{topBear.insight}</div>
+        </div>
       </div>
 
-      <div className="border border-red-900 bg-red-950/20 rounded p-4">
-        <p className="text-xs text-red-500 font-mono uppercase tracking-widest mb-1">
-          Top Bear
-        </p>
-        <p className="text-lg font-cinzel text-red-300">{topBear.full}</p>
-        <p className="text-3xl font-mono font-bold text-red-400 mt-1">
-          {topBear.score}
-          <span className="text-sm text-red-700 ml-1">/100</span>
-        </p>
-        <p className="text-xs text-red-700 mt-2 font-mono leading-relaxed">
-          {topBear.insight}
-        </p>
+      {/* Opinion Spread */}
+      <div className="mt-6 pt-6 border-t border-border-primary">
+        <div className="philosophy-subheading text-xs mb-4">PHILOSOPHICAL SPREAD</div>
+        <ProgressBar value={spread} max={100} color="gold" />
+        <div className="text-xs text-secondary mt-3">
+          {spread < 15 && '✓ Strong consensus among Rishis'}
+          {spread >= 15 && spread < 30 && '→ Moderate disagreement'}
+          {spread >= 30 && spread < 50 && '⚠️ Philosophical tension'}
+          {spread >= 50 && '⚡ Deep conflict in views'}
+        </div>
       </div>
     </div>
   );

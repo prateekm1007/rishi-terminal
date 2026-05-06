@@ -1,41 +1,43 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = "dark" | "light";
+type Theme = 'dark' | 'light';
 
-interface ThemeContextType {
+interface ThemeContextValue {
   theme: Theme;
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType>({
-  theme: "dark",
+const ThemeContext = createContext<ThemeContextValue>({
+  theme: 'dark',
   toggleTheme: () => {},
 });
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("rishi_theme") as Theme | null;
-    if (stored === "light" || stored === "dark") {
-      setTheme(stored);
-      document.documentElement.setAttribute("data-theme", stored);
-    }
+    try {
+      const stored = localStorage.getItem('rishi_theme_v1') as Theme | null;
+      if (stored === 'light' || stored === 'dark') {
+        setTheme(stored);
+        document.documentElement.setAttribute('data-theme', stored);
+      }
+    } catch {}
   }, []);
 
-  const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark";
+  function toggleTheme() {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
-    localStorage.setItem("rishi_theme", next);
-    document.documentElement.setAttribute("data-theme", next);
-  };
-
-  if (!mounted) {
-    return <>{children}</>;
+    try {
+      localStorage.setItem('rishi_theme_v1', next);
+      document.documentElement.setAttribute('data-theme', next);
+    } catch {}
   }
 
   return (
@@ -43,8 +45,4 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  return useContext(ThemeContext);
 }

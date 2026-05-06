@@ -1,7 +1,7 @@
-﻿export interface Stock {
+export interface Stock {
   symbol: string;
   name: string;
-  sector: string;
+  sector: string;        // CRITICAL - used by scorers and WisdomSidebar
   exchange: string;
   price: number;
   pe: number;
@@ -25,19 +25,29 @@
   bvps: number;
 }
 
-export interface ScoreComponent {
-  label: string;
-  v: number;
-  wt: number;
-  detail: string;
-}
-
 export interface RishiScore {
   name: string;
   full: string;
   label: string;
   score: number;
-  origin: string;
-  comps: ScoreComponent[];
+  origin: 'Global' | 'India';
+  comps: Array<{
+    label: string;
+    v: number;
+    wt: number;
+    detail: string;
+  }>;
   insight: string;
+}
+
+export interface ConsensusResult {
+  asset: Stock;
+  scores: RishiScore[];
+  consensus: number;
+  category: string;
+  tension: string;
+  tensionSpread: number;
+  weightedBy: string;
+  topBull: RishiScore;
+  topBear: RishiScore;
 }

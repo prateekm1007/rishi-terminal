@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '../lib/theme';
-import Sidebar from '../components/Sidebar';
+import { Sidebar } from '../components/Sidebar';
 
 export const metadata: Metadata = {
   title: 'Rishi Terminal 4.0',
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <div style={{ display: 'flex', minHeight: '100vh' }}>
             <Sidebar />
-            <main style={{ flex: 1, overflow: 'auto' }}>
+            <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
               {children}
             </main>
           </div>

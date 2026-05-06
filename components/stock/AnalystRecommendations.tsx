@@ -1,103 +1,89 @@
-﻿'use client';
+'use client';
+
+import { MetricCard, StatGroup } from './StyleGuide';
 
 interface AnalystRec {
   firm: string;
-  analyst: string;
-  rating: 'BUY' | 'SELL' | 'HOLD' | 'NEUTRAL' | 'OUTPERFORM';
+  rating: string;
   targetPrice: number;
-  upside: number;
   date: string;
 }
 
 interface Props {
-  analystRecs: AnalystRec[];
+  recommendations: AnalystRec[];
   currentPrice: number;
 }
 
-const ratingStyle = (rating: string) => {
-  const styles: Record<string, { bg: string; text: string; border: string }> = {
-    'BUY': { bg: 'bg-emerald-900/40', text: 'text-emerald-400', border: 'border-emerald-800' },
-    'OUTPERFORM': { bg: 'bg-blue-900/40', text: 'text-blue-400', border: 'border-blue-800' },
-    'HOLD': { bg: 'bg-amber-900/40', text: 'text-amber-400', border: 'border-amber-800' },
-    'NEUTRAL': { bg: 'bg-zinc-800/40', text: 'text-zinc-400', border: 'border-zinc-700' },
-    'SELL': { bg: 'bg-red-900/40', text: 'text-red-400', border: 'border-red-800' },
-  };
-  return styles[rating] || styles['NEUTRAL'];
-};
+export function AnalystRecommendations({ recommendations, currentPrice }: Props) {
+  if (!recommendations || recommendations.length === 0 || !currentPrice) {
+    return null;
+  }
 
-export function AnalystRecommendations({ analystRecs, currentPrice }: Props) {
-  const avgTarget = analystRecs.reduce((sum, r) => sum + r.targetPrice, 0) / analystRecs.length;
+  const avgTarget =
+    recommendations.reduce((sum, r) => sum + r.targetPrice, 0) / recommendations.length;
   const avgUpside = ((avgTarget - currentPrice) / currentPrice) * 100;
-  
+
   const consensus = {
-    buy: analystRecs.filter(r => r.rating === 'BUY' || r.rating === 'OUTPERFORM').length,
-    hold: analystRecs.filter(r => r.rating === 'HOLD' || r.rating === 'NEUTRAL').length,
-    sell: analystRecs.filter(r => r.rating === 'SELL').length,
+    buy: recommendations.filter(r => r.rating === 'Buy').length,
+    hold: recommendations.filter(r => r.rating === 'Hold').length,
+    sell: recommendations.filter(r => r.rating === 'Sell').length,
   };
 
   return (
-    <div className="border border-zinc-800 bg-zinc-900/40 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-xs font-mono text-zinc-500">ANALYST RECOMMENDATIONS</div>
-        <div className="text-xs font-mono text-emerald-500">{analystRecs.length} Analysts</div>
+    <div className="card-sacred p-6">
+      <div className="philosophy-heading text-lg mb-6">Analyst Recommendations</div>
+
+      {/* Consensus */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <MetricCard label="Buy" value={consensus.buy} color="green" />
+        <MetricCard label="Hold" value={consensus.hold} color="yellow" />
+        <MetricCard label="Sell" value={consensus.sell} color="red" />
       </div>
 
-      {/* Consensus Summary */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-emerald-950/30 border border-emerald-800 p-4 rounded text-center">
-          <div className="text-2xl font-mono font-bold text-emerald-400">{consensus.buy}</div>
-          <div className="text-xs text-emerald-500 font-mono mt-1">BUY / OUTPERFORM</div>
-        </div>
-        <div className="bg-amber-950/30 border border-amber-800 p-4 rounded text-center">
-          <div className="text-2xl font-mono font-bold text-amber-400">{consensus.hold}</div>
-          <div className="text-xs text-amber-500 font-mono mt-1">HOLD / NEUTRAL</div>
-        </div>
-        <div className="bg-red-950/30 border border-red-800 p-4 rounded text-center">
-          <div className="text-2xl font-mono font-bold text-red-400">{consensus.sell}</div>
-          <div className="text-xs text-red-500 font-mono mt-1">SELL</div>
-        </div>
-      </div>
-
-      {/* Average Target */}
-      <div className="bg-zinc-950 p-4 rounded mb-6 border border-zinc-800">
-        <div className="flex items-center justify-between">
+      {/* Target Price */}
+      <div className="p-6 bg-secondary/50 rounded-lg border border-border-primary/50 mb-6">
+        <div className="philosophy-subheading text-xs mb-4">CONSENSUS TARGET</div>
+        <div className="flex justify-between items-end">
           <div>
-            <div className="text-xs text-zinc-500 font-mono">AVERAGE TARGET PRICE</div>
-            <div className="text-2xl font-mono font-bold text-white mt-1">{avgTarget.toFixed(0)}</div>
+            <div className="text-xs text-muted mb-1">Avg Target Price</div>
+            <div className="text-3xl font-bold font-mono text-accent-gold">{avgTarget.toFixed(2)}</div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-zinc-500 font-mono">POTENTIAL UPSIDE</div>
-            <div className={`text-2xl font-mono font-bold mt-1 ${avgUpside >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className="text-xs text-muted mb-1">Upside Potential</div>
+            <div className={`text-2xl font-bold font-mono ${avgUpside >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {avgUpside >= 0 ? '+' : ''}{avgUpside.toFixed(1)}%
             </div>
           </div>
         </div>
       </div>
 
-      {/* Individual Recommendations */}
-      <div className="space-y-3">
-        {analystRecs.slice(0, 6).map((rec, i) => {
-          const style = ratingStyle(rec.rating);
-          return (
-            <div key={i} className="flex items-center justify-between bg-zinc-950 p-4 rounded hover:bg-zinc-900 transition-colors border border-zinc-800">
-              <div className="flex-1">
-                <div className="font-semibold text-sm text-zinc-100">{rec.firm}</div>
-                <div className="text-xs text-zinc-500 mt-0.5">{rec.analyst} • {rec.date}</div>
+      {/* Recent Calls */}
+      <div>
+        <div className="philosophy-subheading text-xs mb-4">RECENT CALLS</div>
+        <div className="space-y-2">
+          {recommendations.slice(0, 5).map((rec, idx) => (
+            <div key={idx} className="p-3 bg-secondary/50 rounded-lg border border-border-primary/50 flex justify-between items-center">
+              <div>
+                <div className="text-sm font-medium">{rec.firm}</div>
+                <div className="text-xs text-muted">{rec.date}</div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <div className="font-mono font-bold text-lg">{rec.targetPrice.toLocaleString()}</div>
-                  <div className={`text-xs font-mono ${rec.upside >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                    {rec.upside >= 0 ? '+' : ''}{rec.upside.toFixed(1)}%
-                  </div>
-                </div>
-                <div className={`px-3 py-1.5 rounded border text-xs font-mono font-bold ${style.bg} ${style.text} ${style.border}`}>
+              <div className="text-right">
+                <div
+                  className={`text-sm font-bold font-mono ${
+                    rec.rating === 'Buy'
+                      ? 'text-green-400'
+                      : rec.rating === 'Hold'
+                        ? 'text-yellow-400'
+                        : 'text-red-400'
+                  }`}
+                >
                   {rec.rating}
                 </div>
+                <div className="text-xs text-muted font-mono">{rec.targetPrice}</div>
               </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
     </div>
   );

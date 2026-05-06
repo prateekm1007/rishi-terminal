@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-export default function StockError({
+export default function Error({
   error,
   reset,
 }: {
@@ -14,21 +14,39 @@ export default function StockError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6">
-      <div className="max-w-md text-center">
-        <p className="text-red-500 text-sm font-mono mb-3">ERROR</p>
-        <h2 className="font-cinzel text-2xl text-zinc-100 mb-4">
-          Something went wrong
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="card-sacred p-8 max-w-md w-full text-center">
+        <div className="text-6xl mb-4">⚠️</div>
+        <h2 className="philosophy-heading text-2xl mb-4">
+          Wisdom Temporarily Obscured
         </h2>
-        <p className="text-zinc-400 text-sm mb-8">
-          We couldn’t load the Rishi analysis for this stock.
+        <p className="text-sm text-secondary mb-6">
+          {error.message || 'An error occurred while loading this stock. The Rishis are meditating on the issue.'}
         </p>
-        <button
-          onClick={reset}
-          className="px-6 py-2 border border-zinc-700 hover:bg-zinc-900 rounded font-mono text-sm transition-colors"
-        >
-          Try Again
-        </button>
+        <div className="space-y-3">
+          <button
+            onClick={reset}
+            className="w-full px-6 py-3 bg-accent-gold text-black rounded-lg font-bold hover:bg-accent-gold/90 transition-colors"
+          >
+            Try Again
+          </button>
+          <a
+            href="/"
+            className="block w-full px-6 py-3 bg-secondary border border-primary rounded-lg hover:bg-card transition-colors"
+          >
+            Return to Dashboard
+          </a>
+        </div>
+        {process.env.NODE_ENV === 'development' && (
+          <details className="mt-6 text-left">
+            <summary className="text-xs text-muted cursor-pointer hover:text-accent-gold">
+              Debug Info (Dev Mode)
+            </summary>
+            <pre className="mt-2 p-3 bg-zinc-900 rounded text-xs overflow-auto max-h-40 text-red-400">
+              {error.stack}
+            </pre>
+          </details>
+        )}
       </div>
     </div>
   );

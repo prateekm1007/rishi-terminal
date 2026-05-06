@@ -2,144 +2,148 @@ export type WisdomTier = 'seeker' | 'student' | 'disciple';
 
 export interface TierConfig {
   name: string;
-  label: string;
   price: string;
-  priceNum: number;
-  color: string;
-  features: string[];
   rishisVisible: number;
-  dailyViews: number | null;
-  hasJournal: boolean;
-  hasBacktest: boolean;
-  hasCustomBlend: boolean;
-  hasKnowledgeGraph: boolean;
+  dailyStockLimit: number | null;
+  features: string[];
 }
 
 export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
   seeker: {
-    name: 'seeker',
-    label: 'Seeker',
+    name: 'Seeker',
     price: 'Free',
-    priceNum: 0,
-    color: '#71767B',
-    features: [
-      '5 stock analyses per day',
-      'Top 5 Rishi scores visible',
-      'Basic consensus score',
-      'Screener access',
-    ],
     rishisVisible: 5,
-    dailyViews: 5,
-    hasJournal: false,
-    hasBacktest: false,
-    hasCustomBlend: false,
-    hasKnowledgeGraph: false,
+    dailyStockLimit: 5,
+    features: [
+      'top 5 rishi scores',
+      'basic consensus view',
+      'screener access',
+    ],
   },
   student: {
-    name: 'student',
-    label: 'Student',
-    price: 'Rs 499/year',
-    priceNum: 499,
-    color: '#FFD700',
-    features: [
-      'Unlimited stock analyses',
-      'All 20 Rishi scores visible',
-      'Investment Journal',
-      'Portfolio tracking',
-      'Wisdom sidebar',
-      'Historical parallels',
-    ],
+    name: 'Student',
+    price: '499/year',
     rishisVisible: 20,
-    dailyViews: null,
-    hasJournal: true,
-    hasBacktest: false,
-    hasCustomBlend: false,
-    hasKnowledgeGraph: false,
+    dailyStockLimit: null,
+    features: [
+      'all 20 rishis',
+      'unlimited stock views',
+      'portfolio tracking',
+      'investment journal',
+      'wisdom sidebar',
+      'philosophy radar',
+    ],
   },
   disciple: {
-    name: 'disciple',
-    label: 'Disciple',
-    price: 'Rs 1,999/year',
-    priceNum: 1999,
-    color: '#C084FC',
-    features: [
-      'Everything in Student',
-      'Custom Rishi blend creation',
-      'Historical backtesting (2018-2025)',
-      'Rishi Knowledge Graph',
-      'Priority support',
-      'Early access to new Rishis',
-    ],
+    name: 'Disciple',
+    price: '1,999/year',
     rishisVisible: 20,
-    dailyViews: null,
-    hasJournal: true,
-    hasBacktest: true,
-    hasCustomBlend: true,
-    hasKnowledgeGraph: true,
+    dailyStockLimit: null,
+    features: [
+      'all 20 rishis',
+      'unlimited stock views',
+      'portfolio tracking',
+      'investment journal',
+      'wisdom sidebar',
+      'philosophy radar',
+      'historical backtesting',
+      'custom rishi blends',
+      'knowledge graph',
+      'rishi dialogue system',
+      'advanced lens insights',
+    ],
   },
 };
 
-const STORAGE_KEY = 'rishi_tier_v1';
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ðŸ”§ DEVELOPER MODE â€” set false before shipping
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const DEVELOPER_MODE = true;
 
 export function getCurrentTier(): WisdomTier {
+  if (DEVELOPER_MODE) return 'disciple';
   if (typeof window === 'undefined') return 'seeker';
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'student' || stored === 'disciple') return stored;
+  try {
+    const stored = localStorage.getItem('rishi_tier_v1');
+    if (stored && ['seeker', 'student', 'disciple'].includes(stored)) {
+      return stored as WisdomTier;
+    }
+  } catch {}
   return 'seeker';
 }
 
 export function setTier(tier: WisdomTier): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, tier);
-}
-
-export function getTierConfig(tier: WisdomTier): TierConfig {
-  return TIER_CONFIG[tier];
-}
-
-export function canAccess(feature: keyof TierConfig, tier: WisdomTier): boolean {
-  return !!TIER_CONFIG[tier][feature];
-}
-
-// Daily view tracking
-const VIEW_KEY = 'rishi_views_v1';
-
-export function getViewsToday(): number {
-  if (typeof window === 'undefined') return 0;
   try {
-    const stored = localStorage.getItem(VIEW_KEY);
-    if (!stored) return 0;
-    const data = JSON.parse(stored);
-    const today = new Date().toDateString();
-    if (data.date !== today) return 0;
-    return data.count || 0;
-  } catch {
-    return 0;
-  }
-}
-
-export function incrementViews(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    const today = new Date().toDateString();
-    const views = getViewsToday();
-    localStorage.setItem(VIEW_KEY, JSON.stringify({ date: today, count: views + 1 }));
+    localStorage.setItem('rishi_tier_v1', tier);
   } catch {}
 }
 
-export function canViewStock(tier: WisdomTier): boolean {
-  const config = TIER_CONFIG[tier];
-  if (config.dailyViews === null) return true;
-  return getViewsToday() < config.dailyViews;
+export function getRishisVisible(tier?: WisdomTier): number {
+  if (DEVELOPER_MODE) return 20;
+  const t = tier ?? getCurrentTier();
+  return TIER_CONFIG[t].rishisVisible;
 }
 
-// Legacy compat
-export function getRishisVisible(): number {
-  const tier = getCurrentTier();
-  return TIER_CONFIG[tier].rishisVisible;
+export function canViewStock(tier?: WisdomTier): boolean {
+  if (DEVELOPER_MODE) return true;
+  if (typeof window === 'undefined') return true;
+  const t = tier ?? getCurrentTier();
+  const limit = TIER_CONFIG[t].dailyStockLimit;
+  if (limit === null) return true;
+  try {
+    const today = new Date().toDateString();
+    const key = `stock_views_${today}`;
+    const views = parseInt(localStorage.getItem(key) || '0', 10);
+    if (views >= limit) return false;
+    localStorage.setItem(key, (views + 1).toString());
+    return true;
+  } catch {
+    return true;
+  }
 }
 
-export function isPremium(): boolean {
+export function canAccess(feature: string, tier?: WisdomTier): boolean {
+  if (DEVELOPER_MODE) return true;
+  const t = tier ?? getCurrentTier();
+  const features = TIER_CONFIG[t].features;
+  return features.some(f => f.toLowerCase().includes(feature.toLowerCase()));
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// isPremium â€” true for student or disciple
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function isPremium(tier?: WisdomTier): boolean {
+  if (DEVELOPER_MODE) return true;
+  const t = tier ?? getCurrentTier();
+  return t === 'student' || t === 'disciple';
+}
+
+export function isDisciple(tier?: WisdomTier): boolean {
+  if (DEVELOPER_MODE) return true;
+  const t = tier ?? getCurrentTier();
+  return t === 'disciple';
+}
+
+export function resetDailyLimit(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const today = new Date().toDateString();
+    localStorage.removeItem(`stock_views_${today}`);
+  } catch {}
+}
+export function getViewsRemaining(): number {
+  if (DEVELOPER_MODE) return 999;
+  if (typeof window === 'undefined') return 5;
   const tier = getCurrentTier();
-  return tier === 'student' || tier === 'disciple';
+  const limit = TIER_CONFIG[tier].dailyStockLimit;
+  if (limit === null) return 999;
+  try {
+    const today = new Date().toDateString();
+    const key = `stock_views_${today}`;
+    const views = parseInt(localStorage.getItem(key) || '0', 10);
+    return Math.max(0, limit - views);
+  } catch {
+    return 5;
+  }
 }

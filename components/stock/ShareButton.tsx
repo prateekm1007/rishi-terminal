@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Stock } from "../../lib/consensus/types";
+import { Stock } from '../../lib/consensus/types';
 
 interface Props {
   stock: Stock;
@@ -8,21 +8,21 @@ interface Props {
 }
 
 export function ShareButton({ stock, consensus }: Props) {
-  const shareText = `${stock.name} (${stock.symbol}) — Rishi Consensus: ${consensus}/100`;
+  const shareText = `${stock.name} (${stock.symbol}) - Rishi Consensus: ${consensus}/100`;
 
   const shareOnTwitter = () => {
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(window.location.href)}`;
-    window.open(url, "_blank");
+    window.open(url, '_blank');
   };
 
   const shareOnWhatsApp = () => {
-    const url = `https://wa.me/?text=${encodeURIComponent(shareText + "\n" + window.location.href)}`;
-    window.open(url, "_blank");
+    const url = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + window.location.href)}`;
+    window.open(url, '_blank');
   };
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(window.location.href);
-    alert("Link copied to clipboard");
+    alert('Link copied to clipboard');
   };
 
   return (

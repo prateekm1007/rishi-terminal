@@ -1,49 +1,34 @@
 'use client';
 
-import { WisdomGraphData } from '../../lib/wisdom/graph';
+import { Stock, RishiScore } from '../../lib/types';
 
 interface Props {
-  data: WisdomGraphData;
+  stock: Stock;
+  scores: RishiScore[];
 }
 
-export function WisdomGraph({ data }: Props) {
+export function WisdomGraph({ stock, scores }: Props) {
+  if (!stock || !scores || scores.length === 0) {
+    return null;
+  }
+
+  // Extract principles from top Rishis
+  const topRishis = scores.slice(0, 5);
+  const principles = topRishis.map(r => r.label);
+
   return (
-    <div className="card p-6">
-      <div className="philosophy-heading text-base mb-4">Wisdom Knowledge Graph</div>
-      
-      <div className="mb-6">
-        <div className="text-xs text-muted mb-3">KEY PRINCIPLES DETECTED:</div>
-        <div className="flex flex-wrap gap-2">
-          {data.nodes.filter(n => n.type === 'principle').map(node => (
-            <div key={node.id} className="px-3 py-1 bg-accent-gold/10 border border-accent-gold/30 rounded text-xs">
-              {node.label}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {data.nodes.some(n => n.type === 'risk') && (
-        <div className="mb-6">
-          <div className="text-xs text-muted mb-3">RISK FACTORS:</div>
-          <div className="flex flex-wrap gap-2">
-            {data.nodes.filter(n => n.type === 'risk').map(node => (
-              <div key={node.id} className="px-3 py-1 bg-accent-red/10 border border-accent-red/30 rounded text-xs text-accent-red">
-                {node.label}
-              </div>
-            ))}
+    <div className="card-sacred p-6">
+      <h3 className="philosophy-heading text-lg mb-4">Wisdom Graph</h3>
+      <div className="text-xs text-muted mb-3">KEY PRINCIPLES DETECTED:</div>
+      <div className="flex flex-wrap gap-2">
+        {principles.map((principle, idx) => (
+          <div key={idx} className="px-3 py-1 bg-accent-gold/10 border border-accent-gold/30 rounded text-xs">
+            {principle}
           </div>
-        </div>
-      )}
-
-      <div>
-        <div className="text-xs text-muted mb-3">INSIGHTS:</div>
-        <ul className="space-y-2">
-          {data.insights.map((insight, i) => (
-            <li key={i} className="text-xs text-secondary pl-3 border-l-2 border-border-primary">
-              {insight}
-            </li>
-          ))}
-        </ul>
+        ))}
+      </div>
+      <div className="mt-6 p-4 bg-secondary/50 rounded-lg text-center text-xs text-muted">
+        Interactive knowledge graph coming soon
       </div>
     </div>
   );

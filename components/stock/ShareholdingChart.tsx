@@ -1,55 +1,70 @@
-﻿'use client';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+'use client';
 
-interface ShareholdingPattern {
+interface ShareholdingEntry {
   quarter: string;
   promoter: number;
   fii: number;
   dii: number;
   public: number;
-  promoterPledged: number;
 }
 
 interface Props {
-  shareholdingHistory: ShareholdingPattern[];
+  history: ShareholdingEntry[];
 }
 
-const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
+export function ShareholdingChart({ history }: Props) {
+  if (!history || history.length === 0) return null;
 
-export function ShareholdingChart({ shareholdingHistory }: Props) {
-  const latest = shareholdingHistory[0];
-  if (!latest) return null;
+  const latest = history[0];
 
   const data = [
-    { name: 'Promoter', value: latest.promoter },
-    { name: 'FII', value: latest.fii },
-    { name: 'DII', value: latest.dii },
-    { name: 'Public', value: latest.public },
+    { label: 'Promoter', value: latest.promoter, color: '#10b981' },
+    { label: 'FII', value: latest.fii, color: '#3b82f6' },
+    { label: 'DII', value: latest.dii, color: '#f59e0b' },
+    { label: 'Public', value: latest.public, color: '#71717a' },
   ];
 
   return (
-    <div style={{ border: '1px solid #27272a', background: '#18181b', borderRadius: 12, padding: 24 }}>
-      <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', letterSpacing: 2, marginBottom: 8 }}>SHAREHOLDING PATTERN — {latest.quarter}</div>
-      <div style={{ width: '100%', height: 300 }}>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={70} outerRadius={110} dataKey="value" paddingAngle={3}>
-              {data.map((_, i) => (
-                <Cell key={i} fill={COLORS[i]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={{ background: '#09090b', border: '1px solid #27272a', borderRadius: 8, fontFamily: 'monospace', fontSize: 11 }} formatter={(v: any) => `${v}%`} />
-            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'monospace' }} />
-          </PieChart>
-        </ResponsiveContainer>
+    <div className="card-sacred p-6">
+      <div className="philosophy-heading text-lg mb-6">Shareholding Pattern</div>
+      <div className="philosophy-subheading text-xs text-muted mb-4">As of {latest.quarter}</div>
+
+      {/* Stacked Bar */}
+      <div className="h-12 flex rounded-lg overflow-hidden mb-6 border border-border-primary/50">
+        {data.map((d, idx) => (
+          <div
+            key={idx}
+            style={{ width: `${d.value}%`, backgroundColor: d.color }}
+            className="transition-all duration-300 hover:opacity-80"
+            title={`${d.label}: ${d.value.toFixed(1)}%`}
+          />
+        ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 8 }}>
-        {data.map((d, i) => (
-          <div key={d.name} style={{ background: '#09090b', borderRadius: 8, padding: 10, borderLeft: `3px solid ${COLORS[i]}` }}>
-            <div style={{ fontSize: 10, color: '#71717a', fontFamily: 'monospace' }}>{d.name}</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: COLORS[i], fontFamily: 'monospace' }}>{d.value}%</div>
+
+      {/* Legend */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {data.map((d, idx) => (
+          <div key={idx} className="p-3 bg-secondary/50 rounded-lg border border-border-primary/50 text-center">
+            <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: d.color }} />
+            <div className="text-xs text-muted mb-1">{d.label}</div>
+            <div className="text-lg font-bold font-mono">{d.value.toFixed(1)}%</div>
           </div>
         ))}
+      </div>
+
+      {/* Insights */}
+      <div className="mt-6 pt-6 border-t border-border-primary">
+        <div className="text-xs text-muted mb-2">📊 OWNERSHIP INSIGHTS</div>
+        <div className="text-xs text-secondary">
+          {latest.promoter > 50
+            ? '✓ Strong promoter control'
+            : latest.promoter > 30
+              ? '→ Balanced ownership'
+              : '⚠️ Dispersed ownership'}
+          {latest.fii > latest.dii
+            ? ' • FII dominant over DII'
+            : ' • DII stronger than FII'}
+        </div>
       </div>
     </div>
   );

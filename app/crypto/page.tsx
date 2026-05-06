@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CRYPTO_ASSETS, FEAR_GREED_INDEX, MARKET_DOMINANCE, getCryptoMetrics } from "../../data/crypto";
 import { scoreSatoshiBodhi } from "../../lib/scorers/crypto/satoshibodhi";
 import { scoreVitalikVeda } from "../../lib/scorers/crypto/vitalikVeda";
@@ -13,7 +14,7 @@ const CRYPTO_RISHIS = [
   {
     id: "satoshi",
     name: "Satoshi Bodhi",
-    emoji: "â‚¿",
+    tag: "BTC",
     bio: "Sound money maximalist. Bitcoin as the ultimate store of value. Decentralization above all else.",
     quote: "The root problem with conventional currency is all the trust required to make it work.",
     scorer: scoreSatoshiBodhi,
@@ -22,7 +23,7 @@ const CRYPTO_RISHIS = [
   {
     id: "vitalik",
     name: "Vitalik Veda",
-    emoji: "âŸ ",
+    tag: "ETH",
     bio: "Protocol fundamentalist. Ethereum as world computer. Scalability, security, decentralization trilemma solver.",
     quote: "Whereas most technologies tend to automate workers, blockchains automate away trust.",
     scorer: scoreVitalikVeda,
@@ -31,7 +32,7 @@ const CRYPTO_RISHIS = [
   {
     id: "saylor",
     name: "Michael Saylor",
-    emoji: "ðŸ›ï¸",
+    tag: "MS",
     bio: "Corporate Bitcoin maximalist. Digital property thesis. MicroStrategy Bitcoin treasury architect.",
     quote: "Bitcoin is a bank in cyberspace, run by incorruptible software.",
     scorer: scoreMichaelSaylor,
@@ -46,6 +47,7 @@ function scoreColor(score: number): string {
 }
 
 export default function CryptoPage() {
+  const router = useRouter();
   const [sector, setSector] = useState("All");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -54,7 +56,10 @@ export default function CryptoPage() {
 
   const sectors = ["All", ...Array.from(new Set(CRYPTO_ASSETS.map(c => c.sector)))];
   const filtered = sector === "All" ? CRYPTO_ASSETS : CRYPTO_ASSETS.filter(c => c.sector === sector);
-  const fgColor = FEAR_GREED_INDEX.value >= 60 ? "var(--accent-green)" : FEAR_GREED_INDEX.value >= 40 ? "var(--accent-gold)" : "var(--accent-red)";
+
+  const fgValue = FEAR_GREED_INDEX.value;
+  const fgColor = fgValue >= 60 ? "var(--accent-green)" : fgValue >= 40 ? "var(--accent-gold)" : "var(--accent-red)";
+  const fgLabel = fgValue >= 75 ? "Extreme Greed" : fgValue >= 55 ? "Greed" : fgValue >= 45 ? "Neutral" : fgValue >= 25 ? "Fear" : "Extreme Fear";
 
   return (
     <main className="page-container">
@@ -62,52 +67,52 @@ export default function CryptoPage() {
       {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">
-          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 1 }}>
-            <Link href="/" style={{ color: "var(--accent-gold)" }}>RISHI TERMINAL</Link>
-            <span style={{ margin: "0 8px" }}>â€º</span>
-            <span>CRYPTO</span>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 1, fontFamily: "monospace" }}>
+            <Link href="/" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>RISHI TERMINAL</Link>
+            {" > CRYPTO"}
           </div>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                <span style={{ fontSize: 40 }}>ðŸª™</span>
-                <h1 style={{ fontFamily: "Cinzel, serif", fontSize: 36, color: "var(--text-primary)" }}>Crypto Rishis</h1>
-              </div>
-              <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 600, lineHeight: 1.6 }}>
-                Satoshi Bodhi Â· Vitalik Veda Â· Michael Saylor â€” three distinct philosophical lenses on digital assets.
+              <h1 className="philosophy-heading" style={{ fontSize: 32, color: "var(--accent-gold)", marginBottom: 8 }}>
+                Crypto Markets
+              </h1>
+              <p style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 520, lineHeight: 1.6 }}>
+                Digital assets analyzed through Satoshi Bodhi, Vitalik Veda, and Michael Saylor philosophies.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="content-wrapper">
+      <div className="content-wrapper" style={{ padding: "28px 24px" }}>
 
         {/* Market Overview */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 32 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 28 }}>
           {[
-            { label: "Total Market Cap", value: `$${(metrics.totalMarketCap / 1e12).toFixed(2)}T`, color: "var(--accent-blue)" },
-            { label: "24h Volume", value: `$${(metrics.totalVolume / 1e9).toFixed(1)}B`, color: "var(--text-primary)" },
-            { label: "Avg RSI", value: metrics.avgRSI.toString(), color: metrics.avgRSI >= 60 ? "var(--accent-green)" : "var(--accent-gold)" },
-            { label: "Sentiment", value: metrics.sentiment, color: metrics.sentiment === "BULLISH" ? "var(--accent-green)" : "var(--accent-red)" },
-            { label: "BTC Dominance", value: `${MARKET_DOMINANCE.btc}%`, color: "var(--accent-gold)" },
-            { label: "Fear & Greed", value: `${FEAR_GREED_INDEX.value}`, color: fgColor },
+            { label: "Total Market Cap", value: "$" + (metrics.totalMarketCap / 1e12).toFixed(2) + "T", color: "var(--accent-gold)" },
+            { label: "24h Volume",       value: "$" + (metrics.totalVolume / 1e9).toFixed(1) + "B",     color: "var(--text-primary)" },
+            { label: "Avg RSI",          value: metrics.avgRSI.toString(),                               color: metrics.avgRSI >= 60 ? "var(--accent-green)" : "var(--accent-gold)" },
+            { label: "Sentiment",        value: metrics.sentiment,                                       color: metrics.sentiment === "BULLISH" ? "var(--accent-green)" : "var(--accent-red)" },
+            { label: "BTC Dominance",    value: MARKET_DOMINANCE.btc + "%",                             color: "var(--accent-gold)" },
+            { label: "Fear & Greed",     value: fgValue.toString() + " — " + fgLabel,                   color: fgColor },
           ].map(stat => (
-            <div key={stat.label} className="card" style={{ padding: 16 }}>
-              <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 6, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: stat.color }}>{stat.value}</div>
+            <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
+              <div style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 8, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
+              <div style={{ fontSize: 16, fontWeight: 700, fontFamily: "monospace", color: stat.color }}>{stat.value}</div>
             </div>
           ))}
         </div>
 
         {/* Fear & Greed Gauge */}
-        <div className="card" style={{ padding: 24, marginBottom: 40 }}>
+        <div className="card-sacred" style={{ padding: 24, marginBottom: 28 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
             <div>
-              <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 4 }}>CRYPTO FEAR & GREED INDEX</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: fgColor }}>{FEAR_GREED_INDEX.value} â€” {FEAR_GREED_INDEX.label}</div>
+              <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 6 }}>CRYPTO FEAR AND GREED INDEX</div>
+              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: "monospace", color: fgColor }}>
+                {fgValue} — {fgLabel}
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 20, fontSize: 12, color: "var(--text-muted)" }}>
+            <div style={{ display: "flex", gap: 24, fontSize: 12, color: "var(--text-muted)", fontFamily: "monospace" }}>
               <span>Yesterday: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousDay}</strong></span>
               <span>Last Week: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousWeek}</strong></span>
               <span>Last Month: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousMonth}</strong></span>
@@ -115,28 +120,32 @@ export default function CryptoPage() {
           </div>
           <div style={{ position: "relative", height: 20, background: "linear-gradient(90deg, #F4212E 0%, #FFD700 50%, #00BA7C 100%)", borderRadius: 10 }}>
             <div style={{
-              position: "absolute", top: "50%",
-              left: `calc(${Math.min(95, Math.max(5, FEAR_GREED_INDEX.value))}% - 12px)`,
+              position: "absolute",
+              top: "50%",
+              left: "calc(" + Math.min(95, Math.max(5, fgValue)) + "% - 12px)",
               transform: "translateY(-50%)",
               width: 24, height: 24,
               background: "var(--bg-primary)",
-              border: `3px solid ${fgColor}`,
+              border: "3px solid " + fgColor,
               borderRadius: "50%",
-              boxShadow: `0 0 12px ${fgColor}`,
+              boxShadow: "0 0 12px " + fgColor,
             }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, color: "var(--text-muted)" }}>
-            <span>ðŸ˜± Extreme Fear</span><span>ðŸ˜ Neutral</span><span>ðŸ¤‘ Extreme Greed</span>
+            <span>Extreme Fear (0)</span>
+            <span>Neutral (50)</span>
+            <span>Extreme Greed (100)</span>
           </div>
         </div>
 
-        {/* Rishi Cards */}
+        {/* Crypto Rishi Cards */}
         <div style={{ marginBottom: 8 }}>
-          <p style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 4 }}>CRYPTO PHILOSOPHERS</p>
-          <h2 style={{ fontFamily: "Cinzel, serif", fontSize: 26, color: "var(--text-primary)", marginBottom: 24 }}>3 Crypto Rishis</h2>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 3, marginBottom: 16, fontFamily: "monospace" }}>
+            CRYPTO PHILOSOPHERS
+          </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 48 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
           {CRYPTO_RISHIS.map(guru => {
             const asset = CRYPTO_ASSETS.find(c => c.symbol === guru.target);
             if (!asset) return null;
@@ -146,82 +155,81 @@ export default function CryptoPage() {
             return (
               <div
                 key={guru.id}
-                className="card"
+                className="card-sacred"
                 style={{ padding: 0, overflow: "hidden", cursor: "pointer" }}
                 onClick={() => setExpandedCard(isExpanded ? null : guru.id)}
               >
-                {/* Accent bar */}
-                <div style={{ height: 3, background: "linear-gradient(90deg, var(--accent-blue), var(--accent-gold))" }} />
+                <div style={{ height: 2, background: "linear-gradient(90deg, var(--accent-gold), var(--accent-green))" }} />
 
-                {/* Summary Row â€” always visible */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", flexWrap: "wrap", gap: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <span style={{ fontSize: 40 }}>{guru.emoji}</span>
+                    <div style={{
+                      width: 48, height: 48, borderRadius: "50%",
+                      background: "rgba(255,215,0,0.1)",
+                      border: "1px solid rgba(255,215,0,0.3)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 11, fontWeight: 700, fontFamily: "monospace",
+                      color: "var(--accent-gold)",
+                    }}>
+                      {guru.tag}
+                    </div>
                     <div>
-                      <div style={{ fontFamily: "Cinzel, serif", fontSize: 20, color: "var(--text-primary)", marginBottom: 4, fontWeight: 700 }}>
+                      <div className="philosophy-heading" style={{ fontSize: 18, color: "var(--text-primary)", marginBottom: 4 }}>
                         {guru.name}
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                        {result.label} Â· {result.origin}
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "monospace" }}>
+                        {result.label} — {result.origin}
                       </div>
                     </div>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                    {/* Score */}
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 48, fontWeight: 900, color: scoreColor(result.score), lineHeight: 1 }}>
+                      <div style={{ fontSize: 48, fontWeight: 900, fontFamily: "monospace", color: scoreColor(result.score), lineHeight: 1 }}>
                         {result.score}
                       </div>
                       <div style={{ fontSize: 11, color: "var(--text-muted)" }}>/100</div>
                     </div>
-
-                    {/* Mini bar */}
-                    <div style={{ width: 100, height: 8, background: "var(--bg-hover)", borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${result.score}%`, background: scoreColor(result.score), borderRadius: 4 }} />
+                    <div style={{ width: 100, height: 6, background: "var(--bg-secondary)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: result.score + "%", background: scoreColor(result.score), borderRadius: 4 }} />
                     </div>
-
-                    {/* Expand arrow */}
                     <div style={{
-                      fontSize: 14, color: "var(--text-muted)",
+                      fontSize: 12, color: "var(--text-muted)",
                       transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
                       transition: "transform 0.25s ease",
-                    }}>â–¼</div>
+                    }}>
+                      v
+                    </div>
                   </div>
                 </div>
 
-                {/* Expanded Content */}
                 {isExpanded && (
-                  <div style={{ borderTop: "1px solid var(--border-primary)", padding: "24px" }}>
-
-                    {/* Bio + Quote */}
+                  <div style={{ borderTop: "1px solid var(--border-primary)", padding: 24 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16, marginBottom: 20 }}>
                       <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18 }}>
-                        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>PHILOSOPHY</div>
+                        <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>PHILOSOPHY</div>
                         <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{guru.bio}</p>
                       </div>
                       <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18, borderLeft: "3px solid var(--accent-gold)" }}>
-                        <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>SIGNATURE QUOTE</div>
+                        <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>SIGNATURE QUOTE</div>
                         <p style={{ fontSize: 13, color: "var(--accent-gold)", fontStyle: "italic", lineHeight: 1.7 }}>"{guru.quote}"</p>
                       </div>
                     </div>
 
-                    {/* Insight */}
                     <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18, marginBottom: 20 }}>
-                      <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 10 }}>CURRENT ANALYSIS</div>
+                      <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>CURRENT ANALYSIS</div>
                       <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{result.insight}</p>
                     </div>
 
-                    {/* Score Components */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
-                      {result.comps.map(comp => (
+                      {result.comps.map((comp: any) => (
                         <div key={comp.label} style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 16 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                             <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{comp.label}</span>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: scoreColor(comp.v) }}>{comp.v}</span>
+                            <span style={{ fontSize: 16, fontWeight: 700, fontFamily: "monospace", color: scoreColor(comp.v) }}>{comp.v}</span>
                           </div>
-                          <div style={{ height: 6, background: "var(--bg-hover)", borderRadius: 3, overflow: "hidden", marginBottom: 6 }}>
-                            <div style={{ height: "100%", width: `${comp.v}%`, background: scoreColor(comp.v), borderRadius: 3 }} />
+                          <div style={{ height: 5, background: "var(--border-primary)", borderRadius: 3, overflow: "hidden", marginBottom: 6 }}>
+                            <div style={{ height: "100%", width: comp.v + "%", background: scoreColor(comp.v), borderRadius: 3 }} />
                           </div>
                           <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{comp.detail}</div>
                         </div>
@@ -235,79 +243,89 @@ export default function CryptoPage() {
         </div>
 
         {/* Asset Table */}
-        <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <p style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 4 }}>LIVE PRICES</p>
-              <h2 style={{ fontFamily: "Cinzel, serif", fontSize: 22, color: "var(--text-primary)" }}>All Crypto Assets</h2>
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {sectors.map(sec => (
-                <button key={sec} onClick={() => setSector(sec)} style={{
-                  padding: "8px 16px", borderRadius: 8, fontSize: 11,
-                  fontWeight: sector === sec ? 700 : 400,
-                  border: sector === sec ? "none" : "1px solid var(--border-primary)",
-                  background: sector === sec ? "var(--accent-blue)" : "var(--bg-card)",
-                  color: sector === sec ? "#fff" : "var(--text-muted)",
-                }}>{sec}</button>
-              ))}
-            </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+          <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 3, fontFamily: "monospace" }}>
+            ALL CRYPTO ASSETS — CLICK TO EXPLORE
           </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {sectors.map(sec => (
+              <button key={sec} onClick={() => setSector(sec)} style={{
+                padding: "6px 14px", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                fontWeight: sector === sec ? 700 : 400,
+                border: sector === sec ? "none" : "1px solid var(--border-primary)",
+                background: sector === sec ? "var(--accent-gold)" : "var(--bg-card)",
+                color: sector === sec ? "#000" : "var(--text-muted)",
+                fontFamily: "monospace",
+              }}>{sec}</button>
+            ))}
+          </div>
+        </div>
 
-          <div className="card" style={{ overflow: "hidden" }}>
-            <table>
+        <div className="card-sacred" style={{ overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr>
-                  <th style={{ textAlign: "left" }}>Asset</th>
-                  <th style={{ textAlign: "right" }}>Price</th>
-                  <th style={{ textAlign: "right" }}>24h</th>
-                  <th style={{ textAlign: "right" }}>7d</th>
-                  <th style={{ textAlign: "right" }}>Market Cap</th>
-                  <th style={{ textAlign: "right" }}>RSI</th>
-                  <th style={{ textAlign: "right" }}>MACD</th>
-                  <th style={{ textAlign: "right" }}>200D MA</th>
+                <tr style={{ borderBottom: "1px solid var(--border-primary)", background: "var(--bg-secondary)" }}>
+                  {["Asset", "Price", "24h", "7d", "Market Cap", "RSI", "MACD", "200D MA"].map((h, i) => (
+                    <th key={h} style={{
+                      textAlign: i === 0 ? "left" : "right",
+                      padding: "12px 16px",
+                      fontSize: 9, color: "var(--text-muted)", letterSpacing: 1, fontWeight: 600,
+                    }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(c => (
-                  <tr key={c.symbol} style={{ cursor: 'pointer', transition: 'background 0.15s' }}
-                    onClick={() => window.location.href = `/crypto/${c.symbol}`}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                  <tr
+                    key={c.symbol}
+                    style={{ borderBottom: "1px solid var(--border-subtle)", cursor: "pointer", transition: "background 0.15s" }}
+                    onClick={() => router.push("/crypto/" + c.symbol)}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,215,0,0.03)"}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
                   >
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 22 }}>{c.emoji}</span>
+                    <td style={{ padding: "14px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{
+                          width: 36, height: 36, borderRadius: "50%",
+                          background: "rgba(255,215,0,0.08)",
+                          border: "1px solid rgba(255,215,0,0.2)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 10, fontWeight: 700, fontFamily: "monospace",
+                          color: "var(--accent-gold)", flexShrink: 0,
+                        }}>
+                          {c.symbol.slice(0, 3)}
+                        </div>
                         <div>
                           <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: 13 }}>{c.symbol}</div>
                           <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{c.name}</div>
                         </div>
                       </div>
                     </td>
-                    <td style={{ textAlign: "right", fontWeight: 700, fontFamily: "monospace", fontSize: 14 }}>
+                    <td style={{ textAlign: "right", padding: "14px 16px", fontWeight: 700, fontFamily: "monospace", fontSize: 14, color: "var(--text-primary)" }}>
                       ${c.price.toLocaleString("en-US", { maximumFractionDigits: 2 })}
                     </td>
-                    <td style={{ textAlign: "right", fontWeight: 700, color: c.change24h >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>
-                      {c.change24h >= 0 ? "▲" : "▼"} {Math.abs(c.change24h).toFixed(2)}%
+                    <td style={{ textAlign: "right", padding: "14px 16px", fontWeight: 700, fontFamily: "monospace", color: c.change24h >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>
+                      {c.change24h >= 0 ? "+" : ""}{c.change24h.toFixed(2)}%
                     </td>
-                    <td style={{ textAlign: "right", color: c.change7d >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>
+                    <td style={{ textAlign: "right", padding: "14px 16px", fontFamily: "monospace", color: c.change7d >= 0 ? "var(--accent-green)" : "var(--accent-red)" }}>
                       {c.change7d >= 0 ? "+" : ""}{c.change7d.toFixed(2)}%
                     </td>
-                    <td style={{ textAlign: "right", fontSize: 12, color: "var(--text-secondary)" }}>
+                    <td style={{ textAlign: "right", padding: "14px 16px", fontSize: 12, fontFamily: "monospace", color: "var(--text-secondary)" }}>
                       ${(c.marketCap / 1e9).toFixed(1)}B
                     </td>
-                    <td style={{ textAlign: "right", fontWeight: 700, color: c.rsi >= 70 ? "var(--accent-red)" : c.rsi >= 50 ? "var(--accent-green)" : "var(--accent-gold)" }}>
+                    <td style={{ textAlign: "right", padding: "14px 16px", fontWeight: 700, fontFamily: "monospace", color: c.rsi >= 70 ? "var(--accent-red)" : c.rsi >= 50 ? "var(--accent-green)" : "var(--accent-gold)" }}>
                       {c.rsi}
                     </td>
-                    <td style={{ textAlign: "right" }}>
+                    <td style={{ textAlign: "right", padding: "14px 16px" }}>
                       <span style={{
                         fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 6,
                         background: c.macd === "BULLISH" ? "rgba(0,186,124,0.15)" : c.macd === "BEARISH" ? "rgba(244,33,46,0.15)" : "rgba(255,215,0,0.15)",
                         color: c.macd === "BULLISH" ? "var(--accent-green)" : c.macd === "BEARISH" ? "var(--accent-red)" : "var(--accent-gold)",
                       }}>{c.macd}</span>
                     </td>
-                    <td style={{ textAlign: "right", fontSize: 12, fontWeight: 700, color: c.price > c.moving200d ? "var(--accent-green)" : "var(--accent-red)" }}>
-                      {c.price > c.moving200d ? "▲ ABOVE" : "▼ BELOW"}
+                    <td style={{ textAlign: "right", padding: "14px 16px", fontSize: 12, fontWeight: 700, fontFamily: "monospace", color: c.price > c.moving200d ? "var(--accent-green)" : "var(--accent-red)" }}>
+                      {c.price > c.moving200d ? "ABOVE" : "BELOW"}
                     </td>
                   </tr>
                 ))}

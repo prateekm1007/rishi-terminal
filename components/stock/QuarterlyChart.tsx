@@ -1,39 +1,53 @@
-﻿'use client';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+'use client';
 
 interface QuarterlyResult {
   quarter: string;
   revenue: number;
   netProfit: number;
-  opm: number;
+  margins: number;
 }
 
 interface Props {
-  quarterlyResults: QuarterlyResult[];
+  quarters: QuarterlyResult[];
 }
 
-export function QuarterlyChart({ quarterlyResults }: Props) {
-  return (
-    <div style={{ border: '1px solid #27272a', background: '#18181b', borderRadius: 12, padding: 24 }}>
-      <div style={{ fontSize: 11, color: '#71717a', fontFamily: 'monospace', letterSpacing: 2, marginBottom: 8 }}>QUARTERLY RESULTS</div>
-      <div style={{ width: '100%', height: 300 }}>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={quarterlyResults} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-            <XAxis dataKey="quarter" stroke="#3f3f46" tick={{ fontSize: 10, fill: '#71717a' }} />
-            <YAxis stroke="#3f3f46" tick={{ fontSize: 10, fill: '#71717a' }} />
-            <Tooltip contentStyle={{ background: '#09090b', border: '1px solid #27272a', borderRadius: 8, fontFamily: 'monospace', fontSize: 11 }} />
-            <Legend wrapperStyle={{ fontSize: 11, fontFamily: 'monospace' }} />
-            <Bar dataKey="revenue" fill="#3b82f6" name="Revenue" radius={[4,4,0,0]} />
-            <Bar dataKey="netProfit" fill="#10b981" name="Net Profit" radius={[4,4,0,0]} />
-          </BarChart>
-        </ResponsiveContainer>
+export function QuarterlyChart({ quarters }: Props) {
+  if (!quarters || quarters.length === 0) {
+    return (
+      <div className="card-sacred p-6">
+        <h3 className="philosophy-heading text-lg mb-4">Quarterly Results</h3>
+        <div className="text-muted text-center">No quarterly data available</div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginTop: 16 }}>
-        {quarterlyResults.slice(0,3).map(q => (
-          <div key={q.quarter} style={{ background: '#09090b', borderRadius: 8, padding: 12 }}>
-            <div style={{ fontSize: 10, color: '#71717a', fontFamily: 'monospace' }}>{q.quarter}</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#10b981', fontFamily: 'monospace' }}>{q.netProfit.toLocaleString()}</div>
-            <div style={{ fontSize: 10, color: '#71717a' }}>OPM: {q.opm}%</div>
+    );
+  }
+
+  return (
+    <div className="card-sacred p-6">
+      <h3 className="philosophy-heading text-lg mb-4">Quarterly Results</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {quarters.slice(0, 3).map((q, idx) => (
+          <div key={idx} className="p-4 bg-secondary border border-primary rounded-lg">
+            <div className="text-xs text-muted mb-2">{q.quarter || 'N/A'}</div>
+            <div className="space-y-2">
+              <div>
+                <div className="text-xs text-muted">Revenue</div>
+                <div className="text-lg font-bold font-mono">
+                  {q.revenue ? q.revenue.toLocaleString() : 'N/A'}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">Net Profit</div>
+                <div className="text-lg font-bold font-mono text-green-400">
+                  {q.netProfit ? q.netProfit.toLocaleString() : 'N/A'}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-muted">Margins</div>
+                <div className="text-sm font-mono">
+                  {q.margins != null ? `${q.margins.toFixed(1)}%` : 'N/A'}
+                </div>
+              </div>
+            </div>
           </div>
         ))}
       </div>

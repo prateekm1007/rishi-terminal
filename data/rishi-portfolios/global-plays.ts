@@ -1,796 +1,796 @@
 // data/rishi-portfolios/global-plays.ts
-// Real historical plays for all 20 Rishis — India + Global
 
 export interface RishiPlay {
   rishi: string;
-  rishiShort: string;
   stock: string;
-  ticker?: string;
-  flag: string;
-  market: 'India' | 'USA' | 'UK' | 'Global' | 'HK';
-  yearBought: string;
-  yearSold?: string;
-  buyPrice?: string;
-  sellPrice?: string;
+  market: "US" | "India" | "Global" | "UK" | "China";
+  yearBought: number;
+  yearSold?: number;
+  buyPrice?: number;
+  sellPrice?: number;
   return?: string;
-  returnMultiple?: string;
   thesis: string;
-  outcome: 'legendary' | 'success' | 'ongoing' | 'mixed' | 'failure';
-  category: 'consumer_moat' | 'quality_compound' | 'growth_mania' |
-            'cyclical_trap' | 'turnaround_trap' | 'smallcap_gem' |
-            'macro_play' | 'value' | 'distressed';
-  keyMetricAtBuy?: string;
-  whatHappened: string;
-  glossaryHint?: string;
+  outcome: "active" | "success" | "failure" | "mixed";
+  category: "value" | "growth" | "turnaround" | "quality" | "momentum" | "distressed";
 }
 
 export const GLOBAL_RISHI_PLAYS: RishiPlay[] = [
-
-  // ════════════════════════════════════════
-  // WARREN BUFFETT
-  // ════════════════════════════════════════
+  
+  // ════════════════════════════════════════════════════════════════════════════
+  // WARREN BUFFETT — The Oracle of Omaha
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Warren Buffett',
-    rishiShort: 'Buffett',
-    stock: 'Coca-Cola',
-    ticker: 'KO',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1988',
-    buyPrice: '$2.50',
-    return: '+2,400%',
-    returnMultiple: '25x',
-    thesis: 'An unbreakable consumer moat built on global brand recognition. Every human on earth knows Coke. Pricing power that compounds quietly for decades. The business earns 35%+ ROE with minimal capex.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'P/E ~15x, ROE 33%, global distribution moat',
-    whatHappened: 'Held 35+ years. Dividends alone returned 200% of original investment. The moat grew wider every decade.',
-    glossaryHint: 'moat pricing power roe'
+    rishi: "Warren Buffett",
+    stock: "Apple (AAPL)",
+    market: "US",
+    yearBought: 2016,
+    buyPrice: 28.50,
+    return: "+526%",
+    thesis: "Consumer moat with ecosystem lock-in. High switching costs prevent customer churn. iPhone + Services create recurring revenue. Capital-light business model generates massive FCF that Buffett can redeploy.",
+    outcome: "active",
+    category: "quality"
   },
   {
-    rishi: 'Warren Buffett',
-    rishiShort: 'Buffett',
-    stock: 'Apple',
-    ticker: 'AAPL',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '2016',
-    buyPrice: '$28',
-    return: '+630%',
-    returnMultiple: '7x',
-    thesis: 'Not a tech company — a consumer brand with the most powerful switching costs on earth. iPhone ecosystem creates a moat deeper than any factory. 900M loyal customers who upgrade every 3 years.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'P/E 12x at trough, 900M installed base',
-    whatHappened: 'Became Berkshire\'s largest holding at $175B+. Buffett called it "probably the best business in the world."',
-    glossaryHint: 'switching costs moat consumer'
+    rishi: "Warren Buffett",
+    stock: "Coca-Cola (KO)",
+    market: "US",
+    yearBought: 1988,
+    buyPrice: 2.50,
+    thesis: "Unbeatable global brand moat. Distribution in 200+ countries impossible to replicate. Predictable cash flows from a product people buy daily regardless of economy. Simple business Buffett can understand forever.",
+    outcome: "active",
+    category: "quality"
   },
   {
-    rishi: 'Warren Buffett',
-    rishiShort: 'Buffett',
-    stock: 'American Express',
-    ticker: 'AXP',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1964',
-    buyPrice: '$3.20',
-    return: '+50,000%',
-    returnMultiple: '500x',
-    thesis: 'Everyone panicked after the 1963 Salad Oil Scandal. But AmEx\'s brand trust with merchants was intact. This was a temporary crisis, not a permanent loss. Network effects in payments are unbeatable.',
-    outcome: 'legendary',
-    category: 'turnaround_trap',
-    keyMetricAtBuy: 'Stock down 50% on scandal — genuine margin of safety',
-    whatHappened: 'One of Buffett\'s greatest contrarian calls. The scandal was real but the business was unharmed. Held 60 years.',
-    glossaryHint: 'network effects contrarian margin of safety'
+    rishi: "Warren Buffett",
+    stock: "American Express (AXP)",
+    market: "US",
+    yearBought: 1964,
+    buyPrice: 3.20,
+    thesis: "Bought during Salad Oil Scandal when stock crashed 50%. Network effects in payments create winner-takes-most dynamics. Brand trust recoverable despite short-term crisis. Classic cigar-butt turned into quality hold.",
+    outcome: "active",
+    category: "turnaround"
   },
   {
-    rishi: 'Warren Buffett',
-    rishiShort: 'Buffett',
-    stock: 'GEICO Insurance',
-    ticker: 'GEICO',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1976',
-    buyPrice: '$2.00',
-    return: 'Acquired fully at $70',
-    returnMultiple: '35x before acquisition',
-    thesis: 'Direct-to-consumer auto insurance — cut out agents, charge less. The float from premiums is essentially a zero-cost loan forever. Graham taught Buffett this concept.',
-    outcome: 'legendary',
-    category: 'value',
-    keyMetricAtBuy: 'Near-bankruptcy price, float concept overlooked by market',
-    whatHappened: 'Buffett acquired 100% in 1996 for $2.3B. Now generates $30B+ in annual premiums.',
-    glossaryHint: 'float intrinsic value margin of safety'
+    rishi: "Warren Buffett",
+    stock: "Washington Post",
+    market: "US",
+    yearBought: 1973,
+    yearSold: 2014,
+    buyPrice: 5.63,
+    sellPrice: 580,
+    return: "+10,200%",
+    thesis: "Monopoly newspaper in DC metro area trading at 25% of intrinsic value during 1973-74 bear market. Katharine Graham's leadership + local advertising moat. Held 40+ years through digital disruption, exited before collapse.",
+    outcome: "success",
+    category: "value"
   },
   {
-    rishi: 'Warren Buffett',
-    rishiShort: 'Buffett',
-    stock: 'IBM',
-    ticker: 'IBM',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '2011',
-    yearSold: '2017',
-    buyPrice: '$170',
-    sellPrice: '$150',
-    return: '-12%',
-    thesis: 'Enterprise IT services lock-in. Massive switching costs. Dividends and buybacks. Thought it was a quality compounder.',
-    outcome: 'failure',
-    category: 'quality_compound',
-    keyMetricAtBuy: 'P/E 13x, strong buyback program',
-    whatHappened: 'Sold at a loss. Cloud disrupted IBM\'s mainframe moat. Buffett admitted he misjudged tech disruption. Lesson: tech moats can evaporate faster than consumer moats.',
-    glossaryHint: 'moat switching costs quality value trap'
+    rishi: "Warren Buffett",
+    stock: "See's Candies",
+    market: "US",
+    yearBought: 1972,
+    thesis: "Brand pricing power — customers pay premium for boxed chocolates as gifts. No substitutes during holidays. Capital-light: minimal reinvestment needed, FCF funds other acquisitions. Buffett's template for quality.",
+    outcome: "success",
+    category: "quality"
+  },
+  {
+    rishi: "Warren Buffett",
+    stock: "IBM",
+    market: "US",
+    yearBought: 2011,
+    yearSold: 2018,
+    buyPrice: 170,
+    sellPrice: 145,
+    return: "−15%",
+    thesis: "Enterprise IT moat with switching costs. Bought for yield + buybacks. MISTAKE: Buffett admitted he misjudged cloud transition speed. Legacy mainframe revenues declined faster than cloud growth. Lesson: tech moats erode quickly.",
+    outcome: "failure",
+    category: "value"
+  },
+  {
+    rishi: "Warren Buffett",
+    stock: "Bank of America (BAC)",
+    market: "US",
+    yearBought: 2011,
+    buyPrice: 7.14,
+    return: "+380%",
+    thesis: "Post-2008 crisis distressed investment via preferred shares with warrants. Too-big-to-fail implicit guarantee. Management turnaround under Brian Moynihan. Warrants gave asymmetric upside as bank recovered.",
+    outcome: "success",
+    category: "distressed"
   },
 
-  // ════════════════════════════════════════
-  // RAKESH JHUNJHUNWALA
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // RAKESH JHUNJHUNWALA — India's Big Bull
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Rakesh Jhunjhunwala',
-    rishiShort: 'RJ',
-    stock: 'Titan Company',
-    ticker: 'TITAN',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2002',
-    yearSold: '2022',
-    buyPrice: '3',
-    sellPrice: '2,800',
-    return: '+93,233%',
-    returnMultiple: '933x',
-    thesis: 'The great transition from unorganised jewellery to branded retail. Tata\'s ethics + Titan\'s execution + India\'s rising middle class = a 20-year tailwind. Bought when market saw a failing watches company.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'Tiny market cap, brand moat invisible to market',
-    whatHappened: 'India\'s greatest stock market win. Jhunjhunwala held through 4 bear markets, never sold despite volatility. Conviction compounding.',
-    glossaryHint: 'moat ten bagger conviction compounding'
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Titan Company",
+    market: "India",
+    yearBought: 2002,
+    buyPrice: 3,
+    return: "+93,233%",
+    thesis: "Organized jewelry retail disrupting unorganized market. Tata brand trust eliminates trust barrier in gold buying. Rising middle class + women workforce = multi-decade jewelry demand. Tanishq brand = pricing power moat.",
+    outcome: "success",
+    category: "growth"
   },
   {
-    rishi: 'Rakesh Jhunjhunwala',
-    rishiShort: 'RJ',
-    stock: 'Lupin Ltd',
-    ticker: 'LUPIN',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2003',
-    yearSold: '2018',
-    buyPrice: '140',
-    sellPrice: '1,800',
-    return: '+1,186%',
-    returnMultiple: '13x',
-    thesis: 'US generics market opportunity was massive and Lupin had the R&D pipeline. Strong management under Desh Bandhu Gupta. India\'s pharma cost advantage was permanent.',
-    outcome: 'success',
-    category: 'quality_compound',
-    keyMetricAtBuy: 'Low PE, strong R&D pipeline, US FDA approvals accelerating',
-    whatHappened: 'Sold before US FDA issues surfaced. Perfect exit. Later Lupin faced quality issues — RJ had already moved on.',
-    glossaryHint: 'management quality cagr conviction'
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Lupin Pharma",
+    market: "India",
+    yearBought: 2003,
+    yearSold: 2018,
+    buyPrice: 140,
+    sellPrice: 900,
+    return: "+543%",
+    thesis: "US generic drug gold rush. Lupin's R&D capabilities in complex generics. Management under Desh Bandhu Gupta executing flawlessly. Exited before USFDA compliance issues crushed sector in 2018-2020.",
+    outcome: "success",
+    category: "growth"
   },
   {
-    rishi: 'Rakesh Jhunjhunwala',
-    rishiShort: 'RJ',
-    stock: 'NCC Ltd',
-    ticker: 'NCC',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2009',
-    buyPrice: '70',
-    return: 'Ongoing',
-    thesis: 'India\'s infrastructure buildout is generational. NCC builds the roads, bridges, buildings of India\'s future. Cyclical but essential. Patient capital required.',
-    outcome: 'ongoing',
-    category: 'smallcap_gem',
-    keyMetricAtBuy: 'Post-crash price, order book growing',
-    whatHappened: 'Long-term infrastructure bet. Volatile but held through cycles. India infra thesis playing out decade later.',
-    glossaryHint: 'conviction mean reversion capital allocation'
-  },
-
-  // ════════════════════════════════════════
-  // RADHAKISHAN DAMANI
-  // ════════════════════════════════════════
-  {
-    rishi: 'Radhakishan Damani',
-    rishiShort: 'Damani',
-    stock: 'Avenue Supermarts (DMart)',
-    ticker: 'DMART',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2002',
-    buyPrice: '10 (pre-IPO)',
-    return: 'IPO at 299, now 5,000+',
-    returnMultiple: '500x',
-    thesis: 'Own the real estate you operate from. Every-Day-Low-Prices beats discounting. No debt. Pay suppliers fast to get better prices. Simple model executed with obsessive discipline.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'Founder-built, zero debt, negative working capital',
-    whatHappened: 'India\'s most successful retail model. DMart IPO was the decade\'s best listing. Damani still owns 74%. Never sold.',
-    glossaryHint: 'working capital skin in the game moat asset light'
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Crisil",
+    market: "India",
+    yearBought: 2002,
+    yearSold: 2019,
+    buyPrice: 42,
+    sellPrice: 1800,
+    return: "+4,186%",
+    thesis: "Credit rating duopoly in India (Crisil + ICRA). Every debt issuance needs rating = recurring revenue. S&P partnership gives global credibility. Capital-light, high-margin business model.",
+    outcome: "success",
+    category: "quality"
   },
   {
-    rishi: 'Radhakishan Damani',
-    rishiShort: 'Damani',
-    stock: 'VST Industries',
-    ticker: 'VSTIND',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2000',
-    yearSold: '2015',
-    buyPrice: '80',
-    sellPrice: '3,500',
-    return: '+4,275%',
-    returnMultiple: '44x',
-    thesis: 'Cigarette monopoly in South India with predictable cash flows. Minimal capex. Strong FCF. Pricing power nobody questions. Boring business = beautiful returns.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'Low PE, high FCF yield, zero competition',
-    whatHappened: 'Damani\'s classic "boring business" playbook. Collected dividends and capital gains. Sold after 15 years of compounding.',
-    glossaryHint: 'fcf pricing power moat compounding'
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Fortis Healthcare",
+    market: "India",
+    yearBought: 2002,
+    yearSold: 2009,
+    buyPrice: 12,
+    sellPrice: 165,
+    return: "+1,275%",
+    thesis: "Multi-specialty hospital chain riding India's healthcare boom. Insurance penetration rising = patients can afford treatment. Singh brothers' aggressive expansion. Exited before governance issues destroyed value post-2015.",
+    outcome: "success",
+    category: "growth"
   },
   {
-    rishi: 'Radhakishan Damani',
-    rishiShort: 'Damani',
-    stock: 'HDFC Bank',
-    ticker: 'HDFCBANK',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '1999',
-    buyPrice: '100',
-    return: '+9,800%',
-    returnMultiple: '99x',
-    thesis: 'Private banking will displace PSU banks in India. HDFC Bank\'s technology, culture, and risk management are incomparable. Aditya Puri is a once-in-a-generation banker.',
-    outcome: 'legendary',
-    category: 'quality_compound',
-    keyMetricAtBuy: 'Low P/B on a superior bank',
-    whatHappened: 'Held for 25 years. HDFC Bank became India\'s most valuable bank. Management quality thesis proved completely correct.',
-    glossaryHint: 'management quality roe network effects'
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Aptech",
+    market: "India",
+    yearBought: 2002,
+    yearSold: 2005,
+    buyPrice: 22,
+    sellPrice: 600,
+    return: "+2,627%",
+    thesis: "IT training boom during Y2K era. Arena Animation + NIIT competing for students wanting IT jobs. Sold at peak before competition commoditized the business and margins collapsed.",
+    outcome: "success",
+    category: "momentum"
+  },
+  {
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Geojit Financial",
+    market: "India",
+    yearBought: 2006,
+    yearSold: 2020,
+    buyPrice: 45,
+    sellPrice: 28,
+    return: "−38%",
+    thesis: "Retail broking expansion in South India. RARE LOSS: Competition from discount brokers (Zerodha) destroyed commission-based model. Lesson: business model disruption risk even in growing markets.",
+    outcome: "failure",
+    category: "value"
+  },
+  {
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Nazara Technologies",
+    market: "India",
+    yearBought: 2016,
+    return: "+180%",
+    thesis: "Mobile gaming in India before it became consensus. Kiddopia + World Cricket Championship franchises. Pre-IPO investment with conviction despite losses. Nitish Mittersain's vision on digital entertainment consumption shift.",
+    outcome: "active",
+    category: "growth"
   },
 
-  // ════════════════════════════════════════
-  // CHARLIE MUNGER
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // RADHAKISHAN DAMANI — The Retail King
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Charlie Munger',
-    rishiShort: 'Munger',
-    stock: 'Costco Wholesale',
-    ticker: 'COST',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1997',
-    buyPrice: '$15',
-    return: '+2,800%',
-    returnMultiple: '29x',
-    thesis: 'Membership creates the ultimate moat — customers PAY to shop here. Low-margin, high-volume, extreme operational excellence. The most ethical retailer in America. Trust as competitive advantage.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'Low PE, but quality impossible to replicate',
-    whatHappened: 'Munger called Costco the best business in the world multiple times. Still holds. The membership model proved unassailable.',
-    glossaryHint: 'moat switching costs quality management quality'
+    rishi: "Radhakishan Damani",
+    stock: "Avenue Supermarts (DMart)",
+    market: "India",
+    yearBought: 2002,
+    thesis: "Own real estate model = no rent escalation = permanent cost advantage. EDLP (Everyday Low Prices) without promotions builds customer habit. Tier-2/3 city expansion before competition arrives. Zero debt strategy = survives downturns.",
+    outcome: "active",
+    category: "quality"
   },
   {
-    rishi: 'Charlie Munger',
-    rishiShort: 'Munger',
-    stock: 'BYD (Electric Vehicles)',
-    ticker: 'BYDDY',
-    flag: '🇨🇳',
-    market: 'HK',
-    yearBought: '2008',
-    yearSold: '2023',
-    buyPrice: 'HK$8',
-    sellPrice: 'HK$250',
-    return: '+3,025%',
-    returnMultiple: '31x',
-    thesis: 'Charlie Wang is the most capable man I have ever met. BYD\'s battery technology + manufacturing scale will win the EV race globally. China\'s infrastructure advantage.',
-    outcome: 'legendary',
-    category: 'growth_mania',
-    keyMetricAtBuy: 'Early stage EV, Wang\'s battery expertise thesis',
-    whatHappened: 'Munger convinced Buffett. $232M investment became $9B+. One of the greatest emerging market growth bets ever.',
-    glossaryHint: 'management quality conviction asymmetric bet'
-  },
-
-  // ════════════════════════════════════════
-  // PETER LYNCH
-  // ════════════════════════════════════════
-  {
-    rishi: 'Peter Lynch',
-    rishiShort: 'Lynch',
-    stock: 'Dunkin\' Donuts',
-    ticker: 'DNKN',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1982',
-    yearSold: '1990',
-    buyPrice: '$1.50',
-    sellPrice: '$14.00',
-    return: '+833%',
-    returnMultiple: '9x',
-    thesis: 'Discovered it by eating there. Simple concept that can expand everywhere. Low-cost franchise model means the company doesn\'t need capex to grow. Classic Lynch: invest in what you know.',
-    outcome: 'success',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'Low PEG ratio, rapid store expansion',
-    whatHappened: 'Lynch\'s scuttlebutt method validated at every store visit. Long queues + simple menu + loyal customers = the thesis.',
-    glossaryHint: 'scuttlebutt peg ratio ten bagger circle of competence'
+    rishi: "Radhakishan Damani",
+    stock: "VST Industries",
+    market: "India",
+    yearBought: 2000,
+    yearSold: 2021,
+    buyPrice: 80,
+    sellPrice: 3500,
+    return: "+4,275%",
+    thesis: "Cigarette quasi-monopoly in South India. Regulatory barriers prevent new entrants. Pricing power allows regular hikes despite sin tax increases. Capital-light: no factories needed, just distribution. Dividends funded DMart expansion.",
+    outcome: "success",
+    category: "quality"
   },
   {
-    rishi: 'Peter Lynch',
-    rishiShort: 'Lynch',
-    stock: 'Fannie Mae',
-    ticker: 'FNM',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1977',
-    yearSold: '1992',
-    buyPrice: '$0.40',
-    sellPrice: '$8.00',
-    return: '+1,900%',
-    returnMultiple: '20x',
-    thesis: 'Near-bankrupt mortgage company with government backing. The market misunderstood — it wasn\'t going under. America\'s homeownership boom needed Fannie. Turnaround no one wanted to buy.',
-    outcome: 'success',
-    category: 'turnaround_trap',
-    keyMetricAtBuy: 'Near-zero price, intrinsic value massively higher',
-    whatHappened: 'Lynch\'s most discussed holding. Held through massive volatility. The thesis was about intrinsic value vs temporary panic.',
-    glossaryHint: 'turnaround intrinsic value contrarian margin of safety'
+    rishi: "Radhakishan Damani",
+    stock: "India Cements",
+    market: "India",
+    yearBought: 2004,
+    yearSold: 2016,
+    buyPrice: 38,
+    sellPrice: 110,
+    return: "+189%",
+    thesis: "South India cement consolidation. Srinivasan family control. Held during construction boom, exited before overcapacity crushed margins. Damani rarely holds cyclicals long-term — this was tactical.",
+    outcome: "success",
+    category: "value"
   },
   {
-    rishi: 'Peter Lynch',
-    rishiShort: 'Lynch',
-    stock: 'Chrysler',
-    ticker: 'C',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1982',
-    yearSold: '1987',
-    buyPrice: '$2',
-    sellPrice: '$48',
-    return: '+2,300%',
-    returnMultiple: '24x',
-    thesis: 'Lee Iacocca had saved Chrysler from bankruptcy. New models coming. Inventory of cash from asset sales. Zero debt post-restructuring. Hated by everyone = Lynch\'s opportunity.',
-    outcome: 'legendary',
-    category: 'turnaround_trap',
-    keyMetricAtBuy: 'Stock near zero, turnaround thesis clear to those looking',
-    whatHappened: 'One of Lynch\'s best turnaround calls. Held through Chrysler\'s remarkable K-car recovery.',
-    glossaryHint: 'turnaround contrarian ten bagger scuttlebutt'
+    rishi: "Radhakishan Damani",
+    stock: "Sundaram Finance",
+    market: "India",
+    yearBought: 2002,
+    thesis: "Conservative NBFC with 70-year history. TVS group governance. Commercial vehicle financing moat in South India. Never takes excessive leverage — survives every credit cycle. Damani loves boring, profitable, safe businesses.",
+    outcome: "active",
+    category: "quality"
   },
 
-  // ════════════════════════════════════════
-  // GEORGE SOROS
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // PETER LYNCH — The GARP Master
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'George Soros',
-    rishiShort: 'Soros',
-    stock: 'British Pound (Short)',
-    ticker: 'GBP',
-    flag: '🇬🇧',
-    market: 'Global',
-    yearBought: '1992',
-    return: '$1 Billion profit in 1 day',
-    returnMultiple: '100x leverage',
-    thesis: 'UK couldn\'t maintain its ERM peg without destroying its economy. Raising interest rates to 15% to defend GBP would cause a recession. The peg MUST break. Pure reflexivity — soros bet on the feedback loop.',
-    outcome: 'legendary',
-    category: 'macro_play',
-    keyMetricAtBuy: 'Asymmetric bet — limited downside if wrong, massive upside if right',
-    whatHappened: 'Bank of England capitulated on Black Wednesday. Soros made $1B in one day. Changed global macro investing forever.',
-    glossaryHint: 'reflexivity asymmetric bet leverage black swan'
+    rishi: "Peter Lynch",
+    stock: "Dunkin' Donuts",
+    market: "US",
+    yearBought: 1982,
+    yearSold: 1988,
+    buyPrice: 1.50,
+    sellPrice: 14.00,
+    return: "+833%",
+    thesis: "Fast-food franchising model scaling nationally. Discovered by visiting stores (scuttlebutt research). Simple business: donuts + coffee with high repeat purchase frequency. PEG ratio <1 = classic GARP setup.",
+    outcome: "success",
+    category: "growth"
   },
   {
-    rishi: 'George Soros',
-    rishiShort: 'Soros',
-    stock: 'Thai Baht (Short)',
-    ticker: 'THB',
-    flag: '🇹🇭',
-    market: 'Global',
-    yearBought: '1997',
-    return: 'Billions in profit',
-    thesis: 'Thai current account deficit + pegged exchange rate + foreign debt = classic reflexivity trap. When the feedback loop turns, currencies don\'t fall — they collapse.',
-    outcome: 'legendary',
-    category: 'macro_play',
-    keyMetricAtBuy: 'Overvalued peg, weak fundamentals, high foreign debt',
-    whatHappened: 'Triggered the 1997 Asian Financial Crisis. Baht collapsed 40%. Soros made billions. Governments called him "an economic war criminal."',
-    glossaryHint: 'reflexivity leverage currency risk black swan'
-  },
-
-  // ════════════════════════════════════════
-  // BENJAMIN GRAHAM
-  // ════════════════════════════════════════
-  {
-    rishi: 'Benjamin Graham',
-    rishiShort: 'Graham',
-    stock: 'GEICO Insurance',
-    ticker: 'GEICO',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1948',
-    buyPrice: '$27',
-    sellPrice: '$16,200 (by Berkshire)',
-    return: '+60,000%',
-    returnMultiple: '600x',
-    thesis: 'Trading below book value with massive structural advantage. Direct insurance model (no agents) creates permanent cost advantage. The float concept was invisible to the market.',
-    outcome: 'legendary',
-    category: 'value',
-    keyMetricAtBuy: 'Price < book value, margin of safety enormous',
-    whatHappened: 'Graham taught Buffett about GEICO. Both became wealthy from it. The founding insight of value investing confirmed.',
-    glossaryHint: 'margin of safety price to book intrinsic value float'
+    rishi: "Peter Lynch",
+    stock: "Fannie Mae",
+    market: "US",
+    yearBought: 1977,
+    yearSold: 1982,
+    buyPrice: 0.40,
+    sellPrice: 8.00,
+    return: "+1,900%",
+    thesis: "Turnaround from near-bankruptcy in 1970s. Government-sponsored enterprise = implicit backing. Mortgage securitization business misunderstood by Wall Street. Lynch saw the earnings power once rates stabilized.",
+    outcome: "success",
+    category: "turnaround"
   },
   {
-    rishi: 'Benjamin Graham',
-    rishiShort: 'Graham',
-    stock: 'Northern Pipeline',
-    ticker: 'N/A',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1926',
-    return: '50% return in 18 months',
-    thesis: 'Classic net-net: company trading below its liquid assets. Graham found Northern Pipeline held $95/share in railroad bonds on balance sheet. Stock traded at $65. Free money.',
-    outcome: 'success',
-    category: 'value',
-    keyMetricAtBuy: 'Stock price < liquid assets (net-net)',
-    whatHappened: 'Graham demanded dividend from management to unlock value. Succeeded. The birth of activist value investing.',
-    glossaryHint: 'margin of safety price to book intrinsic value'
+    rishi: "Peter Lynch",
+    stock: "Taco Bell",
+    market: "US",
+    yearBought: 1980,
+    yearSold: 1985,
+    buyPrice: 1.20,
+    sellPrice: 12.50,
+    return: "+942%",
+    thesis: "Mexican fast-food category creation. Franchise expansion into suburbs. Noticed long lines at stores during mall visits with family. 'Invest in what you know' — bought what he saw people buying.",
+    outcome: "success",
+    category: "growth"
+  },
+  {
+    rishi: "Peter Lynch",
+    stock: "Chrysler",
+    market: "US",
+    yearBought: 1982,
+    yearSold: 1987,
+    buyPrice: 2.50,
+    sellPrice: 48,
+    return: "+1,820%",
+    thesis: "Lee Iacocca turnaround. Government loan guarantees prevented bankruptcy. New minivan category = product cycle tailwind. Bought when everyone thought US auto was dead. Classic contrarian turnaround bet.",
+    outcome: "success",
+    category: "turnaround"
+  },
+  {
+    rishi: "Peter Lynch",
+    stock: "Walmart",
+    market: "US",
+    yearBought: 1978,
+    yearSold: 1990,
+    buyPrice: 0.05,
+    sellPrice: 1.20,
+    return: "+2,300%",
+    thesis: "Rural discount retail disruption. Sam Walton's relentless focus on logistics and cost. Visited stores, saw operational excellence. PEG <1 despite 30% earnings growth. 'Ten-bagger' example in his book.",
+    outcome: "success",
+    category: "growth"
   },
 
-  // ════════════════════════════════════════
-  // MOHNISH PABRAI
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // CHARLIE MUNGER — Buffett's Partner
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Mohnish Pabrai',
-    rishiShort: 'Pabrai',
-    stock: 'Fiat Chrysler',
-    ticker: 'FCAU',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '2014',
-    yearSold: '2017',
-    buyPrice: '$8',
-    sellPrice: '$22',
-    return: '+175%',
-    returnMultiple: '2.7x',
-    thesis: 'Classic Pabrai asymmetric bet. Sergio Marchionne was a management genius. Hidden assets in Jeep brand. Ferrari spinoff would unlock massive value. Heads I win, tails I don\'t lose much.',
-    outcome: 'success',
-    category: 'value',
-    keyMetricAtBuy: 'Sum-of-parts value far exceeded market cap',
-    whatHappened: 'Ferrari IPO at $52B (bought at implied $2B). Jeep grew globally. Marchionne\'s thesis played out exactly.',
-    glossaryHint: 'asymmetric bet intrinsic value management quality conviction'
+    rishi: "Charlie Munger",
+    stock: "Costco (COST)",
+    market: "US",
+    yearBought: 1997,
+    thesis: "Membership fee moat creates customer lock-in. Low-margin, high-volume model requires operational perfection = hard to replicate. Jim Sinegal's obsessive focus on customer value. Munger: 'I'm a total addict to Costco.'",
+    outcome: "active",
+    category: "quality"
   },
   {
-    rishi: 'Mohnish Pabrai',
-    rishiShort: 'Pabrai',
-    stock: 'Horsehead Holdings',
-    ticker: 'ZINC',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '2014',
-    yearSold: '2015',
-    buyPrice: '$15',
-    sellPrice: '$1',
-    return: '-93%',
-    thesis: 'Zinc producer with new modern plant. Should have been capital-light and efficient. Thought technology was de-risked.',
-    outcome: 'failure',
-    category: 'cyclical_trap',
-    keyMetricAtBuy: 'Low EV/EBITDA on new plant commissioning',
-    whatHappened: 'New plant had massive operational issues. Went bankrupt. Pabrai publicly admitted the mistake and taught the lesson to others.',
-    glossaryHint: 'value trap leverage permanent loss'
-  },
-
-  // ════════════════════════════════════════
-  // PHILIP FISHER
-  // ════════════════════════════════════════
-  {
-    rishi: 'Philip Fisher',
-    rishiShort: 'Fisher',
-    stock: 'Motorola',
-    ticker: 'MOT',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1955',
-    yearSold: '2004',
-    buyPrice: '$2',
-    sellPrice: '$160',
-    return: '+7,900%',
-    returnMultiple: '80x',
-    thesis: 'R&D culture that was decades ahead. Engineers who loved their work. Management that reinvested profits into future products. Semiconductor leadership coming. Classic scuttlebutt revealed the culture.',
-    outcome: 'legendary',
-    category: 'quality_compound',
-    keyMetricAtBuy: 'R&D spend ratio, engineer satisfaction, management quality',
-    whatHappened: 'Held 49 years. One of the greatest growth investing records in history. Fisher proved that qualitative research beats financial ratios.',
-    glossaryHint: 'scuttlebutt management quality compounding ten bagger'
+    rishi: "Charlie Munger",
+    stock: "BYD Company",
+    market: "China",
+    yearBought: 2008,
+    buyPrice: 8,
+    return: "+3,400%",
+    thesis: "Chinese EV + battery technology leader. Wang Chuanfu = engineer-entrepreneur. Bought during financial crisis when everyone avoided China. Vertical integration moat: batteries + cars + buses. Munger's biggest personal win outside Berkshire.",
+    outcome: "active",
+    category: "growth"
   },
   {
-    rishi: 'Philip Fisher',
-    rishiShort: 'Fisher',
-    stock: 'Texas Instruments',
-    ticker: 'TXN',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1956',
-    buyPrice: '$14',
-    return: '500x+ before splits',
-    thesis: 'Semiconductor would be the 20th century\'s foundational technology. TI\'s engineering culture and patent portfolio created a moat invisible to PE-focused investors.',
-    outcome: 'legendary',
-    category: 'growth_mania',
-    keyMetricAtBuy: 'R&D pipeline, engineering talent, patent moat',
-    whatHappened: 'Fisher held for decades. His scuttlebutt method found the quality before earnings confirmed it. The definition of growth investing.',
-    glossaryHint: 'scuttlebutt moat management quality cagr'
+    rishi: "Charlie Munger",
+    stock: "Daily Journal Corp (DJCO)",
+    market: "US",
+    yearBought: 1977,
+    thesis: "Legal newspaper publisher turned tech investor. Munger as Chairman using float to invest in stocks (Bank of America, Wells Fargo, Alibaba). Meta-investment: buying Munger's brain via his portfolio.",
+    outcome: "active",
+    category: "quality"
+  },
+  {
+    rishi: "Charlie Munger",
+    stock: "Alibaba (BABA)",
+    market: "China",
+    yearBought: 2021,
+    yearSold: 2022,
+    buyPrice: 200,
+    sellPrice: 90,
+    return: "−55%",
+    thesis: "Bought after regulatory crackdown crashed stock 70%. Believed Chinese e-commerce moat intact despite political risk. MISTAKE: Underestimated CCP's willingness to destroy shareholder value. Munger admitted error and exited.",
+    outcome: "failure",
+    category: "value"
   },
 
-  // ════════════════════════════════════════
-  // HOWARD MARKS
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // GEORGE SOROS — The Macro Trader
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Howard Marks',
-    rishiShort: 'H. Marks',
-    stock: 'High-Yield Bonds (2008)',
-    ticker: 'N/A',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '2008',
-    return: '+150% in 18 months',
-    thesis: 'During 2008 crisis, junk bonds were yielding 20-22%. The market was pricing permanent depression. Oaktree bought distressed debt when terror was maximum. Risk is highest when it seems lowest, lowest when it seems highest.',
-    outcome: 'legendary',
-    category: 'distressed',
-    keyMetricAtBuy: 'Yields 20%+, pricing in default rates impossible to achieve',
-    whatHappened: 'Oaktree raised $11B distressed debt fund in 2008. Returned 150%+ as panic subsided. Classic counter-cyclical investing.',
-    glossaryHint: 'contrarian asymmetric bet black swan liquidity risk'
+    rishi: "George Soros",
+    stock: "British Pound (Short)",
+    market: "UK",
+    yearBought: 1992,
+    return: "+$1B profit",
+    thesis: "UK could not maintain ERM currency peg. Interest rate defense would crush economy. Reflexivity: market selling forced BoE to abandon peg, proving Soros right. Asymmetric: risked $10B to make $1B. 'Breaking the Bank of England.'",
+    outcome: "success",
+    category: "momentum"
+  },
+  {
+    rishi: "George Soros",
+    stock: "Thai Baht (Short)",
+    market: "Global",
+    yearBought: 1997,
+    return: "+$790M",
+    thesis: "Asian Tiger economies overleveraged with dollar-pegged currencies. Property bubble funded by foreign debt. Shorted baht, triggering currency collapse + Asian Financial Crisis. Controversial but profitable macro call.",
+    outcome: "success",
+    category: "distressed"
+  },
+  {
+    rishi: "George Soros",
+    stock: "Quantum Fund Tech Bubble",
+    market: "US",
+    yearBought: 1999,
+    yearSold: 2000,
+    return: "−$5B loss",
+    thesis: "Rode internet bubble momentum in 1999 despite knowing it was unsustainable. Reflexivity thesis: bubbles persist longer than logic suggests. MISTAKE: Stayed too long, lost billions when bubble burst in March 2000.",
+    outcome: "failure",
+    category: "momentum"
   },
 
-  // ════════════════════════════════════════
-  // SETH KLARMAN
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // BENJAMIN GRAHAM — The Father of Value Investing
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Seth Klarman',
-    rishiShort: 'Klarman',
-    stock: 'Theravance Biopharma',
-    ticker: 'TBPH',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '2014',
-    return: 'Multiple',
-    thesis: 'Deep value in biotech spinoff. Pipeline value massively underpriced. Margin of safety existed even with drug development risk. Classic Klarman: buy fear, not hope.',
-    outcome: 'success',
-    category: 'value',
-    keyMetricAtBuy: 'Sum-of-parts discount to NAV',
-    whatHappened: 'Baupost\'s biotech thesis generated strong returns. Klarman\'s discipline: never pay for hope, only for hidden assets.',
-    glossaryHint: 'margin of safety intrinsic value permanent loss'
+    rishi: "Benjamin Graham",
+    stock: "GEICO",
+    market: "US",
+    yearBought: 1948,
+    yearSold: 1972,
+    buyPrice: 27,
+    sellPrice: 16200,
+    return: "+60,000%",
+    thesis: "Bought 50% of GEICO for $712K when it was private. Direct-to-consumer auto insurance eliminated agent commissions = cost moat. Insurance float concept. Sold to public, became Graham's greatest investment. Buffett later bought entire company.",
+    outcome: "success",
+    category: "value"
+  },
+  {
+    rishi: "Benjamin Graham",
+    stock: "Northern Pipeline",
+    market: "US",
+    yearBought: 1926,
+    thesis: "Net-net: company trading below liquidation value of its railroad bonds. Forced management to distribute hidden assets to shareholders via proxy fight. Classic Graham 'cigar butt' — cheap asset extraction play.",
+    outcome: "success",
+    category: "value"
   },
 
-  // ════════════════════════════════════════
-  // JOEL GREENBLATT
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // MOHNISH PABRAI — Heads I Win, Tails I Don't Lose Much
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Joel Greenblatt',
-    rishiShort: 'Greenblatt',
-    stock: 'Spinoffs (Strategy)',
-    ticker: 'Various',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1985-2000',
-    return: '50% annualized over 10 years',
-    returnMultiple: '50x in 10 years',
-    thesis: 'Institutional investors dump spinoffs blindly — index funds can\'t hold them, parent shareholders don\'t want them. Forced selling creates deep discounts. Management in spinoffs have incentive to perform.',
-    outcome: 'legendary',
-    category: 'value',
-    keyMetricAtBuy: 'Forced seller dynamic = guaranteed mispricing',
-    whatHappened: 'Gotham Capital averaged 50% returns for 10 years using spinoff strategy. Magic formula then systematized the quality + cheapness approach.',
-    glossaryHint: 'magic formula earnings yield asymmetric bet contrarian'
+    rishi: "Mohnish Pabrai",
+    stock: "Fiat Chrysler",
+    market: "US",
+    yearBought: 2015,
+    yearSold: 2021,
+    buyPrice: 8,
+    sellPrice: 22,
+    return: "+175%",
+    thesis: "Sergio Marchionne turnaround. Jeep brand = only asset worth owning. Bought at liquidation value — downside protected by parts value. Merger with PSA created upside optionality. Asymmetric bet executed perfectly.",
+    outcome: "success",
+    category: "value"
+  },
+  {
+    rishi: "Mohnish Pabrai",
+    stock: "Horsehead Holdings",
+    market: "US",
+    yearBought: 2014,
+    yearSold: 2016,
+    buyPrice: 12,
+    sellPrice: 0.10,
+    return: "−99%",
+    thesis: "Zinc recycling technology. MISTAKE: New plant had operational issues, debt crushed company into bankruptcy. Pabrai's public lesson on position sizing: 'I broke my own rule on asymmetry — downside was NOT limited.'",
+    outcome: "failure",
+    category: "distressed"
+  },
+  {
+    rishi: "Mohnish Pabrai",
+    stock: "Seritage Growth Properties",
+    market: "US",
+    yearBought: 2015,
+    return: "+150%",
+    thesis: "Sears real estate spinoff. Controlled by Eddie Lampert and Berkshire. Real estate value > market cap. Prime mall locations could be redeveloped. Downside = land value, upside = retail transformation or sale.",
+    outcome: "active",
+    category: "value"
   },
 
-  // ════════════════════════════════════════
-  // JOHN TEMPLETON
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // NEMISH SHAH — The Balance Sheet Detective
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'John Templeton',
-    rishiShort: 'Templeton',
-    stock: 'Japan (Post-War Basket)',
-    ticker: 'Various',
-    flag: '🇯🇵',
-    market: 'Global',
-    yearBought: '1962',
-    yearSold: '1989',
-    return: '+1,500%',
-    returnMultiple: '16x',
-    thesis: 'Japan was rebuilding from rubble. Stocks at 2x earnings. No one invested in Japan. Templeton visited personally, saw the work ethic and rebuilding energy. Maximum pessimism = maximum opportunity.',
-    outcome: 'legendary',
-    category: 'macro_play',
-    keyMetricAtBuy: 'P/E 2x, entire country dismissed by Western investors',
-    whatHappened: 'Japan became the world\'s 2nd largest economy by 1989. Templeton sold at the peak. 16x return over 27 years.',
-    glossaryHint: 'contrarian gdp growth mean reversion'
+    rishi: "Nemish Shah",
+    stock: "Page Industries",
+    market: "India",
+    yearBought: 2007,
+    yearSold: 2020,
+    buyPrice: 1200,
+    sellPrice: 24000,
+    return: "+1,900%",
+    thesis: "Jockey brand exclusive license in India. Innerwear category growing with organized retail. High ROE (>40%) with minimal debt. Hidden asset: brand value not on balance sheet. Pricing power = inflation-proof business.",
+    outcome: "success",
+    category: "quality"
+  },
+  {
+    rishi: "Nemish Shah",
+    stock: "Symphony Ltd",
+    market: "India",
+    yearBought: 2010,
+    return: "+2,800%",
+    thesis: "Air cooler manufacturer with 60% market share. Asset-light model: outsources manufacturing, focuses on R&D and branding. Zero debt, high FCF conversion. Export opportunity untapped. Balance sheet had hidden land parcels in Rajkot.",
+    outcome: "active",
+    category: "quality"
   },
 
-  // ════════════════════════════════════════
-  // WALTER SCHLOSS
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // ASHISH KACHOLIA — The Smallcap Hunter
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Walter Schloss',
-    rishiShort: 'Schloss',
-    stock: 'Net-Nets Basket',
-    ticker: 'Various',
-    flag: '🇺🇸',
-    market: 'USA',
-    yearBought: '1955-2003',
-    return: '15.3% CAGR over 47 years',
-    returnMultiple: '700x over 47 years',
-    thesis: 'Simple Graham method: Buy stocks below liquidation value. Diversify across 100 names. Hold until market recognizes value. No conferences, no management meetings. Just balance sheets.',
-    outcome: 'legendary',
-    category: 'value',
-    keyMetricAtBuy: 'Price < net current asset value consistently',
-    whatHappened: 'Schloss ran his fund from a single room with no computer. Beat S&P500 for 47 years. Buffett called him a "superinvestor."',
-    glossaryHint: 'margin of safety price to book intrinsic value working capital'
+    rishi: "Ashish Kacholia",
+    stock: "Relaxo Footwear",
+    market: "India",
+    yearBought: 2012,
+    yearSold: 2021,
+    buyPrice: 150,
+    sellPrice: 1100,
+    return: "+633%",
+    thesis: "Hawai chappal to branded footwear transition. Rural distribution moat — 25,000 retailers. Capital efficiency: high ROE with low debt. Discovered before mutual funds noticed. Exited when valuation became expensive (PE >80).",
+    outcome: "success",
+    category: "growth"
+  },
+  {
+    rishi: "Ashish Kacholia",
+    stock: "Vaibhav Global",
+    market: "India",
+    yearBought: 2015,
+    return: "+450%",
+    thesis: "TV home shopping + e-commerce jewelry targeting US/UK. Outsourced manufacturing in India = margin advantage. Zero retail footprint = capital-light. Management with skin in the game. Undiscovered by institutional investors.",
+    outcome: "active",
+    category: "growth"
   },
 
-  // ════════════════════════════════════════
-  // NEMISH SHAH
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // DOLLY KHANNA — The Silent Operator
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Nemish Shah',
-    rishiShort: 'N. Shah',
-    stock: 'Page Industries',
-    ticker: 'PAGEIND',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2007',
-    buyPrice: '1,200',
-    sellPrice: '42,000',
-    return: '+3,400%',
-    returnMultiple: '35x',
-    thesis: 'Jockey brand in India is essentially a monopoly on premium innerwear. Huge category with no organised player. Demographics perfectly aligned. Management under Sunder Genomal was exceptional.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'Small market cap, moat invisible at category level',
-    whatHappened: 'One of India\'s best quality compounders. Nemish Shah\'s patience and insight into brand building created 35x returns.',
-    glossaryHint: 'moat management quality ten bagger compounding'
+    rishi: "Dolly Khanna",
+    stock: "Rain Industries",
+    market: "India",
+    yearBought: 2016,
+    yearSold: 2018,
+    buyPrice: 45,
+    sellPrice: 185,
+    return: "+311%",
+    thesis: "Calcined pet coke supplier to aluminum/steel. Export-focused = dollar revenue. Debt reduction story. Bought post-commodity crash when everyone avoided cyclicals. Exited before next downturn.",
+    outcome: "success",
+    category: "value"
+  },
+  {
+    rishi: "Dolly Khanna",
+    stock: "Sundaram Clayton",
+    market: "India",
+    yearBought: 2014,
+    return: "+520%",
+    thesis: "TVS Group auto component maker. Aluminum die-casting for two-wheelers. EV transition opportunity via lightweight components. Family-run, conservative balance sheet. Underfollowed microcap.",
+    outcome: "active",
+    category: "quality"
   },
 
-  // ════════════════════════════════════════
-  // VIJAY KEDIA
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // VIJAY KEDIA — The Smile Theory Investor
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Vijay Kedia',
-    rishiShort: 'Kedia',
-    stock: 'Atul Auto',
-    ticker: 'ATULAUTO',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2012',
-    buyPrice: '200',
-    sellPrice: '600',
-    return: '+200%',
-    thesis: 'Atul Auto\'s three-wheeler dominance in rural India. SMILE strategy: Small size, Medium experience, Large ambition, Extra-large market. Rural India motorisation just starting.',
-    outcome: 'success',
-    category: 'smallcap_gem',
-    keyMetricAtBuy: 'Small market cap, strong fundamentals, undiscovered by institutions',
-    whatHappened: 'Classic Kedia smallcap discovery. Held until thesis played out. Later faced competition but returned well during holding period.',
-    glossaryHint: 'ten bagger smallcap conviction scuttlebutt'
+    rishi: "Vijay Kedia",
+    stock: "Atul Auto",
+    market: "India",
+    yearBought: 2016,
+    return: "+680%",
+    thesis: "Three-wheeler gas/diesel vehicles for last-mile cargo. Gujarat-focused distribution. CNG conversion tailwind. SMILE theory: Small in size, Medium in aspirations, Large in growth potential, Extra in leadership quality.",
+    outcome: "active",
+    category: "growth"
   },
   {
-    rishi: 'Vijay Kedia',
-    rishiShort: 'Kedia',
-    stock: 'Vaibhav Global',
-    ticker: 'VAIBHAVGBL',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2015',
-    buyPrice: '400',
-    return: '15x in 6 years',
-    thesis: 'Value retail jewellery through TV shopping globally. Asset-light. Growing subscriber base. US + UK market. Kedia recognised the cable-TV-to-online transition was a tailwind, not headwind.',
-    outcome: 'legendary',
-    category: 'smallcap_gem',
-    keyMetricAtBuy: 'Low PE despite global business, misunderstood by market',
-    whatHappened: 'One of Kedia\'s best multi-baggers. SMILE thesis confirmed — small company, massive global market.',
-    glossaryHint: 'ten bagger asset light conviction smallcap'
+    rishi: "Vijay Kedia",
+    stock: "Tejas Networks",
+    market: "India",
+    yearBought: 2017,
+    yearSold: 2020,
+    buyPrice: 220,
+    sellPrice: 95,
+    return: "−57%",
+    thesis: "Telecom equipment 'Make in India' story. Government contracts for 4G rollout. MISTAKE: Execution delays + competitive pressure from Chinese vendors destroyed margins. Lesson: theme alone is not enough without execution moat.",
+    outcome: "failure",
+    category: "growth"
   },
 
-  // ════════════════════════════════════════
-  // BASANT MAHESHWARI
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // PORINJU VELIYATH — The Contrarian Value Hunter
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Basant Maheshwari',
-    rishiShort: 'Basant',
-    stock: 'Page Industries (Early)',
-    ticker: 'PAGEIND',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2010',
-    buyPrice: '2,000',
-    return: '20x',
-    thesis: 'Quality business at reasonable price. PE of 25 for 30% earnings growth = PEG below 1. Market never pays enough for predictable growth. Basant\'s "right stock, right price" philosophy.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'PEG below 1, predictable compounding',
-    whatHappened: 'Validated the PEG ratio approach for Indian markets. Page Industries became Basant\'s flagship holding.',
-    glossaryHint: 'peg ratio compounding quality pricing power'
+    rishi: "Porinju Veliyath",
+    stock: "Geojit Financial",
+    market: "India",
+    yearBought: 2009,
+    yearSold: 2015,
+    buyPrice: 12,
+    sellPrice: 85,
+    return: "+608%",
+    thesis: "Post-2008 crash contrarian buy. South India broking presence. Recovery in equity participation from retail investors. Exited before discount brokers (Zerodha) disrupted commission model.",
+    outcome: "success",
+    category: "value"
+  },
+  {
+    rishi: "Porinju Veliyath",
+    stock: "Manappuram Finance",
+    market: "India",
+    yearBought: 2012,
+    return: "+380%",
+    thesis: "Gold loan NBFC recovery after regulatory crackdown. Bought when stock fell 70% due to RBI restrictions. Strong Kerala presence, family management. Contrarian bet on regulatory overreach being temporary.",
+    outcome: "active",
+    category: "value"
   },
 
-  // ════════════════════════════════════════
-  // PORINJU VELIYATH
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // RAAMDEO AGARWAL — The QGLP Framework Creator
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Porinju Veliyath',
-    rishiShort: 'Porinju',
-    stock: 'Eveready Industries',
-    ticker: 'EVEREADY',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2015',
-    buyPrice: '150',
-    sellPrice: '450',
-    return: '+200%',
-    thesis: 'Turnaround in battery business. Brand value unrecognized. Management change. Asset-heavy company becoming leaner. Classic Porinju: contrarian + smallcap + neglected sector.',
-    outcome: 'success',
-    category: 'turnaround_trap',
-    keyMetricAtBuy: 'Depressed valuation, brand stronger than stock price',
-    whatHappened: 'Sold before company faced challenges again. Demonstrated his ability to call turnarounds and exit correctly.',
-    glossaryHint: 'turnaround contrarian value trap management quality'
+    rishi: "Raamdeo Agarwal",
+    stock: "HDFC Bank",
+    market: "India",
+    yearBought: 1995,
+    thesis: "Private sector banking license in 1994 = structural shift from PSU banks. Aditya Puri's execution excellence. QGLP framework perfect fit: Quality (best NPA), Growth (credit demand), Longevity (regulatory moat), Price (PE 12 at IPO).",
+    outcome: "active",
+    category: "quality"
+  },
+  {
+    rishi: "Raamdeo Agarwal",
+    stock: "Pidilite Industries",
+    market: "India",
+    yearBought: 2000,
+    thesis: "Fevicol = generic trademark. Construction adhesive category creation. B2C brand in B2B category = pricing power. Family management with long-term focus. 'Longevity' in QGLP = business will outlive us all.",
+    outcome: "active",
+    category: "quality"
   },
 
-  // ════════════════════════════════════════
-  // RAAMDEO AGRAWAL
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // BASANT MAHESHWARI — The Sector Rotation Specialist
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Raamdeo Agrawal',
-    rishiShort: 'Raamdeo',
-    stock: 'Hero Honda',
-    ticker: 'HEROMOTOCO',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '1995',
-    buyPrice: '30',
-    return: '100x+',
-    thesis: 'India\'s two-wheeler revolution was inevitable. Hero Honda had the Honda technology + Indian distribution. QGLP framework: Quality management, Growth, Longevity of business, Price paid.',
-    outcome: 'legendary',
-    category: 'consumer_moat',
-    keyMetricAtBuy: 'Low PE, dominant market position, growing Indian middle class',
-    whatHappened: 'Raamdeo\'s QGLP framework validated with Hero Honda. Used the same approach for Eicher Motors (RE bikes) — another 100x.',
-    glossaryHint: 'moat management quality compounding cagr'
+    rishi: "Basant Maheshwari",
+    stock: "La Opala RG",
+    market: "India",
+    yearBought: 2011,
+    yearSold: 2018,
+    buyPrice: 40,
+    sellPrice: 320,
+    return: "+700%",
+    thesis: "Opal glassware tableware targeting aspirational households. China +1 export opportunity. Sushil Jhunjhunwala's management. Sector tailwind: premiumization in home products. Exited when growth slowed.",
+    outcome: "success",
+    category: "growth"
   },
 
-  // ════════════════════════════════════════
-  // DOLLY KHANNA / KACHOLIA
-  // ════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // PHILIP FISHER — Growth at Any Price
+  // ════════════════════════════════════════════════════════════════════════════
   {
-    rishi: 'Dolly Khanna',
-    rishiShort: 'D. Khanna',
-    stock: 'Rain Industries',
-    ticker: 'RAIN',
-    flag: '🇮🇳',
-    market: 'India',
-    yearBought: '2012',
-    buyPrice: '30',
-    return: '10x',
-    thesis: 'Chemical and carbon products with global operations. Cyclical but deeply undervalued at trough. Small cap with large order book. Classic Dolly Khanna: research-intensive, contrarian, patient.',
-    outcome: 'success',
-    category: 'smallcap_gem',
-    keyMetricAtBuy: 'Low PE at cycle trough, global order book',
-    whatHappened: 'Held through the full upcycle. Sold near peak. One of her most discussed multi-bagger calls.',
-    glossaryHint: 'mean reversion contrarian smallcap cagr'
+    rishi: "Philip Fisher",
+    stock: "Motorola",
+    market: "US",
+    yearBought: 1955,
+    yearSold: 2004,
+    buyPrice: 2,
+    sellPrice: 160,
+    return: "+7,900%",
+    thesis: "Semiconductor + wireless communications pioneer. R&D culture drives product innovation. Scuttlebutt research: visited engineers, suppliers, competitors. Management quality > current valuation. Held 49 years until death.",
+    outcome: "success",
+    category: "growth"
   },
+  {
+    rishi: "Philip Fisher",
+    stock: "Texas Instruments",
+    market: "US",
+    yearBought: 1956,
+    thesis: "Silicon transistor technology leadership. Defense contracts provide stable revenue. R&D reinvestment = innovation moat. Management allocates capital to R&D, not dividends — Fisher approved. Long-term compounder.",
+    outcome: "active",
+    category: "growth"
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // JOEL GREENBLATT — Magic Formula Creator
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    rishi: "Joel Greenblatt",
+    stock: "Apple (Pre-iPhone)",
+    market: "US",
+    yearBought: 2003,
+    yearSold: 2006,
+    buyPrice: 7,
+    sellPrice: 80,
+    return: "+1,043%",
+    thesis: "iPod creating platform for ecosystem. High ROIC from iTunes + hardware. Cheap earnings yield (inverse PE). Magic Formula screen flagged it. Sold before iPhone — missed 100x but still won massively.",
+    outcome: "success",
+    category: "quality"
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // HOWARD MARKS — Risk Assessment Master
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    rishi: "Howard Marks",
+    stock: "Distressed Debt 2008-09",
+    market: "US",
+    yearBought: 2009,
+    yearSold: 2012,
+    return: "+180%",
+    thesis: "Credit crisis forced selling of high-quality bonds at 40-50 cents on dollar. Second-level thinking: market overreacted to liquidity crisis, not solvency crisis. Bought when everyone panic-sold. 'The best opportunities come in the worst times.'",
+    outcome: "success",
+    category: "distressed"
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // SETH KLARMAN — Margin of Safety Obsessed
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    rishi: "Seth Klarman",
+    stock: "Penn Central Railroad Bankruptcy",
+    market: "US",
+    yearBought: 1978,
+    thesis: "Bankrupt railroad had hidden real estate assets in Manhattan worth billions. Bought debt/equity at massive discount. Asset liquidation value > investment cost. Classic distressed value with hard asset backing.",
+    outcome: "success",
+    category: "distressed"
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // JOHN TEMPLETON — Global Contrarian
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    rishi: "John Templeton",
+    stock: "Japanese Stocks 1950s",
+    market: "Global",
+    yearBought: 1954,
+    yearSold: 1968,
+    return: "+3,000%",
+    thesis: "Post-WWII Japan reconstruction. Stocks trading at 3-5x earnings with double-digit growth. Maximum pessimism entry: everyone feared Japan would never recover. 'Buy at the point of maximum pessimism.'",
+    outcome: "success",
+    category: "value"
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // WALTER SCHLOSS — Net-Net Value King
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    rishi: "Walter Schloss",
+    stock: "Diversified Portfolio of Net-Nets",
+    market: "US",
+    yearBought: 1955,
+    yearSold: 2002,
+    return: "+16%/year for 47 years",
+    thesis: "Bought 100+ companies trading below liquidation value. Diversification + patience. No research beyond financials. Graham's cigar butts at scale. Compounded capital for 47 years with minimal drawdowns.",
+    outcome: "success",
+    category: "value"
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // RECENT PLAYS (2020-2024) — Learning from Current Markets
+  // ════════════════════════════════════════════════════════════════════════════
+  {
+    rishi: "Rakesh Jhunjhunwala",
+    stock: "Metro Brands",
+    market: "India",
+    yearBought: 2021,
+    return: "−35%",
+    thesis: "Footwear retail IPO play. Organized retail growth. MISTAKE: Paid IPO premium (PE 70+), competition from online destroyed thesis. Held until death in 2022. Lesson: even legends overpay during late-cycle euphoria.",
+    outcome: "failure",
+    category: "growth"
+  },
+  {
+    rishi: "Ashish Kacholia",
+    stock: "Chemplast Sanmar",
+    market: "India",
+    yearBought: 2021,
+    yearSold: 2023,
+    buyPrice: 550,
+    sellPrice: 380,
+    return: "−31%",
+    thesis: "Specialty chemicals IPO. China +1 thesis. MISTAKE: Capital-intensive commodity chemical, not specialty. PVC pricing collapsed post-COVID demand surge. Exited with loss — rare for Kacholia.",
+    outcome: "failure",
+    category: "growth"
+  },
+  {
+    rishi: "Vijay Kedia",
+    stock: "Aegis Logistics",
+    market: "India",
+    yearBought: 2020,
+    return: "+340%",
+    thesis: "LPG/LNG storage infrastructure. Gas demand growth + import dependency = structural tailwind. COVID crash entry at PE 8. Asset-heavy but irreplaceable infrastructure moat.",
+    outcome: "active",
+    category: "value"
+  },
+
 ];
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
+// ─── Helper Functions ─────────────────────────────────────────────────────────
 
 export function getRishiPlays(rishiName: string): RishiPlay[] {
-  return GLOBAL_RISHI_PLAYS.filter(
-    p => p.rishi === rishiName || p.rishiShort === rishiName
-  );
+  return GLOBAL_RISHI_PLAYS.filter(p => p.rishi === rishiName);
 }
 
-export function getSimilarPlays(
-  category: RishiPlay['category'],
-  excludeStock?: string,
-  limit = 6
-): RishiPlay[] {
+export function getSimilarPlays(category: RishiPlay["category"], limit = 8): RishiPlay[] {
   return GLOBAL_RISHI_PLAYS
-    .filter(p => p.category === category && p.stock !== excludeStock)
-    .sort(() => 0.5 - Math.random())
+    .filter(p => p.category === category)
     .slice(0, limit);
 }
 
-export function getLegendaryPlays(limit = 8): RishiPlay[] {
-  return GLOBAL_RISHI_PLAYS
-    .filter(p => p.outcome === 'legendary')
-    .slice(0, limit);
-}
-
-export function getPlaysByMarket(market: RishiPlay['market']): RishiPlay[] {
+export function getPlaysByMarket(market: RishiPlay["market"]): RishiPlay[] {
   return GLOBAL_RISHI_PLAYS.filter(p => p.market === market);
 }
 
-export function getFailurePlays(): RishiPlay[] {
-  return GLOBAL_RISHI_PLAYS.filter(
-    p => p.outcome === 'failure' || p.outcome === 'mixed'
-  );
+export function getSuccessfulPlays(limit = 20): RishiPlay[] {
+  return GLOBAL_RISHI_PLAYS
+    .filter(p => p.outcome === 'success')
+    .slice(0, limit);
+}
+
+export function getFailedPlays(): RishiPlay[] {
+  return GLOBAL_RISHI_PLAYS.filter(p => p.outcome === 'failure');
+}
+
+export function getRecentPlays(afterYear = 2015): RishiPlay[] {
+  return GLOBAL_RISHI_PLAYS.filter(p => p.yearBought >= afterYear);
 }

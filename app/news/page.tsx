@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS, CRICKET_LIVE, NewsItem } from '../../data/news';
 import { fetchAllNews, LiveNewsItem } from '../../lib/newsApi';
+import { useLanguage } from '../../lib/language';
 
 type Region   = 'ALL' | 'INDIA' | 'GLOBAL' | 'CRYPTO' | 'SPORTS';
 type Category = 'All' | 'Markets' | 'Economy' | 'Earnings' | 'Cricket' | 'IPL' | 'Tech' | 'Regulation' | 'Corporate' | 'Crypto';
@@ -42,10 +43,11 @@ function regionFlag(r: string) {
   return 'CR';
 }
 
-function NewsCard({ news, saved, toggleSave }: {
+function NewsCard({ news, saved, toggleSave, t }: {
   news: NewsItem | LiveNewsItem;
   saved: string[];
   toggleSave: (id: string) => void;
+  t: (key: string) => string;
 }) {
   const router  = useRouter();
   const isSaved = saved.includes(news.id);
@@ -58,6 +60,8 @@ function NewsCard({ news, saved, toggleSave }: {
       router.push('/news/' + news.id);
     }
   };
+
+  const impactLabel = news.impact === 'POSITIVE' ? t('news.bullish') : news.impact === 'NEGATIVE' ? t('news.bearish') : t('news.neutral');
 
   return (
     <div
@@ -96,21 +100,21 @@ function NewsCard({ news, saved, toggleSave }: {
             background: impactBg(news.impact),
             borderRadius: 4, padding: '2px 7px',
           }}>
-            {news.impact === 'POSITIVE' ? 'BULLISH' : news.impact === 'NEGATIVE' ? 'BEARISH' : 'NEUTRAL'}
+            {impactLabel}
           </span>
           {news.isBreaking && (
             <span style={{ fontSize: 8, color: '#EF4444', background: '#EF444420', borderRadius: 4, padding: '2px 7px', fontWeight: 700 }}>
-              BREAKING
+              {t('news.breaking')}
             </span>
           )}
           {news.isTrending && (
             <span style={{ fontSize: 8, color: '#F59E0B', background: '#F59E0B15', borderRadius: 4, padding: '2px 7px', fontWeight: 700 }}>
-              HOT
+              {t('news.hot')}
             </span>
           )}
           {isLive && (
             <span style={{ fontSize: 8, color: '#10B981', background: '#10B98115', borderRadius: 4, padding: '2px 7px', fontWeight: 700 }}>
-              LIVE
+              {t('news.live')}
             </span>
           )}
         </div>
@@ -157,14 +161,14 @@ function NewsCard({ news, saved, toggleSave }: {
           ))}
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>via {news.source}</span>
+          <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{t('news.via')} {news.source}</span>
           <span style={{
             fontSize: 9,
             color: isLive ? '#10B981' : '#F59E0B',
             border: '1px solid ' + (isLive ? '#10B98130' : '#F59E0B30'),
             borderRadius: 4, padding: '3px 10px',
           }}>
-            {isLive ? 'Open source →' : 'Read full →'}
+            {isLive ? t('news.openSource') : t('news.readFull')}
           </span>
         </div>
       </div>
@@ -172,18 +176,18 @@ function NewsCard({ news, saved, toggleSave }: {
   );
 }
 
-function CricketLiveWidget() {
+function CricketLiveWidget({ t }: { t: (key: string) => string }) {
   return (
     <div className="card-sacred" style={{ padding: 16, marginBottom: 16, borderLeft: '3px solid #10B981' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ fontSize: 10, color: '#10B981', letterSpacing: 2, fontWeight: 700, fontFamily: 'monospace' }}>
-          LIVE MATCH
+          {t('news.liveCricket')}
         </div>
         <div style={{
           background: '#EF444420', border: '1px solid #EF444440',
           borderRadius: 4, padding: '2px 8px', fontSize: 8, color: '#EF4444', fontWeight: 700,
         }}>
-          LIVE
+          {t('news.live')}
         </div>
       </div>
       <div style={{ fontSize: 11, color: '#F59E0B', fontWeight: 700, marginBottom: 6 }}>{CRICKET_LIVE.match}</div>
@@ -219,14 +223,14 @@ function CricketLiveWidget() {
   );
 }
 
-function IPLStandingsWidget() {
+function IPLStandingsWidget({ t }: { t: (key: string) => string }) {
   return (
     <div className="card-sacred" style={{ padding: 16, marginBottom: 16 }}>
       <div style={{
         fontSize: 10, color: '#F59E0B', letterSpacing: 2,
         fontWeight: 600, marginBottom: 14, fontFamily: 'monospace',
       }}>
-        IPL 2025 TEAMS
+        {t('news.iplTeams')}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
         {IPL_TEAMS.map(team => (
@@ -241,7 +245,7 @@ function IPLStandingsWidget() {
               {team.name.split(' ').slice(-1)[0]}
             </div>
             <div style={{ fontSize: 8, color: '#F59E0B', marginTop: 2 }}>
-              {team.titles} titles
+              {team.titles} {t('news.titles')}
             </div>
           </div>
         ))}
@@ -251,6 +255,7 @@ function IPLStandingsWidget() {
 }
 
 export default function NewsPage() {
+  const { t } = useLanguage();
   const [region,      setRegion]      = useState<Region>('ALL');
   const [category,    setCategory]    = useState<Category>('All');
   const [search,      setSearch]      = useState('');
@@ -354,16 +359,17 @@ export default function NewsPage() {
         <div className="content-wrapper">
           <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            {' > NEWS'}
+            {' > '}
+            <span>{t('news.breadcrumb')}</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div>
               <h1 className="philosophy-heading" style={{ fontSize: 28, color: '#F59E0B', letterSpacing: 3 }}>
-                Market Intelligence
+                {t('news.title')}
               </h1>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginTop: 3, fontFamily: 'monospace' }}>
-                LIVE RSS · INDIA · GLOBAL · CRYPTO · CRICKET · IPL
+                {t('news.subtitle')}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -372,42 +378,42 @@ export default function NewsPage() {
                   background: '#F59E0B15', border: '1px solid #F59E0B40',
                   borderRadius: 6, padding: '6px 12px', fontSize: 10, color: '#F59E0B',
                 }}>
-                  Fetching live...
+                  {t('news.fetchingLive')}
                 </div>
               ) : (
                 <div style={{
                   background: '#10B98115', border: '1px solid #10B98130',
                   borderRadius: 6, padding: '6px 12px', fontSize: 10, color: '#10B981',
                 }}>
-                  Updated {lastUpdated}
+                  {t('news.updated')} {lastUpdated}
                 </div>
               )}
               <div style={{
                 background: '#EF444415', border: '1px solid #EF444430',
                 borderRadius: 6, padding: '6px 12px', fontSize: 10, color: '#EF4444', fontWeight: 700,
               }}>
-                LIVE
+                {t('news.live')}
               </div>
               <button onClick={loadLiveNews} style={{
                 background: '#818CF815', border: '1px solid #818CF840',
                 borderRadius: 6, padding: '6px 12px', fontSize: 10, color: '#818CF8',
                 cursor: 'pointer', fontFamily: 'monospace',
               }}>
-                Refresh
+                {t('news.refresh')}
               </button>
               <div style={{
                 background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)',
                 borderRadius: 6, padding: '6px 12px', fontSize: 10, color: 'var(--text-muted)',
                 fontFamily: 'monospace',
               }}>
-                {allNews.length} stories
+                {allNews.length} {t('news.stories')}
               </div>
               <button onClick={() => router.push('/news/saved')} style={{
                 background: '#F59E0B15', border: '1px solid #F59E0B40',
                 borderRadius: 6, padding: '6px 12px', fontSize: 10, color: '#F59E0B',
                 cursor: 'pointer', fontFamily: 'monospace',
               }}>
-                ★ {saved.length} saved
+                ★ {saved.length} {t('news.saved')}
               </button>
             </div>
           </div>
@@ -420,22 +426,22 @@ export default function NewsPage() {
               display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap',
             }}>
               <span style={{ fontSize: 10, color: '#10B981', fontWeight: 700, fontFamily: 'monospace' }}>
-                LIVE RSS ACTIVE
+                {t('news.liveRssActive')}
               </span>
               <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
-                {liveNews.filter(n => n.region === 'INDIA').length} India
+                {liveNews.filter(n => n.region === 'INDIA').length} {t('news.india')}
               </span>
               <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
-                {liveNews.filter(n => n.region === 'GLOBAL').length} Global
+                {liveNews.filter(n => n.region === 'GLOBAL').length} {t('news.global')}
               </span>
               <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
-                {liveNews.filter(n => n.region === 'CRYPTO').length} Crypto
+                {liveNews.filter(n => n.region === 'CRYPTO').length} {t('news.crypto')}
               </span>
               <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>
-                {liveNews.filter(n => n.region === 'SPORTS').length} Sports
+                {liveNews.filter(n => n.region === 'SPORTS').length} {t('news.sports')}
               </span>
               <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>
-                Auto-refreshes every 5 minutes
+                {t('news.autoRefresh')}
               </span>
             </div>
           )}
@@ -444,7 +450,7 @@ export default function NewsPage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search — RBI, Infosys, Bitcoin, Virat Kohli, IPL..."
+            placeholder={t('news.searchPlaceholder')}
             style={{
               width: '100%', background: 'var(--bg-card)',
               border: '1px solid var(--border-primary)', borderRadius: 8,
@@ -493,7 +499,7 @@ export default function NewsPage() {
 
           {/* LEFT FEED */}
           <div>
-            {(region === 'ALL' || region === 'SPORTS') && <CricketLiveWidget />}
+            {(region === 'ALL' || region === 'SPORTS') && <CricketLiveWidget t={t} />}
 
             {breaking.length > 0 && (
               <div style={{ marginBottom: 24 }}>
@@ -503,12 +509,12 @@ export default function NewsPage() {
                     borderRadius: 4, padding: '3px 10px', fontSize: 9, color: '#EF4444',
                     fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace',
                   }}>
-                    BREAKING
+                    {t('news.breaking')}
                   </div>
                   <div style={{ height: 1, flex: 1, background: '#EF444420' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {breaking.map(n => <NewsCard key={n.id} news={n} saved={saved} toggleSave={toggleSave} />)}
+                  {breaking.map(n => <NewsCard key={n.id} news={n} saved={saved} toggleSave={toggleSave} t={t} />)}
                 </div>
               </div>
             )}
@@ -521,12 +527,12 @@ export default function NewsPage() {
                     borderRadius: 4, padding: '3px 10px', fontSize: 9, color: '#F59E0B',
                     fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace',
                   }}>
-                    TRENDING
+                    {t('news.trending')}
                   </div>
                   <div style={{ height: 1, flex: 1, background: '#F59E0B20' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {trending.map(n => <NewsCard key={n.id} news={n} saved={saved} toggleSave={toggleSave} />)}
+                  {trending.map(n => <NewsCard key={n.id} news={n} saved={saved} toggleSave={toggleSave} t={t} />)}
                 </div>
               </div>
             )}
@@ -539,19 +545,19 @@ export default function NewsPage() {
                     borderRadius: 4, padding: '3px 10px', fontSize: 9, color: '#818CF8',
                     fontWeight: 700, letterSpacing: 2, fontFamily: 'monospace',
                   }}>
-                    LATEST
+                    {t('news.latest')}
                   </div>
                   <div style={{ height: 1, flex: 1, background: '#818CF820' }} />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {rest.map(n => <NewsCard key={n.id} news={n} saved={saved} toggleSave={toggleSave} />)}
+                  {rest.map(n => <NewsCard key={n.id} news={n} saved={saved} toggleSave={toggleSave} t={t} />)}
                 </div>
               </div>
             )}
 
             {breaking.length === 0 && trending.length === 0 && rest.length === 0 && (
               <div className="card-sacred" style={{ textAlign: 'center', padding: 60 }}>
-                <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>No stories match your filters</div>
+                <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>{t('news.noMatch')}</div>
                 <button
                   onClick={() => { setRegion('ALL'); setCategory('All'); setSearch(''); }}
                   style={{
@@ -560,7 +566,7 @@ export default function NewsPage() {
                     fontSize: 11, fontFamily: 'monospace',
                   }}
                 >
-                  Clear filters
+                  {t('news.clearFilters')}
                 </button>
               </div>
             )}
@@ -576,9 +582,9 @@ export default function NewsPage() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={{ fontSize: 9, color: '#10B981', fontWeight: 700, fontFamily: 'monospace' }}>
-                    LIVE CRICKET
+                    {t('news.liveCricket')}
                   </span>
-                  <span style={{ fontSize: 8, color: '#EF4444', fontWeight: 700 }}>LIVE</span>
+                  <span style={{ fontSize: 8, color: '#EF4444', fontWeight: 700 }}>{t('news.live')}</span>
                 </div>
                 <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 4 }}>
                   India vs Australia
@@ -587,17 +593,17 @@ export default function NewsPage() {
                   <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700, fontFamily: 'monospace' }}>
                     IND {CRICKET_LIVE.india.score}
                   </span>
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>vs</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{t('news.vs')}</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'monospace' }}>
                     AUS {CRICKET_LIVE.australia.score}
                   </span>
                 </div>
                 <div style={{ fontSize: 9, color: '#10B981', marginTop: 4 }}>{CRICKET_LIVE.lead}</div>
-                <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 4 }}>Click to see sports news →</div>
+                <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 4 }}>{t('news.clickToSee')}</div>
               </div>
             )}
 
-            <IPLStandingsWidget />
+            <IPLStandingsWidget t={t} />
 
             {/* Trending Topics */}
             <div className="card-sacred" style={{ padding: 16, marginBottom: 16 }}>
@@ -605,12 +611,12 @@ export default function NewsPage() {
                 fontSize: 10, color: '#F59E0B', letterSpacing: 2,
                 fontWeight: 600, marginBottom: 14, fontFamily: 'monospace',
               }}>
-                TRENDING
+                {t('news.trendingTopics')}
               </div>
-              {TRENDING_TOPICS.map((t, i) => (
+              {TRENDING_TOPICS.map((topic, i) => (
                 <div
-                  key={t.topic}
-                  onClick={() => setSearch(t.topic.split(' ')[0])}
+                  key={topic.topic}
+                  onClick={() => setSearch(topic.topic.split(' ')[0])}
                   style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     padding: '8px 0', borderBottom: '1px solid var(--border-subtle)',
@@ -621,11 +627,11 @@ export default function NewsPage() {
                     <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 16, fontFamily: 'monospace' }}>
                       #{i + 1}
                     </span>
-                    <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{t.topic}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{topic.topic}</span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 9, color: '#10B981' }}>{t.change}</div>
-                    <div style={{ fontSize: 8, color: 'var(--text-muted)' }}>{(t.count / 1000).toFixed(1)}K</div>
+                    <div style={{ fontSize: 9, color: '#10B981' }}>{topic.change}</div>
+                    <div style={{ fontSize: 8, color: 'var(--text-muted)' }}>{(topic.count / 1000).toFixed(1)}K</div>
                   </div>
                 </div>
               ))}
@@ -637,15 +643,15 @@ export default function NewsPage() {
                 fontSize: 10, color: '#818CF8', letterSpacing: 2,
                 fontWeight: 600, marginBottom: 14, fontFamily: 'monospace',
               }}>
-                TODAY'S PULSE
+                {t('news.todaysPulse')}
               </div>
               {[
-                { label: 'Total',    value: allNews.length.toString(),                                 color: 'var(--text-primary)', fn: () => { setRegion('ALL'); setCategory('All'); } },
-                { label: 'Breaking', value: allNews.filter(n => n.isBreaking).length.toString(),       color: '#EF4444',              fn: () => {} },
-                { label: 'India',    value: allNews.filter(n => n.region === 'INDIA').length.toString(), color: '#F59E0B',              fn: () => setRegion('INDIA') },
-                { label: 'Global',   value: allNews.filter(n => n.region === 'GLOBAL').length.toString(), color: '#818CF8',              fn: () => setRegion('GLOBAL') },
-                { label: 'Crypto',   value: allNews.filter(n => n.region === 'CRYPTO').length.toString(), color: '#A78BFA',              fn: () => setRegion('CRYPTO') },
-                { label: 'Sports',   value: allNews.filter(n => n.region === 'SPORTS').length.toString(), color: '#10B981',              fn: () => setRegion('SPORTS') },
+                { label: t('news.total'),    value: allNews.length.toString(),                                 color: 'var(--text-primary)', fn: () => { setRegion('ALL'); setCategory('All'); } },
+                { label: t('news.breaking'), value: allNews.filter(n => n.isBreaking).length.toString(),       color: '#EF4444',              fn: () => {} },
+                { label: t('news.india'),    value: allNews.filter(n => n.region === 'INDIA').length.toString(), color: '#F59E0B',              fn: () => setRegion('INDIA') },
+                { label: t('news.global'),   value: allNews.filter(n => n.region === 'GLOBAL').length.toString(), color: '#818CF8',              fn: () => setRegion('GLOBAL') },
+                { label: t('news.crypto'),   value: allNews.filter(n => n.region === 'CRYPTO').length.toString(), color: '#A78BFA',              fn: () => setRegion('CRYPTO') },
+                { label: t('news.sports'),   value: allNews.filter(n => n.region === 'SPORTS').length.toString(), color: '#10B981',              fn: () => setRegion('SPORTS') },
               ].map(s => (
                 <div
                   key={s.label}

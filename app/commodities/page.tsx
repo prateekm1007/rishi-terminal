@@ -9,6 +9,7 @@ import { scoreRickRule } from '../../lib/scorers/commodity/rickrule';
 import { scoreDanielYergin } from '../../lib/scorers/commodity/danielyergin';
 import { isPremium } from '../../lib/premium';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
+import { useLanguage } from '../../lib/language';
 
 const COMMODITY_RISHIS = [
   {
@@ -47,6 +48,7 @@ function scoreColor(score: number): string {
 }
 
 export default function CommoditiesPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [category, setCategory] = useState('All');
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -64,15 +66,16 @@ export default function CommoditiesPage() {
         <div className="content-wrapper">
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2, fontFamily: 'monospace' }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            {' > COMMODITIES'}
+            {' > '}
+            <span>{t('commodities.breadcrumb')}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
             <div>
               <h1 className="philosophy-heading" style={{ fontSize: 32, color: 'var(--accent-gold)' }}>
-                Commodity Markets
+                {t('commodities.title')}
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.6 }}>
-                Jim Rogers, Rick Rule, Daniel Yergin — supercycles, precious metals, and energy geopolitics.
+                {t('commodities.subtitle')}
               </p>
             </div>
           </div>
@@ -84,10 +87,10 @@ export default function CommoditiesPage() {
         {/* Quick Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
           {[
-            { label: 'Gold Spot',   value: '$2,650/oz',                 color: 'var(--accent-gold)' },
-            { label: 'Silver Spot', value: '$32.5/oz',                  color: '#94A3B8' },
-            { label: 'Crude WTI',   value: '$72.5/bbl',                 color: 'var(--accent-blue)' },
-            { label: 'Tracked',     value: COMMODITIES.length + ' assets', color: 'var(--accent-green)' },
+            { label: t('commodities.goldSpot'),   value: '$2,650/oz',                 color: 'var(--accent-gold)' },
+            { label: t('commodities.silverSpot'), value: '$32.5/oz',                  color: '#94A3B8' },
+            { label: t('commodities.crudeWti'),   value: '$72.5/bbl',                 color: 'var(--accent-blue)' },
+            { label: t('commodities.tracked'),     value: COMMODITIES.length + ' ' + t('commodities.assets'), color: 'var(--accent-green)' },
           ].map(stat => (
             <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
@@ -99,7 +102,7 @@ export default function CommoditiesPage() {
         {/* Rishi Cards */}
         <div style={{ marginBottom: 8 }}>
           <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
-            COMMODITY PHILOSOPHERS
+            {t('commodities.commodityPhilosophers')}
           </div>
         </div>
 
@@ -136,7 +139,7 @@ export default function CommoditiesPage() {
                         {guru.name}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                        {result.label} — {result.origin} — analyzing {commodity.name}
+                        {result.label} — {result.origin} — {t('commodities.analyzing')} {commodity.name}
                       </div>
                     </div>
                   </div>
@@ -163,18 +166,18 @@ export default function CommoditiesPage() {
                   <div style={{ borderTop: '1px solid var(--border-primary)', padding: 24 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 20 }}>
                       <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 18 }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>ABOUT</div>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>{t('commodities.about')}</div>
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{guru.bio}</p>
                       </div>
                       <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 18, borderLeft: '3px solid var(--accent-gold)' }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>SIGNATURE QUOTE</div>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>{t('commodities.signatureQuote')}</div>
                         <p style={{ fontSize: 14, color: 'var(--accent-gold)', fontStyle: 'italic', lineHeight: 1.7 }}>"{guru.quote}"</p>
                       </div>
                     </div>
 
                     <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 18, marginBottom: 20 }}>
                       <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>
-                        CURRENT ANALYSIS — {commodity.name} at {commodity.price}{commodity.unit}
+                        {t('commodities.currentAnalysis')} — {commodity.name} {t('commodities.at')} {commodity.price}{commodity.unit}
                       </div>
                       <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{result.insight}</p>
                     </div>
@@ -203,7 +206,7 @@ export default function CommoditiesPage() {
         {/* Commodity Table */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
           <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, fontFamily: 'monospace' }}>
-            ALL COMMODITIES — CLICK TO EXPLORE
+            {t('commodities.allCommodities')}
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {categories.map(cat => (
@@ -224,7 +227,7 @@ export default function CommoditiesPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
-                  {['Commodity', 'Price', 'Change', '52W Low', '52W High', '52W Position'].map((h, i) => (
+                  {[t('commodities.commodity'), t('commodities.price'), t('commodities.change'), t('commodities.low52w'), t('commodities.high52w'), t('commodities.position52w')].map((h, i) => (
                     <th key={h} style={{
                       textAlign: i === 0 ? 'left' : 'right',
                       padding: '12px 16px',

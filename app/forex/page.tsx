@@ -4,8 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FOREX_PAIRS } from '../../data/forex';
+import { useLanguage } from '../../lib/language';
 
 export default function ForexPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const pairList = Object.values(FOREX_PAIRS);
 
@@ -23,35 +25,40 @@ export default function ForexPage() {
         <div className="content-wrapper">
           <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            {' > FOREX'}
+            {' > '}
+            <span>{t('forex.breadcrumb')}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
             <div>
               <h1 className="philosophy-heading" style={{ fontSize: 36, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8, lineHeight: 1.1 }}>
-                Forex Dashboard
+                {t('forex.title')}
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
-                Major currency pairs analyzed through macro-economic Rishi perspectives
+                {t('forex.subtitle')}
               </p>
             </div>
 
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160 }}>
-              <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>PAIRS</div>
+              <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
+                {t('forex.pairs')}
+              </div>
               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
                 {pairList.length}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>INR Cross Rates</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                {t('forex.inrCrossRates')}
+              </div>
             </div>
           </div>
 
           {/* Quick Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
             {[
-              { label: 'Avg Volatility', value: avgVol + '%',                                      color: 'var(--accent-gold)',  bg: 'rgba(255,215,0,0.08)', border: 'rgba(255,215,0,0.2)' },
-              { label: '24h Volume',      value: '$' + (totalVolume / 1e9).toFixed(1) + 'B',       color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)' },
-              { label: 'USD/INR Spot',    value: FOREX_PAIRS.USDINR.spotRate.toFixed(2),          color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)' },
-              { label: 'EUR/INR Spot',    value: FOREX_PAIRS.EURINR.spotRate.toFixed(2),          color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
+              { label: t('forex.avgVolatility'), value: avgVol + '%',                                      color: 'var(--accent-gold)',  bg: 'rgba(255,215,0,0.08)', border: 'rgba(255,215,0,0.2)' },
+              { label: t('forex.volume24h'),      value: '$' + (totalVolume / 1e9).toFixed(1) + 'B',       color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)' },
+              { label: t('forex.usdInrSpot'),    value: FOREX_PAIRS.USDINR.spotRate.toFixed(2),          color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)' },
+              { label: t('forex.eurInrSpot'),    value: FOREX_PAIRS.EURINR.spotRate.toFixed(2),          color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
             ].map(stat => (
               <div
                 key={stat.label}
@@ -77,7 +84,7 @@ export default function ForexPage() {
       {/* Forex Table */}
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
         <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
-          CURRENCY PAIRS — CLICK TO EXPLORE
+          {t('forex.currencyPairs')}
         </div>
 
         <div className="card-sacred" style={{ overflow: 'hidden' }}>
@@ -85,7 +92,7 @@ export default function ForexPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
-                  {['Pair', 'Spot', 'Bid', 'Ask', 'Spread', '1M Fwd', 'Vol %', 'PPP'].map((h, i) => (
+                  {[t('forex.pair'), t('forex.spot'), t('forex.bid'), t('forex.ask'), t('forex.spread'), t('forex.forward1m'), t('forex.volatility'), t('forex.ppp')].map((h, i) => (
                     <th key={h} style={{
                       textAlign: i === 0 ? 'left' : 'right',
                       padding: '14px 24px',
@@ -153,7 +160,7 @@ export default function ForexPage() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border-primary)' }}>
-          FOREX MARKET DATA — RISHI TERMINAL v4.1 — MULTI-ASSET WISDOM OS
+          {t('forex.footer')}
         </div>
       </div>
 

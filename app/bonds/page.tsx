@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BONDS } from '../../data/bonds';
+import { useLanguage } from '../../lib/language';
 
 type BondType = 'All' | 'G-Sec' | 'SDL' | 'Corporate' | 'T-Bill';
 
@@ -15,6 +16,7 @@ function typeColor(type: string) {
 }
 
 export default function BondsPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [typeFilter, setTypeFilter] = useState<BondType>('All');
   const [sortBy, setSortBy] = useState<'ytm' | 'duration' | 'maturity'>('ytm');
@@ -49,16 +51,17 @@ export default function BondsPage() {
         <div className="content-wrapper">
           <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            {' > BOND MARKET'}
+            {' > '}
+            <span>{t('bonds.breadcrumb')}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
             <div>
               <h1 className="philosophy-heading" style={{ fontSize: 36, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>
-                Bond Market
+                {t('bonds.title')}
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
-                G-Secs, SDLs, Corporate Bonds & T-Bills analyzed through fixed-income Rishi wisdom
+                {t('bonds.subtitle')}
               </p>
             </div>
 
@@ -67,24 +70,26 @@ export default function BondsPage() {
               borderRadius: 12, padding: '16px 24px', minWidth: 160,
             }}>
               <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
-                TOTAL BONDS
+                {t('bonds.totalBonds')}
               </div>
               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
                 {bondList.length}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>Sovereign + Corporate</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                {t('bonds.sovereignCorporate')}
+              </div>
             </div>
           </div>
 
           {/* Quick Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
             {[
-              { label: 'G-Secs',        count: gSecs.length,             color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
-              { label: 'SDLs',          count: sdls.length,              color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)' },
-              { label: 'Corporate',     count: corporate.length,         color: 'var(--accent-gold)',  bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.2)' },
-              { label: 'T-Bills',       count: tbills.length,            color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
-              { label: 'Avg YTM',       count: avgYTM + '%',             color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
-              { label: 'Avg Duration', count: avgDuration + 'y',        color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
+              { label: t('bonds.gSecs'),        count: gSecs.length,             color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
+              { label: t('bonds.sdls'),          count: sdls.length,              color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)' },
+              { label: t('bonds.corporate'),     count: corporate.length,         color: 'var(--accent-gold)',  bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.2)' },
+              { label: t('bonds.tBills'),       count: tbills.length,            color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
+              { label: t('bonds.avgYtm'),       count: avgYTM + '%',             color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
+              { label: t('bonds.avgDuration'), count: avgDuration + 'y',        color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
             ].map(stat => (
               <div
                 key={stat.label}
@@ -132,7 +137,7 @@ export default function BondsPage() {
 
           <div style={{ display: 'flex', gap: 6 }}>
             <span style={{ fontSize: 11, color: 'var(--text-muted)', alignSelf: 'center', fontFamily: 'monospace' }}>
-              Sort:
+              {t('bonds.sortBy')}
             </span>
             {['ytm', 'duration', 'maturity'].map(sort => (
               <button
@@ -146,7 +151,7 @@ export default function BondsPage() {
                   cursor: 'pointer', fontFamily: 'monospace',
                 }}
               >
-                {sort === 'ytm' ? 'YTM' : sort === 'duration' ? 'Duration' : 'Maturity'}
+                {sort === 'ytm' ? t('bonds.sortYtm') : sort === 'duration' ? t('bonds.sortDuration') : t('bonds.sortMaturity')}
               </button>
             ))}
           </div>
@@ -158,7 +163,7 @@ export default function BondsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
-                  {['Bond', 'Type', 'Coupon', 'YTM', 'Price', 'Duration', 'Rating', 'Maturity'].map((h, i) => (
+                  {[t('bonds.bond'), t('bonds.type'), t('bonds.coupon'), t('bonds.ytm'), t('bonds.price'), t('bonds.duration'), t('bonds.rating'), t('bonds.maturity')].map((h, i) => (
                     <th key={h} style={{
                       textAlign: i === 0 ? 'left' : 'right',
                       padding: '14px 24px',
@@ -226,7 +231,7 @@ export default function BondsPage() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border-primary)' }}>
-          BOND MARKET DATA — RISHI TERMINAL v4.1 — MULTI-ASSET WISDOM OS
+          {t('bonds.footer')}
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import { scoreVitalikVeda } from "../../lib/scorers/crypto/vitalikVeda";
 import { scoreMichaelSaylor } from "../../lib/scorers/crypto/michaelsaylor";
 import { isPremium } from "../../lib/premium";
 import { UpgradePrompt } from "../../components/premium/UpgradePrompt";
+import { useLanguage } from "../../lib/language";
 
 const CRYPTO_RISHIS = [
   {
@@ -47,6 +48,7 @@ function scoreColor(score: number): string {
 }
 
 export default function CryptoPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [sector, setSector] = useState("All");
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -59,7 +61,7 @@ export default function CryptoPage() {
 
   const fgValue = FEAR_GREED_INDEX.value;
   const fgColor = fgValue >= 60 ? "var(--accent-green)" : fgValue >= 40 ? "var(--accent-gold)" : "var(--accent-red)";
-  const fgLabel = fgValue >= 75 ? "Extreme Greed" : fgValue >= 55 ? "Greed" : fgValue >= 45 ? "Neutral" : fgValue >= 25 ? "Fear" : "Extreme Fear";
+  const fgLabel = fgValue >= 75 ? t('crypto.extremeGreed') : fgValue >= 55 ? t('crypto.greed') : fgValue >= 45 ? t('crypto.neutral') : fgValue >= 25 ? t('crypto.fear') : t('crypto.extremeFear');
 
   return (
     <main className="page-container">
@@ -69,15 +71,16 @@ export default function CryptoPage() {
         <div className="content-wrapper">
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 16, letterSpacing: 1, fontFamily: "monospace" }}>
             <Link href="/" style={{ color: "var(--accent-gold)", textDecoration: "none" }}>RISHI TERMINAL</Link>
-            {" > CRYPTO"}
+            {" > "}
+            <span>{t('crypto.breadcrumb')}</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
             <div>
               <h1 className="philosophy-heading" style={{ fontSize: 32, color: "var(--accent-gold)", marginBottom: 8 }}>
-                Crypto Markets
+                {t('crypto.title')}
               </h1>
               <p style={{ fontSize: 13, color: "var(--text-secondary)", maxWidth: 520, lineHeight: 1.6 }}>
-                Digital assets analyzed through Satoshi Bodhi, Vitalik Veda, and Michael Saylor philosophies.
+                {t('crypto.subtitle')}
               </p>
             </div>
           </div>
@@ -89,12 +92,12 @@ export default function CryptoPage() {
         {/* Market Overview */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 28 }}>
           {[
-            { label: "Total Market Cap", value: "$" + (metrics.totalMarketCap / 1e12).toFixed(2) + "T", color: "var(--accent-gold)" },
-            { label: "24h Volume",       value: "$" + (metrics.totalVolume / 1e9).toFixed(1) + "B",     color: "var(--text-primary)" },
-            { label: "Avg RSI",          value: metrics.avgRSI.toString(),                               color: metrics.avgRSI >= 60 ? "var(--accent-green)" : "var(--accent-gold)" },
-            { label: "Sentiment",        value: metrics.sentiment,                                       color: metrics.sentiment === "BULLISH" ? "var(--accent-green)" : "var(--accent-red)" },
-            { label: "BTC Dominance",    value: MARKET_DOMINANCE.btc + "%",                             color: "var(--accent-gold)" },
-            { label: "Fear & Greed",     value: fgValue.toString() + " — " + fgLabel,                   color: fgColor },
+            { label: t('crypto.totalMarketCap'), value: "$" + (metrics.totalMarketCap / 1e12).toFixed(2) + "T", color: "var(--accent-gold)" },
+            { label: t('crypto.volume24h'),       value: "$" + (metrics.totalVolume / 1e9).toFixed(1) + "B",     color: "var(--text-primary)" },
+            { label: t('crypto.avgRsi'),          value: metrics.avgRSI.toString(),                               color: metrics.avgRSI >= 60 ? "var(--accent-green)" : "var(--accent-gold)" },
+            { label: t('crypto.sentiment'),        value: metrics.sentiment,                                       color: metrics.sentiment === "BULLISH" ? "var(--accent-green)" : "var(--accent-red)" },
+            { label: t('crypto.btcDominance'),    value: MARKET_DOMINANCE.btc + "%",                             color: "var(--accent-gold)" },
+            { label: t('crypto.fearGreed'),     value: fgValue.toString() + " — " + fgLabel,                   color: fgColor },
           ].map(stat => (
             <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
               <div style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 8, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
@@ -107,15 +110,15 @@ export default function CryptoPage() {
         <div className="card-sacred" style={{ padding: 24, marginBottom: 28 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
             <div>
-              <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 6 }}>CRYPTO FEAR AND GREED INDEX</div>
+              <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 6 }}>{t('crypto.fearGreedIndex')}</div>
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: "monospace", color: fgColor }}>
                 {fgValue} — {fgLabel}
               </div>
             </div>
             <div style={{ display: "flex", gap: 24, fontSize: 12, color: "var(--text-muted)", fontFamily: "monospace" }}>
-              <span>Yesterday: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousDay}</strong></span>
-              <span>Last Week: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousWeek}</strong></span>
-              <span>Last Month: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousMonth}</strong></span>
+              <span>{t('crypto.yesterday')}: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousDay}</strong></span>
+              <span>{t('crypto.lastWeek')}: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousWeek}</strong></span>
+              <span>{t('crypto.lastMonth')}: <strong style={{ color: "var(--text-primary)" }}>{FEAR_GREED_INDEX.previousMonth}</strong></span>
             </div>
           </div>
           <div style={{ position: "relative", height: 20, background: "linear-gradient(90deg, #F4212E 0%, #FFD700 50%, #00BA7C 100%)", borderRadius: 10 }}>
@@ -132,16 +135,16 @@ export default function CryptoPage() {
             }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11, color: "var(--text-muted)" }}>
-            <span>Extreme Fear (0)</span>
-            <span>Neutral (50)</span>
-            <span>Extreme Greed (100)</span>
+            <span>{t('crypto.extremeFear')} (0)</span>
+            <span>{t('crypto.neutral')} (50)</span>
+            <span>{t('crypto.extremeGreed')} (100)</span>
           </div>
         </div>
 
         {/* Crypto Rishi Cards */}
         <div style={{ marginBottom: 8 }}>
           <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 3, marginBottom: 16, fontFamily: "monospace" }}>
-            CRYPTO PHILOSOPHERS
+            {t('crypto.cryptoPhilosophers')}
           </div>
         </div>
 
@@ -207,17 +210,17 @@ export default function CryptoPage() {
                   <div style={{ borderTop: "1px solid var(--border-primary)", padding: 24 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16, marginBottom: 20 }}>
                       <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18 }}>
-                        <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>PHILOSOPHY</div>
+                        <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>{t('crypto.about')}</div>
                         <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{guru.bio}</p>
                       </div>
                       <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18, borderLeft: "3px solid var(--accent-gold)" }}>
-                        <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>SIGNATURE QUOTE</div>
+                        <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>{t('crypto.signatureQuote')}</div>
                         <p style={{ fontSize: 13, color: "var(--accent-gold)", fontStyle: "italic", lineHeight: 1.7 }}>"{guru.quote}"</p>
                       </div>
                     </div>
 
                     <div style={{ background: "var(--bg-secondary)", borderRadius: 10, padding: 18, marginBottom: 20 }}>
-                      <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>CURRENT ANALYSIS</div>
+                      <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 10 }}>{t('crypto.currentAnalysis')}</div>
                       <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>{result.insight}</p>
                     </div>
 
@@ -245,7 +248,7 @@ export default function CryptoPage() {
         {/* Asset Table */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
           <div style={{ fontSize: 9, color: "var(--text-muted)", letterSpacing: 3, fontFamily: "monospace" }}>
-            ALL CRYPTO ASSETS — CLICK TO EXPLORE
+            {t('crypto.allCryptoAssets')}
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {sectors.map(sec => (
@@ -266,7 +269,7 @@ export default function CryptoPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-primary)", background: "var(--bg-secondary)" }}>
-                  {["Asset", "Price", "24h", "7d", "Market Cap", "RSI", "MACD", "200D MA"].map((h, i) => (
+                  {[t('crypto.asset'), t('crypto.price'), t('crypto.change24h'), t('crypto.change7d'), t('crypto.marketCap'), t('crypto.rsi'), t('crypto.macd'), t('crypto.moving200d')].map((h, i) => (
                     <th key={h} style={{
                       textAlign: i === 0 ? "left" : "right",
                       padding: "12px 16px",
@@ -325,7 +328,7 @@ export default function CryptoPage() {
                       }}>{c.macd}</span>
                     </td>
                     <td style={{ textAlign: "right", padding: "14px 16px", fontSize: 12, fontWeight: 700, fontFamily: "monospace", color: c.price > c.moving200d ? "var(--accent-green)" : "var(--accent-red)" }}>
-                      {c.price > c.moving200d ? "ABOVE" : "BELOW"}
+                      {c.price > c.moving200d ? t('crypto.above') : t('crypto.below')}
                     </td>
                   </tr>
                 ))}

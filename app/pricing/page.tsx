@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { TIER_CONFIG, getCurrentTier, setTier, type WisdomTier } from '../../lib/premium';
+import { useLanguage } from '../../lib/language';
 
 export default function PricingPage() {
+  const { t } = useLanguage();
   const [currentTier, setCurrentTierState] = useState<WisdomTier>('seeker');
 
   useEffect(() => {
@@ -39,18 +41,17 @@ export default function PricingPage() {
           <p style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             {' > '}
-            <span>WISDOM TIERS</span>
+            <span>{t('pricing.breadcrumb')}</span>
           </p>
 
           <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 38, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8 }}>
-            Tiers of Wisdom
+            {t('pricing.title')}
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.7, marginBottom: 16 }}>
-            The journey from Seeker to Disciple is the journey of the serious investor.
-            Each tier unlocks deeper philosophical access to the Rishis.
+            {t('pricing.subtitle')}
           </p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-            "An investment in knowledge pays the best interest." — Benjamin Franklin
+            &ldquo;{t('pricing.benjaminFranklin')}&rdquo; &mdash; {t('pricing.franklinAuthor')}
           </p>
         </div>
       </div>
@@ -88,7 +89,7 @@ export default function PricingPage() {
                     padding: '4px 12px',
                     borderRadius: 20,
                   }}>
-                    CURRENT TIER
+                    {t('pricing.currentTier')}
                   </div>
                 )}
 
@@ -118,9 +119,13 @@ export default function PricingPage() {
                 </div>
 
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16 }}>
-                  {config.rishisVisible === 20 ? 'All 20 Rishis visible' : `${config.rishisVisible} Rishis visible`}
+                  {config.rishisVisible === 20
+                    ? `All 20 ${t('pricing.rishisVisible')}`
+                    : `${config.rishisVisible} ${t('pricing.rishisVisible')}`}
                   {' · '}
-                  {config.dailyViews ? `${config.dailyViews} views/day` : 'Unlimited views'}
+                  {config.dailyViews
+                    ? `${config.dailyViews} ${t('pricing.viewsPerDay')}`
+                    : t('pricing.unlimitedViews')}
                 </div>
 
                 {tier === 'seeker' ? (
@@ -134,7 +139,7 @@ export default function PricingPage() {
                     textAlign: 'center',
                     fontSize: 13,
                   }}>
-                    {isActive ? 'Your current tier' : 'Free forever'}
+                    {isActive ? t('pricing.yourCurrentTier') : t('pricing.freeForever')}
                   </div>
                 ) : (
                   <button
@@ -155,7 +160,7 @@ export default function PricingPage() {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    {isActive ? 'Active' : `Become a ${config.label}`}
+                    {isActive ? t('pricing.active') : `${t('pricing.becomeA')} ${config.label}`}
                   </button>
                 )}
               </div>
@@ -165,14 +170,13 @@ export default function PricingPage() {
 
         <div className="card" style={{ padding: 32, textAlign: 'center' }}>
           <div style={{ fontFamily: 'Cinzel, serif', fontSize: 18, color: 'var(--accent-gold)', marginBottom: 12 }}>
-            The Rishi Guarantee
+            {t('pricing.guarantee')}
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
-            This is not investment advice. The Rishis offer philosophical frameworks for thinking about value.
-            The greatest investment you can make is in your own understanding.
+            {t('pricing.guaranteeText')}
           </p>
           <div style={{ marginTop: 24, fontSize: 12, color: 'var(--text-muted)' }}>
-            All tiers use localStorage — no account required. No data leaves your device.
+            {t('pricing.localStorage')}
           </div>
         </div>
 

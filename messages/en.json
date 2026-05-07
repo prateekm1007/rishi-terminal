@@ -2,7 +2,7 @@
   "common": {
     "loading": "Loading...",
     "error": "Error",
-    "search": "Search stocks — TITAN, INFY, RELIANCE, TCS...",
+    "search": "Search stocks - TITAN, INFY, RELIANCE, TCS...",
     "viewAll": "View All",
     "exploreAllRishis": "Explore All 20 Rishis",
     "back": "Back",
@@ -32,11 +32,11 @@
   },
   "header": {
     "title": "RISHI TERMINAL",
-    "subtitle": "20 RISHIS — STOCKS — CRYPTO — FOREX — COMMODITIES — BONDS",
+    "subtitle": "20 RISHIS - STOCKS - CRYPTO - FOREX - COMMODITIES - BONDS",
     "investmentWisdomOS": "INVESTMENT WISDOM OS",
     "wisdomOverHype": "Wisdom over hype.",
     "time": "IST",
-    "exchanges": "NSE — BSE — MCX — GLOBAL"
+    "exchanges": "NSE - BSE - MCX - GLOBAL"
   },
   "dashboard": {
     "stockOfDay": "STOCK OF THE DAY",
@@ -44,10 +44,10 @@
     "viewFullAnalysis": "VIEW FULL RISHI ANALYSIS",
     "wisdomOfDay": "RISHI WISDOM OF THE DAY",
     "masterInvestor": "Master Investor",
-    "globalMarkets": "GLOBAL MARKETS — CLICK TO EXPLORE",
-    "topBuySignals": "TOP BUY SIGNALS — RISHI CONSENSUS ABOVE 65",
+    "globalMarkets": "GLOBAL MARKETS - CLICK TO EXPLORE",
+    "topBuySignals": "TOP BUY SIGNALS - RISHI CONSENSUS ABOVE 65",
     "fullScreener": "FULL SCREENER",
-    "notInvestmentAdvice": "NOT INVESTMENT ADVICE — EDUCATIONAL SIMULATION — RISHI TERMINAL v4.2 — 20 RISHIS ACTIVE"
+    "notInvestmentAdvice": "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE"
   },
   "stock": {
     "overview": "Overview",
@@ -195,7 +195,7 @@
   },
   "rishis": {
     "title": "The Rishis",
-    "subtitle": "investment legends across Stocks, Crypto, Commodities, and Forex.",
+    "subtitle": "Investment legends across Stocks, Crypto, Commodities, and Forex.",
     "philosophyDesc": "Each Rishi brings a unique philosophical lens to market analysis.",
     "compareMode": "Compare Stocks",
     "catalog": "Catalog",
@@ -236,7 +236,7 @@
     "unlimitedViews": "Unlimited views",
     "guarantee": "The Rishi Guarantee",
     "guaranteeText": "This is not investment advice. The Rishis offer philosophical frameworks for thinking about value. The greatest investment you can make is in your own understanding.",
-    "localStorage": "All tiers use localStorage — no account required. No data leaves your device."
+    "localStorage": "All tiers use localStorage - no account required. No data leaves your device."
   },
   "news": {
     "title": "Market Intelligence",
@@ -259,7 +259,7 @@
     "saved": "saved",
     "liveRssActive": "LIVE RSS ACTIVE",
     "autoRefresh": "Auto-refreshes every 5 minutes",
-    "searchPlaceholder": "Search — RBI, Infosys, Bitcoin, Virat Kohli, IPL...",
+    "searchPlaceholder": "Search - RBI, Infosys, Bitcoin, Virat Kohli, IPL...",
     "all": "ALL",
     "bullish": "BULLISH",
     "bearish": "BEARISH",
@@ -302,7 +302,7 @@
     "lastWeek": "Last Week",
     "lastMonth": "Last Month",
     "cryptoPhilosophers": "CRYPTO PHILOSOPHERS",
-    "allCryptoAssets": "ALL CRYPTO ASSETS — CLICK TO EXPLORE",
+    "allCryptoAssets": "ALL CRYPTO ASSETS - CLICK TO EXPLORE",
     "asset": "Asset",
     "price": "Price",
     "change24h": "24h",
@@ -330,7 +330,7 @@
     "volume24h": "24h Volume",
     "usdInrSpot": "USD/INR Spot",
     "eurInrSpot": "EUR/INR Spot",
-    "currencyPairs": "CURRENCY PAIRS — CLICK TO EXPLORE",
+    "currencyPairs": "CURRENCY PAIRS - CLICK TO EXPLORE",
     "pair": "Pair",
     "spot": "Spot",
     "bid": "Bid",
@@ -339,11 +339,11 @@
     "forward1m": "1M Fwd",
     "volatility": "Vol %",
     "ppp": "PPP",
-    "footer": "FOREX MARKET DATA — RISHI TERMINAL v4.1 — MULTI-ASSET WISDOM OS"
+    "footer": "FOREX MARKET DATA - RISHI TERMINAL v4.1 - MULTI-ASSET WISDOM OS"
   },
   "commodities": {
     "title": "Commodity Markets",
-    "subtitle": "Jim Rogers, Rick Rule, Daniel Yergin — supercycles, precious metals, and energy geopolitics.",
+    "subtitle": "Jim Rogers, Rick Rule, Daniel Yergin - supercycles, precious metals, and energy geopolitics.",
     "breadcrumb": "COMMODITIES",
     "goldSpot": "Gold Spot",
     "silverSpot": "Silver Spot",
@@ -352,7 +352,7 @@
     "assets": "assets",
     "commodityPhilosophers": "COMMODITY PHILOSOPHERS",
     "analyzing": "analyzing",
-    "allCommodities": "ALL COMMODITIES — CLICK TO EXPLORE",
+    "allCommodities": "ALL COMMODITIES - CLICK TO EXPLORE",
     "commodity": "Commodity",
     "price": "Price",
     "change": "Change",
@@ -385,9 +385,8 @@
     "ytm": "YTM",
     "price": "Price",
     "duration": "Duration",
-    "rating": "Rating",
     "maturity": "Maturity",
-    "footer": "BOND MARKET DATA — RISHI TERMINAL v4.1 — MULTI-ASSET WISDOM OS"
+    "footer": "BOND MARKET DATA - RISHI TERMINAL v4.1 - MULTI-ASSET WISDOM OS"
   },
   "marketSections": {
     "crypto": "Crypto",

@@ -22,28 +22,36 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Messages>({});
   const [isLoading, setIsLoading] = useState(true);
 
+  // Initialize locale from localStorage on mount
   useEffect(() => {
-    // Load locale from localStorage
     const savedLocale = localStorage.getItem('rishi_locale') as Locale;
     if (savedLocale && ['en', 'hi', 'gu'].includes(savedLocale)) {
       setLocaleState(savedLocale);
+    } else {
+      setLocaleState('en');
     }
   }, []);
 
+  // Load messages whenever locale changes
   useEffect(() => {
-    // Load messages for current locale
     async function loadMessages() {
       setIsLoading(true);
       try {
         const msgs = await import(`../messages/${locale}.json`);
-        setMessages(msgs.default);
+        setMessages(msgs.default || msgs);
+        setIsLoading(false);
       } catch (error) {
         console.error(`Failed to load messages for ${locale}`, error);
-        // Fallback to English
-        const fallback = await import(`../messages/en.json`);
-        setMessages(fallback.default);
+        try {
+          // Fallback to English
+          const fallback = await import(`../messages/en.json`);
+          setMessages(fallback.default || fallback);
+        } catch (fallbackError) {
+          console.error('Failed to load fallback English messages', fallbackError);
+          setMessages({});
+        }
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
     loadMessages();
   }, [locale]);
@@ -54,17 +62,22 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const t = (key: string): string => {
+    if (!messages || Object.keys(messages).length === 0) {
+      return key; // Return key if messages not loaded yet
+    }
+
     const keys = key.split('.');
     let value: any = messages;
-    
+
     for (const k of keys) {
       if (value && typeof value === 'object' && k in value) {
         value = value[k];
       } else {
+        console.warn(`Translation key not found: ${key}`);
         return key; // Return key if translation not found
       }
     }
-    
+
     return typeof value === 'string' ? value : key;
   };
 

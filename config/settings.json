@@ -1,0 +1,5 @@
+﻿{
+  "terminal": { "name": "Rishi Terminal", "version": "1.0", "theme": "dark", "author": "Rishi" },
+  "paths": { "logs": "C:\Users\Administrator\Desktop\rishi-terminal\\logs", "scripts": "C:\Users\Administrator\Desktop\rishi-terminal\\scripts", "backup": "C:\Users\Administrator\Desktop\rishi-terminal\\backup" },
+  "features": { "showWelcome": true }
+}

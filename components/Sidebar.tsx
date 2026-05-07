@@ -3,36 +3,22 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getCurrentTier, TIER_CONFIG } from '../lib/premium';
+import { useLanguage } from '../lib/language';
+import { LanguageSelector } from './LanguageSelector';
 import { useEffect, useState } from 'react';
-
-const NAV_MAIN = [
-  { name: 'Dashboard',  href: '/',          icon: 'DB' },
-  { name: 'Screener',   href: '/screener',  icon: 'SC' },
-  { name: 'Portfolio',  href: '/portfolio', icon: 'PF' },
-  { name: 'All Rishis', href: '/rishis',    icon: 'RS' },
-  { name: 'News',       href: '/news',      icon: 'NW' },
-  { name: 'Pricing',    href: '/pricing',   icon: 'PR' },
-];
-
-const NAV_MARKETS = [
-  { name: 'Crypto',      href: '/crypto',      icon: 'CR' },
-  { name: 'Forex',       href: '/forex',        icon: 'FX' },
-  { name: 'Commodities', href: '/commodities',  icon: 'CM' },
-  { name: 'Bonds',       href: '/bonds',        icon: 'BD' },
-  { name: 'Watchlist',   href: '/watchlist',    icon: 'WL' },
-];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [tier, setTier] = useState<'seeker' | 'student' | 'disciple'>('seeker');
   const [isDev, setIsDev] = useState(false);
 
   useEffect(() => {
-    const t = getCurrentTier();
-    setTier(t);
+    const currentTier = getCurrentTier();
+    setTier(currentTier);
     try {
       const stored = localStorage.getItem('rishi_tier_v1') || 'seeker';
-      if (t === 'disciple' && stored !== 'disciple') setIsDev(true);
+      if (currentTier === 'disciple' && stored !== 'disciple') setIsDev(true);
     } catch {}
   }, []);
 
@@ -75,6 +61,23 @@ export function Sidebar() {
     marginTop: '4px',
   };
 
+  const NAV_MAIN = [
+    { key: 'dashboard',  href: '/',            icon: 'DB' },
+    { key: 'screener',   href: '/screener',    icon: 'SC' },
+    { key: 'portfolio',  href: '/portfolio',   icon: 'PF' },
+    { key: 'allRishis',  href: '/rishis',      icon: 'RS' },
+    { key: 'news',       href: '/news',        icon: 'NW' },
+    { key: 'pricing',    href: '/pricing',     icon: 'PR' },
+  ];
+
+  const NAV_MARKETS = [
+    { key: 'crypto',       href: '/crypto',       icon: 'CR' },
+    { key: 'forex',        href: '/forex',         icon: 'FX' },
+    { key: 'commodities',  href: '/commodities',   icon: 'CM' },
+    { key: 'bonds',        href: '/bonds',         icon: 'BD' },
+    { key: 'watchlist',    href: '/watchlist',     icon: 'WL' },
+  ];
+
   return (
     <aside className="sidebar-desktop" style={{
       width: '220px',
@@ -93,10 +96,10 @@ export function Sidebar() {
       {/* Logo */}
       <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border-primary)' }}>
         <div className="philosophy-heading" style={{ fontSize: '22px', color: 'var(--accent-gold)', letterSpacing: '3px' }}>
-          RISHI
+          {t('header.title')}
         </div>
         <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '2px', marginTop: '4px' }}>
-          INVESTMENT WISDOM OS
+          {t('header.investmentWisdomOS')}
         </div>
 
         {isDev && (
@@ -123,7 +126,7 @@ export function Sidebar() {
           borderRadius: '6px',
         }}>
           <div style={{ fontSize: '11px', color: 'var(--accent-gold)', fontWeight: 600, letterSpacing: '1px' }}>
-            {TIER_CONFIG[tier].name.toUpperCase()}
+            {t(`tiers.${tier}`).toUpperCase()}
           </div>
           <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
             {TIER_CONFIG[tier].price}
@@ -134,23 +137,40 @@ export function Sidebar() {
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
 
-        <div style={sectionLabel}>MAIN</div>
+        <div style={sectionLabel}>{t('nav.main')}</div>
         {NAV_MAIN.map(item => (
-          <Link key={item.name} href={item.href} style={linkStyle(item.href)}>
+          <Link key={item.key} href={item.href} style={linkStyle(item.href)}>
             <span style={iconStyle(item.href)}>{item.icon}</span>
-            {item.name}
+            {t(`nav.${item.key}`)}
           </Link>
         ))}
 
-        <div style={{ ...sectionLabel, marginTop: '16px' }}>MARKETS</div>
+        <div style={{ ...sectionLabel, marginTop: '16px' }}>{t('nav.markets')}</div>
         {NAV_MARKETS.map(item => (
-          <Link key={item.name} href={item.href} style={linkStyle(item.href)}>
+          <Link key={item.key} href={item.href} style={linkStyle(item.href)}>
             <span style={iconStyle(item.href)}>{item.icon}</span>
-            {item.name}
+            {t(`nav.${item.key}`)}
           </Link>
         ))}
 
       </nav>
+
+      {/* Language Selector */}
+      <div style={{
+        padding: '12px 10px',
+        borderTop: '1px solid var(--border-primary)',
+      }}>
+        <div style={{
+          fontSize: '9px',
+          color: 'var(--text-muted)',
+          letterSpacing: '2px',
+          marginBottom: '8px',
+          padding: '0 2px',
+        }}>
+          {t('language.select').toUpperCase()}
+        </div>
+        <LanguageSelector />
+      </div>
 
       {/* Footer */}
       <div style={{
@@ -162,7 +182,7 @@ export function Sidebar() {
           RISHI TERMINAL v4.1
         </div>
         <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', fontStyle: 'italic' }}>
-          Wisdom over hype.
+          {t('header.wisdomOverHype')}
         </div>
       </div>
     </aside>

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { STOCKS } from '../../data/stocks';
 import { buildConsensus } from '../../lib/consensus';
+import { useLanguage } from '../../lib/language';
 
 interface WatchlistItem {
   symbol: string;
@@ -20,6 +21,7 @@ function scoreColor(s: number) {
 
 export default function WatchlistPage() {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
   const [addSymbol, setAddSymbol] = useState('TCS');
   const [editNote, setEditNote] = useState<string | null>(null);
@@ -28,14 +30,17 @@ export default function WatchlistPage() {
 
   const allSymbols = Object.keys(STOCKS);
 
+  const SORT_LABELS = useMemo(() => ({
+    added:  t('watchlist.sortRecent'),
+    score:  t('watchlist.sortScore'),
+    change: t('watchlist.sortChange'),
+  }), [t, locale]);
+
   useEffect(() => {
     const saved = localStorage.getItem('rishi_watchlist_v2');
     if (saved) {
-      try {
-        setWatchlist(JSON.parse(saved));
-      } catch {
-        setWatchlist([]);
-      }
+      try { setWatchlist(JSON.parse(saved)); }
+      catch { setWatchlist([]); }
     }
   }, []);
 
@@ -47,12 +52,7 @@ export default function WatchlistPage() {
   const addStock = () => {
     if (!allSymbols.includes(addSymbol)) return;
     if (watchlist.some(w => w.symbol === addSymbol)) return;
-
-    const newItem: WatchlistItem = {
-      symbol: addSymbol,
-      addedDate: new Date().toISOString(),
-    };
-    saveWatchlist([...watchlist, newItem]);
+    saveWatchlist([...watchlist, { symbol: addSymbol, addedDate: new Date().toISOString() }]);
   };
 
   const removeStock = (symbol: string) => {
@@ -83,19 +83,16 @@ export default function WatchlistPage() {
     a.click();
   };
 
-  // Sort watchlist
   let sortedList = [...watchlist];
   if (sortBy === 'score') {
-    sortedList.sort((a, b) => {
-      const scoreA = buildConsensus(STOCKS[a.symbol]).consensus;
-      const scoreB = buildConsensus(STOCKS[b.symbol]).consensus;
-      return scoreB - scoreA;
-    });
+    sortedList.sort((a, b) =>
+      buildConsensus(STOCKS[b.symbol]).consensus - buildConsensus(STOCKS[a.symbol]).consensus
+    );
   } else if (sortBy === 'change') {
     sortedList.sort((a, b) => {
-      const changeA = ((STOCKS[a.symbol].price - STOCKS[a.symbol].price * 0.98) / STOCKS[a.symbol].price) * 100;
-      const changeB = ((STOCKS[b.symbol].price - STOCKS[b.symbol].price * 0.98) / STOCKS[b.symbol].price) * 100;
-      return changeB - changeA;
+      const ca = ((STOCKS[a.symbol].price - STOCKS[a.symbol].price * 0.98) / STOCKS[a.symbol].price) * 100;
+      const cb = ((STOCKS[b.symbol].price - STOCKS[b.symbol].price * 0.98) / STOCKS[b.symbol].price) * 100;
+      return cb - ca;
     });
   }
 
@@ -105,24 +102,30 @@ export default function WatchlistPage() {
       {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">
+
+          {/* Breadcrumb */}
           <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
-            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            {' > WATCHLIST'}
+            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>
+              {t('header.title')}
+            </Link>
+            {' > '}{t('watchlist.title').toUpperCase()}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
             <div>
               <h1 className="philosophy-heading" style={{ fontSize: 32, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>
-                Watchlist
+                {t('watchlist.title')}
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
-                Track your favorite stocks with notes and price alerts
+                {t('watchlist.subtitle')}
               </p>
             </div>
 
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ padding: '12px 20px', background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8 }}>
-                <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 4 }}>WATCHING</div>
+                <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 4 }}>
+                  {t('watchlist.watching')}
+                </div>
                 <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-gold)' }}>
                   {watchlist.length}
                 </div>
@@ -154,7 +157,7 @@ export default function WatchlistPage() {
                 fontSize: 12, fontWeight: 700, cursor: 'pointer',
               }}
             >
-              + Add to Watchlist
+              + {t('watchlist.addToWatchlist')}
             </button>
 
             {watchlist.length > 0 && (
@@ -167,14 +170,14 @@ export default function WatchlistPage() {
                     padding: '8px 18px', fontSize: 12, cursor: 'pointer',
                   }}
                 >
-                  Export CSV
+                  {t('watchlist.exportCSV')}
                 </button>
 
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-                  {['added', 'score', 'change'].map(sort => (
+                  {(['added', 'score', 'change'] as const).map(sort => (
                     <button
                       key={sort}
-                      onClick={() => setSortBy(sort as any)}
+                      onClick={() => setSortBy(sort)}
                       style={{
                         padding: '6px 12px', fontSize: 11, borderRadius: 4,
                         background: sortBy === sort ? 'var(--accent-gold)' : 'var(--bg-card)',
@@ -183,7 +186,7 @@ export default function WatchlistPage() {
                         cursor: 'pointer', fontFamily: 'monospace',
                       }}
                     >
-                      {sort === 'added' ? 'Recent' : sort === 'score' ? 'Score' : 'Change'}
+                      {SORT_LABELS[sort]}
                     </button>
                   ))}
                 </div>
@@ -197,10 +200,10 @@ export default function WatchlistPage() {
         {watchlist.length === 0 ? (
           <div className="card-sacred" style={{ padding: 60, textAlign: 'center' }}>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 1 }}>
-              NO STOCKS IN WATCHLIST
+              {t('watchlist.empty')}
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-              Add stocks above to track their Rishi scores and set price alerts.
+              {t('watchlist.emptyHint')}
             </p>
           </div>
         ) : (
@@ -208,23 +211,18 @@ export default function WatchlistPage() {
             {sortedList.map(item => {
               const stock = STOCKS[item.symbol];
               const consensus = buildConsensus(stock).consensus;
-              const change1D = ((stock.price - stock.price * 0.98) / stock.price) * 100; // Simulated
+              const change1D = ((stock.price - stock.price * 0.98) / stock.price) * 100;
 
               return (
                 <div
                   key={item.symbol}
                   className="card-sacred"
-                  style={{
-                    padding: 0,
-                    overflow: 'hidden',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
-                  onClick={() => router.push(`/stock/${item.symbol}`)}
+                  style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}
+                  onClick={() => router.push('/stock/' + item.symbol)}
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}
                 >
-                  <div style={{ height: 2, background: `linear-gradient(90deg, transparent, ${scoreColor(consensus)}, transparent)` }} />
+                  <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, ' + scoreColor(consensus) + ', transparent)' }} />
 
                   <div style={{ padding: '16px 20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
@@ -236,7 +234,7 @@ export default function WatchlistPage() {
                           <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{stock.name}</span>
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                          {stock.sector} · Added {new Date(item.addedDate).toLocaleDateString('en-IN')}
+                          {stock.sector} · {t('watchlist.added')} {new Date(item.addedDate).toLocaleDateString('en-IN')}
                         </div>
                       </div>
 
@@ -251,12 +249,13 @@ export default function WatchlistPage() {
                         </div>
 
                         <div style={{
-                          padding: '8px 16px',
-                          borderRadius: 6,
+                          padding: '8px 16px', borderRadius: 6,
                           background: scoreColor(consensus) + '15',
-                          border: `1px solid ${scoreColor(consensus)}40`,
+                          border: '1px solid ' + scoreColor(consensus) + '40',
                         }}>
-                          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 2 }}>RISHI</div>
+                          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 2 }}>
+                            {t('watchlist.rishiScore')}
+                          </div>
                           <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: scoreColor(consensus) }}>
                             {consensus}
                           </div>
@@ -275,12 +274,12 @@ export default function WatchlistPage() {
                               cursor: 'pointer', fontSize: 10,
                             }}
                           >
-                            Note
+                            {t('watchlist.note')}
                           </button>
                           <button
                             onClick={e => {
                               e.stopPropagation();
-                              if (confirm(`Remove ${item.symbol} from watchlist?`)) {
+                              if (confirm(t('watchlist.confirmRemove') + ' ' + item.symbol + '?')) {
                                 removeStock(item.symbol);
                               }
                             }}
@@ -290,7 +289,7 @@ export default function WatchlistPage() {
                               cursor: 'pointer', fontSize: 10,
                             }}
                           >
-                            Remove
+                            {t('watchlist.remove')}
                           </button>
                         </div>
                       </div>
@@ -312,7 +311,7 @@ export default function WatchlistPage() {
                         <input
                           value={noteText}
                           onChange={e => setNoteText(e.target.value)}
-                          placeholder="Add a note... (e.g., 'Buy below 3500')"
+                          placeholder={t('watchlist.notePlaceholder')}
                           onClick={e => e.stopPropagation()}
                           style={{
                             flex: 1, background: 'var(--bg-secondary)',
@@ -322,17 +321,14 @@ export default function WatchlistPage() {
                           }}
                         />
                         <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            saveNote(item.symbol);
-                          }}
+                          onClick={e => { e.stopPropagation(); saveNote(item.symbol); }}
                           style={{
                             background: 'var(--accent-green)', color: '#000',
                             border: 'none', borderRadius: 4, padding: '8px 16px',
                             cursor: 'pointer', fontSize: 11, fontWeight: 700,
                           }}
                         >
-                          Save
+                          {t('common.save')}
                         </button>
                       </div>
                     )}
@@ -342,8 +338,15 @@ export default function WatchlistPage() {
             })}
           </div>
         )}
-      </div>
 
+        {/* Footer */}
+        <div style={{
+          textAlign: 'center', fontSize: 11, color: 'var(--text-muted)',
+          paddingTop: 24, marginTop: 24, borderTop: '1px solid var(--border-primary)',
+        }}>
+          {t('dashboard.notInvestmentAdvice')}
+        </div>
+      </div>
     </main>
   );
 }

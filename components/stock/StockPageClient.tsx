@@ -16,6 +16,8 @@ import { AnalystRecommendations } from './AnalystRecommendations';
 import { QuarterlyChart }         from './QuarterlyChart';
 import { ShareholdingChart }      from './ShareholdingChart';
 import { WisdomSidebar }          from './WisdomSidebar';
+import { KnowledgeGraphView }     from './KnowledgeGraphView';
+import { useLanguage }            from '../../lib/language';
 
 interface Props {
   stock: Stock;
@@ -23,25 +25,148 @@ interface Props {
   detail: any;
 }
 
-const TABS = [
-  { id: 'overview',  label: 'Overview',      desc: 'Fundamentals & Consensus' },
-  { id: 'technical', label: 'Technicals',    desc: 'Price Action & Indicators' },
-  { id: 'wisdom',    label: 'Rishi Wisdom',  desc: 'All 20 Philosopher Scores' },
-];
-
 export function StockPageClient({ stock, consensus, detail }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showGraph, setShowGraph] = useState(false);
+  const { t } = useLanguage();
+
+  const TABS = [
+    { id: 'overview',  label: t('stock.overview'),   desc: t('stock.overviewDesc')   },
+    { id: 'technical', label: t('stock.technicals'),  desc: t('stock.technicalsDesc') },
+    { id: 'wisdom',    label: t('stock.rishiWisdom'), desc: t('stock.wisdomDesc')     },
+  ];
 
   const scoreColor = (s: number) =>
-    s >= 75 ? 'var(--accent-green)' : s >= 55 ? 'var(--accent-gold)' : 'var(--accent-red)';
+    s >= 75 ? 'var(--accent-green)' : s >= 55 ? 'var(--accent-gold)' : s >= 35 ? '#f59e0b' : 'var(--accent-red)';
 
   const scoreBg = (s: number) =>
-    s >= 75 ? 'rgba(0,186,124,0.1)' : s >= 55 ? 'rgba(255,215,0,0.1)' : 'rgba(244,33,46,0.1)';
+    s >= 75 ? 'rgba(0,186,124,0.1)' : s >= 55 ? 'rgba(255,215,0,0.1)' : s >= 35 ? 'rgba(245,158,11,0.1)' : 'rgba(244,33,46,0.1)';
 
   return (
     <div className="page-container">
 
-      {/* ── Page Header ── */}
+      {/* Knowledge Graph Floating Button */}
+      <button
+        onClick={() => setShowGraph(true)}
+        style={{
+          position: 'fixed',
+          bottom: 32,
+          right: 32,
+          width: 64,
+          height: 64,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, var(--accent-gold), #FFA500)',
+          border: 'none',
+          boxShadow: '0 8px 24px rgba(255,215,0,0.4)',
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          transition: 'all 0.3s ease',
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLElement).style.transform = 'scale(1.1)';
+          (e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(255,215,0,0.6)';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+          (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(255,215,0,0.4)';
+        }}
+      >
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2">
+          <circle cx="12" cy="12" r="3" />
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+          <line x1="9" y1="7" x2="9.5" y2="10" />
+          <line x1="15" y1="7" x2="14.5" y2="10" />
+          <line x1="9" y1="17" x2="9.5" y2="14" />
+          <line x1="15" y1="17" x2="14.5" y2="14" />
+        </svg>
+        <span style={{ fontSize: 8, fontWeight: 700, color: '#000', marginTop: 2, letterSpacing: 0.5 }}>
+          {t('stock.graph')}
+        </span>
+      </button>
+
+      {/* Knowledge Graph Modal */}
+      {showGraph && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.9)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 24,
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: 1400,
+            maxHeight: '90vh',
+            background: 'var(--bg-primary)',
+            borderRadius: 16,
+            overflow: 'hidden',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '20px 28px',
+              borderBottom: '1px solid var(--border-primary)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: 'var(--bg-secondary)',
+            }}>
+              <div>
+                <h2 className="philosophy-heading" style={{ fontSize: 20, color: 'var(--accent-gold)', marginBottom: 4 }}>
+                  {t('stock.knowledgeGraph')}
+                </h2>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1 }}>
+                  {stock.name} — {t('stock.graphSubtitle')}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowGraph(false)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--border-primary)',
+                  color: 'var(--text-primary)',
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = 'var(--accent-red)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-red)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-primary)';
+                }}
+              >
+                x
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: 28, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
+              <KnowledgeGraphView stock={stock} consensus={consensus} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Page Header */}
       <div className="page-header">
         <div className="content-wrapper">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24 }}>
@@ -51,8 +176,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   {stock.name}
                 </h1>
                 <span style={{
-                  fontFamily: 'monospace',
-                  fontSize: 11,
+                  fontFamily: 'monospace', fontSize: 11,
                   padding: '3px 8px',
                   background: 'rgba(255,215,0,0.1)',
                   border: '1px solid rgba(255,215,0,0.3)',
@@ -69,7 +193,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 <span>{stock.exchange}</span>
                 <span style={{ color: 'var(--border-primary)' }}>|</span>
                 <span style={{ color: scoreColor(consensus.consensus), fontWeight: 600 }}>
-                  Consensus: {consensus.consensus}/100
+                  {t('stock.consensus')}: {consensus.consensus}/100
                 </span>
               </div>
             </div>
@@ -78,8 +202,12 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
         </div>
       </div>
 
-      {/* ── Tab Bar ── */}
-      <div style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', position: 'sticky', top: 0, zIndex: 30 }}>
+      {/* Tab Bar */}
+      <div style={{
+        borderBottom: '1px solid var(--border-primary)',
+        background: 'var(--bg-secondary)',
+        position: 'sticky', top: 0, zIndex: 30,
+      }}>
         <div className="content-wrapper">
           <div style={{ display: 'flex', gap: 0 }}>
             {TABS.map(tab => (
@@ -114,126 +242,148 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
         </div>
       </div>
 
-      {/* ── Tab Content ── */}
+      {/* Tab Content */}
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
 
-          {/* ── Main Column ── */}
+          {/* Main Column */}
           <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-            {/* ══════════════════════════════════
-                TAB 1: OVERVIEW
-                Consensus + Metrics + Chart + Peers + Analyst
-                ══════════════════════════════════ */}
             {activeTab === 'overview' && (
               <>
-                {/* Consensus Score Hero */}
                 <div className="wisdom-reveal">
                   <ConsensusHero consensus={consensus} />
                 </div>
 
-                {/* Key Fundamentals */}
                 <div className="wisdom-reveal-delay-1">
                   <MetricsPanel stock={stock} />
                 </div>
 
-                {/* Price Chart */}
-                <div className="wisdom-reveal-delay-1">
-                  <PriceChart stock={stock} />
-                </div>
-
-                {/* Top 6 Rishi Snapshot */}
                 <div className="wisdom-reveal-delay-2 card-sacred" style={{ padding: 24, position: 'relative' }}>
                   <div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, height: 2,
                     background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)',
                     borderRadius: '12px 12px 0 0',
                   }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <div className="philosophy-heading" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: 2 }}>
-                      TOP RISHI SCORES
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                    <div>
+                      <div className="philosophy-heading" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: 2 }}>
+                        {t('stock.topRishiScores')}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, opacity: 0.7 }}>
+                        {t('stock.topRishiSubtitle')}
+                      </div>
                     </div>
                     <button
                       onClick={() => setActiveTab('wisdom')}
                       style={{
-                        background: 'none', border: 'none',
-                        color: 'var(--accent-gold)', cursor: 'pointer',
-                        fontSize: 11, fontFamily: 'monospace', letterSpacing: 1,
+                        background: 'rgba(255,215,0,0.08)',
+                        border: '1px solid rgba(255,215,0,0.25)',
+                        color: 'var(--accent-gold)',
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        fontFamily: 'monospace',
+                        letterSpacing: 1,
+                        padding: '6px 14px',
+                        borderRadius: 6,
                       }}
                     >
-                      VIEW ALL 20 →
+                      {t('stock.viewAll20')}
                     </button>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
-                    {consensus.scores.slice(0, 6).map(r => (
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {consensus.scores.slice(0, 6).map((r, i) => (
                       <div key={r.name} style={{
-                        padding: '14px 12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        padding: '14px 16px',
                         background: scoreBg(r.score),
-                        border: `1px solid ${scoreColor(r.score)}33`,
-                        borderRadius: 8,
+                        border: '1px solid ' + scoreColor(r.score) + '22',
+                        borderRadius: 10,
                         transition: 'all 0.2s ease',
                       }}>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, fontFamily: 'monospace' }}>
-                          {r.full}
+                        <div style={{
+                          fontSize: 11,
+                          color: 'var(--text-muted)',
+                          fontFamily: 'monospace',
+                          width: 20,
+                          flexShrink: 0,
+                        }}>
+                          #{i + 1}
                         </div>
-                        <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'monospace', color: scoreColor(r.score), lineHeight: 1 }}>
+
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {r.full}
+                          </div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                            {r.label}
+                          </div>
+                        </div>
+
+                        <div style={{ width: 100, flexShrink: 0 }}>
+                          <div style={{ height: 4, background: 'var(--border-primary)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{
+                              width: r.score + '%',
+                              height: '100%',
+                              background: scoreColor(r.score),
+                              borderRadius: 3,
+                              transition: 'width 0.8s ease',
+                            }} />
+                          </div>
+                        </div>
+
+                        <div style={{
+                          fontSize: 22,
+                          fontWeight: 700,
+                          fontFamily: 'monospace',
+                          color: scoreColor(r.score),
+                          width: 40,
+                          textAlign: 'right',
+                          flexShrink: 0,
+                        }}>
                           {r.score}
-                        </div>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4, letterSpacing: 0.5 }}>
-                          {r.label}
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Peer Comparison */}
                 <div className="wisdom-reveal-delay-2">
                   <PeerComparison stock={stock} peers={detail.peers} />
                 </div>
 
-                {/* Analyst Recommendations */}
                 <div className="wisdom-reveal-delay-3">
                   <AnalystRecommendations recommendations={detail.analystRecs} currentPrice={stock.price} />
                 </div>
               </>
             )}
 
-            {/* ══════════════════════════════════
-                TAB 2: TECHNICALS
-                Price + Indicators + Quarterly + Shareholding
-                ══════════════════════════════════ */}
             {activeTab === 'technical' && (
               <>
-                {/* Price Chart - full focus here */}
                 <div className="wisdom-reveal">
                   <PriceChart stock={stock} />
                 </div>
 
-                {/* Technical Indicators */}
                 <div className="wisdom-reveal-delay-1">
                   <TechnicalIndicators stock={stock} />
                 </div>
 
-                {/* Quarterly Results */}
                 <div className="wisdom-reveal-delay-2">
                   <QuarterlyChart quarters={detail.quarterlyResults} />
                 </div>
 
-                {/* Shareholding Pattern */}
                 <div className="wisdom-reveal-delay-2">
                   <ShareholdingChart history={detail.shareholdingHistory} />
                 </div>
               </>
             )}
 
-            {/* ══════════════════════════════════
-                TAB 3: RISHI WISDOM
-                Bull/Bear + Radar + All 20 Rishis
-                ══════════════════════════════════ */}
             {activeTab === 'wisdom' && (
               <>
-                {/* Bull vs Bear */}
                 <div className="wisdom-reveal">
                   <BullBearBar
                     topBull={consensus.topBull}
@@ -242,51 +392,10 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   />
                 </div>
 
-                {/* Consensus Tension Summary */}
-                <div className="wisdom-reveal-delay-1 card-sacred" style={{ padding: 20, position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-                    background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)',
-                    borderRadius: '12px 12px 0 0',
-                  }} />
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, textAlign: 'center' }}>
-                    <div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>CONSENSUS</div>
-                      <div style={{ fontSize: 32, fontWeight: 700, fontFamily: 'monospace', color: scoreColor(consensus.consensus) }}>
-                        {consensus.consensus}
-                      </div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>{consensus.category}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>TENSION</div>
-                      <div style={{ fontSize: 32, fontWeight: 700, fontFamily: 'monospace', color: consensus.tensionSpread > 40 ? 'var(--accent-red)' : 'var(--accent-gold)' }}>
-                        {consensus.tensionSpread}
-                      </div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>{consensus.tension}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>TOP BULL</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-green)', marginTop: 6 }}>
-                        {consensus.topBull?.score ?? '--'}
-                      </div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>{consensus.topBull?.name ?? '--'}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>TOP BEAR</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-red)', marginTop: 6 }}>
-                        {consensus.topBear?.score ?? '--'}
-                      </div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>{consensus.topBear?.name ?? '--'}</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Philosophy Radar Chart */}
                 <div className="wisdom-reveal-delay-1">
                   <PhilosophyRadar scores={consensus.scores} />
                 </div>
 
-                {/* All 20 Rishi Cards */}
                 <div className="wisdom-reveal-delay-2">
                   <RishiGrid scores={consensus.scores} />
                 </div>
@@ -295,7 +404,6 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
 
           </div>
 
-          {/* ── Sticky Wisdom Sidebar ── */}
           <div style={{ position: 'sticky', top: 80 }}>
             <div className="wisdom-reveal-delay-2">
               <WisdomSidebar stock={stock} scores={consensus.scores} />

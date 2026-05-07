@@ -22,22 +22,29 @@ export default function Dashboard() {
   const [searchResults, setSearchResults] = useState<string[]>([]);
   const [tier, setTier]                   = useState('seeker');
   const [livePrices, setLivePrices]       = useState<any>(null);
+  const [priceUpdatedAt, setPriceUpdatedAt] = useState<Date | null>(null);
   const searchRef                         = useRef<HTMLDivElement>(null);
   const { t, locale }                     = useLanguage();
 
   const allSymbols = Object.keys(STOCKS);
 
+  // Fetch live prices every 60 seconds
   useEffect(() => {
     async function fetchPrices() {
       try {
         const res  = await fetch('/api/prices');
         const data = await res.json();
         setLivePrices(data);
-      } catch {
-        // keep fallback values
+        setPriceUpdatedAt(new Date());
+      } catch (error) {
+        console.error('Failed to fetch prices:', error);
       }
     }
+    
+    // Fetch immediately on mount
     fetchPrices();
+    
+    // Then fetch every 60 seconds
     const interval = setInterval(fetchPrices, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -82,18 +89,28 @@ export default function Dashboard() {
       items: [
         {
           name: 'BTC',
-          value: livePrices?.BTC?.price ? '$' + Number(livePrices.BTC.price).toLocaleString() : '$67,420',
-          change: livePrices?.BTC?.change ? (livePrices.BTC.change > 0 ? '+' : '') + livePrices.BTC.change + '%' : '+2.14%',
-          up: livePrices?.BTC?.change != null ? livePrices.BTC.change > 0 : true,
+          value: livePrices?.BTC?.price ? '$' + Number(livePrices.BTC.price).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '$79,683',
+          change: livePrices?.BTC?.change ? (livePrices.BTC.change > 0 ? '+' : '') + livePrices.BTC.change.toFixed(2) + '%' : '-2.07%',
+          up: livePrices?.BTC?.change != null ? livePrices.BTC.change > 0 : false,
         },
         {
           name: 'ETH',
-          value: livePrices?.ETH?.price ? '$' + Number(livePrices.ETH.price).toLocaleString() : '$3,580',
-          change: livePrices?.ETH?.change ? (livePrices.ETH.change > 0 ? '+' : '') + livePrices.ETH.change + '%' : '+1.87%',
-          up: livePrices?.ETH?.change != null ? livePrices.ETH.change > 0 : true,
+          value: livePrices?.ETH?.price ? '$' + Number(livePrices.ETH.price).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '$2,283',
+          change: livePrices?.ETH?.change ? (livePrices.ETH.change > 0 ? '+' : '') + livePrices.ETH.change.toFixed(2) + '%' : '-2.78%',
+          up: livePrices?.ETH?.change != null ? livePrices.ETH.change > 0 : false,
         },
-        { name: 'BNB', value: '$612', change: '-0.43%', up: false },
-        { name: 'SOL', value: '$185', change: '+4.21%', up: true  },
+        {
+          name: 'BNB',
+          value: livePrices?.BNB?.price ? '$' + Number(livePrices.BNB.price).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '$612',
+          change: livePrices?.BNB?.change ? (livePrices.BNB.change > 0 ? '+' : '') + livePrices.BNB.change.toFixed(2) + '%' : '-0.43%',
+          up: livePrices?.BNB?.change != null ? livePrices.BNB.change > 0 : false,
+        },
+        {
+          name: 'SOL',
+          value: livePrices?.SOL?.price ? '$' + Number(livePrices.SOL.price).toLocaleString('en-US', { maximumFractionDigits: 2 }) : '$185',
+          change: livePrices?.SOL?.change ? (livePrices.SOL.change > 0 ? '+' : '') + livePrices.SOL.change.toFixed(2) + '%' : '+4.21%',
+          up: livePrices?.SOL?.change != null ? livePrices.SOL.change > 0 : true,
+        },
       ],
     },
     {
@@ -108,12 +125,27 @@ export default function Dashboard() {
         {
           name: 'USD/INR',
           value: livePrices?.INR?.price ? Number(livePrices.INR.price).toFixed(2) : '83.92',
-          change: livePrices?.INR?.change ? (livePrices.INR.change > 0 ? '+' : '') + livePrices.INR.change + '%' : '+0.12%',
+          change: livePrices?.INR?.change ? (livePrices.INR.change > 0 ? '+' : '') + livePrices.INR.change.toFixed(2) + '%' : '+0.12%',
           up: livePrices?.INR?.change != null ? livePrices.INR.change > 0 : true,
         },
-        { name: 'EUR/INR', value: '90.14',  change: '-0.08%', up: false },
-        { name: 'GBP/INR', value: '106.40', change: '+0.21%', up: true  },
-        { name: 'JPY/INR', value: '0.5542', change: '-0.34%', up: false },
+        {
+          name: 'EUR/INR',
+          value: livePrices?.EUR_INR?.price ? Number(livePrices.EUR_INR.price).toFixed(2) : '90.14',
+          change: livePrices?.EUR_INR?.change ? (livePrices.EUR_INR.change > 0 ? '+' : '') + livePrices.EUR_INR.change.toFixed(2) + '%' : '-0.08%',
+          up: livePrices?.EUR_INR?.change != null ? livePrices.EUR_INR.change > 0 : false,
+        },
+        {
+          name: 'GBP/INR',
+          value: livePrices?.GBP_INR?.price ? Number(livePrices.GBP_INR.price).toFixed(2) : '106.40',
+          change: livePrices?.GBP_INR?.change ? (livePrices.GBP_INR.change > 0 ? '+' : '') + livePrices.GBP_INR.change.toFixed(2) + '%' : '+0.21%',
+          up: livePrices?.GBP_INR?.change != null ? livePrices.GBP_INR.change > 0 : true,
+        },
+        {
+          name: 'JPY/INR',
+          value: livePrices?.JPY_INR?.price ? Number(livePrices.JPY_INR.price).toFixed(4) : '0.5542',
+          change: livePrices?.JPY_INR?.change ? (livePrices.JPY_INR.change > 0 ? '+' : '') + livePrices.JPY_INR.change.toFixed(2) + '%' : '-0.34%',
+          up: livePrices?.JPY_INR?.change != null ? livePrices.JPY_INR.change > 0 : false,
+        },
       ],
     },
     {
@@ -127,13 +159,28 @@ export default function Dashboard() {
       items: [
         {
           name: 'GOLD',
-          value: livePrices?.GOLD?.price ? '$' + Number(livePrices.GOLD.price).toLocaleString() : '$2,334',
-          change: livePrices?.GOLD?.change ? (livePrices.GOLD.change > 0 ? '+' : '') + livePrices.GOLD.change + '%' : '+0.54%',
+          value: livePrices?.GOLD?.price ? '$' + Number(livePrices.GOLD.price).toLocaleString('en-US', { maximumFractionDigits: 0 }) : '$2,334',
+          change: livePrices?.GOLD?.change ? (livePrices.GOLD.change > 0 ? '+' : '') + livePrices.GOLD.change.toFixed(2) + '%' : '+0.54%',
           up: livePrices?.GOLD?.change != null ? livePrices.GOLD.change > 0 : true,
         },
-        { name: 'SILVER',  value: '$29.40', change: '+1.12%', up: true  },
-        { name: 'CRUDE',   value: '$82.60', change: '-1.34%', up: false },
-        { name: 'NAT GAS', value: '$2.84',  change: '+2.10%', up: true  },
+        {
+          name: 'SILVER',
+          value: livePrices?.SILVER?.price ? '$' + Number(livePrices.SILVER.price).toFixed(2) : '$29.40',
+          change: livePrices?.SILVER?.change ? (livePrices.SILVER.change > 0 ? '+' : '') + livePrices.SILVER.change.toFixed(2) + '%' : '+1.12%',
+          up: livePrices?.SILVER?.change != null ? livePrices.SILVER.change > 0 : true,
+        },
+        {
+          name: 'CRUDE',
+          value: livePrices?.CRUDE?.price ? '$' + Number(livePrices.CRUDE.price).toFixed(2) : '$82.60',
+          change: livePrices?.CRUDE?.change ? (livePrices.CRUDE.change > 0 ? '+' : '') + livePrices.CRUDE.change.toFixed(2) + '%' : '-1.34%',
+          up: livePrices?.CRUDE?.change != null ? livePrices.CRUDE.change > 0 : false,
+        },
+        {
+          name: 'NAT GAS',
+          value: livePrices?.NAT_GAS?.price ? '$' + Number(livePrices.NAT_GAS.price).toFixed(2) : '$2.84',
+          change: livePrices?.NAT_GAS?.change ? (livePrices.NAT_GAS.change > 0 ? '+' : '') + livePrices.NAT_GAS.change.toFixed(2) + '%' : '+2.10%',
+          up: livePrices?.NAT_GAS?.change != null ? livePrices.NAT_GAS.change > 0 : true,
+        },
       ],
     },
     {
@@ -194,6 +241,16 @@ export default function Dashboard() {
   const dayIndex    = Math.floor(Date.now() / 86400000) % WISDOM_QUOTES.length;
   const dailyWisdom = WISDOM_QUOTES[dayIndex];
   const tierConfig  = TIER_CONFIG[tier as keyof typeof TIER_CONFIG];
+
+  // Format time since last update
+  const getTimeSinceUpdate = () => {
+    if (!priceUpdatedAt) return 'updating...';
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - priceUpdatedAt.getTime()) / 1000);
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}m ago`;
+  };
 
   return (
     <main className="page-container">
@@ -377,10 +434,21 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Markets Overview */}
+        {/* Markets Overview with Live Update Indicator */}
         <div style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
-            {t('dashboard.globalMarkets')}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, fontFamily: 'monospace' }}>
+              {t('dashboard.globalMarkets')}
+            </div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', letterSpacing: 0.5 }}>
+              {livePrices ? (
+                <span style={{ color: 'var(--accent-green)' }}>
+                  ● Live • Updated {getTimeSinceUpdate()}
+                </span>
+              ) : (
+                <span>Loading prices...</span>
+              )}
+            </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))', gap: 16 }}>
             {MARKET_SECTIONS.map(section => (

@@ -1,42 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchLivePrice } from '../../../lib/livePrice';
 
-export const dynamic = 'force-dynamic'; // Never cache
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     const prices: Record<string, any> = {};
     
-    // Crypto: BTC, ETH, SOL, BNB
-    const cryptoFetches = [
-      { key: 'BTC', symbol: 'BTC=F' },
-      { key: 'ETH', symbol: 'ETH=F' },
-      { key: 'SOL', symbol: 'SOL=F' },
-      { key: 'BNB', symbol: 'BNB=F' },
-    ];
-    
-    // Forex: USD/INR, EUR/INR, GBP/INR, JPY/INR
-    const forexFetches = [
+    // All symbol fetches
+    const allSymbols = [
+      // CRYPTO
+      { key: 'BTC', symbol: 'BTC' },
+      { key: 'ETH', symbol: 'ETH' },
+      { key: 'SOL', symbol: 'SOL' },
+      { key: 'BNB', symbol: 'BNB' },
+      
+      // FOREX
       { key: 'INR', symbol: 'USD/INR' },
       { key: 'EUR_INR', symbol: 'EUR/INR' },
       { key: 'GBP_INR', symbol: 'GBP/INR' },
       { key: 'JPY_INR', symbol: 'JPY/INR' },
+      
+      // COMMODITIES
+      { key: 'GOLD', symbol: 'GOLD' },
+      { key: 'SILVER', symbol: 'SILVER' },
+      { key: 'CRUDE', symbol: 'CRUDE' },
+      { key: 'NAT_GAS', symbol: 'NAT_GAS' },
+      
+      // BONDS
+      { key: 'IN_10Y', symbol: 'IN_10Y' },
+      { key: 'IN_2Y', symbol: 'IN_2Y' },
+      { key: 'US_10Y', symbol: 'US_10Y' },
+      { key: 'US_30Y', symbol: 'US_30Y' },
+      
+      // TOP 20 STOCKS (most commonly searched)
+      { key: 'TCS', symbol: 'TCS' },
+      { key: 'INFY', symbol: 'INFY' },
+      { key: 'RELIANCE', symbol: 'RELIANCE' },
+      { key: 'HDFC', symbol: 'HDFC' },
+      { key: 'ICICI', symbol: 'ICICI' },
+      { key: 'SBIN', symbol: 'SBIN' },
+      { key: 'WIPRO', symbol: 'WIPRO' },
+      { key: 'ITC', symbol: 'ITC' },
+      { key: 'BAJAJFINSV', symbol: 'BAJAJFINSV' },
+      { key: 'LT', symbol: 'LT' },
+      { key: 'ASIANPAINT', symbol: 'ASIANPAINT' },
+      { key: 'MARUTI', symbol: 'MARUTI' },
+      { key: 'HDFCBANK', symbol: 'HDFCBANK' },
+      { key: 'AXIS', symbol: 'AXIS' },
+      { key: 'BHARTIARTL', symbol: 'BHARTIARTL' },
+      { key: 'SUNPHARMA', symbol: 'SUNPHARMA' },
+      { key: 'TITAN', symbol: 'TITAN' },
+      { key: 'NESTLEIND', symbol: 'NESTLEIND' },
+      { key: 'POWERGRID', symbol: 'POWERGRID' },
+      { key: 'ULTRACEMCO', symbol: 'ULTRACEMCO' },
     ];
     
-    // Commodities: GOLD, SILVER, CRUDE, NAT GAS
-    const commodityFetches = [
-      { key: 'GOLD', symbol: 'GC=F' },
-      { key: 'SILVER', symbol: 'SI=F' },
-      // CRUDE and NAT GAS - we'll use mock for now as APIs are limited
-    ];
-    
-    // Fetch all in parallel
-    const allFetches = [...cryptoFetches, ...forexFetches, ...commodityFetches];
-    
-    const results = await Promise.all(
-      allFetches.map(async (item) => {
+    // Fetch all in parallel with timeout protection
+    const results = await Promise.allSettled(
+      allSymbols.map(async (item) => {
         try {
-          const price = await fetchLivePrice(item.symbol);
+          const price = await Promise.race([
+            fetchLivePrice(item.symbol),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('timeout')), 5000)
+            )
+          ]);
+          
           if (price) {
             return { key: item.key, price };
           }
@@ -47,20 +77,12 @@ export async function GET(request: NextRequest) {
       })
     );
     
-    results.forEach(result => {
-      if (result) {
-        prices[result.key] = result.price;
+    results.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value) {
+        prices[result.value.key] = result.value.price;
       }
     });
     
-    // Add mock data for items we couldn't fetch
-    if (!prices.CRUDE) {
-      prices.CRUDE = { price: 82.60, change: -1.34, lastUpdated: new Date().toISOString() };
-    }
-    if (!prices.NAT_GAS) {
-      prices.NAT_GAS = { price: 2.84, change: 2.10, lastUpdated: new Date().toISOString() };
-    }
-
     return NextResponse.json(prices, {
       headers: {
         'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',

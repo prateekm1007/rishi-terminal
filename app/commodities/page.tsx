@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { COMMODITIES } from '../../data/markets';
@@ -10,6 +10,7 @@ import { scoreDanielYergin } from '../../lib/scorers/commodity/danielyergin';
 import { isPremium } from '../../lib/premium';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
+import { useLivePrices } from '../../hooks/useLivePrices';
 
 const COMMODITY_RISHIS = [
   {
@@ -47,6 +48,12 @@ function scoreColor(score: number): string {
   return 'var(--accent-red)';
 }
 
+function changeColor(change: number): string {
+  if (change > 0) return 'var(--accent-green)';
+  if (change < 0) return 'var(--accent-red)';
+  return 'var(--text-muted)';
+}
+
 export default function CommoditiesPage() {
   const { t } = useLanguage();
   const router = useRouter();
@@ -55,11 +62,41 @@ export default function CommoditiesPage() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const premium = isPremium();
 
-  const categories = ['All', ...Array.from(new Set(COMMODITIES.map(c => c.category)))];
-  const filtered = category === 'All' ? COMMODITIES : COMMODITIES.filter(c => c.category === category);
+  // Pull symbols for live price fetching
+  const commoditySymbols = useMemo(() => COMMODITIES.map(c => c.symbol), []);
+  const { prices, loading, error, lastUpdated } = useLivePrices(commoditySymbols);
+
+  // Merge live prices into commodities
+  const enrichedCommodities = useMemo(() => {
+    return COMMODITIES.map(c => {
+      const live = prices[c.symbol];
+      if (live && live.price > 0) {
+        return {
+          ...c,
+          price:           live.price,
+          changePercent:   live.changePercent24h,
+          change24h:       live.changePercent24h,
+        };
+      }
+      return { ...c, changePercent: 0, change24h: 0 };
+    });
+  }, [prices]);
+
+  const categories = ['All', ...Array.from(new Set(enrichedCommodities.map(c => c.category)))];
+  const filtered = category === 'All'
+    ? enrichedCommodities
+    : enrichedCommodities.filter(c => c.category === category);
+
+  // Key stats from live data
+  const goldData   = enrichedCommodities.find(c => c.symbol === 'GOLD');
+  const silverData = enrichedCommodities.find(c => c.symbol === 'SILVER');
+  const wtiData    = enrichedCommodities.find(c => c.symbol === 'WTI');
+  const brentData  = enrichedCommodities.find(c => c.symbol === 'BRENT');
 
   return (
     <main className="page-container">
+
+      {showUpgrade && <UpgradePrompt onClose={() => setShowUpgrade(false)} />}
 
       {/* Header */}
       <div className="page-header">
@@ -69,6 +106,7 @@ export default function CommoditiesPage() {
             {' > '}
             <span>{t('commodities.breadcrumb')}</span>
           </div>
+
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
             <div>
               <h1 className="philosophy-heading" style={{ fontSize: 32, color: 'var(--accent-gold)' }}>
@@ -77,236 +115,194 @@ export default function CommoditiesPage() {
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.6 }}>
                 {t('commodities.subtitle')}
               </p>
+              {lastUpdated && (
+                <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
+                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                </div>
+              )}
             </div>
+
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160 }}>
+              <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
+                COMMODITIES
+              </div>
+              <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
+                {enrichedCommodities.length}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                Live Global Markets
+              </div>
+            </div>
+          </div>
+
+          {/* Live Key Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginTop: 24 }}>
+            {[
+              { label: 'GOLD (XAU/USD)',   data: goldData,   color: '#FFD700', bg: 'rgba(255,215,0,0.08)',   border: 'rgba(255,215,0,0.2)',   prefix: '$' },
+              { label: 'SILVER (XAG/USD)', data: silverData, color: '#C0C0C0', bg: 'rgba(192,192,192,0.08)', border: 'rgba(192,192,192,0.2)', prefix: '$' },
+              { label: 'WTI CRUDE',        data: wtiData,    color: '#f97316', bg: 'rgba(249,115,22,0.08)',  border: 'rgba(249,115,22,0.2)',  prefix: '$' },
+              { label: 'BRENT CRUDE',      data: brentData,  color: '#60a5fa', bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.2)',  prefix: '$' },
+            ].map(stat => (
+              <div key={stat.label} style={{
+                background: stat.bg,
+                border: '1px solid ' + stat.border,
+                borderRadius: 10,
+                padding: '12px 16px',
+              }}>
+                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
+                  {stat.label}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <div style={{ fontSize: 20, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
+                    {loading ? '...' : stat.data ? stat.prefix + stat.data.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                  </div>
+                  {!loading && stat.data && (
+                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: changeColor(stat.data.change24h) }}>
+                      {stat.data.change24h > 0 ? '+' : ''}{stat.data.change24h.toFixed(2)}%
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="content-wrapper" style={{ padding: '28px 24px' }}>
-
-        {/* Quick Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
-          {[
-            { label: t('commodities.goldSpot'),   value: '$2,650/oz',                 color: 'var(--accent-gold)' },
-            { label: t('commodities.silverSpot'), value: '$32.5/oz',                  color: '#94A3B8' },
-            { label: t('commodities.crudeWti'),   value: '$72.5/bbl',                 color: 'var(--accent-blue)' },
-            { label: t('commodities.tracked'),     value: COMMODITIES.length + ' ' + t('commodities.assets'), color: 'var(--accent-green)' },
-          ].map(stat => (
-            <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
-              <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'monospace', color: stat.color }}>{stat.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Rishi Cards */}
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
-            {t('commodities.commodityPhilosophers')}
+      {/* Error Banner */}
+      {error && (
+        <div className="content-wrapper" style={{ padding: '12px 24px' }}>
+          <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 16px', fontSize: 12, color: 'var(--accent-red)' }}>
+            ⚠ {error} — showing last known prices
           </div>
         </div>
+      )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-          {COMMODITY_RISHIS.map(guru => {
-            const commodity = COMMODITIES.find(c => c.symbol === guru.target);
-            if (!commodity) return null;
-            const result = guru.scorer(commodity);
-            const isExpanded = expandedCard === guru.id;
+      {/* Category Filter */}
+      <div className="content-wrapper" style={{ padding: '20px 24px 0' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              style={{
+                padding: '6px 16px',
+                borderRadius: 20,
+                border: '1px solid ' + (category === cat ? 'var(--accent-gold)' : 'var(--border-primary)'),
+                background: category === cat ? 'rgba(255,215,0,0.1)' : 'transparent',
+                color: category === cat ? 'var(--accent-gold)' : 'var(--text-muted)',
+                fontSize: 11,
+                fontFamily: 'monospace',
+                cursor: 'pointer',
+                letterSpacing: 1,
+              }}
+            >
+              {cat.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Commodities Grid */}
+      <div className="content-wrapper" style={{ padding: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+          {filtered.map(commodity => {
+            const isExpanded  = expandedCard === commodity.symbol;
+            const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(commodity) }));
+            const avgScore    = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
+            const isLive      = !!prices[commodity.symbol];
 
             return (
               <div
-                key={guru.id}
+                key={commodity.symbol}
                 className="card-sacred"
-                style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
-                onClick={() => setExpandedCard(isExpanded ? null : guru.id)}
+                style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                onClick={() => {
+                  if (!premium && commodity.category !== 'Energy') {
+                    setShowUpgrade(true);
+                    return;
+                  }
+                  router.push('/commodities/' + commodity.symbol);
+                }}
               >
-                <div style={{ height: 2, background: 'linear-gradient(90deg, var(--accent-gold), var(--accent-green))' }} />
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', flexWrap: 'wrap', gap: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: '50%',
-                      background: 'rgba(255,215,0,0.1)',
-                      border: '1px solid rgba(255,215,0,0.3)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 11, fontWeight: 700, fontFamily: 'monospace',
-                      color: 'var(--accent-gold)',
-                    }}>
-                      {guru.tag}
-                    </div>
+                {/* Card Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: 32 }}>{commodity.emoji}</span>
                     <div>
-                      <div className="philosophy-heading" style={{ fontSize: 18, color: 'var(--text-primary)', marginBottom: 4 }}>
-                        {guru.name}
+                      <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>
+                        {commodity.name}
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                        {result.label} — {result.origin} — {t('commodities.analyzing')} {commodity.name}
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', letterSpacing: 1 }}>
+                        {commodity.symbol} • {commodity.category}
+                        {isLive && (
+                          <span style={{ color: 'var(--accent-green)', marginLeft: 6 }}>⚡ LIVE</span>
+                        )}
                       </div>
                     </div>
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 48, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(result.score), lineHeight: 1 }}>
-                        {result.score}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>/100</div>
-                    </div>
-                    <div style={{ width: 100, height: 6, background: 'var(--bg-secondary)', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: result.score + '%', background: scoreColor(result.score), borderRadius: 4 }} />
-                    </div>
-                    <div style={{
-                      fontSize: 12, color: 'var(--text-muted)',
-                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                      transition: 'transform 0.25s ease',
-                    }}>v</div>
+                  <div style={{
+                    fontSize: 11, fontWeight: 700,
+                    padding: '4px 10px', borderRadius: 6,
+                    background: scoreColor(avgScore) + '20',
+                    color: scoreColor(avgScore),
+                    fontFamily: 'monospace',
+                  }}>
+                    {avgScore}
                   </div>
                 </div>
 
-                {isExpanded && (
-                  <div style={{ borderTop: '1px solid var(--border-primary)', padding: 24 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 20 }}>
-                      <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 18 }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>{t('commodities.about')}</div>
-                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{guru.bio}</p>
-                      </div>
-                      <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 18, borderLeft: '3px solid var(--accent-gold)' }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>{t('commodities.signatureQuote')}</div>
-                        <p style={{ fontSize: 14, color: 'var(--accent-gold)', fontStyle: 'italic', lineHeight: 1.7 }}>"{guru.quote}"</p>
-                      </div>
-                    </div>
+                {/* Price */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                  <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {loading && !prices[commodity.symbol]
+                      ? '...'
+                      : '$' + commodity.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                    }
+                  </div>
+                  <div style={{ fontSize: 13, fontFamily: 'monospace', color: changeColor(commodity.change24h), fontWeight: 700 }}>
+                    {commodity.change24h > 0 ? '+' : ''}{commodity.change24h.toFixed(2)}%
+                  </div>
+                </div>
 
-                    <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 18, marginBottom: 20 }}>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>
-                        {t('commodities.currentAnalysis')} — {commodity.name} {t('commodities.at')} {commodity.price}{commodity.unit}
-                      </div>
-                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{result.insight}</p>
+                {/* 52W Range Bar */}
+                {commodity.high52w && commodity.low52w && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4 }}>
+                      <span>${commodity.low52w.toLocaleString()}</span>
+                      <span>52W RANGE</span>
+                      <span>${commodity.high52w.toLocaleString()}</span>
                     </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-                      {result.comps.map((comp: any) => (
-                        <div key={comp.label} style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 16 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{comp.label}</span>
-                            <span style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: scoreColor(comp.v) }}>{comp.v}</span>
-                          </div>
-                          <div style={{ height: 5, background: 'var(--border-primary)', borderRadius: 3, overflow: 'hidden', marginBottom: 6 }}>
-                            <div style={{ height: '100%', width: comp.v + '%', background: scoreColor(comp.v), borderRadius: 3 }} />
-                          </div>
-                          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{comp.detail}</div>
-                        </div>
-                      ))}
+                    <div style={{ height: 3, background: 'var(--bg-secondary)', borderRadius: 2 }}>
+                      <div style={{
+                        height: '100%', borderRadius: 2,
+                        width: Math.min(100, Math.max(0,
+                          ((commodity.price - commodity.low52w) / (commodity.high52w - commodity.low52w)) * 100
+                        )) + '%',
+                        background: 'linear-gradient(90deg, var(--accent-gold), var(--accent-green))',
+                      }} />
                     </div>
                   </div>
                 )}
+
+                {/* Rishi Score Bar */}
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {rishiScores.map(r => (
+                    <div key={r.id} style={{ flex: 1, textAlign: 'center' }}>
+                      <div style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 3 }}>{r.tag}</div>
+                      <div style={{ height: 3, borderRadius: 2, background: scoreColor(r.result.score) + '40' }}>
+                        <div style={{ height: '100%', borderRadius: 2, width: r.result.score + '%', background: scoreColor(r.result.score) }} />
+                      </div>
+                      <div style={{ fontSize: 9, fontFamily: 'monospace', color: scoreColor(r.result.score), marginTop: 2 }}>
+                        {r.result.score}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             );
           })}
         </div>
-
-        {/* Commodity Table */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, fontFamily: 'monospace' }}>
-            {t('commodities.allCommodities')}
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {categories.map(cat => (
-              <button key={cat} onClick={() => setCategory(cat)} style={{
-                padding: '6px 14px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
-                fontWeight: category === cat ? 700 : 400,
-                border: category === cat ? 'none' : '1px solid var(--border-primary)',
-                background: category === cat ? 'var(--accent-gold)' : 'var(--bg-card)',
-                color: category === cat ? '#000' : 'var(--text-muted)',
-                fontFamily: 'monospace',
-              }}>{cat}</button>
-            ))}
-          </div>
-        </div>
-
-        <div className="card-sacred" style={{ overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
-                  {[t('commodities.commodity'), t('commodities.price'), t('commodities.change'), t('commodities.low52w'), t('commodities.high52w'), t('commodities.position52w')].map((h, i) => (
-                    <th key={h} style={{
-                      textAlign: i === 0 ? 'left' : 'right',
-                      padding: '12px 16px',
-                      fontSize: 9,
-                      color: 'var(--text-muted)',
-                      letterSpacing: 1,
-                      fontWeight: 600,
-                    }}>{h.toUpperCase()}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(c => {
-                  const range = c.high52w - c.low52w;
-                  const position = range > 0 ? ((c.price - c.low52w) / range) * 100 : 50;
-                  const posColor = position >= 70 ? 'var(--accent-green)' : position >= 30 ? 'var(--accent-gold)' : 'var(--accent-red)';
-
-                  return (
-                    <tr
-                      key={c.symbol}
-                      style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s' }}
-                      onClick={() => router.push('/commodities/' + c.symbol)}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                    >
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{
-                            width: 36, height: 36, borderRadius: '50%',
-                            background: 'rgba(255,215,0,0.08)',
-                            border: '1px solid rgba(255,215,0,0.2)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, fontWeight: 700, fontFamily: 'monospace',
-                            color: 'var(--accent-gold)', flexShrink: 0,
-                          }}>
-                            {c.symbol.slice(0, 3)}
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 13 }}>{c.name}</div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{c.symbol} — {c.category}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '14px 16px', fontWeight: 700, fontFamily: 'monospace', fontSize: 14, color: 'var(--text-primary)' }}>
-                        {c.price.toLocaleString('en-US')}<span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{c.unit}</span>
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '14px 16px', fontWeight: 700, fontFamily: 'monospace', color: c.changePct >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                        {c.changePct >= 0 ? '+' : ''}{c.changePct.toFixed(2)}%
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '14px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                        {c.low52w.toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '14px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                        {c.high52w.toLocaleString()}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-                          <div style={{ width: 80, height: 5, background: 'var(--border-primary)', borderRadius: 3, overflow: 'hidden' }}>
-                            <div style={{
-                              height: '100%', width: position + '%', borderRadius: 3,
-                              background: posColor,
-                            }} />
-                          </div>
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 32, textAlign: 'right', fontFamily: 'monospace' }}>
-                            {position.toFixed(0)}%
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
       </div>
-
-      {showUpgrade && <UpgradePrompt reason="locked_feature" onClose={() => setShowUpgrade(false)} />}
     </main>
   );
 }

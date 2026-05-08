@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { STOCKS } from '../../data/stocks';
 import { buildConsensus } from '../../lib/consensus';
 import { useLanguage } from '../../lib/language';
+import { useLivePrices } from '../../hooks/useLivePrices';
 
 interface WatchlistItem {
   symbol: string;
@@ -17,6 +18,10 @@ interface WatchlistItem {
 
 function scoreColor(s: number) {
   return s >= 75 ? 'var(--accent-green)' : s >= 55 ? 'var(--accent-gold)' : 'var(--accent-red)';
+}
+
+function priceChangeColor(change: number) {
+  return change > 0 ? 'var(--accent-green)' : change < 0 ? 'var(--accent-red)' : 'var(--text-muted)';
 }
 
 export default function WatchlistPage() {
@@ -68,284 +73,251 @@ export default function WatchlistPage() {
     setNoteText('');
   };
 
-  const exportCSV = () => {
-    const rows = watchlist.map(w => {
-      const stock = STOCKS[w.symbol];
+  // Extract symbols for live prices
+  const watchSymbols = useMemo(() => watchlist.map(w => w.symbol), [watchlist]);
+  const { prices, loading, lastUpdated } = useLivePrices(watchSymbols);
+
+  // Enrich watchlist with live data
+  const enrichedWatchlist = useMemo(() => {
+    return watchlist.map(item => {
+      const stock = STOCKS[item.symbol];
+      const livePrice = prices[item.symbol]?.price ?? stock?.price;
+      const change24h = prices[item.symbol]?.change ?? 0;
       const consensus = buildConsensus(stock).consensus;
-      return `${w.symbol},${stock.name},${stock.sector},${stock.price},${consensus},${w.notes || ''}`;
+      return { ...item, stock, livePrice, change24h, consensus };
     });
-    const csv = ['Symbol,Name,Sector,Price,Rishi Score,Notes', ...rows].join('\n');
+  }, [watchlist, prices]);
+
+  const sorted = useMemo(() => {
+    const items = [...enrichedWatchlist];
+    if (sortBy === 'score') items.sort((a, b) => b.consensus - a.consensus);
+    else if (sortBy === 'change') items.sort((a, b) => b.change24h - a.change24h);
+    else items.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime());
+    return items;
+  }, [enrichedWatchlist, sortBy]);
+
+  const exportCSV = () => {
+    const rows = enrichedWatchlist.map(w => 
+      `${w.symbol},${w.stock.name},${w.stock.sector},${w.livePrice},${w.consensus},${w.change24h},${w.notes || ''}`
+    );
+    const csv = ['Symbol,Name,Sector,Live Price,Rishi Score,24H Change %,Notes', ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'rishi_watchlist_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.download = `watchlist-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
-
-  let sortedList = [...watchlist];
-  if (sortBy === 'score') {
-    sortedList.sort((a, b) =>
-      buildConsensus(STOCKS[b.symbol]).consensus - buildConsensus(STOCKS[a.symbol]).consensus
-    );
-  } else if (sortBy === 'change') {
-    sortedList.sort((a, b) => {
-      const ca = ((STOCKS[a.symbol].price - STOCKS[a.symbol].price * 0.98) / STOCKS[a.symbol].price) * 100;
-      const cb = ((STOCKS[b.symbol].price - STOCKS[b.symbol].price * 0.98) / STOCKS[b.symbol].price) * 100;
-      return cb - ca;
-    });
-  }
 
   return (
     <main className="page-container">
-
-      {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">
-
-          {/* Breadcrumb */}
           <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
-            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>
-              {t('header.title')}
-            </Link>
-            {' > '}{t('watchlist.title').toUpperCase()}
+            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
+            {' > '}
+            <span>{t('watchlist.breadcrumb')}</span>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
             <div>
-              <h1 className="philosophy-heading" style={{ fontSize: 32, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>
+              <h1 className="philosophy-heading" style={{ fontSize: 36, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>
                 {t('watchlist.title')}
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
                 {t('watchlist.subtitle')}
               </p>
+              {lastUpdated && (
+                <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
+                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                </div>
+              )}
             </div>
 
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ padding: '12px 20px', background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 8 }}>
-                <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 4 }}>
-                  {t('watchlist.watching')}
-                </div>
-                <div style={{ fontSize: 28, fontWeight: 700, fontFamily: 'monospace', color: 'var(--accent-gold)' }}>
-                  {watchlist.length}
-                </div>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160 }}>
+              <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
+                WATCHED STOCKS
+              </div>
+              <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
+                {watchlist.length}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                Real-time tracking
               </div>
             </div>
           </div>
 
-          {/* Add Controls */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            <select
-              value={addSymbol}
-              onChange={e => setAddSymbol(e.target.value)}
-              style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
-                borderRadius: 6, padding: '8px 14px', color: 'var(--text-primary)',
-                fontSize: 12, fontFamily: 'monospace', cursor: 'pointer',
-              }}
-            >
-              {allSymbols.map(s => (
-                <option key={s} value={s}>{s} — {STOCKS[s].name}</option>
-              ))}
-            </select>
-
-            <button
-              onClick={addStock}
-              style={{
-                background: 'var(--accent-gold)', color: '#000',
-                border: 'none', borderRadius: 6, padding: '8px 18px',
-                fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              }}
-            >
-              + {t('watchlist.addToWatchlist')}
-            </button>
-
-            {watchlist.length > 0 && (
-              <>
-                <button
-                  onClick={exportCSV}
-                  style={{
-                    background: 'var(--bg-card)', color: 'var(--accent-green)',
-                    border: '1px solid var(--accent-green)', borderRadius: 6,
-                    padding: '8px 18px', fontSize: 12, cursor: 'pointer',
-                  }}
-                >
-                  {t('watchlist.exportCSV')}
-                </button>
-
-                <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
-                  {(['added', 'score', 'change'] as const).map(sort => (
-                    <button
-                      key={sort}
-                      onClick={() => setSortBy(sort)}
-                      style={{
-                        padding: '6px 12px', fontSize: 11, borderRadius: 4,
-                        background: sortBy === sort ? 'var(--accent-gold)' : 'var(--bg-card)',
-                        color: sortBy === sort ? '#000' : 'var(--text-muted)',
-                        border: sortBy === sort ? 'none' : '1px solid var(--border-primary)',
-                        cursor: 'pointer', fontFamily: 'monospace',
-                      }}
-                    >
-                      {SORT_LABELS[sort]}
-                    </button>
-                  ))}
+          {/* Quick Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+            {[
+              { label: 'Total Items', value: watchlist.length, color: 'var(--accent-gold)', bg: 'rgba(255,215,0,0.08)', border: 'rgba(255,215,0,0.2)' },
+              { label: 'Avg Score', value: enrichedWatchlist.length > 0 ? (enrichedWatchlist.reduce((s, w) => s + w.consensus, 0) / enrichedWatchlist.length).toFixed(0) : '—', color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
+            ].map(stat => (
+              <div key={stat.label} style={{ background: stat.bg, border: '1px solid ' + stat.border, borderRadius: 10, padding: '12px 16px' }}>
+                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
+                  {stat.label.toUpperCase()}
                 </div>
-              </>
-            )}
+                <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
+                  {stat.value}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
-        {watchlist.length === 0 ? (
-          <div className="card-sacred" style={{ padding: 60, textAlign: 'center' }}>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 1 }}>
-              {t('watchlist.empty')}
-            </div>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-              {t('watchlist.emptyHint')}
-            </p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {sortedList.map(item => {
-              const stock = STOCKS[item.symbol];
-              const consensus = buildConsensus(stock).consensus;
-              const change1D = ((stock.price - stock.price * 0.98) / stock.price) * 100;
+        {/* Add Stock Form */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
+          <input
+            type="text"
+            placeholder="Enter stock symbol (e.g., TCS)"
+            value={addSymbol}
+            onChange={e => setAddSymbol(e.target.value.toUpperCase())}
+            onKeyPress={e => e.key === 'Enter' && addStock()}
+            style={{
+              padding: '10px 16px',
+              borderRadius: 8,
+              border: '1px solid var(--border-primary)',
+              background: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              fontSize: 12,
+              fontFamily: 'monospace',
+              flex: 1,
+            }}
+          />
+          <button
+            onClick={addStock}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 8,
+              background: 'var(--accent-gold)',
+              color: '#000',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontSize: 12,
+              letterSpacing: 1,
+            }}
+          >
+            ADD
+          </button>
+          <button
+            onClick={exportCSV}
+            style={{
+              padding: '10px 20px',
+              borderRadius: 8,
+              background: 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-primary)',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 12,
+              letterSpacing: 1,
+            }}
+          >
+            EXPORT CSV
+          </button>
+        </div>
 
-              return (
-                <div
-                  key={item.symbol}
-                  className="card-sacred"
-                  style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onClick={() => router.push('/stock/' + item.symbol)}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}
-                >
-                  <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, ' + scoreColor(consensus) + ', transparent)' }} />
+        {/* Sort Controls */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+          {Object.entries(SORT_LABELS).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setSortBy(key as any)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 4,
+                background: sortBy === key ? 'var(--accent-gold)' : 'var(--bg-card)',
+                color: sortBy === key ? '#000' : 'var(--text-muted)',
+                border: sortBy === key ? 'none' : '1px solid var(--border-primary)',
+                cursor: 'pointer',
+                fontSize: 11,
+                fontFamily: 'monospace',
+                fontWeight: 600,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-                  <div style={{ padding: '16px 20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-                          <span style={{ fontSize: 16, color: 'var(--accent-gold)', fontWeight: 700, fontFamily: 'monospace' }}>
-                            {item.symbol}
-                          </span>
-                          <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{stock.name}</span>
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                          {stock.sector} · {t('watchlist.added')} {new Date(item.addedDate).toLocaleDateString('en-IN')}
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)' }}>
-                            Rs {stock.price.toLocaleString('en-IN')}
-                          </div>
-                          <div style={{ fontSize: 12, fontWeight: 700, fontFamily: 'monospace', color: change1D >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                            {change1D >= 0 ? '+' : ''}{change1D.toFixed(2)}%
-                          </div>
-                        </div>
-
-                        <div style={{
-                          padding: '8px 16px', borderRadius: 6,
-                          background: scoreColor(consensus) + '15',
-                          border: '1px solid ' + scoreColor(consensus) + '40',
-                        }}>
-                          <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 2 }}>
-                            {t('watchlist.rishiScore')}
-                          </div>
-                          <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: scoreColor(consensus) }}>
-                            {consensus}
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          <button
-                            onClick={e => {
-                              e.stopPropagation();
-                              setEditNote(editNote === item.symbol ? null : item.symbol);
-                              setNoteText(item.notes || '');
-                            }}
-                            style={{
-                              background: 'var(--bg-secondary)', border: 'none',
-                              borderRadius: 4, padding: '4px 8px', color: 'var(--text-muted)',
-                              cursor: 'pointer', fontSize: 10,
-                            }}
-                          >
-                            {t('watchlist.note')}
-                          </button>
-                          <button
-                            onClick={e => {
-                              e.stopPropagation();
-                              if (confirm(t('watchlist.confirmRemove') + ' ' + item.symbol + '?')) {
-                                removeStock(item.symbol);
-                              }
-                            }}
-                            style={{
-                              background: 'transparent', border: '1px solid var(--accent-red)',
-                              borderRadius: 4, padding: '4px 8px', color: 'var(--accent-red)',
-                              cursor: 'pointer', fontSize: 10,
-                            }}
-                          >
-                            {t('watchlist.remove')}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {item.notes && editNote !== item.symbol && (
-                      <div style={{
-                        marginTop: 12, fontSize: 11, color: 'var(--text-secondary)',
-                        fontStyle: 'italic', padding: '10px 12px',
-                        background: 'var(--bg-secondary)', borderRadius: 6,
-                        borderLeft: '3px solid var(--accent-gold)',
-                      }}>
-                        {item.notes}
-                      </div>
-                    )}
-
-                    {editNote === item.symbol && (
-                      <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                        <input
-                          value={noteText}
-                          onChange={e => setNoteText(e.target.value)}
-                          placeholder={t('watchlist.notePlaceholder')}
-                          onClick={e => e.stopPropagation()}
-                          style={{
-                            flex: 1, background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-primary)', borderRadius: 4,
-                            padding: '8px 12px', color: 'var(--text-primary)',
-                            fontSize: 11, fontFamily: 'inherit',
-                          }}
-                        />
+        {/* Watchlist Table */}
+        {watchlist.length > 0 ? (
+          <div className="card-sacred" style={{ overflow: 'hidden' }}>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
+                    {['SYMBOL', 'NAME', 'SECTOR', 'LIVE PRICE', '24H CHANGE', 'RISHI SCORE', 'NOTES', 'ACTION'].map(h => (
+                      <th key={h} style={{
+                        textAlign: 'right',
+                        padding: '14px 24px',
+                        fontSize: 9,
+                        fontFamily: 'monospace',
+                        color: 'var(--text-muted)',
+                        letterSpacing: 1,
+                        fontWeight: 600,
+                      }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map(item => (
+                    <tr key={item.symbol} style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 700, color: 'var(--accent-gold)', fontSize: 13 }}>
+                        {item.symbol}
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontSize: 12 }}>
+                        {item.stock.name}
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-muted)', fontSize: 11 }}>
+                        {item.stock.sector}
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)' }}>
+                        {item.livePrice.toFixed(2)}
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', fontWeight: 700, color: priceChangeColor(item.change24h) }}>
+                        {item.change24h > 0 ? '+' : ''}{item.change24h.toFixed(2)}%
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 700, color: scoreColor(item.consensus) }}>
+                        {item.consensus.toFixed(0)}
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-muted)', fontSize: 11, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.notes || '—'}
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px' }}>
                         <button
-                          onClick={e => { e.stopPropagation(); saveNote(item.symbol); }}
+                          onClick={() => removeStock(item.symbol)}
                           style={{
-                            background: 'var(--accent-green)', color: '#000',
-                            border: 'none', borderRadius: 4, padding: '8px 16px',
-                            cursor: 'pointer', fontSize: 11, fontWeight: 700,
+                            padding: '4px 8px',
+                            borderRadius: 4,
+                            background: 'rgba(239,68,68,0.1)',
+                            color: 'var(--accent-red)',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: 10,
+                            fontWeight: 600,
                           }}
                         >
-                          {t('common.save')}
+                          REMOVE
                         </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', fontSize: 14 }}>
+            No stocks in watchlist. Add one to get started!
           </div>
         )}
-
-        {/* Footer */}
-        <div style={{
-          textAlign: 'center', fontSize: 11, color: 'var(--text-muted)',
-          paddingTop: 24, marginTop: 24, borderTop: '1px solid var(--border-primary)',
-        }}>
-          {t('dashboard.notInvestmentAdvice')}
-        </div>
       </div>
     </main>
   );

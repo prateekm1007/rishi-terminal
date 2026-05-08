@@ -4,19 +4,22 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Stock } from "../../lib/types";
 import { buildConsensus } from "../../lib/consensus";
+import { useLivePrices } from "../../hooks/useLivePrices";
 
 interface StockRow extends Stock {
   consensus: number;
   topRishi: string;
   topRishiScore: number;
   category: string;
+  livePrice: number;
+  change24h: number;
 }
 
 interface Props {
   stocks: Stock[];
 }
 
-type SortKey = "symbol" | "price" | "pe" | "roe" | "mktcap" | "consensus";
+type SortKey = "symbol" | "livePrice" | "pe" | "roe" | "mktcap" | "consensus" | "change24h";
 
 function consensusCategory(score: number): string {
   if (score >= 75) return "STRONG BUY";
@@ -28,24 +31,32 @@ function consensusCategory(score: number): string {
 export function StockTable({ stocks }: Props) {
   const dark = true;
 
-  const [search, setSearch]           = useState("");
+  const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
-  const [sortKey, setSortKey]         = useState<SortKey>("consensus");
-  const [sortDesc, setSortDesc]       = useState(true);
+  const [sortKey, setSortKey] = useState<SortKey>("consensus");
+  const [sortDesc, setSortDesc] = useState(true);
+
+  // Get live prices for all stocks
+  const stockSymbols = useMemo(() => stocks.map(s => s.symbol), [stocks]);
+  const { prices } = useLivePrices(stockSymbols);
 
   const enrichedStocks = useMemo<StockRow[]>(() => {
     return stocks.map(stock => {
-      const report   = buildConsensus(stock);
+      const report = buildConsensus(stock);
       const topScore = report.scores[0];
+      const livePrice = prices[stock.symbol]?.price ?? stock.price;
+      const change24h = prices[stock.symbol]?.change ?? 0;
       return {
         ...stock,
-        consensus:      report.consensus,
-        topRishi:       topScore.name,
-        topRishiScore:  topScore.score,
-        category:       consensusCategory(report.consensus),
+        consensus: report.consensus,
+        topRishi: topScore.name,
+        topRishiScore: topScore.score,
+        category: consensusCategory(report.consensus),
+        livePrice,
+        change24h,
       };
     });
-  }, [stocks]);
+  }, [stocks, prices]);
 
   const sectors = useMemo(() => {
     const unique = new Set(stocks.map(s => s.sector));
@@ -78,7 +89,10 @@ export function StockTable({ stocks }: Props) {
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortDesc(!sortDesc);
-    else { setSortKey(key); setSortDesc(true); }
+    else {
+      setSortKey(key);
+      setSortDesc(true);
+    }
   };
 
   const sortIcon = (key: SortKey) =>
@@ -91,190 +105,128 @@ export function StockTable({ stocks }: Props) {
     return dark ? "text-red-400" : "text-red-700";
   };
 
-  const categoryBadge = (cat: string) => {
-    if (cat === "STRONG BUY") return dark
-      ? "bg-emerald-900/40 text-emerald-400 border-emerald-800"
-      : "bg-green-100 text-green-800 border-green-300";
-    if (cat === "BUY") return dark
-      ? "bg-blue-900/40 text-blue-400 border-blue-800"
-      : "bg-blue-100 text-blue-800 border-blue-300";
-    if (cat === "HOLD") return dark
-      ? "bg-yellow-900/40 text-yellow-400 border-yellow-800"
-      : "bg-yellow-100 text-yellow-800 border-yellow-300";
-    return dark
-      ? "bg-red-900/40 text-red-400 border-red-800"
-      : "bg-red-100 text-red-700 border-red-300";
+  const changeColor = (change: number) => {
+    if (change > 0) return dark ? "text-emerald-400" : "text-green-700";
+    if (change < 0) return dark ? "text-red-400" : "text-red-700";
+    return dark ? "text-gray-400" : "text-gray-600";
   };
 
-  const mktcapFmt = (v: number) => {
-    if (v >= 1e5) return `${(v / 1e5).toFixed(1)}L Cr`;
-    if (v >= 1e3) return `${(v / 1e3).toFixed(1)}K Cr`;
-    return `${v} Cr`;
+  const categoryBadge = (cat: string) => {
+    if (cat === "STRONG BUY")
+      return dark
+        ? "bg-emerald-900/40 text-emerald-400 border-emerald-800"
+        : "bg-green-100 text-green-800 border-green-300";
+    if (cat === "BUY")
+      return dark
+        ? "bg-blue-900/40 text-blue-400 border-blue-800"
+        : "bg-blue-100 text-blue-800 border-blue-300";
+    if (cat === "HOLD")
+      return dark
+        ? "bg-amber-900/40 text-amber-400 border-amber-800"
+        : "bg-amber-100 text-amber-800 border-amber-300";
+    return dark
+      ? "bg-red-900/40 text-red-400 border-red-800"
+      : "bg-red-100 text-red-800 border-red-300";
   };
 
   return (
-    <div className="space-y-4">
-
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: "var(--text-muted)" }}>🔍</span>
-          <input
-            type="text"
-            placeholder="Search symbol or company name..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm font-mono focus:outline-none transition-colors"
-            style={{
-              background:   "var(--bg-card)",
-              border:       "1px solid var(--border-primary)",
-              color:        "var(--text-primary)",
-            }}
-          />
-        </div>
+    <div className="w-full">
+      {/* Search & Filter */}
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <input
+          type="text"
+          placeholder="Search symbols or company names..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className={`rounded-lg border px-4 py-2 text-sm font-mono transition ${
+            dark
+              ? "border-gray-700 bg-gray-900/50 text-gray-100 placeholder-gray-500"
+              : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
+          }`}
+        />
         <select
           value={sectorFilter}
           onChange={e => setSectorFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-lg text-sm font-mono focus:outline-none"
-          style={{
-            background: "var(--bg-card)",
-            border:     "1px solid var(--border-primary)",
-            color:      "var(--text-primary)",
-          }}
+          className={`rounded-lg border px-4 py-2 text-sm font-mono transition ${
+            dark
+              ? "border-gray-700 bg-gray-900/50 text-gray-100"
+              : "border-gray-300 bg-white text-gray-900"
+          }`}
         >
-          {sectors.map(s => <option key={s} value={s}>{s}</option>)}
+          {sectors.map(s => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
         </select>
       </div>
 
-      {/* Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-          Showing <span style={{ color: "var(--accent-gold)", fontWeight: 700 }}>{filtered.length}</span> of {stocks.length} stocks
-        </p>
-        <div className="flex gap-2">
-          {["STRONG BUY", "BUY", "HOLD", "AVOID"].map(cat => {
-            const count = filtered.filter(s => s.category === cat).length;
-            return (
-              <span
-                key={cat}
-                className={`text-xs font-mono px-2 py-0.5 rounded border ${categoryBadge(cat)}`}
-              >
-                {cat}: {count}
-              </span>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Table */}
-      <div
-        className="overflow-x-auto rounded-xl shadow-lg"
-        style={{ border: "1px solid var(--border-primary)" }}
-      >
+      <div className="overflow-x-auto rounded-lg border border-gray-700">
         <table className="w-full text-sm">
-          <thead>
-            <tr style={{
-              background:   "var(--bg-secondary)",
-              borderBottom: "2px solid var(--accent-red)",
-            }}>
-              {[
-                { key: "symbol",    label: "Symbol",    align: "left"  },
-                { key: null,        label: "Company",   align: "left"  },
-                { key: null,        label: "Sector",    align: "left"  },
-                { key: "price",     label: "Price",     align: "right" },
-                { key: "pe",        label: "P/E",       align: "right" },
-                { key: "roe",       label: "ROE %",     align: "right" },
-                { key: "mktcap",    label: "Mkt Cap",   align: "right" },
-                { key: "consensus", label: "Rishi Score", align: "right" },
-                { key: null,        label: "Signal",    align: "center"},
-                { key: null,        label: "Top Rishi", align: "left"  },
-              ].map(col => (
-                <th
-                  key={col.label}
-                  onClick={() => col.key && handleSort(col.key as SortKey)}
-                  className={`px-4 py-3 text-xs font-mono uppercase tracking-wider ${col.key ? "cursor-pointer hover:opacity-70" : ""}`}
-                  style={{
-                    textAlign: col.align as "left" | "right" | "center",
-                    color:     "var(--text-muted)",
-                  }}
-                >
-                  {col.label} {col.key && sortIcon(col.key as SortKey)}
-                </th>
-              ))}
+          <thead
+            className={dark ? "bg-gray-900/50 border-gray-700" : "bg-gray-100 border-gray-300"}
+          >
+            <tr className="border-b">
+              <th className="px-4 py-3 text-left font-mono font-semibold text-gray-400">
+                SYMBOL
+              </th>
+              <th className="px-4 py-3 text-left font-mono font-semibold text-gray-400">
+                NAME
+              </th>
+              <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("livePrice")}>
+                PRICE {sortIcon("livePrice")}
+              </th>
+              <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("change24h")}>
+                24H {sortIcon("change24h")}
+              </th>
+              <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("pe")}>
+                PE {sortIcon("pe")}
+              </th>
+              <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("roe")}>
+                ROE {sortIcon("roe")}
+              </th>
+              <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("consensus")}>
+                SCORE {sortIcon("consensus")}
+              </th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((stock, i) => (
+            {filtered.map((stock, idx) => (
               <tr
                 key={stock.symbol}
-                className="transition-colors cursor-pointer"
-                style={{
-                  background:   i % 2 === 0 ? "var(--bg-card)" : "var(--bg-secondary)",
-                  borderBottom: "1px solid var(--border-subtle)",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = "var(--bg-hover)")}
-                onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? "var(--bg-card)" : "var(--bg-secondary)")}
+                className={`border-b transition ${
+                  dark
+                    ? "border-gray-800 hover:bg-gray-900/30"
+                    : "border-gray-200 hover:bg-gray-50"
+                }`}
               >
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/stock/${stock.symbol}`}
-                    className="font-mono font-bold text-sm hover:underline"
-                    style={{ color: "var(--accent-gold)" }}
-                  >
+                <td className="px-4 py-3 font-mono font-bold text-yellow-500">
+                  <Link href={`/stock/${stock.symbol}`} className="hover:underline">
                     {stock.symbol}
                   </Link>
                 </td>
-                <td className="px-4 py-3 font-mono text-sm" style={{ color: "var(--text-primary)" }}>
+                <td className={`px-4 py-3 font-mono text-sm ${dark ? "text-gray-300" : "text-gray-700"}`}>
                   {stock.name}
                 </td>
-                <td className="px-4 py-3">
-                  <span
-                    className="text-xs font-mono px-2 py-0.5 rounded"
-                    style={{
-                      background: "var(--bg-hover)",
-                      color:      "var(--text-muted)",
-                    }}
-                  >
-                    {stock.sector}
-                  </span>
+                <td className="px-4 py-3 text-right font-mono font-semibold text-yellow-500">
+                  {stock.livePrice.toFixed(2)}
                 </td>
-                <td className="px-4 py-3 text-right font-mono font-semibold" style={{ color: "var(--text-primary)" }}>
-                  {stock.price.toLocaleString("en-IN")}
+                <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h)}`}>
+                  {stock.change24h > 0 ? "+" : ""}{stock.change24h.toFixed(2)}%
                 </td>
-                <td className="px-4 py-3 text-right font-mono" style={{ color: "var(--text-secondary)" }}>
+                <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
                   {stock.pe > 0 ? stock.pe.toFixed(1) : "—"}
                 </td>
-                <td className="px-4 py-3 text-right font-mono" style={{ color: stock.roe >= 15 ? "var(--accent-green)" : "var(--text-secondary)" }}>
-                  {stock.roe}%
-                </td>
-                <td className="px-4 py-3 text-right font-mono text-xs" style={{ color: "var(--text-secondary)" }}>
-                  {mktcapFmt(stock.mktcap)}
+                <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
+                  {stock.roe > 0 ? (stock.roe * 100).toFixed(1) + "%" : "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <div className="flex flex-col items-end gap-1">
-                    <span className={`text-xl font-mono font-black ${scoreColor(stock.consensus)}`}>
-                      {stock.consensus}
-                    </span>
-                    <div
-                      className="w-16 h-1.5 rounded-full overflow-hidden"
-                    >
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width:      `${stock.consensus}%`,
-                          background: stock.consensus >= 75 ? "var(--accent-green)" : stock.consensus >= 55 ? "var(--accent-gold)" : "var(--accent-red)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`text-xs font-mono px-2 py-1 rounded border ${categoryBadge(stock.category)}`}>
-                    {stock.category}
+                  <span
+                    className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
+                  >
+                    {stock.consensus.toFixed(0)}
                   </span>
-                </td>
-                <td className="px-4 py-3 font-mono text-xs" style={{ color: "var(--text-muted)" }}>
-                  {stock.topRishi} <span style={{ color: "var(--accent-gold)" }}>({stock.topRishiScore})</span>
                 </td>
               </tr>
             ))}
@@ -283,14 +235,8 @@ export function StockTable({ stocks }: Props) {
       </div>
 
       {filtered.length === 0 && (
-        <div
-          className="text-center py-16 rounded-xl"
-          style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)" }}
-        >
-          <div className="text-4xl mb-3">🔍</div>
-          <p className="font-mono text-sm" style={{ color: "var(--text-muted)" }}>
-            No stocks match your filters
-          </p>
+        <div className={`text-center py-8 ${dark ? "text-gray-500" : "text-gray-400"}`}>
+          No stocks found matching your criteria.
         </div>
       )}
     </div>

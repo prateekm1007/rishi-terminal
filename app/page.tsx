@@ -7,24 +7,15 @@ import { buildConsensus } from '../lib/consensus';
 import { getCurrentTier, TIER_CONFIG } from '../lib/premium';
 import { useLanguage } from '../lib/language';
 
-const MARKET_INDICES = [
-  { name: 'NIFTY 50',     value: '24,850',  change: '+0.75%', up: true  },
-  { name: 'SENSEX',       value: '81,920',  change: '+0.68%', up: true  },
-  { name: 'NIFTY MIDCAP', value: '12,450',  change: '+1.15%', up: true  },
-  { name: 'NIFTY BANK',   value: '52,340',  change: '-0.22%', up: false },
-  { name: 'S&P 500',      value: '5,850',   change: '+0.78%', up: true  },
-  { name: 'NASDAQ',       value: '18,450',  change: '+1.22%', up: true  },
-];
-
 export default function Dashboard() {
-  const [time, setTime]                   = useState('');
-  const [search, setSearch]               = useState('');
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-  const [tier, setTier]                   = useState('seeker');
-  const [livePrices, setLivePrices]       = useState<any>(null);
+  const [time, setTime]                     = useState('');
+  const [search, setSearch]                 = useState('');
+  const [searchResults, setSearchResults]   = useState<string[]>([]);
+  const [tier, setTier]                     = useState('seeker');
+  const [livePrices, setLivePrices]         = useState<any>(null);
   const [priceUpdatedAt, setPriceUpdatedAt] = useState<Date | null>(null);
-  const searchRef                         = useRef<HTMLDivElement>(null);
-  const { t, locale }                     = useLanguage();
+  const searchRef                           = useRef<HTMLDivElement>(null);
+  const { t, locale }                       = useLanguage();
 
   const allSymbols = Object.keys(STOCKS);
 
@@ -40,11 +31,7 @@ export default function Dashboard() {
         console.error('Failed to fetch prices:', error);
       }
     }
-    
-    // Fetch immediately on mount
     fetchPrices();
-    
-    // Then fetch every 60 seconds
     const interval = setInterval(fetchPrices, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -76,6 +63,70 @@ export default function Dashboard() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // ✅ LIVE MARKET INDICES — replaces static MARKET_INDICES array
+  const MARKET_INDICES = useMemo(() => [
+    {
+      name: 'NIFTY 50',
+      value: livePrices?.NIFTY50?.price
+        ? Number(livePrices.NIFTY50.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })
+        : '24,850',
+      change: livePrices?.NIFTY50?.change != null
+        ? (livePrices.NIFTY50.change > 0 ? '+' : '') + livePrices.NIFTY50.change.toFixed(2) + '%'
+        : '+0.75%',
+      up: livePrices?.NIFTY50?.change != null ? livePrices.NIFTY50.change > 0 : true,
+    },
+    {
+      name: 'SENSEX',
+      value: livePrices?.SENSEX?.price
+        ? Number(livePrices.SENSEX.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })
+        : '81,920',
+      change: livePrices?.SENSEX?.change != null
+        ? (livePrices.SENSEX.change > 0 ? '+' : '') + livePrices.SENSEX.change.toFixed(2) + '%'
+        : '+0.68%',
+      up: livePrices?.SENSEX?.change != null ? livePrices.SENSEX.change > 0 : true,
+    },
+    {
+      name: 'NIFTY BANK',
+      value: livePrices?.BANK_NIFTY?.price
+        ? Number(livePrices.BANK_NIFTY.price).toLocaleString('en-IN', { maximumFractionDigits: 0 })
+        : '52,340',
+      change: livePrices?.BANK_NIFTY?.change != null
+        ? (livePrices.BANK_NIFTY.change > 0 ? '+' : '') + livePrices.BANK_NIFTY.change.toFixed(2) + '%'
+        : '-0.22%',
+      up: livePrices?.BANK_NIFTY?.change != null ? livePrices.BANK_NIFTY.change > 0 : false,
+    },
+    {
+      name: 'USD/INR',
+      value: livePrices?.INR?.price
+        ? Number(livePrices.INR.price).toFixed(2)
+        : '83.92',
+      change: livePrices?.INR?.change != null
+        ? (livePrices.INR.change > 0 ? '+' : '') + livePrices.INR.change.toFixed(2) + '%'
+        : '+0.12%',
+      up: livePrices?.INR?.change != null ? livePrices.INR.change > 0 : true,
+    },
+    {
+      name: 'GOLD',
+      value: livePrices?.GOLD?.price
+        ? '$' + Number(livePrices.GOLD.price).toLocaleString('en-US', { maximumFractionDigits: 0 })
+        : '$2,334',
+      change: livePrices?.GOLD?.change != null
+        ? (livePrices.GOLD.change > 0 ? '+' : '') + livePrices.GOLD.change.toFixed(2) + '%'
+        : '+0.54%',
+      up: livePrices?.GOLD?.change != null ? livePrices.GOLD.change > 0 : true,
+    },
+    {
+      name: 'BTC',
+      value: livePrices?.BTC?.price
+        ? '$' + Number(livePrices.BTC.price).toLocaleString('en-US', { maximumFractionDigits: 0 })
+        : '$79,683',
+      change: livePrices?.BTC?.change != null
+        ? (livePrices.BTC.change > 0 ? '+' : '') + livePrices.BTC.change.toFixed(2) + '%'
+        : '-2.07%',
+      up: livePrices?.BTC?.change != null ? livePrices.BTC.change > 0 : false,
+    },
+  ], [livePrices]);
 
   const MARKET_SECTIONS = useMemo(() => [
     {
@@ -192,10 +243,30 @@ export default function Dashboard() {
       bgColor: 'rgba(167,139,250,0.06)',
       borderColor: 'rgba(167,139,250,0.2)',
       items: [
-        { name: 'IN 10Y', value: '7.08%', change: '-0.02%', up: false },
-        { name: 'US 10Y', value: '4.42%', change: '+0.03%', up: true  },
-        { name: 'IN 2Y',  value: '6.94%', change: '-0.01%', up: false },
-        { name: 'US 30Y', value: '4.68%', change: '+0.04%', up: true  },
+        {
+          name: 'IN 10Y',
+          value: livePrices?.IN_10Y?.price ? livePrices.IN_10Y.price.toFixed(2) + '%' : '7.08%',
+          change: livePrices?.IN_10Y?.change ? (livePrices.IN_10Y.change > 0 ? '+' : '') + livePrices.IN_10Y.change.toFixed(2) + '%' : '-0.02%',
+          up: livePrices?.IN_10Y?.change != null ? livePrices.IN_10Y.change > 0 : false,
+        },
+        {
+          name: 'US 10Y',
+          value: livePrices?.US_10Y?.price ? livePrices.US_10Y.price.toFixed(2) + '%' : '4.42%',
+          change: livePrices?.US_10Y?.change ? (livePrices.US_10Y.change > 0 ? '+' : '') + livePrices.US_10Y.change.toFixed(2) + '%' : '+0.03%',
+          up: livePrices?.US_10Y?.change != null ? livePrices.US_10Y.change > 0 : true,
+        },
+        {
+          name: 'IN 2Y',
+          value: livePrices?.IN_2Y?.price ? livePrices.IN_2Y.price.toFixed(2) + '%' : '6.94%',
+          change: livePrices?.IN_2Y?.change ? (livePrices.IN_2Y.change > 0 ? '+' : '') + livePrices.IN_2Y.change.toFixed(2) + '%' : '-0.01%',
+          up: livePrices?.IN_2Y?.change != null ? livePrices.IN_2Y.change > 0 : false,
+        },
+        {
+          name: 'US 30Y',
+          value: livePrices?.US_30Y?.price ? livePrices.US_30Y.price.toFixed(2) + '%' : '4.68%',
+          change: livePrices?.US_30Y?.change ? (livePrices.US_30Y.change > 0 ? '+' : '') + livePrices.US_30Y.change.toFixed(2) + '%' : '+0.04%',
+          up: livePrices?.US_30Y?.change != null ? livePrices.US_30Y.change > 0 : true,
+        },
       ],
     },
     {
@@ -242,14 +313,11 @@ export default function Dashboard() {
   const dailyWisdom = WISDOM_QUOTES[dayIndex];
   const tierConfig  = TIER_CONFIG[tier as keyof typeof TIER_CONFIG];
 
-  // Format time since last update
   const getTimeSinceUpdate = () => {
     if (!priceUpdatedAt) return 'updating...';
-    const now = new Date();
-    const seconds = Math.floor((now.getTime() - priceUpdatedAt.getTime()) / 1000);
+    const seconds = Math.floor((new Date().getTime() - priceUpdatedAt.getTime()) / 1000);
     if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}m ago`;
+    return `${Math.floor(seconds / 60)}m ago`;
   };
 
   return (
@@ -336,7 +404,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Market Index Ticker */}
+        {/* ✅ LIVE Market Index Ticker */}
         <div className="card-sacred" style={{ padding: '12px 20px', marginBottom: 28, overflow: 'hidden' }}>
           <div style={{ display: 'flex', gap: 0, overflowX: 'auto', scrollbarWidth: 'none' }}>
             {MARKET_INDICES.map((idx, i) => (
@@ -356,12 +424,22 @@ export default function Dashboard() {
                 </span>
               </div>
             ))}
+            {/* Live indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 20, marginLeft: 'auto', flexShrink: 0 }}>
+              {livePrices ? (
+                <span style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--accent-green)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-green)', display: 'inline-block' }} />
+                  LIVE
+                </span>
+              ) : (
+                <span style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)' }}>LOADING...</span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Stock of Day + Daily Wisdom */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 28 }}>
-
           <div className="card-sacred wisdom-reveal" style={{ padding: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: 2,
@@ -434,7 +512,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Markets Overview with Live Update Indicator */}
+        {/* Markets Overview */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, fontFamily: 'monospace' }}>
@@ -489,7 +567,6 @@ export default function Dashboard() {
                       {t('common.viewAll')} {'>'}
                     </div>
                   </div>
-
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {section.items.map((item, i) => (
                       <div key={i} style={{

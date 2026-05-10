@@ -1,5 +1,9 @@
 "use client";
 
+import ShortOfTheDay from "@/components/dashboard/ShortOfTheDay";
+import DailyRitualWidget from "@/components/gamification/DailyRitual";
+import ProgressBar from "@/components/gamification/ProgressBar";
+
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useLivePrices } from "@/hooks/useLivePrices";

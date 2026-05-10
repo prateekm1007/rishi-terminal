@@ -18,6 +18,9 @@ import { ShareholdingChart }      from './ShareholdingChart';
 import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage }            from '../../lib/language';
+import RishiScoreDual             from '../score/RishiScoreDual';
+import { calculateDualScore }     from '../../lib/scorers/rishiScoreV2';
+import type { StockMetrics }      from '../../lib/scorers/types';
 
 interface Props {
   stock: Stock;
@@ -253,6 +256,20 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
               <>
                 <div className="wisdom-reveal">
                   <ConsensusHero consensus={consensus} />
+                </div>
+
+                <div className="wisdom-reveal-delay-1">
+                  {(() => {
+                    const metrics: StockMetrics = {
+                      symbol: stock.symbol, name: stock.name, sector: stock.sector,
+                      pe: stock.pe, pb: stock.price / stock.bvps,
+                      roe: stock.roe, roce: stock.roce, opm: stock.opm,
+                      debtToEquity: stock.de, revenueCAGR3Y: stock.revcagr,
+                      epsCAGR3Y: stock.epscagr, promoterHolding: stock.promo,
+                      marketCap: stock.mktcap, fcfMargin: (stock.fcf / stock.rev) * 100,
+                    };
+                    return <RishiScoreDual metrics={metrics} />;
+                  })()}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">

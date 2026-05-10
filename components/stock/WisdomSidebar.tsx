@@ -1,10 +1,19 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { Stock, RishiScore } from '../../lib/types';
 
 interface WisdomSidebarProps {
   stock: Stock;
   scores: RishiScore[];
+}
+
+interface Message {
+  id: string;
+  role: "user" | "rishi";
+  rishiName?: string;
+  text: string;
+  timestamp: Date;
 }
 
 interface HistoricalParallel {
@@ -25,7 +34,6 @@ const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     quote: 'The best businesses are those where the customer cannot do without you.',
     author: 'Radhakishan Damani',
   },
-  
   cyclical_value: {
     companies: ['Tata Steel (2018)', 'Hindalco (2020)', 'Vedanta (2019)'],
     era: 'Commodity Downcycle 2018-2020',
@@ -34,7 +42,6 @@ const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     quote: 'Price is what you pay, value is what you get - but in cyclicals, both move together.',
     author: 'Howard Marks',
   },
-  
   growth_premium: {
     companies: ['Zomato (2021)', 'Paytm (2021)', 'Nykaa (2021)'],
     era: 'IPO Mania 2021',
@@ -43,7 +50,6 @@ const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     quote: 'Beware of geeks bearing formulas.',
     author: 'Warren Buffett',
   },
-
   quality_growth: {
     companies: ['HDFC Bank (2005)', 'TCS (2010)', 'Infosys (2008)'],
     era: 'India Services Export Boom',
@@ -52,7 +58,6 @@ const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     quote: 'Time is the friend of the wonderful business, the enemy of the mediocre.',
     author: 'Warren Buffett',
   },
-
   turnaround: {
     companies: ['Tata Motors (2016)', 'Yes Bank (2020)', 'Suzlon (2018)'],
     era: 'Corporate Turnaround Attempts',
@@ -61,7 +66,6 @@ const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     quote: 'Turnarounds seldom turn.',
     author: 'Peter Lynch',
   },
-
   smallcap_gem: {
     companies: ['Dixon (2018)', 'IRCTC (2019)', 'Avenue Supermarts (2017)'],
     era: 'Smallcap Discovery Phase',
@@ -74,129 +78,282 @@ const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
 
 function detectArchetype(stock: Stock): string | null {
   const { sector, roe, pe, np, revcagr, de, mktcap } = stock;
-
-  // Consumer moat: FMCG/Consumer with high ROE
-  if (['FMCG', 'Consumer Goods', 'Retail'].includes(sector) && roe > 20) {
-    return 'consumer_moat';
-  }
-
-  // Cyclical value trap: Metals/Energy with low PE
-  if (['Metals', 'Energy', 'Commodities'].includes(sector) && pe < 10 && pe > 0) {
-    return 'cyclical_value';
-  }
-
-  // Growth premium: High PE with negative profits
-  if (pe > 50 && np < 0) {
-    return 'growth_premium';
-  }
-
-  // Quality growth: IT/Finance with consistent metrics
-  if (['IT', 'Finance', 'Banking'].includes(sector) && roe > 15 && de < 1) {
-    return 'quality_growth';
-  }
-
-  // Turnaround: Negative ROE or very high D/E
-  if (roe < 0 || de > 3) {
-    return 'turnaround';
-  }
-
-  // Smallcap gem: Market cap < 10000cr, high growth
-  if (mktcap < 10000 && revcagr > 20 && roe > 15) {
-    return 'smallcap_gem';
-  }
-
+  if (['FMCG', 'Consumer', 'Retail'].includes(sector) && roe > 20) return 'consumer_moat';
+  if (['Metals', 'Energy'].includes(sector) && pe < 10 && pe > 0) return 'cyclical_value';
+  if (pe > 50 && np < 0) return 'growth_premium';
+  if (['IT', 'Banking'].includes(sector) && roe > 15 && de < 1) return 'quality_growth';
+  if (roe < 0 || de > 3) return 'turnaround';
+  if (mktcap < 10000 && revcagr > 20 && roe > 15) return 'smallcap_gem';
   return null;
 }
 
-export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
-  const archetypeKey = detectArchetype(stock);
+function getRishiResponse(rishiName: string, prompt: string, stock: Stock, scores: RishiScore[]): string {
+  const myScore = scores.find(s => s.name === rishiName || s.full.includes(rishiName));
+  const score = myScore?.score ?? 50;
   
-  if (!archetypeKey) {
-    return (
-      <div className="card-sacred p-6 sticky top-24">
-        <div className="text-xs text-muted text-center">
-          No historical parallels detected for this profile.
-        </div>
-      </div>
-    );
+  if (prompt.toLowerCase().includes("view") || prompt.toLowerCase().includes("opinion")) {
+    return score >= 75 
+      ? `${stock.symbol} scores ${score}/100 — this is exactly the kind of business I look for. ${stock.roe >= 20 ? "ROE of " + stock.roe + "% shows real competitive advantages." : ""} ${myScore?.insight ?? "Strong fundamental case."}`
+      : `${stock.symbol} at ${score}/100 doesn't meet my standards yet. ${stock.de > 1 ? "Debt of " + stock.de + "x is concerning." : ""} ${stock.pe > 40 ? "Valuation is stretched." : ""} ${myScore?.insight ?? "Wait for better opportunity."}`;
   }
+  
+  if (prompt.toLowerCase().includes("risk")) {
+    return `Primary risks for ${stock.symbol}: ${stock.de > 1 ? "(1) High debt — refinancing risk" : stock.pe > 40 ? "(1) Valuation — mean reversion risk" : "(1) Competitive intensity"}, (2) ${stock.sector} sector headwinds, (3) Management execution. Always size positions to survive worst-case scenarios.`;
+  }
+  
+  return `${stock.symbol} scores ${score}/100 from my perspective. ${myScore?.insight ?? "Ask me something specific about valuation, risks, or thesis."}`;
+}
 
-  const parallel = HISTORICAL_PARALLELS[archetypeKey];
-  if (!parallel) return null;
+export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
+  const [activeMode, setActiveMode] = useState<"wisdom" | "chat">("wisdom");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [selectedRishi, setSelectedRishi] = useState(scores[0]?.name ?? "Damani");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Find relevant Rishi scores
-  const relevantScores = scores.filter(s => 
-    parallel.rishis.some(r => s.name === r)
-  );
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = (text: string) => {
+    if (!text.trim()) return;
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      text: text.trim(),
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    setTimeout(() => {
+      const response = getRishiResponse(selectedRishi, text, stock, scores);
+      const rishiMsg: Message = {
+        id: Date.now().toString() + "_r",
+        role: "rishi",
+        rishiName: selectedRishi,
+        text: response,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, rishiMsg]);
+    }, 400);
+
+    setInput("");
+  };
+
+  const archetypeKey = detectArchetype(stock);
+  const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
+  const relevantScores = parallel ? scores.filter(s => parallel.rishis.some(r => s.name === r)) : [];
 
   return (
-    <div className="card-sacred p-6 sticky top-24 space-y-6">
-      {/* Header */}
-      <div>
-        <div className="text-xs text-accent-gold mb-2 tracking-widest font-medium">
-          HISTORICAL WISDOM
-        </div>
-        <h3 className="philosophy-heading text-lg mb-3">
-          {parallel.era}
-        </h3>
+    <div style={{
+      background: "rgba(17,24,39,0.85)", border: "1px solid rgba(30,41,59,0.8)",
+      borderRadius: "16px", overflow: "hidden",
+      position: "sticky", top: "80px",
+    }}>
+      {/* Tab Switcher */}
+      <div style={{
+        display: "flex", borderBottom: "1px solid rgba(51,65,85,0.5)",
+        background: "rgba(5,8,16,0.6)",
+      }}>
+        {[
+          { id: "wisdom" as const, label: "📜 Wisdom", emoji: "📜" },
+          { id: "chat" as const, label: "💬 Chat", emoji: "💬" },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveMode(tab.id)}
+            style={{
+              flex: 1, padding: "10px", border: "none",
+              background: activeMode === tab.id ? "rgba(212,175,55,0.1)" : "transparent",
+              borderBottom: activeMode === tab.id ? "2px solid #D4AF37" : "2px solid transparent",
+              color: activeMode === tab.id ? "#D4AF37" : "#64748B",
+              fontSize: "12px", fontWeight: 700, cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            {tab.emoji} {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Lesson */}
-      <div className="rishi-insight text-sm leading-relaxed">
-        {parallel.lesson}
-      </div>
-
-      {/* Similar Companies */}
-      <div>
-        <div className="text-xs text-muted mb-3 font-medium">SIMILAR COMPANIES:</div>
-        <div className="space-y-2">
-          {parallel.companies.map((company, idx) => (
-            <div 
-              key={idx}
-              className="text-xs text-secondary pl-3 border-l-2 border-accent-gold/30 py-1"
-            >
-              {company}
+      {/* Wisdom Mode */}
+      {activeMode === "wisdom" && (
+        <div style={{ padding: "20px", maxHeight: "600px", overflowY: "auto" }}>
+          {!parallel ? (
+            <div style={{ textAlign: "center", color: "#64748B", fontSize: "12px", padding: "40px 20px" }}>
+              No historical parallels detected
             </div>
-          ))}
-        </div>
-      </div>
+          ) : (
+            <>
+              <div style={{ marginBottom: "16px" }}>
+                <div style={{ fontSize: "10px", color: "#D4AF37", fontWeight: 700, letterSpacing: "0.1em", marginBottom: "6px" }}>
+                  HISTORICAL WISDOM
+                </div>
+                <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#F8FAFC", marginBottom: "12px" }}>
+                  {parallel.era}
+                </h3>
+                <div style={{ fontSize: "12px", color: "#94A3B8", lineHeight: 1.7 }}>
+                  {parallel.lesson}
+                </div>
+              </div>
 
-      {/* Relevant Rishis */}
-      <div>
-        <div className="text-xs text-muted mb-3 font-medium">RELEVANT RISHIS:</div>
-        <div className="flex flex-wrap gap-2">
-          {relevantScores.map((score) => (
-            <div 
-              key={score.name}
-              className="px-3 py-1.5 bg-secondary border border-primary rounded-lg text-xs hover:border-accent-gold/50 transition-colors"
-              title={score.insight}
+              <div style={{ marginBottom: "16px" }}>
+                <div style={{ fontSize: "10px", color: "#64748B", fontWeight: 700, marginBottom: "8px" }}>
+                  SIMILAR COMPANIES:
+                </div>
+                {parallel.companies.map((c, i) => (
+                  <div key={i} style={{
+                    fontSize: "11px", color: "#94A3B8",
+                    borderLeft: "2px solid rgba(212,175,55,0.3)",
+                    paddingLeft: "10px", marginBottom: "6px",
+                  }}>{c}</div>
+                ))}
+              </div>
+
+              {relevantScores.length > 0 && (
+                <div style={{ marginBottom: "16px" }}>
+                  <div style={{ fontSize: "10px", color: "#64748B", fontWeight: 700, marginBottom: "8px" }}>
+                    RELEVANT RISHIS:
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                    {relevantScores.map(s => (
+                      <div key={s.name} style={{
+                        padding: "4px 10px", borderRadius: "6px",
+                        background: "rgba(31,41,59,0.6)", border: "1px solid rgba(51,65,85,0.4)",
+                        fontSize: "11px", color: "#94A3B8",
+                      }}>
+                        {s.name} ({s.score})
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{
+                paddingTop: "16px", borderTop: "1px solid rgba(51,65,85,0.4)",
+              }}>
+                <div style={{ fontSize: "10px", color: "#D4AF37", fontWeight: 700, marginBottom: "8px" }}>
+                  RELATED QUOTE
+                </div>
+                <blockquote style={{ fontSize: "12px", fontStyle: "italic", color: "#94A3B8", lineHeight: 1.7, marginBottom: "8px" }}>
+                  "{parallel.quote}"
+                </blockquote>
+                <div style={{ fontSize: "10px", color: "#64748B", textAlign: "right" }}>
+                  — {parallel.author}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Chat Mode */}
+      {activeMode === "chat" && (
+        <div style={{ display: "flex", flexDirection: "column", height: "500px" }}>
+          {/* Rishi Selector */}
+          <div style={{ padding: "12px", borderBottom: "1px solid rgba(51,65,85,0.4)" }}>
+            <select
+              value={selectedRishi}
+              onChange={e => setSelectedRishi(e.target.value)}
+              style={{
+                width: "100%", background: "rgba(5,8,16,0.8)",
+                border: "1px solid rgba(51,65,85,0.6)", borderRadius: "8px",
+                color: "#F8FAFC", padding: "8px 12px", fontSize: "12px", fontWeight: 700,
+              }}
             >
-              <span className="font-medium">{score.name}</span>
-              <span className="text-muted ml-1">({score.score})</span>
+              {scores.slice(0, 7).map(s => (
+                <option key={s.name} value={s.name}>
+                  {s.full} ({s.score}/100)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
+            {messages.length === 0 && (
+              <div style={{ textAlign: "center", color: "#475569", fontSize: "11px", marginTop: "20px" }}>
+                <div style={{ fontSize: "24px", marginBottom: "8px" }}>💬</div>
+                <div>Ask {selectedRishi} about {stock.symbol}</div>
+              </div>
+            )}
+
+            {messages.map(msg => (
+              <div
+                key={msg.id}
+                style={{
+                  alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
+                  maxWidth: "85%",
+                }}
+              >
+                {msg.role === "rishi" && (
+                  <div style={{ fontSize: "10px", color: "#64748B", marginBottom: "3px" }}>
+                    {msg.rishiName}
+                  </div>
+                )}
+                <div style={{
+                  background: msg.role === "user" ? "rgba(212,175,55,0.15)" : "rgba(17,24,39,0.8)",
+                  border: "1px solid " + (msg.role === "user" ? "rgba(212,175,55,0.3)" : "rgba(51,65,85,0.4)"),
+                  borderRadius: "10px", padding: "10px 12px",
+                  fontSize: "12px", color: "#E2E8F0", lineHeight: 1.6,
+                  whiteSpace: "pre-wrap",
+                }}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Quick Prompts */}
+          <div style={{ padding: "8px", borderTop: "1px solid rgba(51,65,85,0.4)" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" }}>
+              {["What's your view?", "Biggest risks?", "Should I buy?"].map(p => (
+                <button
+                  key={p}
+                  onClick={() => sendMessage(p)}
+                  style={{
+                    padding: "4px 8px", borderRadius: "6px",
+                    background: "rgba(31,41,59,0.5)", border: "1px solid rgba(51,65,85,0.4)",
+                    color: "#64748B", fontSize: "10px", cursor: "pointer",
+                  }}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* Quote */}
-      <div className="pt-4 border-t border-border-primary">
-        <div className="text-xs text-accent-gold mb-2 font-medium">RELATED QUOTE</div>
-        <blockquote className="text-xs italic text-secondary leading-relaxed">
-          {'"'}{parallel.quote}{'"'}
-        </blockquote>
-        <div className="text-xs text-muted mt-2">
-          — {parallel.author}
-        </div>
-      </div>
-
-      {/* Archetype Badge */}
-      <div className="pt-4 border-t border-border-primary">
-        <div className="px-3 py-2 bg-accent-gold/10 border border-accent-gold/30 rounded-lg text-center">
-          <div className="text-xs text-accent-gold font-medium">
-            {archetypeKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} Pattern
+          {/* Input */}
+          <div style={{ padding: "12px", borderTop: "1px solid rgba(51,65,85,0.5)" }}>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <input
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && sendMessage(input)}
+                placeholder={`Ask ${selectedRishi}...`}
+                style={{
+                  flex: 1, background: "rgba(17,24,39,0.8)",
+                  border: "1px solid rgba(51,65,85,0.6)", borderRadius: "8px",
+                  padding: "8px 12px", color: "#F8FAFC", fontSize: "12px",
+                  outline: "none",
+                }}
+              />
+              <button
+                onClick={() => sendMessage(input)}
+                style={{
+                  padding: "8px 16px", borderRadius: "8px",
+                  background: "linear-gradient(135deg,#A88B20,#D4AF37)",
+                  border: "none", color: "#0A0F1C", fontWeight: 700,
+                  fontSize: "12px", cursor: "pointer",
+                }}
+              >
+                Send
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

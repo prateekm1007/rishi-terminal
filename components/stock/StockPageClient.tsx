@@ -37,13 +37,13 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
   ];
 
   const scoreColor = (s: number) =>
-    s >= 75 ? 'var(--accent-green)' : s >= 55 ? 'var(--accent-gold)' : s >= 35 ? '#f59e0b' : 'var(--accent-red)';
+    s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : s >= 35 ? '#f59e0b' : '#EF4444';
 
   const scoreBg = (s: number) =>
     s >= 75 ? 'rgba(0,186,124,0.1)' : s >= 55 ? 'rgba(255,215,0,0.1)' : s >= 35 ? 'rgba(245,158,11,0.1)' : 'rgba(244,33,46,0.1)';
 
   return (
-    <div className="page-container">
+    <div className="rishi-page">
 
       {/* Knowledge Graph Floating Button */}
       <button
@@ -55,7 +55,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
           width: 64,
           height: 64,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--accent-gold), #FFA500)',
+          background: 'linear-gradient(135deg, #D4AF37, #FFA500)',
           border: 'none',
           boxShadow: '0 8px 24px rgba(255,215,0,0.4)',
           cursor: 'pointer',
@@ -107,7 +107,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
             width: '100%',
             maxWidth: 1400,
             maxHeight: '90vh',
-            background: 'var(--bg-primary)',
+            background: '#0A0F1C',
             borderRadius: 16,
             overflow: 'hidden',
             boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
@@ -115,26 +115,26 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
             {/* Modal Header */}
             <div style={{
               padding: '20px 28px',
-              borderBottom: '1px solid var(--border-primary)',
+              borderBottom: '1px solid rgba(30,41,59,0.8)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               background: 'var(--bg-secondary)',
             }}>
               <div>
-                <h2 className="philosophy-heading" style={{ fontSize: 20, color: 'var(--accent-gold)', marginBottom: 4 }}>
+                <h2 className="philosophy-heading" style={{ fontSize: 20, color: '#D4AF37', marginBottom: 4 }}>
                   {t('stock.knowledgeGraph')}
                 </h2>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1 }}>
-                  {stock.name} — {t('stock.graphSubtitle')}
+                <p style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>
+                  {stock.name} â€” {t('stock.graphSubtitle')}
                 </p>
               </div>
               <button
                 onClick={() => setShowGraph(false)}
                 style={{
                   background: 'transparent',
-                  border: '1px solid var(--border-primary)',
-                  color: 'var(--text-primary)',
+                  border: '1px solid rgba(30,41,59,0.8)',
+                  color: '#F8FAFC',
                   width: 36,
                   height: 36,
                   borderRadius: 8,
@@ -146,12 +146,12 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.background = 'var(--accent-red)';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-red)';
+                  (e.currentTarget as HTMLElement).style.background = '#EF4444';
+                  (e.currentTarget as HTMLElement).style.borderColor = '#EF4444';
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-primary)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,41,59,0.8)';
                 }}
               >
                 x
@@ -172,7 +172,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-                <h1 className="philosophy-heading" style={{ fontSize: 28, color: 'var(--accent-gold)', letterSpacing: 2 }}>
+                <h1 className="philosophy-heading" style={{ fontSize: 28, color: '#D4AF37', letterSpacing: 2 }}>
                   {stock.name}
                 </h1>
                 <span style={{
@@ -181,17 +181,17 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   background: 'rgba(255,215,0,0.1)',
                   border: '1px solid rgba(255,215,0,0.3)',
                   borderRadius: 4,
-                  color: 'var(--accent-gold)',
+                  color: '#D4AF37',
                   letterSpacing: 1,
                 }}>
                   {stock.symbol}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, fontFamily: 'monospace' }}>
+              <div style={{ display: 'flex', gap: 16, fontSize: 12, color: '#64748B', letterSpacing: 1, fontFamily: 'monospace' }}>
                 <span>{stock.sector}</span>
-                <span style={{ color: 'var(--border-primary)' }}>|</span>
+                <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
                 <span>{stock.exchange}</span>
-                <span style={{ color: 'var(--border-primary)' }}>|</span>
+                <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
                 <span style={{ color: scoreColor(consensus.consensus), fontWeight: 600 }}>
                   {t('stock.consensus')}: {consensus.consensus}/100
                 </span>
@@ -204,7 +204,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
 
       {/* Tab Bar */}
       <div style={{
-        borderBottom: '1px solid var(--border-primary)',
+        borderBottom: '1px solid rgba(30,41,59,0.8)',
         background: 'var(--bg-secondary)',
         position: 'sticky', top: 0, zIndex: 30,
       }}>
@@ -221,8 +221,8 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   fontWeight: activeTab === tab.id ? 700 : 400,
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: activeTab === tab.id ? '2px solid var(--accent-gold)' : '2px solid transparent',
-                  color: activeTab === tab.id ? 'var(--accent-gold)' : 'var(--text-muted)',
+                  borderBottom: activeTab === tab.id ? '2px solid #D4AF37' : '2px solid transparent',
+                  color: activeTab === tab.id ? '#D4AF37' : '#64748B',
                   cursor: 'pointer',
                   letterSpacing: activeTab === tab.id ? '1px' : '0.5px',
                   transition: 'all 0.2s ease',
@@ -262,16 +262,16 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 <div className="wisdom-reveal-delay-2 card-sacred" style={{ padding: 24, position: 'relative' }}>
                   <div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, height: 2,
-                    background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)',
+                    background: 'linear-gradient(90deg, transparent, #D4AF37, transparent)',
                     borderRadius: '12px 12px 0 0',
                   }} />
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                     <div>
-                      <div className="philosophy-heading" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: 2 }}>
+                      <div className="philosophy-heading" style={{ fontSize: 13, color: '#64748B', letterSpacing: 2 }}>
                         {t('stock.topRishiScores')}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, opacity: 0.7 }}>
+                      <div style={{ fontSize: 11, color: '#64748B', marginTop: 4, opacity: 0.7 }}>
                         {t('stock.topRishiSubtitle')}
                       </div>
                     </div>
@@ -280,7 +280,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                       style={{
                         background: 'rgba(255,215,0,0.08)',
                         border: '1px solid rgba(255,215,0,0.25)',
-                        color: 'var(--accent-gold)',
+                        color: '#D4AF37',
                         cursor: 'pointer',
                         fontSize: 11,
                         fontFamily: 'monospace',
@@ -307,7 +307,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                       }}>
                         <div style={{
                           fontSize: 11,
-                          color: 'var(--text-muted)',
+                          color: '#64748B',
                           fontFamily: 'monospace',
                           width: 20,
                           flexShrink: 0,
@@ -316,16 +316,16 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                         </div>
 
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
                             {r.full}
                           </div>
-                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                          <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>
                             {r.label}
                           </div>
                         </div>
 
                         <div style={{ width: 100, flexShrink: 0 }}>
-                          <div style={{ height: 4, background: 'var(--border-primary)', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ height: 4, background: 'rgba(30,41,59,0.8)', borderRadius: 3, overflow: 'hidden' }}>
                             <div style={{
                               width: r.score + '%',
                               height: '100%',

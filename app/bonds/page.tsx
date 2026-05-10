@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -91,7 +91,7 @@ export default function BondsPage() {
               </p>
               {lastUpdated && (
                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                  âš¡ Live â€¢ Updated {lastUpdated.toLocaleTimeString('en-IN')}
                 </div>
               )}
             </div>
@@ -147,7 +147,7 @@ export default function BondsPage() {
       {error && (
         <div className="content-wrapper" style={{ padding: '12px 24px' }}>
           <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 16px', fontSize: 12, color: 'var(--accent-red)' }}>
-            ⚠ {error} — showing last known yields
+            âš  {error} â€” showing last known yields
           </div>
         </div>
       )}
@@ -255,7 +255,7 @@ export default function BondsPage() {
                       {bond.duration.toFixed(1)}y
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 600, color: 'var(--accent-gold)' }}>
-                      {bond.rating || 'AAA'}
+                      {bond.riskRating || 'AAA'}
                     </td>
                   </tr>
                 ))}

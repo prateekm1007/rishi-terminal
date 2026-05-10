@@ -18,77 +18,54 @@ interface TooltipState {
   y: number;
 }
 
-// ─── Glossary Tooltip ────────────────────────────────────────────────────────
-
+/* ── Glossary Tooltip ──────────────────────────────────────── */
 function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
   if (!tooltip) return null;
   const entry = INVESTMENT_GLOSSARY[tooltip.term.toLowerCase()];
   if (!entry) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        left: Math.min(tooltip.x, window.innerWidth - 420),
-        top: tooltip.y + 8,
-        maxWidth: 400,
-        background: 'var(--bg-card)',
-        border: '2px solid #FFD700',
-        borderRadius: 12,
-        padding: '16px 18px',
-        boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
-        zIndex: 99999,
-        pointerEvents: 'none',
-        animation: 'fadeIn 0.15s ease',
-      }}
-    >
+    <div style={{
+      position: 'fixed',
+      left: Math.min(tooltip.x, window.innerWidth - 420),
+      top: tooltip.y + 8,
+      maxWidth: 400,
+      background: '#0A0F1C',
+      border: '2px solid #D4AF37',
+      borderRadius: 12,
+      padding: '16px 18px',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
+      zIndex: 99999,
+      pointerEvents: 'none',
+    }}>
       <div style={{
-        fontSize: 11,
-        fontWeight: 700,
-        color: '#FFD700',
-        marginBottom: 6,
-        fontFamily: 'Cinzel, serif',
-        letterSpacing: 1,
-        textTransform: 'uppercase',
+        fontSize: 11, fontWeight: 700, color: '#D4AF37',
+        marginBottom: 6, fontFamily: 'Cinzel, serif',
+        letterSpacing: 1, textTransform: 'uppercase',
       }}>
         {entry.term}
       </div>
-      <div style={{
-        fontSize: 12,
-        color: 'var(--text-primary)',
-        lineHeight: 1.65,
-        marginBottom: entry.example ? 10 : 0,
-      }}>
+      <div style={{ fontSize: 12, color: '#F8FAFC', lineHeight: 1.65, marginBottom: entry.example ? 10 : 0 }}>
         {entry.definition}
       </div>
       {entry.example && (
         <div style={{
-          fontSize: 11,
-          color: 'var(--text-muted)',
-          fontStyle: 'italic',
-          padding: '8px 10px',
-          background: 'rgba(255,215,0,0.06)',
-          borderRadius: 6,
-          borderLeft: '2px solid #FFD700',
-          lineHeight: 1.5,
+          fontSize: 11, color: '#64748B', fontStyle: 'italic',
+          padding: '8px 10px', background: 'rgba(212,175,55,0.06)',
+          borderRadius: 6, borderLeft: '2px solid #D4AF37', lineHeight: 1.5,
         }}>
-          💡 {entry.example}
+          {entry.example}
         </div>
       )}
       {entry.relatedTerms && entry.relatedTerms.length > 0 && (
         <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {entry.relatedTerms.map(rt => (
+          {entry.relatedTerms.map((rt: string) => (
             <span key={rt} style={{
-              fontSize: 9,
-              padding: '2px 7px',
-              background: 'rgba(255,215,0,0.08)',
-              border: '1px solid rgba(255,215,0,0.2)',
-              borderRadius: 20,
-              color: 'var(--text-muted)',
-              letterSpacing: 0.5,
-            }}>
-              {rt}
-            </span>
+              fontSize: 10, padding: '2px 8px',
+              background: 'rgba(212,175,55,0.08)',
+              border: '1px solid rgba(212,175,55,0.2)',
+              borderRadius: 4, color: '#D4AF37',
+            }}>{rt}</span>
           ))}
         </div>
       )}
@@ -96,986 +73,424 @@ function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
   );
 }
 
-// ─── Smart Text with Glossary Highlighting ───────────────────────────────────
-
-function SmartText({
-  text,
-  onHover,
-  onLeave,
-}: {
-  text: string;
-  onHover: (term: string, x: number, y: number) => void;
-  onLeave: () => void;
-}) {
-  const glossaryKeys = Object.keys(INVESTMENT_GLOSSARY).sort((a, b) => b.length - a.length);
-
-  // Build segments by scanning the text for known terms
-  const buildSegments = () => {
-    const segments: Array<{ text: string; term?: string; isGlossary: boolean }> = [];
-    let remaining = text;
-    let cursor = 0;
-
-    while (cursor < text.length) {
-      let matched = false;
-      for (const key of glossaryKeys) {
-        const slice = text.slice(cursor);
-        const lowerSlice = slice.toLowerCase();
-        if (lowerSlice.startsWith(key.toLowerCase())) {
-          // Check word boundary before
-          const before = cursor > 0 ? text[cursor - 1] : ' ';
-          const after = text[cursor + key.length] ?? ' ';
-          const wordBefore = /\W/.test(before);
-          const wordAfter = /\W/.test(after) || cursor + key.length >= text.length;
-          if (wordBefore && wordAfter) {
-            segments.push({
-              text: text.slice(cursor, cursor + key.length),
-              term: key,
-              isGlossary: true,
-            });
-            cursor += key.length;
-            matched = true;
-            break;
-          }
-        }
-      }
-      if (!matched) {
-        // Extend the last non-glossary segment or start a new one
-        if (segments.length > 0 && !segments[segments.length - 1].isGlossary) {
-          segments[segments.length - 1].text += text[cursor];
-        } else {
-          segments.push({ text: text[cursor], isGlossary: false });
-        }
-        cursor++;
-      }
-    }
-    return segments;
-  };
-
-  const segments = buildSegments();
-
-  return (
-    <span>
-      {segments.map((seg, i) =>
-        seg.isGlossary && seg.term ? (
-          <span
-            key={i}
-            onMouseEnter={e => {
-              const rect = (e.target as HTMLElement).getBoundingClientRect();
-              onHover(seg.term!, rect.left, rect.bottom);
-            }}
-            onMouseLeave={onLeave}
-            style={{
-              color: '#FFD700',
-              textDecoration: 'underline dotted',
-              textUnderlineOffset: 3,
-              cursor: 'help',
-              fontWeight: 600,
-              transition: 'opacity 0.1s',
-            }}
-          >
-            {seg.text}
-          </span>
-        ) : (
-          <span key={i}>{seg.text}</span>
-        )
-      )}
-    </span>
-  );
-}
-
-// ─── Score Color Helper ───────────────────────────────────────────────────────
-
-const scoreColor = (s: number) =>
-  s >= 75 ? '#00BA7C' : s >= 55 ? '#FFD700' : '#F4212E';
-
-const verdictColor = (v: 'better' | 'worse' | 'similar') =>
-  v === 'better' ? '#00BA7C' : v === 'worse' ? '#F4212E' : '#FFD700';
-
-// ─── Category matching for stock plays ───────────────────────────────────────
-
-function getRelevantPlays(stock: Stock): RishiPlay[] {
-  const { sector, pe, roe, de, np, mktcap, epscagr } = stock;
-
-  // Determine category from stock characteristics
-  let categories: RishiPlay['category'][] = ['quality'];
-
-  if (['FMCG', 'Consumer'].includes(sector) && roe > 20) {
-    categories = ['quality', 'growth'];
-  } else if (['Metals', 'Energy'].includes(sector) && pe < 10) {
-    categories = ['value', 'distressed'];
-  } else if (pe > 50 && np < 0) {
-    categories = ['growth', 'momentum'];
-  } else if (['IT', 'Pharma'].includes(sector) && roe > 18) {
-    categories = ['quality', 'growth'];
-  } else if (np < 0 && de > 1.5) {
-    categories = ['turnaround', 'distressed'];
-  } else if (mktcap < 50000 && epscagr > 20) {
-    categories = ['growth', 'value'];
-  }
-
-  // Get plays matching categories, deduplicated by rishi
-  const seenRishis = new Set<string>();
-  const relevant: RishiPlay[] = [];
-
-  for (const play of GLOBAL_RISHI_PLAYS) {
-    if (categories.includes(play.category) && !seenRishis.has(play.rishi)) {
-      seenRishis.add(play.rishi);
-      relevant.push(play);
-    }
-  }
-
-  // If not enough, fill with remaining
-  for (const play of GLOBAL_RISHI_PLAYS) {
-    if (!seenRishis.has(play.rishi)) {
-      seenRishis.add(play.rishi);
-      relevant.push(play);
-    }
-    if (relevant.length >= 12) break;
-  }
-
-  return relevant;
-}
-
-// ─── Rishi Avatar ────────────────────────────────────────────────────────────
-
-function RishiAvatar({
-  name,
-  score,
-  stance,
-}: {
-  name: string;
-  score: number;
-  stance: 'bull' | 'bear' | 'neutral';
-}) {
-  const color = stance === 'bull' ? '#00BA7C' : stance === 'bear' ? '#F4212E' : '#FFD700';
-  const initials = name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-      <div style={{
-        width: 44,
-        height: 44,
-        borderRadius: '50%',
-        background: color + '18',
-        border: '2px solid ' + color,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 13,
-        fontWeight: 800,
-        color,
-        fontFamily: 'monospace',
-        flexShrink: 0,
-        boxShadow: '0 0 0 3px ' + color + '20',
-      }}>
-        {initials}
-      </div>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{name}</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{
-            width: 60,
-            height: 4,
-            background: 'var(--bg-secondary)',
-            borderRadius: 2,
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              width: score + '%',
-              height: '100%',
-              background: scoreColor(score),
-              borderRadius: 2,
-            }} />
-          </div>
-          <span style={{ fontSize: 11, color: scoreColor(score), fontFamily: 'monospace', fontWeight: 700 }}>
-            {score}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Debate Card ──────────────────────────────────────────────────────────────
-
+/* ── Debate Card ────────────────────────────────────────────── */
 function DebateCard({
-  rishi,
-  stance,
-  onHover,
-  onLeave,
+  side, rishi, argument, score, color,
+  onHover, onLeave,
 }: {
-  rishi: { rishi: string; score: number; reasoning: string; philosophy: string; keyMetric: string };
-  stance: 'bull' | 'bear' | 'neutral';
-  onHover: (term: string, x: number, y: number) => void;
+  side: 'bull' | 'bear';
+  rishi: string;
+  argument: string;
+  score: number;
+  color: string;
+  onHover: (term: string, e: React.MouseEvent) => void;
   onLeave: () => void;
 }) {
-  const color = stance === 'bull' ? '#00BA7C' : stance === 'bear' ? '#F4212E' : '#FFD700';
-  const [expanded, setExpanded] = useState(false);
+  const icon = side === 'bull' ? '🐂' : '🐻';
+  const label = side === 'bull' ? 'BULL CASE' : 'BEAR CASE';
 
   return (
     <div style={{
-      background: color + '08',
-      border: '1px solid ' + color + '30',
-      borderLeft: '3px solid ' + color,
-      borderRadius: 10,
-      padding: 16,
-      transition: 'all 0.2s',
+      background: side === 'bull'
+        ? 'linear-gradient(135deg, rgba(34,197,94,0.06), rgba(17,24,39,0.8))'
+        : 'linear-gradient(135deg, rgba(239,68,68,0.06), rgba(17,24,39,0.8))',
+      border: `1px solid ${color}33`,
+      borderRadius: 14,
+      padding: '18px 20px',
+      transition: 'border-color 0.2s',
     }}>
-      <RishiAvatar name={rishi.rishi} score={rishi.score} stance={stance} />
-
-      {/* Key metric badge */}
-      <div style={{
-        display: 'inline-block',
-        fontSize: 9,
-        padding: '3px 9px',
-        background: color + '15',
-        border: '1px solid ' + color + '40',
-        borderRadius: 20,
-        color,
-        letterSpacing: 1,
-        textTransform: 'uppercase',
-        fontWeight: 700,
-        marginBottom: 10,
-      }}>
-        {rishi.keyMetric}
-      </div>
-
-      {/* Main reasoning */}
-      <div style={{
-        fontSize: 13,
-        color: 'var(--text-secondary)',
-        lineHeight: 1.75,
-        marginBottom: 10,
-      }}>
-        <SmartText text={rishi.reasoning} onHover={onHover} onLeave={onLeave} />
-      </div>
-
-      {/* Philosophy toggle */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: color,
-          fontSize: 11,
-          cursor: 'pointer',
-          padding: 0,
-          fontWeight: 600,
-          letterSpacing: 0.5,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-        }}
-      >
-        {expanded ? '▲' : '▼'} {expanded ? 'Hide' : 'Show'} philosophy basis
-      </button>
-
-      {expanded && (
-        <div style={{
-          marginTop: 10,
-          padding: '10px 14px',
-          background: 'var(--bg-secondary)',
-          borderRadius: 8,
-          fontSize: 12,
-          color: 'var(--text-muted)',
-          fontStyle: 'italic',
-          lineHeight: 1.6,
-          borderLeft: '2px solid ' + color + '50',
-        }}>
-          <SmartText text={rishi.philosophy} onHover={onHover} onLeave={onLeave} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 20 }}>{icon}</span>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color, letterSpacing: '0.1em' }}>{label}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC', marginTop: 2 }}>{rishi}</div>
+          </div>
         </div>
-      )}
+        <div style={{
+          fontSize: 22, fontWeight: 900, color,
+          fontFamily: 'JetBrains Mono, monospace',
+        }}>{score}</div>
+      </div>
+      <div style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.7, fontStyle: 'italic' }}>
+        "{argument}"
+      </div>
     </div>
   );
 }
 
-// ─── Play Card ────────────────────────────────────────────────────────────────
-
+/* ── Play Card ──────────────────────────────────────────────── */
 function PlayCard({
-  play,
-  relevanceNote,
-  onHover,
-  onLeave,
+  play, relevanceNote, onHover, onLeave,
 }: {
   play: RishiPlay;
   relevanceNote: string;
-  onHover: (term: string, x: number, y: number) => void;
+  onHover: (term: string, e: React.MouseEvent) => void;
   onLeave: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const outcomeColor =
-    play.outcome === 'success' ? '#00BA7C' :
-    play.outcome === 'failure' ? '#F4212E' : '#FFD700';
-  const marketFlag =
-    play.market === 'India' ? '🇮🇳' :
-    play.market === 'US' ? '🇺🇸' : '🌐';
-
+  const up = (play.returnPct ?? 0) >= 0;
   return (
-    <div className="card-sacred" style={{
-      padding: 18,
-      borderLeft: '3px solid ' + outcomeColor,
-      transition: 'transform 0.2s',
-    }}>
-      {/* Header row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ fontSize: 16 }}>{marketFlag}</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {play.stock}
-            </span>
-            <span style={{
-              fontSize: 9,
-              padding: '2px 7px',
-              background: 'rgba(255,215,0,0.1)',
-              border: '1px solid rgba(255,215,0,0.25)',
-              borderRadius: 20,
-              color: '#FFD700',
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-            }}>
-              {play.category}
-            </span>
+    <div style={{
+      background: 'rgba(17,24,39,0.7)',
+      border: '1px solid rgba(51,65,85,0.5)',
+      borderRadius: 12,
+      padding: '14px 16px',
+      transition: 'border-color 0.2s',
+    }}
+      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(212,175,55,0.4)'}
+      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(51,65,85,0.5)'}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
+            {play.rishi} — {play.company}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{play.rishi}</span>
-            <span>·</span>
-            <span>{play.yearBought}{play.yearSold ? `–${play.yearSold}` : '–present'}</span>
-            <span>·</span>
-            <span>{play.market}</span>
+          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+            {play.year} · {play.market}
           </div>
         </div>
-
-        {play.return && (
+        {play.returnPct != null && (
           <div style={{
-            background: outcomeColor + '15',
-            border: '1px solid ' + outcomeColor + '40',
-            padding: '6px 12px',
-            borderRadius: 8,
-            fontSize: 15,
-            fontWeight: 800,
-            fontFamily: 'monospace',
-            color: outcomeColor,
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
+            fontSize: 15, fontWeight: 800,
+            color: up ? '#22C55E' : '#EF4444',
+            fontFamily: 'JetBrains Mono, monospace',
           }}>
-            {play.return}
+            {up ? '+' : ''}{play.returnPct}%
           </div>
         )}
       </div>
+      <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.6, marginBottom: 8 }}>
+        {play.thesis}
+      </div>
+      <div style={{
+        fontSize: 11, color: '#D4AF37',
+        padding: '6px 10px',
+        background: 'rgba(212,175,55,0.06)',
+        borderRadius: 6,
+        borderLeft: '2px solid rgba(212,175,55,0.4)',
+      }}>
+        {relevanceNote}
+      </div>
+    </div>
+  );
+}
 
-      {/* Price info */}
-      {play.buyPrice && (
-        <div style={{
-          display: 'flex',
-          gap: 16,
-          marginBottom: 10,
-          fontSize: 11,
-          fontFamily: 'monospace',
-          color: 'var(--text-muted)',
-        }}>
-          <span>Buy: <strong style={{ color: 'var(--text-secondary)' }}>${play.buyPrice}</strong></span>
-          {play.sellPrice && (
-            <span>Sell: <strong style={{ color: outcomeColor }}>${play.sellPrice}</strong></span>
-          )}
+/* ── Technical Bar ──────────────────────────────────────────── */
+function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
+  const stockVal = comp.stockValue ?? 0;
+  const sectorVal = comp.sectorAvg ?? 0;
+  const better = comp.higherIsBetter ? stockVal >= sectorVal : stockVal <= sectorVal;
+
+  return (
+    <div style={{
+      background: 'rgba(17,24,39,0.6)',
+      border: '1px solid rgba(51,65,85,0.4)',
+      borderRadius: 12,
+      padding: '14px 16px',
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{comp.metric}</div>
+        <div style={{ display: 'flex', gap: 16, fontSize: 13, fontFamily: 'JetBrains Mono, monospace' }}>
+          <span style={{ color: better ? '#22C55E' : '#EF4444', fontWeight: 700 }}>
+            {stockName}: {stockVal.toFixed(1)}{comp.unit}
+          </span>
+          <span style={{ color: '#64748B' }}>
+            Sector: {sectorVal.toFixed(1)}{comp.unit}
+          </span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ flex: 1, height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            width: Math.min(100, (stockVal / Math.max(stockVal, sectorVal)) * 100) + '%',
+            background: better ? '#22C55E' : '#EF4444',
+            borderRadius: 3,
+            transition: 'width 0.8s ease',
+          }} />
+        </div>
+        <div style={{ flex: 1, height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            width: Math.min(100, (sectorVal / Math.max(stockVal, sectorVal)) * 100) + '%',
+            background: '#64748B',
+            borderRadius: 3,
+          }} />
+        </div>
+      </div>
+      {comp.insight && (
+        <div style={{ marginTop: 8, fontSize: 11, color: '#D4AF37', fontStyle: 'italic' }}>
+          {comp.insight}
         </div>
       )}
-
-      {/* Thesis */}
-      <div style={{
-        fontSize: 12,
-        color: 'var(--text-secondary)',
-        lineHeight: 1.7,
-        padding: '10px 12px',
-        background: 'var(--bg-secondary)',
-        borderRadius: 8,
-        marginBottom: 10,
-      }}>
-        <SmartText text={play.thesis} onHover={onHover} onLeave={onLeave} />
-      </div>
-
-      {/* Relevance note */}
-      <div style={{
-        fontSize: 11,
-        color: '#FFD700',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 6,
-      }}>
-        <span style={{ flexShrink: 0 }}>🔗</span>
-        <span>{relevanceNote}</span>
-      </div>
     </div>
   );
 }
 
-// ─── Timeline Event Card ──────────────────────────────────────────────────────
-
-function TimelineCard({
-  event,
-  onHover,
-  onLeave,
-}: {
-  event: { rishi: string; date: string; score: number; trigger: string; context: string; event: string };
-  onHover: (term: string, x: number, y: number) => void;
+/* ── Timeline Card ──────────────────────────────────────────── */
+function TimelineCard({ event, onHover, onLeave }: {
+  event: any;
+  onHover: (term: string, e: React.MouseEvent) => void;
   onLeave: () => void;
 }) {
-  const color = scoreColor(event.score);
-  const icon =
-    event.event === 'buy_signal' ? '🟢' :
-    event.event === 'sell_signal' ? '🔴' :
-    event.event === 'warning' ? '⚠️' : '🟡';
-
+  const scoreColor = event.score >= 75 ? '#22C55E' : event.score >= 55 ? '#D4AF37' : '#EF4444';
   return (
-    <div style={{ position: 'relative', paddingLeft: 28, marginBottom: 20 }}>
-      {/* Dot */}
+    <div style={{
+      display: 'flex', gap: 16, marginBottom: 16,
+      paddingLeft: 20, position: 'relative',
+    }}>
       <div style={{
-        position: 'absolute',
-        left: 0,
-        top: 10,
-        width: 14,
-        height: 14,
-        borderRadius: '50%',
-        background: color,
-        border: '2px solid var(--bg-primary)',
-        boxShadow: '0 0 0 3px ' + color + '30',
-        zIndex: 1,
+        position: 'absolute', left: 0, top: 6,
+        width: 14, height: 14, borderRadius: '50%',
+        background: scoreColor,
+        boxShadow: `0 0 8px ${scoreColor}88`,
+        border: '2px solid #0A0F1C',
+        flexShrink: 0,
       }} />
-
-      <div className="card-sacred" style={{ padding: 14 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span>{icon}</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {event.rishi}
-            </span>
-          </div>
-          <div style={{
-            fontSize: 20,
-            fontWeight: 900,
-            fontFamily: 'monospace',
-            color,
-            lineHeight: 1,
-          }}>
-            {event.score}
-          </div>
-        </div>
-        <div style={{
-          fontSize: 10,
-          color: 'var(--text-muted)',
-          fontFamily: 'monospace',
-          letterSpacing: 0.5,
-          marginBottom: 8,
-        }}>
-          {event.date} · {event.trigger}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-          <SmartText text={event.context} onHover={onHover} onLeave={onLeave} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Technical Bar ────────────────────────────────────────────────────────────
-
-function TechnicalBar({
-  comp,
-  stockName,
-}: {
-  comp: { metric: string; thisStock: number | string; sectorAvg: number | string; verdict: 'better' | 'worse' | 'similar'; insight: string };
-  stockName: string;
-}) {
-  const color = verdictColor(comp.verdict);
-  const thisVal = typeof comp.thisStock === 'number' ? comp.thisStock : parseFloat(comp.thisStock) || 0;
-  const avgVal = typeof comp.sectorAvg === 'number' ? comp.sectorAvg : parseFloat(comp.sectorAvg) || 0;
-  const maxVal = Math.max(thisVal, avgVal, 1);
-  const thisWidth = Math.round((thisVal / maxVal) * 100);
-  const avgWidth = Math.round((avgVal / maxVal) * 100);
-
-  return (
-    <div className="card-sacred" style={{ padding: 18 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', fontWeight: 600 }}>
-          {comp.metric}
-        </div>
-        <div style={{
-          fontSize: 10,
-          padding: '3px 10px',
-          background: color + '15',
-          border: '1px solid ' + color + '40',
-          borderRadius: 20,
-          color,
-          fontWeight: 700,
-          textTransform: 'uppercase',
-          letterSpacing: 1,
-        }}>
-          {comp.verdict === 'better' ? '✓ Above Avg' : comp.verdict === 'worse' ? '✗ Below Avg' : '= At Par'}
-        </div>
-      </div>
-
-      {/* Bar comparison */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-        {/* This stock */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 10, color: '#FFD700', fontWeight: 600 }}>{stockName}</span>
-            <span style={{ fontSize: 12, fontFamily: 'monospace', fontWeight: 700, color: color }}>
-              {comp.thisStock}
-            </span>
-          </div>
-          <div style={{ height: 8, background: 'var(--bg-secondary)', borderRadius: 4, overflow: 'hidden' }}>
-            <div style={{
-              width: thisWidth + '%',
-              height: '100%',
-              background: color,
-              borderRadius: 4,
-              transition: 'width 0.8s ease',
-            }} />
-          </div>
-        </div>
-
-        {/* Sector average */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Sector Average</span>
-            <span style={{ fontSize: 12, fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-muted)' }}>
-              {comp.sectorAvg}
-            </span>
-          </div>
-          <div style={{ height: 8, background: 'var(--bg-secondary)', borderRadius: 4, overflow: 'hidden' }}>
-            <div style={{
-              width: avgWidth + '%',
-              height: '100%',
-              background: 'var(--text-muted)',
-              borderRadius: 4,
-              opacity: 0.4,
-            }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Insight */}
       <div style={{
-        fontSize: 11,
-        color: 'var(--text-muted)',
-        fontStyle: 'italic',
-        lineHeight: 1.5,
-        padding: '8px 10px',
-        background: 'var(--bg-secondary)',
-        borderRadius: 6,
+        background: 'rgba(17,24,39,0.6)',
+        border: '1px solid rgba(51,65,85,0.4)',
+        borderRadius: 10, padding: '10px 14px', flex: 1,
       }}>
-        {comp.insight}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#F8FAFC' }}>{event.rishi}</div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 11, color: '#64748B' }}>{event.year}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: scoreColor, fontFamily: 'JetBrains Mono, monospace' }}>
+              {event.score}
+            </span>
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.6 }}>{event.signal}</div>
       </div>
     </div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
+/* ── Main KnowledgeGraphView ────────────────────────────────── */
 export function KnowledgeGraphView({ stock, consensus }: Props) {
-  const [graphData, setGraphData] = useState<EliteKnowledgeGraph | null>(null);
   const [activeView, setActiveView] = useState<'debate' | 'historical' | 'technical' | 'timeline'>('debate');
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const [graphData, setGraphData] = useState<EliteKnowledgeGraph | null>(null);
 
-  const handleHover = useCallback((term: string, x: number, y: number) => {
-    setTooltip({ term, x, y });
+  useEffect(() => {
+    const data = buildEliteKnowledgeGraph(stock, consensus);
+    setGraphData(data);
+  }, [stock, consensus]);
+
+  const handleHover = useCallback((term: string, e: React.MouseEvent) => {
+    setTooltip({ term, x: e.clientX, y: e.clientY });
   }, []);
 
   const handleLeave = useCallback(() => {
     setTooltip(null);
   }, []);
 
-  useEffect(() => {
-    const data = buildEliteKnowledgeGraph(stock, consensus.scores);
-    setGraphData(data);
-  }, [stock, consensus]);
-
   if (!graphData) {
     return (
-      <div style={{
-        height: 500,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 16,
-      }}>
-        <div style={{
-          width: 48,
-          height: 48,
-          border: '3px solid rgba(255,215,0,0.2)',
-          borderTop: '3px solid #FFD700',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }} />
-        <div style={{ color: 'var(--text-muted)', fontFamily: 'monospace', letterSpacing: 2, fontSize: 12 }}>
-          BUILDING ELITE ANALYSIS...
-        </div>
+      <div style={{ padding: 40, textAlign: 'center', color: '#64748B' }}>
+        Building knowledge graph...
       </div>
     );
   }
 
-  const relevantPlays = getRelevantPlays(stock);
+  const relevantPlays = GLOBAL_RISHI_PLAYS.filter(p =>
+    p.sector === stock.sector ||
+    p.themes?.some((t: string) => stock.tags?.includes(t))
+  ).slice(0, 8);
 
-  // Generate relevance notes per play
-  const getRelevanceNote = (play: RishiPlay): string => {
-    const notes: Record<string, string> = {
-      quality: `${play.rishi} applied the same quality-compounding lens to ${play.stock} that applies to ${stock.name} today.`,
-      growth: `${play.rishi} saw similar growth trajectory in ${play.stock} — ${stock.name} mirrors that pattern.`,
-      value: `${play.rishi} found deep value in ${play.stock}; ${stock.name} shows comparable valuation signals.`,
-      turnaround: `${play.rishi} bet on ${play.stock}'s revival — ${stock.name} faces a similar inflection moment.`,
-      momentum: `${play.rishi} rode macro tailwinds in ${play.stock}; ${stock.name} has analogous sector momentum.`,
-      distressed: `${play.rishi} saw opportunity in distress — ${stock.name}'s metrics warrant similar scrutiny.`,
-    };
-    return notes[play.category] || `${play.rishi}'s experience with ${play.stock} is directly relevant here.`;
+  const getRelevanceNote = (play: RishiPlay) => {
+    if (play.sector === stock.sector) return `Same sector as ${stock.symbol}`;
+    return `Thematic parallel to ${stock.symbol}`;
   };
 
-  const tabs = [
-    { id: 'debate',     label: '🎭 Rishi Debate',      sub: 'Bulls vs Bears' },
-    { id: 'historical', label: '📊 Rishi Stock Plays',  sub: 'Global & India' },
-    { id: 'technical',  label: '📈 Technical Edge',     sub: 'Metric Analysis' },
-    { id: 'timeline',   label: '⏱ Signal Timeline',    sub: 'Buy/Sell Signals' },
+  const VIEWS = [
+    { id: 'debate',     label: 'Bulls vs Bears' },
+    { id: 'historical', label: 'Historical Plays' },
+    { id: 'technical',  label: 'Technical Edge' },
+    { id: 'timeline',   label: 'Signal Timeline' },
   ] as const;
 
   return (
-    <div style={{ position: 'relative', paddingBottom: 40 }}>
-      {/* Glossary tooltip */}
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      height: '100%', overflow: 'hidden',
+    }}>
       <GlossaryTooltip tooltip={tooltip} />
 
-      {/* ── Consensus header ── */}
+      {/* Tab Bar */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: 12,
-        marginBottom: 24,
+        display: 'flex', gap: 6,
+        padding: '12px 16px',
+        borderBottom: '1px solid rgba(51,65,85,0.5)',
+        flexShrink: 0,
       }}>
-        {[
-          { label: 'Bulls',     value: graphData.consensus.bullCount,    color: '#00BA7C', icon: '🐂' },
-          { label: 'Bears',     value: graphData.consensus.bearCount,    color: '#F4212E', icon: '🐻' },
-          { label: 'Neutral',   value: graphData.consensus.neutralCount, color: '#FFD700', icon: '⚖️' },
-          { label: 'Consensus', value: graphData.consensus.overall + '%', color: scoreColor(graphData.consensus.overall), icon: '🎯' },
-        ].map((stat, i) => (
-          <div key={i} className="card-sacred" style={{ padding: 16, textAlign: 'center' }}>
-            <div style={{ fontSize: 18, marginBottom: 6 }}>{stat.icon}</div>
-            <div style={{
-              fontSize: 28,
-              fontWeight: 900,
-              fontFamily: 'monospace',
-              color: stat.color,
-              lineHeight: 1,
-              marginBottom: 4,
-            }}>
-              {stat.value}
-            </div>
-            <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, textTransform: 'uppercase' }}>
-              {stat.label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Tabs ── */}
-      <div style={{
-        display: 'flex',
-        gap: 4,
-        marginBottom: 24,
-        borderBottom: '1px solid var(--border-primary)',
-        overflowX: 'auto',
-        paddingBottom: 0,
-      }}>
-        {tabs.map(tab => (
+        {VIEWS.map(v => (
           <button
-            key={tab.id}
-            onClick={() => setActiveView(tab.id)}
+            key={v.id}
+            onClick={() => setActiveView(v.id)}
             style={{
-              padding: '12px 18px',
-              background: activeView === tab.id ? 'rgba(255,215,0,0.08)' : 'transparent',
-              border: 'none',
-              borderBottom: activeView === tab.id ? '2px solid #FFD700' : '2px solid transparent',
-              color: activeView === tab.id ? '#FFD700' : 'var(--text-muted)',
-              cursor: 'pointer',
+              padding: '7px 16px',
+              borderRadius: 8,
               fontSize: 12,
-              fontWeight: activeView === tab.id ? 700 : 400,
-              transition: 'all 0.2s',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              whiteSpace: 'nowrap',
-              gap: 2,
+              fontWeight: 600,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              background: activeView === v.id
+                ? 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(139,92,246,0.1))'
+                : 'transparent',
+              color: activeView === v.id ? '#D4AF37' : '#64748B',
+              borderBottom: activeView === v.id ? '2px solid #D4AF37' : '2px solid transparent',
             }}
           >
-            <span>{tab.label}</span>
-            <span style={{ fontSize: 9, opacity: 0.6 }}>{tab.sub}</span>
+            {v.label}
           </button>
         ))}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════
-          TAB 1 — RISHI DEBATE
-      ══════════════════════════════════════════════════════════ */}
-      {activeView === 'debate' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Content */}
+      <div style={{
+        flex: 1, overflowY: 'auto',
+        padding: '20px 16px',
+        display: 'flex', flexDirection: 'column', gap: 14,
+      }}>
 
-          {/* Instruction hint */}
-          <div style={{
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            background: 'rgba(255,215,0,0.05)',
-            border: '1px solid rgba(255,215,0,0.15)',
-            borderRadius: 8,
-            padding: '8px 14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}>
-            <span>💡</span>
-            <span>
-              Hover over <span style={{ color: '#FFD700', fontWeight: 700, textDecoration: 'underline dotted' }}>
-                golden terms
-              </span> for definitions. Click "Show philosophy" for deeper reasoning.
-            </span>
-          </div>
-
-          {/* Bulls section */}
-          <div>
+        {/* DEBATE TAB */}
+        {activeView === 'debate' && (
+          <>
             <div style={{
-              fontSize: 11,
-              color: '#00BA7C',
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: 'uppercase',
-              marginBottom: 12,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 14,
             }}>
-              <span>🐂</span>
-              <span>Bullish Rishis ({graphData.debate.bulls.length})</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {graphData.debate.bulls.map((bull, i) => (
-                <DebateCard key={i} rishi={bull} stance="bull" onHover={handleHover} onLeave={handleLeave} />
-              ))}
-            </div>
-          </div>
-
-          {/* Bears section */}
-          <div>
-            <div style={{
-              fontSize: 11,
-              color: '#F4212E',
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: 'uppercase',
-              marginBottom: 12,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginTop: 8,
-            }}>
-              <span>🐻</span>
-              <span>Bearish Rishis ({graphData.debate.bears.length})</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {graphData.debate.bears.map((bear, i) => (
-                <DebateCard key={i} rishi={bear} stance="bear" onHover={handleHover} onLeave={handleLeave} />
-              ))}
-            </div>
-          </div>
-
-          {/* Neutrals */}
-          {graphData.debate.neutrals && graphData.debate.neutrals.length > 0 && (
-            <div>
-              <div style={{
-                fontSize: 11,
-                color: '#FFD700',
-                fontWeight: 700,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                marginBottom: 12,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                marginTop: 8,
-              }}>
-                <span>⚖️</span>
-                <span>Neutral / Watching ({graphData.debate.neutrals.length})</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {graphData.debate.neutrals.map((n, i) => (
-                  <DebateCard key={i} rishi={n} stance="neutral" onHover={handleHover} onLeave={handleLeave} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════
-          TAB 2 — RISHI STOCK PLAYS (Global + India)
-      ══════════════════════════════════════════════════════════ */}
-      {activeView === 'historical' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-          {/* Header */}
-          <div style={{
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            background: 'rgba(255,215,0,0.05)',
-            border: '1px solid rgba(255,215,0,0.15)',
-            borderRadius: 8,
-            padding: '10px 14px',
-            lineHeight: 1.6,
-          }}>
-            <strong style={{ color: '#FFD700' }}>How Rishis thought about similar situations.</strong>{' '}
-            Every play below is a real historical investment by that Rishi in a stock with a similar profile to{' '}
-            <strong style={{ color: 'var(--text-primary)' }}>{stock.name}</strong> today.
-            Their thesis then = a lens for you now.
-          </div>
-
-          {/* Market filter tabs */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {(['All', '🇮🇳 India', '🇺🇸 US', '🌐 Global'] as const).map(filter => (
-              <span key={filter} style={{
-                fontSize: 10,
-                padding: '4px 12px',
-                background: filter === 'All' ? 'rgba(255,215,0,0.15)' : 'var(--bg-secondary)',
-                border: '1px solid rgba(255,215,0,0.3)',
-                borderRadius: 20,
-                color: filter === 'All' ? '#FFD700' : 'var(--text-muted)',
-                cursor: 'default',
-              }}>
-                {filter}
-              </span>
-            ))}
-          </div>
-
-          {/* India plays first */}
-          {relevantPlays.filter(p => p.market === 'India').length > 0 && (
-            <div>
-              <div style={{
-                fontSize: 10,
-                color: 'var(--text-muted)',
-                letterSpacing: 2,
-                marginBottom: 12,
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-                🇮🇳 INDIAN MARKET PLAYS
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {relevantPlays.filter(p => p.market === 'India').map((play, i) => (
-                  <PlayCard
-                    key={i}
-                    play={play}
-                    relevanceNote={getRelevanceNote(play)}
-                    onHover={handleHover}
-                    onLeave={handleLeave}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Global plays */}
-          {relevantPlays.filter(p => p.market !== 'India').length > 0 && (
-            <div>
-              <div style={{
-                fontSize: 10,
-                color: 'var(--text-muted)',
-                letterSpacing: 2,
-                marginBottom: 12,
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-                🌐 GLOBAL PLAYS — SAME PHILOSOPHY
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {relevantPlays.filter(p => p.market !== 'India').map((play, i) => (
-                  <PlayCard
-                    key={i}
-                    play={play}
-                    relevanceNote={getRelevanceNote(play)}
-                    onHover={handleHover}
-                    onLeave={handleLeave}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════
-          TAB 3 — TECHNICAL EDGE
-      ══════════════════════════════════════════════════════════ */}
-      {activeView === 'technical' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            marginBottom: 4,
-            lineHeight: 1.6,
-          }}>
-            {stock.name} vs sector average on key Rishi metrics. Each bar shows where{' '}
-            <strong style={{ color: 'var(--text-primary)' }}>{stock.name}</strong> stands relative to peers.
-          </div>
-          {graphData.technicalEdge.map((comp, i) => (
-            <TechnicalBar key={i} comp={comp} stockName={stock.name} />
-          ))}
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════
-          TAB 4 — SIGNAL TIMELINE
-      ══════════════════════════════════════════════════════════ */}
-      {activeView === 'timeline' && (
-        <div>
-          <div style={{
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            marginBottom: 20,
-            lineHeight: 1.6,
-          }}>
-            When each Rishi's scoring model would have triggered based on{' '}
-            <strong style={{ color: 'var(--text-primary)' }}>{stock.name}</strong>'s evolving metrics.
-            Higher scores = stronger conviction.
-          </div>
-
-          {/* Timeline track */}
-          <div style={{ position: 'relative' }}>
-            {/* Vertical line */}
-            <div style={{
-              position: 'absolute',
-              left: 6,
-              top: 0,
-              bottom: 0,
-              width: 2,
-              background: 'linear-gradient(180deg, #FFD700, rgba(255,215,0,0.1))',
-              borderRadius: 2,
-            }} />
-
-            {graphData.timeline.map((event, i) => (
-              <TimelineCard
-                key={i}
-                event={event}
+              <DebateCard
+                side="bull"
+                rishi={consensus.topBull?.rishi ?? 'Buffett'}
+                argument={consensus.topBull?.argument ?? 'Strong fundamentals support long-term value.'}
+                score={consensus.topBull?.score ?? 80}
+                color="#22C55E"
                 onHover={handleHover}
                 onLeave={handleLeave}
               />
-            ))}
+              <DebateCard
+                side="bear"
+                rishi={consensus.topBear?.rishi ?? 'Chanos'}
+                argument={consensus.topBear?.argument ?? 'Elevated valuation creates downside risk.'}
+                score={consensus.topBear?.score ?? 35}
+                color="#EF4444"
+                onHover={handleHover}
+                onLeave={handleLeave}
+              />
+            </div>
+
+            {graphData.debates && graphData.debates.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 700, color: '#64748B',
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                }}>
+                  All Arguments
+                </div>
+                {graphData.debates.map((debate: any, i: number) => (
+                  <div key={i} style={{
+                    background: 'rgba(17,24,39,0.6)',
+                    border: '1px solid rgba(51,65,85,0.4)',
+                    borderRadius: 10,
+                    padding: '12px 14px',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{debate.rishi}</span>
+                      <span style={{ fontSize: 12, color: debate.side === 'bull' ? '#22C55E' : '#EF4444', fontWeight: 600 }}>
+                        {debate.side === 'bull' ? '🐂 Bull' : '🐻 Bear'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.65 }}>
+                      {debate.argument}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* HISTORICAL TAB */}
+        {activeView === 'historical' && (
+          <div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>
+              Historical plays by legendary investors in sectors similar to{' '}
+              <strong style={{ color: '#F8FAFC' }}>{stock.name}</strong>.
+              Study these to understand how the Rishis think.
+            </div>
+            {relevantPlays.length === 0 ? (
+              <div style={{ color: '#64748B', textAlign: 'center', padding: 40 }}>
+                No direct parallels found — explore{' '}
+                <span style={{ color: '#D4AF37' }}>all Rishi plays</span> in the Rishis section.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {relevantPlays.map((play, i) => (
+                  <PlayCard
+                    key={i}
+                    play={play}
+                    relevanceNote={getRelevanceNote(play)}
+                    onHover={handleHover}
+                    onLeave={handleLeave}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+
+        {/* TECHNICAL TAB */}
+        {activeView === 'technical' && (
+          <div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>
+              {stock.name} vs sector average on key Rishi metrics.
+            </div>
+            {graphData.technicalEdge && graphData.technicalEdge.length > 0 ? (
+              graphData.technicalEdge.map((comp: any, i: number) => (
+                <div key={i} style={{ marginBottom: 14 }}>
+                  <TechnicalBar comp={comp} stockName={stock.name} />
+                </div>
+              ))
+            ) : (
+              <div style={{ color: '#64748B', textAlign: 'center', padding: 40 }}>
+                Technical comparison data unavailable for this stock.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TIMELINE TAB */}
+        {activeView === 'timeline' && (
+          <div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 20, lineHeight: 1.6 }}>
+              When each Rishi's scoring model would have triggered based on{' '}
+              <strong style={{ color: '#F8FAFC' }}>{stock.name}</strong>'s evolving metrics.
+            </div>
+            <div style={{ position: 'relative', paddingLeft: 4 }}>
+              <div style={{
+                position: 'absolute', left: 6, top: 0, bottom: 0, width: 2,
+                background: 'linear-gradient(180deg, #D4AF37, rgba(212,175,55,0.1))',
+                borderRadius: 2,
+              }} />
+              {graphData.timeline && graphData.timeline.length > 0 ? (
+                graphData.timeline.map((event: any, i: number) => (
+                  <TimelineCard key={i} event={event} onHover={handleHover} onLeave={handleLeave} />
+                ))
+              ) : (
+                <div style={{ color: '#64748B', textAlign: 'center', padding: 40, paddingLeft: 20 }}>
+                  Signal timeline data unavailable.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

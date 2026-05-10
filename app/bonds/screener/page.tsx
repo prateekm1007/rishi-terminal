@@ -1,10 +1,9 @@
+﻿'use client';
+
+export const dynamic = 'force-dynamic';
+
 import { BONDS } from '../../../data/bonds';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'Bond Screener — Rishi Terminal',
-  description: 'Filter and analyze bonds by type, yield, duration, and rating',
-};
 
 export default function BondScreenerPage() {
   const bondList = Object.values(BONDS).sort((a, b) => b.ytm - a.ytm);
@@ -18,14 +17,14 @@ export default function BondScreenerPage() {
           
           <p style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            <span style={{ margin: '0 8px' }}>›</span>
+            <span style={{ margin: '0 8px' }}>â€º</span>
             <Link href="/bonds" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>BONDS</Link>
-            <span style={{ margin: '0 8px' }}>›</span>
+            <span style={{ margin: '0 8px' }}>â€º</span>
             <span>SCREENER</span>
           </p>
 
           <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 42, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8 }}>
-            📋 Bond Screener
+            ðŸ“‹ Bond Screener
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480 }}>
             {bondList.length} bonds sorted by yield to maturity
@@ -43,7 +42,7 @@ export default function BondScreenerPage() {
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
                   <th style={{ textAlign: 'left', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>BOND</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>TYPE</th>
-                  <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>YTM ↓</th>
+                  <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>YTM â†“</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>COUPON</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>PRICE</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>DURATION</th>
@@ -99,7 +98,7 @@ export default function BondScreenerPage() {
                         {bond.rating}
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 12, color: bond.spread > 0 ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                        {bond.spread > 0 ? `+${bond.spread}bps` : '—'}
+                        {bond.spread > 0 ? `+${bond.spread}bps` : 'â€”'}
                       </td>
                     </tr>
                   );

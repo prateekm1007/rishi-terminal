@@ -1,18 +1,20 @@
-export type WisdomTier = 'seeker' | 'student' | 'disciple';
+﻿export type WisdomTier = 'seeker' | 'student' | 'disciple';
 
 export interface TierConfig {
-  name: string;
-  price: string;
-  rishisVisible: number;
+  name:            string;
+  label:           string;
+  price:           string;
+  rishisVisible:   number;
   dailyStockLimit: number | null;
-  features: string[];
+  features:        string[];
 }
 
 export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
   seeker: {
-    name: 'Seeker',
-    price: 'Free',
-    rishisVisible: 5,
+    name:            'Seeker',
+    label:           'Seeker',
+    price:           'Free',
+    rishisVisible:   5,
     dailyStockLimit: 5,
     features: [
       'top 5 rishi scores',
@@ -21,9 +23,10 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
     ],
   },
   student: {
-    name: 'Student',
-    price: '499/year',
-    rishisVisible: 20,
+    name:            'Student',
+    label:           'Student',
+    price:           '499/year',
+    rishisVisible:   20,
     dailyStockLimit: null,
     features: [
       'all 20 rishis',
@@ -35,9 +38,10 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
     ],
   },
   disciple: {
-    name: 'Disciple',
-    price: '1,999/year',
-    rishisVisible: 20,
+    name:            'Disciple',
+    label:           'Disciple',
+    price:           '1,999/year',
+    rishisVisible:   20,
     dailyStockLimit: null,
     features: [
       'all 20 rishis',
@@ -55,9 +59,7 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
   },
 };
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// ðŸ”§ DEVELOPER MODE â€” set false before shipping
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── DEVELOPER MODE ──────────────────────────────────────────────
 const DEVELOPER_MODE = true;
 
 export function getCurrentTier(): WisdomTier {
@@ -74,9 +76,7 @@ export function getCurrentTier(): WisdomTier {
 
 export function setTier(tier: WisdomTier): void {
   if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem('rishi_tier_v1', tier);
-  } catch {}
+  try { localStorage.setItem('rishi_tier_v1', tier); } catch {}
 }
 
 export function getRishisVisible(tier?: WisdomTier): number {
@@ -93,26 +93,21 @@ export function canViewStock(tier?: WisdomTier): boolean {
   if (limit === null) return true;
   try {
     const today = new Date().toDateString();
-    const key = `stock_views_${today}`;
+    const key   = `stock_views_${today}`;
     const views = parseInt(localStorage.getItem(key) || '0', 10);
     if (views >= limit) return false;
     localStorage.setItem(key, (views + 1).toString());
     return true;
-  } catch {
-    return true;
-  }
+  } catch { return true; }
 }
 
 export function canAccess(feature: string, tier?: WisdomTier): boolean {
   if (DEVELOPER_MODE) return true;
-  const t = tier ?? getCurrentTier();
+  const t        = tier ?? getCurrentTier();
   const features = TIER_CONFIG[t].features;
   return features.some(f => f.toLowerCase().includes(feature.toLowerCase()));
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// isPremium â€” true for student or disciple
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export function isPremium(tier?: WisdomTier): boolean {
   if (DEVELOPER_MODE) return true;
   const t = tier ?? getCurrentTier();
@@ -132,18 +127,17 @@ export function resetDailyLimit(): void {
     localStorage.removeItem(`stock_views_${today}`);
   } catch {}
 }
+
 export function getViewsRemaining(): number {
   if (DEVELOPER_MODE) return 999;
   if (typeof window === 'undefined') return 5;
-  const tier = getCurrentTier();
+  const tier  = getCurrentTier();
   const limit = TIER_CONFIG[tier].dailyStockLimit;
   if (limit === null) return 999;
   try {
     const today = new Date().toDateString();
-    const key = `stock_views_${today}`;
+    const key   = `stock_views_${today}`;
     const views = parseInt(localStorage.getItem(key) || '0', 10);
     return Math.max(0, limit - views);
-  } catch {
-    return 5;
-  }
+  } catch { return 5; }
 }

@@ -1,189 +1,181 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { getCurrentTier, TIER_CONFIG } from '../lib/premium';
-import { useLanguage } from '../lib/language';
-import { LanguageSelector } from './LanguageSelector';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-export function Sidebar() {
+const NAV_GROUPS = [
+  {
+    title: "CORE",
+    items: [
+      { href: "/",            emoji: "⚡", label: "Dashboard"     },
+      { href: "/screener",    emoji: "📊", label: "Screener"      },
+      { href: "/portfolio",   emoji: "💼", label: "Portfolio"     },
+      { href: "/watchlist",   emoji: "⭐", label: "Watchlist"     },
+      { href: "/compare",     emoji: "⚖️", label: "Compare"      },
+    ],
+  },
+  {
+    title: "MARKETS",
+    items: [
+      { href: "/crypto",      emoji: "₿",  label: "Crypto"       },
+      { href: "/forex",       emoji: "💱", label: "Forex"        },
+      { href: "/commodities", emoji: "🥇", label: "Commodities"  },
+      { href: "/bonds",       emoji: "📜", label: "Bonds"        },
+      { href: "/pulse",       emoji: "📡", label: "Market Pulse" },
+    ],
+  },
+  {
+    title: "INTELLIGENCE",
+    items: [
+      { href: "/rishis",      emoji: "🧘", label: "Rishis"       },
+      { href: "/news",        emoji: "📰", label: "News"         },
+      { href: "/backtest",    emoji: "🔬", label: "Backtest"     },
+      { href: "/pricing",     emoji: "💎", label: "Pricing"      },
+    ],
+  },
+];
+
+export default function Sidebar() {
   const pathname = usePathname();
-  const { t } = useLanguage();
-  const [tier, setTier] = useState<'seeker' | 'student' | 'disciple'>('seeker');
-  const [isDev, setIsDev] = useState(false);
-
-  useEffect(() => {
-    const currentTier = getCurrentTier();
-    setTier(currentTier);
-    try {
-      const stored = localStorage.getItem('rishi_tier_v1') || 'seeker';
-      if (currentTier === 'disciple' && stored !== 'disciple') setIsDev(true);
-    } catch {}
-  }, []);
-
-  const isActive = (href: string) =>
-    href === '/' ? pathname === '/' : pathname?.startsWith(href) ?? false;
-
-  const linkStyle = (href: string) => ({
-    display: 'flex' as const,
-    alignItems: 'center' as const,
-    gap: '10px',
-    padding: '8px 10px',
-    borderRadius: '6px',
-    marginBottom: '2px',
-    textDecoration: 'none',
-    fontSize: '13px',
-    fontWeight: isActive(href) ? 600 : 400,
-    background: isActive(href) ? 'rgba(255,215,0,0.1)' : 'transparent',
-    color: isActive(href) ? 'var(--accent-gold)' : 'var(--text-secondary)',
-    border: isActive(href) ? '1px solid rgba(255,215,0,0.25)' : '1px solid transparent',
-    transition: 'all 0.15s ease',
-  });
-
-  const iconStyle = (href: string) => ({
-    width: '26px',
-    height: '20px',
-    fontSize: '9px',
-    fontFamily: 'monospace',
-    color: isActive(href) ? 'var(--accent-gold)' : 'var(--text-muted)',
-    letterSpacing: '0.5px',
-    display: 'flex' as const,
-    alignItems: 'center' as const,
-  });
-
-  const sectionLabel = {
-    fontSize: '9px',
-    color: 'var(--text-muted)',
-    letterSpacing: '2px',
-    padding: '0 8px',
-    marginBottom: '6px',
-    marginTop: '4px',
-  };
-
-  const NAV_MAIN = [
-    { key: 'dashboard',  href: '/',            icon: 'DB' },
-    { key: 'screener',   href: '/screener',    icon: 'SC' },
-    { key: 'portfolio',  href: '/portfolio',   icon: 'PF' },
-    { key: 'allRishis',  href: '/rishis',      icon: 'RS' },
-    { key: 'news',       href: '/news',        icon: 'NW' },
-    { key: 'pricing',    href: '/pricing',     icon: 'PR' },
-  ];
-
-  const NAV_MARKETS = [
-    { key: 'crypto',       href: '/crypto',       icon: 'CR' },
-    { key: 'forex',        href: '/forex',         icon: 'FX' },
-    { key: 'commodities',  href: '/commodities',   icon: 'CM' },
-    { key: 'bonds',        href: '/bonds',         icon: 'BD' },
-    { key: 'watchlist',    href: '/watchlist',     icon: 'WL' },
-  ];
 
   return (
-    <aside className="sidebar-desktop" style={{
-      width: '220px',
-      minWidth: '220px',
-      height: '100vh',
-      position: 'sticky',
+    <aside style={{
+      width: "240px",
+      minHeight: "100vh",
+      height: "100vh",
+      background: "linear-gradient(180deg, #050810 0%, #070C18 100%)",
+      borderRight: "1px solid rgba(212,175,55,0.1)",
+      display: "flex",
+      flexDirection: "column",
+      position: "fixed",
+      left: 0,
       top: 0,
-      background: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border-primary)',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'auto',
-      zIndex: 40,
+      bottom: 0,
+      zIndex: 100,
+      overflowY: "auto",
+      overflowX: "hidden",
     }}>
 
       {/* Logo */}
-      <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border-primary)' }}>
-        <div className="philosophy-heading" style={{ fontSize: '22px', color: 'var(--accent-gold)', letterSpacing: '3px' }}>
-          {t('header.title')}
-        </div>
-        <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '2px', marginTop: '4px' }}>
-          {t('header.investmentWisdomOS')}
-        </div>
-
-        {isDev && (
-          <div style={{
-            marginTop: '10px',
-            padding: '3px 8px',
-            background: 'rgba(255,215,0,0.1)',
-            border: '1px solid rgba(255,215,0,0.4)',
-            borderRadius: '4px',
-            fontSize: '10px',
-            color: 'var(--accent-gold)',
-            fontFamily: 'monospace',
-            letterSpacing: '1px',
-          }}>
-            DEV MODE
-          </div>
-        )}
-
-        <div style={{
-          marginTop: '10px',
-          padding: '8px 10px',
-          background: 'rgba(255,215,0,0.06)',
-          border: '1px solid rgba(255,215,0,0.2)',
-          borderRadius: '6px',
-        }}>
-          <div style={{ fontSize: '11px', color: 'var(--accent-gold)', fontWeight: 600, letterSpacing: '1px' }}>
-            {t(`tiers.${tier}`).toUpperCase()}
-          </div>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {TIER_CONFIG[tier].price}
-          </div>
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
-
-        <div style={sectionLabel}>{t('nav.main')}</div>
-        {NAV_MAIN.map(item => (
-          <Link key={item.key} href={item.href} style={linkStyle(item.href)}>
-            <span style={iconStyle(item.href)}>{item.icon}</span>
-            {t(`nav.${item.key}`)}
-          </Link>
-        ))}
-
-        <div style={{ ...sectionLabel, marginTop: '16px' }}>{t('nav.markets')}</div>
-        {NAV_MARKETS.map(item => (
-          <Link key={item.key} href={item.href} style={linkStyle(item.href)}>
-            <span style={iconStyle(item.href)}>{item.icon}</span>
-            {t(`nav.${item.key}`)}
-          </Link>
-        ))}
-
-      </nav>
-
-      {/* Language Selector */}
       <div style={{
-        padding: '12px 10px',
-        borderTop: '1px solid var(--border-primary)',
+        padding: "24px 20px 20px",
+        borderBottom: "1px solid rgba(212,175,55,0.08)",
+        flexShrink: 0,
       }}>
-        <div style={{
-          fontSize: '9px',
-          color: 'var(--text-muted)',
-          letterSpacing: '2px',
-          marginBottom: '8px',
-          padding: '0 2px',
-        }}>
-          {t('language.select').toUpperCase()}
-        </div>
-        <LanguageSelector />
+        <Link href="/" style={{ textDecoration: "none", display: "block" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{
+              width: "38px", height: "38px", borderRadius: "12px",
+              background: "linear-gradient(135deg, rgba(212,175,55,0.25), rgba(139,92,246,0.25))",
+              border: "1px solid rgba(212,175,55,0.4)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "20px", flexShrink: 0,
+              boxShadow: "0 4px 12px rgba(212,175,55,0.15)",
+            }}>🧘</div>
+            <div>
+              <div style={{
+                fontFamily: "Cinzel, Georgia, serif",
+                fontSize: "15px", fontWeight: 700,
+                color: "#D4AF37", letterSpacing: "0.06em",
+              }}>RISHI</div>
+              <div style={{
+                fontFamily: "JetBrains Mono, monospace",
+                fontSize: "9px", color: "#475569",
+                letterSpacing: "0.15em", fontWeight: 600,
+              }}>TERMINAL v4.4</div>
+            </div>
+          </div>
+        </Link>
       </div>
+
+      {/* Nav Groups */}
+      <nav style={{ flex: 1, padding: "16px 12px", overflowY: "auto" }}>
+        {NAV_GROUPS.map((group) => (
+          <div key={group.title} style={{ marginBottom: "28px" }}>
+            <div style={{
+              fontSize: "9px", fontWeight: 800, color: "#334155",
+              letterSpacing: "0.15em", padding: "0 12px", marginBottom: "6px",
+              fontFamily: "Inter, sans-serif",
+            }}>
+              {group.title}
+            </div>
+            {group.items.map((item) => {
+              const isActive = pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+              return (
+                <Link href={item.href} key={item.href} style={{ textDecoration: "none", display: "block" }}>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: "10px",
+                    padding: "9px 12px", borderRadius: "10px",
+                    marginBottom: "2px", position: "relative",
+                    cursor: "pointer",
+                    background: isActive
+                      ? "linear-gradient(90deg, rgba(212,175,55,0.12), rgba(212,175,55,0.05))"
+                      : "transparent",
+                    borderLeft: isActive ? "2px solid #D4AF37" : "2px solid transparent",
+                    transition: "all 0.15s ease",
+                  }}>
+                    <span style={{ fontSize: "15px", width: "20px", textAlign: "center", flexShrink: 0 }}>
+                      {item.emoji}
+                    </span>
+                    <span style={{
+                      fontSize: "13px", fontWeight: isActive ? 600 : 500,
+                      color: isActive ? "#E8CB6A" : "#64748B",
+                      fontFamily: "Inter, sans-serif",
+                      letterSpacing: "0.01em",
+                    }}>
+                      {item.label}
+                    </span>
+                    {isActive && (
+                      <div style={{
+                        marginLeft: "auto",
+                        width: "5px", height: "5px",
+                        borderRadius: "50%",
+                        background: "#D4AF37",
+                        boxShadow: "0 0 6px rgba(212,175,55,0.8)",
+                        flexShrink: 0,
+                      }} />
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
 
       {/* Footer */}
       <div style={{
-        padding: '14px 20px',
-        borderTop: '1px solid var(--border-primary)',
-        textAlign: 'center',
+        padding: "16px", borderTop: "1px solid rgba(212,175,55,0.08)",
+        flexShrink: 0,
       }}>
-        <div style={{ fontSize: '10px', color: 'var(--text-muted)', letterSpacing: '1px' }}>
-          RISHI TERMINAL v4.1
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
+          <div style={{
+            width: "7px", height: "7px", borderRadius: "50%",
+            background: "#22C55E",
+            boxShadow: "0 0 8px rgba(34,197,94,0.7)",
+            animation: "none",
+          }} className="animate-pulse" />
+          <span style={{
+            fontSize: "11px", color: "#22C55E", fontWeight: 600,
+            fontFamily: "Inter, sans-serif", letterSpacing: "0.03em",
+          }}>Live Market Data</span>
         </div>
-        <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', fontStyle: 'italic' }}>
-          {t('header.wisdomOverHype')}
-        </div>
+
+        <Link href="/pricing" style={{ textDecoration: "none", display: "block" }}>
+          <div style={{
+            background: "linear-gradient(135deg, rgba(212,175,55,0.08), rgba(139,92,246,0.08))",
+            border: "1px solid rgba(212,175,55,0.2)",
+            borderRadius: "10px", padding: "10px 12px",
+          }}>
+            <div style={{ fontSize: "11px", fontWeight: 700, color: "#D4AF37", marginBottom: "3px" }}>
+              🌟 SEEKER PLAN
+            </div>
+            <div style={{ fontSize: "11px", color: "#475569", fontFamily: "Inter, sans-serif" }}>
+              Upgrade for full access →
+            </div>
+          </div>
+        </Link>
       </div>
     </aside>
   );

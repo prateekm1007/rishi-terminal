@@ -1,40 +1,33 @@
-import type { Metadata, Viewport } from 'next';
-import './globals.css';
-import { ThemeProvider } from '../lib/theme';
-import { LanguageProvider } from '../lib/language';
-import { Sidebar } from '../components/Sidebar';
-import { MobileNav } from '../components/MobileNav';
-import { HamburgerMenu } from '../components/HamburgerMenu';
+import type { Metadata } from "next";
+import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+import { LanguageProvider } from "@/lib/language";
 
 export const metadata: Metadata = {
-  title: 'Rishi Terminal 4.0',
-  description: 'Philosophical stock analysis engine',
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
+  title: "Rishi Terminal — Sacred Investment Intelligence",
+  description: "AI-powered investment wisdom from 20 legendary investors",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="dark">
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body>
+    <html lang="en">
+      <body style={{ margin: 0, padding: 0, background: "#020408", overflowX: "hidden" }}>
         <LanguageProvider>
-          <HamburgerMenu />
-          <ThemeProvider>
-            <div style={{ display: 'flex', minHeight: '100vh' }}>
-              <Sidebar />
-              <main style={{ flex: 1, overflow: 'auto', minWidth: 0 }}>
-                {children}
-              </main>
-            </div>
-          </ThemeProvider>
-          <MobileNav />
+          <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
+            <Sidebar />
+            <main style={{
+              marginLeft: "240px",
+              flex: 1,
+              minHeight: "100vh",
+              overflowX: "hidden",
+              overflowY: "auto",
+              position: "relative",
+              width: "calc(100vw - 240px)",
+              maxWidth: "calc(100vw - 240px)",
+            }}>
+              {children}
+            </main>
+          </div>
         </LanguageProvider>
       </body>
     </html>

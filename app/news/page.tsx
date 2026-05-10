@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
@@ -111,7 +111,7 @@ function NewsCard({ news, saved, toggleSave, t }: {
             transition: 'color 0.2s',
           }}
         >
-          {isSaved ? '★' : '☆'}
+          {isSaved ? 'â˜…' : 'â˜†'}
         </button>
       </div>
 
@@ -131,12 +131,12 @@ function NewsCard({ news, saved, toggleSave, t }: {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
         <div style={{ display: 'flex', gap: 8, fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
           <span>{news.source}</span>
-          <span>•</span>
+          <span>â€¢</span>
           <span>{timeAgoLabel(news.minutesAgo)}</span>
         </div>
-        {news.tickers && news.tickers.length > 0 && (
+        {(news as any).tickers && (news as any).tickers.length > 0 && (
           <div style={{ display: 'flex', gap: 4 }}>
-            {news.tickers.slice(0, 3).map(ticker => (
+            {((news as any).tickers as string[]).slice(0, 3).map((ticker: string) => (
               <span key={ticker} style={{
                 fontSize: 9, fontWeight: 700, fontFamily: 'monospace',
                 background: 'var(--accent-gold)' + '20',
@@ -168,7 +168,7 @@ export default function NewsPage() {
   const tickerItems = useMemo(() => {
     return tickerSymbols.map(sym => {
       const livePrice = prices[sym];
-      if (!livePrice) return { symbol: sym, price: '—', change: 0 };
+      if (!livePrice) return { symbol: sym, price: 'â€”', change: 0 };
       
       const priceFormatted = sym.startsWith('BTC') || sym.startsWith('ETH') 
         ? '$' + livePrice.price.toLocaleString('en-US', { maximumFractionDigits: 0 })

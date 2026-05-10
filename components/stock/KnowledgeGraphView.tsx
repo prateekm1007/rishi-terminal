@@ -18,7 +18,7 @@ interface TooltipState {
   y: number;
 }
 
-/* ── Glossary Tooltip ──────────────────────────────────────── */
+/* -- Glossary Tooltip ----------------------------------------- */
 function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
   if (!tooltip) return null;
   const entry = INVESTMENT_GLOSSARY[tooltip.term.toLowerCase()];
@@ -27,7 +27,7 @@ function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
   return (
     <div style={{
       position: 'fixed',
-      left: Math.min(tooltip.x, window.innerWidth - 420),
+      left: Math.min(tooltip.x, (typeof window !== 'undefined' ? window.innerWidth : 1200) - 420),
       top: tooltip.y + 8,
       maxWidth: 400,
       background: '#0A0F1C',
@@ -41,7 +41,7 @@ function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
       <div style={{
         fontSize: 11, fontWeight: 700, color: '#D4AF37',
         marginBottom: 6, fontFamily: 'Cinzel, serif',
-        letterSpacing: 1, textTransform: 'uppercase',
+        letterSpacing: 1, textTransform: 'uppercase' as const,
       }}>
         {entry.term}
       </div>
@@ -73,18 +73,15 @@ function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
   );
 }
 
-/* ── Debate Card ────────────────────────────────────────────── */
+/* -- Debate Card ----------------------------------------------- */
 function DebateCard({
   side, rishi, argument, score, color,
-  onHover, onLeave,
 }: {
   side: 'bull' | 'bear';
   rishi: string;
   argument: string;
   score: number;
   color: string;
-  onHover: (term: string, e: React.MouseEvent) => void;
-  onLeave: () => void;
 }) {
   const icon = side === 'bull' ? '🐂' : '🐻';
   const label = side === 'bull' ? 'BULL CASE' : 'BEAR CASE';
@@ -97,7 +94,6 @@ function DebateCard({
       border: `1px solid ${color}33`,
       borderRadius: 14,
       padding: '18px 20px',
-      transition: 'border-color 0.2s',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -119,14 +115,10 @@ function DebateCard({
   );
 }
 
-/* ── Play Card ──────────────────────────────────────────────── */
-function PlayCard({
-  play, relevanceNote, onHover, onLeave,
-}: {
+/* -- Play Card ------------------------------------------------- */
+function PlayCard({ play, relevanceNote }: {
   play: RishiPlay;
   relevanceNote: string;
-  onHover: (term: string, e: React.MouseEvent) => void;
-  onLeave: () => void;
 }) {
   const up = (play.returnPct ?? 0) >= 0;
   return (
@@ -175,10 +167,12 @@ function PlayCard({
   );
 }
 
-/* ── Technical Bar ──────────────────────────────────────────── */
+/* -- Technical Bar --------------------------------------------- */
 function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
-  const stockVal = comp.stockValue ?? 0;
-  const sectorVal = comp.sectorAvg ?? 0;
+  // FIX: ensure numbers before calling toFixed
+  const stockVal = Number(comp.stockValue ?? 0);
+  const sectorVal = Number(comp.sectorAvg ?? 0);
+  const maxVal = Math.max(stockVal, sectorVal, 0.001); // avoid division by zero
   const better = comp.higherIsBetter ? stockVal >= sectorVal : stockVal <= sectorVal;
 
   return (
@@ -192,10 +186,10 @@ function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
         <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{comp.metric}</div>
         <div style={{ display: 'flex', gap: 16, fontSize: 13, fontFamily: 'JetBrains Mono, monospace' }}>
           <span style={{ color: better ? '#22C55E' : '#EF4444', fontWeight: 700 }}>
-            {stockName}: {stockVal.toFixed(1)}{comp.unit}
+            {stockName}: {stockVal.toFixed(1)}{comp.unit ?? ''}
           </span>
           <span style={{ color: '#64748B' }}>
-            Sector: {sectorVal.toFixed(1)}{comp.unit}
+            Sector: {sectorVal.toFixed(1)}{comp.unit ?? ''}
           </span>
         </div>
       </div>
@@ -203,7 +197,7 @@ function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
         <div style={{ flex: 1, height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, overflow: 'hidden' }}>
           <div style={{
             height: '100%',
-            width: Math.min(100, (stockVal / Math.max(stockVal, sectorVal)) * 100) + '%',
+            width: Math.min(100, (stockVal / maxVal) * 100) + '%',
             background: better ? '#22C55E' : '#EF4444',
             borderRadius: 3,
             transition: 'width 0.8s ease',
@@ -212,7 +206,7 @@ function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
         <div style={{ flex: 1, height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, overflow: 'hidden' }}>
           <div style={{
             height: '100%',
-            width: Math.min(100, (sectorVal / Math.max(stockVal, sectorVal)) * 100) + '%',
+            width: Math.min(100, (sectorVal / maxVal) * 100) + '%',
             background: '#64748B',
             borderRadius: 3,
           }} />
@@ -227,12 +221,8 @@ function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
   );
 }
 
-/* ── Timeline Card ──────────────────────────────────────────── */
-function TimelineCard({ event, onHover, onLeave }: {
-  event: any;
-  onHover: (term: string, e: React.MouseEvent) => void;
-  onLeave: () => void;
-}) {
+/* -- Timeline Card --------------------------------------------- */
+function TimelineCard({ event }: { event: any }) {
   const scoreColor = event.score >= 75 ? '#22C55E' : event.score >= 55 ? '#D4AF37' : '#EF4444';
   return (
     <div style={{
@@ -267,28 +257,31 @@ function TimelineCard({ event, onHover, onLeave }: {
   );
 }
 
-/* ── Main KnowledgeGraphView ────────────────────────────────── */
+/* -- Main KnowledgeGraphView ------------------------------------ */
 export function KnowledgeGraphView({ stock, consensus }: Props) {
   const [activeView, setActiveView] = useState<'debate' | 'historical' | 'technical' | 'timeline'>('debate');
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [graphData, setGraphData] = useState<EliteKnowledgeGraph | null>(null);
 
   useEffect(() => {
-    const data = buildEliteKnowledgeGraph(stock, consensus);
-    setGraphData(data);
+    if (!consensus?.scores || !Array.isArray(consensus.scores)) return;
+    try {
+      const data = buildEliteKnowledgeGraph(stock, consensus.scores);
+      setGraphData(data);
+    } catch (e) {
+      console.error('KnowledgeGraph build error:', e);
+    }
   }, [stock, consensus]);
 
   const handleHover = useCallback((term: string, e: React.MouseEvent) => {
     setTooltip({ term, x: e.clientX, y: e.clientY });
   }, []);
 
-  const handleLeave = useCallback(() => {
-    setTooltip(null);
-  }, []);
+  const handleLeave = useCallback(() => setTooltip(null), []);
 
   if (!graphData) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: '#64748B' }}>
+      <div style={{ padding: 40, textAlign: 'center', color: '#64748B', fontSize: 13 }}>
         Building knowledge graph...
       </div>
     );
@@ -312,10 +305,7 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
   ] as const;
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column',
-      height: '100%', overflow: 'hidden',
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <GlossaryTooltip tooltip={tooltip} />
 
       {/* Tab Bar */}
@@ -330,12 +320,9 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
             key={v.id}
             onClick={() => setActiveView(v.id)}
             style={{
-              padding: '7px 16px',
-              borderRadius: 8,
-              fontSize: 12,
-              fontWeight: 600,
-              border: 'none',
-              cursor: 'pointer',
+              padding: '7px 16px', borderRadius: 8,
+              fontSize: 12, fontWeight: 600,
+              border: 'none', cursor: 'pointer',
               transition: 'all 0.15s ease',
               background: activeView === v.id
                 ? 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(139,92,246,0.1))'
@@ -359,19 +346,13 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
         {/* DEBATE TAB */}
         {activeView === 'debate' && (
           <>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 14,
-            }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <DebateCard
                 side="bull"
                 rishi={consensus.topBull?.rishi ?? 'Buffett'}
                 argument={consensus.topBull?.argument ?? 'Strong fundamentals support long-term value.'}
                 score={consensus.topBull?.score ?? 80}
                 color="#22C55E"
-                onHover={handleHover}
-                onLeave={handleLeave}
               />
               <DebateCard
                 side="bear"
@@ -379,25 +360,19 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
                 argument={consensus.topBear?.argument ?? 'Elevated valuation creates downside risk.'}
                 score={consensus.topBear?.score ?? 35}
                 color="#EF4444"
-                onHover={handleHover}
-                onLeave={handleLeave}
               />
             </div>
 
             {graphData.debates && graphData.debates.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{
-                  fontSize: 11, fontWeight: 700, color: '#64748B',
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                }}>
-                  All Arguments
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em' }}>
+                  ALL ARGUMENTS
                 </div>
                 {graphData.debates.map((debate: any, i: number) => (
                   <div key={i} style={{
                     background: 'rgba(17,24,39,0.6)',
                     border: '1px solid rgba(51,65,85,0.4)',
-                    borderRadius: 10,
-                    padding: '12px 14px',
+                    borderRadius: 10, padding: '12px 14px',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{debate.rishi}</span>
@@ -425,8 +400,7 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
             </div>
             {relevantPlays.length === 0 ? (
               <div style={{ color: '#64748B', textAlign: 'center', padding: 40 }}>
-                No direct parallels found — explore{' '}
-                <span style={{ color: '#D4AF37' }}>all Rishi plays</span> in the Rishis section.
+                No direct parallels found for this sector.
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -435,8 +409,6 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
                     key={i}
                     play={play}
                     relevanceNote={getRelevanceNote(play)}
-                    onHover={handleHover}
-                    onLeave={handleLeave}
                   />
                 ))}
               </div>
@@ -451,11 +423,11 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
               {stock.name} vs sector average on key Rishi metrics.
             </div>
             {graphData.technicalEdge && graphData.technicalEdge.length > 0 ? (
-              graphData.technicalEdge.map((comp: any, i: number) => (
-                <div key={i} style={{ marginBottom: 14 }}>
-                  <TechnicalBar comp={comp} stockName={stock.name} />
-                </div>
-              ))
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {graphData.technicalEdge.map((comp: any, i: number) => (
+                  <TechnicalBar key={i} comp={comp} stockName={stock.name} />
+                ))}
+              </div>
             ) : (
               <div style={{ color: '#64748B', textAlign: 'center', padding: 40 }}>
                 Technical comparison data unavailable for this stock.
@@ -479,7 +451,7 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
               }} />
               {graphData.timeline && graphData.timeline.length > 0 ? (
                 graphData.timeline.map((event: any, i: number) => (
-                  <TimelineCard key={i} event={event} onHover={handleHover} onLeave={handleLeave} />
+                  <TimelineCard key={i} event={event} />
                 ))
               ) : (
                 <div style={{ color: '#64748B', textAlign: 'center', padding: 40, paddingLeft: 20 }}>

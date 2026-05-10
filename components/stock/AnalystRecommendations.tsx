@@ -1,12 +1,13 @@
 'use client';
 
-import { MetricCard, StatGroup } from './StyleGuide';
+import Link from 'next/link';
 
 interface AnalystRec {
   firm: string;
   rating: string;
   targetPrice: number;
   date: string;
+  symbol?: string;
 }
 
 interface Props {
@@ -15,42 +16,81 @@ interface Props {
 }
 
 export function AnalystRecommendations({ recommendations, currentPrice }: Props) {
-  if (!recommendations || recommendations.length === 0 || !currentPrice) {
-    return null;
-  }
+  if (!recommendations || recommendations.length === 0 || !currentPrice) return null;
 
-  const avgTarget =
-    recommendations.reduce((sum, r) => sum + r.targetPrice, 0) / recommendations.length;
+  const safeNum = (v: any) => isNaN(Number(v)) ? 0 : Number(v);
+
+  const avgTarget = recommendations.reduce((s, r) => s + safeNum(r.targetPrice), 0) / recommendations.length;
   const avgUpside = ((avgTarget - currentPrice) / currentPrice) * 100;
 
   const consensus = {
-    buy: recommendations.filter(r => r.rating === 'Buy').length,
+    buy:  recommendations.filter(r => r.rating === 'Buy').length,
     hold: recommendations.filter(r => r.rating === 'Hold').length,
     sell: recommendations.filter(r => r.rating === 'Sell').length,
   };
 
-  return (
-    <div className="card-sacred p-6">
-      <div className="philosophy-heading text-lg mb-6">Analyst Recommendations</div>
+  const ratingColor = (rating: string) =>
+    rating === 'Buy' ? '#22C55E' : rating === 'Hold' ? '#F59E0B' : '#EF4444';
 
-      {/* Consensus */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <MetricCard label="Buy" value={consensus.buy} color="green" />
-        <MetricCard label="Hold" value={consensus.hold} color="yellow" />
-        <MetricCard label="Sell" value={consensus.sell} color="red" />
+  const card = (label: string, count: number, color: string) => (
+    <div style={{
+      background: 'rgba(17,24,39,0.6)',
+      border: `1px solid ${color}33`,
+      borderRadius: 10, padding: '14px 16px', textAlign: 'center',
+    }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em', marginBottom: 6 }}>
+        {label.toUpperCase()}
+      </div>
+      <div style={{ fontSize: 28, fontWeight: 900, color, fontFamily: 'JetBrains Mono, monospace' }}>
+        {count}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{
+      background: 'rgba(17,24,39,0.85)',
+      border: '1px solid rgba(30,41,59,0.8)',
+      borderRadius: 16, padding: 24,
+    }}>
+      <div style={{
+        fontFamily: 'Cinzel, serif', fontWeight: 700,
+        color: '#F8FAFC', fontSize: 18, marginBottom: 24,
+      }}>
+        Analyst Recommendations
+      </div>
+
+      {/* Consensus counts */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+        {card('Buy', consensus.buy, '#22C55E')}
+        {card('Hold', consensus.hold, '#F59E0B')}
+        {card('Sell', consensus.sell, '#EF4444')}
       </div>
 
       {/* Target Price */}
-      <div className="p-6 bg-secondary/50 rounded-lg border border-border-primary/50 mb-6">
-        <div className="philosophy-subheading text-xs mb-4">CONSENSUS TARGET</div>
-        <div className="flex justify-between items-end">
+      <div style={{
+        padding: '16px 20px',
+        background: 'rgba(31,41,59,0.5)',
+        border: '1px solid rgba(51,65,85,0.4)',
+        borderRadius: 12, marginBottom: 20,
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em', marginBottom: 12 }}>
+          CONSENSUS TARGET
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
-            <div className="text-xs text-muted mb-1">Avg Target Price</div>
-            <div className="text-3xl font-bold font-mono text-accent-gold">{avgTarget.toFixed(2)}</div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>Avg Target Price</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: '#D4AF37', fontFamily: 'JetBrains Mono, monospace' }}>
+              {avgTarget.toFixed(2)}
+            </div>
           </div>
-          <div className="text-right">
-            <div className="text-xs text-muted mb-1">Upside Potential</div>
-            <div className={`text-2xl font-bold font-mono ${avgUpside >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>Upside Potential</div>
+            <div style={{
+              fontSize: 24, fontWeight: 900,
+              color: avgUpside >= 0 ? '#22C55E' : '#EF4444',
+              fontFamily: 'JetBrains Mono, monospace',
+            }}>
               {avgUpside >= 0 ? '+' : ''}{avgUpside.toFixed(1)}%
             </div>
           </div>
@@ -59,27 +99,45 @@ export function AnalystRecommendations({ recommendations, currentPrice }: Props)
 
       {/* Recent Calls */}
       <div>
-        <div className="philosophy-subheading text-xs mb-4">RECENT CALLS</div>
-        <div className="space-y-2">
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em', marginBottom: 12 }}>
+          RECENT CALLS
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {recommendations.slice(0, 5).map((rec, idx) => (
-            <div key={idx} className="p-3 bg-secondary/50 rounded-lg border border-border-primary/50 flex justify-between items-center">
+            <div key={idx} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '12px 14px',
+              background: 'rgba(31,41,59,0.5)',
+              border: '1px solid rgba(51,65,85,0.4)',
+              borderRadius: 10,
+              transition: 'border-color 0.15s',
+            }}
+              onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(212,175,55,0.3)'}
+              onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(51,65,85,0.4)'}
+            >
               <div>
-                <div className="text-sm font-medium">{rec.firm}</div>
-                <div className="text-xs text-muted">{rec.date}</div>
+                {rec.symbol ? (
+                  <Link href={`/stock/${rec.symbol}`} style={{ textDecoration: 'none' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#D4AF37' }}>
+                      {rec.firm} →
+                    </div>
+                  </Link>
+                ) : (
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#F8FAFC' }}>{rec.firm}</div>
+                )}
+                <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>{rec.date}</div>
               </div>
-              <div className="text-right">
-                <div
-                  className={`text-sm font-bold font-mono ${
-                    rec.rating === 'Buy'
-                      ? 'text-green-400'
-                      : rec.rating === 'Hold'
-                        ? 'text-yellow-400'
-                        : 'text-red-400'
-                  }`}
-                >
+              <div style={{ textAlign: 'right' }}>
+                <div style={{
+                  fontSize: 13, fontWeight: 700,
+                  fontFamily: 'JetBrains Mono, monospace',
+                  color: ratingColor(rec.rating),
+                }}>
                   {rec.rating}
                 </div>
-                <div className="text-xs text-muted font-mono">{rec.targetPrice}</div>
+                <div style={{ fontSize: 11, color: '#64748B', fontFamily: 'JetBrains Mono, monospace', marginTop: 2 }}>
+                  {safeNum(rec.targetPrice).toFixed(0)}
+                </div>
               </div>
             </div>
           ))}

@@ -2,36 +2,37 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import SadhuVectorLogo from "./SadhuVectorLogo";
 
 const NAV_GROUPS = [
   {
     title: "CORE",
     items: [
-      { href: "/",            emoji: "⚡", label: "Dashboard"    },
-      { href: "/screener",    emoji: "📊", label: "Screener"     },
-      { href: "/portfolio",   emoji: "💼", label: "Portfolio"    },
-      { href: "/watchlist",   emoji: "⭐", label: "Watchlist"    },
-      { href: "/compare",     emoji: "⚖️", label: "Compare"     },
+    { href: "/",            emoji: "⚡", label: "Dashboard"    },
+    { href: "/screener",    emoji: "🔍", label: "Screener"     },
+    { href: "/portfolio",   emoji: "💼", label: "Portfolio"    },
+    { href: "/watchlist",   emoji: "⭐", label: "Watchlist"    },
+    { href: "/compare",     emoji: "⚖️", label: "Compare"      },
     ],
   },
   {
     title: "MARKETS",
     items: [
-      { href: "/crypto",      emoji: "₿",  label: "Crypto"      },
-      { href: "/forex",       emoji: "💱", label: "Forex"       },
-      { href: "/commodities", emoji: "🥇", label: "Commodities" },
-      { href: "/bonds",       emoji: "📜", label: "Bonds"       },
-      { href: "/pulse",       emoji: "📡", label: "Market Pulse"},
+    { href: "/crypto",      emoji: "₿",  label: "Crypto"       },
+    { href: "/forex",       emoji: "💱", label: "Forex"        },
+    { href: "/commodities", emoji: "🥇", label: "Commodities"  },
+    { href: "/bonds",       emoji: "🔒", label: "Bonds"        },
+    { href: "/pulse",       emoji: "📡", label: "Market Pulse" },
     ],
   },
   {
     title: "INTELLIGENCE",
     items: [
-      { href: "/fno/builder", emoji: "🎯", label: "F&O Builder"  },
-      { href: "/rishis",      emoji: "🧘", label: "Rishis"       },
-      { href: "/news",        emoji: "📰", label: "News"         },
-      { href: "/backtest",    emoji: "🔬", label: "Backtest"     },
-      { href: "/pricing",     emoji: "💎", label: "Pricing"      },
+    { href: "/fno/builder", emoji: "🧯", label: "F&O Builder"  },
+    { href: "/rishis", emoji: "🧘", label: "Chat with Rishis" },
+    { href: "/news",        emoji: "📰", label: "News"         },
+    { href: "/backtest",    emoji: "⏪", label: "Backtest"     },
+    { href: "/pricing",     emoji: "💎", label: "Pricing"      },
     ],
   },
 ];
@@ -53,32 +54,17 @@ export default function Sidebar() {
       <div style={{
         padding: "24px 20px 20px",
         borderBottom: "1px solid rgba(212,175,55,0.08)",
-        flexShrink: 0,
       }}>
-        <Link href="/" style={{ textDecoration: "none", display: "block" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{
-              width: "38px", height: "38px", borderRadius: "12px",
-              background: "linear-gradient(135deg, rgba(212,175,55,0.25), rgba(139,92,246,0.25))",
-              border: "1px solid rgba(212,175,55,0.4)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "20px", flexShrink: 0,
-              boxShadow: "0 4px 12px rgba(212,175,55,0.15)",
-            }}>🧘</div>
-            <div>
-              <div style={{
-                fontFamily: "Cinzel, Georgia, serif",
-                fontSize: "15px", fontWeight: 700,
-                color: "#D4AF37", letterSpacing: "0.06em",
-              }}>RISHI</div>
-              <div style={{
-                fontFamily: "JetBrains Mono, monospace",
-                fontSize: "9px", color: "#475569",
-                letterSpacing: "0.15em", fontWeight: 600,
-              }}>TERMINAL v4.4</div>
-            </div>
-          </div>
-        </Link>
+        <SadhuVectorLogo size={64} showText={true} />
+        <div style={{
+          fontFamily: "JetBrains Mono, monospace",
+          fontSize: "9px",
+          color: "#475569",
+          letterSpacing: "0.12em",
+          marginTop: 12,
+        }}>
+          SACRED INVESTMENT OS
+        </div>
       </div>
 
       {/* Nav */}
@@ -153,7 +139,7 @@ export default function Sidebar() {
             borderRadius: "10px", padding: "10px 12px",
           }}>
             <div style={{ fontSize: "11px", fontWeight: 700, color: "#D4AF37", marginBottom: "3px" }}>
-              🌟 SEEKER PLAN
+              👑 SEEKER PLAN
             </div>
             <div style={{ fontSize: "11px", color: "#475569", fontFamily: "Inter, sans-serif" }}>
               Upgrade for full access →

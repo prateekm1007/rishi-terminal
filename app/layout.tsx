@@ -6,6 +6,10 @@ import AuthProvider from "@/components/auth/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Rishi Terminal — Sacred Investment Intelligence",
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   description: "AI-powered investment wisdom from 20 legendary investors",
 };
 

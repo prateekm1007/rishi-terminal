@@ -87,36 +87,46 @@ function detectArchetype(stock: Stock): string | null {
   return null;
 }
 
-function getRishiResponse(rishiName: string, prompt: string, stock: Stock, scores: RishiScore[]): string {
-  const myScore = scores.find(s => s.name === rishiName || s.full.includes(rishiName));
-  const score = myScore?.score ?? 50;
-  
-  if (prompt.toLowerCase().includes("view") || prompt.toLowerCase().includes("opinion")) {
-    return score >= 75 
-      ? `${stock.symbol} scores ${score}/100 — this is exactly the kind of business I look for. ${stock.roe >= 20 ? "ROE of " + stock.roe + "% shows real competitive advantages." : ""} ${myScore?.insight ?? "Strong fundamental case."}`
-      : `${stock.symbol} at ${score}/100 doesn't meet my standards yet. ${stock.de > 1 ? "Debt of " + stock.de + "x is concerning." : ""} ${stock.pe > 40 ? "Valuation is stretched." : ""} ${myScore?.insight ?? "Wait for better opportunity."}`;
-  }
-  
-  if (prompt.toLowerCase().includes("risk")) {
-    return `Primary risks for ${stock.symbol}: ${stock.de > 1 ? "(1) High debt — refinancing risk" : stock.pe > 40 ? "(1) Valuation — mean reversion risk" : "(1) Competitive intensity"}, (2) ${stock.sector} sector headwinds, (3) Management execution. Always size positions to survive worst-case scenarios.`;
-  }
-  
-  return `${stock.symbol} scores ${score}/100 from my perspective. ${myScore?.insight ?? "Ask me something specific about valuation, risks, or thesis."}`;
-}
+// RISHI SYSTEM PROMPTS - Same as in /rishis page
+const RISHI_PROMPTS: Record<string, string> = {
+  'Rakesh Jhunjhunwala': `You are Rakesh Jhunjhunwala, the Big Bull of India. You are analyzing a stock. Be passionate, bold, and conviction-driven. Use your P/CF + Growth + Quality + Conviction framework. Reference the stock\'s fundamentals directly. Keep response concise (2-3 sentences max for stock page chat).`,
+  'Radhakishan Damani': `You are Radhakishan Damani, DMart founder. You obsess over zero-debt and cash flows. Ask first: how much debt? Then ROCE? Then cash conversion? Be direct and skeptical of hype. Keep response concise.`,
+  'Ashish Kacholia': `You are Ashish Kacholia, the Whale hunter of small-caps. Look for hidden gems with high promoter ownership and accelerating FCF. Be enthusiastic about discoveries. Keep response concise.`,
+  'Vijay Kedia': `You are Vijay Kedia, creator of SMILE formula. Apply it systematically: Small, Manageable, Innovative, Listed, Emerging. Be patient and philosophical. Keep response concise.`,
+  'Porinju Veliyath': `You are Porinju Veliyath, the contrarian. Find value in beaten-down stocks. Ask: what narrative does market hate? Is it justified? What is the catalyst? Be bold. Keep response concise.`,
+  'Raamdeo Agrawal': `You are Raamdeo Agrawal, QGLP framework creator. Systematically evaluate: Quality (ROE), Growth (CAGR), Longevity (10+ years?), Price (PEG?). Be structured and academic. Keep response concise.`,
+  'Nemish Shah': `You are Nemish Shah, the boring compounder expert. Focus on consistent EPS growth, zero debt, and capital allocation. "Boring beats exciting." Keep response concise.`,
+  'Basant Maheshwari': `You are Basant Maheshwari, consumption growth expert. Is this riding India\'s consumption wave? Can revenues 3x in 5 years? Be enthusiastic about the India story. Keep response concise.`,
+  'Warren Buffett': `You are Warren Buffett, the Oracle of Omaha. Look for moats, management quality, and earnings power. Be folksy and warm. "Would I buy this entire business?" Keep response concise.`,
+  'Benjamin Graham': `You are Benjamin Graham, Father of Value Investing. Calculate margin of safety. "Mr. Market is your servant, not master." Be analytical. Keep response concise.`,
+  'Peter Lynch': `You are Peter Lynch, GARP expert. Calculate PEG ratio. Categorize the stock. Tell the investment story simply. "Invest in what you know." Keep response concise.`,
+  'Charlie Munger': `You are Charlie Munger, mental models master. Use inversion: what would cause failure? What are the incentives? Be blunt and wise. Keep response concise.`,
+  'Joel Greenblatt': `You are Joel Greenblatt, Magic Formula creator. Calculate ROC and Earnings Yield. "Good businesses at cheap prices." Be systematic. Keep response concise.`,
+  'Mohnish Pabrai': `You are Mohnish Pabrai, Dhandho framework expert. "Heads I win, tails I don\'t lose much." Find asymmetric bets. Be humble and transparent. Keep response concise.`,
+  'Philip Fisher': `You are Philip Fisher, scuttlebutt method pioneer. Ask about management quality and R&D investment. "Outstanding companies with outstanding management." Keep response concise.`,
+  'Howard Marks': `You are Howard Marks, cycle expert. Where are we in the cycle? What is risk/reward? Ask second-level questions. Keep response concise.`,
+  'Seth Klarman': `You are Seth Klarman, downside protection obsessed. "What is the worst case?" Find asymmetric returns. Be cautious. Keep response concise.`,
+  'John Templeton': `You are John Templeton, global contrarian. "Buy at maximum pessimism." Look globally. Be optimistic about human progress. Keep response concise.`,
+  'Walter Schloss': `You are Walter Schloss, cigar-butt value investor. Focus on P/B, debt, and insider buying. "Buy cheap and wait." Be simple and humble. Keep response concise.`,
+};
 
 export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
   const [activeMode, setActiveMode] = useState<"wisdom" | "chat">("wisdom");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [selectedRishi, setSelectedRishi] = useState(scores[0]?.name ?? "Damani");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return;
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+    
+    setError(null);
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -124,20 +134,52 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
 
-    setTimeout(() => {
-      const response = getRishiResponse(selectedRishi, text, stock, scores);
+    try {
+      // Build context about the stock
+      const stockContext = `You are analyzing ${stock.symbol} (${stock.name}). 
+Stock details: PE ${stock.pe}, ROE ${stock.roe}%, Debt/Equity ${stock.de}, Revenue CAGR ${stock.revcagr}%, Market Cap ${stock.mktcap}Cr, Sector: ${stock.sector}.
+User question about this stock:`;
+
+      const systemPrompt = (RISHI_PROMPTS[selectedRishi] || RISHI_PROMPTS['Warren Buffett']) + '\n\n' + stockContext;
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemPrompt,
+          history: messages,
+          message: text.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || `API error: ${res.status}`);
+      }
+
+      if (!data.text) {
+        throw new Error('Empty response from Gemini');
+      }
+
       const rishiMsg: Message = {
         id: Date.now().toString() + "_r",
         role: "rishi",
         rishiName: selectedRishi,
-        text: response,
+        text: data.text,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, rishiMsg]);
-    }, 400);
-
-    setInput("");
+    } catch (err: unknown) {
+      console.error('Chat error:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Something went wrong';
+      setError(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const archetypeKey = detectArchetype(stock);
@@ -239,7 +281,7 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
                   "{parallel.quote}"
                 </blockquote>
                 <div style={{ fontSize: "10px", color: "#64748B", textAlign: "right" }}>
-                  — {parallel.author}
+                  – {parallel.author}
                 </div>
               </div>
             </>
@@ -302,6 +344,37 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
                 </div>
               </div>
             ))}
+
+            {isLoading && (
+              <div style={{ alignSelf: "flex-start" }}>
+                <div style={{ fontSize: "10px", color: "#64748B", marginBottom: "3px" }}>
+                  {selectedRishi}
+                </div>
+                <div style={{
+                  background: "rgba(17,24,39,0.8)", border: "1px solid rgba(51,65,85,0.4)",
+                  borderRadius: "10px", padding: "10px 12px", display: "flex", gap: "4px",
+                }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{
+                      width: "6px", height: "6px", borderRadius: "50%", background: "#D4AF37",
+                      animation: `pulse 1.4s ease-in-out ${i * 0.2}s infinite`,
+                    }} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div style={{
+                alignSelf: "flex-start", maxWidth: "85%",
+                background: "#1a0000", border: "1px solid #ff4444",
+                borderRadius: "10px", padding: "10px 12px",
+                fontSize: "12px", color: "#ff6666",
+              }}>
+                ⚠️ {error}
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -312,10 +385,12 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
                 <button
                   key={p}
                   onClick={() => sendMessage(p)}
+                  disabled={isLoading}
                   style={{
                     padding: "4px 8px", borderRadius: "6px",
                     background: "rgba(31,41,59,0.5)", border: "1px solid rgba(51,65,85,0.4)",
-                    color: "#64748B", fontSize: "10px", cursor: "pointer",
+                    color: "#64748B", fontSize: "10px", cursor: isLoading ? "not-allowed" : "pointer",
+                    opacity: isLoading ? 0.5 : 1,
                   }}
                 >
                   {p}
@@ -330,30 +405,40 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
               <input
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendMessage(input)}
+                onKeyDown={e => e.key === "Enter" && !isLoading && sendMessage(input)}
+                disabled={isLoading}
                 placeholder={`Ask ${selectedRishi}...`}
                 style={{
                   flex: 1, background: "rgba(17,24,39,0.8)",
                   border: "1px solid rgba(51,65,85,0.6)", borderRadius: "8px",
                   padding: "8px 12px", color: "#F8FAFC", fontSize: "12px",
-                  outline: "none",
+                  outline: "none", opacity: isLoading ? 0.5 : 1,
                 }}
               />
               <button
                 onClick={() => sendMessage(input)}
+                disabled={isLoading || !input.trim()}
                 style={{
                   padding: "8px 16px", borderRadius: "8px",
                   background: "linear-gradient(135deg,#A88B20,#D4AF37)",
                   border: "none", color: "#0A0F1C", fontWeight: 700,
-                  fontSize: "12px", cursor: "pointer",
+                  fontSize: "12px", cursor: isLoading || !input.trim() ? "not-allowed" : "pointer",
+                  opacity: isLoading || !input.trim() ? 0.5 : 1,
                 }}
               >
-                Send
+                {isLoading ? "..." : "Send"}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 0.3; transform: scale(0.8); }
+          50%       { opacity: 1;   transform: scale(1.2); }
+        }
+      `}</style>
     </div>
   );
 }

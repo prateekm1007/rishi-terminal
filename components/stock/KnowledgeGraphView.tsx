@@ -120,7 +120,7 @@ function PlayCard({ play, relevanceNote }: {
   play: RishiPlay;
   relevanceNote: string;
 }) {
-  const up = (play.returnPct ?? 0) >= 0;
+  const up = (play.return?.includes?.('+') ?? false);
   return (
     <div style={{
       background: 'rgba(17,24,39,0.7)',
@@ -135,19 +135,19 @@ function PlayCard({ play, relevanceNote }: {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
-            {play.rishi} — {play.company}
+            {play.rishi} — {play.stock}
           </div>
           <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
-            {play.year} · {play.market}
+            {play.yearBought} · {play.market}
           </div>
         </div>
-        {play.returnPct != null && (
+        {play.return && (
           <div style={{
             fontSize: 15, fontWeight: 800,
             color: up ? '#22C55E' : '#EF4444',
             fontFamily: 'JetBrains Mono, monospace',
           }}>
-            {up ? '+' : ''}{play.returnPct}%
+            {play.return}
           </div>
         )}
       </div>
@@ -169,10 +169,9 @@ function PlayCard({ play, relevanceNote }: {
 
 /* -- Technical Bar --------------------------------------------- */
 function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
-  // FIX: ensure numbers before calling toFixed
   const stockVal = Number(comp.stockValue ?? 0);
   const sectorVal = Number(comp.sectorAvg ?? 0);
-  const maxVal = Math.max(stockVal, sectorVal, 0.001); // avoid division by zero
+  const maxVal = Math.max(stockVal, sectorVal, 0.001);
   const better = comp.higherIsBetter ? stockVal >= sectorVal : stockVal <= sectorVal;
 
   return (
@@ -257,6 +256,89 @@ function TimelineCard({ event }: { event: any }) {
   );
 }
 
+// Smart matching algorithm for historical plays
+function getRelevantPlays(stock: Stock): RishiPlay[] {
+  const SECTOR_KEYWORDS: Record<string, string[]> = {
+    IT: ['technology', 'software', 'tech', 'digital', 'cloud', 'apple', 'ibm'],
+    Banking: ['bank', 'finance', 'financial', 'credit', 'amex', 'america'],
+    Pharma: ['pharma', 'health', 'drug', 'medical', 'bio'],
+    Auto: ['auto', 'motor', 'car', 'vehicle'],
+    Energy: ['oil', 'gas', 'energy', 'power', 'coal'],
+    FMCG: ['consumer', 'fmcg', 'coca', 'colgate', 'unilever', 'candies'],
+    Retail: ['retail', 'ecommerce', 'store', 'supermart'],
+    Cement: ['cement', 'construction', 'building'],
+    Metals: ['steel', 'metal', 'alumin'],
+  };
+
+  const stockSectorLower = stock.sector.toLowerCase();
+  const keywords = SECTOR_KEYWORDS[stock.sector] || [stockSectorLower];
+
+  // Score each play by relevance
+  const scored = GLOBAL_RISHI_PLAYS.map(play => {
+    let score = 0;
+    const playStockLower = play.stock.toLowerCase();
+    const playThesisLower = play.thesis.toLowerCase();
+
+    // Exact sector keyword match in stock name or thesis
+    keywords.forEach(kw => {
+      if (playStockLower.includes(kw)) score += 10;
+      if (playThesisLower.includes(kw)) score += 5;
+    });
+
+    // Market preference (India plays get bonus for Indian stocks)
+    if (play.market === 'India' && stock.exchange === 'NSE') score += 3;
+
+    // Category match (quality stocks → quality plays)
+    if (stock.roe >= 20 && play.category === 'quality') score += 4;
+    if (stock.pe < 15 && play.category === 'value') score += 4;
+    if (stock.revcagr >= 20 && play.category === 'growth') score += 4;
+
+    // Famous plays get slight bonus
+    if (['Warren Buffett', 'Rakesh Jhunjhunwala'].includes(play.rishi)) score += 2;
+
+    return { play, score };
+  });
+
+  // Sort by score descending, take top 8
+  const sorted = scored.sort((a, b) => b.score - a.score);
+
+  // If top match has score >= 5, show top 8 with score >= 3
+  // Otherwise show any top 8 plays (fallback to famous plays)
+  const topScore = sorted[0]?.score ?? 0;
+  const relevant = topScore >= 5
+    ? sorted.filter(s => s.score >= 3).slice(0, 8)
+    : sorted.slice(0, 8);
+
+  return relevant.map(r => r.play);
+}
+
+function getRelevanceNote(play: RishiPlay, stock: Stock): string {
+  const playLower = play.stock.toLowerCase();
+  const sectorLower = stock.sector.toLowerCase();
+
+  if (playLower.includes(sectorLower) || play.thesis.toLowerCase().includes(sectorLower)) {
+    return `${stock.sector} sector parallel — study ${play.rishi}'s approach`;
+  }
+
+  if (play.market === 'India' && stock.exchange === 'NSE') {
+    return `Indian market success story by ${play.rishi}`;
+  }
+
+  if (play.category === 'quality' && stock.roe >= 20) {
+    return `Quality business playbook — similar ROE profile to ${stock.symbol}`;
+  }
+
+  if (play.category === 'value' && stock.pe < 15) {
+    return `Value investing case study — similar valuation approach`;
+  }
+
+  if (play.category === 'growth' && stock.revcagr >= 20) {
+    return `High-growth opportunity — similar to ${stock.symbol}'s trajectory`;
+  }
+
+  return `Legendary ${play.rishi} play — timeless investment wisdom`;
+}
+
 /* -- Main KnowledgeGraphView ------------------------------------ */
 export function KnowledgeGraphView({ stock, consensus }: Props) {
   const [activeView, setActiveView] = useState<'debate' | 'historical' | 'technical' | 'timeline'>('debate');
@@ -287,15 +369,7 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
     );
   }
 
-  const relevantPlays = GLOBAL_RISHI_PLAYS.filter(p =>
-    p.sector === stock.sector ||
-    p.themes?.some((t: string) => stock.tags?.includes(t))
-  ).slice(0, 8);
-
-  const getRelevanceNote = (play: RishiPlay) => {
-    if (play.sector === stock.sector) return `Same sector as ${stock.symbol}`;
-    return `Thematic parallel to ${stock.symbol}`;
-  };
+  const relevantPlays = getRelevantPlays(stock);
 
   const VIEWS = [
     { id: 'debate',     label: 'Bulls vs Bears' },
@@ -394,25 +468,19 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
         {activeView === 'historical' && (
           <div>
             <div style={{ fontSize: 11, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>
-              Historical plays by legendary investors in sectors similar to{' '}
+              Historical plays by legendary investors relevant to{' '}
               <strong style={{ color: '#F8FAFC' }}>{stock.name}</strong>.
               Study these to understand how the Rishis think.
             </div>
-            {relevantPlays.length === 0 ? (
-              <div style={{ color: '#64748B', textAlign: 'center', padding: 40 }}>
-                No direct parallels found for this sector.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {relevantPlays.map((play, i) => (
-                  <PlayCard
-                    key={i}
-                    play={play}
-                    relevanceNote={getRelevanceNote(play)}
-                  />
-                ))}
-              </div>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {relevantPlays.map((play, i) => (
+                <PlayCard
+                  key={i}
+                  play={play}
+                  relevanceNote={getRelevanceNote(play, stock)}
+                />
+              ))}
+            </div>
           </div>
         )}
 

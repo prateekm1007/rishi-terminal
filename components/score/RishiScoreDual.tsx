@@ -41,8 +41,8 @@ function ScoreGauge({ score, mode }: { score: number; mode: ScoreMode }) {
     animate();
   }, [score]);
 
-  const strokeId = "gauge-gradient-" + mode + "-" + Math.random().toString(36).substr(2,9);
-  const glowId = "glow-" + Math.random().toString(36).substr(2,9);
+  const strokeId = "gauge-gradient-" + mode + "-" + score.toFixed(0);
+  const glowId = "glow-" + mode + "-" + score.toFixed(0);
 
   return (
     <div style={{ position:"relative", width:"180px", height:"180px", margin:"0 auto" }}>

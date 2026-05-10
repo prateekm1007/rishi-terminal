@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { STOCKS } from '../../data/stocks';
 import { StockTable } from '../../components/screener/StockTable';
 import { useLanguage } from '../../lib/language';
-import { SCREENER_PRESETS, applyFilters, type ScreenerPreset } from '../../lib/screener/presets';
+import { SCREENER_PRESETS, applyFilters } from '../../lib/screener/presets';
 
 export default function ScreenerPage() {
   const { t, locale } = useLanguage();
@@ -17,6 +17,8 @@ export default function ScreenerPage() {
     if (!preset) return stockList;
     return applyFilters(stockList, preset.filters);
   }, [stockList, activePreset]);
+
+  const activePresetData = SCREENER_PRESETS.find(p => p.id === activePreset);
 
   const STAT_PILLS = useMemo(() => [
     { label: t('screener.strongBuy'),  count: stockList.filter(s => s.pe > 0 && s.roe > 15).length, color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)'  },
@@ -32,11 +34,10 @@ export default function ScreenerPage() {
       <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)', padding: '40px 24px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
 
-          {/* Breadcrumb */}
           <p style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
-            <a href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>{t('header.title')}</a>
+            <a href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</a>
             <span style={{ margin: '0 8px' }}>›</span>
-            <span>{t('screener.title').toUpperCase()}</span>
+            <span>SCREENER</span>
           </p>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 32 }}>
@@ -44,41 +45,42 @@ export default function ScreenerPage() {
               <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 42, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8, lineHeight: 1.1 }}>
                 {t('screener.title')}
               </h1>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
-                {activePreset 
-                  ? SCREENER_PRESETS.find(p => p.id === activePreset)?.description 
-                  : "Filter stocks by Rishi wisdom — Buffett Mode, Damani Mode, Short Mode, and more"}
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 520, lineHeight: 1.6 }}>
+                {activePresetData ? (
+                  <><strong style={{ color: '#D4AF37' }}>{activePresetData.emoji} {activePresetData.name}:</strong> {activePresetData.description}</>
+                ) : (
+                  'Filter 281 Indian stocks by Rishi wisdom — Buffett Mode, Damani Mode, Graham Mode, Short Mode & more'
+                )}
               </p>
             </div>
 
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160 }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160, textAlign: 'center' }}>
               <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
-                {activePreset ? "FILTERED" : t('screener.totalCoverage')}
+                {activePreset ? 'FILTERED' : 'TOTAL COVERAGE'}
               </div>
               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
                 {filteredStocks.length}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                {activePreset ? "stocks matching" : t('screener.nseBseStocks')}
+                {activePreset ? 'stocks matching' : 'NSE / BSE stocks'}
               </div>
             </div>
           </div>
 
-          {/* Rishi Mode Presets */}
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em', marginBottom: 12 }}>
+          {/* Rishi Presets */}
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.12em', marginBottom: 10 }}>
               🧘 RISHI SCREENING MODES
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
                 onClick={() => setActivePreset(null)}
                 style={{
-                  padding: '10px 16px', borderRadius: 10,
-                  background: !activePreset ? 'linear-gradient(135deg,rgba(212,175,55,0.15),rgba(212,175,55,0.05))' : 'rgba(31,41,59,0.6)',
-                  border: !activePreset ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
+                  padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  background: !activePreset ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
+                  outline: !activePreset ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
                   color: !activePreset ? '#D4AF37' : '#64748B',
-                  fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
                 }}
               >
                 🔍 All Stocks
@@ -86,15 +88,14 @@ export default function ScreenerPage() {
               {SCREENER_PRESETS.map(preset => (
                 <button
                   key={preset.id}
-                  onClick={() => setActivePreset(preset.id)}
+                  onClick={() => setActivePreset(preset.id === activePreset ? null : preset.id)}
                   style={{
-                    padding: '10px 16px', borderRadius: 10,
-                    background: activePreset === preset.id ? 'linear-gradient(135deg,rgba(212,175,55,0.15),rgba(212,175,55,0.05))' : 'rgba(31,41,59,0.6)',
-                    border: activePreset === preset.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
+                    padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: activePreset === preset.id ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
+                    outline: activePreset === preset.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
                     color: activePreset === preset.id ? '#D4AF37' : '#64748B',
-                    fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    display: 'flex', alignItems: 'center', gap: 6,
+                    fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
+                    display: 'flex', alignItems: 'center', gap: 5,
                   }}
                 >
                   <span>{preset.emoji}</span>

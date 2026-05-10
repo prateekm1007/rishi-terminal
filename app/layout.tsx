@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { LanguageProvider } from "@/lib/language";
+import AuthProvider from "@/components/auth/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Rishi Terminal — Sacred Investment Intelligence",
@@ -12,7 +13,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body style={{ margin: 0, padding: 0, background: "#020408", overflowX: "hidden" }}>
-        <LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
           <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
             <Sidebar />
             <main style={{
@@ -29,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
           </div>
         </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );

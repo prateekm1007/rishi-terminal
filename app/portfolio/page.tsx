@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
@@ -6,6 +6,7 @@ import { STOCKS } from '../../data/stocks';
 import { loadPortfolioLocal, savePortfolioLocal, type Holding } from '../../lib/portfolio';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
+import PortfolioXRay from '../../components/portfolio/PortfolioXRay';
 
 type Portfolio = Holding[];
 
@@ -26,6 +27,7 @@ export default function PortfolioPage() {
   const [formSymbol,   setFormSymbol]   = useState('');
   const [formShares,   setFormShares]   = useState('');
   const [formAvgPrice, setFormAvgPrice] = useState('');
+  const [activeTab, setActiveTab] = useState<'holdings' | 'xray'>('holdings');
 
   useEffect(() => {
     setPortfolio(loadPortfolioLocal());
@@ -38,7 +40,6 @@ export default function PortfolioPage() {
     if (portfolio.length === 0) return null;
     let totalInvested = 0;
     let totalCurrent  = 0;
-
     const holdings = portfolio.map(h => {
       const livePrice = prices[h.symbol]?.price ?? h.avgPrice;
       const invested  = h.shares * h.avgPrice;
@@ -84,221 +85,219 @@ export default function PortfolioPage() {
   }
 
   return (
-    <main className="page-container">
-      <div className="page-header">
-        <div className="content-wrapper">
-          <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
-            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            {' > '}
-            <span>PORTFOLIO</span>
+    <main style={{ minHeight: '100vh', background: 'var(--bg-primary)', padding: '32px 24px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 36, color: 'var(--text-primary)', marginBottom: 8 }}>
+            💼 {t('portfolio.title')}
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
+            Track your holdings with live P&L · Stress test scenarios · Margin of safety
+          </p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div style={{ marginBottom: 24, borderBottom: '1px solid rgba(51,65,85,0.5)' }}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[
+              { id: 'holdings' as const, label: '📊 Holdings', emoji: '📊' },
+              { id: 'xray' as const, label: '🔬 X-Ray', emoji: '🔬' },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  padding: '10px 20px', border: 'none',
+                  background: activeTab === tab.id ? 'rgba(212,175,55,0.1)' : 'transparent',
+                  borderBottom: activeTab === tab.id ? '2px solid #D4AF37' : '2px solid transparent',
+                  color: activeTab === tab.id ? '#D4AF37' : '#64748B',
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {tab.emoji} {tab.label}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
-            <div>
-              <h1 className="philosophy-heading" style={{ fontSize: 36, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>
-                Portfolio Tracker
-              </h1>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
-                Track your holdings with live P&amp;L calculations
-              </p>
-              {lastUpdated && (
-                <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  Live &bull; Updated {lastUpdated.toLocaleTimeString('en-IN')}
-                </div>
-              )}
-            </div>
-
+        {/* Holdings Tab */}
+        {activeTab === 'holdings' && (
+          <>
+            {/* Stats */}
             {liveMetrics && (
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 240 }}>
-                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
-                  LIVE PORTFOLIO VALUE
-                </div>
-                <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1, marginBottom: 12 }}>
-                  {formatCurrency(liveMetrics.totalCurrent)}
-                </div>
-                <div style={{ display: 'flex', gap: 16 }}>
-                  <div>
-                    <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 2 }}>INVESTED</div>
-                    <div style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {formatCurrency(liveMetrics.totalInvested)}
-                    </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>TOTAL INVESTED</div>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                    {formatCurrency(liveMetrics.totalInvested)}
                   </div>
-                  <div>
-                    <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 2 }}>P&amp;L</div>
-                    <div style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: plColor(liveMetrics.totalPL) }}>
-                      {liveMetrics.totalPL > 0 ? '+' : ''}{formatCurrency(liveMetrics.totalPL)} ({liveMetrics.totalPLPct.toFixed(2)}%)
-                    </div>
+                </div>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>CURRENT VALUE</div>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: plColor(liveMetrics.totalPL), fontFamily: 'monospace' }}>
+                    {formatCurrency(liveMetrics.totalCurrent)}
+                  </div>
+                </div>
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>TOTAL P&L</div>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: plColor(liveMetrics.totalPL), fontFamily: 'monospace' }}>
+                    {formatCurrency(liveMetrics.totalPL)} ({liveMetrics.totalPLPct >= 0 ? '+' : ''}{liveMetrics.totalPLPct.toFixed(2)}%)
                   </div>
                 </div>
               </div>
             )}
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
-            {[
-              { label: 'Holdings',       value: portfolio.length,                                                            color: 'var(--accent-gold)', bg: 'rgba(255,215,0,0.08)',   border: 'rgba(255,215,0,0.2)'   },
-              { label: 'Avg Allocation', value: portfolio.length ? (100 / portfolio.length).toFixed(0) + '%' : '0%',        color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.2)'  },
-            ].map(stat => (
-              <div key={stat.label} style={{ background: stat.bg, border: '1px solid ' + stat.border, borderRadius: 10, padding: '12px 16px' }}>
-                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
-                  {stat.label.toUpperCase()}
-                </div>
-                <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
-                  {stat.value}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="content-wrapper" style={{ padding: '28px 24px' }}>
-        <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-          <button
-            onClick={() => setShowAddModal(true)}
-            style={{
-              padding: '10px 20px', borderRadius: 8,
-              background: 'var(--accent-gold)', color: '#000',
-              border: 'none', cursor: 'pointer',
-              fontWeight: 700, fontSize: 12, letterSpacing: 1,
-            }}
-          >
-            + ADD HOLDING
-          </button>
-        </div>
-
-        {liveMetrics && liveMetrics.holdings.length > 0 && (
-          <div className="card-sacred" style={{ overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
-                    {['SYMBOL', 'SHARES', 'AVG PRICE', 'LIVE PRICE', 'INVESTED', 'CURRENT', 'P&L', 'RETURN %', ''].map((h, i) => (
-                      <th key={i} style={{
-                        textAlign: h === 'SYMBOL' ? 'left' : 'right',
-                        padding: '14px 24px', fontSize: 9,
-                        fontFamily: 'monospace', color: 'var(--text-muted)',
-                        letterSpacing: 1, fontWeight: 600,
-                      }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {liveMetrics.holdings.map(h => (
-                    <tr key={h.symbol} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                      <td style={{ padding: '16px 24px', fontWeight: 700, color: 'var(--text-primary)', fontSize: 13 }}>
-                        {h.symbol}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                        {h.shares}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                        {h.avgPrice.toFixed(2)}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)' }}>
-                        {loading ? '...' : h.currentPrice.toFixed(2)}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
-                        {formatCurrency(h.invested)}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {formatCurrency(h.current)}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', fontWeight: 700, color: plColor(h.pl) }}>
-                        {h.pl > 0 ? '+' : ''}{formatCurrency(h.pl)}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', fontWeight: 700, color: plColor(h.pl) }}>
-                        {h.plPct > 0 ? '+' : ''}{h.plPct.toFixed(2)}%
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px' }}>
-                        <button
-                          onClick={() => handleRemoveHolding(h.symbol)}
-                          style={{
-                            background: 'none', border: '1px solid var(--border-primary)',
-                            color: 'var(--accent-red)', cursor: 'pointer',
-                            padding: '4px 10px', borderRadius: 4, fontSize: 11,
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Add Button */}
+            <div style={{ marginBottom: 16 }}>
+              <button
+                onClick={() => setShowAddModal(true)}
+                style={{
+                  padding: '10px 20px', borderRadius: 10,
+                  background: 'linear-gradient(135deg,#A88B20,#D4AF37)',
+                  border: 'none', color: '#0A0F1C', fontWeight: 700,
+                  fontSize: 14, cursor: 'pointer',
+                }}
+              >
+                + Add Holding
+              </button>
             </div>
-          </div>
+
+            {/* Holdings Table */}
+            {liveMetrics && (
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: 'rgba(5,8,16,0.6)' }}>
+                      {['SYMBOL', 'SHARES', 'AVG PRICE', 'LIVE PRICE', 'INVESTED', 'CURRENT', 'P&L', 'RETURN %', ''].map(h => (
+                        <th key={h} style={{ padding: '12px', fontSize: 11, fontWeight: 700, color: '#64748B', textAlign: h === '' ? 'center' : 'left', borderBottom: '1px solid rgba(51,65,85,0.5)' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {liveMetrics.holdings.map(h => (
+                      <tr key={h.symbol} style={{ borderBottom: '1px solid rgba(51,65,85,0.3)' }}>
+                        <td style={{ padding: '14px' }}>
+                          <Link href={`/stock/${h.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 700, fontFamily: 'monospace' }}>
+                            {h.symbol}
+                          </Link>
+                        </td>
+                        <td style={{ padding: '14px', fontFamily: 'monospace', color: '#F8FAFC' }}>{h.shares.toLocaleString()}</td>
+                        <td style={{ padding: '14px', fontFamily: 'monospace', color: '#64748B' }}>{h.avgPrice.toFixed(2)}</td>
+                        <td style={{ padding: '14px', fontFamily: 'monospace', color: '#F8FAFC', fontWeight: 700 }}>{h.currentPrice.toFixed(2)}</td>
+                        <td style={{ padding: '14px', fontFamily: 'monospace', color: '#64748B' }}>{formatCurrency(h.invested)}</td>
+                        <td style={{ padding: '14px', fontFamily: 'monospace', color: '#F8FAFC', fontWeight: 700 }}>{formatCurrency(h.current)}</td>
+                        <td style={{ padding: '14px', fontFamily: 'monospace', color: plColor(h.pl), fontWeight: 800 }}>
+                          {h.pl >= 0 ? '+' : ''}{formatCurrency(h.pl)}
+                        </td>
+                        <td style={{ padding: '14px', fontFamily: 'monospace', color: plColor(h.pl), fontWeight: 800 }}>
+                          {h.plPct >= 0 ? '+' : ''}{h.plPct.toFixed(2)}%
+                        </td>
+                        <td style={{ padding: '14px', textAlign: 'center' }}>
+                          <button
+                            onClick={() => handleRemoveHolding(h.symbol)}
+                            style={{
+                              padding: '6px 12px', borderRadius: 6,
+                              background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                              color: '#EF4444', fontSize: 12, cursor: 'pointer',
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
 
-        {portfolio.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
-            <div style={{ fontSize: 16, marginBottom: 8 }}>No holdings yet</div>
-            <div style={{ fontSize: 13 }}>Click &quot;+ ADD HOLDING&quot; to start tracking</div>
-          </div>
+        {/* X-Ray Tab */}
+        {activeTab === 'xray' && (
+          <PortfolioXRay holdings={portfolio} prices={prices} />
         )}
-      </div>
 
-      {/* Add Holding Modal */}
-      {showAddModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-        }}>
+        {/* Add Modal */}
+        {showAddModal && (
           <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
-            borderRadius: 16, padding: 32, width: '100%', maxWidth: 400,
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000,
           }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--accent-gold)', marginBottom: 24 }}>
-              Add Holding
-            </h2>
-            {[
-              { label: 'Symbol (e.g. TCS, RELIANCE)', value: formSymbol,   setter: setFormSymbol,   type: 'text'   },
-              { label: 'Shares',                       value: formShares,   setter: setFormShares,   type: 'number' },
-              { label: 'Average Buy Price (Rs)',        value: formAvgPrice, setter: setFormAvgPrice, type: 'number' },
-            ].map(field => (
-              <div key={field.label} style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
-                  {field.label}
-                </label>
+            <div style={{
+              background: '#0A0F1C', border: '1px solid rgba(212,175,55,0.3)',
+              borderRadius: 16, padding: 24, width: '400px',
+            }}>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#F8FAFC', marginBottom: 16 }}>
+                Add Holding
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
                 <input
-                  type={field.type}
-                  value={field.value}
-                  onChange={e => field.setter(e.target.value)}
+                  type="text"
+                  placeholder="Symbol (e.g., TCS)"
+                  value={formSymbol}
+                  onChange={e => setFormSymbol(e.target.value)}
                   style={{
-                    width: '100%', padding: '10px 14px', borderRadius: 8,
-                    background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)',
-                    color: 'var(--text-primary)', fontSize: 14, outline: 'none',
-                    boxSizing: 'border-box',
+                    padding: '10px 12px', borderRadius: 8,
+                    background: 'rgba(17,24,39,0.8)', border: '1px solid rgba(51,65,85,0.6)',
+                    color: '#F8FAFC', fontSize: 14,
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="Shares"
+                  value={formShares}
+                  onChange={e => setFormShares(e.target.value)}
+                  style={{
+                    padding: '10px 12px', borderRadius: 8,
+                    background: 'rgba(17,24,39,0.8)', border: '1px solid rgba(51,65,85,0.6)',
+                    color: '#F8FAFC', fontSize: 14,
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="Average Price"
+                  value={formAvgPrice}
+                  onChange={e => setFormAvgPrice(e.target.value)}
+                  style={{
+                    padding: '10px 12px', borderRadius: 8,
+                    background: 'rgba(17,24,39,0.8)', border: '1px solid rgba(51,65,85,0.6)',
+                    color: '#F8FAFC', fontSize: 14,
                   }}
                 />
               </div>
-            ))}
-            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-              <button
-                onClick={handleAddHolding}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: 8,
-                  background: 'var(--accent-gold)', color: '#000',
-                  border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13,
-                }}
-              >
-                Add Holding
-              </button>
-              <button
-                onClick={() => setShowAddModal(false)}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: 8,
-                  background: 'var(--bg-secondary)', color: 'var(--text-muted)',
-                  border: '1px solid var(--border-primary)', cursor: 'pointer', fontSize: 13,
-                }}
-              >
-                Cancel
-              </button>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={handleAddHolding}
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: 8,
+                    background: 'linear-gradient(135deg,#A88B20,#D4AF37)',
+                    border: 'none', color: '#0A0F1C', fontWeight: 700,
+                    fontSize: 14, cursor: 'pointer',
+                  }}
+                >
+                  Add
+                </button>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  style={{
+                    flex: 1, padding: '10px', borderRadius: 8,
+                    background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.4)',
+                    color: '#64748B', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
     </main>
   );
 }

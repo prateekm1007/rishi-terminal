@@ -135,7 +135,7 @@ function PlayCard({ play, relevanceNote }: {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
-            {play.rishi} — {play.stock}
+            {play.rishi} – {play.stock}
           </div>
           <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
             {play.yearBought} · {play.market}
@@ -317,7 +317,7 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
   const sectorLower = stock.sector.toLowerCase();
 
   if (playLower.includes(sectorLower) || play.thesis.toLowerCase().includes(sectorLower)) {
-    return `${stock.sector} sector parallel — study ${play.rishi}'s approach`;
+    return `${stock.sector} sector parallel - study ${play.rishi}'s approach`;
   }
 
   if (play.market === 'India' && stock.exchange === 'NSE') {
@@ -325,18 +325,18 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
   }
 
   if (play.category === 'quality' && stock.roe >= 20) {
-    return `Quality business playbook — similar ROE profile to ${stock.symbol}`;
+    return `Quality business playbook - similar ROE profile to ${stock.symbol}`;
   }
 
   if (play.category === 'value' && stock.pe < 15) {
-    return `Value investing case study — similar valuation approach`;
+    return `Value investing case study - similar valuation approach`;
   }
 
   if (play.category === 'growth' && stock.revcagr >= 20) {
-    return `High-growth opportunity — similar to ${stock.symbol}'s trajectory`;
+    return `High-growth opportunity - similar to ${stock.symbol}'s trajectory`;
   }
 
-  return `Legendary ${play.rishi} play — timeless investment wisdom`;
+  return `Legendary ${play.rishi} play - timeless investment wisdom`;
 }
 
 /* -- Main KnowledgeGraphView ------------------------------------ */
@@ -437,28 +437,65 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
               />
             </div>
 
-            {graphData.debates && graphData.debates.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em' }}>
-                  ALL ARGUMENTS
-                </div>
-                {graphData.debates.map((debate: any, i: number) => (
-                  <div key={i} style={{
-                    background: 'rgba(17,24,39,0.6)',
-                    border: '1px solid rgba(51,65,85,0.4)',
-                    borderRadius: 10, padding: '12px 14px',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{debate.rishi}</span>
-                      <span style={{ fontSize: 12, color: debate.side === 'bull' ? '#22C55E' : '#EF4444', fontWeight: 600 }}>
-                        {debate.side === 'bull' ? '🐂 Bull' : '🐻 Bear'}
-                      </span>
+            {graphData.debate && (graphData.debate.bulls.length + graphData.debate.bears.length + graphData.debate.neutrals.length) > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+                {/* BULLS */}
+                {graphData.debate.bulls.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#22C55E", letterSpacing: "0.1em", marginBottom: 12 }}>
+                      🐂 BULL ARGUMENTS ({graphData.debate.bulls.length})
                     </div>
-                    <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.65 }}>
-                      {debate.argument}
-                    </div>
+                    {graphData.debate.bulls.map((debate: any, i: number) => (
+                      <div key={`bull-${i}`} style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 10, padding: "12px 14px", marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>{debate.rishi}</span>
+                          <span style={{ fontSize: 14, color: "#22C55E", fontWeight: 700, fontFamily: "monospace" }}>{debate.score}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 8 }}>{debate.reasoning}</div>
+                        <div style={{ fontSize: 11, color: "#64748B", fontStyle: "italic", borderLeft: "2px solid #22C55E", paddingLeft: 10 }}>{debate.philosophy}</div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+
+                {/* BEARS */}
+                {graphData.debate.bears.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#EF4444", letterSpacing: "0.1em", marginBottom: 12 }}>
+                      🐻 BEAR ARGUMENTS ({graphData.debate.bears.length})
+                    </div>
+                    {graphData.debate.bears.map((debate: any, i: number) => (
+                      <div key={`bear-${i}`} style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "12px 14px", marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>{debate.rishi}</span>
+                          <span style={{ fontSize: 14, color: "#EF4444", fontWeight: 700, fontFamily: "monospace" }}>{debate.score}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 8 }}>{debate.reasoning}</div>
+                        <div style={{ fontSize: 11, color: "#64748B", fontStyle: "italic", borderLeft: "2px solid #EF4444", paddingLeft: 10 }}>{debate.philosophy}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* NEUTRALS */}
+                {graphData.debate.neutrals.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#D4AF37", letterSpacing: "0.1em", marginBottom: 12 }}>
+                      ⚖️ NEUTRAL POSITIONS ({graphData.debate.neutrals.length})
+                    </div>
+                    {graphData.debate.neutrals.map((debate: any, i: number) => (
+                      <div key={`neutral-${i}`} style={{ background: "rgba(212,175,55,0.05)", border: "1px solid rgba(212,175,55,0.3)", borderRadius: 10, padding: "12px 14px", marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>{debate.rishi}</span>
+                          <span style={{ fontSize: 14, color: "#D4AF37", fontWeight: 700, fontFamily: "monospace" }}>{debate.score}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 8 }}>{debate.reasoning}</div>
+                        <div style={{ fontSize: 11, color: "#64748B", fontStyle: "italic", borderLeft: "2px solid #D4AF37", paddingLeft: 10 }}>{debate.philosophy}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </>

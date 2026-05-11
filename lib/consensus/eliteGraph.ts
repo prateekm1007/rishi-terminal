@@ -2,7 +2,7 @@ import { Stock } from '../types';
 import { RishiScore } from './types';
 import { detectArchetype, HISTORICAL_PARALLELS } from '../wisdom/parallels';
 
-// ─── Output Interfaces ────────────────────────────────────────────────────────
+// â”€â”€â”€ Output Interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export interface DebateEntry {
   rishi: string;
@@ -45,7 +45,7 @@ export interface EliteKnowledgeGraph {
   };
 }
 
-// ─── Rishi Philosophy Map ─────────────────────────────────────────────────────
+// â”€â”€â”€ Rishi Philosophy Map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Maps each rishi to their core philosophical lens for generating reasoning
 
 const RISHI_PHILOSOPHY: Record<string, { lens: string; keyFocus: string; signature: string }> = {
@@ -71,7 +71,7 @@ const RISHI_PHILOSOPHY: Record<string, { lens: string; keyFocus: string; signatu
   'Schloss':    { lens: 'net-net value',        keyFocus: 'assets below liquidation value',   signature: 'Can I buy the assets for less than they are worth?' },
 };
 
-// ─── Generate reasoning from rishi score components ──────────────────────────
+// â”€â”€â”€ Generate reasoning from rishi score components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function generateReasoning(score: RishiScore, stock: Stock, stance: 'bull' | 'bear' | 'neutral'): string {
   const p = RISHI_PHILOSOPHY[score.name] || { lens: 'fundamental', keyFocus: 'core metrics', signature: '' };
@@ -79,17 +79,17 @@ function generateReasoning(score: RishiScore, stock: Stock, stance: 'bull' | 'be
   const bottomComp = score.comps.sort((a, b) => a.v - b.v)[0];
 
   if (stance === 'bull') {
-    return `Through my ${p.lens} lens, ${stock.name} shows clear merit. ${topComp ? `The ${topComp.label} scores ${topComp.v}/100 — ${topComp.detail}` : ''}. With ROE of ${stock.roe}% and a PE of ${stock.pe}x, the ${p.keyFocus} argument is compelling. ${score.insight}`;
+    return `Through my ${p.lens} lens, ${stock.name} shows clear merit. ${topComp ? `The ${topComp.label} scores ${topComp.v}/100 â€” ${topComp.detail}` : ''}. With ROE of ${stock.roe}% and a PE of ${stock.pe}x, the ${p.keyFocus} argument is compelling. ${score.insight}`;
   } else if (stance === 'bear') {
-    return `My ${p.lens} framework raises red flags here. ${bottomComp ? `The ${bottomComp.label} scores only ${bottomComp.v}/100 — ${bottomComp.detail}` : ''}. Focusing on ${p.keyFocus}, the risk-reward does not justify current price. ${score.insight}`;
+    return `My ${p.lens} framework raises red flags here. ${bottomComp ? `The ${bottomComp.label} scores only ${bottomComp.v}/100 â€” ${bottomComp.detail}` : ''}. Focusing on ${p.keyFocus}, the risk-reward does not justify current price. ${score.insight}`;
   } else {
-    return `Applying my ${p.lens} approach, ${stock.name} sits at a crossroads. The ${p.keyFocus} picture is mixed — I need more data before committing. ${score.insight}`;
+    return `Applying my ${p.lens} approach, ${stock.name} sits at a crossroads. The ${p.keyFocus} picture is mixed â€” I need more data before committing. ${score.insight}`;
   }
 }
 
 function generatePhilosophy(score: RishiScore, stock: Stock, stance: 'bull' | 'bear' | 'neutral'): string {
   const p = RISHI_PHILOSOPHY[score.name] || { lens: 'fundamental', keyFocus: 'core metrics', signature: 'What is the core value here?' };
-  return `"${p.signature}" — In ${stock.name}'s case, the answer ${stance === 'bull' ? 'supports' : stance === 'bear' ? 'questions' : 'does not yet confirm'} investment at current levels. My ${p.lens} framework demands ${stance === 'bull' ? 'conviction and position sizing' : stance === 'bear' ? 'patience and margin of safety' : 'more clarity before acting'}.`;
+  return `"${p.signature}" â€” In ${stock.name}'s case, the answer ${stance === 'bull' ? 'supports' : stance === 'bear' ? 'questions' : 'does not yet confirm'} investment at current levels. My ${p.lens} framework demands ${stance === 'bull' ? 'conviction and position sizing' : stance === 'bear' ? 'patience and margin of safety' : 'more clarity before acting'}.`;
 }
 
 function generateKeyMetric(score: RishiScore, stance: 'bull' | 'bear'): string {
@@ -99,7 +99,7 @@ function generateKeyMetric(score: RishiScore, stance: 'bull' | 'bear'): string {
   return topComp?.label || (stance === 'bull' ? 'Strong Fundamentals' : 'Risk Factor');
 }
 
-// ─── Technical Edge computation ───────────────────────────────────────────────
+// â”€â”€â”€ Technical Edge computation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildTechnicalEdge(stock: Stock): TechnicalEdgeEntry[] {
   // Sector averages (approximate market data)
@@ -136,7 +136,7 @@ function buildTechnicalEdge(stock: Stock): TechnicalEdgeEntry[] {
       sectorAvg: avg.pe.toFixed(1) + 'x',
       verdict: verdict(stock.pe, avg.pe, false),
       insight: stock.pe < avg.pe
-        ? `Trading at a discount to sector. Graham's margin of safety principle applies — cheaper than peers.`
+        ? `Trading at a discount to sector. Graham's margin of safety principle applies â€” cheaper than peers.`
         : stock.pe > avg.pe * 1.3
         ? `Premium valuation demands premium growth. Lynch would check if PEG ratio justifies this PE.`
         : `Fairly valued vs sector. Buffett would look past PE to ROE sustainability.`,
@@ -165,7 +165,7 @@ function buildTechnicalEdge(stock: Stock): TechnicalEdgeEntry[] {
       sectorAvg: avg.de.toFixed(2) + 'x',
       verdict: verdict(stock.de, avg.de, false),
       insight: stock.de < 0.3
-        ? `Fortress balance sheet. Pabrai's asymmetric bet thesis works best with low-debt companies — less tail risk.`
+        ? `Fortress balance sheet. Pabrai's asymmetric bet thesis works best with low-debt companies â€” less tail risk.`
         : stock.de > avg.de * 1.5
         ? `Elevated leverage amplifies both gains and losses. Seth Klarman demands higher margin of safety here.`
         : `Moderate debt. Acceptable for this sector. Monitor interest coverage ratio.`,
@@ -177,7 +177,7 @@ function buildTechnicalEdge(stock: Stock): TechnicalEdgeEntry[] {
       verdict: verdict(stock.roce, avg.roce, true),
       insight: stock.roce > 20
         ? `Excellent capital deployment. Raamdeo's QGLP framework scores this high on the "Q" (Quality) dimension.`
-        : `ROCE below benchmark. Greenblatt's magic formula requires high ROIC — this would not make his screen.`,
+        : `ROCE below benchmark. Greenblatt's magic formula requires high ROIC â€” this would not make his screen.`,
     },
     {
       metric: 'Revenue CAGR',
@@ -191,18 +191,14 @@ function buildTechnicalEdge(stock: Stock): TechnicalEdgeEntry[] {
   ];
 }
 
-// ─── Timeline generation ──────────────────────────────────────────────────────
+// â”€â”€â”€ Timeline generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
   const today = new Date();
   const events: TimelineEntry[] = [];
 
-  // Take top 8 rishis (mix of high and low scorers for interest)
-  const selected = [
-    ...scores.filter(s => s.score >= 75).slice(0, 3),
-    ...scores.filter(s => s.score >= 55 && s.score < 75).slice(0, 3),
-    ...scores.filter(s => s.score < 55).slice(0, 2),
-  ];
+  // Show ALL 19 rishis in timeline (sorted by score descending)
+  const selected = [...scores].sort((a, b) => b.score - a.score);
 
   selected.forEach((rishi, idx) => {
     const daysAgo = (idx + 1) * 25;
@@ -219,9 +215,9 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
 
     const contextMap: Record<TimelineEntry['event'], string> = {
       buy_signal: `${rishi.full} model triggers BUY. ${p.lens} score: ${rishi.score}/100. Primary driver: ${topComp?.label || 'overall quality'}. ${topComp?.detail || rishi.insight}`,
-      hold:       `${rishi.full} model signals HOLD. Score of ${rishi.score} — not cheap enough to buy aggressively, not expensive enough to exit. ${p.keyFocus} remains acceptable.`,
-      warning:    `${rishi.full} model issues CAUTION. Score ${rishi.score}/100 — ${p.keyFocus} deteriorating. Requires fresh catalyst before re-entry.`,
-      sell_signal:`${rishi.full} model triggers REDUCE. Score ${rishi.score}/100 — ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
+      hold:       `${rishi.full} model signals HOLD. Score of ${rishi.score} â€” not cheap enough to buy aggressively, not expensive enough to exit. ${p.keyFocus} remains acceptable.`,
+      warning:    `${rishi.full} model issues CAUTION. Score ${rishi.score}/100 â€” ${p.keyFocus} deteriorating. Requires fresh catalyst before re-entry.`,
+      sell_signal:`${rishi.full} model triggers REDUCE. Score ${rishi.score}/100 â€” ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
     };
 
     events.push({
@@ -237,7 +233,7 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
   return events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-// ─── Main Builder ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function buildEliteKnowledgeGraph(
   stock: Stock,
@@ -252,7 +248,7 @@ export function buildEliteKnowledgeGraph(
   const neutralScores = sorted.filter(s => s.score >= 50 && s.score < 70);
 
   // Build debate entries
-  const bulls: DebateEntry[] = bullScores.slice(0, 5).map(s => ({
+  const bulls: DebateEntry[] = bullScores.map(s => ({
     rishi: s.full,
     score: s.score,
     reasoning: generateReasoning(s, stock, 'bull'),
@@ -260,7 +256,7 @@ export function buildEliteKnowledgeGraph(
     keyMetric: generateKeyMetric(s, 'bull'),
   }));
 
-  const bears: DebateEntry[] = bearScores.slice(0, 5).map(s => ({
+  const bears: DebateEntry[] = bearScores.map(s => ({
     rishi: s.full,
     score: s.score,
     reasoning: generateReasoning(s, stock, 'bear'),
@@ -268,7 +264,7 @@ export function buildEliteKnowledgeGraph(
     keyMetric: generateKeyMetric(s, 'bear'),
   }));
 
-  const neutrals: DebateEntry[] = neutralScores.slice(0, 3).map(s => ({
+  const neutrals: DebateEntry[] = neutralScores.map(s => ({
     rishi: s.full,
     score: s.score,
     reasoning: generateReasoning(s, stock, 'neutral'),

@@ -14,7 +14,14 @@ interface StockPageProps {
 
 export default async function StockPage({ params }: StockPageProps) {
   const { symbol } = await params;
-  const stock = STOCKS[symbol.toUpperCase()];
+    const key = symbol.toUpperCase();
+  let stock = STOCKS[key];
+
+  // Fallback: if object keys differ from stock.symbol, try finding by value
+  if (!stock) {
+    stock = Object.values(STOCKS).find(s => (s.symbol || "").toUpperCase() === key) as any;
+  }
+
   if (!stock) notFound();
 
   const consensus = buildConsensus(stock);

@@ -1,24 +1,37 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { supabase } from "@/lib/db/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/db/supabase";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
+
     CredentialsProvider({
       name: "Email",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email) return null;
-        
-        // Simple email-based auth (no password for demo)
+
+        // If Supabase isn't configured, allow a demo session (so UI doesn't break)
+        if (!isSupabaseConfigured) {
+          return {
+            id: "demo-user",
+            email: credentials.email,
+            name: credentials.email.split("@")[0],
+          };
+        }
+
+        // If Supabase is configured, persist/find user
         const { data, error } = await supabase
           .from("users")
           .select("*")
@@ -26,13 +39,12 @@ export const authOptions: NextAuthOptions = {
           .single();
 
         if (error || !data) {
-          // Create new user
           const { data: newUser } = await supabase
             .from("users")
             .insert({ email: credentials.email })
             .select()
             .single();
-          
+
           return newUser ? { id: newUser.id, email: newUser.email, name: newUser.name } : null;
         }
 
@@ -41,10 +53,10 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user }) {
       if (!user.email) return false;
+      if (!isSupabaseConfigured) return true;
 
-      // Ensure user exists in our DB
       const { data: existingUser } = await supabase
         .from("users")
         .select("id")
@@ -52,24 +64,16 @@ export const authOptions: NextAuthOptions = {
         .single();
 
       if (!existingUser) {
-        await supabase.from("users").insert({
-          email: user.email,
-          name: user.name,
-        });
+        await supabase.from("users").insert({ email: user.email, name: user.name });
       }
-
       return true;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub!;
-      }
+      if (session.user) session.user.id = token.sub || "demo-user";
       return session;
     },
   },
-  pages: {
-    signIn: "/auth/signin",
-  },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

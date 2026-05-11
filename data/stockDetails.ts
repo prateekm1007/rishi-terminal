@@ -78,7 +78,7 @@ function generateShareholdingHistory(stock: Stock): ShareholdingEntry[] {
   ];
 }
 
-// Generate realistic peers for any stock — STOCKS now properly imported
+// Generate realistic peers for any stock Ã¢â‚¬â€ STOCKS now properly imported
 function generatePeers(stock: Stock): PeerStock[] {
   const allStocks  = Object.values(STOCKS);
   const sectorPeers = allStocks.filter(
@@ -151,15 +151,15 @@ function generateAnalystRecs(stock: Stock): AnalystRec[] {
   const analysts = ['Nikhil Mathur', 'Pritesh Mehta',   'Amit Hiranandani', 'Anand Shah', 'Ritesh Shah', 'Sumeet Kumar'];
 
   return [
-    { firm: firms[0], analyst: analysts[0], rating: 'BUY',        targetPrice: target,                              upside: Math.round(upside         * 10) / 10, date: '2 days ago'   },
-    { firm: firms[1], analyst: analysts[1], rating: 'OUTPERFORM', targetPrice: Math.round(target * 0.97),           upside: Math.round(upside * 0.9   * 10) / 10, date: '1 week ago'   },
-    { firm: firms[2], analyst: analysts[2], rating: 'BUY',        targetPrice: Math.round(target * 1.04),           upside: Math.round(upside * 1.15  * 10) / 10, date: '3 days ago'   },
-    { firm: firms[3], analyst: analysts[3], rating: 'HOLD',       targetPrice: Math.round(stock.price * 1.08),      upside: Math.round(8.0            * 10) / 10, date: '2 weeks ago'  },
+    { firm: firms[0], analyst: analysts[0], rating: "Buy",  targetPrice: target,                              upside: Math.round(upside         * 10) / 10, date: "2 days ago"   },
+    { firm: firms[1], analyst: analysts[1], rating: "Buy",  targetPrice: Math.round(target * 0.97),           upside: Math.round(upside * 0.9   * 10) / 10, date: "1 week ago"   },
+    { firm: firms[2], analyst: analysts[2], rating: "Buy",  targetPrice: Math.round(target * 1.04),           upside: Math.round(upside * 1.15  * 10) / 10, date: "3 days ago"   },
+    { firm: firms[3], analyst: analysts[3], rating: "Hold", targetPrice: Math.round(stock.price * 1.08),      upside: Math.round(8.0            * 10) / 10, date: "2 weeks ago"  },
+    { firm: firms[4], analyst: analysts[4], rating: "Sell", targetPrice: Math.round(stock.price * 0.92),      upside: Math.round(-8.0           * 10) / 10, date: "4 days ago"   },
   ];
 }
 
-// Generate technical indicators
-function generateTechnicals(stock: Stock): TechnicalData[] {
+function generateTechnicals(stock: Stock): TechnicalIndicator[] {
   const priceVariation = stock.price * 0.02;
   const sma20 = Math.round(stock.price - priceVariation);
   const sma50 = Math.round(stock.price - priceVariation * 1.5);
@@ -174,12 +174,12 @@ function generateTechnicals(stock: Stock): TechnicalData[] {
   ];
 }
 
-// Module-level cache — lives for the lifetime of the server process
+// Module-level cache Ã¢â‚¬â€ lives for the lifetime of the server process
 const STOCK_DETAILS_CACHE: Record<string, StockDetail> = {};
 
 /**
  * Generate complete stock details for ANY stock.
- * Results are cached after first computation — O(1) on repeat calls.
+ * Results are cached after first computation Ã¢â‚¬â€ O(1) on repeat calls.
  */
 export function generateStockDetail(stock: Stock): StockDetail {
   if (STOCK_DETAILS_CACHE[stock.symbol]) {

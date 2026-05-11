@@ -135,10 +135,10 @@ function PlayCard({ play, relevanceNote }: {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
-            {play.rishi} – {play.stock}
+            {play.rishi} → {play.stock}
           </div>
           <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
-            {play.yearBought} · {play.market}
+            {play.yearBought} • {play.market}
           </div>
         </div>
         {play.return && (
@@ -168,54 +168,127 @@ function PlayCard({ play, relevanceNote }: {
 }
 
 /* -- Technical Bar --------------------------------------------- */
-function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
+function TechnicalBar({ comp, stockName }) {
   const stockVal = Number(comp.stockValue ?? 0);
   const sectorVal = Number(comp.sectorAvg ?? 0);
   const maxVal = Math.max(stockVal, sectorVal, 0.001);
-  const better = comp.higherIsBetter ? stockVal >= sectorVal : stockVal <= sectorVal;
+
+  const delta = comp.higherIsBetter
+    ? ((stockVal - sectorVal) / sectorVal) * 100
+    : ((sectorVal - stockVal) / sectorVal) * 100;
+
+  const outperforming = delta > 0;
+  const percentile = comp.percentile ?? 65;
+
+  let signal = "HOLD";
+  let color = "#D4AF37";
+
+  const strength = Math.abs(delta) * (percentile / 100);
+
+  if (outperforming && strength > 25) {
+    signal = "STRONG BUY";
+    color = "#22C55E";
+  } else if (outperforming && strength > 12) {
+    signal = "BUY";
+    color = "#22C55E";
+  } else if (!outperforming && strength > 20) {
+    signal = "SELL";
+    color = "#EF4444";
+  }
+
+  const impliedUpside = Math.round(Math.abs(delta) * 0.6);
 
   return (
     <div style={{
-      background: 'rgba(17,24,39,0.6)',
-      border: '1px solid rgba(51,65,85,0.4)',
-      borderRadius: 12,
-      padding: '14px 16px',
+      background: "rgba(17,24,39,0.85)",
+      border: "1px solid " + (outperforming ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.4)"),
+      borderRadius: 14,
+      padding: 18,
+      marginBottom: 16
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{comp.metric}</div>
-        <div style={{ display: 'flex', gap: 16, fontSize: 13, fontFamily: 'JetBrains Mono, monospace' }}>
-          <span style={{ color: better ? '#22C55E' : '#EF4444', fontWeight: 700 }}>
-            {stockName}: {stockVal.toFixed(1)}{comp.unit ?? ''}
-          </span>
-          <span style={{ color: '#64748B' }}>
-            Sector: {sectorVal.toFixed(1)}{comp.unit ?? ''}
-          </span>
+      
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9" }}>
+            {comp.metric}
+          </div>
+          <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
+            {comp.description}
+          </div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{
+            padding: "6px 14px",
+            background: color === "#22C55E" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+            color: color,
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 800,
+            border: "1px solid " + color
+          }}>
+            {signal}
+          </div>
+          <div style={{ marginTop: 6, fontSize: 10, color: "#D4AF37" }}>
+            {percentile}th percentile
+          </div>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <div style={{ flex: 1, height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%',
-            width: Math.min(100, (stockVal / maxVal) * 100) + '%',
-            background: better ? '#22C55E' : '#EF4444',
-            borderRadius: 3,
-            transition: 'width 0.8s ease',
-          }} />
+
+      {/* Metrics */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: "#64748B" }}>STOCK</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: outperforming ? "#22C55E" : "#EF4444" }}>
+            {stockVal.toFixed(2)}{comp.unit}
+          </div>
         </div>
-        <div style={{ flex: 1, height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, overflow: 'hidden' }}>
-          <div style={{
-            height: '100%',
-            width: Math.min(100, (sectorVal / maxVal) * 100) + '%',
-            background: '#64748B',
-            borderRadius: 3,
-          }} />
+
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: "#64748B" }}>SECTOR</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#94A3B8" }}>
+            {sectorVal.toFixed(2)}{comp.unit}
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: "#64748B" }}>IMPLIED UPSIDE</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#D4AF37" }}>
+            +{impliedUpside}%
+          </div>
         </div>
       </div>
-      {comp.insight && (
-        <div style={{ marginTop: 8, fontSize: 11, color: '#D4AF37', fontStyle: 'italic' }}>
-          {comp.insight}
-        </div>
-      )}
+
+      {/* Visual Bar */}
+      <div style={{
+        height: 10,
+        background: "rgba(51,65,85,0.6)",
+        borderRadius: 6,
+        overflow: "hidden"
+      }}>
+        <div style={{
+          height: "100%",
+          width: Math.min(100, (stockVal / maxVal) * 100) + "%",
+          background: outperforming ? "#22C55E" : "#EF4444"
+        }} />
+      </div>
+
+      {/* Insight */}
+      <div style={{
+        marginTop: 14,
+        padding: 12,
+        borderRadius: 8,
+        fontSize: 11,
+        lineHeight: 1.5,
+        background: outperforming ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+        border: "1px solid " + (outperforming ? "#22C55E" : "#EF4444"),
+        color: "#E2E8F0"
+      }}>
+        {outperforming
+          ? stockName + " demonstrates strong technical edge in " + comp.metric + "."
+          : stockName + " is underperforming sector in " + comp.metric + ". Monitor closely."}
+      </div>
+
     </div>
   );
 }
@@ -375,7 +448,6 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
     { id: 'debate',     label: 'Bulls vs Bears' },
     { id: 'historical', label: 'Historical Plays' },
     { id: 'technical',  label: 'Technical Edge' },
-    { id: 'timeline',   label: 'Signal Timeline' },
   ] as const;
 
   return (
@@ -541,31 +613,6 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
           </div>
         )}
 
-        {/* TIMELINE TAB */}
-        {activeView === 'timeline' && (
-          <div>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 20, lineHeight: 1.6 }}>
-              When each Rishi's scoring model would have triggered based on{' '}
-              <strong style={{ color: '#F8FAFC' }}>{stock.name}</strong>'s evolving metrics.
-            </div>
-            <div style={{ position: 'relative', paddingLeft: 4 }}>
-              <div style={{
-                position: 'absolute', left: 6, top: 0, bottom: 0, width: 2,
-                background: 'linear-gradient(180deg, #D4AF37, rgba(212,175,55,0.1))',
-                borderRadius: 2,
-              }} />
-              {graphData.timeline && graphData.timeline.length > 0 ? (
-                graphData.timeline.map((event: any, i: number) => (
-                  <TimelineCard key={i} event={event} />
-                ))
-              ) : (
-                <div style={{ color: '#64748B', textAlign: 'center', padding: 40, paddingLeft: 20 }}>
-                  Signal timeline data unavailable.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
       </div>
     </div>

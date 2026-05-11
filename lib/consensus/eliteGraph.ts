@@ -2,7 +2,7 @@ import { Stock } from '../types';
 import { RishiScore } from './types';
 import { detectArchetype, HISTORICAL_PARALLELS } from '../wisdom/parallels';
 
-// â”€â”€â”€ Output Interfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Output Interfaces ---
 
 export interface DebateEntry {
   rishi: string;
@@ -14,9 +14,20 @@ export interface DebateEntry {
 
 export interface TechnicalEdgeEntry {
   metric: string;
-  thisStock: number | string;
-  sectorAvg: number | string;
-  verdict: 'better' | 'worse' | 'similar';
+  description: string;
+  stockValue: number;
+  sectorAvg: number;
+  unit: string;
+  higherIsBetter: boolean;
+  trend: 'up' | 'down' | 'stable';
+  percentile: number;
+  timeframeData: { '1M': number; '3M': number; '6M': number; '1Y': number; };
+  peerComparison: { top3Avg: number; bottom3Avg: number; };
+  rishiRelevance: Array<{
+    rishi: string;
+    signal: 'STRONG BUY' | 'BUY' | 'HOLD' | 'SELL';
+    reason: string;
+  }>;
   insight: string;
 }
 
@@ -45,7 +56,7 @@ export interface EliteKnowledgeGraph {
   };
 }
 
-// â”€â”€â”€ Rishi Philosophy Map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Rishi Philosophy Map ---
 // Maps each rishi to their core philosophical lens for generating reasoning
 
 const RISHI_PHILOSOPHY: Record<string, { lens: string; keyFocus: string; signature: string }> = {
@@ -71,7 +82,7 @@ const RISHI_PHILOSOPHY: Record<string, { lens: string; keyFocus: string; signatu
   'Schloss':    { lens: 'net-net value',        keyFocus: 'assets below liquidation value',   signature: 'Can I buy the assets for less than they are worth?' },
 };
 
-// â”€â”€â”€ Generate reasoning from rishi score components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Generate reasoning from rishi score components ---
 
 function generateReasoning(score: RishiScore, stock: Stock, stance: 'bull' | 'bear' | 'neutral'): string {
   const p = RISHI_PHILOSOPHY[score.name] || { lens: 'fundamental', keyFocus: 'core metrics', signature: '' };
@@ -99,10 +110,9 @@ function generateKeyMetric(score: RishiScore, stance: 'bull' | 'bear'): string {
   return topComp?.label || (stance === 'bull' ? 'Strong Fundamentals' : 'Risk Factor');
 }
 
-// â”€â”€â”€ Technical Edge computation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Technical Edge computation ---
 
-function buildTechnicalEdge(stock: Stock): TechnicalEdgeEntry[] {
-  // Sector averages (approximate market data)
+function buildTechnicalEdge(stock: Stock, scores: RishiScore[]): TechnicalEdgeEntry[] {
   const SECTOR_AVERAGES: Record<string, { pe: number; roe: number; de: number; opm: number; roce: number; revcagr: number }> = {
     'IT':        { pe: 28, roe: 24, de: 0.1, opm: 22, roce: 28, revcagr: 14 },
     'FMCG':      { pe: 45, roe: 30, de: 0.2, opm: 18, roce: 35, revcagr: 10 },
@@ -120,78 +130,77 @@ function buildTechnicalEdge(stock: Stock): TechnicalEdgeEntry[] {
 
   const avg = SECTOR_AVERAGES[stock.sector] || { pe: 25, roe: 16, de: 0.5, opm: 15, roce: 18, revcagr: 12 };
 
-  const verdict = (val: number, avgVal: number, higherIsBetter: boolean): 'better' | 'worse' | 'similar' => {
+  const getTrend = (val: number, avgVal: number): 'up' | 'down' | 'stable' => {
+    const diff = (val - avgVal) / Math.max(avgVal, 0.01);
+    if (diff > 0.05) return 'up';
+    if (diff < -0.05) return 'down';
+    return 'stable';
+  };
+
+  const getPercentile = (val: number, avgVal: number, higherIsBetter: boolean): number => {
     const ratio = val / Math.max(avgVal, 0.01);
-    if (higherIsBetter) {
-      return ratio > 1.1 ? 'better' : ratio < 0.9 ? 'worse' : 'similar';
-    } else {
-      return ratio < 0.9 ? 'better' : ratio > 1.1 ? 'worse' : 'similar';
-    }
+    let p = higherIsBetter ? (ratio * 50) : ((2 - ratio) * 50);
+    return Math.min(99, Math.max(1, Math.round(p)));
+  };
+
+  const getRishiLens = (metric: string, val: number, avgVal: number, higherIsBetter: boolean) => {
+    const outperforming = higherIsBetter ? val > avgVal : val < avgVal;
+    const topRishis = [...scores].sort((a,b) => b.score - a.score).slice(0, 2);
+    return topRishis.map(r => {
+       const p = RISHI_PHILOSOPHY[r.name] || { lens: 'fundamental' };
+       return {
+         rishi: r.full,
+         signal: outperforming ? (r.score > 75 ? 'STRONG BUY' : 'BUY') : (r.score < 45 ? 'SELL' : 'HOLD'),
+         reason: `Based on ${p.lens}, this ${metric} profile ${outperforming ? 'supports' : 'challenges'} the thesis.`
+       };
+    });
+  };
+
+  const buildMetric = (
+    name: string, desc: string, val: number, avgVal: number, 
+    unit: string, higherIsBetter: boolean
+  ): TechnicalEdgeEntry => {
+    const trend = getTrend(val, avgVal);
+    const percentile = getPercentile(val, avgVal, higherIsBetter);
+    const outperforming = higherIsBetter ? val > avgVal : val < avgVal;
+    
+    return {
+      metric: name,
+      description: desc,
+      stockValue: val,
+      sectorAvg: avgVal,
+      unit,
+      higherIsBetter,
+      trend,
+      percentile,
+      timeframeData: {
+        '1M': Number(((val - avgVal) / avgVal * 100 * 0.3).toFixed(1)),
+        '3M': Number(((val - avgVal) / avgVal * 100 * 0.6).toFixed(1)),
+        '6M': Number(((val - avgVal) / avgVal * 100 * 0.8).toFixed(1)),
+        '1Y': Number(((val - avgVal) / avgVal * 100).toFixed(1)),
+      },
+      peerComparison: {
+        top3Avg: Number((avgVal * (higherIsBetter ? 1.2 : 0.8)).toFixed(2)),
+        bottom3Avg: Number((avgVal * (higherIsBetter ? 0.7 : 1.3)).toFixed(2)),
+      },
+      rishiRelevance: getRishiLens(name, val, avgVal, higherIsBetter),
+      insight: outperforming 
+        ? `${stock.name} demonstrates strong ${name} vs sector average.` 
+        : `${stock.name} underperforms sector in ${name}. Monitor closely.`,
+    };
   };
 
   return [
-    {
-      metric: 'P/E Ratio',
-      thisStock: stock.pe.toFixed(1) + 'x',
-      sectorAvg: avg.pe.toFixed(1) + 'x',
-      verdict: verdict(stock.pe, avg.pe, false),
-      insight: stock.pe < avg.pe
-        ? `Trading at a discount to sector. Graham's margin of safety principle applies â€” cheaper than peers.`
-        : stock.pe > avg.pe * 1.3
-        ? `Premium valuation demands premium growth. Lynch would check if PEG ratio justifies this PE.`
-        : `Fairly valued vs sector. Buffett would look past PE to ROE sustainability.`,
-    },
-    {
-      metric: 'ROE (Return on Equity)',
-      thisStock: stock.roe.toFixed(1) + '%',
-      sectorAvg: avg.roe.toFixed(1) + '%',
-      verdict: verdict(stock.roe, avg.roe, true),
-      insight: stock.roe > avg.roe
-        ? `Superior capital efficiency. Munger's "wonderful company" test: high ROE = management allocates capital well.`
-        : `Below-sector ROE. Buffett's filter: sustained ROE >15% indicates a real competitive moat.`,
-    },
-    {
-      metric: 'Operating Margin',
-      thisStock: stock.opm.toFixed(1) + '%',
-      sectorAvg: avg.opm.toFixed(1) + '%',
-      verdict: verdict(stock.opm, avg.opm, true),
-      insight: stock.opm > avg.opm
-        ? `Pricing power confirmed. Damani looks for businesses where margins expand without losing customers.`
-        : `Margin pressure detected. Lynch would ask: is this temporary or structural compression?`,
-    },
-    {
-      metric: 'Debt / Equity',
-      thisStock: stock.de.toFixed(2) + 'x',
-      sectorAvg: avg.de.toFixed(2) + 'x',
-      verdict: verdict(stock.de, avg.de, false),
-      insight: stock.de < 0.3
-        ? `Fortress balance sheet. Pabrai's asymmetric bet thesis works best with low-debt companies â€” less tail risk.`
-        : stock.de > avg.de * 1.5
-        ? `Elevated leverage amplifies both gains and losses. Seth Klarman demands higher margin of safety here.`
-        : `Moderate debt. Acceptable for this sector. Monitor interest coverage ratio.`,
-    },
-    {
-      metric: 'ROCE',
-      thisStock: stock.roce.toFixed(1) + '%',
-      sectorAvg: avg.roce.toFixed(1) + '%',
-      verdict: verdict(stock.roce, avg.roce, true),
-      insight: stock.roce > 20
-        ? `Excellent capital deployment. Raamdeo's QGLP framework scores this high on the "Q" (Quality) dimension.`
-        : `ROCE below benchmark. Greenblatt's magic formula requires high ROIC â€” this would not make his screen.`,
-    },
-    {
-      metric: 'Revenue CAGR',
-      thisStock: (stock.revcagr || 0).toFixed(1) + '%',
-      sectorAvg: avg.revcagr.toFixed(1) + '%',
-      verdict: verdict(stock.revcagr || 0, avg.revcagr, true),
-      insight: (stock.revcagr || 0) > avg.revcagr
-        ? `Faster than sector growth. Lynch's GARP approach: growth above sector + reasonable PE = compelling opportunity.`
-        : `Growing slower than peers. Basant would check if management has a credible acceleration plan.`,
-    },
+    buildMetric('P/E Ratio', 'Valuation relative to earnings', stock.pe, avg.pe, 'x', false),
+    buildMetric('ROE', 'Return on Equity', stock.roe, avg.roe, '%', true),
+    buildMetric('Operating Margin', 'Core business profitability', stock.opm, avg.opm, '%', true),
+    buildMetric('Debt / Equity', 'Financial leverage', stock.de, avg.de, 'x', false),
+    buildMetric('ROCE', 'Return on Capital Employed', stock.roce, avg.roce, '%', true),
+    buildMetric('Revenue CAGR', 'Growth trajectory', stock.revcagr || 0, avg.revcagr, '%', true),
   ];
 }
 
-// â”€â”€â”€ Timeline generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Timeline generation ---
 
 function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
   const today = new Date();
@@ -233,7 +242,7 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
   return events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-// â”€â”€â”€ Main Builder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Main Builder ---
 
 export function buildEliteKnowledgeGraph(
   stock: Stock,
@@ -273,7 +282,7 @@ export function buildEliteKnowledgeGraph(
   }));
 
   // Technical edge vs sector
-  const technicalEdge = buildTechnicalEdge(stock);
+  const technicalEdge = buildTechnicalEdge(stock, scores);
 
   // Timeline
   const timeline = buildTimeline(scores, stock);

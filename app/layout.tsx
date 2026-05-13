@@ -16,25 +16,34 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: "#020408", overflowX: "hidden" }}>
+      <body style={{
+        margin: 0,
+        padding: 0,
+        background: "#020408",
+        overflowX: "hidden"
+      }}>
         <AuthProvider>
           <LanguageProvider>
-          <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
-            <Sidebar />
-            <main style={{
-              marginLeft: "240px",
-              flex: 1,
+            <div style={{
+              display: "flex",
               minHeight: "100vh",
-              overflowX: "hidden",
-              overflowY: "auto",
-              position: "relative",
-              width: "calc(100vw - 240px)",
-              maxWidth: "calc(100vw - 240px)",
+              position: "relative"
             }}>
-              {children}
-            </main>
-          </div>
-        </LanguageProvider>
+              <Sidebar />
+              <main style={{
+                marginLeft: "240px",
+                flex: 1,
+                minHeight: "100vh",
+                overflowX: "hidden",
+                overflowY: "auto",
+                position: "relative",
+                width: "calc(100vw - 240px)",
+                maxWidth: "calc(100vw - 240px)",
+              }}>
+                {children}
+              </main>
+            </div>
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>

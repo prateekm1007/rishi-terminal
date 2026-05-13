@@ -1,0 +1,26 @@
+import { UniversalAsset } from '../types/asset';
+import { CryptoAsset } from '../../data/crypto';
+
+export function adaptCrypto(crypto: CryptoAsset): UniversalAsset {
+  return {
+    symbol: crypto.symbol,
+    name: crypto.name,
+    category: 'crypto',
+    price: crypto.price,
+    change24h: crypto.change24h,
+    metadata: {
+      marketCap: crypto.marketCap,
+      volume24h: crypto.volume24h,
+      circulatingSupply: crypto.circulatingSupply,
+      maxSupply: crypto.maxSupply,
+      sector: crypto.sector,
+      description: crypto.description,
+      // Technical data
+      rsi: crypto.rsi,
+      macd: crypto.macd,
+      moving200d: crypto.moving200d,
+      fromAth: crypto.fromAth,
+      change7d: crypto.change7d
+    }
+  };
+}

@@ -148,7 +148,7 @@ export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props)
   return (
     <div style={{
       background:   "linear-gradient(135deg, rgba(17,24,39,0.92) 0%, rgba(10,15,28,0.96) 100%)",
-      border:       "1px solid " + (isLeg ? colors.goldBorderActive : colors.borderGold),
+      border:       "1px solid " + (isLeg ? colors.goldBorderActive : colors.gold),
       borderRadius: "28px",
       padding:      "32px",
       maxWidth:     "540px",

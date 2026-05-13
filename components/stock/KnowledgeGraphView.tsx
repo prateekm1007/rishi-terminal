@@ -168,7 +168,7 @@ function PlayCard({ play, relevanceNote }: {
 }
 
 /* -- Technical Bar --------------------------------------------- */
-function TechnicalBar({ comp, stockName }) {
+function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
   const stockVal = Number(comp.stockValue ?? 0);
   const sectorVal = Number(comp.sectorAvg ?? 0);
   const maxVal = Math.max(stockVal, sectorVal, 0.001);
@@ -495,15 +495,15 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <DebateCard
                 side="bull"
-                rishi={consensus.topBull?.rishi ?? 'Buffett'}
-                argument={consensus.topBull?.argument ?? 'Strong fundamentals support long-term value.'}
+                rishi={(consensus.topBull as any)?.rishi ?? 'Buffett'}
+                argument={(consensus.topBull as any)?.argument ?? 'Strong fundamentals support long-term value.'}
                 score={consensus.topBull?.score ?? 80}
                 color="#22C55E"
               />
               <DebateCard
                 side="bear"
-                rishi={consensus.topBear?.rishi ?? 'Chanos'}
-                argument={consensus.topBear?.argument ?? 'Elevated valuation creates downside risk.'}
+                rishi={(consensus.topBear as any)?.rishi ?? 'Chanos'}
+                argument={(consensus.topBear as any)?.argument ?? 'Elevated valuation creates downside risk.'}
                 score={consensus.topBear?.score ?? 35}
                 color="#EF4444"
               />

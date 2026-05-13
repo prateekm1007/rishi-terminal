@@ -183,7 +183,7 @@ function buildTechnicalEdge(stock: Stock, scores: RishiScore[]): TechnicalEdgeEn
         top3Avg: Number((avgVal * (higherIsBetter ? 1.2 : 0.8)).toFixed(2)),
         bottom3Avg: Number((avgVal * (higherIsBetter ? 0.7 : 1.3)).toFixed(2)),
       },
-      rishiRelevance: getRishiLens(name, val, avgVal, higherIsBetter),
+      rishiRelevance: getRishiLens(name, val, avgVal, higherIsBetter) as any,
       insight: outperforming 
         ? `${stock.name} demonstrates strong ${name} vs sector average.` 
         : `${stock.name} underperforms sector in ${name}. Monitor closely.`,

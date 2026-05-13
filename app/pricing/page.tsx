@@ -123,9 +123,9 @@ export default function PricingPage() {
                     ? `All 20 ${t('pricing.rishisVisible')}`
                     : `${config.rishisVisible} ${t('pricing.rishisVisible')}`}
                   {' · '}
-                  {config.dailyViews
-                    ? `${config.dailyViews} ${t('pricing.viewsPerDay')}`
-                    : t('pricing.unlimitedViews')}
+                  {t('pricing.unlimitedViews')}
+
+
                 </div>
 
                 {tier === 'seeker' ? (

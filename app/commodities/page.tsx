@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -96,7 +96,7 @@ export default function CommoditiesPage() {
   return (
     <main className="page-container">
 
-      {showUpgrade && <UpgradePrompt onClose={() => setShowUpgrade(false)} />}
+      {showUpgrade && <UpgradePrompt reason="limit_reached" onClose={() => setShowUpgrade(false)} />}
 
       {/* Header */}
       <div className="page-header">

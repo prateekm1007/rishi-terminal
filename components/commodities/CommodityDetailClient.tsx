@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { Commodity } from '../../data/markets';
+import type { CommodityData as Commodity } from '../../data/markets';
 import { scoreJimRogers } from '../../lib/scorers/commodity/jimrogers';
 import { scoreRickRule } from '../../lib/scorers/commodity/rickrule';
 import { scoreDanielYergin } from '../../lib/scorers/commodity/danielyergin';
@@ -206,7 +206,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                 <span>{commodity.category}</span>
                 <span>|</span>
-                <span>{commodity.exchange}</span>
+                <span>{(commodity as any).exchange || "Global"}</span>
                 <span>|</span>
                 <span style={{ color: scoreColor(avgScore), fontWeight: 600 }}>Rishi Consensus: {avgScore}/100</span>
               </div>
@@ -273,7 +273,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   { label: '52W High', value: `${commodity.high52w.toLocaleString()} ${commodity.unit}`, color: '#22C55E' },
                   { label: '52W Position', value: `${pos52w.toFixed(0)}%`, color: scoreColor(pos52w) },
                   { label: 'Category', value: commodity.category, color: 'var(--text-primary)' },
-                  { label: 'Exchange', value: commodity.exchange, color: 'var(--text-primary)' },
+                  { label: 'Exchange', value: (commodity as any).exchange || "Global", color: 'var(--text-primary)' },
                 ].map(m => (
                   <div key={m.label} style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{m.label.toUpperCase()}</div>

@@ -1,4 +1,4 @@
-﻿export interface Bond {
+export interface Bond {
   symbol:      string;
   name:        string;
   issuer:      string;
@@ -35,3 +35,8 @@ export const BONDS: Bond[] = [
   { symbol: 'IN182DTB',        name: 'India T-Bill 182D',               issuer: 'Govt of India',     type: 'T-Bill',     country: 'India', maturityYears: 0.5,  maturityDate: '2026-11-15', coupon: 0,    couponRate: 0,    ytm: 6.85, price: 96.82,  duration: 0.5,  riskRating: 'AAA', rating: 'AAA', spread: 0   },
   { symbol: 'US3MTB',          name: 'US T-Bill 3M',                    issuer: 'US Treasury',       type: 'T-Bill',     country: 'USA',   maturityYears: 0.25, maturityDate: '2026-08-15', coupon: 0,    couponRate: 0,    ytm: 5.25, price: 98.70,  duration: 0.25, riskRating: 'AAA', rating: 'AAA', spread: 0   },
 ];
+
+
+export function getBondBySymbol(symbol: string): Bond | undefined {
+  return BONDS.find(b => b?.symbol && symbol && b.symbol.toUpperCase() === symbol.toUpperCase());
+}

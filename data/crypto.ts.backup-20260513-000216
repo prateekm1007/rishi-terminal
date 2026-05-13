@@ -1,0 +1,163 @@
+// Cryptocurrency data for Rishi Terminal
+
+export interface Crypto {
+  symbol: string;
+  name: string;
+  price: number;
+  change24h: number;
+  marketCap: number;
+  volume24h: number;
+  circulatingSupply: number;
+  maxSupply: number | null;
+  sector: string; // e.g., 'Layer 1', 'DeFi', 'Exchange'
+  category: string;
+  description: string;
+}
+
+export const CRYPTO_DATA: Crypto[] = [
+  {
+    symbol: 'BTC',
+    name: 'Bitcoin',
+    price: 4285000,
+    change24h: 2.5,
+    marketCap: 83500000000000,
+    volume24h: 2850000000000,
+    circulatingSupply: 19500000,
+    maxSupply: 21000000,
+    sector: 'Layer 1',
+    category: 'Layer 1',
+    description: 'The first and largest cryptocurrency by market cap. Digital gold, store of value.'
+  },
+  {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    price: 185000,
+    change24h: 3.2,
+    marketCap: 22300000000000,
+    volume24h: 1250000000000,
+    circulatingSupply: 120500000,
+    maxSupply: null,
+    sector: 'Layer 1',
+    category: 'Layer 1',
+    description: 'Leading smart contract platform. Powers DeFi, NFTs, and Web3 applications.'
+  },
+  {
+    symbol: 'BNB',
+    name: 'Binance Coin',
+    price: 42500,
+    change24h: 1.8,
+    marketCap: 6200000000000,
+    volume24h: 125000000000,
+    circulatingSupply: 145800000,
+    maxSupply: 200000000,
+    sector: 'Exchange',
+    category: 'Exchange',
+    description: 'Native token of Binance ecosystem. Used for trading fee discounts and BSC gas.'
+  },
+  {
+    symbol: 'SOL',
+    name: 'Solana',
+    price: 12500,
+    change24h: -1.5,
+    marketCap: 5800000000000,
+    volume24h: 285000000000,
+    circulatingSupply: 465000000,
+    maxSupply: null,
+    sector: 'Layer 1',
+    category: 'Layer 1',
+    description: 'High-performance blockchain. Known for speed and low transaction costs.'
+  },
+  {
+    symbol: 'ADA',
+    name: 'Cardano',
+    price: 52,
+    change24h: 0.8,
+    marketCap: 1850000000000,
+    volume24h: 45000000000,
+    circulatingSupply: 35500000000,
+    maxSupply: 45000000000,
+    sector: 'Layer 1',
+    category: 'Layer 1',
+    description: 'Research-driven blockchain. Focus on sustainability and peer-reviewed development.'
+  },
+  {
+    symbol: 'MATIC',
+    name: 'Polygon',
+    price: 65,
+    change24h: 4.2,
+    marketCap: 625000000000,
+    volume24h: 32000000000,
+    circulatingSupply: 9600000000,
+    maxSupply: 10000000000,
+    sector: 'Layer 2',
+    category: 'Layer 2',
+    description: 'Ethereum scaling solution. Low fees, fast transactions.'
+  },
+  {
+    symbol: 'DOT',
+    name: 'Polkadot',
+    price: 485,
+    change24h: 1.2,
+    marketCap: 7200000000000,
+    volume24h: 180000000000,
+    circulatingSupply: 1485000000,
+    maxSupply: null,
+    sector: 'Layer 0',
+    category: 'Layer 0',
+    description: 'Interoperability protocol. Connects multiple blockchains into one network.'
+  },
+  {
+    symbol: 'AVAX',
+    name: 'Avalanche',
+    price: 2850,
+    change24h: -0.5,
+    marketCap: 11200000000000,
+    volume24h: 285000000000,
+    circulatingSupply: 393000000,
+    maxSupply: 720000000,
+    sector: 'Layer 1',
+    category: 'Layer 1',
+    description: 'High-throughput smart contracts platform. Subnets for custom blockchains.'
+  }
+];
+
+// Alias for backward compatibility
+export const CRYPTO_ASSETS = CRYPTO_DATA;
+
+// Fear & Greed Index (0-100)
+export const FEAR_GREED_INDEX = {
+  value: 62,
+  label: 'Greed',
+  timestamp: new Date(),
+  previousValue: 58,
+  classification: 'Greed' as 'Extreme Fear' | 'Fear' | 'Neutral' | 'Greed' | 'Extreme Greed'
+};
+
+// Market Dominance
+export const MARKET_DOMINANCE = {
+  BTC: 52.3,
+  ETH: 18.2,
+  others: 29.5,
+  updated: new Date()
+};
+
+// Get crypto metrics
+export function getCryptoMetrics() {
+  const totalMarketCap = CRYPTO_DATA.reduce((sum, crypto) => sum + crypto.marketCap, 0);
+  const total24hVolume = CRYPTO_DATA.reduce((sum, crypto) => sum + crypto.volume24h, 0);
+  const avgChange = CRYPTO_DATA.reduce((sum, crypto) => sum + crypto.change24h, 0) / CRYPTO_DATA.length;
+  
+  return {
+    totalMarketCap,
+    total24hVolume,
+    avgChange24h: avgChange,
+    activeCryptos: CRYPTO_DATA.length,
+    btcDominance: MARKET_DOMINANCE.BTC,
+    fearGreedIndex: FEAR_GREED_INDEX.value
+  };
+}
+
+// Get crypto by symbol
+export function getCryptoBySymbol(symbol: string): Crypto | undefined {
+  return CRYPTO_DATA.find(c => c.symbol.toUpperCase() === symbol.toUpperCase());
+}

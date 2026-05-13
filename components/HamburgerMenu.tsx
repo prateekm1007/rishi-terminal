@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
+import Sidebar from './Sidebar';
 
 export function HamburgerMenu() {
   const [isOpen, setIsOpen] = useState(false);

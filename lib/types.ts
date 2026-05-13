@@ -30,7 +30,7 @@ export interface RishiScore {
   full: string;
   label: string;
   score: number;
-  origin: 'Global' | 'India';
+  origin: 'Global' | 'India' | 'Bharat' | 'Crypto' | 'Commodity' | 'Forex/Macro';
   comps: Array<{
     label: string;
     v: number;

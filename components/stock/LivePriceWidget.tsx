@@ -9,7 +9,7 @@ interface LivePriceWidgetProps {
 
 export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
   const [displayPrice, setDisplayPrice]     = useState<number>(stock.price);
-  const [changePercent, setChangePercent]   = useState<number>(stock.change || 0);
+  const [changePercent, setChangePercent]   = useState<number>((stock as any).metadata?.change || 0);
   const [changeAbs, setChangeAbs]           = useState<number>(0);
   const [loading, setLoading]               = useState(true);
   const [lastUpdated, setLastUpdated]       = useState<Date | null>(null);
@@ -153,18 +153,18 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
       )}
 
       {/* 52W range bar */}
-      {stock.high52w && stock.low52w && (
+      {(stock as any).metadata?.high52w && (stock as any).metadata?.low52w && (
         <div style={{ marginTop: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4 }}>
-            <span>52W LOW {stock.low52w.toLocaleString('en-IN')}</span>
-            <span>{stock.high52w.toLocaleString('en-IN')} HIGH</span>
+            <span>52W LOW {(stock as any).metadata?.low52w.toLocaleString('en-IN')}</span>
+            <span>{(stock as any).metadata?.high52w.toLocaleString('en-IN')} HIGH</span>
           </div>
           <div style={{ height: 4, background: 'var(--bg-secondary)', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{
               height:     '100%',
               borderRadius: 2,
               width: Math.min(100, Math.max(0,
-                ((displayPrice - stock.low52w) / (stock.high52w - stock.low52w)) * 100
+                ((displayPrice - (stock as any).metadata?.low52w) / ((stock as any).metadata?.high52w - (stock as any).metadata?.low52w)) * 100
               )) + '%',
               background: 'linear-gradient(90deg, var(--accent-gold), var(--accent-green))',
               transition: 'width 0.5s ease',

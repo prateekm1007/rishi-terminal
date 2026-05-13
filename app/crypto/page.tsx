@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
@@ -335,7 +335,7 @@ export default function CryptoPage() {
           })}
         </div>
 
-        {showUpgrade && <UpgradePrompt onClose={() => setShowUpgrade(false)} />}
+        {showUpgrade && <UpgradePrompt reason="limit_reached" onClose={() => setShowUpgrade(false)} />}
       </div>
     </main>
   );

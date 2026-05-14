@@ -25,6 +25,6 @@ export function scoreGeorgeSoros(c: CommodityData): RishiScore {
       { label: 'Trend Strength', v: Math.round(trendStrengthS), wt: 20, detail: `Range position ${rangePos.toFixed(0)}%` },
       { label: 'Macro Position', v: Math.round(rangePosS), wt: 15, detail: `52W: ${c.low52w} - ${c.high52w}` },
     ],
-    insight: `${c.name} at ${c.price}${c.unit} · ${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%. ${total >= 75 ? 'Reflexivity in play — trend accelerating, ride it.' : total >= 55 ? 'Moderate macro signal — position sizing key.' : 'No clear reflexive trend — wait for inflection.'}`
+    insight: `${c.name} at ${c.price}${c.unit} - ${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%. ${total >= 75 ? 'Reflexivity in play - trend accelerating, ride it.' : total >= 55 ? 'Moderate macro signal - position sizing key.' : 'No clear reflexive trend - wait for inflection.'}`
   };
 }

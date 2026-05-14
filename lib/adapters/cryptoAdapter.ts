@@ -8,19 +8,6 @@ export function adaptCrypto(crypto: CryptoAsset): UniversalAsset {
     category: 'crypto',
     price: crypto.price,
     change24h: crypto.change24h,
-    metadata: {
-      marketCap: crypto.marketCap,
-      volume24h: crypto.volume24h,
-      circulatingSupply: (crypto as any).circulatingSupply,
-      maxSupply: (crypto as any).maxSupply,
-      sector: crypto.sector,
-      description: (crypto as any).description,
-      // Technical data
-      rsi: crypto.rsi,
-      macd: crypto.macd,
-      moving200d: crypto.moving200d,
-      fromAth: crypto.fromAth,
-      change7d: crypto.change7d
-    }
+    metadata: crypto
   };
 }

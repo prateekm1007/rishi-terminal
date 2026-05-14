@@ -1,40 +1,57 @@
-import { CommodityData } from '../../../data/markets';
-import { RishiScore } from '../../types';
+import type { CommodityData } from '../../../data/markets';
+import type { RishiScore } from '../../types';
 
 function clamp(v: number, lo = 0, hi = 100) {
   return Math.max(lo, Math.min(hi, v));
 }
 
+function rangePosition(c: CommodityData): number {
+  const range = c.high52w - c.low52w;
+  return range > 0 ? clamp(((c.price - c.low52w) / range) * 100) : 50;
+}
+
 export function scoreCrudeRishi(c: CommodityData): RishiScore {
-  // Macro-Cycle Demand Scoring
-  // 1. Price level (above $75 = strong demand)
-  const demandS = clamp(c.price >= 75 ? 100 : c.price >= 65 ? 70 : (c.price / 65) * 70);
+  const rangePos = rangePosition(c);
+  const symbol = c.symbol.toUpperCase();
+  const name = c.name.toLowerCase();
+  const category = c.category.toLowerCase();
 
-  // 2. Momentum (positive = economic growth)
-  const momentumS = clamp(50 + c.changePct * 10);
+  const isEnergy =
+    category.includes('energy') ||
+    symbol.includes('CRUDE') ||
+    symbol.includes('OIL') ||
+    symbol.includes('BRENT') ||
+    symbol.includes('WTI') ||
+    name.includes('crude') ||
+    name.includes('oil') ||
+    name.includes('gas');
 
-  // 3. Range position (higher = boom cycle)
-  const range52w = c.high52w - c.low52w;
-  const rangePos = range52w > 0 ? ((c.price - c.low52w) / range52w) * 100 : 50;
-  const rangePosS = clamp(rangePos);
+  const energyRelevanceS = isEnergy ? 95 : 52;
+  const demandMomentumS = c.changePct >= 0 ? clamp(60 + c.changePct * 9) : clamp(55 + c.changePct * 7);
+  const priceRegimeS = c.price >= 70 && c.price <= 95 ? 90 : c.price >= 55 && c.price <= 110 ? 70 : 45;
+  const supplyRiskS = isEnergy ? clamp(72 + Math.abs(c.changePct) * 4) : 45;
+  const trendS = rangePos > 70 ? 92 : rangePos > 50 ? 74 : rangePos > 30 ? 52 : 32;
 
-  // 4. Supply crunch signal (above $80 = tight market)
-  const supplyS = clamp(c.price >= 80 ? 100 : c.price >= 70 ? 60 : (c.price / 70) * 60);
-
-  const total = demandS * 0.30 + momentumS * 0.25 + rangePosS * 0.25 + supplyS * 0.20;
+  const total =
+    energyRelevanceS * 0.25 +
+    demandMomentumS * 0.25 +
+    priceRegimeS * 0.20 +
+    supplyRiskS * 0.15 +
+    trendS * 0.15;
 
   return {
     name: 'Crude Rishi',
-    full: 'Macro-Cycle Guru',
-    label: 'Economic Pulse',
+    full: 'Crude Oil Cycle Sage',
+    label: 'Energy Supply-Demand Cycle',
     score: Math.round(total),
     origin: 'Commodity',
     comps: [
-      { label: 'Global Demand', v: Math.round(demandS), wt: 30, detail: `$${c.price}/bbl (target >$75)` },
-      { label: 'Economic Momentum', v: Math.round(momentumS), wt: 25, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%` },
-      { label: '52W Cycle Position', v: Math.round(rangePosS), wt: 25, detail: `${rangePos.toFixed(0)}% of range` },
-      { label: 'Supply Tightness', v: Math.round(supplyS), wt: 20, detail: c.price >= 80 ? 'Tight supply' : 'Normal supply' },
+      { label: 'Energy Relevance', v: Math.round(energyRelevanceS), wt: 25, detail: isEnergy ? 'Direct energy commodity' : `${c.category} commodity` },
+      { label: 'Demand Momentum', v: Math.round(demandMomentumS), wt: 25, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}% daily move` },
+      { label: 'Price Regime', v: Math.round(priceRegimeS), wt: 20, detail: `${c.price}${c.unit}` },
+      { label: 'Supply Risk Premium', v: Math.round(supplyRiskS), wt: 15, detail: isEnergy ? 'Energy markets price geopolitical and supply risk' : 'Lower direct supply-risk sensitivity' },
+      { label: 'Trend Position', v: Math.round(trendS), wt: 15, detail: `${rangePos.toFixed(0)}% of 52W range` },
     ],
-    insight: `Crude at $${c.price}/bbl · ${c.changePct >= 0 ? 'Rising' : 'Falling'} ${Math.abs(c.changePct).toFixed(2)}%. ${total >= 70 ? 'Strong economic growth signal.' : total >= 50 ? 'Moderate demand.' : 'Weak growth or oversupply.'}`
+    insight: `${c.name} at ${c.price}${c.unit}. ${total >= 75 ? 'Strong energy-cycle signal with favorable supply-demand tension.' : total >= 55 ? 'Moderate energy setup; position sizing matters.' : 'Weak crude-style setup; wait for stronger demand or supply shock.'}`
   };
 }

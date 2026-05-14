@@ -129,7 +129,7 @@ export default function CryptoPage() {
             { label: t('crypto.avgRsi'),          value: '62',                               color: 'var(--accent-gold)' },
             { label: t('crypto.sentiment'),        value: 'BULLISH',                          color: 'var(--accent-green)' },
             { label: t('crypto.btcDominance'),    value: MARKET_DOMINANCE.btc + '%',        color: 'var(--accent-gold)' },
-            { label: t('crypto.fearGreed'),     value: fgValue.toString() + ' – ' + fgLabel,                   color: fgColor },
+            { label: t('crypto.fearGreed'),     value: fgValue.toString() + ' - ' + fgLabel,                   color: fgColor },
           ].map(stat => (
             <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
@@ -144,7 +144,7 @@ export default function CryptoPage() {
             <div>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6 }}>{t('crypto.fearGreedIndex')}</div>
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: fgColor }}>
-                {fgValue} – {fgLabel}
+                {fgValue} - {fgLabel}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 24, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>

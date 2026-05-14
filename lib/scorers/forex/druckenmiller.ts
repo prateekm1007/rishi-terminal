@@ -25,6 +25,6 @@ export function scoreDruckenmiller(c: CommodityData): RishiScore {
       { label: 'Risk/Reward', v: Math.round(riskRewardS), wt: 25, detail: `${rangePos.toFixed(0)}% range position` },
       { label: 'Cycle Position', v: Math.round(rangePosS), wt: 15, detail: `52W: ${c.low52w} - ${c.high52w}` },
     ],
-    insight: `${c.name} at ${c.price}${c.unit} · ${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%. ${total >= 75 ? 'High conviction setup — size up the position.' : total >= 55 ? 'Moderate opportunity — half position.' : 'Unfavorable risk/reward — stay flat.'}`
+    insight: `${c.name} at ${c.price}${c.unit} - ${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%. ${total >= 75 ? 'High conviction setup - size up the position.' : total >= 55 ? 'Moderate opportunity - half position.' : 'Unfavorable risk/reward - stay flat.'}`
   };
 }

@@ -1,42 +1,57 @@
-import { CommodityData } from '../../../data/markets';
-import { RishiScore } from '../../types';
+import type { CommodityData } from '../../../data/markets';
+import type { RishiScore } from '../../types';
 
 function clamp(v: number, lo = 0, hi = 100) {
   return Math.max(lo, Math.min(hi, v));
 }
 
+function rangePosition(c: CommodityData): number {
+  const range = c.high52w - c.low52w;
+  return range > 0 ? clamp(((c.price - c.low52w) / range) * 100) : 50;
+}
+
 export function scoreDanielYergin(c: CommodityData): RishiScore {
-  // Daniel Yergin - Energy Historian + Geopolitical Oil Expert
-  // Focus: Crude oil, energy transitions, geopolitical supply
+  const rangePos = rangePosition(c);
+  const symbol = c.symbol.toUpperCase();
+  const name = c.name.toLowerCase();
+  const category = c.category.toLowerCase();
 
-  // 1. Price level (above $75 = strong demand, tight supply)
-  const demandS = clamp(c.price >= 75 ? 100 : c.price >= 65 ? 70 : (c.price / 65) * 70);
+  const isEnergy =
+    category.includes('energy') ||
+    symbol.includes('OIL') ||
+    symbol.includes('CRUDE') ||
+    symbol.includes('BRENT') ||
+    symbol.includes('WTI') ||
+    name.includes('oil') ||
+    name.includes('gas') ||
+    name.includes('crude');
 
-  // 2. Momentum (positive = economic growth signal)
-  const momentumS = clamp(50 + c.changePct * 10);
+  const energySystemS = isEnergy ? 96 : category.includes('metal') ? 68 : 55;
+  const supplyDemandS = rangePos > 60 && c.changePct > 0 ? 88 : rangePos > 40 ? 70 : c.changePct > 0 ? 60 : 45;
+  const geopoliticalPremiumS = isEnergy ? clamp(72 + Math.abs(c.changePct) * 4) : clamp(55 + Math.abs(c.changePct) * 2);
+  const marketBalanceS = rangePos > 25 && rangePos < 80 ? 82 : 52;
+  const stabilityS = clamp(100 - Math.abs(c.changePct) * 9);
 
-  // 3. Range position (higher = boom cycle)
-  const range52w = c.high52w - c.low52w;
-  const rangePos = range52w > 0 ? ((c.price - c.low52w) / range52w) * 100 : 50;
-  const rangePosS = clamp(rangePos);
-
-  // 4. Geopolitical premium (above $80 = supply risk)
-  const geopoliticalS = clamp(c.price >= 80 ? 100 : c.price >= 70 ? 60 : (c.price / 70) * 60);
-
-  const total = demandS * 0.30 + momentumS * 0.25 + rangePosS * 0.25 + geopoliticalS * 0.20;
+  const total =
+    energySystemS * 0.25 +
+    supplyDemandS * 0.25 +
+    geopoliticalPremiumS * 0.20 +
+    marketBalanceS * 0.15 +
+    stabilityS * 0.15;
 
   return {
     name: 'Daniel Yergin',
     full: 'Daniel Yergin',
-    label: 'Energy Geopolitics',
+    label: 'Energy History & Geopolitics',
     score: Math.round(total),
     origin: 'Commodity',
     comps: [
-      { label: 'Global Demand', v: Math.round(demandS), wt: 30, detail: `${c.price}${c.unit} (target >$75)` },
-      { label: 'Economic Momentum', v: Math.round(momentumS), wt: 25, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%` },
-      { label: 'Energy Cycle', v: Math.round(rangePosS), wt: 25, detail: `${rangePos.toFixed(0)}% of 52W range` },
-      { label: 'Geopolitical Risk', v: Math.round(geopoliticalS), wt: 20, detail: c.price >= 80 ? 'High supply risk' : 'Normal supply' },
+      { label: 'Energy System Relevance', v: Math.round(energySystemS), wt: 25, detail: isEnergy ? 'Core energy market' : `${c.category} with indirect macro linkage` },
+      { label: 'Supply-Demand Balance', v: Math.round(supplyDemandS), wt: 25, detail: `${rangePos.toFixed(0)}% of 52W range` },
+      { label: 'Geopolitical Premium', v: Math.round(geopoliticalPremiumS), wt: 20, detail: `${Math.abs(c.changePct).toFixed(2)}% volatility signal` },
+      { label: 'Market Balance', v: Math.round(marketBalanceS), wt: 15, detail: rangePos > 25 && rangePos < 80 ? 'Balanced but constructive range' : 'Extreme pricing zone' },
+      { label: 'Stability', v: Math.round(stabilityS), wt: 15, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}% daily move` },
     ],
-    insight: `${c.name} at ${c.price}${c.unit} · ${c.changePct >= 0 ? 'Rising' : 'Falling'} ${Math.abs(c.changePct).toFixed(2)}%. ${total >= 70 ? 'Strong energy demand — growth signal.' : total >= 50 ? 'Moderate demand — watch supply.' : 'Weak demand or oversupply.'}`
+    insight: `${c.name} at ${c.price}${c.unit}. ${total >= 75 ? 'Strong geopolitical and supply-demand setup.' : total >= 55 ? 'Balanced macro commodity signal.' : 'Weak setup; market structure is not compelling.'}`
   };
 }

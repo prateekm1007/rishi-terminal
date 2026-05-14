@@ -1,41 +1,52 @@
-﻿import { CommodityData } from '../../../data/markets';
-import { RishiScore } from '../../types';
+import type { CommodityData } from '../../../data/markets';
+import type { RishiScore } from '../../types';
 
 function clamp(v: number, lo = 0, hi = 100) {
   return Math.max(lo, Math.min(hi, v));
 }
 
+function rangePosition(c: CommodityData): number {
+  const range = c.high52w - c.low52w;
+  return range > 0 ? clamp(((c.price - c.low52w) / range) * 100) : 50;
+}
+
 export function scoreGoldRishi(c: CommodityData): RishiScore {
-  // Inflation Hedge Scoring
-  // 1. Distance from 52W high (closer = stronger inflation fear)
-  const distFromHigh = ((c.high52w - c.price) / c.high52w) * 100;
-  const highProxS = clamp(100 - distFromHigh * 2); // Penalty for being far from high
-  
-  // 2. Momentum (positive change = inflation concerns rising)
-  const momentumS = clamp(50 + c.changePct * 10); // +5% = 100, -5% = 0
-  
-  // 3. Range position (higher in 52W range = bull market)
-  const range52w = c.high52w - c.low52w;
-  const rangePos = range52w > 0 ? ((c.price - c.low52w) / range52w) * 100 : 50;
-  const rangePosS = clamp(rangePos);
-  
-  // 4. Absolute price strength (above $2500 = strong)
-  const priceStrengthS = clamp(c.price >= 2500 ? 100 : (c.price / 2500) * 100);
-  
-  const total = highProxS * 0.30 + momentumS * 0.25 + rangePosS * 0.25 + priceStrengthS * 0.20;
-  
+  const rangePos = rangePosition(c);
+  const symbol = c.symbol.toUpperCase();
+  const name = c.name.toLowerCase();
+  const category = c.category.toLowerCase();
+
+  const isGold = symbol.includes('GOLD') || name.includes('gold');
+  const isPrecious = category.includes('precious') || isGold;
+
+  const safeHavenS = isGold ? 95 : isPrecious ? 82 : 55;
+  const momentumS = clamp(55 + c.changePct * 8);
+  const inflationHedgeS = c.changePct >= 0 ? clamp(72 + c.changePct * 5) : clamp(62 + c.changePct * 4);
+  const rangeStrengthS = rangePos >= 75 ? 95 : rangePos >= 55 ? 78 : rangePos >= 35 ? 58 : 38;
+
+  const drawdownFromHigh = c.high52w > 0 ? ((c.price - c.high52w) / c.high52w) * 100 : 0;
+  const highProximityS = clamp(100 + drawdownFromHigh * 2);
+
+  const total =
+    safeHavenS * 0.25 +
+    inflationHedgeS * 0.25 +
+    rangeStrengthS * 0.20 +
+    highProximityS * 0.15 +
+    momentumS * 0.15;
+
   return {
     name: 'Gold Rishi',
-    full: 'Inflation Hedge Guru',
-    label: 'Safe Haven Shield',
+    full: 'Gold Safe-Haven Sage',
+    label: 'Monetary Metal & Crisis Hedge',
     score: Math.round(total),
     origin: 'Commodity',
     comps: [
-      { label: 'Inflation Fear Proxy', v: Math.round(highProxS), wt: 30, detail: `${distFromHigh.toFixed(1)}% from 52W high` },
-      { label: 'Momentum Signal', v: Math.round(momentumS), wt: 25, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}% change` },
-      { label: '52W Range Position', v: Math.round(rangePosS), wt: 25, detail: `${rangePos.toFixed(0)}% of range` },
-      { label: 'Price Strength', v: Math.round(priceStrengthS), wt: 20, detail: `$${c.price}/oz (target >$2500)` },
+      { label: 'Safe-Haven Quality', v: Math.round(safeHavenS), wt: 25, detail: isGold ? 'Primary monetary metal' : `${c.category} exposure` },
+      { label: 'Inflation Hedge', v: Math.round(inflationHedgeS), wt: 25, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}% move` },
+      { label: 'Range Strength', v: Math.round(rangeStrengthS), wt: 20, detail: `${rangePos.toFixed(0)}% of 52W range` },
+      { label: 'High Proximity', v: Math.round(highProximityS), wt: 15, detail: `${drawdownFromHigh.toFixed(1)}% from 52W high` },
+      { label: 'Momentum', v: Math.round(momentumS), wt: 15, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}% daily change` },
     ],
-    insight: `Gold at $${c.price}/oz · ${c.changePct >= 0 ? 'Rising' : 'Falling'} ${Math.abs(c.changePct).toFixed(2)}%. ${total >= 70 ? 'Strong inflation hedge signal.' : total >= 50 ? 'Moderate safe-haven demand.' : 'Weak inflation protection.'}`
+    insight: `${c.name} at ${c.price}${c.unit}. ${total >= 75 ? 'Strong safe-haven and monetary hedge signal.' : total >= 55 ? 'Moderate hedge value, but conviction is not extreme.' : 'Weak gold-style setup; wait for better macro confirmation.'}`
   };
 }

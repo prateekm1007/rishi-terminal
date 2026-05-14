@@ -3,4 +3,3 @@ export { runAllScorers, TOTAL_RISHIS }                       from "./orchestrato
 export { weightedAverage, getWeight, RISHI_WEIGHT_CONFIG }   from "./weights";
 export { resolveStock }                                      from "./stockResolver";
 export type { ConsensusResult, RishiWeight }                 from "./types";
-export { buildUniversalConsensus } from './universalConsensus';

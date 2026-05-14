@@ -206,7 +206,7 @@ export default function CryptoPage() {
                     <tr
                       key={asset.symbol}
                       style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer' }}
-                      onClick={() => router.push(`/crypto/${asset.symbol}`)}
+                      onClick={() => router.push(`/stock/${asset.symbol}`)}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                     >

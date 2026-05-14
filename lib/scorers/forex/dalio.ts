@@ -25,6 +25,6 @@ export function scoreRayDalio(c: CommodityData): RishiScore {
       { label: 'Debt Cycle Signal', v: Math.round(debtCycleS), wt: 25, detail: `${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%` },
       { label: 'Range Position', v: Math.round(rangePosS), wt: 20, detail: `${rangePos.toFixed(0)}% of 52W range` },
     ],
-    insight: `${c.name} at ${c.price}${c.unit}. ${total >= 70 ? 'Strong All Weather allocation signal — include in balanced portfolio.' : total >= 50 ? 'Moderate signal — small portfolio allocation.' : 'Low allocation priority — rebalance away.'}`
+    insight: `${c.name} at ${c.price}${c.unit}. ${total >= 70 ? 'Strong All Weather allocation signal - include in balanced portfolio.' : total >= 50 ? 'Moderate signal - small portfolio allocation.' : 'Low allocation priority - rebalance away.'}`
   };
 }

@@ -4,23 +4,23 @@ import { adaptCrypto } from '../../../lib/adapters/cryptoAdapter';
 import { buildUniversalConsensus } from '../../../lib/consensus/universalConsensus';
 import { AssetTerminal } from '../../../components/terminal/AssetTerminal';
 
-export async function generateStaticParams() {
-  return CRYPTO_ASSETS.map(asset => ({
-    symbol: asset.symbol,
-  }));
-}
-
 interface PageProps {
   params: Promise<{ symbol: string }>;
 }
 
+export async function generateStaticParams() {
+  return CRYPTO_ASSETS.map((asset) => ({
+    symbol: asset.symbol,
+  }));
+}
+
 export default async function CryptoDetailPage({ params }: PageProps) {
   const { symbol } = await params;
-  
+
   const crypto = CRYPTO_ASSETS.find(
-    a => a.symbol.toUpperCase() === symbol.toUpperCase()
+    (a) => a.symbol.toUpperCase() === symbol.toUpperCase()
   );
-  
+
   if (!crypto) {
     notFound();
   }

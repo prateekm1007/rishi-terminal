@@ -8,8 +8,6 @@ export function adaptCommodity(commodity: CommodityData): UniversalAsset {
     category: 'commodity',
     price: commodity.price,
     change24h: commodity.changePct,
-    sector: commodity.category,
-    exchange: 'MCX',
-    metadata: commodity,
+    metadata: commodity
   };
 }

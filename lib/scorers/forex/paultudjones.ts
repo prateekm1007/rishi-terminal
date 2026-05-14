@@ -25,6 +25,6 @@ export function scorePaulTudorJones(c: CommodityData): RishiScore {
       { label: 'Breakout Signal', v: Math.round(breakoutS), wt: 20, detail: c.changePct > 2 ? 'Breakout confirmed' : 'Pre-breakout' },
       { label: '52W Position', v: Math.round(rangePosS), wt: 15, detail: `${c.low52w} - ${c.high52w}` },
     ],
-    insight: `${c.name} at ${c.price}${c.unit} · ${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%. ${total >= 75 ? 'Strong technical breakout — trend trade setup confirmed.' : total >= 55 ? 'Developing setup — wait for momentum confirmation.' : 'No technical edge — stand aside.'}`
+    insight: `${c.name} at ${c.price}${c.unit} - ${c.changePct >= 0 ? '+' : ''}${c.changePct.toFixed(2)}%. ${total >= 75 ? 'Strong technical breakout - trend trade setup confirmed.' : total >= 55 ? 'Developing setup - wait for momentum confirmation.' : 'No technical edge - stand aside.'}`
   };
 }

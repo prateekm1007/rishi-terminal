@@ -12,6 +12,8 @@ import { LivePriceWidget }        from './LivePriceWidget';
 import { AssetPriceChart }        from './AssetPriceChart';
 import { AssetTechnicalIndicators } from './AssetTechnicalIndicators';
 import { AssetWisdomSidebar }     from './AssetWisdomSidebar';
+import { AssetKnowledgeGraph } from './AssetKnowledgeGraph';
+import { buildUniversalKnowledgeGraph } from '../../lib/consensus/universalKnowledgeGraph'
 import { useLanguage }            from '../../lib/language';
 import { LegalDisclaimer } from '../ui/LegalDisclaimer';
 import RishiScoreDual             from '../score/RishiScoreDual';
@@ -38,6 +40,9 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
 
   const scoreBg = (s: number) =>
     s >= 75 ? 'rgba(0,186,124,0.1)' : s >= 55 ? 'rgba(255,215,0,0.1)' : s >= 35 ? 'rgba(245,158,11,0.1)' : 'rgba(244,33,46,0.1)';
+
+  // Build Knowledge Graph data
+  const graphData = buildUniversalKnowledgeGraph(asset, consensus.scores);
 
   return (
     <div className="rishi-page">
@@ -90,79 +95,11 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
 
       {/* Knowledge Graph Modal */}
       {showGraph && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.9)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 24,
-        }}>
-          <div style={{
-            width: '100%',
-            maxWidth: 1400,
-            maxHeight: '90vh',
-            background: '#0A0F1C',
-            borderRadius: 16,
-            overflow: 'hidden',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
-          }}>
-            {/* Modal Header */}
-            <div style={{
-              padding: '20px 28px',
-              borderBottom: '1px solid rgba(30,41,59,0.8)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              background: 'var(--bg-secondary)',
-            }}>
-              <div>
-                <h2 className="philosophy-heading" style={{ fontSize: 20, color: '#D4AF37', marginBottom: 4 }}>
-                  {t('asset.knowledgeGraph')}
-                </h2>
-                <p style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>
-                  {asset.name} — {t('asset.graphSubtitle')}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowGraph(false)}
-                style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(30,41,59,0.8)',
-                  color: '#F8FAFC',
-                  width: 36,
-                  height: 36,
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  fontSize: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.background = '#EF4444';
-                  (e.currentTarget as HTMLElement).style.borderColor = '#EF4444';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(30,41,59,0.8)';
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div style={{ padding: 28, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
-              <div style={{ textAlign: 'center', color: '#64748B', padding: '40px 20px' }}>
-                Knowledge Graph visualization coming soon
-              </div>
-            </div>
-          </div>
-        </div>
+        <AssetKnowledgeGraph
+          graphData={graphData}
+          assetName={asset.name}
+          onClose={() => setShowGraph(false)}
+        />
       )}
 
       {/* Page Header */}

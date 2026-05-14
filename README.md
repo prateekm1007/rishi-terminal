@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rishi Terminal
 
-## Getting Started
+**Analyze stocks like the legends.**  
+A sacred investment intelligence platform inspired by Rakesh Jhunjhunwala, Rakesh Damani, Warren Buffett and other great investors.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Vision
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Rishi Terminal brings ancient wisdom to modern investing by compressing the philosophies of legendary investors into powerful, explainable intelligence tools.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🌟 Key Features
 
-## Learn More
+- **Rishi Score v2.0** — Advanced multi-pillar scoring system with Long & Short modes
+- **Chat with Rishis** — Multi-persona AI conversations with contextual awareness and Debate Mode
+- **Live Multi-Asset Data** — Indian equities, F&O, Crypto, Forex, Commodities & Bonds
+- **Smart Screener** with Rishi Mode presets
+- **Portfolio X-Ray** & Real-time P&L
+- **Daily Rishi Ritual** & Wisdom
+- **Knowledge Graph** & Investor-style analysis
+- Sacred dark theme with gold philosophy accents
 
-To learn more about Next.js, take a look at the following resources:
+--The project is built with Next.js 16 + TypeScript.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Framework: Next.js 16 (App Router) + React 19 + TypeScript
+Styling: Custom sacred CSS (glassmorphism + gold accents)
+Data: Multi-source live pricing engine (Yahoo Finance, CoinGecko, etc.)
+AI: Gemini with structured Rishi personas
+Backend: Supabase (Auth + Database)
+Charts: Recharts
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Philosophy
+Great investing is as much about wisdom, temperament, and perspective as it is about numbers. Rishi Terminal is designed to cultivate better thinking.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Disclaimer
+This is not financial advice.
+All content, scores, and AI conversations are for educational and informational purposes only.
+Rishis are AI simulations inspired by legendary investors and are not affiliated with any real person.
+Invest at your own risk. Past performance does not guarantee future results.
+
+Roadmap
+
+Full Supabase migration & persistent memory
+Advanced multi-agent Rishi Debate System
+Complete F&O Strategy Builder
+Custom workspaces & Command Palette (⌘K)
+Thesis Wall & Community features-
+
+
+```powershell
+PS C:\Users\Administrator\Desktop\rishi-terminal>

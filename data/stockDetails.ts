@@ -187,7 +187,7 @@ export function generateStockDetail(stock: Stock): StockDetail {
   }
 
   const detail: StockDetail = {
-    quarterlyResults:    generateQuarterlyResults(stock),
+    quarterlyResults: generateQuarterlyResults(stock),
     shareholdingHistory: generateShareholdingHistory(stock),
     peers:               generatePeers(stock),
     analystRecs:         generateAnalystRecs(stock),

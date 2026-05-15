@@ -12,12 +12,11 @@ import { LivePriceWidget }        from './LivePriceWidget';
 import { PriceChart }             from './PriceChart';
 import { TechnicalIndicators }    from './TechnicalIndicators';
 import { PeerComparison }         from './PeerComparison';
-import { AnalystRecommendations } from './AnalystRecommendations';
 import { QuarterlyChart }         from './QuarterlyChart';
 import { ShareholdingChart }      from './ShareholdingChart';
 import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
-import { useLanguage }            from '../../lib/language';
+import { useLanguage } from '../../lib/language';
 import RishiScoreDual             from '../score/RishiScoreDual';
 import { calculateDualScore }     from '../../lib/scorers/rishiScoreV2';
 import type { StockMetrics }      from '../../lib/scorers/types';
@@ -372,11 +371,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 <div className="wisdom-reveal-delay-2">
                   <PeerComparison stock={stock} peers={detail.peers} />
                 </div>
-
-                <div className="wisdom-reveal-delay-3">
-                  <AnalystRecommendations recommendations={detail.analystRecs} currentPrice={stock.price} />
-                </div>
-              </>
+</>
             )}
 
             {activeTab === 'technical' && (

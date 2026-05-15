@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { UniversalAsset } from '../../lib/types/asset';
 import type { RishiScore } from '../../lib/types';
+import { getUniversalParallels } from "../../lib/wisdom/universalParallels";
 
 interface Message {
   id: string;
@@ -170,8 +171,24 @@ User question about this asset:`;
   };
 
   const archetypeKey = detectArchetype(asset);
-  const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
-  const relevantScores = parallel ? scores.filter(s => parallel.rishis.some(r => s.name === r)) : [];
+  const stockParallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
+
+  const universalList = getUniversalParallels(asset);
+  const universalParallel = (!stockParallel && universalList.length > 0) ? ({
+    era: `${universalList[0].title} (${universalList[0].period})`,
+    lesson: universalList[0].takeaway,
+    author: "Rishi Historical Archive",
+    companies: [
+      `Move: ${universalList[0].move}`,
+      `Driver: ${universalList[0].driver}`,
+      ...universalList.slice(1, 3).map(p => `Also: ${p.title} (${p.period})`),
+    ],
+    rishis: [],
+  } as any) : null;
+
+  const parallel = stockParallel ?? universalParallel;
+
+  const relevantScores = parallel ? scores.filter(s => ((parallel as any).rishis ?? []).some((r: string) => s.name === r)) : [];
 
   return (
     <div style={{
@@ -238,7 +255,7 @@ User question about this asset:`;
                 <div style={{ fontSize: "10px", color: "#64748B", fontWeight: 700, marginBottom: "8px" }}>
                   SIMILAR COMPANIES:
                 </div>
-                {parallel.companies.map((c, i) => (
+                {parallel.companies.map((c: string, i: number) => (
                   <div key={i} style={{
                     fontSize: "11px",
                     color: "#94A3B8",

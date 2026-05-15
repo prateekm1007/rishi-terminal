@@ -248,7 +248,7 @@ export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props)
 
         <div style={{ marginTop:"18px", display:"flex", justifyContent:"space-between", fontSize:"11px", color: colors.textGhost, fontFamily: fonts.mono, fontWeight:500 }}>
           <span>Confidence: {(result.confidence * 100).toFixed(0)}%</span>
-          <span>{new Date(result.timestamp).toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" })}</span>
+          <span suppressHydrationWarning>{new Date(result.timestamp).toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" })}</span>
         </div>
       </div>
     </div>

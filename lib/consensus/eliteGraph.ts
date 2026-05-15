@@ -1,6 +1,7 @@
 import { Stock } from '../types';
 import { RishiScore } from './types';
 import { detectArchetype, HISTORICAL_PARALLELS } from '../wisdom/parallels';
+import { buildEpistemicMetadata } from '../engine/epistemicTransparency';
 
 // --- Output Interfaces ---
 
@@ -54,6 +55,7 @@ export interface EliteKnowledgeGraph {
     bearCount: number;
     neutralCount: number;
   };
+  epistemic: any;
 }
 
 // --- Rishi Philosophy Map ---
@@ -298,5 +300,6 @@ export function buildEliteKnowledgeGraph(
     technicalEdge,
     timeline,
     consensus: { overall, bullCount, bearCount, neutralCount },
+    epistemic: buildEpistemicMetadata(sorted),
   };
 }

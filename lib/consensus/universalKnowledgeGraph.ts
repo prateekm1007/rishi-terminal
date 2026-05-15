@@ -12,39 +12,37 @@ export function buildUniversalKnowledgeGraph(
   scores: RishiScore[]
 ) {
   // For stocks, use the original function
-  if (asset.type === 'stock') {
-    return buildStockGraph(asset as Stock, scores);
+  if (asset.category === 'stock') {
+    return buildStockGraph(asset as unknown as Stock, scores);
   }
 
   // For other assets, create a minimal Stock-like object
   const mockStock: Stock = {
     symbol: asset.symbol,
     name: asset.name,
-    price: asset.price,
     sector: asset.metadata?.sector || 'Unknown',
-    mcap: asset.metadata?.marketCap || 0,
-    
-    // Default values for missing stock metrics
+    exchange: asset.exchange || 'N/A',
+    price: asset.price,
     pe: 0,
     roe: 0,
-    roce: 0,
-    de: 0,
-    opm: 0,
+    mktcap: asset.metadata?.marketCap || 0,
+    ocf: 0,
+    rev: 0,
     revcagr: 0,
     epscagr: 0,
-    pb: 0,
-    ps: 0,
-    pfcf: 0,
-    ev: 0,
-    
-    // These won't be used but are required by Stock interface
-    yh: asset.price * 1.2,
-    yl: asset.price * 0.8,
-    promoter: 0,
-    pledged: 0,
-    fii: 0,
-    dii: 0
-  };
+    opm: 0,
+    roce: 0,
+    de: 0,
+    fcf: 0,
+    promo: 0,
+    ca: 0,
+    tl: 0,
+    sh: 0,
+    np: 0,
+    dep: 0,
+    capex: 0,
+    bvps: 0,
+  }
 
   return buildStockGraph(mockStock, scores);
 }

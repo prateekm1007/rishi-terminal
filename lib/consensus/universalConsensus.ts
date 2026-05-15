@@ -25,6 +25,13 @@ import { scoreRayDalio } from '../scorers/forex/dalio';
 import { scoreDruckenmiller } from '../scorers/forex/druckenmiller';
 import { scorePaulTudorJones } from '../scorers/forex/paultudjones';
 
+// Import bond scorers
+import { scoreBuffettBond } from '../scorers/bond/buffett';
+import { scoreDalioBond } from '../scorers/bond/dalio';
+import { scoreGrahamBond } from '../scorers/bond/graham';
+import { scoreLynchBond } from '../scorers/bond/lynch';
+import { scoreMarksBond } from '../scorers/bond/marks';
+
 export interface UniversalConsensusResult {
   asset: UniversalAsset;
   scores: RishiScore[];
@@ -60,6 +67,7 @@ function analyzeTension(scores: RishiScore[]): { label: string; spread: number }
   
   return { label, spread };
 }
+
 
 export function buildUniversalConsensus(asset: UniversalAsset): UniversalConsensusResult {
   let scores: RishiScore[] = [];
@@ -100,9 +108,13 @@ export function buildUniversalConsensus(asset: UniversalAsset): UniversalConsens
       }
       break;
     }
-    case 'bond':
-      // Bond scorers not yet implemented
+    case 'bond': {
+      const bond = asset.metadata as CommodityData;
+      if (bond.symbol && typeof bond.price === 'number') {
+        scores = runBondScorers(bond);
+      }
       break;
+    }
     case 'stock':
       // Stock scoring handled elsewhere
       break;
@@ -201,6 +213,37 @@ function runForexScorers(forex: CommodityData): RishiScore[] {
       .sort((a, b) => b.score - a.score);
   } catch (e) {
     console.error('Forex scorers failed:', e);
+    return [];
+  }
+
+
+
+}
+
+
+function runBondScorers(bond: any): RishiScore[] {
+  try {
+    const scorers = [
+      () => scoreBuffettBond(bond),
+      () => scoreDalioBond(bond),
+      () => scoreGrahamBond(bond),
+      () => scoreLynchBond(bond),
+      () => scoreMarksBond(bond),
+    ];
+
+    return scorers
+      .map(fn => {
+        try {
+          return fn();
+        } catch (e) {
+          console.error('Bond scorer error:', e);
+          return null;
+        }
+      })
+      .filter((s): s is RishiScore => s !== null)
+      .sort((a, b) => b.score - a.score);
+  } catch (e) {
+    console.error('Bond scorers failed:', e);
     return [];
   }
 }

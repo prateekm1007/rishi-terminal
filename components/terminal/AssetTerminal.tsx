@@ -97,6 +97,7 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
       {showGraph && (
         <AssetKnowledgeGraph
           graphData={graphData}
+          epistemicData={graphData.epistemic}
           assetName={asset.name}
           onClose={() => setShowGraph(false)}
         />

@@ -19,7 +19,7 @@ export function BullBearBar({ topBull, topBear, spread }: Props) {
       <div className="grid grid-cols-2 gap-6">
         {/* Bull */}
         <div className="p-6 bg-green-500/10 border border-green-500/30 rounded-lg">
-          <div className="text-xs text-green-400 mb-2 font-medium">ðŸ‚ TOP BULL</div>
+          <div className="text-xs text-green-400 mb-2 font-medium">🐂 TOP BULL</div>
           <div className="text-3xl font-bold text-green-400 font-mono">{topBull.score}</div>
           <div className="text-sm font-medium text-primary mt-2">{topBull.full}</div>
           <div className="text-xs text-muted mt-1">{topBull.label}</div>
@@ -28,7 +28,7 @@ export function BullBearBar({ topBull, topBear, spread }: Props) {
 
         {/* Bear */}
         <div className="p-6 bg-red-500/10 border border-red-500/30 rounded-lg">
-          <div className="text-xs text-red-400 mb-2 font-medium">ðŸ» TOP BEAR</div>
+          <div className="text-xs text-red-400 mb-2 font-medium">🐻 TOP BEAR</div>
           <div className="text-3xl font-bold text-red-400 font-mono">{topBear.score}</div>
           <div className="text-sm font-medium text-primary mt-2">{topBear.full}</div>
           <div className="text-xs text-muted mt-1">{topBear.label}</div>

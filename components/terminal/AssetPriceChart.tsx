@@ -7,7 +7,7 @@ interface Props {
   asset: UniversalAsset;
 }
 
-// Fixed heights ƒ¢¢"š¬¢‚¬ no Math.random() to avoid hydration mismatch
+// Fixed heights — no Math.random() to avoid hydration mismatch
 const CHART_BARS = [45,62,38,71,55,48,82,39,67,74,51,88,43,69,57,76,41,63,79,52,84,46,70,58,73,44,66,80,53,77];
 
 export function AssetPriceChart({ asset }: Props) {
@@ -30,7 +30,7 @@ export function AssetPriceChart({ asset }: Props) {
             {asset.price.toLocaleString('en-US')}
           </div>
           <div style={{ fontSize: '13px', fontFamily: 'monospace', marginTop: '6px', color: isPositive ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-            {isPositive ? 'ƒ¢¢‚¬"‚²' : 'ƒ¢¢‚¬"‚¼'} {Math.abs(change).toFixed(2)}% ({timeframe})
+            {isPositive ? '▲' : '▼'} {Math.abs(change).toFixed(2)}% ({timeframe})
           </div>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -56,7 +56,7 @@ export function AssetPriceChart({ asset }: Props) {
         </div>
       </div>
 
-      {/* Chart ƒ¢¢"š¬¢‚¬ fixed heights, no random */}
+      {/* Chart — fixed heights, no random */}
       <div style={{ height: '200px', display: 'flex', alignItems: 'flex-end', gap: '3px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', padding: '16px', border: '1px solid var(--border-subtle)' }}>
         {CHART_BARS.map((h, i) => (
           <div

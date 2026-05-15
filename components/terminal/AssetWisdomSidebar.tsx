@@ -73,7 +73,7 @@ export function AssetWisdomSidebar({ asset, scores }: Props) {
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // ðŸ’¾ Persistent Memory: Load saved conversation on mount
+  // 💾 Persistent Memory: Load saved conversation on mount
   useEffect(() => {
     const storageKey = `rishi-chat-${asset.symbol}-${selectedRishi}`;
     const saved = localStorage.getItem(storageKey);
@@ -87,7 +87,7 @@ export function AssetWisdomSidebar({ asset, scores }: Props) {
     }
   }, [asset.symbol, selectedRishi]);
 
-  // ðŸ’¾ Auto-save conversation on every message change
+  // 💾 Auto-save conversation on every message change
   useEffect(() => {
     if (messages.length > 0) {
       const storageKey = `rishi-chat-${asset.symbol}-${selectedRishi}`;
@@ -189,8 +189,8 @@ User question about this asset:`;
         background: "rgba(5,8,16,0.6)",
       }}>
         {[
-          { id: "wisdom" as const, label: "ðŸ“œ Wisdom", emoji: "ðŸ“œ" },
-          { id: "chat" as const, label: "ðŸ’¬ Chat", emoji: "ðŸ’¬" },
+          { id: "wisdom" as const, label: "📜 Wisdom", emoji: "📜" },
+          { id: "chat" as const, label: "💬 Chat", emoji: "💬" },
         ].map(tab => (
           <button
             key={tab.id}
@@ -284,7 +284,7 @@ User question about this asset:`;
                   "{parallel.quote}"
                 </blockquote>
                 <div style={{ fontSize: "10px", color: "#64748B", textAlign: "right" }}>
-                  â€” {parallel.author}
+                  — {parallel.author}
                 </div>
               </div>
             </>
@@ -306,7 +306,7 @@ User question about this asset:`;
             color: "#94A3B8",
             lineHeight: 1.5,
           }}>
-            <strong style={{ color: "#FFC107" }}>âš ï¸ Disclaimer:</strong> This chat uses AI to simulate how the selected Rishi
+            <strong style={{ color: "#FFC107" }}>⚠️ Disclaimer:</strong> This chat uses AI to simulate how the selected Rishi
             might analyze investments based on publicly known philosophies. This is <strong>not</strong> real advice from the actual investor.
             For entertainment and education only.
           </div>
@@ -348,7 +348,7 @@ User question about this asset:`;
                 opacity: messages.length === 0 ? 0.4 : 1,
               }}
             >
-              ðŸ—‘ï¸ Clear
+              🗑️ Clear
             </button>
           </div>
 
@@ -356,7 +356,7 @@ User question about this asset:`;
           <div style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
             {messages.length === 0 && (
               <div style={{ textAlign: "center", color: "#475569", fontSize: "11px", marginTop: "20px" }}>
-                <div style={{ fontSize: "24px", marginBottom: "8px" }}>ðŸ’¬</div>
+                <div style={{ fontSize: "24px", marginBottom: "8px" }}>💬</div>
                 <div>Ask {selectedRishi} about {asset.symbol}</div>
               </div>
             )}
@@ -426,7 +426,7 @@ User question about this asset:`;
                 fontSize: "12px",
                 color: "#ff6666",
               }}>
-                âš ï¸ {error}
+                ⚠️ {error}
               </div>
             )}
 

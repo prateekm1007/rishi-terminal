@@ -2439,10 +2439,4 @@ export const STOCKS: Record<string, Stock> = {
     roce: 0,
     promo: 0,
   },
-  ELDECO: { symbol: 'ELDECO', name: 'Eldeco Housing', sector: 'Realty', exchange: 'NSE', price: 2200, pe: 18, roe: 16, mktcap: 2800, ocf: 80, rev: 380, revcagr: 14, epscagr: 16, opm: 24, roce: 16, de: 0, fcf: 72, promo: 61.5, ca: 800, tl: 200, sh: 13, np: 155, dep: 12, capex: 18, bvps: 880 },
-  TVSMOTOR: { symbol: 'TVSMOTOR', name: 'TVS Motor Company', sector: 'Auto', exchange: 'NSE', price: 2280, pe: 52, roe: 28, mktcap: 108000, ocf: 2800, rev: 38000, revcagr: 18, epscagr: 22, opm: 12, roce: 28, de: 0.4, fcf: 2200, promo: 57.4, ca: 12000, tl: 6000, sh: 475, np: 2050, dep: 600, capex: 900, bvps: 380 },
-  MAHINDRA: { symbol: 'MAHINDRA', name: 'Mahindra & Mahindra Financial', sector: 'NBFC', exchange: 'NSE', price: 295, pe: 14, roe: 12, mktcap: 36600, ocf: 4500, rev: 14000, revcagr: 12, epscagr: 10, opm: 32, roce: 10, de: 4.0, fcf: 2000, promo: 52.2, ca: 55000, tl: 46000, sh: 1241, np: 2100, dep: 200, capex: 300, bvps: 165 },
-  INDIAMRT: { symbol: 'INDIAMART', name: 'IndiaMART InterMESH', sector: 'Internet', exchange: 'NSE', price: 2280, pe: 28, roe: 22, mktcap: 13700, ocf: 400, rev: 1400, revcagr: 18, epscagr: 22, opm: 28, roce: 24, de: 0, fcf: 375, promo: 57.9, ca: 2500, tl: 400, sh: 60, np: 489, dep: 40, capex: 55, bvps: 880 },
-  AEGISLOG: { symbol: 'AEGISLOG', name: 'Aegis Logistics', sector: 'Logistics', exchange: 'NSE', price: 880, pe: 28, roe: 18, mktcap: 9900, ocf: 350, rev: 4500, revcagr: 12, epscagr: 14, opm: 10, roce: 20, de: 0.2, fcf: 300, promo: 58.5, ca: 2000, tl: 1000, sh: 113, np: 354, dep: 80, capex: 110, bvps: 280 },
-  INDIAACC: { symbol: 'INDIAACC', name: 'India Cements', sector: 'Cement', exchange: 'NSE', price: 285, pe: 0, roe: 4, mktcap: 8800, ocf: 400, rev: 5000, revcagr: 4, epscagr: 0, opm: 8, roce: 4, de: 0.5, fcf: 180, promo: 28.4, ca: 2500, tl: 2500, sh: 309, np: 0, dep: 300, capex: 420, bvps: 220 },
 };

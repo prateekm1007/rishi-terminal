@@ -86,7 +86,7 @@ async function snapshotNewStocks() {
           symbol:             sym,
           asset_category:     "stock",
           snapshot_date:      today,
-          consensus_score:    consensus.consensus,
+          consensus_score: consensus.consensus ?? 0,
           signal:             consensus.consensus >= 75 ? "BUY"
                             : consensus.consensus >= 45 ? "HOLD" : "SELL",
           disagreement:       0,

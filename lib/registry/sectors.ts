@@ -86,6 +86,13 @@ const ALIASES: Record<string, CanonicalSector> = {
   "Steel": "Metals",
   "Food": "FMCG",
   "Jewellery": "Consumer",
+
+  "Paper": "Chemicals",
+  "Engineering": "Capital Goods",
+  "Polymers": "Chemicals",
+  "AgriTech": "Agri",
+  "Jewelry": "Consumer",
+  "Packaging": "Capital Goods",
 };
 
 export function normalizeSector(input?: string): CanonicalSector {

@@ -26,6 +26,7 @@ export const CANONICAL_SECTORS = [
   "Infra",
   "Capital Goods",
   "Cement",
+  "Building Materials",
   "Realty",
   "Hospitality",
   "Aviation",

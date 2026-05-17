@@ -3182,7 +3182,7 @@ export const STOCKS: Record<string, Stock> = {
     dep: 150, capex: 220, bvps: 280,
   },
   VENKEYS: {
-    symbol: 'VENKEYS', name: 'Venky's India', sector: 'Agri', exchange: 'NSE',
+    symbol: 'VENKEYS', name: 'Venkys India', sector: 'Agri', exchange: 'NSE',
     price: 2480, pe: 28, roe: 16, roce: 18, mktcap: 3800,
     ocf: 100, rev: 2800, revcagr: 10, epscagr: 12,
     opm: 8, de: 0.2, fcf: 82, promo: 74.9,
@@ -3355,25 +3355,25 @@ export const STOCKS: Record<string, Stock> = {
     name: 'Billion Brains Garage Ventures', 
     sector: 'Fintech', 
     exchange: 'BSE',
-    price: 295,      // Update with live NSE/BSE price
-    pe: 28,          // Update with actual P/E
-    roe: 14,         // Update with actual ROE
-    roce: 16,        // Update with actual ROCE
-    mktcap: 1200,    // Update with actual market cap (in crores)
-    ocf: 80,         // Update with operating cash flow
-    rev: 450,        // Update with revenue
-    revcagr: 18,     // Update with revenue CAGR
-    epscagr: 16,     // Update with EPS CAGR
-    opm: 22,         // Update with operating margin %
-    de: 0.3,         // Update with debt/equity
-    fcf: 65,         // Update with free cash flow
-    promo: 60.0,     // Update with promoter holding %
-    ca: 600,         // Update with current assets
-    tl: 350,         // Update with total liabilities
-    sh: 41,          // Update with shares outstanding (lakhs)
-    np: 95,          // Update with net profit
-    dep: 25,         // Update with depreciation
-    capex: 35,       // Update with capex
-    bvps: 220,       // Update with book value per share
+    price: 295,      
+    pe: 28,          
+    roe: 14,         
+    roce: 16,        
+    mktcap: 1200,    
+    ocf: 80,         
+    rev: 450,        
+    revcagr: 18,     
+    epscagr: 16,     
+    opm: 22,         
+    de: 0.3,         
+    fcf: 65,         
+    promo: 60.0,     
+    ca: 600,         
+    tl: 350,         
+    sh: 41,          
+    np: 95,          
+    dep: 25,         
+    capex: 35,       
+    bvps: 220,       
   },
 };

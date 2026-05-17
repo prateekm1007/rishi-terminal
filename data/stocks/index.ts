@@ -2445,4 +2445,28 @@ export const STOCKS: Record<string, Stock> = {
   INDIAMRT: { symbol: 'INDIAMART', name: 'IndiaMART InterMESH', sector: 'Internet', exchange: 'NSE', price: 2280, pe: 28, roe: 22, mktcap: 13700, ocf: 400, rev: 1400, revcagr: 18, epscagr: 22, opm: 28, roce: 24, de: 0, fcf: 375, promo: 57.9, ca: 2500, tl: 400, sh: 60, np: 489, dep: 40, capex: 55, bvps: 880 },
   AEGISLOG: { symbol: 'AEGISLOG', name: 'Aegis Logistics', sector: 'Logistics', exchange: 'NSE', price: 880, pe: 28, roe: 18, mktcap: 9900, ocf: 350, rev: 4500, revcagr: 12, epscagr: 14, opm: 10, roce: 20, de: 0.2, fcf: 300, promo: 58.5, ca: 2000, tl: 1000, sh: 113, np: 354, dep: 80, capex: 110, bvps: 280 },
   INDIAACC: { symbol: 'INDIAACC', name: 'India Cements', sector: 'Cement', exchange: 'NSE', price: 285, pe: 0, roe: 4, mktcap: 8800, ocf: 400, rev: 5000, revcagr: 4, epscagr: 0, opm: 8, roce: 4, de: 0.5, fcf: 180, promo: 28.4, ca: 2500, tl: 2500, sh: 309, np: 0, dep: 300, capex: 420, bvps: 220 },
+  BRAHMASTRA: {
+    symbol: 'BRAHMASTRA', name: 'Brahmastra Realty', sector: 'Defense', exchange: 'NSE',
+    price: 295, pe: 18, roe: 12, roce: 12, mktcap: 1200,
+    ocf: 50, rev: 380, revcagr: 18, epscagr: 14,
+    opm: 14, de: 0.3, fcf: 35, promo: 65,
+    ca: 500, tl: 250, sh: 41, np: 65,
+    dep: 15, capex: 22, bvps: 220,
+  },
+  TASYBITE: {
+    symbol: 'TASYBITE', name: 'Tasty Bite Eatables', sector: 'FMCG', exchange: 'NSE',
+    price: 8500, pe: 55, roe: 20, roce: 22, mktcap: 2600,
+    ocf: 50, rev: 350, revcagr: 12, epscagr: 14,
+    opm: 14, de: 0, fcf: 45, promo: 64,
+    ca: 250, tl: 60, sh: 3, np: 47,
+    dep: 12, capex: 16, bvps: 2400,
+  },
+  SANDUMANG: {
+    symbol: 'SANDUMANG', name: 'Sandur Manganese', sector: 'Mining', exchange: 'NSE',
+    price: 380, pe: 8, roe: 14, roce: 16, mktcap: 2000,
+    ocf: 200, rev: 1400, revcagr: 10, epscagr: 12,
+    opm: 22, de: 0, fcf: 175, promo: 56.5,
+    ca: 800, tl: 200, sh: 53, np: 250,
+    dep: 50, capex: 70, bvps: 280,
+  },
 };

@@ -3349,4 +3349,31 @@ export const STOCKS: Record<string, Stock> = {
     ca: 1200, tl: 800, sh: 56, np: 135,
     dep: 60, capex: 90, bvps: 380,
   },
+
+  BGV01: {
+    symbol: 'BGV01', 
+    name: 'Billion Brains Garage Ventures', 
+    sector: 'Fintech', 
+    exchange: 'BSE',
+    price: 295,      // Update with live NSE/BSE price
+    pe: 28,          // Update with actual P/E
+    roe: 14,         // Update with actual ROE
+    roce: 16,        // Update with actual ROCE
+    mktcap: 1200,    // Update with actual market cap (in crores)
+    ocf: 80,         // Update with operating cash flow
+    rev: 450,        // Update with revenue
+    revcagr: 18,     // Update with revenue CAGR
+    epscagr: 16,     // Update with EPS CAGR
+    opm: 22,         // Update with operating margin %
+    de: 0.3,         // Update with debt/equity
+    fcf: 65,         // Update with free cash flow
+    promo: 60.0,     // Update with promoter holding %
+    ca: 600,         // Update with current assets
+    tl: 350,         // Update with total liabilities
+    sh: 41,          // Update with shares outstanding (lakhs)
+    np: 95,          // Update with net profit
+    dep: 25,         // Update with depreciation
+    capex: 35,       // Update with capex
+    bvps: 220,       // Update with book value per share
+  },
 };

@@ -1,1 +1,0 @@
-const fs=require("fs");const p=require("path");console.log("ready");

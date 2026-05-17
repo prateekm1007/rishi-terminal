@@ -36,7 +36,7 @@ export default function ScreenerPage() {
 
           <p style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <a href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</a>
-            <span style={{ margin: '0 8px' }}>›</span>
+            <span style={{ margin: '0 8px' }}>â€º</span>
             <span>SCREENER</span>
           </p>
 
@@ -49,7 +49,7 @@ export default function ScreenerPage() {
                 {activePresetData ? (
                   <><strong style={{ color: '#D4AF37' }}>{activePresetData.emoji} {activePresetData.name}:</strong> {activePresetData.description}</>
                 ) : (
-                  'Filter 281 Indian stocks by Rishi wisdom — Buffett Mode, Damani Mode, Graham Mode, Short Mode & more'
+                  'Filter ${stockList.length} Indian stocks by Rishi wisdom â€” Buffett Mode, Damani Mode, Graham Mode, Short Mode & more'
                 )}
               </p>
             </div>
@@ -70,7 +70,7 @@ export default function ScreenerPage() {
           {/* Rishi Presets */}
           <div style={{ marginBottom: 28 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.12em', marginBottom: 10 }}>
-              🧘 RISHI SCREENING MODES
+              ðŸ§˜ RISHI SCREENING MODES
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
@@ -83,7 +83,7 @@ export default function ScreenerPage() {
                   fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
                 }}
               >
-                🔍 All Stocks
+                ðŸ” All Stocks
               </button>
               {SCREENER_PRESETS.map(preset => (
                 <button

@@ -10,6 +10,26 @@ export interface PriceData {
   lastUpdated: string;
 }
 
+// Split array into chunks of given size
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
+
+// Fetch one batch chunk (max 150 symbols)
+async function fetchChunk(symbols: string[]): Promise<Record<string, any>> {
+  const response = await fetch('/api/prices/batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbols }),
+  });
+  if (!response.ok) throw new Error('Price API returned ' + response.status);
+  return response.json();
+}
+
 export function useLivePrices(symbols: string[], refreshInterval = 60000) {
   const [prices, setPrices] = useState<Record<string, PriceData>>({});
   const [loading, setLoading] = useState(true);
@@ -33,20 +53,20 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/prices/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbols: currentSymbols }),
-      });
+      // Split into chunks of 150 (well under the 200 API limit)
+      const chunks = chunkArray(currentSymbols, 150);
 
-      if (!response.ok) throw new Error('Price API returned ' + response.status);
-
-      const data = await response.json();
+      // Fetch all chunks sequentially to avoid hammering Yahoo Finance
+      const merged: Record<string, any> = {};
+      for (const chunk of chunks) {
+        const chunkData = await fetchChunk(chunk);
+        Object.assign(merged, chunkData);
+      }
 
       // Normalize — ensure every field exists with a safe fallback
       const normalized: Record<string, PriceData> = {};
       for (const sym of currentSymbols) {
-        const raw = data[sym];
+        const raw = merged[sym];
         if (raw) {
           normalized[sym] = {
             price:            typeof raw.price            === 'number' ? raw.price            : 0,

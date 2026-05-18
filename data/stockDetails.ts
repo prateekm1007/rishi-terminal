@@ -78,7 +78,7 @@ function generateShareholdingHistory(stock: Stock): ShareholdingEntry[] {
   ];
 }
 
-// Generate realistic peers for any stock ƒ¢¢€š¬¢‚¬ STOCKS now properly imported
+// Generate realistic peers for any stock Ã¢â‚¬â€ STOCKS now properly imported
 function generatePeers(stock: Stock): PeerStock[] {
   const allStocks  = Object.values(STOCKS);
   const sectorPeers = allStocks.filter(
@@ -174,12 +174,12 @@ function generateTechnicals(stock: Stock): any[] {
   ];
 }
 
-// Module-level cache ƒ¢¢€š¬¢‚¬ lives for the lifetime of the server process
+// Module-level cache Ã¢â‚¬â€ lives for the lifetime of the server process
 const STOCK_DETAILS_CACHE: Record<string, StockDetail> = {};
 
 /**
  * Generate complete stock details for ANY stock.
- * Results are cached after first computation ƒ¢¢€š¬¢‚¬ O(1) on repeat calls.
+ * Results are cached after first computation Ã¢â‚¬â€ O(1) on repeat calls.
  */
 export function generateStockDetail(stock: Stock): StockDetail {
   if (STOCK_DETAILS_CACHE[stock.symbol]) {

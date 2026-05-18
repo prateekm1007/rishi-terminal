@@ -17,7 +17,7 @@ const CACHE_TTL = 60_000; // 60 seconds
 // Fetch single stock from Yahoo Finance v8/chart (works without auth)
 async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
   try {
-    // Convert NSE symbol to Yahoo format (TCS → TCS.NS)
+    // Convert NSE symbol to Yahoo format (TCS â†’ TCS.NS)
     const yahooSymbol = symbol.includes('.') ? symbol : `${symbol}.NS`;
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}`;
     
@@ -125,7 +125,7 @@ export async function fetchBulkPricesForSymbols(
   }
   
   // Process in parallel batches (10 batches of ~100 symbols each)
-  const chunks = chunkArray(toFetch, 100);
+  const chunks = chunkArray(toFetch, 20);
   const batchResults = await Promise.allSettled(
     chunks.map(chunk => processBatch(chunk))
   );

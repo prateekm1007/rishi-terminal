@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       !s.includes('/') && // not forex
       !s.startsWith('IN') && // not bonds
       !['BTC','ETH','BNB','SOL','ADA','AVAX','DOT','MATIC','LINK','UNI','AAVE','MKR','XRP','DOGE','SHIB'].includes(s) && // not crypto
-      !['GOLD','SILVER','PLATINUM','CRUDEOIL','NATURALGAS','COPPER','ALUMINIUM','ZINC','NICKEL','LEAD','BRENTCRUDE','PALLADIUM','COTTON','RUBBER','MENTHAOIL','CARDAMOM'].includes(s) // not commodities
+      !['GOLD','SILVER','PLATINUM','CRUDEOIL','WTI','BRENT','NATURALGAS','COPPER','ALUMINIUM','ZINC','NICKEL','LEAD','BRENTCRUDE','PALLADIUM','COTTON','RUBBER','MENTHAOIL','CARDAMOM'].includes(s) // not commodities
     );
 
     const otherSymbols = symbols.filter(s => !nseSymbols.includes(s));

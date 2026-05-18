@@ -2,8 +2,7 @@ import { notFound } from 'next/navigation';
 import { STOCKS } from '../../../data/stocks';
 import { buildConsensus } from '../../../lib/consensus';
 import { generateStockDetail } from '../../../data/stockDetails';
-import { adaptStock } from '../../../lib/adapters/stockAdapter';
-import { AssetTerminal } from '../../../components/terminal/AssetTerminal';
+import { StockPageClient } from '../../../components/stock/StockPageClient';
 
 export async function generateStaticParams() {
   return Object.keys(STOCKS).map((symbol) => ({ symbol }));
@@ -28,14 +27,13 @@ export default async function StockPage({ params }: StockPageProps) {
   if (!stock) notFound();
 
   const consensus = buildConsensus(stock);
-  const asset = adaptStock(stock);
   const stockDetail = generateStockDetail(stock);
 
   return (
-    <AssetTerminal
-      asset={asset}
-      consensus={consensus as any}
-      detail={{ stockDetail }}
+    <StockPageClient
+      stock={stock}
+      consensus={consensus}
+      detail={stockDetail}
     />
   );
 }

@@ -8,34 +8,52 @@ const NAV_GROUPS = [
   {
     title: "CORE",
     items: [
-      { href: "/",            emoji: "⚡", label: "Dashboard"    },
-      { href: "/screener",    emoji: "📊", label: "Screener"     },
-      { href: "/portfolio",   emoji: "💼", label: "Portfolio"    },
-      { href: "/watchlist",   emoji: "⭐", label: "Watchlist"    },
-      { href: "/compare",     emoji: "⚖️", label: "Compare"      },
+      { href: "/",            label: "Dashboard",      icon: "terminal" },
+      { href: "/screener",    label: "Screener",       icon: "filter"   },
+      { href: "/portfolio",   label: "Portfolio",      icon: "briefcase"},
+      { href: "/watchlist",   label: "Watchlist",      icon: "star"     },
+      { href: "/compare",     label: "Compare",        icon: "scale"    },
     ],
   },
   {
     title: "MARKETS",
     items: [
-      { href: "/crypto",      emoji: "₿",  label: "Crypto"       },
-      { href: "/forex",       emoji: "💱", label: "Forex"        },
-      { href: "/commodities", emoji: "🥇", label: "Commodities"  },
-      { href: "/bonds",       emoji: "📜", label: "Bonds"        },
-      { href: "/pulse",       emoji: "📡", label: "Market Pulse" },
+      { href: "/crypto",      label: "Crypto",         icon: "btc"      },
+      { href: "/forex",       label: "Forex",          icon: "fx"       },
+      { href: "/commodities", label: "Commodities",    icon: "gold"     },
+      { href: "/bonds",       label: "Bonds",          icon: "bond"     },
+      { href: "/pulse",       label: "Market Pulse",   icon: "pulse"    },
     ],
   },
   {
     title: "INTELLIGENCE",
     items: [
-      { href: "/fno/builder", emoji: "🧯", label: "F&O Builder"  },
-      { href: "/rishis",      emoji: "🧘", label: "Chat with Rishis" },
-      { href: "/news",        emoji: "📰", label: "News"         },
-      { href: "/backtest",    emoji: "⏪", label: "Backtest"     },
-      { href: "/pricing",     emoji: "💎", label: "Pricing"      },
+      { href: "/fno/builder", label: "F&O Builder",    icon: "fno"      },
+      { href: "/rishis",      label: "Chat with Rishis", icon: "rishi"  },
+      { href: "/news",        label: "News",           icon: "news"     },
+      { href: "/backtest",    label: "Backtest",       icon: "back"     },
+      { href: "/pricing",     label: "Pricing",        icon: "gem"      },
     ],
   },
 ];
+
+const ICONS: Record<string, React.ReactNode> = {
+  terminal: <span>⌘</span>,
+  filter:   <span>◫</span>,
+  briefcase:<span>▣</span>,
+  star:     <span>★</span>,
+  scale:    <span>⚖</span>,
+  btc:      <span>₿</span>,
+  fx:       <span>¤</span>,
+  gold:     <span>◆</span>,
+  bond:     <span>▤</span>,
+  pulse:    <span>◉</span>,
+  fno:      <span>◈</span>,
+  rishi:    <span>◌</span>,
+  news:     <span>☰</span>,
+  back:     <span>↺</span>,
+  gem:      <span>◇</span>,
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -58,12 +76,12 @@ export default function Sidebar() {
       overflowX: "hidden",
     }}>
 
-      {/* Logo */}
       <div style={{
         padding: "24px 20px 20px",
         borderBottom: "1px solid rgba(212,175,55,0.08)",
       }}>
         <SadhuVectorLogo size={64} showText={true} />
+
         <div style={{
           fontFamily: "JetBrains Mono, monospace",
           fontSize: "9px",
@@ -75,10 +93,10 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Nav */}
       <nav style={{ flex: 1, padding: "16px 12px", overflowY: "auto" }}>
         {NAV_GROUPS.map((group) => (
           <div key={group.title} style={{ marginBottom: "28px" }}>
+
             <div style={{
               fontSize: "9px",
               fontWeight: 800,
@@ -92,10 +110,17 @@ export default function Sidebar() {
             </div>
 
             {group.items.map((item) => {
-              const isActive = pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href));
+              const isActive =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
+
               return (
-                <Link href={item.href} key={item.href} style={{ textDecoration: "none", display: "block" }}>
+                <Link
+                  href={item.href}
+                  key={item.href}
+                  style={{ textDecoration: "none", display: "block" }}
+                >
                   <div style={{
                     display: "flex",
                     alignItems: "center",
@@ -105,19 +130,24 @@ export default function Sidebar() {
                     marginBottom: "2px",
                     cursor: "pointer",
                     background: isActive
-                      ? "linear-gradient(90deg,rgba(212,175,55,0.12),rgba(212,175,55,0.05))"
+                      ? "linear-gradient(90deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04))"
                       : "transparent",
-                    borderLeft: isActive ? "2px solid #D4AF37" : "2px solid transparent",
+                    borderLeft: isActive
+                      ? "2px solid #D4AF37"
+                      : "2px solid transparent",
                     transition: "all 0.15s ease",
                   }}>
+
                     <span style={{
-                      fontSize: "15px",
                       width: "20px",
                       textAlign: "center",
-                      flexShrink: 0
+                      color: isActive ? "#D4AF37" : "#64748B",
+                      fontSize: "15px",
+                      flexShrink: 0,
                     }}>
-                      {item.emoji}
+                      {ICONS[item.icon]}
                     </span>
+
                     <span style={{
                       fontSize: "13px",
                       fontWeight: isActive ? 600 : 500,
@@ -126,6 +156,7 @@ export default function Sidebar() {
                     }}>
                       {item.label}
                     </span>
+
                     {isActive && (
                       <div style={{
                         marginLeft: "auto",
@@ -145,17 +176,15 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
       <div style={{
         padding: "16px",
         borderTop: "1px solid rgba(212,175,55,0.08)",
-        flexShrink: 0,
       }}>
         <div style={{
           display: "flex",
           alignItems: "center",
           gap: "6px",
-          marginBottom: "12px"
+          marginBottom: "12px",
         }}>
           <div style={{
             width: "7px",
@@ -164,6 +193,7 @@ export default function Sidebar() {
             background: "#22C55E",
             boxShadow: "0 0 8px rgba(34,197,94,0.7)",
           }} />
+
           <span style={{
             fontSize: "11px",
             color: "#22C55E",
@@ -173,6 +203,7 @@ export default function Sidebar() {
             Live Market Data
           </span>
         </div>
+
         <Link href="/pricing" style={{ textDecoration: "none", display: "block" }}>
           <div style={{
             background: "linear-gradient(135deg,rgba(212,175,55,0.08),rgba(139,92,246,0.08))",
@@ -184,16 +215,17 @@ export default function Sidebar() {
               fontSize: "11px",
               fontWeight: 700,
               color: "#D4AF37",
-              marginBottom: "3px"
+              marginBottom: "3px",
             }}>
-              💎 SEEKER PLAN
+              SEEKER PLAN
             </div>
+
             <div style={{
               fontSize: "11px",
               color: "#475569",
-              fontFamily: "Inter, sans-serif"
+              fontFamily: "Inter, sans-serif",
             }}>
-              Upgrade for full access →
+              Upgrade for full access
             </div>
           </div>
         </Link>

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { UniversalAsset } from '../../lib/types/asset';
 import type { RishiScore } from '../../lib/types';
 import { getUniversalParallels } from "../../lib/wisdom/universalParallels";
+import { getStockParallel } from "../../lib/wisdom/stockParallels";
 
 interface Message {
   id: string;
@@ -74,7 +75,7 @@ export function AssetWisdomSidebar({ asset, scores }: Props) {
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 💾 Persistent Memory: Load saved conversation on mount
+  // Ã°Å¸â€™Â¾ Persistent Memory: Load saved conversation on mount
   useEffect(() => {
     const storageKey = `rishi-chat-${asset.symbol}-${selectedRishi}`;
     const saved = localStorage.getItem(storageKey);
@@ -88,7 +89,7 @@ export function AssetWisdomSidebar({ asset, scores }: Props) {
     }
   }, [asset.symbol, selectedRishi]);
 
-  // 💾 Auto-save conversation on every message change
+  // Ã°Å¸â€™Â¾ Auto-save conversation on every message change
   useEffect(() => {
     if (messages.length > 0) {
       const storageKey = `rishi-chat-${asset.symbol}-${selectedRishi}`;
@@ -186,7 +187,15 @@ User question about this asset:`;
     rishis: [],
   } as any) : null;
 
-  const parallel = stockParallel ?? universalParallel;
+  const consensusScore = scores.length > 0
+    ? Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length)
+    : 50;
+
+  const generatedStockParallel = asset.category === "stock"
+    ? getStockParallel(asset, consensusScore)
+    : null;
+
+  const parallel = stockParallel ?? universalParallel ?? generatedStockParallel;
 
   const relevantScores = parallel ? scores.filter(s => ((parallel as any).rishis ?? []).some((r: string) => s.name === r)) : [];
 
@@ -206,8 +215,8 @@ User question about this asset:`;
         background: "rgba(5,8,16,0.6)",
       }}>
         {[
-          { id: "wisdom" as const, label: "📜 Wisdom", emoji: "📜" },
-          { id: "chat" as const, label: "💬 Chat", emoji: "💬" },
+          { id: "wisdom" as const, label: "Ã°Å¸â€œÅ“ Wisdom", emoji: "Ã°Å¸â€œÅ“" },
+          { id: "chat" as const, label: "Ã°Å¸â€™Â¬ Chat", emoji: "Ã°Å¸â€™Â¬" },
         ].map(tab => (
           <button
             key={tab.id}
@@ -301,7 +310,7 @@ User question about this asset:`;
                   "{parallel.quote}"
                 </blockquote>
                 <div style={{ fontSize: "10px", color: "#64748B", textAlign: "right" }}>
-                  — {parallel.author}
+                  Ã¢â‚¬â€ {parallel.author}
                 </div>
               </div>
             </>
@@ -323,7 +332,7 @@ User question about this asset:`;
             color: "#94A3B8",
             lineHeight: 1.5,
           }}>
-            <strong style={{ color: "#FFC107" }}>⚠️ Disclaimer:</strong> This chat uses AI to simulate how the selected Rishi
+            <strong style={{ color: "#FFC107" }}>Ã¢Å¡Â Ã¯Â¸Â Disclaimer:</strong> This chat uses AI to simulate how the selected Rishi
             might analyze investments based on publicly known philosophies. This is <strong>not</strong> real advice from the actual investor.
             For entertainment and education only.
           </div>
@@ -365,7 +374,7 @@ User question about this asset:`;
                 opacity: messages.length === 0 ? 0.4 : 1,
               }}
             >
-              🗑️ Clear
+              Ã°Å¸â€”â€˜Ã¯Â¸Â Clear
             </button>
           </div>
 
@@ -373,7 +382,7 @@ User question about this asset:`;
           <div style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
             {messages.length === 0 && (
               <div style={{ textAlign: "center", color: "#475569", fontSize: "11px", marginTop: "20px" }}>
-                <div style={{ fontSize: "24px", marginBottom: "8px" }}>💬</div>
+                <div style={{ fontSize: "24px", marginBottom: "8px" }}>Ã°Å¸â€™Â¬</div>
                 <div>Ask {selectedRishi} about {asset.symbol}</div>
               </div>
             )}
@@ -443,7 +452,7 @@ User question about this asset:`;
                 fontSize: "12px",
                 color: "#ff6666",
               }}>
-                ⚠️ {error}
+                Ã¢Å¡Â Ã¯Â¸Â {error}
               </div>
             )}
 

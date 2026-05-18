@@ -31,3 +31,5 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+# Vercel CLI
+.vercel/

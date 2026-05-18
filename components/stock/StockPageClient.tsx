@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Stock } from '../../lib/types';
@@ -128,7 +128,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   {t('stock.knowledgeGraph')}
                 </h2>
                 <p style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>
-                  {stock.name} ¢‚¬€ {t('stock.graphSubtitle')}
+                  {stock.name}  —  {t('stock.graphSubtitle')}
                 </p>
               </div>
               <button

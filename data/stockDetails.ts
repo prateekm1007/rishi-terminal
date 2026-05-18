@@ -1,4 +1,4 @@
-import { Stock } from '../lib/types';
+﻿import { Stock } from '../lib/types';
 import { STOCKS } from '../data/stocks';
 
 export interface QuarterlyResult {
@@ -179,7 +179,7 @@ const STOCK_DETAILS_CACHE: Record<string, StockDetail> = {};
 
 /**
  * Generate complete stock details for ANY stock.
- * Results are cached after first computation Ã¢â‚¬â€ O(1) on repeat calls.
+ * Results are cached after first computation -- O(1) on repeat calls.
  */
 export function generateStockDetail(stock: Stock): StockDetail {
   if (STOCK_DETAILS_CACHE[stock.symbol]) {

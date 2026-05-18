@@ -27,7 +27,7 @@ export function ConsensusHero({ consensus }: Props) {
             <span style={{ color: '#64748B' }}>
               Tension: <span style={{ color: score >= 55 ? '#00BA7C' : '#f59e0b' }}>{consensus.tension}</span>
             </span>
-            <span style={{ color: 'rgba(51,65,85,0.5)' }}>ƒ¢¢"š¬‚¢</span>
+            <span style={{ color: 'rgba(51,65,85,0.5)' }}></span>
             <span style={{ color: '#64748B' }}>
               Spread: <span style={{ color: '#F8FAFC', fontFamily: 'monospace' }}>{consensus.tensionSpread.toFixed(0)} pts</span>
             </span>

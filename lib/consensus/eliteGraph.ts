@@ -92,17 +92,17 @@ function generateReasoning(score: RishiScore, stock: Stock, stance: 'bull' | 'be
   const bottomComp = score.comps.sort((a, b) => a.v - b.v)[0];
 
   if (stance === 'bull') {
-    return `Through my ${p.lens} lens, ${stock.name} shows clear merit. ${topComp ? `The ${topComp.label} scores ${topComp.v}/100 â€” ${topComp.detail}` : ''}. With ROE of ${stock.roe}% and a PE of ${stock.pe}x, the ${p.keyFocus} argument is compelling. ${score.insight}`;
+    return `Through my ${p.lens} lens, ${stock.name} shows clear merit. ${topComp ? `The ${topComp.label} scores ${topComp.v}/100 -- ${topComp.detail}` : ''}. With ROE of ${stock.roe}% and a PE of ${stock.pe}x, the ${p.keyFocus} argument is compelling. ${score.insight}`;
   } else if (stance === 'bear') {
-    return `My ${p.lens} framework raises red flags here. ${bottomComp ? `The ${bottomComp.label} scores only ${bottomComp.v}/100 â€” ${bottomComp.detail}` : ''}. Focusing on ${p.keyFocus}, the risk-reward does not justify current price. ${score.insight}`;
+    return `My ${p.lens} framework raises red flags here. ${bottomComp ? `The ${bottomComp.label} scores only ${bottomComp.v}/100 -- ${bottomComp.detail}` : ''}. Focusing on ${p.keyFocus}, the risk-reward does not justify current price. ${score.insight}`;
   } else {
-    return `Applying my ${p.lens} approach, ${stock.name} sits at a crossroads. The ${p.keyFocus} picture is mixed â€” I need more data before committing. ${score.insight}`;
+    return `Applying my ${p.lens} approach, ${stock.name} sits at a crossroads. The ${p.keyFocus} picture is mixed -- I need more data before committing. ${score.insight}`;
   }
 }
 
 function generatePhilosophy(score: RishiScore, stock: Stock, stance: 'bull' | 'bear' | 'neutral'): string {
   const p = RISHI_PHILOSOPHY[score.name] || { lens: 'fundamental', keyFocus: 'core metrics', signature: 'What is the core value here?' };
-  return `"${p.signature}" â€” In ${stock.name}'s case, the answer ${stance === 'bull' ? 'supports' : stance === 'bear' ? 'questions' : 'does not yet confirm'} investment at current levels. My ${p.lens} framework demands ${stance === 'bull' ? 'conviction and position sizing' : stance === 'bear' ? 'patience and margin of safety' : 'more clarity before acting'}.`;
+  return `"${p.signature}" -- In ${stock.name}'s case, the answer ${stance === 'bull' ? 'supports' : stance === 'bear' ? 'questions' : 'does not yet confirm'} investment at current levels. My ${p.lens} framework demands ${stance === 'bull' ? 'conviction and position sizing' : stance === 'bear' ? 'patience and margin of safety' : 'more clarity before acting'}.`;
 }
 
 function generateKeyMetric(score: RishiScore, stance: 'bull' | 'bear'): string {
@@ -226,9 +226,9 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
 
     const contextMap: Record<TimelineEntry['event'], string> = {
       buy_signal: `${rishi.full} model triggers BUY. ${p.lens} score: ${rishi.score}/100. Primary driver: ${topComp?.label || 'overall quality'}. ${topComp?.detail || rishi.insight}`,
-      hold:       `${rishi.full} model signals HOLD. Score of ${rishi.score} â€” not cheap enough to buy aggressively, not expensive enough to exit. ${p.keyFocus} remains acceptable.`,
-      warning:    `${rishi.full} model issues CAUTION. Score ${rishi.score}/100 â€” ${p.keyFocus} deteriorating. Requires fresh catalyst before re-entry.`,
-      sell_signal:`${rishi.full} model triggers REDUCE. Score ${rishi.score}/100 â€” ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
+      hold:       `${rishi.full} model signals HOLD. Score of ${rishi.score} -- not cheap enough to buy aggressively, not expensive enough to exit. ${p.keyFocus} remains acceptable.`,
+      warning:    `${rishi.full} model issues CAUTION. Score ${rishi.score}/100 -- ${p.keyFocus} deteriorating. Requires fresh catalyst before re-entry.`,
+      sell_signal:`${rishi.full} model triggers REDUCE. Score ${rishi.score}/100 -- ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
     };
 
     events.push({

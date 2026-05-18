@@ -6,7 +6,7 @@
 // Bonds: Static yields
 
 // =============================================================================
-// NSE INDIA API — Stocks + MCX Commodities
+// NSE INDIA API â€” Stocks + MCX Commodities
 // =============================================================================
 
 const NSE_HEADERS = {
@@ -69,7 +69,7 @@ async function getNSEDerivativePrice(symbol: string): Promise<{ price: number; c
 }
 
 // =============================================================================
-// COMMODITY MAPPING — MCX symbol to NSE/Global
+// COMMODITY MAPPING â€” MCX symbol to NSE/Global
 // =============================================================================
 
 // MCX commodities trade on NSE derivatives segment
@@ -88,17 +88,26 @@ const COMMODITY_NSE_SYMBOLS: Record<string, string> = {
 // For commodities not on NSE, use static USD prices (updated periodically)
 // Brent crude tracks WTI closely; MCX gold tracks international gold
 const COMMODITY_STATIC_USD: Record<string, number> = {
-  BRENTCRUDE: 65.0,    // USD per barrel - update periodically
-  PLATINUM: 980.0,     // USD per troy oz
-  PALLADIUM: 980.0,    // USD per troy oz
-  COTTON: 68.0,        // USD per pound (cents)
-  RUBBER: 180.0,       // USD per 100kg
-  MENTHAOIL: 950.0,    // INR per kg (MCX)
-  CARDAMOM: 1800.0,    // INR per kg (MCX)
+  // MCX prices in INR (approximate current values - May 2025)
+  GOLD: 96000,         // INR per 10g
+  SILVER: 97000,       // INR per kg
+  BRENTCRUDE: 5500,    // INR per barrel (~65 USD)
+  CRUDEOIL: 5400,      // INR per barrel (WTI)
+  NATURALGAS: 285,     // INR per mmBtu
+  COPPER: 820,         // INR per kg
+  ALUMINIUM: 240,      // INR per kg
+  ZINC: 260,           // INR per kg
+  NICKEL: 1550,        // INR per kg
+  LEAD: 185,           // INR per kg
+  PLATINUM: 98000,     // INR per 10g
+  PALLADIUM: 95000,    // INR per 10g
+  COTTON: 58000,       // INR per candy (356kg)
+  MENTHAOIL: 950,      // INR per kg
+  CARDAMOM: 1800,      // INR per kg
 };
 
 // =============================================================================
-// COINGECKO — Crypto ONLY
+// COINGECKO â€” Crypto ONLY
 // =============================================================================
 
 const COINGECKO_IDS: Record<string, string> = {
@@ -166,7 +175,7 @@ async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; chang
 }
 
 // =============================================================================
-// FOREX — ExchangeRate-API (free, no auth)
+// FOREX â€” ExchangeRate-API (free, no auth)
 // =============================================================================
 
 const forexCache: { rates: Record<string, number>; fetchedAt: number } | null = null;
@@ -227,7 +236,7 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
 }
 
 // =============================================================================
-// BOND YIELDS (static — no free real-time Indian bond API)
+// BOND YIELDS (static â€” no free real-time Indian bond API)
 // =============================================================================
 
 const BOND_YIELDS: Record<string, number> = {
@@ -277,13 +286,15 @@ export async function fetchLivePrice(
   else if (symbol.includes('/')) {
     priceData = await getForexRate(symbol);
   }
-  // 4. MCX Commodities on NSE derivatives
-  else if (COMMODITY_NSE_SYMBOLS[symbol]) {
-    priceData = await getNSEDerivativePrice(COMMODITY_NSE_SYMBOLS[symbol]);
-  }
-  // 5. Static commodity fallback
-  else if (COMMODITY_STATIC_USD[symbol]) {
-    priceData = { price: COMMODITY_STATIC_USD[symbol], change: 0 };
+  // 4. MCX Commodities — try NSE derivative, fall back to static
+  else if (COMMODITY_NSE_SYMBOLS[symbol] || COMMODITY_STATIC_USD[symbol]) {
+    if (COMMODITY_NSE_SYMBOLS[symbol]) {
+      priceData = await getNSEDerivativePrice(COMMODITY_NSE_SYMBOLS[symbol]);
+    }
+    // Fallback to static if NSE derivative fails
+    if (!priceData && COMMODITY_STATIC_USD[symbol]) {
+      priceData = { price: COMMODITY_STATIC_USD[symbol], change: 0 };
+    }
   }
   // 6. Indian stocks (NSE equity API)
   else {

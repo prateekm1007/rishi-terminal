@@ -134,7 +134,7 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                 </span>
               </div>
             </div>
-            <LivePriceWidget price={asset.price} change24h={asset.change24h} />
+            <LivePriceWidget symbol={asset.symbol} price={asset.price} change24h={asset.change24h} />
           </div>
         </div>
       </div>

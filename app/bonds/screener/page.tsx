@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +17,9 @@ export default function BondScreenerPage() {
           
           <p style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
-            <span style={{ margin: '0 8px' }}>â€º</span>
+            <span style={{ margin: '0 8px' }}>€º</span>
             <Link href="/bonds" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>BONDS</Link>
-            <span style={{ margin: '0 8px' }}>â€º</span>
+            <span style={{ margin: '0 8px' }}>€º</span>
             <span>SCREENER</span>
           </p>
 
@@ -42,7 +42,7 @@ export default function BondScreenerPage() {
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
                   <th style={{ textAlign: 'left', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>BOND</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>TYPE</th>
-                  <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>YTM â†“</th>
+                  <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>YTM †“</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>COUPON</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>PRICE</th>
                   <th style={{ textAlign: 'right', padding: '14px 24px', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', letterSpacing: 1 }}>DURATION</th>
@@ -98,7 +98,7 @@ export default function BondScreenerPage() {
                         {bond.rating}
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 12, color: bond.spread > 0 ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                        {bond.spread > 0 ? `+${bond.spread}bps` : 'â€”'}
+                        {bond.spread > 0 ? `+${bond.spread}bps` : '€”'}
                       </td>
                     </tr>
                   );

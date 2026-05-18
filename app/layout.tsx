@@ -3,9 +3,10 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { LanguageProvider } from "@/lib/language";
 import AuthProvider from "@/components/auth/AuthProvider";
+import { GlobalSearchBar } from "@/components/ui/GlobalSearchBar";
 
 export const metadata: Metadata = {
-  title: "Rishi Terminal — Sacred Investment Intelligence",
+  title: "Rishi Terminal - Sacred Investment Intelligence",
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body style={{
         margin: 0,
         padding: 0,
@@ -40,7 +41,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 width: "calc(100vw - 240px)",
                 maxWidth: "calc(100vw - 240px)",
               }}>
-                {children}
+                <div style={{
+  padding: "16px 24px 0 24px",
+  position: "relative",
+  zIndex: 50
+}}>
+  <GlobalSearchBar />
+</div>
+{children}
               </main>
             </div>
           </LanguageProvider>

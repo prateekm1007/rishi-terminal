@@ -7,17 +7,17 @@ import type { UniversalAsset } from '../../lib/types/asset';
 import { usePriceHistory, type Timeframe, type PricePoint } from '../../hooks/usePriceHistory';
 
 interface Props { asset: UniversalAsset; }
-// â”€â”€ TIMEFRAMES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬ TIMEFRAMES Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬
 const TIMEFRAMES: Timeframe[] = ['1D','1W','1M','3M','6M','1Y','3Y','5Y','MAX'];
 const TF_LABEL: Record<Timeframe,string> = {
   '1D':'1 Day','1W':'1 Week','1M':'1 Month','3M':'3 Months',
   '6M':'6 Months','1Y':'1 Year','3Y':'3 Years','5Y':'5 Years','MAX':'All Time',
 };
 
-// â”€â”€ TOOLTIP STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬ TOOLTIP STATE Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬
 interface TooltipState { x: number; y: number; price: number; date: string; visible: boolean; }
 
-// â”€â”€ SVG LINE CHART WITH TOOLTIP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬ SVG LINE CHART WITH TOOLTIP Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬Â¢â‚¬Ââ€šÂ¬
 function LineChart({ points, positive }: { points: PricePoint[]; positive: boolean }) {
   const [tip, setTip] = React.useState<TooltipState>({ x:0, y:0, price:0, date:'', visible:false });
 
@@ -44,8 +44,8 @@ function LineChart({ points, positive }: { points: PricePoint[]; positive: boole
     'Z',
   ].join(' ');
 
-  const color  = positive ? '#22C55E' : '#EF4444';
-  const fillId = `cf_${positive?'g':'r'}_${Math.abs(points.length)}`;
+  const color  = positive ? '^' : 'v';
+  const fillId = `cf_${positive ? '^' : 'v'}_${Math.abs(points.length)}`;
 
   const yTicks = Array.from({length:5},(_,i)=>{
     const v=vMin+(vRange/4)*i;
@@ -180,7 +180,7 @@ export function AssetPriceChart({ asset }: Props) {
             {(last ?? asset.price).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </div>
           <div style={{ fontSize:13, fontFamily:'monospace', marginTop:6, color: pos ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-            {loading ? 'Loadingâ€¦' : `${pos?'â–²':'â–¼'} ${Math.abs(change).toFixed(2)}% (${TF_LABEL[tf]})`}
+            {loading ? 'LoadingÂ¢â€šÂ¬Â¦' : `${pos?'Â¢â‚¬â€œÂ²':'Â¢â‚¬â€œÂ¼'} ${Math.abs(change).toFixed(2)}% (${TF_LABEL[tf]})`}
           </div>
         </div>
         <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
@@ -197,15 +197,15 @@ export function AssetPriceChart({ asset }: Props) {
       </div>
 
       <div style={{ height:240, background:'rgba(255,255,255,0.02)', borderRadius:8, border:'1px solid var(--border-subtle)', position:'relative', overflow:'hidden' }}>
-        {loading && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:12,fontFamily:'monospace' }}>Loadingâ€¦</div>}
+        {loading && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:12,fontFamily:'monospace' }}>LoadingÂ¢â€šÂ¬Â¦</div>}
         {!loading && error && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--accent-red)',fontSize:11,fontFamily:'monospace' }}>Failed to load data</div>}
         {!loading && !error && points.length>=2 && <LineChart points={points} positive={pos}/>}
         {!loading && !error && points.length<2 && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:11 }}>No data for this period</div>}
       </div>
 
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:8 }}>
-        <span style={{ fontSize:10, color:'var(--text-muted)', fontFamily:'monospace' }}>Source: {source??'â€”'} Â· {points.length} pts Â· Hover to inspect</span>
-        <span style={{ fontSize:10, color:'var(--text-muted)', fontFamily:'monospace' }}>AO Â· Not investment advice</span>
+        <span style={{ fontSize:10, color:'var(--text-muted)', fontFamily:'monospace' }}>Source: {source??'Â¢â€šÂ¬â‚¬Â'} â€šÂ· {points.length} pts â€šÂ· Hover to inspect</span>
+        <span style={{ fontSize:10, color:'var(--text-muted)', fontFamily:'monospace' }}>AO â€šÂ· Not investment advice</span>
       </div>
     </div>
   );

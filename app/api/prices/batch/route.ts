@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchBulkNSEPrices } from '@/lib/nse/bulkFetch';
+import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
 import { fetchLivePrice } from '@/lib/livePrice';
 
 export async function POST(req: NextRequest) {
@@ -14,52 +14,49 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Max 1000 symbols' }, { status: 400 });
     }
 
-    const prices: Record<string, any> = {};
     const t0 = Date.now();
+    const prices: Record<string, any> = {};
 
-    // Step 1: Bulk NSE fetch (covers ~800 stocks in ~3s, cached 60s)
-    const bulk = await fetchBulkNSEPrices();
-    const missing: string[] = [];
+    // Strategy: Yahoo bulk for NSE stocks, fallback for others
+    const nseSymbols = symbols.filter(s => 
+      !s.includes('/') && // not forex
+      !s.startsWith('IN') && // not bonds
+      !['BTC','ETH','BNB','SOL','ADA','AVAX','DOT','MATIC','LINK','UNI','AAVE','MKR','XRP','DOGE','SHIB'].includes(s) && // not crypto
+      !['GOLD','SILVER','PLATINUM','CRUDEOIL','NATURALGAS','COPPER','ALUMINIUM','ZINC','NICKEL','LEAD','BRENTCRUDE','PALLADIUM','COTTON','RUBBER','MENTHAOIL','CARDAMOM'].includes(s) // not commodities
+    );
 
-    for (const sym of symbols) {
-      const hit = bulk[sym];
-      if (hit) {
-        prices[sym] = {
-          price: hit.price,
-          change: hit.change,
-          changePercent24h: hit.change,
-          volume24h: hit.volume,
-          lastUpdated: new Date().toISOString(),
-        };
-      } else {
-        missing.push(sym);
-      }
+    const otherSymbols = symbols.filter(s => !nseSymbols.includes(s));
+
+    // Fetch NSE stocks via Yahoo bulk
+    const bulkResults = await fetchBulkPricesForSymbols(nseSymbols);
+    
+    for (const [sym, data] of Object.entries(bulkResults)) {
+      prices[sym] = {
+        price: data.price,
+        change: data.change,
+        changePercent24h: data.change,
+        volume24h: data.volume,
+        lastUpdated: new Date().toISOString(),
+      };
     }
 
-    // Step 2: Individual fallback for unmatched symbols
-    // (crypto, forex, bonds, commodities, or small-cap not in any index)
-    if (missing.length > 0) {
-      const cap = Math.min(missing.length, 200);
-      const toFetch = missing.slice(0, cap);
-
-      const settled = await Promise.allSettled(
-        toFetch.map((s) => fetchLivePrice(s)),
+    // Fetch non-NSE symbols (crypto/forex/bonds/commodities) via individual calls
+    if (otherSymbols.length > 0) {
+      const results = await Promise.allSettled(
+        otherSymbols.map(s => fetchLivePrice(s))
       );
 
-      settled.forEach((r, i) => {
+      results.forEach((r, i) => {
         if (r.status === 'fulfilled' && r.value) {
-          prices[toFetch[i]] = r.value;
+          prices[otherSymbols[i]] = r.value;
         }
       });
     }
 
     const ms = Date.now() - t0;
     console.log(
-      '[batch] ' +
-        Object.keys(prices).length + '/' + symbols.length +
-        ' in ' + ms + 'ms' +
-        ' (bulk=' + Object.keys(bulk).length +
-        ', fallback=' + missing.length + ')',
+      `[/api/prices/batch] ${Object.keys(prices).length}/${symbols.length} in ${ms}ms ` +
+      `(Yahoo bulk: ${Object.keys(bulkResults).length}, fallback: ${otherSymbols.length})`
     );
 
     return NextResponse.json(prices, {
@@ -68,8 +65,8 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('[/api/prices/batch] error:', error);
     return NextResponse.json(
-      { error: 'Batch fetch failed' },
-      { status: 500 },
+      { error: 'Batch fetch failed', details: (error as Error).message },
+      { status: 500 }
     );
   }
 }

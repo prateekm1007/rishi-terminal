@@ -68,6 +68,51 @@ async function getNSEDerivativePrice(symbol: string): Promise<{ price: number; c
   }
 }
 
+
+// =============================================================================
+// YAHOO FINANCE -- Indices + Commodity Futures (works from cloud without auth)
+// =============================================================================
+
+const YAHOO_INDEX_SYMBOLS: Record<string, string> = {
+  NIFTY50:    '^NSEI',
+  SENSEX:     '^BSESN',
+  BANK_NIFTY: '^NSEBANK',
+};
+
+const YAHOO_COMMODITY_SYMBOLS: Record<string, string> = {
+  GOLD:       'GC=F',
+  SILVER:     'SI=F',
+  CRUDEOIL:   'CL=F',
+  WTI:        'CL=F',
+  BRENT:      'BZ=F',
+  BRENTCRUDE: 'BZ=F',
+  PLATINUM:   'PL=F',
+  PALLADIUM:  'PA=F',
+  COPPER:     'HG=F',
+  NATURALGAS: 'NG=F',
+};
+
+async function fetchYahooQuote(
+  yahooSymbol: string
+): Promise<{ price: number; change: number } | null> {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const meta = json?.chart?.result?.[0]?.meta;
+    if (!meta?.regularMarketPrice) return null;
+    const price = Number(meta.regularMarketPrice) || 0;
+    const prevClose = Number(meta.previousClose) || price;
+    const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
+    return { price, change };
+  } catch {
+    return null;
+  }
+}
 // =============================================================================
 // COMMODITY MAPPING — MCX symbol to NSE/Global
 // =============================================================================
@@ -265,6 +310,10 @@ export async function fetchLivePrice(
 ): Promise<{ price: number; change: number; lastUpdated: string }> {
   let priceData: { price: number; change: number } | null = null;
 
+  // 0. Market indices (Yahoo Finance)
+  if (YAHOO_INDEX_SYMBOLS[symbol]) {
+    priceData = await fetchYahooQuote(YAHOO_INDEX_SYMBOLS[symbol]);
+  }
   // 1. Crypto (CoinGecko)
   if (COINGECKO_IDS[symbol]) {
     priceData = await getCoinGeckoPrice(symbol);
@@ -277,9 +326,14 @@ export async function fetchLivePrice(
   else if (symbol.includes('/')) {
     priceData = await getForexRate(symbol);
   }
-  // 4. MCX Commodities on NSE derivatives
+  // 4. Commodities via Yahoo Finance futures
+  else if (YAHOO_COMMODITY_SYMBOLS[symbol]) {
+    priceData = await fetchYahooQuote(YAHOO_COMMODITY_SYMBOLS[symbol]);
+  }
+  // 4b. MCX Commodities on NSE derivatives (fallback)
   else if (COMMODITY_NSE_SYMBOLS[symbol]) {
-    priceData = await getNSEDerivativePrice(COMMODITY_NSE_SYMBOLS[symbol]);
+    priceData = await fetchYahooQuote(`${COMMODITY_NSE_SYMBOLS[symbol]}.NS`) ??
+                await getNSEDerivativePrice(COMMODITY_NSE_SYMBOLS[symbol]);
   }
   // 5. Static commodity fallback
   else if (COMMODITY_STATIC_USD[symbol]) {

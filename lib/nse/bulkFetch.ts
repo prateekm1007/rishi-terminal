@@ -1,4 +1,4 @@
-// lib/nse/bulkFetch.ts
+﻿// lib/nse/bulkFetch.ts
 // Bulk stock price fetching using Yahoo Finance v8/chart endpoint
 // Strategy: parallel batches of sequential calls + 60s cache
 
@@ -17,7 +17,7 @@ const CACHE_TTL = 60_000; // 60 seconds
 // Fetch single stock from Yahoo Finance v8/chart (works without auth)
 async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
   try {
-    // Convert NSE symbol to Yahoo format (TCS â†’ TCS.NS)
+    // Convert NSE symbol to Yahoo format (TCS -> TCS.NS)
     const yahooSymbol = symbol.includes('.') ? symbol : `${symbol}.NS`;
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}`;
     

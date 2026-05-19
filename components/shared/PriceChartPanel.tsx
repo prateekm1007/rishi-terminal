@@ -177,7 +177,7 @@ export function PriceChartPanel({ stock }: Props) {
         <div>
           <div style={{ fontSize:10, color:'var(--text-muted)', letterSpacing:'0.1em', fontFamily:'Cinzel,serif', marginBottom:8 }}>PRICE CHART</div>
           <div style={{ fontSize:36, fontWeight:700, fontFamily:'JetBrains Mono,monospace', color:'var(--text-primary)' }}>
-            {stock.price.toLocaleString('en-IN')}
+            {loading ? stock.price.toLocaleString('en-IN') : last.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </div>
           <div style={{ fontSize:13, fontFamily:'monospace', marginTop:6, color: pos ? 'var(--accent-green)' : 'var(--accent-red)' }}>
             {loading ? 'Loading…' : `${pos?'▲':'▼'} ${Math.abs(change).toFixed(2)}% (${TF_LABEL[tf]})`}

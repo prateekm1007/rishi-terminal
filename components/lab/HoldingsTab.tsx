@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+
 import { STOCKS } from '@/data/stocks/index';
-import { loadPortfolio, savePortfolio, addHolding, removeHolding, calculatePortfolioMetrics, type PortfolioHolding } from '@/lib/portfolio';
 import { buildConsensus } from '@/lib/consensus';
+import { loadPortfolio, addHolding, removeHolding, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import PortfolioXRay from '@/components/portfolio/PortfolioXRay';
 
@@ -27,6 +28,7 @@ function scoreColor(s: number): string {
 export default function HoldingsTab() {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [innerTab, setInnerTab] = useState<InnerTab>('holdings');
+
   const [showAdd, setShowAdd] = useState(false);
   const [formSymbol, setFormSymbol] = useState('');
   const [formShares, setFormShares] = useState('');
@@ -50,13 +52,14 @@ export default function HoldingsTab() {
       const plPct = invested > 0 ? (pl / invested) * 100 : 0;
       const consensus = stock ? buildConsensus(stock) : null;
       const score = consensus?.consensus ?? 0;
+
       return { ...h, stock, livePrice, invested, current, pl, plPct, score };
     });
   }, [holdings, prices]);
 
   const totals = useMemo(() => {
     const totalInvested = enriched.reduce((s, h) => s + h.invested, 0);
-    const totalCurrent  = enriched.reduce((s, h) => s + h.current, 0);
+    const totalCurrent = enriched.reduce((s, h) => s + h.current, 0);
     const totalPL = totalCurrent - totalInvested;
     const totalPLPct = totalInvested > 0 ? (totalPL / totalInvested) * 100 : 0;
     return { totalInvested, totalCurrent, totalPL, totalPLPct };
@@ -74,7 +77,10 @@ export default function HoldingsTab() {
 
     addHolding({ symbol: sym, shares, avgPrice, addedDate: new Date().toISOString() });
     setHoldings(loadPortfolio().holdings);
-    setFormSymbol(''); setFormShares(''); setFormAvgPrice('');
+
+    setFormSymbol('');
+    setFormShares('');
+    setFormAvgPrice('');
     setShowAdd(false);
   }
 
@@ -83,7 +89,7 @@ export default function HoldingsTab() {
     setHoldings(loadPortfolio().holdings);
   }
 
-  const inputStyle = {
+  const inputStyle: React.CSSProperties = {
     padding: '8px 12px',
     background: 'rgba(15,23,42,0.8)',
     border: '1px solid rgba(212,175,55,0.3)',
@@ -94,7 +100,7 @@ export default function HoldingsTab() {
     width: '100%',
   };
 
-  const btnGold = {
+  const btnGold: React.CSSProperties = {
     padding: '8px 20px',
     background: 'rgba(212,175,55,0.15)',
     border: '1px solid rgba(212,175,55,0.4)',
@@ -111,13 +117,22 @@ export default function HoldingsTab() {
       {/* Inner tab bar */}
       <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(30,41,59,0.8)', marginBottom: 24 }}>
         {(['holdings', 'xray'] as InnerTab[]).map(t => (
-          <button key={t} onClick={() => setInnerTab(t)} style={{
-            padding: '10px 24px', fontSize: 12, fontFamily: 'monospace',
-            background: 'transparent', border: 'none',
-            borderBottom: innerTab === t ? '2px solid #D4AF37' : '2px solid transparent',
-            color: innerTab === t ? '#D4AF37' : '#64748B',
-            cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 1,
-          }}>
+          <button
+            key={t}
+            onClick={() => setInnerTab(t)}
+            style={{
+              padding: '10px 24px',
+              fontSize: 12,
+              fontFamily: 'monospace',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: innerTab === t ? '2px solid #D4AF37' : '2px solid transparent',
+              color: innerTab === t ? '#D4AF37' : '#64748B',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+            }}
+          >
             {t === 'holdings' ? 'Holdings' : 'X-Ray'}
           </button>
         ))}
@@ -136,7 +151,9 @@ export default function HoldingsTab() {
               ].map(m => (
                 <div key={m.label} style={{ padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 8, border: '1px solid rgba(30,41,59,0.8)' }}>
                   <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 6 }}>{m.label}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: m.color ?? '#E2E8F0', fontFamily: 'monospace' }}>{m.value}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: (m as any).color ?? '#E2E8F0', fontFamily: 'monospace' }}>
+                    {m.value}
+                  </div>
                 </div>
               ))}
             </div>
@@ -158,18 +175,15 @@ export default function HoldingsTab() {
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
                 <div>
                   <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SYMBOL</div>
-                  <input value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())}
-                    placeholder="e.g. TCS" style={inputStyle} />
+                  <input value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" style={inputStyle} />
                 </div>
                 <div>
                   <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SHARES</div>
-                  <input value={formShares} onChange={e => setFormShares(e.target.value)}
-                    placeholder="10" type="number" style={inputStyle} />
+                  <input value={formShares} onChange={e => setFormShares(e.target.value)} placeholder="10" type="number" style={inputStyle} />
                 </div>
                 <div>
                   <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>AVG PRICE</div>
-                  <input value={formAvgPrice} onChange={e => setFormAvgPrice(e.target.value)}
-                    placeholder="3500" type="number" style={inputStyle} />
+                  <input value={formAvgPrice} onChange={e => setFormAvgPrice(e.target.value)} placeholder="3500" type="number" style={inputStyle} />
                 </div>
                 <button onClick={handleAdd} style={{ ...btnGold, whiteSpace: 'nowrap' }}>Add</button>
               </div>
@@ -193,7 +207,9 @@ export default function HoldingsTab() {
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(30,41,59,0.8)' }}>
                     {['Symbol', 'Shares', 'Avg Price', 'LTP', 'Invested', 'Current', 'P&L', 'P&L %', 'Score', ''].map(h => (
-                      <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600, whiteSpace: 'nowrap' }}>{h}</th>
+                      <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>

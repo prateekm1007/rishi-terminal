@@ -42,3 +42,5 @@ BOND_FIX_SUCCESS_REPORT_*.txt
 SNAPSHOT_*.txt
 *.bak.*
 bond-implementation-dump.txt
+.backups/
+*-backup.tsx

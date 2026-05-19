@@ -33,3 +33,12 @@ next-env.d.ts
 Thumbs.db
 # Vercel CLI
 .vercel/
+
+# ──────────────────────────────────────────────────────────────
+# Auto-generated diagnostics and backups (from PowerShell scripts)
+# ──────────────────────────────────────────────────────────────
+BOND_CONSENSUS_AUDIT_*.txt
+BOND_FIX_SUCCESS_REPORT_*.txt
+SNAPSHOT_*.txt
+*.bak.*
+bond-implementation-dump.txt

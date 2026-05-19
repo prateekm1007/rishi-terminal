@@ -91,7 +91,7 @@ export default function BondsPage() {
               </p>
               {lastUpdated && (
                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  š¡ Live €¢ Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                  Live - Updated {lastUpdated.toLocaleTimeString('en-IN')}
                 </div>
               )}
             </div>
@@ -147,7 +147,7 @@ export default function BondsPage() {
       {error && (
         <div className="content-wrapper" style={{ padding: '12px 24px' }}>
           <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 16px', fontSize: 12, color: 'var(--accent-red)' }}>
-            š  {error} €” showing last known yields
+            Error: {error} - showing last known yields
           </div>
         </div>
       )}

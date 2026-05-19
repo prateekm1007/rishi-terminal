@@ -177,7 +177,7 @@ export function AssetPriceChart({ asset }: Props) {
         <div>
           <div style={{ fontSize:10, color:'var(--text-muted)', letterSpacing:'0.1em', fontFamily:'Cinzel,serif', marginBottom:8 }}>PRICE CHART</div>
           <div style={{ fontSize:36, fontWeight:700, fontFamily:'JetBrains Mono,monospace', color:'var(--text-primary)' }}>
-            {asset.price.toLocaleString('en-US')}
+            {loading ? asset.price.toLocaleString('en-US') : last.toLocaleString('en-US', { maximumFractionDigits: 2 })}
           </div>
           <div style={{ fontSize:13, fontFamily:'monospace', marginTop:6, color: pos ? 'var(--accent-green)' : 'var(--accent-red)' }}>
             {loading ? 'Loading…' : `${pos?'▲':'▼'} ${Math.abs(change).toFixed(2)}% (${TF_LABEL[tf]})`}

@@ -23,9 +23,15 @@ export function adaptBond(bond: Bond): UniversalAsset {
     symbol:    bond.symbol,
     name:      bond.name,
     category:  "bond",
+    // In bonds, we treat "price" in UI as YTM (yield)
     price:     bond.ytm,
     change24h: 0,
     metadata: {
+      // IMPORTANT: consensus engine expects these
+      symbol:    bond.symbol,
+      price:     bond.ytm,
+      change24h: 0,
+
       issuer:       bond.issuer,
       type:         bond.type,
       country:      bond.country,

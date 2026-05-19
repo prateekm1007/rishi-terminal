@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import HoldingsTabView from '@/components/lab/HoldingsTab';
+import WatchlistTabView from '@/components/lab/WatchlistTab';
 
 type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'backtest' | 'intelligence';
 
@@ -126,7 +127,7 @@ function LabContent() {
       <div className="content-wrapper" style={{ padding: '32px 24px' }}>
         {activeTab === 'overview' && <OverviewTab />}
         {activeTab === 'holdings' && <HoldingsTabView />}
-        {activeTab === 'watchlist' && <WatchlistTab />}
+        {activeTab === 'watchlist' && <WatchlistTabView />}
         {activeTab === 'compare' && <CompareTab />}
         {activeTab === 'backtest' && <BacktestTab />}
         {activeTab === 'intelligence' && <IntelligenceTab />}

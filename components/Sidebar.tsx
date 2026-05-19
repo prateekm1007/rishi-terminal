@@ -10,9 +10,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/",            label: "Dashboard",      icon: "terminal" },
       { href: "/screener",    label: "Screener",       icon: "filter"   },
-      { href: "/portfolio",   label: "Portfolio",      icon: "briefcase"},
-      { href: "/watchlist",   label: "Watchlist",      icon: "star"     },
-      { href: "/compare",     label: "Compare",        icon: "scale"    },
+      { href: "/lab",         label: "Portfolio Lab",  icon: "lab"      },
     ],
   },
   {
@@ -31,7 +29,6 @@ const NAV_GROUPS = [
       { href: "/fno/builder", label: "F&O Builder",    icon: "fno"      },
       { href: "/rishis",      label: "Chat with Rishis", icon: "rishi"  },
       { href: "/news",        label: "News",           icon: "news"     },
-      { href: "/backtest",    label: "Backtest",       icon: "back"     },
       { href: "/pricing",     label: "Pricing",        icon: "gem"      },
     ],
   },
@@ -43,6 +40,7 @@ const ICONS: Record<string, React.ReactNode> = {
   briefcase:<span>▣</span>,
   star:     <span>★</span>,
   scale:    <span>⚖</span>,
+  lab:      <span>LAB</span>,
   btc:      <span>₿</span>,
   fx:       <span>¤</span>,
   gold:     <span>◆</span>,

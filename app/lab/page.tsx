@@ -123,7 +123,7 @@ function OverviewTab() {
       </p>
       <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
         <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          🚧 Full implementation coming — will integrate existing Portfolio page logic
+          [SOON] Full implementation coming - will integrate existing Portfolio page logic
         </p>
       </div>
     </div>
@@ -141,7 +141,7 @@ function HoldingsTab() {
       </p>
       <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
         <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          🚧 Will show Portfolio table here
+          [SOON] Will show Portfolio table here
         </p>
       </div>
     </div>
@@ -159,7 +159,7 @@ function WatchlistTab() {
       </p>
       <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
         <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          🚧 Will integrate existing Watchlist page logic
+          [SOON] Will integrate existing Watchlist page logic
         </p>
       </div>
     </div>
@@ -177,7 +177,7 @@ function CompareTab() {
       </p>
       <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
         <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          🚧 Will integrate existing Compare page logic
+          [SOON] Will integrate existing Compare page logic
         </p>
       </div>
     </div>
@@ -195,7 +195,7 @@ function BacktestTab() {
       </p>
       <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
         <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          🚧 Will integrate existing Backtest page logic
+          [SOON] Will integrate existing Backtest page logic
         </p>
       </div>
     </div>
@@ -213,7 +213,7 @@ function IntelligenceTab() {
       </p>
       <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
         <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          🚧 New feature — will analyze entire portfolio through Rishi lens
+          [SOON] New feature - will analyze entire portfolio through Rishi lens
         </p>
       </div>
     </div>

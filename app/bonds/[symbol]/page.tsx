@@ -1,45 +1,80 @@
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+
 import { BONDS } from "@/data/bonds";
-import { AssetTerminal } from "@/components/terminal/AssetTerminal";
 import { adaptBond } from "@/lib/adapters/bondAdapter";
+import { buildUniversalConsensus } from "@/lib/consensus/universalConsensus";
+
+import { AssetTerminal } from "@/components/terminal/AssetTerminal";
+
+interface PageProps {
+  params: Promise<{ symbol: string }>;
+}
 
 export async function generateStaticParams() {
-  return BONDS.map((bond) => ({ symbol: bond.symbol }));
+  return BONDS.map((bond) => ({
+    symbol: bond.symbol,
+  }));
 }
 
 export async function generateMetadata({
   params,
-}: {
-  params: { symbol: string };
-}): Promise<Metadata> {
-  const bond = BONDS.find((b) => b.symbol === params.symbol);
-  if (!bond) return { title: "Bond Not Found" };
+}: PageProps): Promise<Metadata> {
+  const { symbol } = await params;
+
+  const bond = BONDS.find(
+    (b) => b.symbol.toUpperCase() === symbol.toUpperCase()
+  );
+
+  if (!bond) {
+    return {
+      title: "Bond Not Found",
+    };
+  }
 
   return {
     title: `${bond.name} - Bond Analysis | Rishi Terminal`,
-    description: `Detailed analysis of ${bond.name} with Rishi scoring and yield insights.`,
+    description: `${bond.name} government bond analysis with yield, duration, spread, and Rishi consensus scoring.`,
   };
 }
 
-export default function BondPage({
+export default async function BondPage({
   params,
-}: {
-  params: { symbol: string };
-}) {
-  const bond = BONDS.find((b) => b.symbol === params.symbol);
+}: PageProps) {
+  const { symbol } = await params;
+
+  const bond = BONDS.find(
+    (b) => b.symbol.toUpperCase() === symbol.toUpperCase()
+  );
 
   if (!bond) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500">Bond Not Found</h1>
-          <p className="text-gray-400 mt-2">Symbol: {params.symbol}</p>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   const asset = adaptBond(bond);
 
-  return <AssetTerminal asset={asset} />;
+  const consensus = buildUniversalConsensus(asset);
+
+  return (
+    <AssetTerminal
+      asset={asset}
+      consensus={consensus as any}
+      detail={{
+        description: `${bond.name} is a ${bond.type} bond issued by ${bond.issuer} with a yield to maturity of ${bond.ytm}% and duration of ${bond.duration} years.`,
+        metadata: {
+          issuer: bond.issuer,
+          type: bond.type,
+          country: bond.country,
+          maturityYears: bond.maturityYears,
+          maturityDate: bond.maturityDate,
+          couponRate: bond.couponRate,
+          ytm: bond.ytm,
+          duration: bond.duration,
+          spread: bond.spread,
+          rating: bond.rating,
+          riskRating: bond.riskRating,
+        },
+      }}
+    />
+  );
 }

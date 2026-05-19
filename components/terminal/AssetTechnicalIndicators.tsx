@@ -1,5 +1,7 @@
 'use client';
 
+import { usePriceHistory } from '../../hooks/usePriceHistory';
+
 import type { UniversalAsset } from '../../lib/types/asset';
 
 interface Props {
@@ -26,6 +28,9 @@ function IndicatorCard({ title, children }: { title: string; children: React.Rea
 }
 
 export function AssetTechnicalIndicators({ asset }: Props) {
+  const { points } = usePriceHistory(asset?.symbol ?? '', '1M');
+  const last = points.length > 0 ? points[points.length-1].v : (asset?.price ?? 0);
+
   if (!asset) return null;
 
   const rsi   = asset.metadata?.rsi      ?? 50;
@@ -34,10 +39,10 @@ export function AssetTechnicalIndicators({ asset }: Props) {
   const signal    = macd * 0.8;
   const histogram = macd - signal;
 
-  const upper      = asset.price * 1.08;
-  const middle     = asset.price * 1.02;
-  const lower      = asset.price * 0.94;
-  const supertrend = asset.price * ((asset.metadata?.roe || 10) > 15 ? 0.97 : 1.03);
+  const upper      = last * 1.08;
+  const middle     = last * 1.02;
+  const lower      = last * 0.94;
+  const supertrend = last * ((asset.metadata?.roe || 10) > 15 ? 0.97 : 1.03);
 
   const isBullish    = rsi < 70 && adx > 25 && macd > 0;
   const isOverbought = rsi > 70;
@@ -46,7 +51,7 @@ export function AssetTechnicalIndicators({ asset }: Props) {
   const adxLabel  = adx > 50  ? 'Very Strong Trend' : adx > 25 ? 'Strong Trend' : 'Weak / No Trend';
   const macdLabel = macd > 0  ? 'Bullish' : 'Bearish';
 
-  const supertrendUp = supertrend < asset.price;
+  const supertrendUp = supertrend < last;
   const supertrendLabel = supertrendUp
     ? '[UP] UPTREND - Price above Supertrend'
     : '[DOWN] DOWNTREND - Price below Supertrend';
@@ -110,7 +115,7 @@ export function AssetTechnicalIndicators({ asset }: Props) {
               </div>
             ))}
           </div>
-          <ScoreBar value={asset.price} max={upper} color="#FFD700" />
+          <ScoreBar value={last} max={upper} color="#FFD700" />
         </IndicatorCard>
 
         {/* ADX */}

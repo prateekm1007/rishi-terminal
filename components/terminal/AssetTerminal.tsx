@@ -192,6 +192,11 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
               <>
                 <div className="wisdom-reveal">
                   <ConsensusHero consensus={consensus} />
+                {asset.category === 'bond' && (
+                  <>
+                    <BondMetricsPanel asset={asset} />
+                  </>
+                )}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
@@ -321,11 +326,11 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
             {activeTab === 'technical' && (
               <>
                 <div className="wisdom-reveal">
-                  <AssetPriceChart asset={asset} />
+                  {asset.category === 'bond' ? <YieldCurveChart /> : <AssetPriceChart asset={asset} />}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
-                  <AssetTechnicalIndicators asset={asset} />
+                  {asset.category !== 'bond' && <AssetTechnicalIndicators asset={asset} />}
                 </div>
               </>
             )}

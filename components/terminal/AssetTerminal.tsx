@@ -17,6 +17,8 @@ import { buildUniversalKnowledgeGraph } from '../../lib/consensus/universalKnowl
 import { useLanguage }            from '../../lib/language';
 import { LegalDisclaimer } from '../ui/LegalDisclaimer';
 import RishiScoreDual             from '../score/RishiScoreDual';
+import { BondMetricsPanel }  from './BondMetricsPanel';
+import { YieldCurveChart }    from './YieldCurveChart';
 
 interface Props {
   asset: UniversalAsset;

@@ -1,44 +1,44 @@
-import { UniversalAsset } from "@/lib/types/asset";
+import type { UniversalAsset } from "@/lib/types/asset";
 
 export interface Bond {
-  symbol: string;
-  name: string;
-  issuer: string;
-  type: "G-Sec" | "SDL" | "Corporate" | "T-Bill" | "US-Treasury";
-  country: string;
+  symbol:       string;
+  name:         string;
+  issuer:       string;
+  type:         "G-Sec" | "SDL" | "Corporate" | "T-Bill" | "US-Treasury";
+  country:      string;
   maturityYears: number;
   maturityDate: string;
-  coupon: number;
-  couponRate: number;
-  ytm: number;
-  price: number;
-  duration: number;
-  riskRating: string;
-  rating: string;
-  spread: number;
+  coupon:       number;
+  couponRate:   number;
+  ytm:          number;
+  price:        number;
+  duration:     number;
+  riskRating:   string;
+  rating:       string;
+  spread:       number;
 }
 
 export function adaptBond(bond: Bond): UniversalAsset {
   return {
-    symbol: bond.symbol,
-    name: bond.name,
-    category: "bond",
-    price: bond.ytm,
+    symbol:    bond.symbol,
+    name:      bond.name,
+    category:  "bond",
+    price:     bond.ytm,
     change24h: 0,
     metadata: {
-      issuer: bond.issuer,
-      type: bond.type,
-      country: bond.country,
+      issuer:       bond.issuer,
+      type:         bond.type,
+      country:      bond.country,
       maturityYears: bond.maturityYears,
       maturityDate: bond.maturityDate,
-      coupon: bond.coupon,
-      couponRate: bond.couponRate,
-      ytm: bond.ytm,
-      marketPrice: bond.price,
-      duration: bond.duration,
-      riskRating: bond.riskRating,
-      rating: bond.rating,
-      spread: bond.spread,
+      coupon:       bond.coupon,
+      couponRate:   bond.couponRate,
+      ytm:          bond.ytm,
+      marketPrice:  bond.price,
+      duration:     bond.duration,
+      riskRating:   bond.riskRating,
+      rating:       bond.rating,
+      spread:       bond.spread,
     },
   };
 }

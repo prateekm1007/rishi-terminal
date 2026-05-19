@@ -29,6 +29,7 @@ export function adaptBond(bond: Bond): UniversalAsset {
     metadata: {
       // IMPORTANT: consensus engine expects these
       symbol:    bond.symbol,
+      name:      bond.name,
       price:     bond.ytm,
       change24h: 0,
 

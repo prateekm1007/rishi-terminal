@@ -4,6 +4,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/commodity/:symbol',
+        destination: '/commodities/:symbol',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

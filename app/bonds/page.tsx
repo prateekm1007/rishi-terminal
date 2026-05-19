@@ -223,6 +223,7 @@ export default function BondsPage() {
                     style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s' }}
                     onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                      onClick={() => router.push(`/bonds/${bond.symbol}`)}
                   >
                     <td style={{ padding: '16px 24px' }}>
                       <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 14 }}>

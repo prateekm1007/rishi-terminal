@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'backtest' | 'intelligence';
 
@@ -14,10 +14,33 @@ const TABS: { id: LabTab; label: string; desc: string; icon: string }[] = [
   { id: 'intelligence', label: 'Rishi Intelligence', desc: 'Portfolio-level wisdom',  icon: '◌' },
 ];
 
-export default function PortfolioLabPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<LabTab>('overview');
 
+export default function PortfolioLabPage() {
+  return (
+    <Suspense fallback={<div className="rishi-page" style={{ padding: 48, textAlign: 'center' }}><p style={{ color: '#D4AF37' }}>Loading Lab...</p></div>}>
+      <LabContent />
+    </Suspense>
+  );
+}
+
+function LabContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const isValidTab = (t: string): t is LabTab =>
+    t === 'overview' || t === 'holdings' || t === 'watchlist' || t === 'compare' || t === 'backtest' || t === 'intelligence';
+  
+  const [activeTab, setActiveTab] = useState<LabTab>(() => {
+    const t = (searchParams.get('tab') ?? '').toLowerCase();
+    return isValidTab(t) ? t : 'overview';
+  });
+  
+  useEffect(() => {
+    const t = (searchParams.get('tab') ?? '').toLowerCase();
+    if (isValidTab(t) && t !== activeTab) {
+      setActiveTab(t);
+    }
+  }, [searchParams, activeTab]);
   return (
     <div className="rishi-page">
       {/* Header */}
@@ -65,7 +88,7 @@ export default function PortfolioLabPage() {
             {TABS.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => { setActiveTab(tab.id); router.replace(`/lab?tab=${tab.id}`); }}
                 style={{
                   padding: '16px 24px',
                   fontSize: 13,

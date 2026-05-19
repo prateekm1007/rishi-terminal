@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { BONDS } from "@/data/bonds";
-import AssetTerminal from "@/components/terminal/AssetTerminal";
+import { AssetTerminal } from "@/components/terminal/AssetTerminal";
 import { adaptBond } from "@/lib/adapters/bondAdapter";
 
 export async function generateStaticParams() {
@@ -41,5 +41,5 @@ export default function BondPage({
 
   const asset = adaptBond(bond);
 
-  return <AssetTerminal asset={asset} category="bond" />;
+  return <AssetTerminal asset={asset} />;
 }

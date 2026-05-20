@@ -2,11 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  ResponsiveContainer,
-  PieChart, Pie, Cell, Tooltip,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid
-} from 'recharts';
+
 
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
@@ -90,7 +86,7 @@ function calcTWRRTotal(holdings: PortfolioHolding[], endDate: Date, historyBySym
   return (tw - 1) * 100;
 }
 
-const PIE_COLORS = ['#D4AF37', '#22C55E', '#38BDF8', '#A78BFA', '#F97316', '#EF4444', '#14B8A6', '#F472B6', '#94A3B8'];
+
 
 export default function OverviewTab() {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
@@ -765,37 +761,6 @@ export default function OverviewTab() {
         </div>
       </div>
 
-      {/* Allocations Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div style={card}>
-          <div style={label}>Sector Allocation</div>
-          {sectorAlloc.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={sectorAlloc} dataKey="val" nameKey="sector" cx="50%" cy="50%" outerRadius={80} label={(e: any) => e.sector.slice(0,8)}>
-                  {sectorAlloc.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-                </Pie>
-                <Tooltip contentStyle={{ background: '#0F172A', border: '1px solid #334155', borderRadius: 6, fontSize: 11 }} formatter={(v: any) => formatCurrency(v)} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : <div style={{ color: '#64748B', fontSize: 12, marginTop: 20 }}>No data</div>}
-        </div>
-
-        <div style={card}>
-          <div style={label}>Top Holdings by Weight</div>
-          {topWeights.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={topWeights} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.1)" />
-                <XAxis dataKey="symbol" tick={{ fill: '#94A3B8', fontSize: 10 }} angle={-20} textAnchor="end" height={50} />
-                <YAxis tick={{ fill: '#94A3B8', fontSize: 10 }} />
-                <Tooltip contentStyle={{ background: '#0F172A', border: '1px solid #334155', borderRadius: 6, fontSize: 11 }} formatter={(v: any) => fmtPct(v)} />
-                <Bar dataKey="weightPct" fill="#D4AF37" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : <div style={{ color: '#64748B', fontSize: 12, marginTop: 20 }}>No data</div>}
-        </div>
-      </div>
 
       {/* Risk Summary */}
       <div style={card}>

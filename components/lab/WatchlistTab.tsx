@@ -16,6 +16,14 @@ interface WatchlistItem {
   catalyst?: string;
 }
 
+interface PromoteDialog {
+  symbol: string;
+  avgPrice: number;
+  suggestedShares: number;
+  shares: number;
+  keepInWatchlist: boolean;
+}
+
 const STORAGE_KEY = 'rishi_watchlist_v3';
 
 function scoreColor(s: number): string {
@@ -46,6 +54,8 @@ export default function WatchlistTab() {
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'added' | 'score' | 'change' | 'conviction'>('added');
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
+  const [promoteDialog, setPromoteDialog] = useState<PromoteDialog | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -66,6 +76,11 @@ export default function WatchlistTab() {
       setLists({ default: [], highConviction: [], valueTraps: [], earningsWatch: [] });
     }
   }, []);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }
 
   function persist(updatedLists: Record<string, WatchlistItem[]>) {
     setLists(updatedLists);
@@ -144,14 +159,23 @@ export default function WatchlistTab() {
     persist(next);
   }
 
-  function promoteToPortfolio(symbol: string) {
+  function openPromoteDialog(symbol: string) {
     const stock = STOCKS[symbol];
     if (!stock) return;
     const live = prices[symbol]?.price ?? stock.price;
     const avgPrice = live > 0 ? live : stock.price;
     const suggestedShares = avgPrice > 0 ? Math.max(1, Math.round(10000 / avgPrice)) : 1;
-    addHolding({ symbol, shares: suggestedShares, avgPrice, addedDate: new Date().toISOString() });
-    if (!isSmart) removeItem(symbol);
+    setPromoteDialog({ symbol, avgPrice, suggestedShares, shares: suggestedShares, keepInWatchlist: false });
+  }
+
+  function confirmPromote() {
+    if (!promoteDialog) return;
+    const { symbol, avgPrice, shares, keepInWatchlist } = promoteDialog;
+    const finalShares = Math.max(1, shares);
+    addHolding({ symbol, shares: finalShares, avgPrice, addedDate: new Date().toISOString() });
+    if (!keepInWatchlist && !isSmart) removeItem(symbol);
+    setPromoteDialog(null);
+    showToast(`✅ Added ${finalShares} share${finalShares !== 1 ? 's' : ''} of ${symbol} to Holdings at ${avgPrice.toLocaleString('en-IN')}`);
   }
 
   const inputStyle: React.CSSProperties = {
@@ -187,7 +211,143 @@ export default function WatchlistTab() {
   ];
 
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', top: 24, right: 24, zIndex: 9999,
+          padding: '14px 20px',
+          background: 'rgba(15,23,42,0.97)',
+          border: '1px solid rgba(34,197,94,0.4)',
+          borderRadius: 10,
+          color: '#22C55E',
+          fontSize: 13,
+          fontFamily: 'monospace',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+          maxWidth: 380,
+        }}>
+          {toast}
+        </div>
+      )}
+
+      {/* Promote Dialog Modal */}
+      {promoteDialog && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9998,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+          onClick={() => setPromoteDialog(null)}
+        >
+          <div
+            style={{
+              background: '#0F172A',
+              border: '1px solid rgba(212,175,55,0.4)',
+              borderRadius: 12,
+              padding: 28,
+              minWidth: 360,
+              maxWidth: 440,
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 16, fontWeight: 900, color: '#D4AF37', marginBottom: 4, fontFamily: 'monospace' }}>
+              Promote {promoteDialog.symbol} → Holdings
+            </div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 20 }}>
+              {STOCKS[promoteDialog.symbol]?.name ?? ''}
+            </div>
+
+            {/* Price info */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+              <div style={{ padding: 12, background: 'rgba(30,41,59,0.6)', borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: '#64748B', marginBottom: 4 }}>LTP (LIVE PRICE)</div>
+                <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 18, color: '#E2E8F0' }}>
+                  {promoteDialog.avgPrice.toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div style={{ padding: 12, background: 'rgba(30,41,59,0.6)', borderRadius: 8 }}>
+                <div style={{ fontSize: 10, color: '#64748B', marginBottom: 4 }}>TOTAL VALUE</div>
+                <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 18, color: '#D4AF37' }}>
+                  {(promoteDialog.shares * promoteDialog.avgPrice).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                </div>
+              </div>
+            </div>
+
+            {/* Shares input */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>
+                NUMBER OF SHARES (suggested: {promoteDialog.suggestedShares} ≈ 10,000)
+              </div>
+              <input
+                type="number"
+                min={1}
+                value={promoteDialog.shares}
+                onChange={e => setPromoteDialog({ ...promoteDialog, shares: Math.max(1, Number(e.target.value)) })}
+                style={{ ...inputStyle, fontSize: 18, fontWeight: 900, textAlign: 'center' }}
+              />
+            </div>
+
+            {/* Preset qty buttons */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+              {[5000, 10000, 25000, 50000, 100000].map(amt => {
+                const qty = Math.max(1, Math.round(amt / promoteDialog.avgPrice));
+                return (
+                  <button
+                    key={amt}
+                    onClick={() => setPromoteDialog({ ...promoteDialog, shares: qty })}
+                    style={{
+                      padding: '6px 10px',
+                      background: 'rgba(30,41,59,0.6)',
+                      border: '1px solid rgba(30,41,59,0.8)',
+                      borderRadius: 6,
+                      color: '#94A3B8',
+                      fontSize: 11,
+                      cursor: 'pointer',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {amt >= 100000 ? '1L' : amt >= 1000 ? `${amt/1000}k` : amt} ({qty} sh)
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Keep in watchlist */}
+            {!isSmart && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <input
+                  type="checkbox"
+                  id="keepInWatchlist"
+                  checked={promoteDialog.keepInWatchlist}
+                  onChange={e => setPromoteDialog({ ...promoteDialog, keepInWatchlist: e.target.checked })}
+                  style={{ accentColor: '#D4AF37', width: 16, height: 16 }}
+                />
+                <label htmlFor="keepInWatchlist" style={{ fontSize: 12, color: '#94A3B8', cursor: 'pointer' }}>
+                  Keep in watchlist after promoting
+                </label>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={confirmPromote}
+                style={{ ...btnGold, flex: 1, padding: '12px 16px', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}
+              >
+                ✓ CONFIRM PROMOTE
+              </button>
+              <button
+                onClick={() => setPromoteDialog(null)}
+                style={{ padding: '12px 16px', background: 'transparent', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 6, color: '#64748B', fontSize: 12, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Watchlist tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '1px solid rgba(30,41,59,0.8)', paddingBottom: 10, flexWrap: 'wrap' }}>
         {listConfigs.map(cfg => (
@@ -217,7 +377,7 @@ export default function WatchlistTab() {
         </div>
       )}
 
-      {/* Add + Sort controls (manual lists only) */}
+      {/* Add + Sort controls */}
       {!isSmart && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
           <div style={{ flex: '1 1 320px' }}>
@@ -228,7 +388,6 @@ export default function WatchlistTab() {
             </div>
             {error && <div style={{ marginTop: 8, fontSize: 12, color: '#EF4444' }}>{error}</div>}
           </div>
-
           <div style={{ minWidth: 220 }}>
             <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SORT</div>
             <select value={sortBy} onChange={e => setSortBy(e.target.value as 'added' | 'score' | 'change' | 'conviction')} style={inputStyle}>
@@ -238,7 +397,6 @@ export default function WatchlistTab() {
               <option value="change">24h Change</option>
             </select>
           </div>
-
           <div style={{ fontSize: 12, color: '#64748B' }}>
             {loading ? 'Fetching live prices...' : `${items.length} item${items.length !== 1 ? 's' : ''}`}
           </div>
@@ -291,21 +449,17 @@ export default function WatchlistTab() {
                       </Link>
                       <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{i.stock?.name ?? '—'}</div>
                     </td>
-
                     <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0' }}>
                       {(i.live ?? 0).toLocaleString('en-IN')}
                     </td>
-
                     <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: changeColor(i.changePct ?? 0), fontWeight: 700 }}>
-                      {(i.changePct ?? 0).toFixed(2)}%
+                      {(i.changePct ?? 0) >= 0 ? '+' : ''}{(i.changePct ?? 0).toFixed(2)}%
                     </td>
-
                     <td style={{ padding: '12px 12px' }}>
                       <span style={{ fontFamily: 'monospace', fontWeight: 800, color: scoreColor(i.score ?? 0) }}>
                         {i.score ?? 0}
                       </span>
                     </td>
-
                     <td style={{ padding: '12px 12px', minWidth: 180 }}>
                       {!isSmart ? (
                         <div>
@@ -337,11 +491,9 @@ export default function WatchlistTab() {
                         </div>
                       )}
                     </td>
-
                     <td style={{ padding: '12px 12px', fontSize: 11, color: '#22C55E' }}>
                       {i.topBull}
                     </td>
-
                     {!isSmart && (
                       <td style={{ padding: '12px 12px', minWidth: 200 }}>
                         <input
@@ -352,13 +504,12 @@ export default function WatchlistTab() {
                         />
                       </td>
                     )}
-
                     <td style={{ padding: '12px 12px' }}>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <button
-                          onClick={() => promoteToPortfolio(i.symbol)}
+                          onClick={() => openPromoteDialog(i.symbol)}
                           style={btnGold}
-                          title="Add suggested shares to portfolio at LTP"
+                          title="Open promote dialog"
                         >
                           Promote →
                         </button>
@@ -408,7 +559,7 @@ export default function WatchlistTab() {
                           }}
                         />
                         <div style={{ marginTop: 8, fontSize: 11, color: '#64748B' }}>
-                          Top Bull endorsement: <span style={{ color: '#22C55E', fontWeight: 700 }}>{i.topBull}</span> · Rishi Score: <span style={{ color: scoreColor(i.score), fontFamily: 'monospace', fontWeight: 800 }}>{i.score}</span>
+                          Top Bull: <span style={{ color: '#22C55E', fontWeight: 700 }}>{i.topBull}</span> · Rishi Score: <span style={{ color: scoreColor(i.score), fontFamily: 'monospace', fontWeight: 800 }}>{i.score}</span>
                         </div>
                       </td>
                     </tr>
@@ -420,8 +571,8 @@ export default function WatchlistTab() {
 
           <div style={{ marginTop: 10, fontSize: 11, color: '#64748B' }}>
             {isSmart
-              ? 'Smart list auto-generated from all stocks with Rishi Score > 75. Promote adds 10,000 worth of shares at LTP.'
-              : 'Conviction = avg of your slider (1–10) + Rishi-derived score. Promote adds 10,000 worth at LTP (min 1 share). ▼ expands idea thesis.'}
+              ? 'Smart list auto-generated. Promote opens dialog to set share quantity.'
+              : 'Conviction = avg of your slider + Rishi score. Promote opens dialog with preset amounts. ▼ expands idea thesis.'}
           </div>
         </div>
       )}

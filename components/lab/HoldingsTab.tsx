@@ -34,6 +34,7 @@ export default function HoldingsTab() {
   const [formShares, setFormShares] = useState('');
   const [formAvgPrice, setFormAvgPrice] = useState('');
   const [formError, setFormError] = useState('');
+  const [formDate, setFormDate] = useState(new Date().toISOString().slice(0,10));
 
   useEffect(() => {
     setHoldings(loadPortfolio().holdings);
@@ -67,7 +68,19 @@ export default function HoldingsTab() {
 
   function handleAdd() {
     setFormError('');
-    const sym = formSymbol.trim().toUpperCase();
+    let sym = formSymbol.trim().toUpperCase();
+
+    // If user typed a company name, try to resolve to a unique symbol
+    if (!STOCKS[sym]) {
+      const q = formSymbol.trim().toLowerCase();
+      if (q.length >= 2) {
+        const hits = Object.entries(STOCKS).filter(([s, st]) => {
+          const nm = String((st as any)?.name ?? '').toLowerCase();
+          return nm === q || nm.includes(q);
+        });
+        if (hits.length === 1) sym = hits[0][0];
+      }
+    }
     const shares = parseFloat(formShares);
     const avgPrice = parseFloat(formAvgPrice);
 
@@ -75,12 +88,13 @@ export default function HoldingsTab() {
     if (!shares || shares <= 0) { setFormError('Enter valid quantity'); return; }
     if (!avgPrice || avgPrice <= 0) { setFormError('Enter valid avg price'); return; }
 
-    addHolding({ symbol: sym, shares, avgPrice, addedDate: new Date().toISOString() });
+    addHolding({ symbol: sym, shares, avgPrice, addedDate: formDate ? new Date(formDate).toISOString() : new Date().toISOString() });
     setHoldings(loadPortfolio().holdings);
 
     setFormSymbol('');
     setFormShares('');
     setFormAvgPrice('');
+    setFormDate(new Date().toISOString().slice(0,10));
     setShowAdd(false);
   }
 
@@ -172,10 +186,15 @@ export default function HoldingsTab() {
           {/* Add form */}
           {showAdd && (
             <div style={{ padding: 20, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, marginBottom: 20 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
                 <div>
                   <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SYMBOL</div>
-                  <input value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" style={inputStyle} />
+                  <input value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" list="holdings-stocks-list" autoComplete="off" style={inputStyle} />
+                  <datalist id="holdings-stocks-list">
+                    {Object.entries(STOCKS).map(([sym, s]) => (
+                      <option key={sym} value={sym}>{sym} — {String((s as any)?.name ?? '')}</option>
+                    ))}
+                  </datalist>
                 </div>
                 <div>
                   <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SHARES</div>
@@ -184,6 +203,10 @@ export default function HoldingsTab() {
                 <div>
                   <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>AVG PRICE</div>
                   <input value={formAvgPrice} onChange={e => setFormAvgPrice(e.target.value)} placeholder="3500" type="number" style={inputStyle} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>PURCHASE DATE</div>
+                  <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} style={inputStyle} />
                 </div>
                 <button onClick={handleAdd} style={{ ...btnGold, whiteSpace: 'nowrap' }}>Add</button>
               </div>

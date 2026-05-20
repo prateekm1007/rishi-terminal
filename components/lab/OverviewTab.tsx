@@ -186,8 +186,9 @@ export default function OverviewTab() {
 
   const enriched = useMemo(() => {
     return holdings.map(h => {
-      const stock = (STOCKS as any)[h.symbol];
-      const livePrice = prices[h.symbol]?.price ?? stock?.price ?? h.avgPrice;
+      const sym = String(h.symbol ?? '').trim().toUpperCase();
+      const stock = (STOCKS as any)[sym];
+      const livePrice = prices[sym]?.price ?? stock?.price ?? h.avgPrice;
       const invested = h.shares * h.avgPrice;
       const current = h.shares * livePrice;
       const pl = current - invested;
@@ -197,8 +198,8 @@ export default function OverviewTab() {
       const score = consensus?.consensus ?? 0;
       const sector = stock?.sector ?? 'Unknown';
 
-      const change = prices[h.symbol]?.change;
-      const changePct = prices[h.symbol]?.changePercent24h;
+      const change = prices[sym]?.change;
+      const changePct = prices[sym]?.changePercent24h;
       let prevPrice = livePrice;
       if (typeof change === 'number' && Number.isFinite(change) && change !== 0) prevPrice = livePrice - change;
       else if (typeof changePct === 'number' && Number.isFinite(changePct) && changePct !== 0) prevPrice = livePrice / (1 + changePct / 100);
@@ -207,6 +208,7 @@ export default function OverviewTab() {
 
       return {
         ...h,
+        symbol: sym,
         stock,
         livePrice,
         invested,
@@ -220,7 +222,7 @@ export default function OverviewTab() {
         topBull: consensus?.topBull?.full ?? '—',
         topBear: consensus?.topBear?.full ?? '—',
         prevValue,
-        volume24h: prices[h.symbol]?.volume24h ?? 0,
+        volume24h: prices[sym]?.volume24h ?? 0,
       };
     });
   }, [holdings, prices]);
@@ -259,9 +261,14 @@ export default function OverviewTab() {
 
   const sectorAlloc = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const h of enriched) map[h.sector] = (map[h.sector] ?? 0) + h.current;
+    for (const h of enriched) {
+      const sec = (h.sector && typeof h.sector === 'string' && h.sector.trim()) ? h.sector.trim() : 'Other';
+      const v = Number.isFinite(h.current) ? h.current : 0;
+      map[sec] = (map[sec] ?? 0) + v;
+    }
     const total = Object.values(map).reduce((a, b) => a + b, 0);
     return Object.entries(map)
+      .filter(([, val]) => val > 0)
       .map(([sector, val]) => ({ sector, val, pct: total > 0 ? (val / total) * 100 : 0 }))
       .sort((a, b) => b.val - a.val);
   }, [enriched]);
@@ -270,12 +277,15 @@ export default function OverviewTab() {
 
   const topWeights = useMemo(() => {
     const total = totals.totalCurrent;
-    return topHoldings.map(h => ({
-      symbol: h.symbol,
-      weightPct: total > 0 ? (h.current / total) * 100 : 0,
-      value: h.current,
-      score: h.score,
-    }));
+    if (total <= 0 || !Array.isArray(topHoldings) || topHoldings.length === 0) return [];
+    return topHoldings
+      .filter(h => h && typeof h.symbol === 'string' && Number.isFinite(h.current) && h.current > 0)
+      .map(h => ({
+        symbol: h.symbol,
+        weightPct: (h.current / total) * 100,
+        value: h.current,
+        score: h.score ?? 0,
+      }));
   }, [topHoldings, totals.totalCurrent]);
 
   const concentration = useMemo(() => {
@@ -462,60 +472,52 @@ export default function OverviewTab() {
 
   const timeframeReturns = useMemo(() => {
     const end = new Date();
-    const endValue = totals.totalCurrent;
-
     const bench = benchHistory;
-    const out: Array<{
-      key: string;
-      portRetPct: number | null;
-      benchRetPct: number | null;
-      outperfPct: number | null;
-    }> = [];
+    const out: Array<{ key: string; portRetPct: number | null; benchRetPct: number | null; outperfPct: number | null; holdingsUsed: number }> = [];
 
     for (const tf of timeframes) {
       const start = new Date(end.getTime() - tf.days * 24 * 60 * 60 * 1000);
 
-      let bv = 0;
+      // Price-only trailing return for holdings that existed at the start of the window.
+      // This becomes historically accurate ONLY if addedDate is the true purchase date.
+      let startValue = 0;
+      let endValue = 0;
+      let used = 0;
+
       for (const h of holdings) {
         const ad = parseDateSafe(h.addedDate);
         if (ad.getTime() > start.getTime()) continue;
-        const px = closestClose(historyBySymbol[h.symbol], start) ?? (STOCKS as any)[h.symbol]?.price ?? h.avgPrice;
-        bv += h.shares * px;
+
+        const sym = String(h.symbol ?? '').trim().toUpperCase();
+        const stock = (STOCKS as any)[sym];
+        const startPx = closestClose(historyBySymbol[sym], start) ?? stock?.price ?? h.avgPrice;
+        const endPx = prices[sym]?.price ?? stock?.price ?? h.avgPrice;
+
+        if (!Number.isFinite(startPx) || startPx <= 0) continue;
+        if (!Number.isFinite(endPx) || endPx <= 0) continue;
+
+        startValue += h.shares * startPx;
+        endValue += h.shares * endPx;
+        used++;
       }
 
-      let sumCF = 0;
-      let sumWCF = 0;
-      const T = Math.max(1, daysBetween(start, end));
-
-      // Modified Dietz style external flows within the window.
-      // Treat buys as POSITIVE contributions (cash added to portfolio).
-      for (const h of holdings) {
-        const ad = parseDateSafe(h.addedDate);
-        if (ad.getTime() <= start.getTime() || ad.getTime() > end.getTime()) continue;
-        const cf = (h.shares * h.avgPrice);
-        const w = clamp(daysBetween(ad, end) / T, 0, 1);
-        sumCF += cf;
-        sumWCF += w * cf;
-      }
-
-      let portRet: number | null = null;
-      const denom = bv + sumWCF;
-      if (denom > 0) portRet = ((endValue - bv - sumCF) / denom) * 100;
+      const portRet: number | null = startValue > 0 ? ((endValue / startValue) - 1) * 100 : null;
 
       let benchRet: number | null = null;
       if (bench && bench.length > 5) {
         const b0 = closestClose(bench, start);
         const b1 = bench[bench.length - 1]?.close;
-        if (b0 && b1 && b0 > 0) benchRet = ((b1 / b0) - 1) * 100;
+        if (b0 != null && b1 != null && Number.isFinite(b0) && Number.isFinite(b1) && b0 > 0) {
+          benchRet = ((b1 / b0) - 1) * 100;
+        }
       }
 
       const outperf = (portRet != null && benchRet != null) ? (portRet - benchRet) : null;
-
-      out.push({ key: tf.key, portRetPct: portRet, benchRetPct: benchRet, outperfPct: outperf });
+      out.push({ key: tf.key, portRetPct: portRet, benchRetPct: benchRet, outperfPct: outperf, holdingsUsed: used });
     }
 
     return out;
-  }, [holdings, historyBySymbol, totals.totalCurrent, benchHistory.length, timeframes]);
+  }, [holdings, historyBySymbol, benchHistory, prices, timeframes]);
 
   const xirrPct = useMemo(() => {
     if (holdings.length === 0 || totals.totalCurrent <= 0) return null;
@@ -749,7 +751,7 @@ export default function OverviewTab() {
               </div>
               {tf.outperfPct != null && (
                 <div style={{ fontSize: 10, color: plColor(tf.outperfPct), marginTop: 2 }}>
-                  {tf.outperfPct >= 0 ? '+' : ''}{fmtPct(tf.outperfPct)} vs bench
+                  {fmtPct(tf.outperfPct)} vs bench
                 </div>
               )}
             </div>

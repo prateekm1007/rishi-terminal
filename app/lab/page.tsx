@@ -140,9 +140,3 @@ function LabContent() {
   );
 }
 
-// Tab Components (Placeholders - will be enhanced)
-
-
-
-
-

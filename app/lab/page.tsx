@@ -8,23 +8,21 @@ import ErrorBoundary from '@/components/lab/ErrorBoundary';
 import HoldingsTabView from '@/components/lab/HoldingsTab';
 import WatchlistTabView from '@/components/lab/WatchlistTab';
 import CompareTabView from '@/components/lab/CompareTab';
-import BacktestTabView from '@/components/lab/BacktestTab';
 import OverviewTabView from '@/components/lab/OverviewTab';
 import IntelligenceTabView from '@/components/lab/IntelligenceTab';
 
-type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'backtest' | 'intelligence';
+type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'intelligence';
 
 const TABS: { id: LabTab; label: string; desc: string; icon: string }[] = [
   { id: 'overview',      label: 'Overview',           desc: 'Portfolio snapshot',        icon: '◉' },
   { id: 'holdings',      label: 'Holdings',           desc: 'Real positions',            icon: '▣' },
   { id: 'watchlist',     label: 'Watchlist & Ideas',  desc: 'Track & promote',           icon: '★' },
   { id: 'compare',       label: 'Compare',            desc: 'Multi-asset analysis',      icon: '⚖' },
-  { id: 'backtest',      label: 'Backtest Lab',       desc: 'Strategy simulation',       icon: '↺' },
   { id: 'intelligence',  label: 'Rishi Intelligence', desc: 'Portfolio-level wisdom',    icon: '◌' },
 ];
 
 function isValidTab(t: string): t is LabTab {
-  return t === 'overview' || t === 'holdings' || t === 'watchlist' || t === 'compare' || t === 'backtest' || t === 'intelligence';
+  return t === 'overview' || t === 'holdings' || t === 'watchlist' || t === 'compare' || t === 'intelligence';
 }
 
 export default function PortfolioLabPage() {
@@ -139,7 +137,6 @@ function LabContent() {
         {activeTab === 'holdings' && <ErrorBoundary name="HoldingsTab"><HoldingsTabView /></ErrorBoundary>}
         {activeTab === 'watchlist' && <ErrorBoundary name="WatchlistTab"><WatchlistTabView /></ErrorBoundary>}
         {activeTab === 'compare' && <ErrorBoundary name="CompareTab"><CompareTabView /></ErrorBoundary>}
-        {activeTab === 'backtest' && <ErrorBoundary name="BacktestTab"><BacktestTabView /></ErrorBoundary>}
         {activeTab === 'intelligence' && <ErrorBoundary name="IntelligenceTab"><IntelligenceTabView /></ErrorBoundary>}
       </div>
     </div>

@@ -18,14 +18,15 @@ function scoreLabel(s: number): string {
 }
 
 function spreadLabel(spread: number): string {
-  return spread < 15 ? 'Strong Consensus'
-    : spread < 30 ? 'Moderate Divergence'
-    : spread < 50 ? 'Philosophical Tension'
-    : 'Deep Conflict';
+  return spread < 20 ? 'Strong Consensus'
+    : spread < 40 ? 'Mild Disagreement'
+    : spread < 60 ? 'Moderate Disagreement'
+    : spread < 80 ? 'Significant Disagreement'
+    : 'Sharp Division';
 }
 
 function spreadColor(spread: number): string {
-  return spread < 15 ? '#22C55E' : spread < 30 ? '#D4AF37' : spread < 50 ? '#F97316' : '#EF4444';
+  return spread < 20 ? '#22C55E' : spread < 40 ? '#A3E635' : spread < 60 ? '#F59E0B' : spread < 80 ? '#F97316' : '#EF4444';
 }
 
 export default function IntelligenceTab() {

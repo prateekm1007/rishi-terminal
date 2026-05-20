@@ -7,6 +7,7 @@ import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import InfoTip from '@/components/lab/InfoTip';
 
 function scoreColor(s: number): string {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444';
@@ -249,7 +250,7 @@ export default function IntelligenceTab() {
           </div>
 
           <div style={{ padding: 16, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}>DISAGREEMENT INDEX</div>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}><InfoTip term="Disagreement Index" icon={true}>DISAGREEMENT INDEX</InfoTip></div>
             <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 28, color: spreadColor(avgSpread) }}>{avgSpread}</div>
             <div style={{ fontSize: 12, color: spreadColor(avgSpread), marginTop: 6 }}>{spreadLabel(avgSpread)}</div>
             <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>Avg spread across {enriched.length} holding{enriched.length !== 1 ? 's' : ''}</div>

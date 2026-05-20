@@ -8,6 +8,7 @@ import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio, addHolding, removeHolding, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import PortfolioXRay from '@/components/portfolio/PortfolioXRay';
+import InfoTip from '@/components/lab/InfoTip';
 
 type InnerTab = 'holdings' | 'xray';
 
@@ -161,10 +162,10 @@ export default function HoldingsTab() {
                 { label: 'Invested', value: formatCurrency(totals.totalInvested) },
                 { label: 'Current Value', value: formatCurrency(totals.totalCurrent) },
                 { label: 'Total P&L', value: formatCurrency(totals.totalPL), color: plColor(totals.totalPL) },
-                { label: 'Return', value: totals.totalPLPct.toFixed(2) + '%', color: plColor(totals.totalPLPct) },
+                { label: 'Return', value: totals.totalPLPct.toFixed(2) + '%', color: plColor(totals.totalPLPct), tip: 'CAGR' },
               ].map(m => (
                 <div key={m.label} style={{ padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 8, border: '1px solid rgba(30,41,59,0.8)' }}>
-                  <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 6 }}>{m.label}</div>
+                  <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 6 }}>{(m as any).tip ? <InfoTip term={(m as any).tip} icon={true}>{m.label}</InfoTip> : m.label}</div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: (m as any).color ?? '#E2E8F0', fontFamily: 'monospace' }}>
                     {m.value}
                   </div>

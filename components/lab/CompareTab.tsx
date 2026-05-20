@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import InfoTip from '@/components/lab/InfoTip';
 
 const STORAGE_KEY = 'rishi_compare_v1';
 

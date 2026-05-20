@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio } from '@/lib/portfolio/index';
+import InfoTip from '@/components/lab/InfoTip';
 
 type UniverseMode = 'holdings' | 'watchlist' | 'custom';
 type StrategyId = 'equal_weight' | 'top_n_score' | 'score_threshold_cash';

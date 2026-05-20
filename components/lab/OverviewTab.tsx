@@ -13,6 +13,7 @@ import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import {
+import InfoTip from '@/components/lab/InfoTip';
   clamp, toISODateOnly, parseDateSafe, daysBetween,
   formatCurrency, fmtPct, plColor, scoreColor, scoreLabel,
   fetchHistoryPoints, buildCloseMap, closestClose,
@@ -707,13 +708,13 @@ export default function OverviewTab() {
           </div>
         </div>
         <div style={card}>
-          <div style={label}>XIRR</div>
+          <div style={label}><InfoTip term="XIRR" icon={true} /></div>
           <div style={{ fontSize: 22, fontWeight: 700, color: '#D4AF37', fontFamily: 'monospace' }}>
             {xirrPct != null ? fmtPct(xirrPct) : '—'}
           </div>
         </div>
         <div style={card}>
-          <div style={label}>TWRR Total</div>
+          <div style={label}><InfoTip term="TWRR" icon={true}>TWRR Total</InfoTip></div>
           <div style={{ fontSize: 22, fontWeight: 700, color: '#38BDF8', fontFamily: 'monospace' }}>
             {twrrTotalPct != null ? fmtPct(twrrTotalPct) : '—'}
           </div>
@@ -806,7 +807,7 @@ export default function OverviewTab() {
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(concentration.hhi * 100)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>HHI Index</div>
+            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}><InfoTip term="HHI" icon={false}>HHI Index</InfoTip></div>
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(liquidityRisk)}
@@ -826,10 +827,10 @@ export default function OverviewTab() {
           </div>
         </div>
         <div style={{ marginTop: 16, fontSize: 11, color: '#64748B', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>Beta: {beta != null ? beta.toFixed(2) : '—'}</div>
-          <div>Max Drawdown: {maxDD != null ? fmtPct(maxDD) : '—'}</div>
+          <div><InfoTip term="Beta">Beta</InfoTip>: {beta != null ? beta.toFixed(2) : '—'}</div>
+          <div><InfoTip term="Max Drawdown">Max Drawdown</InfoTip>: {maxDD != null ? fmtPct(maxDD) : '—'}</div>
           <div>Recovery Elasticity: {recoveryElasticity != null ? Math.round(recoveryElasticity) : '—'}/100</div>
-          <div>FCF Yield: {fmtPct(fcfYieldPct)}</div>
+          <div><InfoTip term="FCF Yield">FCF Yield</InfoTip>: {fmtPct(fcfYieldPct)}</div>
         </div>
       </div>
 
@@ -853,7 +854,7 @@ export default function OverviewTab() {
               <div style={{ color: '#EF4444', fontWeight: 600 }}>{rishiCouncil.portfolioBear}</div>
             </div>
             <div>
-              <div style={{ color: '#64748B', marginBottom: 4 }}>Disagreement Index</div>
+              <div style={{ color: '#64748B', marginBottom: 4 }}><InfoTip term="Disagreement Index" icon={false}>Disagreement Index</InfoTip></div>
               <div style={{ color: '#F97316', fontWeight: 700 }}>{rishiCouncil.avgSpread}/100</div>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import HoldingsTabView from '@/components/lab/HoldingsTab';
 import WatchlistTabView from '@/components/lab/WatchlistTab';
 import CompareTabView from '@/components/lab/CompareTab';
+import BacktestTabView from '@/components/lab/BacktestTab';
 
 type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'backtest' | 'intelligence';
 
@@ -130,7 +131,7 @@ function LabContent() {
         {activeTab === 'holdings' && <HoldingsTabView />}
         {activeTab === 'watchlist' && <WatchlistTabView />}
         {activeTab === 'compare' && <CompareTabView />}
-        {activeTab === 'backtest' && <BacktestTab />}
+        {activeTab === 'backtest' && <BacktestTabView />}
         {activeTab === 'intelligence' && <IntelligenceTab />}
       </div>
     </div>

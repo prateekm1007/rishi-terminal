@@ -17,11 +17,11 @@ function analyzeTension(scores: RishiScore[]): { label: string; spread: number }
   const vals   = scores.map(s => s.score);
   const spread = Math.max(...vals) - Math.min(...vals);
   let label: string;
-  if      (spread < 15) label = "Strong Consensus";
-  else if (spread < 30) label = "Moderate Divergence";
-  else if (spread < 50) label = "Philosophical Tension";
-  else                  label = "Deep Conflict - Handle with Care";
-  return { label, spread };
+  if      (spread < 20) label = "Strong Consensus";
+  else if (spread < 40) label = "Mild Disagreement";
+  else if (spread < 60) label = "Moderate Disagreement";
+  else if (spread < 80) label = "Significant Disagreement";
+  else                  label = "Sharp Division";
 }
 
 /**

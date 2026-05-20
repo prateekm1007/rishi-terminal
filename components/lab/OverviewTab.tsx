@@ -579,7 +579,7 @@ export default function OverviewTab() {
 
     for (const h of enriched) {
       if ((h.tensionSpread || 0) >= 40) {
-        suggestions.push({ kind: 'review', text: 'Review thesis for ' + h.symbol + ' (spread ' + h.tensionSpread + '). The Council is sharply divided.' });
+        suggestions.push({ kind: 'review', text: 'Review thesis for ' + h.symbol + ' (spread ' + h.tensionSpread + '). ' + (h.tensionSpread < 40 ? 'Mild disagreement.' : h.tensionSpread < 60 ? 'Moderate disagreement.' : h.tensionSpread < 80 ? 'Significant disagreement.' : 'Sharp division.') });
       }
     }
 

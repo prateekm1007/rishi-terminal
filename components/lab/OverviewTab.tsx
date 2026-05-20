@@ -13,13 +13,13 @@ import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import {
-import InfoTip from '@/components/lab/InfoTip';
   clamp, toISODateOnly, parseDateSafe, daysBetween,
   formatCurrency, fmtPct, plColor, scoreColor, scoreLabel,
   fetchHistoryPoints, buildCloseMap, closestClose,
   maxDrawdownPct, computeBeta, calcXIRR,
   type HistoryPoint
 } from './helpers';
+import InfoTip from '@/components/lab/InfoTip';
 
 function useAnimatedNumber(value: number, durationMs = 650) {
   const [display, setDisplay] = useState(value);

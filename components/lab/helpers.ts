@@ -76,8 +76,12 @@ function normalizeHistory(raw: any): HistoryPoint[] {
 
     const close =
       (typeof p?.close === 'number' ? p.close : null) ??
-      (typeof p?.v === 'number' ? p.v : null) ??
+      (typeof p?.c === 'number' ? p.c : null) ??
+      (typeof p?.adjClose === 'number' ? p.adjClose : null) ??
+      (typeof p?.value === 'number' ? p.value : null) ??
       (typeof p?.price === 'number' ? p.price : null) ??
+      // IMPORTANT: use v only as a last-resort fallback (v is often volume)
+      (typeof p?.v === 'number' ? p.v : null) ??
       null;
 
     if (!date) continue;

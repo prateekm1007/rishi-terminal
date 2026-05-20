@@ -483,7 +483,6 @@ export default function BacktestTab() {
           <select value={strategy} onChange={e => setStrategy(e.target.value as any)} style={inputStyle}>
             <option value="equal_weight">Equal Weight (Buy & Hold)</option>
             <option value="top_n_score">Top N by Rishi Score</option>
-            <option value="score_threshold_cash">Score Threshold (Cash Otherwise)</option>
           </select>
         </div>
 

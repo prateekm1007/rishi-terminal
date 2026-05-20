@@ -624,7 +624,7 @@ export default function OverviewTab() {
     );
   };
 
-  if (!liveLoading && holdings.length === 0) {
+  if (holdings.length === 0) {
     return (
       <div style={{ padding: 64, textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>◉</div>

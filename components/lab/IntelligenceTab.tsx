@@ -108,6 +108,85 @@ export default function IntelligenceTab() {
 
   // Conviction heatmap: top 6 Rishis vs all holdings
   const heatmapRishis = useMemo(() => rishiAverages.slice(0, 6).map(r => r.name), [rishiAverages]);
+  // Top Conflict Pairs: holdings where Rishis disagree most
+  const topConflicts = useMemo(() => {
+    const conflicts: Array<{ symbol: string; name: string; bullRishi: string; bullScore: number; bearRishi: string; bearScore: number; spread: number }> = [];
+    for (const h of enriched) {
+      if (h.scores.length < 2) continue;
+      const sorted = [...h.scores].sort((a, b) => b.score - a.score);
+      const bull = sorted[0];
+      const bear = sorted[sorted.length - 1];
+      const spread = bull.score - bear.score;
+      if (spread >= 25) {
+        conflicts.push({
+          symbol: h.symbol,
+          name: h.stock?.name ?? h.symbol,
+          bullRishi: bull.full,
+          bullScore: bull.score,
+          bearRishi: bear.full,
+          bearScore: bear.score,
+          spread,
+        });
+      }
+    }
+    return conflicts.sort((a, b) => b.spread - a.spread).slice(0, 6);
+  }, [enriched]);
+
+  // Knowledge Coverage %: % of portfolio where score >= 55 AND spread < 40
+  const knowledgeCoverage = useMemo(() => {
+    const total = enriched.reduce((s, h) => s + h.current, 0);
+    if (total <= 0) return 0;
+    const covered = enriched.filter(h => h.score >= 55 && h.tensionSpread < 40).reduce((s, h) => s + h.current, 0);
+    return Math.round((covered / total) * 100);
+  }, [enriched]);
+
+  // Macro Regime Fit: cyclical vs defensive positioning
+  const macroRegimeFit = useMemo(() => {
+    const total = enriched.reduce((s, h) => s + h.current, 0);
+    if (total <= 0) return { cyclical: 0, defensive: 0, label: 'Neutral', color: '#94A3B8' };
+
+    const cyclicalSectors = new Set(['Energy', 'Infra', 'Metals', 'Auto', 'Realty', 'Banking', 'Capital Goods', 'Industrials']);
+    const defensiveSectors = new Set(['Pharma', 'IT', 'FMCG', 'Utilities', 'Healthcare', 'Staples']);
+
+    let cyclical = 0, defensive = 0;
+    for (const h of enriched) {
+      const sector = h.stock?.sector ?? 'Unknown';
+      const w = h.current / total;
+      if (cyclicalSectors.has(sector)) cyclical += w;
+      else if (defensiveSectors.has(sector)) defensive += w;
+    }
+
+    const cyclicalPct = Math.round(cyclical * 100);
+    const defensivePct = Math.round(defensive * 100);
+
+    let label = 'Balanced';
+    let color = '#D4AF37';
+    if (cyclicalPct > 55) { label = 'Pro-Cyclical (Rising rates risk)'; color = '#F97316'; }
+    else if (defensivePct > 55) { label = 'Defensive (Growth slowdown hedge)'; color = '#22C55E'; }
+    else if (Math.abs(cyclicalPct - defensivePct) < 15) { label = 'Balanced Macro Exposure'; color = '#38BDF8'; }
+
+    return { cyclical: cyclicalPct, defensive: defensivePct, label, color };
+  }, [enriched]);
+
+  // Rishi Affinity: Portfolio's philosophical DNA
+  const rishiAffinity = useMemo(() => {
+    if (!portfolioBull) return null;
+    const philosophies: Record<string, string> = {
+      'Buffett': 'Moat-driven quality compounder',
+      'Munger': 'Anti-fragile, rational allocation',
+      'Graham': 'Deep value, margin of safety',
+      'Lynch': 'Growth at reasonable price',
+      'Fisher': 'Innovation & secular tailwinds',
+      'Damani': 'Capital-light retail dominance',
+      'Jhunjhunwala': 'High-conviction asymmetric bets',
+      'Klarman': 'Absolute return, risk-first',
+      'Marks': 'Second-level contrarian thinking',
+      'Greenblatt': 'Quality cheap stocks (Magic Formula)',
+    };
+    const philosophy = philosophies[portfolioBull.name] ?? 'Eclectic multi-philosophy blend';
+    return { rishi: portfolioBull.full, philosophy, score: portfolioBull.avg };
+  }, [portfolioBull]);
+
 
   const card: React.CSSProperties = {
     padding: 20,
@@ -328,6 +407,106 @@ export default function IntelligenceTab() {
         </div>
       </div>
 
+
+      {/* Knowledge Coverage */}
+      <div style={{ ...card, borderLeft: '3px solid #38BDF8' }}>
+        <div style={sectionLabel}>Knowledge Coverage</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 48, fontWeight: 900, fontFamily: 'monospace', color: knowledgeCoverage >= 75 ? '#22C55E' : knowledgeCoverage >= 50 ? '#D4AF37' : '#EF4444' }}>
+              {knowledgeCoverage}%
+            </div>
+            <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 4 }}>
+              of portfolio value has adequate conviction (score ≥ 55 + low conflict)
+            </div>
+          </div>
+          <div style={{ width: 200, height: 10, background: 'rgba(30,41,59,0.8)', borderRadius: 5, overflow: 'hidden' }}>
+            <div style={{ width: knowledgeCoverage + '%', height: '100%', background: knowledgeCoverage >= 75 ? '#22C55E' : knowledgeCoverage >= 50 ? '#D4AF37' : '#EF4444', transition: 'width 0.3s ease' }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Top Conflict Pairs */}
+      {topConflicts.length > 0 && (
+        <div style={card}>
+          <div style={sectionLabel}>Top Conflict Pairs — Sharpest Rishi Clashes</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {topConflicts.map(c => (
+              <div key={c.symbol} style={{ padding: 14, background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                  <Link href={`/stock/${c.symbol}`} style={{ color: '#D4AF37', fontFamily: 'monospace', fontWeight: 900, fontSize: 14, textDecoration: 'none' }}>
+                    {c.symbol}
+                  </Link>
+                  <span style={{ fontSize: 11, color: '#64748B' }}>{c.name}</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 12, alignItems: 'center' }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: 11, color: '#22C55E', fontWeight: 700 }}>{c.bullRishi}</div>
+                    <div style={{ fontSize: 18, fontFamily: 'monospace', fontWeight: 900, color: '#22C55E' }}>{c.bullScore}</div>
+                  </div>
+                  <div style={{ fontSize: 20, color: '#EF4444', fontWeight: 900 }}>⚔</div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 11, color: '#EF4444', fontWeight: 700 }}>{c.bearRishi}</div>
+                    <div style={{ fontSize: 18, fontFamily: 'monospace', fontWeight: 900, color: '#EF4444' }}>{c.bearScore}</div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 8, fontSize: 10, color: '#F97316', textAlign: 'center' }}>
+                  Spread: {c.spread} points — deep philosophical divide
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Macro Regime Fit */}
+      <div style={card}>
+        <div style={sectionLabel}>Macro Regime Fit</div>
+        <div style={{ padding: 16, background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: 8 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: macroRegimeFit.color, marginBottom: 12 }}>
+            {macroRegimeFit.label}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div>
+              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>CYCLICAL EXPOSURE</div>
+              <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 900, color: '#F97316' }}>
+                {macroRegimeFit.cyclical}%
+              </div>
+              <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>
+                Energy, Banking, Infra, Metals, Auto, Realty
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>DEFENSIVE EXPOSURE</div>
+              <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 900, color: '#22C55E' }}>
+                {macroRegimeFit.defensive}%
+              </div>
+              <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>
+                IT, Pharma, FMCG, Healthcare, Staples
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rishi Affinity */}
+      {rishiAffinity && (
+        <div style={{ ...card, background: 'linear-gradient(135deg, rgba(212,175,55,0.1), rgba(15,23,42,0.6))' }}>
+          <div style={sectionLabel}>◌ Your Portfolio's Rishi Affinity</div>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 6 }}>THIS PORTFOLIO MATCHES:</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#D4AF37', marginBottom: 10 }}>
+              {rishiAffinity.rishi}
+            </div>
+            <div style={{ fontSize: 14, color: '#CBD5E1', lineHeight: 1.7, marginBottom: 12 }}>
+              Philosophy: <span style={{ color: '#E2E8F0', fontWeight: 600 }}>{rishiAffinity.philosophy}</span>
+            </div>
+            <div style={{ fontSize: 11, color: '#64748B' }}>
+              Alignment Score: <span style={{ fontFamily: 'monospace', fontWeight: 900, color: scoreColor(rishiAffinity.score) }}>{rishiAffinity.score}/100</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

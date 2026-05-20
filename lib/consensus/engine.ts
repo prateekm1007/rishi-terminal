@@ -22,6 +22,7 @@ function analyzeTension(scores: RishiScore[]): { label: string; spread: number }
   else if (spread < 60) label = "Moderate Disagreement";
   else if (spread < 80) label = "Significant Disagreement";
   else                  label = "Sharp Division";
+  return { label, spread };
 }
 
 /**

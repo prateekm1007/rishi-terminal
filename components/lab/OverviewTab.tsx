@@ -487,10 +487,12 @@ export default function OverviewTab() {
       let sumWCF = 0;
       const T = Math.max(1, daysBetween(start, end));
 
+      // Modified Dietz style external flows within the window.
+      // Treat buys as POSITIVE contributions (cash added to portfolio).
       for (const h of holdings) {
         const ad = parseDateSafe(h.addedDate);
         if (ad.getTime() <= start.getTime() || ad.getTime() > end.getTime()) continue;
-        const cf = -(h.shares * h.avgPrice);
+        const cf = (h.shares * h.avgPrice);
         const w = clamp(daysBetween(ad, end) / T, 0, 1);
         sumCF += cf;
         sumWCF += w * cf;
@@ -498,7 +500,7 @@ export default function OverviewTab() {
 
       let portRet: number | null = null;
       const denom = bv + sumWCF;
-      if (denom !== 0) portRet = ((endValue - bv - sumCF) / denom) * 100;
+      if (denom > 0) portRet = ((endValue - bv - sumCF) / denom) * 100;
 
       let benchRet: number | null = null;
       if (bench && bench.length > 5) {

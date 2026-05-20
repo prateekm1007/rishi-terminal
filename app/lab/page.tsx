@@ -6,6 +6,8 @@ import HoldingsTabView from '@/components/lab/HoldingsTab';
 import WatchlistTabView from '@/components/lab/WatchlistTab';
 import CompareTabView from '@/components/lab/CompareTab';
 import BacktestTabView from '@/components/lab/BacktestTab';
+import OverviewTabView from '@/components/lab/OverviewTab';
+import IntelligenceTabView from '@/components/lab/IntelligenceTab';
 
 type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'backtest' | 'intelligence';
 
@@ -127,122 +129,20 @@ function LabContent() {
 
       {/* Tab Content */}
       <div className="content-wrapper" style={{ padding: '32px 24px' }}>
-        {activeTab === 'overview' && <OverviewTab />}
+        {activeTab === 'overview' && <OverviewTabView />}
         {activeTab === 'holdings' && <HoldingsTabView />}
         {activeTab === 'watchlist' && <WatchlistTabView />}
         {activeTab === 'compare' && <CompareTabView />}
         {activeTab === 'backtest' && <BacktestTabView />}
-        {activeTab === 'intelligence' && <IntelligenceTab />}
+        {activeTab === 'intelligence' && <IntelligenceTabView />}
       </div>
     </div>
   );
 }
 
 // Tab Components (Placeholders - will be enhanced)
-function OverviewTab() {
-  return (
-    <div className="card-sacred p-8">
-      <h2 className="philosophy-heading" style={{ fontSize: 24, marginBottom: 16 }}>
-        Portfolio Overview
-      </h2>
-      <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
-        Real-time P&L, allocation treemap, portfolio Rishi Score, risk summary.
-      </p>
-      <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
-        <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          [SOON] Full implementation coming - will integrate existing Portfolio page logic
-        </p>
-      </div>
-    </div>
-  );
-}
 
-function HoldingsTab() {
-  return (
-    <div className="card-sacred p-8">
-      <h2 className="philosophy-heading" style={{ fontSize: 24, marginBottom: 16 }}>
-        Holdings
-      </h2>
-      <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
-        Classic portfolio table with live prices, Rishi Scores, notes, quick actions.
-      </p>
-      <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
-        <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          [SOON] Will show Portfolio table here
-        </p>
-      </div>
-    </div>
-  );
-}
 
-function WatchlistTab() {
-  return (
-    <div className="card-sacred p-8">
-      <h2 className="philosophy-heading" style={{ fontSize: 24, marginBottom: 16 }}>
-        Watchlist & Ideas
-      </h2>
-      <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
-        Track stocks, cryptos, bonds. "Promote to Portfolio" with one click.
-      </p>
-      <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
-        <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          [SOON] Will integrate existing Watchlist page logic
-        </p>
-      </div>
-    </div>
-  );
-}
 
-function CompareTab() {
-  return (
-    <div className="card-sacred p-8">
-      <h2 className="philosophy-heading" style={{ fontSize: 24, marginBottom: 16 }}>
-        Compare Assets
-      </h2>
-      <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
-        Multi-asset comparison table, radar charts, Rishi score delta analysis.
-      </p>
-      <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
-        <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          [SOON] Will integrate existing Compare page logic
-        </p>
-      </div>
-    </div>
-  );
-}
 
-function BacktestTab() {
-  return (
-    <div className="card-sacred p-8">
-      <h2 className="philosophy-heading" style={{ fontSize: 24, marginBottom: 16 }}>
-        Backtest Lab
-      </h2>
-      <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
-        Strategy builder, historical simulation on current portfolio or watchlist.
-      </p>
-      <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
-        <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          [SOON] Will integrate existing Backtest page logic
-        </p>
-      </div>
-    </div>
-  );
-}
 
-function IntelligenceTab() {
-  return (
-    <div className="card-sacred p-8">
-      <h2 className="philosophy-heading" style={{ fontSize: 24, marginBottom: 16 }}>
-        Rishi Intelligence
-      </h2>
-      <p style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>
-        Portfolio-level Rishi Debate, Disagreement Index, Philosophy Fit Analysis.
-      </p>
-      <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,215,0,0.05)', borderRadius: 8, border: '1px dashed rgba(212,175,55,0.3)' }}>
-        <p style={{ fontSize: 13, color: '#D4AF37', fontFamily: 'monospace' }}>
-          [SOON] New feature - will analyze entire portfolio through Rishi lens
-        </p>
-      </div>
-    </div>
-  );
-}

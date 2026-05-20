@@ -25,6 +25,14 @@ function spreadLabel(spread: number): string {
     : 'Sharp Division';
 }
 
+function spreadNarrative(spread: number): string {
+  return spread < 20 ? 'The Council broadly agrees.'
+    : spread < 40 ? 'The Council mildly disagrees.'
+    : spread < 60 ? 'The Council is divided.'
+    : spread < 80 ? 'The Council strongly disagrees.'
+    : 'The Council is sharply divided.';
+}
+
 function spreadColor(spread: number): string {
   return spread < 20 ? '#22C55E' : spread < 40 ? '#A3E635' : spread < 60 ? '#F59E0B' : spread < 80 ? '#F97316' : '#EF4444';
 }
@@ -402,7 +410,7 @@ export default function IntelligenceTab() {
                 </div>
               </div>
               <div style={{ marginTop: 8, fontSize: 10, color: spreadColor(h.tensionSpread) }}>
-                {h.tension} (spread: {h.tensionSpread})
+                {spreadNarrative(h.tensionSpread)} (spread: {h.tensionSpread})
               </div>
             </div>
           ))}

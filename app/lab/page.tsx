@@ -21,7 +21,7 @@ const TABS: { id: LabTab; label: string; desc: string; icon: string }[] = [
   { id: 'intelligence',  label: 'Rishi Intelligence', desc: 'Portfolio-level wisdom',    icon: '◌' },
 ];
 
-function isValidTab(t: string): t is LabTab {
+function isValidTab(t: string | null): t is LabTab {
   return t === 'overview' || t === 'holdings' || t === 'watchlist' || t === 'compare' || t === 'intelligence';
 }
 

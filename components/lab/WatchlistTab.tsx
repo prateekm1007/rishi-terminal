@@ -14,7 +14,7 @@ interface WatchlistItem {
   notes?: string;
 }
 
-const STORAGE_KEY = 'rishi_watchlist_v2';
+const STORAGE_KEY = 'rishi_watchlist_v3';
 
 function scoreColor(s: number): string {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444';
@@ -25,7 +25,13 @@ function changeColor(changePct: number): string {
 }
 
 export default function WatchlistTab() {
-  const [items, setItems] = useState<WatchlistItem[]>([]);
+  const [lists, setLists] = useState<Record<string, WatchlistItem[]>>({
+    default: [],
+    highConviction: [],
+    valueTraps: [],
+    earningsWatch: [],
+  });
+  const [activeList, setActiveList] = useState<string>('default');
   const [addSymbol, setAddSymbol] = useState('TCS');
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'added' | 'score' | 'change'>('added');
@@ -34,24 +40,34 @@ export default function WatchlistTab() {
     if (typeof window === 'undefined') return;
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) { setItems([]); return; }
-      const parsed = JSON.parse(raw) as WatchlistItem[];
-      setItems(Array.isArray(parsed) ? parsed : []);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setLists(parsed.lists ?? { default: [], highConviction: [], valueTraps: [], earningsWatch: [] });
+        setActiveList(parsed.activeList ?? 'default');
+      } else {
+        // Migrate from v2 (single array)
+        const oldRaw = localStorage.getItem('rishi_watchlist_v2');
+        if (oldRaw) {
+          const old = JSON.parse(oldRaw);
+          setLists({ default: Array.isArray(old) ? old : [], highConviction: [], valueTraps: [], earningsWatch: [] });
+        }
+      }
     } catch {
-      setItems([]);
+      setLists({ default: [], highConviction: [], valueTraps: [], earningsWatch: [] });
     }
   }, []);
 
-  function persist(next: WatchlistItem[]) {
-    setItems(next);
+  function persist(updatedLists: Record<string, WatchlistItem[]>) {
+    setLists(updatedLists);
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ lists: updatedLists, activeList }));
     } catch {
       // ignore
     }
   }
 
+  const items = lists[activeList] ?? [];
   const symbols = useMemo(() => items.map(i => i.symbol), [items]);
   const { prices, loading } = useLivePrices(symbols);
 
@@ -86,17 +102,17 @@ export default function WatchlistTab() {
     if (!STOCKS[sym]) { setError('Symbol not found in database'); return; }
     if (items.some(x => x.symbol === sym)) { setError('Already in watchlist'); return; }
 
-    const next = [{ symbol: sym, addedDate: new Date().toISOString() }, ...items];
+    const next = { ...lists, [activeList]: [{ symbol: sym, addedDate: new Date().toISOString() }, ...items] };
     persist(next);
   }
 
   function removeItem(symbol: string) {
-    const next = items.filter(i => i.symbol !== symbol);
+    const next = { ...lists, [activeList]: items.filter(i => i.symbol !== symbol) };
     persist(next);
   }
 
   function updateNotes(symbol: string, notes: string) {
-    const next = items.map(i => i.symbol === symbol ? { ...i, notes } : i);
+    const next = { ...lists, [activeList]: items.map(i => i.symbol === symbol ? { ...i, notes } : i) };
     persist(next);
   }
 
@@ -142,8 +158,37 @@ export default function WatchlistTab() {
     whiteSpace: 'nowrap',
   };
 
+  const listConfigs = [
+    { id: 'default', label: 'Default', icon: '★' },
+    { id: 'highConviction', label: 'High Conviction', icon: '🔥' },
+    { id: 'valueTraps', label: 'Value Traps', icon: '⚠️' },
+    { id: 'earningsWatch', label: 'Earnings Watch', icon: '📊' },
+  ];
+
   return (
     <div>
+      {/* Watchlist tabs */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20, borderBottom: '1px solid rgba(30,41,59,0.8)', paddingBottom: 10 }}>
+        {listConfigs.map(cfg => (
+          <button
+            key={cfg.id}
+            onClick={() => setActiveList(cfg.id)}
+            style={{
+              padding: '8px 16px',
+              background: activeList === cfg.id ? 'rgba(212,175,55,0.15)' : 'transparent',
+              border: activeList === cfg.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(30,41,59,0.8)',
+              borderRadius: 6,
+              color: activeList === cfg.id ? '#D4AF37' : '#64748B',
+              fontSize: 12,
+              cursor: 'pointer',
+              fontWeight: activeList === cfg.id ? 700 : 400,
+            }}
+          >
+            {cfg.icon} {cfg.label} ({(lists[cfg.id] ?? []).length})
+          </button>
+        ))}
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
         <div style={{ flex: '1 1 320px' }}>
           <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD SYMBOL</div>

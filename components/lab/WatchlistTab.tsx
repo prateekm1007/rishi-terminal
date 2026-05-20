@@ -45,7 +45,6 @@ export default function WatchlistTab() {
         setLists(parsed.lists ?? { default: [], highConviction: [], valueTraps: [], earningsWatch: [] });
         setActiveList(parsed.activeList ?? 'default');
       } else {
-        // Migrate from v2 (single array)
         const oldRaw = localStorage.getItem('rishi_watchlist_v2');
         if (oldRaw) {
           const old = JSON.parse(oldRaw);
@@ -67,7 +66,21 @@ export default function WatchlistTab() {
     }
   }
 
-  const items = lists[activeList] ?? [];
+  const isSmart = activeList === 'smartHighScore';
+
+  const items: WatchlistItem[] = useMemo(() => {
+    if (isSmart) {
+      return Object.keys(STOCKS)
+        .filter(sym => {
+          const stock = STOCKS[sym];
+          const c = stock ? buildConsensus(stock) : null;
+          return (c?.consensus ?? 0) > 75;
+        })
+        .map(sym => ({ symbol: sym, addedDate: '', notes: '' }));
+    }
+    return lists[activeList] ?? [];
+  }, [isSmart, lists, activeList]);
+
   const symbols = useMemo(() => items.map(i => i.symbol), [items]);
   const { prices, loading } = useLivePrices(symbols);
 
@@ -78,8 +91,8 @@ export default function WatchlistTab() {
       const changePct = prices[i.symbol]?.changePercent24h ?? 0;
       const consensus = stock ? buildConsensus(stock) : null;
       const score = consensus?.consensus ?? 0;
-
-      return { ...i, stock, live, changePct, score };
+      const topBull = consensus?.topBull?.full ?? '—';
+      return { ...i, stock, live, changePct, score, topBull };
     });
   }, [items, prices]);
 
@@ -101,7 +114,6 @@ export default function WatchlistTab() {
     if (!sym) { setError('Enter a symbol'); return; }
     if (!STOCKS[sym]) { setError('Symbol not found in database'); return; }
     if (items.some(x => x.symbol === sym)) { setError('Already in watchlist'); return; }
-
     const next = { ...lists, [activeList]: [{ symbol: sym, addedDate: new Date().toISOString() }, ...items] };
     persist(next);
   }
@@ -119,22 +131,14 @@ export default function WatchlistTab() {
   function promoteToPortfolio(symbol: string) {
     const stock = STOCKS[symbol];
     if (!stock) return;
-
     const live = prices[symbol]?.price ?? stock.price;
     const avgPrice = live > 0 ? live : stock.price;
-
-    addHolding({
-      symbol,
-      shares: 1,
-      avgPrice,
-      addedDate: new Date().toISOString(),
-    });
-
-    // Optional: remove from watchlist after promotion
-    removeItem(symbol);
+    const suggestedShares = avgPrice > 0 ? Math.max(1, Math.round(10000 / avgPrice)) : 1;
+    addHolding({ symbol, shares: suggestedShares, avgPrice, addedDate: new Date().toISOString() });
+    if (!isSmart) removeItem(symbol);
   }
 
-  const inputStyle: any = {
+  const inputStyle: React.CSSProperties = {
     padding: '8px 12px',
     background: 'rgba(15,23,42,0.8)',
     border: '1px solid rgba(212,175,55,0.3)',
@@ -145,7 +149,7 @@ export default function WatchlistTab() {
     width: '100%',
   };
 
-  const btnGold: any = {
+  const btnGold: React.CSSProperties = {
     padding: '8px 16px',
     background: 'rgba(212,175,55,0.15)',
     border: '1px solid rgba(212,175,55,0.4)',
@@ -159,22 +163,23 @@ export default function WatchlistTab() {
   };
 
   const listConfigs = [
-    { id: 'default', label: 'Default', icon: '★' },
-    { id: 'highConviction', label: 'High Conviction', icon: '🔥' },
-    { id: 'valueTraps', label: 'Value Traps', icon: '⚠️' },
-    { id: 'earningsWatch', label: 'Earnings Watch', icon: '📊' },
+    { id: 'default',        label: 'Default',          icon: '★',  smart: false },
+    { id: 'highConviction', label: 'High Conviction',  icon: '🔥', smart: false },
+    { id: 'valueTraps',     label: 'Value Traps',      icon: '⚠️', smart: false },
+    { id: 'earningsWatch',  label: 'Earnings Watch',   icon: '📊', smart: false },
+    { id: 'smartHighScore', label: 'Smart: Score > 75', icon: '⚡', smart: true  },
   ];
 
   return (
     <div>
       {/* Watchlist tabs */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20, borderBottom: '1px solid rgba(30,41,59,0.8)', paddingBottom: 10 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '1px solid rgba(30,41,59,0.8)', paddingBottom: 10, flexWrap: 'wrap' }}>
         {listConfigs.map(cfg => (
           <button
             key={cfg.id}
             onClick={() => setActiveList(cfg.id)}
             style={{
-              padding: '8px 16px',
+              padding: '8px 14px',
               background: activeList === cfg.id ? 'rgba(212,175,55,0.15)' : 'transparent',
               border: activeList === cfg.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(30,41,59,0.8)',
               borderRadius: 6,
@@ -184,36 +189,60 @@ export default function WatchlistTab() {
               fontWeight: activeList === cfg.id ? 700 : 400,
             }}
           >
-            {cfg.icon} {cfg.label} ({(lists[cfg.id] ?? []).length})
+            {cfg.icon} {cfg.label} {cfg.smart ? `(${items.length})` : `(${(lists[cfg.id] ?? []).length})`}
           </button>
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-        <div style={{ flex: '1 1 320px' }}>
-          <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD SYMBOL</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 }}>
-            <input value={addSymbol} onChange={e => setAddSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" style={inputStyle} />
-            <button onClick={addItem} style={btnGold}>+ Add</button>
-          </div>
-          {error && <div style={{ marginTop: 8, fontSize: 12, color: '#EF4444' }}>{error}</div>}
+      {/* Smart list banner */}
+      {isSmart && (
+        <div style={{ padding: '10px 16px', marginBottom: 16, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, fontSize: 12, color: '#22C55E' }}>
+          ⚡ Auto-generated — all stocks where Rishi Consensus Score exceeds 75. Read-only. Use Promote to add to portfolio.
         </div>
+      )}
 
-        <div style={{ minWidth: 220 }}>
-          <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SORT</div>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} style={inputStyle}>
-            <option value="added">Recently Added</option>
+      {/* Add + Sort controls (manual lists only) */}
+      {!isSmart && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+          <div style={{ flex: '1 1 320px' }}>
+            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD SYMBOL</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 }}>
+              <input value={addSymbol} onChange={e => setAddSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" style={inputStyle} />
+              <button onClick={addItem} style={btnGold}>+ Add</button>
+            </div>
+            {error && <div style={{ marginTop: 8, fontSize: 12, color: '#EF4444' }}>{error}</div>}
+          </div>
+
+          <div style={{ minWidth: 220 }}>
+            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SORT</div>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value as 'added' | 'score' | 'change')} style={inputStyle}>
+              <option value="added">Recently Added</option>
+              <option value="score">Rishi Score</option>
+              <option value="change">24h Change</option>
+            </select>
+          </div>
+
+          <div style={{ fontSize: 12, color: '#64748B' }}>
+            {loading ? 'Fetching live prices...' : `${items.length} item${items.length !== 1 ? 's' : ''}`}
+          </div>
+        </div>
+      )}
+
+      {/* Sort for smart list */}
+      {isSmart && (
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
+          <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>SORT</div>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value as 'added' | 'score' | 'change')} style={{ ...inputStyle, width: 200 }}>
             <option value="score">Rishi Score</option>
             <option value="change">24h Change</option>
           </select>
+          <div style={{ fontSize: 12, color: '#64748B' }}>
+            {loading ? 'Fetching...' : `${items.length} stocks`}
+          </div>
         </div>
+      )}
 
-        <div style={{ fontSize: 12, color: '#64748B' }}>
-          {loading ? 'Fetching live prices...' : `${items.length} item${items.length !== 1 ? 's' : ''}`}
-        </div>
-      </div>
-
-      {items.length === 0 && (
+      {items.length === 0 && !isSmart && (
         <div style={{ padding: 48, textAlign: 'center', border: '1px dashed rgba(212,175,55,0.2)', borderRadius: 8 }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>★</div>
           <div style={{ color: '#64748B', marginBottom: 16 }}>Your watchlist is empty. Add your first idea.</div>
@@ -225,7 +254,7 @@ export default function WatchlistTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(30,41,59,0.8)' }}>
-                {['Symbol', 'Price', '24h %', 'Rishi Score', 'Notes', 'Actions'].map(h => (
+                {['Symbol', 'Price', '24h %', 'Rishi Score', 'Top Bull', isSmart ? '' : 'Notes', 'Actions'].filter(Boolean).map(h => (
                   <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600, whiteSpace: 'nowrap' }}>
                     {h}
                   </th>
@@ -256,22 +285,40 @@ export default function WatchlistTab() {
                     </span>
                   </td>
 
-                  <td style={{ padding: '12px 12px', minWidth: 260 }}>
-                    <input
-                      value={i.notes ?? ''}
-                      onChange={e => updateNotes(i.symbol, e.target.value)}
-                      placeholder="Thesis / catalyst / risk..."
-                      style={inputStyle}
-                    />
+                  <td style={{ padding: '12px 12px', fontSize: 11, color: '#22C55E' }}>
+                    {i.topBull}
                   </td>
 
-                  <td style={{ padding: '12px 12px', display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <button onClick={() => promoteToPortfolio(i.symbol)} style={btnGold} title="Add 1 share to portfolio at LTP and remove from watchlist">
-                      Promote → Holdings
-                    </button>
-                    <button onClick={() => removeItem(i.symbol)} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 14 }} title="Remove">
-                      ✕
-                    </button>
+                  {!isSmart && (
+                    <td style={{ padding: '12px 12px', minWidth: 240 }}>
+                      <input
+                        value={i.notes ?? ''}
+                        onChange={e => updateNotes(i.symbol, e.target.value)}
+                        placeholder="Thesis / catalyst / risk..."
+                        style={inputStyle}
+                      />
+                    </td>
+                  )}
+
+                  <td style={{ padding: '12px 12px' }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <button
+                        onClick={() => promoteToPortfolio(i.symbol)}
+                        style={btnGold}
+                        title="Add suggested shares to portfolio at LTP"
+                      >
+                        Promote → Holdings
+                      </button>
+                      {!isSmart && (
+                        <button
+                          onClick={() => removeItem(i.symbol)}
+                          style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 14 }}
+                          title="Remove"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -279,7 +326,9 @@ export default function WatchlistTab() {
           </table>
 
           <div style={{ marginTop: 10, fontSize: 11, color: '#64748B' }}>
-            Promote uses: <span style={{ fontFamily: 'monospace' }}>shares=1</span> at current live price (fallback: stock.price).
+            {isSmart
+              ? 'Smart list is auto-generated from all stocks with Rishi Score > 75. Promote adds suggested shares (10,000 / LTP).'
+              : 'Promote uses suggested shares (10,000 / LTP, min 1) at current live price.'}
           </div>
         </div>
       )}

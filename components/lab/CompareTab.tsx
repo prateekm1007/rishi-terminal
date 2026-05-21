@@ -5,6 +5,16 @@ import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import {
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from 'recharts';
 
 const STORAGE_KEY = 'rishi_compare_v2';
 const RIVALRY_KEY = 'rishi_compare_rivalries_v1';
@@ -37,6 +47,15 @@ function metricColor(val: number, lo: number, hi: number): string {
   return val >= hi ? '#22C55E' : val >= lo ? '#D4AF37' : '#EF4444';
 }
 
+
+function heatBg(val: number, lo: number, hi: number): string {
+  if (val <= 0) return 'rgba(100,116,139,0.08)';
+  const ratio = Math.min(1, Math.max(0, (val - lo) / Math.max(hi - lo, 1)));
+  const r = Math.round(239 - ratio * (239 - 34));
+  const g = Math.round(68 + ratio * (197 - 68));
+  const b = Math.round(68 + ratio * (94 - 68));
+  return 'rgba(' + r + ',' + g + ',' + b + ',0.22)';
+}
 function fmt(v: number | null, dec = 1, suffix = ''): string {
   if (v === null || !Number.isFinite(v)) return '—';
   return v.toFixed(dec) + suffix;
@@ -840,11 +859,180 @@ export default function CompareTab() {
         </div>
       )}
 
-      {/* OTHER VIEWS (PLACEHOLDERS) */}
-      {symbols.length > 0 && viewMode !== 'matrix' && viewMode !== 'philosophy' && (
+      {/* VIEW: HEATMAP */}
+      {symbols.length > 0 && viewMode === 'heatmap' && (
+        <div style={cardStyle}>
+          <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>
+            🔥 HEATMAP — colour intensity = metric quality
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
+                  <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221' }}>STOCK</th>
+                  {['SCORE', 'MOAT', 'VALUATION', 'GROWTH', 'GOVERNANCE', 'SENTIMENT', 'QUALITY', 'P/E', 'ROE%', 'ROCE%', 'OPM%', 'D/E', 'FCF%', 'REV CAGR', 'EPS CAGR'].map(col => (
+                    <th key={col} style={thStyle}>
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {enriched.map((e: any, i: number) => {
+                  const cells: Array<{ val: number; lo: number; hi: number; inv?: boolean }> = [
+                    { val: e.consensus, lo: 50, hi: 80 },
+                    { val: e.moatScore, lo: 50, hi: 80 },
+                    { val: e.valuationScore, lo: 50, hi: 80 },
+                    { val: e.growthScore, lo: 50, hi: 80 },
+                    { val: e.governanceScore, lo: 50, hi: 80 },
+                    { val: e.sentimentScore, lo: 50, hi: 80 },
+                    { val: e.qualityScore, lo: 50, hi: 80 },
+                    { val: e.pe, lo: 15, hi: 30, inv: true },
+                    { val: e.roe, lo: 12, hi: 25 },
+                    { val: e.roce, lo: 15, hi: 28 },
+                    { val: e.opm, lo: 12, hi: 25 },
+                    { val: e.de, lo: 0, hi: 1, inv: true },
+                    { val: e.fcfYield, lo: 2, hi: 6 },
+                    { val: e.revcagr, lo: 8, hi: 20 },
+                    { val: e.epscagr, lo: 8, hi: 20 },
+                  ];
+                  return (
+                    <tr key={e.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.3)' }}>
+                      <td
+                        style={{
+                          ...tdStyle,
+                          textAlign: 'left',
+                          position: 'sticky',
+                          left: 0,
+                          background: '#0B1221',
+                          fontWeight: 800,
+                          color: STOCK_COLORS[i % STOCK_COLORS.length],
+                        }}
+                      >
+                        {e.symbol}
+                      </td>
+                      {cells.map((c, j) => {
+                        const displayVal = c.inv ? Math.max(0, c.hi - c.val + c.lo) : c.val;
+                        return (
+                          <td
+                            key={j}
+                            style={{
+                              ...tdStyle,
+                              background: heatBg(c.inv ? Math.max(0, c.hi - c.val + c.lo) : c.val, c.lo, c.hi),
+                              fontFamily: 'monospace',
+                              fontWeight: 600,
+                              color: '#E2E8F0',
+                            }}
+                          >
+                            {c.val > 0 ? c.val.toFixed(c.val > 10 ? 0 : 1) : '—'}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: 10, color: '#475569' }}>
+            <span>🟥 Low</span>
+            <span>🟨 Medium</span>
+            <span>🟩 High</span>
+            <span style={{ marginLeft: 8 }}>* D/E and P/E: lower = better (inverted)</span>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW: RADAR CHART */}
+      {symbols.length > 0 && viewMode === 'radar' && (
+        <div style={cardStyle}>
+          <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 16 }}>
+            📡 RADAR CHART — 6 Rishi Pillar Scores
+          </div>
+          <ResponsiveContainer width="100%" height={420}>
+            <RadarChart
+              data={['Moat', 'Valuation', 'Growth', 'Governance', 'Sentiment', 'Quality'].map(metric => {
+                const keyMap: Record<string, string> = {
+                  Moat: 'moatScore',
+                  Valuation: 'valuationScore',
+                  Growth: 'growthScore',
+                  Governance: 'governanceScore',
+                  Sentiment: 'sentimentScore',
+                  Quality: 'qualityScore',
+                };
+                const row: Record<string, any> = { metric };
+                enriched.forEach((e: any) => {
+                  row[e.symbol] = e[keyMap[metric]] ?? 0;
+                });
+                return row;
+              })}
+            >
+              <PolarGrid stroke="rgba(30,41,59,0.8)" />
+              <PolarAngleAxis dataKey="metric" tick={{ fill: '#64748B', fontSize: 11 }} />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#475569', fontSize: 9 }} />
+              {enriched.map((e: any, i: number) => (
+                <Radar
+                  key={e.symbol}
+                  name={e.symbol}
+                  dataKey={e.symbol}
+                  stroke={STOCK_COLORS[i % STOCK_COLORS.length]}
+                  fill={STOCK_COLORS[i % STOCK_COLORS.length]}
+                  fillOpacity={0.08}
+                  strokeWidth={2}
+                />
+              ))}
+              <Legend formatter={(value: any) => <span style={{ color: '#94A3B8', fontSize: 12 }}>{value}</span>} />
+              <Tooltip
+                contentStyle={{ background: '#0B1221', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6 }}
+                labelStyle={{ color: '#D4AF37' }}
+                itemStyle={{ color: '#94A3B8' }}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+
+          {/* Pillar score table under radar */}
+          <div style={{ marginTop: 16, overflowX: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(212,175,55,0.2)' }}>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>STOCK</th>
+                  {['Moat', 'Valuation', 'Growth', 'Governance', 'Sentiment', 'Quality'].map(m => (
+                    <th key={m} style={thStyle}>
+                      {m.toUpperCase()}
+                    </th>
+                  ))}
+                  <th style={thStyle}>AVG PILLAR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...enriched]
+                  .sort((a: any, b: any) => b.consensus - a.consensus)
+                  .map((e: any, i: number) => {
+                    const pillars = [e.moatScore, e.valuationScore, e.growthScore, e.governanceScore, e.sentimentScore, e.qualityScore];
+                    const avg = Math.round(pillars.reduce((s, v) => s + v, 0) / pillars.length);
+                    return (
+                      <tr key={e.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.3)' }}>
+                        <td style={{ ...tdStyle, textAlign: 'left', color: STOCK_COLORS[enriched.indexOf(e) % STOCK_COLORS.length], fontWeight: 800 }}>{e.symbol}</td>
+                        {pillars.map((v, j) => (
+                          <td key={j} style={{ ...tdStyle, color: scoreColor(v), fontWeight: 700 }}>
+                            {v}
+                          </td>
+                        ))}
+                        <td style={{ ...tdStyle, color: scoreColor(avg), fontWeight: 900 }}>{avg}</td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* OTHER VIEWS (HISTORICAL PLACEHOLDER) */}
+      {symbols.length > 0 && viewMode === 'historical' && (
         <div style={{ ...cardStyle, padding: 48, textAlign: 'center' }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#D4AF37', marginBottom: 12 }}>{viewModes.find(vm => vm.id === viewMode)?.label}</div>
-          <div style={{ color: '#64748B' }}>Coming in Patch 3...</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#D4AF37', marginBottom: 12 }}>📈 Historical Battle</div>
+          <div style={{ color: '#64748B' }}>Coming in Patch 4...</div>
         </div>
       )}
 

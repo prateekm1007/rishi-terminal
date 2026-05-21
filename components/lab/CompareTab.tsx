@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { fetchHistoryPoints } from '@/components/lab/helpers';
+import type { HistoryPoint } from '@/components/lab/helpers';
 import {
   RadarChart,
   Radar,
@@ -14,6 +16,8 @@ import {
   ResponsiveContainer,
   Legend,
   Tooltip,
+  LineChart,
+  Line,
 } from 'recharts';
 
 const STORAGE_KEY = 'rishi_compare_v2';

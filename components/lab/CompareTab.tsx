@@ -18,14 +18,17 @@ import {
   Tooltip,
   LineChart,
   Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from 'recharts';
 
 const STORAGE_KEY = 'rishi_compare_v2';
 const RIVALRY_KEY = 'rishi_compare_rivalries_v1';
 const MAX_STOCKS = 10;
-const RISHI_NAMES = ['Warren Buffett', 'Ben Graham', 'Peter Lynch', 'Charlie Munger', 'George Soros', 'Philip Fisher', 'Rakesh Jhunjhunwala'];
 
 type ViewMode = 'matrix' | 'philosophy' | 'heatmap' | 'radar' | 'historical';
+type HistoricalTF = '1Y' | '3Y' | '5Y';
 
 interface CompareState {
   symbols: string[];
@@ -39,6 +42,16 @@ interface SavedRivalry {
   savedAt: string;
 }
 
+// Pillar mapping: Rishi full name → pillar label
+const PILLAR_MAP: Record<string, string> = {
+  'Warren Buffett': 'Moat',
+  'Ben Graham': 'Valuation',
+  'Peter Lynch': 'Growth',
+  'Charlie Munger': 'Governance',
+  'George Soros': 'Sentiment',
+  'Philip Fisher': 'Quality',
+};
+
 function scoreColor(s: number): string {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444';
 }
@@ -51,15 +64,15 @@ function metricColor(val: number, lo: number, hi: number): string {
   return val >= hi ? '#22C55E' : val >= lo ? '#D4AF37' : '#EF4444';
 }
 
-
 function heatBg(val: number, lo: number, hi: number): string {
   if (val <= 0) return 'rgba(100,116,139,0.08)';
   const ratio = Math.min(1, Math.max(0, (val - lo) / Math.max(hi - lo, 1)));
   const r = Math.round(239 - ratio * (239 - 34));
   const g = Math.round(68 + ratio * (197 - 68));
   const b = Math.round(68 + ratio * (94 - 68));
-  return 'rgba(' + r + ',' + g + ',' + b + ',0.22)';
+  return `rgba(${r},${g},${b},0.22)`;
 }
+
 function fmt(v: number | null, dec = 1, suffix = ''): string {
   if (v === null || !Number.isFinite(v)) return '—';
   return v.toFixed(dec) + suffix;
@@ -72,7 +85,7 @@ function fmtCr(v: number): string {
 }
 
 export default function CompareTab() {
-  const [symbols, setSymbols] = useState<string[]>(['TCS', 'RELIANCE']);
+  const [symbols, setSymbols] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('matrix');
   const [addSymbol, setAddSymbol] = useState('');
   const [error, setError] = useState('');
@@ -81,6 +94,9 @@ export default function CompareTab() {
   const [rivalryName, setRivalryName] = useState('');
   const [showRivalry, setShowRivalry] = useState(false);
   const [toast, setToast] = useState('');
+  const [histTF, setHistTF] = useState<HistoricalTF>('1Y');
+  const [histLoading, setHistLoading] = useState(false);
+  const [histData, setHistData] = useState<Record<string, HistoryPoint[]>>({});
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -213,6 +229,13 @@ export default function CompareTab() {
         const chg = prices[sym]?.changePercent24h ?? 0;
         const fcfYield = stock.mktcap > 0 && stock.fcf ? (stock.fcf / stock.mktcap) * 100 : 0;
 
+        // Extract pillar scores by matching full names
+        const pillarScores: Record<string, number> = {};
+        Object.entries(PILLAR_MAP).forEach(([fullName, pillar]) => {
+          const match = c.scores.find(r => r.full === fullName);
+          pillarScores[pillar.toLowerCase() + 'Score'] = match?.score ?? 0;
+        });
+
         return {
           symbol: sym,
           name: stock.name,
@@ -220,29 +243,20 @@ export default function CompareTab() {
           live,
           changePct: chg,
           pe: stock.pe ?? 0,
+          pb: (stock.price && stock.bvps) ? stock.price / stock.bvps : 0,
           roe: stock.roe ?? 0,
           roce: stock.roce ?? 0,
           de: stock.de ?? 0,
-          opm: stock.opm ?? 0,
-          revcagr: stock.revcagr ?? 0,
-          epscagr: stock.epscagr ?? 0,
-          bvps: stock.bvps ?? 0,
           fcfYield,
           mktcap: stock.mktcap ?? 0,
-          promo: stock.promo ?? 0,
           consensus: c.consensus,
           category: c.category,
           tension: c.tension,
           tensionSpread: c.tensionSpread,
           topBull: c.topBull?.full ?? '—',
           topBear: c.topBear?.full ?? '—',
-          scores: c.scores.map(r => ({ name: r.name, score: r.score, full: r.full ?? r.name })),
-          moatScore: c.scores.find(r => r.name === 'Warren Buffett')?.score ?? 0,
-          valuationScore: c.scores.find(r => r.name === 'Ben Graham')?.score ?? 0,
-          growthScore: c.scores.find(r => r.name === 'Peter Lynch')?.score ?? 0,
-          governanceScore: c.scores.find(r => r.name === 'Charlie Munger')?.score ?? 0,
-          sentimentScore: c.scores.find(r => r.name === 'George Soros')?.score ?? 0,
-          qualityScore: c.scores.find(r => r.name === 'Philip Fisher')?.score ?? 0,
+          scores: c.scores,
+          ...pillarScores,
         };
       })
       .filter(Boolean) as any[];
@@ -253,13 +267,23 @@ export default function CompareTab() {
     return Math.round(enriched.reduce((s: number, e: any) => s + e.tensionSpread, 0) / enriched.length);
   }, [enriched]);
 
+  // Build dynamic Rishi list from actual scores
+  const allRishis = useMemo(() => {
+    if (!enriched.length) return [];
+    const rishiSet = new Set<string>();
+    enriched.forEach((e: any) => {
+      e.scores.forEach((r: any) => rishiSet.add(r.full));
+    });
+    return Array.from(rishiSet).sort();
+  }, [enriched]);
+
   const crowns = useMemo(() => {
     const map: Record<string, string> = {};
-    RISHI_NAMES.forEach(rishi => {
+    allRishis.forEach(rishi => {
       let best = -1,
         bestSym = '';
       enriched.forEach((e: any) => {
-        const sc = e.scores.find((r: any) => r.name === rishi)?.score ?? 0;
+        const sc = e.scores.find((r: any) => r.full === rishi)?.score ?? 0;
         if (sc > best) {
           best = sc;
           bestSym = e.symbol;
@@ -268,7 +292,7 @@ export default function CompareTab() {
       if (best > 0) map[rishi] = bestSym;
     });
     return map;
-  }, [enriched]);
+  }, [enriched, allRishis]);
 
   function generateThesis(): string {
     if (!enriched.length) return '';
@@ -285,18 +309,18 @@ export default function CompareTab() {
       `## 📊 Pillar Scores`,
       '| Stock | Moat | Valuation | Growth | Governance | Sentiment | Quality |',
       '|-------|------|-----------|--------|------------|-----------|---------|',
-      ...enriched.map((e: any) => `| ${e.symbol} | ${e.moatScore} | ${e.valuationScore} | ${e.growthScore} | ${e.governanceScore} | ${e.sentimentScore} | ${e.qualityScore} |`),
+      ...enriched.map((e: any) => `| ${e.symbol} | ${e.moatScore || 0} | ${e.valuationScore || 0} | ${e.growthScore || 0} | ${e.governanceScore || 0} | ${e.sentimentScore || 0} | ${e.qualityScore || 0} |`),
       '',
       `## 🔑 Key Ratios`,
-      '| Stock | P/E | ROE% | ROCE% | D/E | OPM% |',
-      '|-------|-----|------|-------|-----|------|',
-      ...enriched.map((e: any) => `| ${e.symbol} | ${fmt(e.pe, 1)} | ${fmt(e.roe, 1)}% | ${fmt(e.roce, 1)}% | ${fmt(e.de, 2)} | ${fmt(e.opm, 1)}% |`),
+      '| Stock | P/E | P/B | ROE% | ROCE% | D/E | FCF Yield% |',
+      '|-------|-----|-----|------|-------|-----|------------|',
+      ...enriched.map((e: any) => `| ${e.symbol} | ${fmt(e.pe, 1)} | ${fmt(e.pb, 1)} | ${fmt(e.roe, 1)} | ${fmt(e.roce, 1)} | ${fmt(e.de, 2)} | ${fmt(e.fcfYield, 1)} |`),
       '',
       `## 🧠 Disagreement Index: ${disagreementIndex}/100`,
       disagreementIndex < 20 ? 'Strong consensus across all stocks — high conviction comparison.' : disagreementIndex < 50 ? 'Moderate disagreement — some philosophical differences worth noting.' : 'High disagreement — requires deep due diligence before committing.',
       '',
       `## 👑 Philosophy Kings`,
-      ...Object.entries(crowns).map(([rishi, sym]) => `- **${rishi}** prefers **${sym}**`),
+      ...Object.entries(crowns).slice(0, 10).map(([rishi, sym]) => `- **${rishi}** prefers **${sym}**`),
     ];
     return lines.join('\n');
   }
@@ -308,6 +332,45 @@ export default function CompareTab() {
       .then(() => showToast('📋 Battle Thesis copied!'))
       .catch(() => showToast('❌ Copy failed'));
   }
+
+  // Fetch historical data
+  useEffect(() => {
+    if (viewMode !== 'historical' || !symbols.length) return;
+    setHistLoading(true);
+    Promise.all(symbols.map(sym => fetchHistoryPoints(sym, histTF)))
+      .then(results => {
+        const map: Record<string, HistoryPoint[]> = {};
+        symbols.forEach((sym, i) => {
+          map[sym] = results[i];
+        });
+        setHistData(map);
+        setHistLoading(false);
+      })
+      .catch(() => {
+        setHistLoading(false);
+        showToast('❌ Failed to fetch history');
+      });
+  }, [viewMode, symbols, histTF]);
+
+  const normalizedHistData = useMemo(() => {
+    if (!Object.keys(histData).length) return [];
+    const dateMap: Record<string, Record<string, number>> = {};
+    
+    // Normalize each symbol to base 100
+    Object.entries(histData).forEach(([sym, points]) => {
+      if (!points.length) return;
+      const base = points[0].close;
+      points.forEach(pt => {
+        const date = pt.date;
+        if (!dateMap[date]) dateMap[date] = {};
+        dateMap[date][sym] = (pt.close / base) * 100;
+      });
+    });
+
+    return Object.entries(dateMap)
+      .map(([date, values]) => ({ date, ...values }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [histData]);
 
   const cardStyle: React.CSSProperties = {
     background: 'rgba(15,23,42,0.6)',
@@ -351,28 +414,28 @@ export default function CompareTab() {
   };
 
   const thStyle: React.CSSProperties = {
-    padding: '10px 10px',
+    padding: '10px 8px',
     textAlign: 'right' as const,
     fontSize: 9,
     color: '#64748B',
-    letterSpacing: 1,
+    letterSpacing: 0.8,
     fontWeight: 600,
     whiteSpace: 'nowrap',
   };
 
   const tdStyle: React.CSSProperties = {
-    padding: '11px 10px',
+    padding: '10px 8px',
     textAlign: 'right' as const,
     fontFamily: 'monospace',
-    fontSize: 12,
+    fontSize: 11,
   };
 
   const viewModes: Array<{ id: ViewMode; label: string; icon: string }> = [
-    { id: 'matrix', label: 'Deep Matrix', icon: '⊞' },
-    { id: 'philosophy', label: 'Philosophy Showdown', icon: '⚔️' },
+    { id: 'matrix', label: 'Matrix', icon: '⊞' },
+    { id: 'philosophy', label: 'Philosophy', icon: '⚔️' },
     { id: 'heatmap', label: 'Heatmap', icon: '🔥' },
-    { id: 'radar', label: 'Radar Chart', icon: '📡' },
-    { id: 'historical', label: 'Historical Battle', icon: '📈' },
+    { id: 'radar', label: 'Radar', icon: '📡' },
+    { id: 'historical', label: 'Historical', icon: '📈' },
   ];
 
   const STOCK_COLORS = ['#D4AF37', '#22C55E', '#3B82F6', '#F97316', '#A855F7', '#EF4444', '#14B8A6', '#F59E0B', '#6366F1', '#EC4899'];
@@ -405,7 +468,7 @@ export default function CompareTab() {
       <div style={cardStyle}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ flex: '1 1 280px', position: 'relative' }}>
-            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD STOCK TO ARENA (MAX {MAX_STOCKS})</div>
+            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD STOCK (MAX {MAX_STOCKS})</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
               <div style={{ position: 'relative' }}>
                 <input
@@ -415,7 +478,7 @@ export default function CompareTab() {
                     if (e.key === 'Enter') addStock();
                     if (e.key === 'Escape') setSuggestions([]);
                   }}
-                  placeholder="Symbol or company name..."
+                  placeholder="Symbol or name..."
                   style={inputStyle}
                 />
                 {suggestions.length > 0 && (
@@ -456,7 +519,6 @@ export default function CompareTab() {
                       >
                         <span style={{ color: '#D4AF37', fontWeight: 700 }}>{sym}</span>
                         <span style={{ color: '#64748B', marginLeft: 8 }}>{STOCKS[sym]?.name}</span>
-                        <span style={{ color: '#475569', marginLeft: 8, fontSize: 10 }}>{STOCKS[sym]?.sector}</span>
                       </div>
                     ))}
                   </div>
@@ -470,29 +532,28 @@ export default function CompareTab() {
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, color: '#64748B' }}>{loading ? '⟳ Fetching prices...' : `${symbols.length}/${MAX_STOCKS} in arena`}</span>
+            <span style={{ fontSize: 11, color: '#64748B' }}>{loading ? '⟳ Loading...' : `${symbols.length}/${MAX_STOCKS}`}</span>
             {symbols.length > 0 && (
               <>
                 <button onClick={() => setShowRivalry(v => !v)} style={btnGhost}>
-                  ⚔️ Save Rivalry
+                  ⚔️ Save
                 </button>
                 <button onClick={copyThesis} style={btnGhost}>
-                  📋 Battle Thesis
+                  📋 Thesis
                 </button>
                 <button onClick={clearAll} style={{ ...btnGhost, color: '#EF4444', borderColor: 'rgba(239,68,68,0.3)' }}>
-                  Clear All
+                  Clear
                 </button>
               </>
             )}
           </div>
         </div>
 
-        {/* Save Rivalry form */}
         {showRivalry && (
           <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <input value={rivalryName} onChange={e => setRivalryName(e.target.value)} placeholder={`e.g. ${symbols.slice(0, 2).join(' vs ')}`} style={{ ...inputStyle, flex: '1 1 200px', padding: '7px 10px' }} />
             <button onClick={saveRivalry} style={btnGold}>
-              Save ⚔️
+              Save
             </button>
             <button onClick={() => setShowRivalry(false)} style={btnGhost}>
               Cancel
@@ -500,12 +561,11 @@ export default function CompareTab() {
           </div>
         )}
 
-        {/* Peer suggestions */}
         {peerSuggestions.length > 0 && symbols.length > 0 && symbols.length < MAX_STOCKS && (
           <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>SECTOR PEERS:</span>
+            <span style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>PEERS:</span>
             {peerSuggestions.map(sym => (
-              <button key={sym} onClick={() => addStock(sym)} style={{ ...btnGhost, fontSize: 10, padding: '4px 8px', color: '#94A3B8' }}>
+              <button key={sym} onClick={() => addStock(sym)} style={{ ...btnGhost, fontSize: 10, padding: '4px 8px' }}>
                 + {sym}
               </button>
             ))}
@@ -513,7 +573,7 @@ export default function CompareTab() {
         )}
       </div>
 
-      {/* RIVALRIES LIBRARY */}
+      {/* RIVALRIES */}
       {rivalries.length > 0 && (
         <div style={cardStyle}>
           <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 10 }}>⚔️ SAVED RIVALRIES</div>
@@ -534,7 +594,7 @@ export default function CompareTab() {
                 <button onClick={() => loadRivalry(r)} style={{ background: 'none', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: 12, fontFamily: 'monospace', padding: 0 }}>
                   {r.name}
                 </button>
-                <button onClick={() => deleteRivalry(r.id)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 11, padding: 0 }} title="Delete">
+                <button onClick={() => deleteRivalry(r.id)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 11, padding: 0 }}>
                   ✕
                 </button>
               </div>
@@ -566,7 +626,7 @@ export default function CompareTab() {
               <span style={{ fontSize: 11, color: scoreColor(e.consensus), fontFamily: 'monospace' }}>{e.consensus}</span>
               <span style={{ fontSize: 11, color: changeColor(e.changePct) }}>
                 {e.changePct >= 0 ? '+' : ''}
-                {e.changePct.toFixed(2)}%
+                {e.changePct.toFixed(1)}%
               </span>
               <button onClick={() => removeStock(e.symbol)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 13, padding: 0, lineHeight: 1 }}>
                 ✕
@@ -576,7 +636,7 @@ export default function CompareTab() {
         </div>
       )}
 
-      {/* VIEW MODE TABS */}
+      {/* VIEW TABS */}
       {symbols.length > 0 && (
         <div style={{ display: 'flex', gap: 6, borderBottom: '1px solid rgba(30,41,59,0.8)', paddingBottom: 10, flexWrap: 'wrap' }}>
           {viewModes.map(vm => (
@@ -608,42 +668,31 @@ export default function CompareTab() {
         <div style={{ ...cardStyle, padding: 64, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#D4AF37', marginBottom: 8 }}>The Arena is Empty</div>
-          <div style={{ color: '#64748B', marginBottom: 20, fontSize: 14 }}>Add 2–10 Indian stocks to begin the ultimate battle of philosophies and metrics.</div>
-          {rivalries.length > 0 && <div style={{ fontSize: 12, color: '#475569' }}>Load a saved rivalry above, or type a symbol to start.</div>}
+          <div style={{ color: '#64748B', marginBottom: 20, fontSize: 14 }}>Add 2–10 stocks to begin the battle.</div>
         </div>
       )}
 
-      {/* VIEW: MATRIX */}
+      {/* VIEW: MATRIX (SIMPLIFIED TO 15 COLUMNS) */}
       {symbols.length > 0 && viewMode === 'matrix' && (
         <div style={cardStyle}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
-                  <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221', zIndex: 10, fontSize: 10 }}>STOCK</th>
+                  <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221', zIndex: 10 }}>STOCK</th>
                   <th style={thStyle}>PRICE</th>
-                  <th style={thStyle}>24H %</th>
+                  <th style={thStyle}>24H%</th>
                   <th style={thStyle}>MKT CAP</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>SCORE</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>CATEGORY</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>MOAT</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>VALUATION</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>GROWTH</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>GOVERNANCE</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>SENTIMENT</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>QUALITY</th>
                   <th style={thStyle}>P/E</th>
-                  <th style={thStyle}>ROE %</th>
-                  <th style={thStyle}>ROCE %</th>
-                  <th style={thStyle}>OPM %</th>
+                  <th style={thStyle}>P/B</th>
+                  <th style={thStyle}>ROE%</th>
+                  <th style={thStyle}>ROCE%</th>
                   <th style={thStyle}>D/E</th>
-                  <th style={thStyle}>FCF YLD</th>
-                  <th style={thStyle}>REV CAGR</th>
-                  <th style={thStyle}>EPS CAGR</th>
-                  <th style={thStyle}>PROMO %</th>
+                  <th style={thStyle}>FCF YLD%</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>TENSION</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>TOP BULL</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>TOP BEAR</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>BULL</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>BEAR</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>✕</th>
                 </tr>
               </thead>
@@ -663,7 +712,7 @@ export default function CompareTab() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: STOCK_COLORS[i % STOCK_COLORS.length], flexShrink: 0 }} />
                         <div>
-                          <Link href={`/stock/${e.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 800 }}>
+                          <Link href={`/stock/${e.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 800, fontSize: 12 }}>
                             {e.symbol}
                           </Link>
                           <div style={{ fontSize: 9, color: '#64748B', marginTop: 1 }}>{e.sector}</div>
@@ -673,33 +722,23 @@ export default function CompareTab() {
                     <td style={{ ...tdStyle, color: '#E2E8F0' }}>{e.live.toLocaleString('en-IN')}</td>
                     <td style={{ ...tdStyle, color: changeColor(e.changePct), fontWeight: 700 }}>
                       {e.changePct >= 0 ? '+' : ''}
-                      {e.changePct.toFixed(2)}%
+                      {e.changePct.toFixed(1)}%
                     </td>
-                    <td style={{ ...tdStyle, color: '#94A3B8', fontSize: 11 }}>{fmtCr(e.mktcap)}</td>
+                    <td style={{ ...tdStyle, color: '#94A3B8', fontSize: 10 }}>{fmtCr(e.mktcap)}</td>
                     <td style={{ ...tdStyle, textAlign: 'center' }}>
-                      <span style={{ fontWeight: 900, fontSize: 15, color: scoreColor(e.consensus) }}>{e.consensus}</span>
+                      <span style={{ fontWeight: 900, fontSize: 14, color: scoreColor(e.consensus) }}>{e.consensus}</span>
                     </td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: '#94A3B8' }}>{e.category}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: scoreColor(e.moatScore) }}>{e.moatScore}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: scoreColor(e.valuationScore) }}>{e.valuationScore}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: scoreColor(e.growthScore) }}>{e.growthScore}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: scoreColor(e.governanceScore) }}>{e.governanceScore}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: scoreColor(e.sentimentScore) }}>{e.sentimentScore}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: scoreColor(e.qualityScore) }}>{e.qualityScore}</td>
                     <td style={{ ...tdStyle, color: e.pe > 0 ? metricColor(e.pe, 15, 30) : '#64748B' }}>{fmt(e.pe, 1)}</td>
-                    <td style={{ ...tdStyle, color: metricColor(e.roe, 12, 20) }}>{fmt(e.roe, 1, '%')}</td>
-                    <td style={{ ...tdStyle, color: metricColor(e.roce, 15, 25) }}>{fmt(e.roce, 1, '%')}</td>
-                    <td style={{ ...tdStyle, color: metricColor(e.opm, 12, 22) }}>{fmt(e.opm, 1, '%')}</td>
+                    <td style={{ ...tdStyle, color: e.pb > 0 ? metricColor(e.pb, 1.5, 4) : '#64748B' }}>{fmt(e.pb, 1)}</td>
+                    <td style={{ ...tdStyle, color: metricColor(e.roe, 12, 20) }}>{fmt(e.roe, 1)}</td>
+                    <td style={{ ...tdStyle, color: metricColor(e.roce, 15, 25) }}>{fmt(e.roce, 1)}</td>
                     <td style={{ ...tdStyle, color: e.de > 1 ? '#EF4444' : e.de > 0 ? '#D4AF37' : '#22C55E' }}>{fmt(e.de, 2)}</td>
-                    <td style={{ ...tdStyle, color: metricColor(e.fcfYield, 2, 5) }}>{fmt(e.fcfYield, 1, '%')}</td>
-                    <td style={{ ...tdStyle, color: metricColor(e.revcagr, 10, 20) }}>{fmt(e.revcagr, 0, '%')}</td>
-                    <td style={{ ...tdStyle, color: metricColor(e.epscagr, 10, 20) }}>{fmt(e.epscagr, 0, '%')}</td>
-                    <td style={{ ...tdStyle, color: e.promo > 50 ? '#22C55E' : e.promo > 25 ? '#D4AF37' : '#EF4444' }}>{fmt(e.promo, 1, '%')}</td>
+                    <td style={{ ...tdStyle, color: metricColor(e.fcfYield, 2, 5) }}>{fmt(e.fcfYield, 1)}</td>
                     <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: e.tensionSpread > 40 ? '#EF4444' : '#64748B' }}>
-                      {e.tension} <span style={{ color: '#475569' }}>({e.tensionSpread})</span>
+                      {e.tension.split(' ')[0]} <span style={{ color: '#475569' }}>({e.tensionSpread})</span>
                     </td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: '#22C55E' }}>{e.topBull}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: '#EF4444' }}>{e.topBear}</td>
+                    <td style={{ ...tdStyle, textAlign: 'center', fontSize: 9, color: '#22C55E' }}>{e.topBull.split(' ')[0]}</td>
+                    <td style={{ ...tdStyle, textAlign: 'center', fontSize: 9, color: '#EF4444' }}>{e.topBear.split(' ')[0]}</td>
                     <td style={{ ...tdStyle, textAlign: 'center' }}>
                       <button onClick={() => removeStock(e.symbol)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 14 }}>
                         ✕
@@ -710,7 +749,7 @@ export default function CompareTab() {
               </tbody>
             </table>
           </div>
-          <div style={{ marginTop: 10, fontSize: 10, color: '#475569' }}>Deep Metric Matrix — {enriched.length} stocks × 24 columns · Disagreement: {disagreementIndex}</div>
+          <div style={{ marginTop: 10, fontSize: 10, color: '#475569' }}>{enriched.length} stocks × 15 cols · Disagreement: {disagreementIndex}</div>
         </div>
       )}
 
@@ -720,8 +759,8 @@ export default function CompareTab() {
           {/* CROWNS */}
           <div style={cardStyle}>
             <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>👑 PHILOSOPHY KINGS</div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {Object.entries(crowns).map(([rishi, sym]) => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
+              {Object.entries(crowns).slice(0, 12).map(([rishi, sym]) => (
                 <div
                   key={rishi}
                   style={{
@@ -729,7 +768,6 @@ export default function CompareTab() {
                     border: '1px solid rgba(212,175,55,0.25)',
                     borderRadius: 8,
                     padding: '8px 12px',
-                    minWidth: 140,
                   }}
                 >
                   <div style={{ fontSize: 9, color: '#64748B', marginBottom: 4 }}>{rishi.toUpperCase()}</div>
@@ -741,25 +779,25 @@ export default function CompareTab() {
 
           {/* RISHI × STOCK MATRIX */}
           <div style={cardStyle}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>⚔️ RISHI × STOCK SCORE MATRIX</div>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>⚔️ RISHI × STOCK SCORE MATRIX ({allRishis.length} Rishis)</div>
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
-                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 160 }}>RISHI / PHILOSOPHY</th>
+                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 140, fontSize: 8 }}>RISHI</th>
                     {enriched.map((e: any, i: number) => (
-                      <th key={e.symbol} style={{ ...thStyle, textAlign: 'center', color: STOCK_COLORS[i % STOCK_COLORS.length] }}>
+                      <th key={e.symbol} style={{ ...thStyle, textAlign: 'center', color: STOCK_COLORS[i % STOCK_COLORS.length], fontSize: 9 }}>
                         {e.symbol}
                       </th>
                     ))}
-                    <th style={{ ...thStyle, textAlign: 'center' }}>WINNER</th>
+                    <th style={{ ...thStyle, textAlign: 'center', fontSize: 8 }}>WINNER</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {RISHI_NAMES.map(rishi => {
+                  {allRishis.map(rishi => {
                     const row = enriched.map((e: any) => ({
                       sym: e.symbol,
-                      score: e.scores.find((r: any) => r.name === rishi)?.score ?? 0,
+                      score: e.scores.find((r: any) => r.full === rishi)?.score ?? 0,
                     }));
                     const maxScore = Math.max(...row.map(r => r.score));
                     const winner = row.find(r => r.score === maxScore);
@@ -774,46 +812,47 @@ export default function CompareTab() {
                           (ev.currentTarget as HTMLTableRowElement).style.background = 'transparent';
                         }}
                       >
-                        <td style={{ ...tdStyle, textAlign: 'left', color: '#94A3B8', fontSize: 11, fontFamily: 'sans-serif' }}>{rishi}</td>
+                        <td style={{ ...tdStyle, textAlign: 'left', color: '#94A3B8', fontSize: 10, fontFamily: 'sans-serif' }}>{rishi}</td>
                         {row.map((r, i) => (
                           <td key={r.sym} style={{ ...tdStyle, textAlign: 'center' }}>
                             <span
                               style={{
                                 display: 'inline-block',
-                                padding: '3px 8px',
+                                padding: '2px 6px',
                                 borderRadius: 4,
-                                background: r.score === maxScore ? 'rgba(212,175,55,0.15)' : 'transparent',
-                                border: r.score === maxScore ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
-                                fontWeight: r.score === maxScore ? 900 : 400,
+                                background: r.score === maxScore && maxScore > 0 ? 'rgba(212,175,55,0.15)' : 'transparent',
+                                border: r.score === maxScore && maxScore > 0 ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
+                                fontWeight: r.score === maxScore ? 800 : 400,
                                 color: scoreColor(r.score),
                                 fontFamily: 'monospace',
+                                fontSize: 11,
                               }}
                             >
-                              {r.score === maxScore ? '👑 ' : ''}
+                              {r.score === maxScore && maxScore > 0 ? '👑 ' : ''}
                               {r.score}
                             </span>
                           </td>
                         ))}
-                        <td style={{ ...tdStyle, textAlign: 'center', color: '#D4AF37', fontWeight: 800, fontFamily: 'monospace' }}>{winner?.sym ?? '—'}</td>
+                        <td style={{ ...tdStyle, textAlign: 'center', color: '#D4AF37', fontWeight: 700, fontFamily: 'monospace', fontSize: 11 }}>{winner?.sym ?? '—'}</td>
                       </tr>
                     );
                   })}
 
                   {/* CONSENSUS ROW */}
                   <tr style={{ borderTop: '2px solid rgba(212,175,55,0.3)', background: 'rgba(212,175,55,0.05)' }}>
-                    <td style={{ ...tdStyle, textAlign: 'left', color: '#D4AF37', fontWeight: 700 }}>RISHI CONSENSUS</td>
+                    <td style={{ ...tdStyle, textAlign: 'left', color: '#D4AF37', fontWeight: 700, fontSize: 10 }}>RISHI CONSENSUS</td>
                     {enriched.map((e: any, i: number) => {
                       const maxC = Math.max(...enriched.map((x: any) => x.consensus));
                       return (
                         <td key={e.symbol} style={{ ...tdStyle, textAlign: 'center' }}>
-                          <span style={{ fontWeight: 900, fontSize: 16, color: scoreColor(e.consensus), fontFamily: 'monospace' }}>
+                          <span style={{ fontWeight: 900, fontSize: 14, color: scoreColor(e.consensus), fontFamily: 'monospace' }}>
                             {e.consensus === maxC ? '🏆 ' : ''}
                             {e.consensus}
                           </span>
                         </td>
                       );
                     })}
-                    <td style={{ ...tdStyle, textAlign: 'center', color: '#D4AF37', fontWeight: 800 }}>
+                    <td style={{ ...tdStyle, textAlign: 'center', color: '#D4AF37', fontWeight: 800, fontSize: 11 }}>
                       {[...enriched].sort((a: any, b: any) => b.consensus - a.consensus)[0]?.symbol ?? '—'}
                     </td>
                   </tr>
@@ -824,7 +863,7 @@ export default function CompareTab() {
 
           {/* CONSENSUS VS OUTLIER */}
           <div style={cardStyle}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>🧠 CONSENSUS vs OUTLIER ANALYSIS</div>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>🧠 CONSENSUS vs OUTLIER</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {enriched.map((e: any) => (
                 <div
@@ -854,7 +893,7 @@ export default function CompareTab() {
                   </div>
                   <span style={{ fontSize: 11, color: e.tensionSpread > 60 ? '#EF4444' : '#64748B', fontFamily: 'monospace' }}>Spread: {e.tensionSpread}</span>
                   <span style={{ fontSize: 10, color: '#475569' }}>
-                    {e.tensionSpread < 20 ? '✅ Unanimous' : e.tensionSpread < 40 ? '🟡 Minor split' : e.tensionSpread < 60 ? '🟠 Notable split' : '🔴 Sharp division'}
+                    {e.tensionSpread < 20 ? '✅ Unanimous' : e.tensionSpread < 40 ? '🟡 Minor' : e.tensionSpread < 60 ? '🟠 Notable' : '🔴 Sharp'}
                   </span>
                 </div>
               ))}
@@ -863,18 +902,18 @@ export default function CompareTab() {
         </div>
       )}
 
-      {/* VIEW: HEATMAP */}
+      {/* VIEW: HEATMAP (ONLY NON-ZERO METRICS) */}
       {symbols.length > 0 && viewMode === 'heatmap' && (
         <div style={cardStyle}>
           <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>
-            🔥 HEATMAP — colour intensity = metric quality
+            🔥 HEATMAP — color intensity = quality
           </div>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
                   <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221' }}>STOCK</th>
-                  {['SCORE', 'MOAT', 'VALUATION', 'GROWTH', 'GOVERNANCE', 'SENTIMENT', 'QUALITY', 'P/E', 'ROE%', 'ROCE%', 'OPM%', 'D/E', 'FCF%', 'REV CAGR', 'EPS CAGR'].map(col => (
+                  {['SCORE', 'P/E', 'P/B', 'ROE%', 'ROCE%', 'D/E', 'FCF%'].map(col => (
                     <th key={col} style={thStyle}>
                       {col}
                     </th>
@@ -885,20 +924,12 @@ export default function CompareTab() {
                 {enriched.map((e: any, i: number) => {
                   const cells: Array<{ val: number; lo: number; hi: number; inv?: boolean }> = [
                     { val: e.consensus, lo: 50, hi: 80 },
-                    { val: e.moatScore, lo: 50, hi: 80 },
-                    { val: e.valuationScore, lo: 50, hi: 80 },
-                    { val: e.growthScore, lo: 50, hi: 80 },
-                    { val: e.governanceScore, lo: 50, hi: 80 },
-                    { val: e.sentimentScore, lo: 50, hi: 80 },
-                    { val: e.qualityScore, lo: 50, hi: 80 },
                     { val: e.pe, lo: 15, hi: 30, inv: true },
+                    { val: e.pb, lo: 1.5, hi: 4, inv: true },
                     { val: e.roe, lo: 12, hi: 25 },
                     { val: e.roce, lo: 15, hi: 28 },
-                    { val: e.opm, lo: 12, hi: 25 },
                     { val: e.de, lo: 0, hi: 1, inv: true },
                     { val: e.fcfYield, lo: 2, hi: 6 },
-                    { val: e.revcagr, lo: 8, hi: 20 },
-                    { val: e.epscagr, lo: 8, hi: 20 },
                   ];
                   return (
                     <tr key={e.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.3)' }}>
@@ -942,16 +973,16 @@ export default function CompareTab() {
             <span>🟥 Low</span>
             <span>🟨 Medium</span>
             <span>🟩 High</span>
-            <span style={{ marginLeft: 8 }}>* D/E and P/E: lower = better (inverted)</span>
+            <span style={{ marginLeft: 8 }}>* D/E, P/E, P/B: lower = better</span>
           </div>
         </div>
       )}
 
-      {/* VIEW: RADAR CHART */}
+      {/* VIEW: RADAR CHART (6 PILLAR OVERLAY) */}
       {symbols.length > 0 && viewMode === 'radar' && (
         <div style={cardStyle}>
           <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 16 }}>
-            📡 RADAR CHART — 6 Rishi Pillar Scores
+            📡 RADAR CHART — 6 Pillar Scores
           </div>
           <ResponsiveContainer width="100%" height={420}>
             <RadarChart
@@ -994,9 +1025,9 @@ export default function CompareTab() {
             </RadarChart>
           </ResponsiveContainer>
 
-          {/* Pillar score table under radar */}
+          {/* Pillar table */}
           <div style={{ marginTop: 16, overflowX: 'auto' }}>
-            <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(212,175,55,0.2)' }}>
                   <th style={{ ...thStyle, textAlign: 'left' }}>STOCK</th>
@@ -1005,7 +1036,7 @@ export default function CompareTab() {
                       {m.toUpperCase()}
                     </th>
                   ))}
-                  <th style={thStyle}>AVG PILLAR</th>
+                  <th style={thStyle}>AVG</th>
                 </tr>
               </thead>
               <tbody>
@@ -1013,13 +1044,13 @@ export default function CompareTab() {
                   .sort((a: any, b: any) => b.consensus - a.consensus)
                   .map((e: any, i: number) => {
                     const pillars = [e.moatScore, e.valuationScore, e.growthScore, e.governanceScore, e.sentimentScore, e.qualityScore];
-                    const avg = Math.round(pillars.reduce((s, v) => s + v, 0) / pillars.length);
+                    const avg = Math.round(pillars.reduce((s, v) => s + (v || 0), 0) / pillars.length);
                     return (
                       <tr key={e.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.3)' }}>
                         <td style={{ ...tdStyle, textAlign: 'left', color: STOCK_COLORS[enriched.indexOf(e) % STOCK_COLORS.length], fontWeight: 800 }}>{e.symbol}</td>
                         {pillars.map((v, j) => (
-                          <td key={j} style={{ ...tdStyle, color: scoreColor(v), fontWeight: 700 }}>
-                            {v}
+                          <td key={j} style={{ ...tdStyle, color: scoreColor(v || 0), fontWeight: 700 }}>
+                            {v || 0}
                           </td>
                         ))}
                         <td style={{ ...tdStyle, color: scoreColor(avg), fontWeight: 900 }}>{avg}</td>
@@ -1032,11 +1063,104 @@ export default function CompareTab() {
         </div>
       )}
 
-      {/* OTHER VIEWS (HISTORICAL PLACEHOLDER) */}
+      {/* VIEW: HISTORICAL BATTLE */}
       {symbols.length > 0 && viewMode === 'historical' && (
-        <div style={{ ...cardStyle, padding: 48, textAlign: 'center' }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#D4AF37', marginBottom: 12 }}>📈 Historical Battle</div>
-          <div style={{ color: '#64748B' }}>Coming in Patch 4...</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>📈 HISTORICAL BATTLE — Normalized Equity Curves</div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {(['1Y', '3Y', '5Y'] as HistoricalTF[]).map(tf => (
+                  <button
+                    key={tf}
+                    onClick={() => setHistTF(tf)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      fontSize: 11,
+                      fontWeight: histTF === tf ? 700 : 400,
+                      background: histTF === tf ? 'rgba(212,175,55,0.15)' : 'transparent',
+                      border: histTF === tf ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(30,41,59,0.6)',
+                      color: histTF === tf ? '#D4AF37' : '#64748B',
+                    }}
+                  >
+                    {tf}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {histLoading ? (
+              <div style={{ textAlign: 'center', padding: 40, color: '#64748B' }}>⟳ Fetching price history...</div>
+            ) : normalizedHistData.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 40, color: '#64748B' }}>No history data available</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={380}>
+                <LineChart data={normalizedHistData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(30,41,59,0.5)" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fill: '#64748B', fontSize: 10 }}
+                    tickFormatter={(val) => {
+                      const d = new Date(val);
+                      return `${d.getMonth() + 1}/${d.getFullYear() % 100}`;
+                    }}
+                  />
+                  <YAxis tick={{ fill: '#64748B', fontSize: 10 }} label={{ value: 'Normalized (Base=100)', angle: -90, position: 'insideLeft', fill: '#64748B', fontSize: 10 }} />
+                  <Tooltip
+                    contentStyle={{ background: '#0B1221', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6 }}
+                    labelStyle={{ color: '#D4AF37', fontSize: 11 }}
+                    itemStyle={{ color: '#94A3B8', fontSize: 11 }}
+                    formatter={(value: any) => value.toFixed(1)}
+                  />
+                  <Legend formatter={(value: any) => <span style={{ color: '#94A3B8', fontSize: 12 }}>{value}</span>} />
+                  {enriched.map((e: any, i: number) => (
+                    <Line
+                      key={e.symbol}
+                      type="monotone"
+                      dataKey={e.symbol}
+                      stroke={STOCK_COLORS[i % STOCK_COLORS.length]}
+                      strokeWidth={2}
+                      dot={false}
+                      name={e.symbol}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Performance summary */}
+          {normalizedHistData.length > 0 && (
+            <div style={cardStyle}>
+              <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>🏆 PERFORMANCE SUMMARY ({histTF})</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
+                {enriched.map((e: any, i: number) => {
+                  const first = (normalizedHistData[0] as any)?.[e.symbol] ?? 100;
+                  const last = (normalizedHistData[normalizedHistData.length - 1] as any)?.[e.symbol] ?? 100;
+                  const change = ((last - first) / first) * 100;
+                  return (
+                    <div
+                      key={e.symbol}
+                      style={{
+                        background: 'rgba(15,23,42,0.4)',
+                        border: `1px solid ${STOCK_COLORS[i % STOCK_COLORS.length]}44`,
+                        borderRadius: 8,
+                        padding: '10px 12px',
+                      }}
+                    >
+                      <div style={{ fontSize: 11, color: STOCK_COLORS[i % STOCK_COLORS.length], fontWeight: 800, marginBottom: 4 }}>{e.symbol}</div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: changeColor(change), fontFamily: 'monospace' }}>
+                        {change >= 0 ? '+' : ''}
+                        {change.toFixed(1)}%
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1052,11 +1176,17 @@ export default function CompareTab() {
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ fontSize: 11, color: '#94A3B8' }}>
-              {disagreementIndex < 20 ? '✅ Strong consensus across Rishis — high-conviction group.' : disagreementIndex < 40 ? '🟡 Mild disagreement — cross-check fundamentals carefully.' : disagreementIndex < 60 ? '🟠 Moderate disagreement — suitable for satellite positions only.' : '🔴 Sharp philosophical division — extreme caution, high-risk selection.'}
+              {disagreementIndex < 20
+                ? '✅ Strong consensus — high conviction group.'
+                : disagreementIndex < 40
+                ? '🟡 Mild disagreement — cross-check fundamentals.'
+                : disagreementIndex < 60
+                ? '🟠 Moderate disagreement — satellite positions only.'
+                : '🔴 Sharp division — extreme caution.'}
             </div>
           </div>
           <button onClick={copyThesis} style={btnGold}>
-            📋 Generate Battle Thesis
+            📋 Battle Thesis
           </button>
         </div>
       )}

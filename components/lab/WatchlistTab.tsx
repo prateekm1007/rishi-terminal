@@ -110,6 +110,8 @@ export default function WatchlistTab() {
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
   const [promoteDialog, setPromoteDialog] = useState<PromoteDialog | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -199,6 +201,9 @@ export default function WatchlistTab() {
     if (items.some(x => x.symbol === sym)) { setError('Already in watchlist'); return; }
     const next = { ...lists, [activeList]: [{ symbol: sym, addedDate: new Date().toISOString(), conviction: 5, notes: '' }, ...items] };
     persist(next);
+    setSearchQuery('');
+    setShowDropdown(false);
+    setAddSymbol('');
   }
 
   function removeItem(symbol: string) {
@@ -426,10 +431,101 @@ export default function WatchlistTab() {
       {!isSmart && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
           <div style={{ flex: '1 1 320px' }}>
-            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD SYMBOL</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 }}>
-              <input value={addSymbol} onChange={e => setAddSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" style={inputStyle} />
-              <button onClick={addItem} style={btnGold}>+ Add</button>
+            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD SYMBOL (type to search)</div>
+            <div style={{ position: 'relative' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10 }}>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    value={searchQuery}
+                    onChange={e => {
+                      const val = e.target.value.toUpperCase();
+                      setSearchQuery(val);
+                      setShowDropdown(val.trim().length > 0);
+                      setAddSymbol(val);
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') addItem();
+                      if (e.key === 'Escape') setShowDropdown(false);
+                    }}
+                    onFocus={() => searchQuery.trim().length > 0 && setShowDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowDropdown(false), 180)}
+                    placeholder="Type symbol / name / sector… (e.g., TCS, Reliance, IT)"
+                    style={inputStyle}
+                  />
+
+                  {showDropdown && searchQuery.trim().length > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      marginTop: 4,
+                      maxHeight: 280,
+                      overflowY: 'auto',
+                      background: 'rgba(15,23,42,0.98)',
+                      border: '1px solid rgba(212,175,55,0.4)',
+                      borderRadius: 6,
+                      zIndex: 1000,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                    }}>
+                      {Object.keys(STOCKS)
+                        .filter(sym => {
+                          const stock = STOCKS[sym];
+                          const q = searchQuery.toLowerCase();
+                          return (
+                            sym.toLowerCase().includes(q) ||
+                            stock.name.toLowerCase().includes(q) ||
+                            stock.sector.toLowerCase().includes(q)
+                          );
+                        })
+                        .slice(0, 20)
+                        .map(sym => {
+                          const stock = STOCKS[sym];
+                          const alreadyAdded = items.some(x => x.symbol === sym);
+                          return (
+                            <div
+                              key={sym}
+                              onClick={() => {
+                                if (alreadyAdded) return;
+                                const next = {
+                                  ...lists,
+                                  [activeList]: [{ symbol: sym, addedDate: new Date().toISOString(), conviction: 5, notes: '' }, ...items],
+                                };
+                                persist(next);
+                                setSearchQuery('');
+                                setAddSymbol('');
+                                setShowDropdown(false);
+                                showToast(`✅ Added ${sym} to watchlist`);
+                              }}
+                              style={{
+                                padding: '10px 12px',
+                                cursor: alreadyAdded ? 'not-allowed' : 'pointer',
+                                background: 'transparent',
+                                borderBottom: '1px solid rgba(30,41,59,0.4)',
+                                opacity: alreadyAdded ? 0.45 : 1,
+                              }}
+                              onMouseEnter={e => !alreadyAdded && (e.currentTarget.style.background = 'rgba(212,175,55,0.10)')}
+                              onMouseLeave={e => !alreadyAdded && (e.currentTarget.style.background = 'transparent')}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                                <div>
+                                  <div style={{ fontFamily: 'monospace', fontWeight: 800, color: alreadyAdded ? '#64748B' : '#D4AF37', fontSize: 13 }}>
+                                    {sym}
+                                  </div>
+                                  <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>
+                                    {stock.name} · {stock.sector}
+                                  </div>
+                                </div>
+                                {alreadyAdded && <div style={{ fontSize: 10, color: '#64748B' }}>Already added</div>}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+                <button onClick={addItem} style={btnGold}>+ Add</button>
+              </div>
             </div>
             {error && <div style={{ marginTop: 8, fontSize: 12, color: '#EF4444' }}>{error}</div>}
           </div>

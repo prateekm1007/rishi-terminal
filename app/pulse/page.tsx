@@ -11,6 +11,7 @@ import {
   MACRO_REGIME,
   MACRO_INDICATORS,
   PHILOSOPHER_STANCES,
+  CURRENCY_DATA,
   getPhilosopherConsensus,
 } from '../../data/economyPlus/macroData';
 
@@ -57,6 +58,12 @@ export default function MarketPulsePage() {
   const today   = FII_DII_HISTORY[0];
   const consensus = getPhilosopherConsensus();
   const regime = MACRO_REGIME;
+  const councilReco =
+    consensus.spread >= 55
+      ? 'High uncertainty. Avoid leverage, prioritize balance-sheet strength, and size positions conservatively.'
+      : consensus.avgAgreement >= 65
+      ? 'Consensus tilts constructive. Prefer quality compounders + domestic cyclicals with strong cashflows.'
+      : 'Mixed regime. Stay barbell: quality defensives + selective cyclicals. Keep cash for volatility.';
 
   const tabs: { key: PulseTab; label: string; emoji: string }[] = [
     { key:'overview',    label:'Overview',    emoji:'📊' },
@@ -91,6 +98,36 @@ export default function MarketPulsePage() {
         ⚡ {mood.description}
       </div>
 
+      {/* ECONOMY PLUS — REGIME BANNER + DISAGREEMENT INDEX */}
+      <div style={{ background:'#09090F', border:'1px solid #D4AF37', borderRadius:12, padding:16, marginBottom:16 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12, flexWrap:'wrap' }}>
+          <div>
+            <div style={{ fontSize:9, color:'#64748B', letterSpacing:2 }}>CURRENT MACRO REGIME</div>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:16, color:'#D4AF37', letterSpacing:2, fontWeight:700, marginTop:4 }}>
+              {regime.label}
+            </div>
+            <div style={{ fontSize:10, color:'#94A3B8', marginTop:6 }}>{regime.sublabel}</div>
+          </div>
+
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:9, color:'#64748B', letterSpacing:2 }}>CONSENSUS SCORE</div>
+            <div style={{ marginTop:4, fontSize:14, fontWeight:800, color:consensus.color }}>
+              {consensus.avgAgreement}/100 · {consensus.label}
+            </div>
+            <div style={{ marginTop:6, fontSize:10, color:'#94A3B8' }}>
+              Disagreement Index: <span style={{ color: consensus.spread >= 55 ? '#EF4444' : consensus.spread >= 35 ? '#F59E0B' : '#10B981', fontWeight:800 }}>{consensus.spread}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop:12, height:6, background:'#1E293B', borderRadius:999, overflow:'hidden' }}>
+          <div style={{ width: Math.min(100, Math.max(0, consensus.spread)) + '%', height:'100%', background: consensus.spread >= 55 ? '#EF4444' : consensus.spread >= 35 ? '#F59E0B' : '#10B981' }} />
+        </div>
+
+        <div style={{ marginTop:12, fontSize:11, color:'#CBD5E1', lineHeight:1.6 }}>
+          <span style={{ color:'#D4AF37', fontWeight:800 }}>What the Council Recommends:</span> {councilReco}
+        </div>
+      </div>
       {/* PHILOSOPHER COUNCIL */}
       <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:16, marginBottom:24 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, gap:12, flexWrap:'wrap' }}>
@@ -247,6 +284,58 @@ export default function MarketPulsePage() {
                 </div>
               </div>
             ))}
+          </div>
+          <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:20, marginBottom:24 }}>
+            <SectionTitle emoji="🧭" title="COUNCIL — SECTOR IMPLICATIONS" color="#D4AF37" />
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap:12 }}>
+              {PHILOSOPHER_STANCES.map(p => (
+                <div key={p.philosopher} style={{ background:'#050508', border:'1px solid #1E293B', borderRadius:10, padding:14 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10 }}>
+                    <div style={{ fontSize:12, fontWeight:900, color:p.color }}>{p.emoji} {p.philosopher}</div>
+                    <div style={{ fontSize:9, color:'#94A3B8', background:'#0B1220', border:'1px solid #1E293B', padding:'4px 10px', borderRadius:999 }}>
+                      {p.keyConcernTag || 'Key Concern'}
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop:10, fontSize:10, color:'#94A3B8', lineHeight:1.6 }}>
+                    {p.sectorImplications && p.sectorImplications.length > 0 ? (
+                      <ul style={{ margin:'0 0 0 16px', padding:0 }}>
+                        {p.sectorImplications.slice(0, 4).map((s, idx) => (
+                          <li key={idx} style={{ margin:'6px 0' }}>{s}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:20 }}>
+            <SectionTitle emoji="💱" title="CURRENCY IMPACT — INR SNAPSHOT" color="#D4AF37" />
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:12 }}>
+              {CURRENCY_DATA.map(c => {
+                const pos = c.changePct >= 0;
+                const col = pos ? '#EF4444' : '#10B981';
+                return (
+                  <div key={c.pair} style={{ background:'#050508', border:'1px solid #1E293B', borderRadius:10, padding:14 }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', gap:10 }}>
+                      <div style={{ fontSize:12, fontWeight:900, color:'#F1F5F9' }}>{c.pair}</div>
+                      <div style={{ fontSize:12, fontWeight:900, color:'#F1F5F9' }}>{c.rate.toFixed(4)}</div>
+                    </div>
+                    <div style={{ marginTop:8, fontSize:10, color:col, fontWeight:800 }}>
+                      {pos ? '+' : ''}{c.changePct.toFixed(2)}% ({pos ? '+' : ''}{c.change.toFixed(2)})
+                    </div>
+                    <div style={{ marginTop:8, fontSize:10, color:'#94A3B8', lineHeight:1.6 }}>{c.signal}</div>
+                    <div style={{ marginTop:10, fontSize:9, color:'#475569' }}>
+                      Trend: {c.trend} · Vol: {c.volatility}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

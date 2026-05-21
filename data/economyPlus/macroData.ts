@@ -22,6 +22,8 @@ export interface PhilosopherStance {
   stanceColor: 'bullish' | 'bearish' | 'neutral' | 'cautious';
   regimeView: string;
   keyWarning: string;
+  keyConcernTag?: string;
+  sectorImplications?: string[];
   agreement: number; // 0-100 agreement with current policy
   indicators: {
     label: string;
@@ -182,6 +184,13 @@ export const PHILOSOPHER_STANCES: PhilosopherStance[] = [
     stanceColor: 'cautious',
     regimeView: 'Malinvestment cycle building. Government capex distorting capital structure. Private sector crowded out. Boom is artificially prolonged — bust risk rising after 2025.',
     keyWarning: 'Fiscal expansion creates false signals. Infrastructure boom may mask misallocation in rate-sensitive sectors. Watch for credit quality deterioration in 18-24 months.',
+    keyConcernTag: 'Malinvestment Risk',
+    sectorImplications: [
+      'Avoid long-duration infra plays with weak balance sheets',
+      'Prefer cash-generative quality over leveraged cyclicals',
+      'Watch NBFC/realty for late-cycle credit stress',
+      'Be skeptical of subsidy-dependent business models',
+    ],
     agreement: 28,
     indicators: [
       { label: 'Govt Capex-Driven Growth', view: 'Artificial boom — not sustainable organic growth', signal: 'negative' },
@@ -200,6 +209,13 @@ export const PHILOSOPHER_STANCES: PhilosopherStance[] = [
     stanceColor: 'neutral',
     regimeView: 'M3 growth at 11.2% exceeds nominal GDP — mild inflationary pressure in pipeline. RBI policy appropriate but should commit to explicit nominal GDP rule. Rate cuts premature until M3 normalises.',
     keyWarning: 'Monetary policy acts with long and variable lags. The 2022-23 tightening effects still unwinding. Do not cut rates until M3 growth falls below 9% consistently.',
+    keyConcernTag: 'Money Supply & Lag Effects',
+    sectorImplications: [
+      'Favor pricing-power businesses if inflation re-accelerates',
+      'Be cautious on rate-sensitive consumption until cuts are real',
+      'Financials benefit if inflation stays contained and growth holds',
+      'Avoid narratives that ignore monetary transmission lags',
+    ],
     agreement: 52,
     indicators: [
       { label: 'M3 at 11.2% YoY', view: 'Above nominal GDP growth — watch carefully', signal: 'negative' },
@@ -218,6 +234,13 @@ export const PHILOSOPHER_STANCES: PhilosopherStance[] = [
     stanceColor: 'bullish',
     regimeView: 'Government capex is exactly the right medicine. Animal spirits need nurturing — private sector will follow public investment. RBI should cut rates NOW to boost consumption and crowd in private capex.',
     keyWarning: 'The risk is doing too little, not too much. GDP deceleration from 7.6% to 6.4% is early warning. Pre-emptive rate cut of 50bps + continued fiscal spending will re-ignite private investment.',
+    keyConcernTag: 'Demand Support',
+    sectorImplications: [
+      'Overweight domestic demand proxies (banks, consumer, infra)',
+      'Rate cuts would re-rate high-quality growth and housing-linked plays',
+      'Watch confidence indicators; animal spirits drive momentum',
+      'Exports are secondary; domestic multiplier is primary',
+    ],
     agreement: 74,
     indicators: [
       { label: 'GDP at 6.4%', view: 'Deceleration requires counter-cyclical response', signal: 'negative' },

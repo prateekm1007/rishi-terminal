@@ -7,13 +7,13 @@ import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { addHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import type { ConsensusResult } from '@/lib/consensus/types';
 
 interface WatchlistItem {
   symbol: string;
   addedDate: string;
   notes?: string;
   conviction?: number;
-  catalyst?: string;
 }
 
 interface PromoteDialog {
@@ -39,8 +39,62 @@ function convictionLabel(c: number): string {
 }
 
 function convictionColor(c: number): string {
-  return c >= 9 ? '#22C55E' : c >= 7 ? '#A3E635' : c >= 5 ? '#D4AF37' : c >= 3 ? '#F97316' : '#EF4444';
+  return c >= 9 ? '#22C55E' : c >= 7 ? '#D4AF37' : c >= 5 ? '#94A3B8' : '#EF4444';
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATALYST ENGINE LOGIC
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getProbability(spread: number): { pct: number; label: string; color: string } {
+  if (spread < 20) return { pct: 88, label: 'Strong Consensus', color: '#22C55E' };
+  if (spread < 40) return { pct: 75, label: 'Mild Disagreement', color: '#D4AF37' };
+  if (spread < 60) return { pct: 60, label: 'Moderate Disagreement', color: '#F59E0B' };
+  return { pct: 45, label: 'Significant Disagreement', color: '#EF4444' };
+}
+
+function getTimeline(topBullName: string): { label: string; color: string } {
+  const name = topBullName.toLowerCase();
+  if (name.includes('graham') || name.includes('schloss') || name.includes('klarman')) {
+    return { label: 'Short-term (0-3M)', color: '#22C55E' };
+  }
+  if (name.includes('lynch') || name.includes('greenblatt')) {
+    return { label: 'Medium-term (3-12M)', color: '#D4AF37' };
+  }
+  if (name.includes('jhunjhunwala') || name.includes('damani') || name.includes('kacholia')) {
+    return { label: 'Long-term (12-36M)', color: '#8B5CF6' };
+  }
+  return { label: 'Long-term (6-24M)', color: '#3B82F6' };
+}
+
+function getCatalystTypes(consensus: ConsensusResult): string[] {
+  const types: string[] = [];
+  const topBull = consensus.topBull;
+  
+  // Analyze top bull's component weights
+  const comps = topBull.comps || [];
+  const labels = comps.map(c => c.label.toLowerCase());
+  
+  if (labels.some(l => l.includes('roe') || l.includes('moat') || l.includes('roce'))) types.push('Quality/Moat');
+  if (labels.some(l => l.includes('growth') || l.includes('cagr') || l.includes('revenue'))) types.push('Growth');
+  if (labels.some(l => l.includes('p/e') || l.includes('p/b') || l.includes('ncav') || l.includes('discount'))) types.push('Value');
+  if (labels.some(l => l.includes('promoter') || l.includes('management') || l.includes('governance'))) types.push('Governance');
+  if (labels.some(l => l.includes('debt') || l.includes('fcf') || l.includes('cash'))) types.push('Financial Strength');
+  
+  return types.length > 0 ? types : ['General'];
+}
+
+function getActionVerdict(score: number, spread: number): { text: string; color: string } {
+  if (score >= 75 && spread < 40) return { text: 'High Conviction Buy', color: '#22C55E' };
+  if (score >= 65 && spread < 40) return { text: 'Accumulate on Dips', color: '#D4AF37' };
+  if (score >= 55 && spread < 30) return { text: 'Monitor Closely', color: '#3B82F6' };
+  if (spread > 60) return { text: 'Wait for Clarity — High Disagreement', color: '#EF4444' };
+  return { text: 'Cautious — Below Conviction Threshold', color: '#64748B' };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function WatchlistTab() {
   const [lists, setLists] = useState<Record<string, WatchlistItem[]>>({
@@ -87,9 +141,7 @@ export default function WatchlistTab() {
     if (typeof window === 'undefined') return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ lists: updatedLists, activeList }));
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
 
   const isSmart = activeList === 'smartHighScore';
@@ -102,7 +154,7 @@ export default function WatchlistTab() {
           const c = stock ? buildConsensus(stock) : null;
           return (c?.consensus ?? 0) > 75;
         })
-        .map(sym => ({ symbol: sym, addedDate: '', notes: '', conviction: 0, catalyst: '' }));
+        .map(sym => ({ symbol: sym, addedDate: '', notes: '', conviction: 0 }));
     }
     return lists[activeList] ?? [];
   }, [isSmart, lists, activeList]);
@@ -121,7 +173,7 @@ export default function WatchlistTab() {
       const rishiConviction = score >= 75 ? 9 : score >= 65 ? 7 : score >= 55 ? 5 : score >= 45 ? 3 : 1;
       const userConviction = i.conviction ?? 5;
       const combinedConviction = Math.round((rishiConviction + userConviction) / 2);
-      return { ...i, stock, live, changePct, score, topBull, rishiConviction, userConviction, combinedConviction };
+      return { ...i, stock, live, changePct, score, topBull, rishiConviction, userConviction, combinedConviction, consensus };
     });
   }, [items, prices]);
 
@@ -145,7 +197,7 @@ export default function WatchlistTab() {
     if (!sym) { setError('Enter a symbol'); return; }
     if (!STOCKS[sym]) { setError('Symbol not found in database'); return; }
     if (items.some(x => x.symbol === sym)) { setError('Already in watchlist'); return; }
-    const next = { ...lists, [activeList]: [{ symbol: sym, addedDate: new Date().toISOString(), conviction: 5, catalyst: '', notes: '' }, ...items] };
+    const next = { ...lists, [activeList]: [{ symbol: sym, addedDate: new Date().toISOString(), conviction: 5, notes: '' }, ...items] };
     persist(next);
   }
 
@@ -258,7 +310,6 @@ export default function WatchlistTab() {
               {STOCKS[promoteDialog.symbol]?.name ?? ''}
             </div>
 
-            {/* Price info */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
               <div style={{ padding: 12, background: 'rgba(30,41,59,0.6)', borderRadius: 8 }}>
                 <div style={{ fontSize: 10, color: '#64748B', marginBottom: 4 }}>LTP (LIVE PRICE)</div>
@@ -274,7 +325,6 @@ export default function WatchlistTab() {
               </div>
             </div>
 
-            {/* Shares input */}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>
                 NUMBER OF SHARES (suggested: {promoteDialog.suggestedShares} ≈ 10,000)
@@ -288,7 +338,6 @@ export default function WatchlistTab() {
               />
             </div>
 
-            {/* Preset qty buttons */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
               {[5000, 10000, 25000, 50000, 100000].map(amt => {
                 const qty = Math.max(1, Math.round(amt / promoteDialog.avgPrice));
@@ -313,7 +362,6 @@ export default function WatchlistTab() {
               })}
             </div>
 
-            {/* Keep in watchlist */}
             {!isSmart && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <input
@@ -329,7 +377,6 @@ export default function WatchlistTab() {
               </div>
             )}
 
-            {/* Action buttons */}
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={confirmPromote}
@@ -370,14 +417,12 @@ export default function WatchlistTab() {
         ))}
       </div>
 
-      {/* Smart list banner */}
       {isSmart && (
         <div style={{ padding: '10px 16px', marginBottom: 16, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, fontSize: 12, color: '#22C55E' }}>
           ⚡ Auto-generated — all stocks where Rishi Consensus Score exceeds 75. Read-only. Use Promote to add to portfolio.
         </div>
       )}
 
-      {/* Add + Sort controls */}
       {!isSmart && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
           <div style={{ flex: '1 1 320px' }}>
@@ -403,7 +448,6 @@ export default function WatchlistTab() {
         </div>
       )}
 
-      {/* Sort for smart list */}
       {isSmart && (
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
           <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>SORT</div>
@@ -429,150 +473,258 @@ export default function WatchlistTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(30,41,59,0.8)' }}>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>Symbol</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>Price</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>24h %</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>Rishi Score</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>Conviction</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>Top Bull</th>
-                {!isSmart && <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>Catalyst</th>}
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>Actions</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>STOCK</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>PRICE</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>24H %</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>RISHI SCORE</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>CONVICTION</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>TOP BULL</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600 }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
-              {sorted.map(i => (
-                <>
-                  <tr key={i.symbol} style={{ borderBottom: expandedSymbol === i.symbol ? 'none' : '1px solid rgba(30,41,59,0.4)' }}>
-                    <td style={{ padding: '12px 12px' }}>
-                      <Link href={`/stock/${i.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 700, fontFamily: 'monospace' }}>
-                        {i.symbol}
-                      </Link>
-                      <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{i.stock?.name ?? '—'}</div>
-                    </td>
-                    <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0' }}>
-                      {(i.live ?? 0).toLocaleString('en-IN')}
-                    </td>
-                    <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: changeColor(i.changePct ?? 0), fontWeight: 700 }}>
-                      {(i.changePct ?? 0) >= 0 ? '+' : ''}{(i.changePct ?? 0).toFixed(2)}%
-                    </td>
-                    <td style={{ padding: '12px 12px' }}>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 800, color: scoreColor(i.score ?? 0) }}>
-                        {i.score ?? 0}
-                      </span>
-                    </td>
-                    <td style={{ padding: '12px 12px', minWidth: 180 }}>
-                      {!isSmart ? (
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                            <input
-                              type="range"
-                              min={1}
-                              max={10}
-                              value={i.userConviction}
-                              onChange={e => updateField(i.symbol, 'conviction', Number(e.target.value))}
-                              style={{ flex: 1, accentColor: convictionColor(i.combinedConviction) }}
-                            />
-                            <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: 13, color: convictionColor(i.combinedConviction), minWidth: 16 }}>
-                              {i.combinedConviction}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: 10, color: convictionColor(i.combinedConviction) }}>
-                            {convictionLabel(i.combinedConviction)} · You: {i.userConviction} · Rishi: {i.rishiConviction}
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <span style={{ fontFamily: 'monospace', fontWeight: 800, color: convictionColor(i.rishiConviction) }}>
-                            {i.rishiConviction}/10
-                          </span>
-                          <div style={{ fontSize: 10, color: convictionColor(i.rishiConviction), marginTop: 2 }}>
-                            {convictionLabel(i.rishiConviction)}
-                          </div>
-                        </div>
-                      )}
-                    </td>
-                    <td style={{ padding: '12px 12px', fontSize: 11, color: '#22C55E' }}>
-                      {i.topBull}
-                    </td>
-                    {!isSmart && (
-                      <td style={{ padding: '12px 12px', minWidth: 200 }}>
-                        <input
-                          value={i.catalyst ?? ''}
-                          onChange={e => updateField(i.symbol, 'catalyst', e.target.value)}
-                          placeholder="Expected catalyst..."
-                          style={{ ...inputStyle, fontSize: 11 }}
-                        />
-                      </td>
-                    )}
-                    <td style={{ padding: '12px 12px' }}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <button
-                          onClick={() => openPromoteDialog(i.symbol)}
-                          style={btnGold}
-                          title="Open promote dialog"
-                        >
-                          Promote →
-                        </button>
-                        {!isSmart && (
-                          <>
-                            <button
-                              onClick={() => setExpandedSymbol(expandedSymbol === i.symbol ? null : i.symbol)}
-                              style={{ background: 'none', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 4, color: '#64748B', cursor: 'pointer', fontSize: 11, padding: '4px 8px' }}
-                              title="Expand thesis"
-                            >
-                              {expandedSymbol === i.symbol ? '▲' : '▼'}
-                            </button>
-                            <button
-                              onClick={() => removeItem(i.symbol)}
-                              style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 14 }}
-                              title="Remove"
-                            >
-                              ✕
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+              {sorted.map(i => {
+                const c = i.consensus;
+                const prob = c ? getProbability(c.tensionSpread) : null;
+                const timeline = c ? getTimeline(c.topBull.full) : null;
+                const types = c ? getCatalystTypes(c) : [];
+                const verdict = c ? getActionVerdict(c.consensus, c.tensionSpread) : null;
 
-                  {/* Expanded thesis row */}
-                  {!isSmart && expandedSymbol === i.symbol && (
-                    <tr key={`${i.symbol}-thesis`} style={{ borderBottom: '1px solid rgba(30,41,59,0.4)', background: 'rgba(15,23,42,0.4)' }}>
-                      <td colSpan={8} style={{ padding: '12px 16px' }}>
-                        <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>IDEA THESIS</div>
-                        <textarea
-                          value={i.notes ?? ''}
-                          onChange={e => updateField(i.symbol, 'notes', e.target.value)}
-                          placeholder="Write your thesis here — why you like this idea, key risks, timeline, target price..."
-                          rows={4}
-                          style={{
-                            width: '100%',
-                            padding: '10px 12px',
-                            background: 'rgba(15,23,42,0.8)',
-                            border: '1px solid rgba(212,175,55,0.2)',
-                            borderRadius: 6,
-                            color: '#E2E8F0',
-                            fontSize: 12,
-                            fontFamily: 'monospace',
-                            resize: 'vertical',
-                            lineHeight: 1.6,
-                          }}
-                        />
-                        <div style={{ marginTop: 8, fontSize: 11, color: '#64748B' }}>
-                          Top Bull: <span style={{ color: '#22C55E', fontWeight: 700 }}>{i.topBull}</span> · Rishi Score: <span style={{ color: scoreColor(i.score), fontFamily: 'monospace', fontWeight: 800 }}>{i.score}</span>
+                return (
+                  <>
+                    <tr key={i.symbol} style={{ borderBottom: expandedSymbol === i.symbol ? 'none' : '1px solid rgba(30,41,59,0.4)' }}>
+                      <td style={{ padding: '12px 12px' }}>
+                        <Link href={`/stock/${i.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 700, fontFamily: 'monospace' }}>
+                          {i.symbol}
+                        </Link>
+                        <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{i.stock?.name ?? '—'}</div>
+                      </td>
+                      <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0' }}>
+                        {(i.live ?? 0).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: changeColor(i.changePct ?? 0), fontWeight: 700 }}>
+                        {(i.changePct ?? 0) >= 0 ? '+' : ''}{(i.changePct ?? 0).toFixed(2)}%
+                      </td>
+                      <td style={{ padding: '12px 12px' }}>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 800, color: scoreColor(i.score ?? 0) }}>
+                          {i.score ?? 0}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 12px', minWidth: 180 }}>
+                        {!isSmart ? (
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <input
+                                type="range"
+                                min={1}
+                                max={10}
+                                value={i.userConviction}
+                                onChange={e => updateField(i.symbol, 'conviction', Number(e.target.value))}
+                                style={{ flex: 1, accentColor: convictionColor(i.combinedConviction) }}
+                              />
+                              <span style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: 13, color: convictionColor(i.combinedConviction), minWidth: 16 }}>
+                                {i.combinedConviction}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 10, color: convictionColor(i.combinedConviction) }}>
+                              {convictionLabel(i.combinedConviction)} · You: {i.userConviction} · Rishi: {i.rishiConviction}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 800, color: convictionColor(i.rishiConviction) }}>
+                              {i.rishiConviction}/10
+                            </span>
+                            <div style={{ fontSize: 10, color: convictionColor(i.rishiConviction), marginTop: 2 }}>
+                              {convictionLabel(i.rishiConviction)}
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: '12px 12px', fontSize: 11, color: '#22C55E' }}>
+                        {i.topBull}
+                      </td>
+                      <td style={{ padding: '12px 12px' }}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <button
+                            onClick={() => openPromoteDialog(i.symbol)}
+                            style={btnGold}
+                            title="Promote to Holdings"
+                          >
+                            Promote →
+                          </button>
+                          {!isSmart && (
+                            <>
+                              <button
+                                onClick={() => setExpandedSymbol(expandedSymbol === i.symbol ? null : i.symbol)}
+                                style={{ background: 'none', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 4, color: '#64748B', cursor: 'pointer', fontSize: 11, padding: '4px 8px' }}
+                                title="Expand thesis"
+                              >
+                                {expandedSymbol === i.symbol ? '▲' : '▼'}
+                              </button>
+                              <button
+                                onClick={() => removeItem(i.symbol)}
+                                style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 14 }}
+                                title="Remove"
+                              >
+                                ✕
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
-                  )}
-                </>
-              ))}
+
+                    {/* Expanded row with Thesis + Catalyst Engine */}
+                    {!isSmart && expandedSymbol === i.symbol && c && (
+                      <tr key={`${i.symbol}-expanded`} style={{ borderBottom: '1px solid rgba(30,41,59,0.4)', background: 'rgba(15,23,42,0.4)' }}>
+                        <td colSpan={7} style={{ padding: '20px 16px' }}>
+                          
+                          {/* Thesis Section */}
+                          <div style={{ marginBottom: 24 }}>
+                            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>INVESTMENT THESIS</div>
+                            <textarea
+                              value={i.notes ?? ''}
+                              onChange={e => updateField(i.symbol, 'notes', e.target.value)}
+                              placeholder="Write your thesis — why you like this idea, key risks, timeline, target price..."
+                              rows={4}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                background: 'rgba(15,23,42,0.8)',
+                                border: '1px solid rgba(212,175,55,0.2)',
+                                borderRadius: 6,
+                                color: '#E2E8F0',
+                                fontSize: 12,
+                                fontFamily: 'monospace',
+                                resize: 'vertical',
+                                lineHeight: 1.6,
+                              }}
+                            />
+                          </div>
+
+                          {/* Catalyst Engine */}
+                          <div style={{ border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, padding: 16, background: 'rgba(30,41,59,0.3)' }}>
+                            
+                            {/* Header */}
+                            <div style={{ marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid rgba(30,41,59,0.6)' }}>
+                              <div style={{ fontSize: 13, fontWeight: 900, color: '#D4AF37', marginBottom: 8, letterSpacing: 1 }}>
+                                🔮 RISHI CATALYST ENGINE
+                              </div>
+                              <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                                {/* Probability */}
+                                {prob && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <div style={{ fontSize: 10, color: '#64748B' }}>CONSENSUS:</div>
+                                    <div style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: 14, color: prob.color }}>
+                                      {prob.pct}%
+                                    </div>
+                                    <div style={{ fontSize: 10, color: prob.color }}>({prob.label})</div>
+                                  </div>
+                                )}
+                                {/* Timeline */}
+                                {timeline && (
+                                  <div style={{ padding: '4px 10px', background: 'rgba(30,41,59,0.6)', borderRadius: 6, border: `1px solid ${timeline.color}40` }}>
+                                    <div style={{ fontSize: 10, color: timeline.color, fontWeight: 700 }}>{timeline.label}</div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Catalyst Types */}
+                            {types.length > 0 && (
+                              <div style={{ marginBottom: 16 }}>
+                                <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>CATALYST TYPES:</div>
+                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                  {types.map(t => (
+                                    <div key={t} style={{ padding: '4px 8px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 4, fontSize: 10, color: '#D4AF37' }}>
+                                      {t}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Top Bulls (positions 1-3) */}
+                            <div style={{ marginBottom: 16 }}>
+                              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 8, letterSpacing: 1 }}>BULL PERSPECTIVES</div>
+                              <div style={{ display: 'grid', gap: 10 }}>
+                                {c.scores.slice(0, 3).map((r, idx) => {
+                                  const topComp = r.comps && r.comps.length > 0 ? r.comps.sort((a, b) => b.wt - a.wt)[0] : null;
+                                  return (
+                                    <div key={r.full} style={{ padding: 12, background: 'rgba(15,23,42,0.6)', borderRadius: 6, border: '1px solid rgba(34,197,94,0.2)' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: '#22C55E' }}>
+                                          {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'} {r.full}
+                                        </div>
+                                        <div style={{ fontSize: 10, color: '#64748B' }}>({r.label})</div>
+                                        <div style={{ marginLeft: 'auto', fontFamily: 'monospace', fontWeight: 800, fontSize: 13, color: scoreColor(r.score) }}>
+                                          {r.score}
+                                        </div>
+                                      </div>
+                                      <div style={{ fontSize: 11, color: '#94A3B8', lineHeight: 1.5, marginBottom: 6 }}>
+                                        {r.insight}
+                                      </div>
+                                      {topComp && (
+                                        <div style={{ fontSize: 10, color: '#64748B', fontFamily: 'monospace' }}>
+                                          Key: {topComp.label} ({topComp.v}/100) — {topComp.detail}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Bear Risks (bottom 2) */}
+                            {c.scores.length > 3 && (
+                              <div style={{ marginBottom: 16 }}>
+                                <div style={{ fontSize: 10, color: '#64748B', marginBottom: 8, letterSpacing: 1 }}>RISK PERSPECTIVES (BEARS)</div>
+                                <div style={{ display: 'grid', gap: 8 }}>
+                                  {c.scores.slice(-2).reverse().map(r => (
+                                    <div key={r.full} style={{ padding: 10, background: 'rgba(239,68,68,0.05)', borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#EF4444' }}>
+                                          ⚠️ {r.full}
+                                        </div>
+                                        <div style={{ marginLeft: 'auto', fontFamily: 'monospace', fontWeight: 700, fontSize: 12, color: '#EF4444' }}>
+                                          {r.score}
+                                        </div>
+                                      </div>
+                                      <div style={{ fontSize: 10, color: '#94A3B8', lineHeight: 1.4 }}>
+                                        {r.insight}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Action Verdict */}
+                            {verdict && (
+                              <div style={{ padding: 14, background: 'rgba(30,41,59,0.6)', borderRadius: 8, border: `1px solid ${verdict.color}40` }}>
+                                <div style={{ fontSize: 10, color: '#64748B', marginBottom: 4 }}>RISHI COUNCIL VERDICT:</div>
+                                <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 14, color: verdict.color, letterSpacing: 0.5 }}>
+                                  {verdict.text}
+                                </div>
+                              </div>
+                            )}
+
+                          </div>
+
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
             </tbody>
           </table>
 
           <div style={{ marginTop: 10, fontSize: 11, color: '#64748B' }}>
             {isSmart
               ? 'Smart list auto-generated. Promote opens dialog to set share quantity.'
-              : 'Conviction = avg of your slider + Rishi score. Promote opens dialog with preset amounts. ▼ expands idea thesis.'}
+              : 'Conviction = avg of your slider + Rishi score. ▼ expands full thesis + Rishi Catalyst Engine.'}
           </div>
         </div>
       )}

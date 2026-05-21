@@ -7,13 +7,22 @@ import { buildConsensus } from '@/lib/consensus';
 import { useLivePrices } from '@/hooks/useLivePrices';
 
 const STORAGE_KEY = 'rishi_compare_v2';
+const RIVALRY_KEY = 'rishi_compare_rivalries_v1';
 const MAX_STOCKS = 10;
+const RISHI_NAMES = ['Warren Buffett', 'Ben Graham', 'Peter Lynch', 'Charlie Munger', 'George Soros', 'Philip Fisher', 'Rakesh Jhunjhunwala'];
 
 type ViewMode = 'matrix' | 'philosophy' | 'heatmap' | 'radar' | 'historical';
 
 interface CompareState {
   symbols: string[];
   viewMode: ViewMode;
+}
+
+interface SavedRivalry {
+  id: string;
+  name: string;
+  symbols: string[];
+  savedAt: string;
 }
 
 function scoreColor(s: number): string {
@@ -45,6 +54,10 @@ export default function CompareTab() {
   const [addSymbol, setAddSymbol] = useState('');
   const [error, setError] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [rivalries, setRivalries] = useState<SavedRivalry[]>([]);
+  const [rivalryName, setRivalryName] = useState('');
+  const [showRivalry, setShowRivalry] = useState(false);
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -55,6 +68,8 @@ export default function CompareTab() {
         if (p.symbols?.length) setSymbols(p.symbols.slice(0, MAX_STOCKS));
         if (p.viewMode) setViewMode(p.viewMode);
       }
+      const rr = localStorage.getItem(RIVALRY_KEY);
+      if (rr) setRivalries(JSON.parse(rr));
     } catch {}
   }, []);
 
@@ -118,6 +133,44 @@ export default function CompareTab() {
     persist([]);
   }
 
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2800);
+  }
+
+  function saveRivalry() {
+    if (!symbols.length) return;
+    const name = rivalryName.trim() || symbols.join(' vs ');
+    const entry: SavedRivalry = {
+      id: Date.now().toString(),
+      name,
+      symbols: [...symbols],
+      savedAt: new Date().toISOString(),
+    };
+    const next = [...rivalries, entry];
+    setRivalries(next);
+    try {
+      localStorage.setItem(RIVALRY_KEY, JSON.stringify(next));
+    } catch {}
+    setRivalryName('');
+    setShowRivalry(false);
+    showToast(`⚔️ Rivalry "${name}" saved!`);
+  }
+
+  function loadRivalry(r: SavedRivalry) {
+    setSymbols(r.symbols);
+    persist(r.symbols);
+    showToast(`Loaded: ${r.name}`);
+  }
+
+  function deleteRivalry(id: string) {
+    const next = rivalries.filter(r => r.id !== id);
+    setRivalries(next);
+    try {
+      localStorage.setItem(RIVALRY_KEY, JSON.stringify(next));
+    } catch {}
+  }
+
   const peerSuggestions = useMemo(() => {
     if (symbols.length === 0) return [];
     const sectors = [...new Set(symbols.map(s => STOCKS[s]?.sector).filter(Boolean))];
@@ -171,6 +224,67 @@ export default function CompareTab() {
       })
       .filter(Boolean) as any[];
   }, [symbols, prices]);
+
+  const disagreementIndex = useMemo(() => {
+    if (!enriched.length) return 0;
+    return Math.round(enriched.reduce((s: number, e: any) => s + e.tensionSpread, 0) / enriched.length);
+  }, [enriched]);
+
+  const crowns = useMemo(() => {
+    const map: Record<string, string> = {};
+    RISHI_NAMES.forEach(rishi => {
+      let best = -1,
+        bestSym = '';
+      enriched.forEach((e: any) => {
+        const sc = e.scores.find((r: any) => r.name === rishi)?.score ?? 0;
+        if (sc > best) {
+          best = sc;
+          bestSym = e.symbol;
+        }
+      });
+      if (best > 0) map[rishi] = bestSym;
+    });
+    return map;
+  }, [enriched]);
+
+  function generateThesis(): string {
+    if (!enriched.length) return '';
+    const winner = [...enriched].sort((a: any, b: any) => b.consensus - a.consensus)[0];
+    const loser = [...enriched].sort((a: any, b: any) => a.consensus - b.consensus)[0];
+    const lines: string[] = [
+      `# ⚔️ Battle Thesis — ${enriched.map((e: any) => e.symbol).join(' vs ')}`,
+      `Generated: ${new Date().toLocaleDateString('en-IN')}`,
+      '',
+      `## 🏆 Rishi Council Verdict`,
+      `**${winner.symbol}** leads with a Rishi Score of **${winner.consensus}** (${winner.category}).`,
+      `**${loser.symbol}** trails at **${loser.consensus}** (${loser.category}).`,
+      '',
+      `## 📊 Pillar Scores`,
+      '| Stock | Moat | Valuation | Growth | Governance | Sentiment | Quality |',
+      '|-------|------|-----------|--------|------------|-----------|---------|',
+      ...enriched.map((e: any) => `| ${e.symbol} | ${e.moatScore} | ${e.valuationScore} | ${e.growthScore} | ${e.governanceScore} | ${e.sentimentScore} | ${e.qualityScore} |`),
+      '',
+      `## 🔑 Key Ratios`,
+      '| Stock | P/E | ROE% | ROCE% | D/E | OPM% |',
+      '|-------|-----|------|-------|-----|------|',
+      ...enriched.map((e: any) => `| ${e.symbol} | ${fmt(e.pe, 1)} | ${fmt(e.roe, 1)}% | ${fmt(e.roce, 1)}% | ${fmt(e.de, 2)} | ${fmt(e.opm, 1)}% |`),
+      '',
+      `## 🧠 Disagreement Index: ${disagreementIndex}/100`,
+      disagreementIndex < 20 ? 'Strong consensus across all stocks — high conviction comparison.' : disagreementIndex < 50 ? 'Moderate disagreement — some philosophical differences worth noting.' : 'High disagreement — requires deep due diligence before committing.',
+      '',
+      `## 👑 Philosophy Kings`,
+      ...Object.entries(crowns).map(([rishi, sym]) => `- **${rishi}** prefers **${sym}**`),
+    ];
+    return lines.join('\n');
+  }
+
+  function copyThesis() {
+    const t = generateThesis();
+    navigator.clipboard
+      .writeText(t)
+      .then(() => showToast('📋 Battle Thesis copied!'))
+      .catch(() => showToast('❌ Copy failed'));
+  }
 
   const cardStyle: React.CSSProperties = {
     background: 'rgba(15,23,42,0.6)',
@@ -238,28 +352,37 @@ export default function CompareTab() {
     { id: 'historical', label: 'Historical Battle', icon: '📈' },
   ];
 
-  const STOCK_COLORS = [
-    '#D4AF37',
-    '#22C55E',
-    '#3B82F6',
-    '#F97316',
-    '#A855F7',
-    '#EF4444',
-    '#14B8A6',
-    '#F59E0B',
-    '#6366F1',
-    '#EC4899',
-  ];
+  const STOCK_COLORS = ['#D4AF37', '#22C55E', '#3B82F6', '#F97316', '#A855F7', '#EF4444', '#14B8A6', '#F59E0B', '#6366F1', '#EC4899'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* TOAST */}
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 24,
+            right: 24,
+            zIndex: 9999,
+            background: 'rgba(15,23,42,0.95)',
+            border: '1px solid rgba(212,175,55,0.5)',
+            borderRadius: 8,
+            padding: '12px 20px',
+            color: '#D4AF37',
+            fontSize: 13,
+            fontFamily: 'monospace',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          }}
+        >
+          {toast}
+        </div>
+      )}
+
       {/* ADD STOCK */}
       <div style={cardStyle}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ flex: '1 1 280px', position: 'relative' }}>
-            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>
-              ADD STOCK TO ARENA (MAX {MAX_STOCKS})
-            </div>
+            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD STOCK TO ARENA (MAX {MAX_STOCKS})</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
               <div style={{ position: 'relative' }}>
                 <input
@@ -324,17 +447,37 @@ export default function CompareTab() {
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, color: '#64748B' }}>
-              {loading ? '⟳ Fetching prices...' : `${symbols.length}/${MAX_STOCKS} in arena`}
-            </span>
+            <span style={{ fontSize: 11, color: '#64748B' }}>{loading ? '⟳ Fetching prices...' : `${symbols.length}/${MAX_STOCKS} in arena`}</span>
             {symbols.length > 0 && (
-              <button onClick={clearAll} style={{ ...btnGhost, color: '#EF4444', borderColor: 'rgba(239,68,68,0.3)' }}>
-                Clear All
-              </button>
+              <>
+                <button onClick={() => setShowRivalry(v => !v)} style={btnGhost}>
+                  ⚔️ Save Rivalry
+                </button>
+                <button onClick={copyThesis} style={btnGhost}>
+                  📋 Battle Thesis
+                </button>
+                <button onClick={clearAll} style={{ ...btnGhost, color: '#EF4444', borderColor: 'rgba(239,68,68,0.3)' }}>
+                  Clear All
+                </button>
+              </>
             )}
           </div>
         </div>
 
+        {/* Save Rivalry form */}
+        {showRivalry && (
+          <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <input value={rivalryName} onChange={e => setRivalryName(e.target.value)} placeholder={`e.g. ${symbols.slice(0, 2).join(' vs ')}`} style={{ ...inputStyle, flex: '1 1 200px', padding: '7px 10px' }} />
+            <button onClick={saveRivalry} style={btnGold}>
+              Save ⚔️
+            </button>
+            <button onClick={() => setShowRivalry(false)} style={btnGhost}>
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {/* Peer suggestions */}
         {peerSuggestions.length > 0 && symbols.length > 0 && symbols.length < MAX_STOCKS && (
           <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             <span style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>SECTOR PEERS:</span>
@@ -346,6 +489,36 @@ export default function CompareTab() {
           </div>
         )}
       </div>
+
+      {/* RIVALRIES LIBRARY */}
+      {rivalries.length > 0 && (
+        <div style={cardStyle}>
+          <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 10 }}>⚔️ SAVED RIVALRIES</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {rivalries.map(r => (
+              <div
+                key={r.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: 'rgba(212,175,55,0.08)',
+                  border: '1px solid rgba(212,175,55,0.2)',
+                  borderRadius: 6,
+                  padding: '6px 10px',
+                }}
+              >
+                <button onClick={() => loadRivalry(r)} style={{ background: 'none', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: 12, fontFamily: 'monospace', padding: 0 }}>
+                  {r.name}
+                </button>
+                <button onClick={() => deleteRivalry(r.id)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 11, padding: 0 }} title="Delete">
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* STOCK CHIPS */}
       {symbols.length > 0 && (
@@ -413,10 +586,11 @@ export default function CompareTab() {
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#D4AF37', marginBottom: 8 }}>The Arena is Empty</div>
           <div style={{ color: '#64748B', marginBottom: 20, fontSize: 14 }}>Add 2–10 Indian stocks to begin the ultimate battle of philosophies and metrics.</div>
+          {rivalries.length > 0 && <div style={{ fontSize: 12, color: '#475569' }}>Load a saved rivalry above, or type a symbol to start.</div>}
         </div>
       )}
 
-      {/* MATRIX VIEW */}
+      {/* VIEW: MATRIX */}
       {symbols.length > 0 && viewMode === 'matrix' && (
         <div style={cardStyle}>
           <div style={{ overflowX: 'auto' }}>
@@ -513,17 +687,185 @@ export default function CompareTab() {
               </tbody>
             </table>
           </div>
-          <div style={{ marginTop: 10, fontSize: 10, color: '#475569' }}>Deep Metric Matrix — {enriched.length} stocks × 24 columns (type-safe)</div>
+          <div style={{ marginTop: 10, fontSize: 10, color: '#475569' }}>Deep Metric Matrix — {enriched.length} stocks × 24 columns · Disagreement: {disagreementIndex}</div>
+        </div>
+      )}
+
+      {/* VIEW: PHILOSOPHY SHOWDOWN */}
+      {symbols.length > 0 && viewMode === 'philosophy' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* CROWNS */}
+          <div style={cardStyle}>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>👑 PHILOSOPHY KINGS</div>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {Object.entries(crowns).map(([rishi, sym]) => (
+                <div
+                  key={rishi}
+                  style={{
+                    background: 'rgba(212,175,55,0.1)',
+                    border: '1px solid rgba(212,175,55,0.25)',
+                    borderRadius: 8,
+                    padding: '8px 12px',
+                    minWidth: 140,
+                  }}
+                >
+                  <div style={{ fontSize: 9, color: '#64748B', marginBottom: 4 }}>{rishi.toUpperCase()}</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#D4AF37', fontFamily: 'monospace' }}>👑 {sym}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* RISHI × STOCK MATRIX */}
+          <div style={cardStyle}>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>⚔️ RISHI × STOCK SCORE MATRIX</div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
+                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 160 }}>RISHI / PHILOSOPHY</th>
+                    {enriched.map((e: any, i: number) => (
+                      <th key={e.symbol} style={{ ...thStyle, textAlign: 'center', color: STOCK_COLORS[i % STOCK_COLORS.length] }}>
+                        {e.symbol}
+                      </th>
+                    ))}
+                    <th style={{ ...thStyle, textAlign: 'center' }}>WINNER</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {RISHI_NAMES.map(rishi => {
+                    const row = enriched.map((e: any) => ({
+                      sym: e.symbol,
+                      score: e.scores.find((r: any) => r.name === rishi)?.score ?? 0,
+                    }));
+                    const maxScore = Math.max(...row.map(r => r.score));
+                    const winner = row.find(r => r.score === maxScore);
+                    return (
+                      <tr
+                        key={rishi}
+                        style={{ borderBottom: '1px solid rgba(30,41,59,0.4)' }}
+                        onMouseEnter={ev => {
+                          (ev.currentTarget as HTMLTableRowElement).style.background = 'rgba(212,175,55,0.04)';
+                        }}
+                        onMouseLeave={ev => {
+                          (ev.currentTarget as HTMLTableRowElement).style.background = 'transparent';
+                        }}
+                      >
+                        <td style={{ ...tdStyle, textAlign: 'left', color: '#94A3B8', fontSize: 11, fontFamily: 'sans-serif' }}>{rishi}</td>
+                        {row.map((r, i) => (
+                          <td key={r.sym} style={{ ...tdStyle, textAlign: 'center' }}>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '3px 8px',
+                                borderRadius: 4,
+                                background: r.score === maxScore ? 'rgba(212,175,55,0.15)' : 'transparent',
+                                border: r.score === maxScore ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
+                                fontWeight: r.score === maxScore ? 900 : 400,
+                                color: scoreColor(r.score),
+                                fontFamily: 'monospace',
+                              }}
+                            >
+                              {r.score === maxScore ? '👑 ' : ''}
+                              {r.score}
+                            </span>
+                          </td>
+                        ))}
+                        <td style={{ ...tdStyle, textAlign: 'center', color: '#D4AF37', fontWeight: 800, fontFamily: 'monospace' }}>{winner?.sym ?? '—'}</td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* CONSENSUS ROW */}
+                  <tr style={{ borderTop: '2px solid rgba(212,175,55,0.3)', background: 'rgba(212,175,55,0.05)' }}>
+                    <td style={{ ...tdStyle, textAlign: 'left', color: '#D4AF37', fontWeight: 700 }}>RISHI CONSENSUS</td>
+                    {enriched.map((e: any, i: number) => {
+                      const maxC = Math.max(...enriched.map((x: any) => x.consensus));
+                      return (
+                        <td key={e.symbol} style={{ ...tdStyle, textAlign: 'center' }}>
+                          <span style={{ fontWeight: 900, fontSize: 16, color: scoreColor(e.consensus), fontFamily: 'monospace' }}>
+                            {e.consensus === maxC ? '🏆 ' : ''}
+                            {e.consensus}
+                          </span>
+                        </td>
+                      );
+                    })}
+                    <td style={{ ...tdStyle, textAlign: 'center', color: '#D4AF37', fontWeight: 800 }}>
+                      {[...enriched].sort((a: any, b: any) => b.consensus - a.consensus)[0]?.symbol ?? '—'}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* CONSENSUS VS OUTLIER */}
+          <div style={cardStyle}>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>🧠 CONSENSUS vs OUTLIER ANALYSIS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {enriched.map((e: any) => (
+                <div
+                  key={e.symbol}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    flexWrap: 'wrap',
+                    padding: '10px 14px',
+                    background: 'rgba(15,23,42,0.4)',
+                    borderRadius: 6,
+                    border: `1px solid ${e.tensionSpread < 20 ? 'rgba(34,197,94,0.2)' : e.tensionSpread > 60 ? 'rgba(239,68,68,0.2)' : 'rgba(212,175,55,0.15)'}`,
+                  }}
+                >
+                  <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#D4AF37', minWidth: 80 }}>{e.symbol}</span>
+                  <span style={{ fontSize: 11, color: '#64748B' }}>{e.tension}</span>
+                  <div style={{ flex: 1, height: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 3, minWidth: 80 }}>
+                    <div
+                      style={{
+                        width: `${Math.min(100, e.tensionSpread)}%`,
+                        height: '100%',
+                        borderRadius: 3,
+                        background: e.tensionSpread < 20 ? '#22C55E' : e.tensionSpread < 50 ? '#D4AF37' : '#EF4444',
+                      }}
+                    />
+                  </div>
+                  <span style={{ fontSize: 11, color: e.tensionSpread > 60 ? '#EF4444' : '#64748B', fontFamily: 'monospace' }}>Spread: {e.tensionSpread}</span>
+                  <span style={{ fontSize: 10, color: '#475569' }}>
+                    {e.tensionSpread < 20 ? '✅ Unanimous' : e.tensionSpread < 40 ? '🟡 Minor split' : e.tensionSpread < 60 ? '🟠 Notable split' : '🔴 Sharp division'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
       {/* OTHER VIEWS (PLACEHOLDERS) */}
-      {symbols.length > 0 && viewMode !== 'matrix' && (
+      {symbols.length > 0 && viewMode !== 'matrix' && viewMode !== 'philosophy' && (
         <div style={{ ...cardStyle, padding: 48, textAlign: 'center' }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#D4AF37', marginBottom: 12 }}>
-            {viewModes.find(vm => vm.id === viewMode)?.label}
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#D4AF37', marginBottom: 12 }}>{viewModes.find(vm => vm.id === viewMode)?.label}</div>
+          <div style={{ color: '#64748B' }}>Coming in Patch 3...</div>
+        </div>
+      )}
+
+      {/* EPISTEMIC FOOTER */}
+      {symbols.length > 1 && (
+        <div style={{ ...cardStyle, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 9, color: '#64748B', letterSpacing: 1 }}>DISAGREEMENT INDEX</div>
+            <div style={{ fontSize: 22, fontWeight: 900, fontFamily: 'monospace', color: disagreementIndex > 60 ? '#EF4444' : disagreementIndex > 30 ? '#D4AF37' : '#22C55E' }}>
+              {disagreementIndex}
+              <span style={{ fontSize: 11, color: '#64748B', marginLeft: 4 }}>/100</span>
+            </div>
           </div>
-          <div style={{ color: '#64748B' }}>Coming in next patch...</div>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ fontSize: 11, color: '#94A3B8' }}>
+              {disagreementIndex < 20 ? '✅ Strong consensus across Rishis — high-conviction group.' : disagreementIndex < 40 ? '🟡 Mild disagreement — cross-check fundamentals carefully.' : disagreementIndex < 60 ? '🟠 Moderate disagreement — suitable for satellite positions only.' : '🔴 Sharp philosophical division — extreme caution, high-risk selection.'}
+            </div>
+          </div>
+          <button onClick={copyThesis} style={btnGold}>
+            📋 Generate Battle Thesis
+          </button>
         </div>
       )}
     </div>

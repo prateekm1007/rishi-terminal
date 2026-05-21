@@ -45,7 +45,7 @@ interface SavedRivalry {
 // Pillar mapping: Rishi full name → pillar label
 const PILLAR_MAP: Record<string, string> = {
   'Warren Buffett': 'Moat',
-  'Ben Graham': 'Valuation',
+  'Benjamin Graham': 'Valuation',
   'Peter Lynch': 'Growth',
   'Charlie Munger': 'Governance',
   'George Soros': 'Sentiment',
@@ -350,7 +350,7 @@ export default function CompareTab() {
         setHistLoading(false);
         showToast('❌ Failed to fetch history');
       });
-  }, [viewMode, symbols, histTF]);
+  }, [viewMode, symbols.join(','), histTF]);
 
   const normalizedHistData = useMemo(() => {
     if (!Object.keys(histData).length) return [];

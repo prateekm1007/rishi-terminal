@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -7,6 +7,12 @@ import {
   DERIVATIVES, OPTIONS_CHAIN, TOP_GAINERS, TOP_LOSERS,
   BLOCK_DEALS, getMarketMood, getFIISummary,
 } from '../../data/marketPulse';
+import {
+  MACRO_REGIME,
+  MACRO_INDICATORS,
+  PHILOSOPHER_STANCES,
+  getPhilosopherConsensus,
+} from '../../data/economyPlus/macroData';
 
 function fmt(n: number) {
   const abs = Math.abs(n);
@@ -42,16 +48,19 @@ function SectionTitle({ emoji, title, color = '#F59E0B' }: { emoji: string; titl
   );
 }
 
-type PulseTab = 'overview' | 'fii' | 'breadth' | 'derivatives' | 'movers' | 'blocks';
+type PulseTab = 'overview' | 'macro' | 'fii' | 'breadth' | 'derivatives' | 'movers' | 'blocks';
 
 export default function MarketPulsePage() {
   const [tab, setTab] = useState<PulseTab>('overview');
   const mood    = getMarketMood();
   const fiiSum  = getFIISummary();
   const today   = FII_DII_HISTORY[0];
+  const consensus = getPhilosopherConsensus();
+  const regime = MACRO_REGIME;
 
   const tabs: { key: PulseTab; label: string; emoji: string }[] = [
     { key:'overview',    label:'Overview',    emoji:'📊' },
+    { key:'macro',       label:'Macro Regime', emoji:'🧠' },
     { key:'fii',         label:'FII / DII',   emoji:'🏦' },
     { key:'breadth',     label:'Breadth',     emoji:'📈' },
     { key:'derivatives', label:'Derivatives', emoji:'⚙️' },
@@ -67,8 +76,8 @@ export default function MarketPulsePage() {
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>
           <Link href="/" style={{ color:'#F59E0B', textDecoration:'none', fontSize:11, display:'block', marginBottom:8 }}>← Dashboard</Link>
-          <div style={{ fontFamily:'Cinzel, Georgia', fontSize:20, color:'#F59E0B', letterSpacing:3, fontWeight:700 }}>📊 MARKET PULSE</div>
-          <div style={{ fontSize:9, color:'#334155', letterSpacing:2, marginTop:3 }}>FII/DII · BREADTH · DERIVATIVES · MOVERS · BLOCK DEALS</div>
+          <div style={{ fontFamily:'Cinzel, Georgia', fontSize:20, color:'#F59E0B', letterSpacing:3, fontWeight:700 }}>🌐 ECONOMY PLUS</div>
+          <div style={{ fontSize:9, color:'#334155', letterSpacing:2, marginTop:3 }}>MACRO INTELLIGENCE · PHILOSOPHER COUNCIL · REGIME ANALYSIS</div>
         </div>
         <div style={{ background:`${mood.color}15`, border:`1px solid ${mood.color}40`, borderRadius:10, padding:'12px 20px', textAlign:'center' }}>
           <div style={{ fontSize:9, color:'#475569', letterSpacing:2, marginBottom:4 }}>MARKET MOOD</div>
@@ -82,6 +91,34 @@ export default function MarketPulsePage() {
         ⚡ {mood.description}
       </div>
 
+      {/* PHILOSOPHER COUNCIL */}
+      <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:16, marginBottom:24 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, gap:12, flexWrap:'wrap' }}>
+          <div style={{ fontFamily:'Cinzel, Georgia', fontSize:14, color:'#F59E0B', letterSpacing:2, fontWeight:700 }}>
+            🧠 PHILOSOPHER COUNCIL
+          </div>
+          <div style={{ fontSize:10, color:consensus.color, background: consensus.color + '12', border:'1px solid ' + consensus.color + '35', padding:'6px 10px', borderRadius:999 }}>
+            {consensus.label} · Spread {consensus.spread} · Avg {consensus.avgAgreement}/100
+          </div>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:10 }}>
+          {PHILOSOPHER_STANCES.map(p => (
+            <div key={p.philosopher} style={{ background:'#050508', border:'1px solid #1E293B', borderRadius:10, padding:12 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                <div style={{ fontSize:20 }}>{p.emoji}</div>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:800, color:p.color }}>{p.philosopher}</div>
+                  <div style={{ fontSize:9, color:'#475569', marginTop:2 }}>{p.shortBio}</div>
+                </div>
+              </div>
+              <div style={{ marginTop:10, fontSize:10, color:'#94A3B8', lineHeight:1.5 }}>
+                {p.currentStance}: {p.keyWarning}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* TAB BAR */}
       <div style={{ display:'flex', gap:8, marginBottom:24, flexWrap:'wrap' }}>
         {tabs.map(t => (
@@ -174,6 +211,46 @@ export default function MarketPulsePage() {
       )}
 
       {/* ═══════════════════════════════════ */}
+      {/* ═══════════════════════════════════ */}
+      {/* MACRO TAB — Economy Plus Foundation */}
+      {/* ═══════════════════════════════════ */}
+      {tab === 'macro' && (
+        <div>
+          <div style={{ background:'#09090F', border:'1px solid #D4AF37', borderRadius:12, padding:20, marginBottom:24 }}>
+            <div style={{ fontSize:10, color:'#475569', letterSpacing:2, marginBottom:6 }}>CURRENT MACRO REGIME</div>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:18, color:'#D4AF37', letterSpacing:2, fontWeight:700 }}>
+              {regime.label}
+            </div>
+            <div style={{ fontSize:10, color:'#64748B', marginTop:6 }}>{regime.sublabel}</div>
+            <div style={{ fontSize:11, color:'#CBD5E1', lineHeight:1.7, marginTop:12 }}>{regime.description}</div>
+            <div style={{ marginTop:12, fontSize:10, color:'#475569' }}>
+              Historical Analog: {regime.historicalAnalog} ({regime.analogPeriod})
+            </div>
+          </div>
+
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:10, marginBottom:24 }}>
+            {MACRO_INDICATORS.map(ind => (
+              <div key={ind.label} style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:10, padding:14 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', gap:10 }}>
+                  <div style={{ fontSize:10, color:'#64748B', letterSpacing:1, textTransform:'uppercase' }}>{ind.label}</div>
+                  <div style={{
+                    fontSize:12,
+                    fontWeight:800,
+                    color: ind.signal === 'bullish' ? '#10B981' : ind.signal === 'bearish' ? '#EF4444' : '#F59E0B'
+                  }}>
+                    {ind.value}{ind.unit}
+                  </div>
+                </div>
+                <div style={{ fontSize:10, color:'#94A3B8', lineHeight:1.6, marginTop:8 }}>{ind.description}</div>
+                <div style={{ fontSize:9, color:'#475569', marginTop:10 }}>
+                  As of {ind.asOf} · {ind.trendValue}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* FII / DII TAB                       */}
       {/* ═══════════════════════════════════ */}
       {tab === 'fii' && (

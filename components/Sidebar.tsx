@@ -20,7 +20,7 @@ const NAV_GROUPS = [
       { href: "/forex",       label: "Forex",          icon: "fx"       },
       { href: "/commodities", label: "Commodities",    icon: "gold"     },
       { href: "/bonds",       label: "Bonds",          icon: "bond"     },
-      { href: "/pulse",       label: "Market Pulse",   icon: "pulse"    },
+      { href: "/pulse",       label: "Economy Plus",   icon: "pulse"    },
     ],
   },
   {

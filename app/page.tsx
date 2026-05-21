@@ -47,7 +47,7 @@ const MARKETS = [
   { href:"/forex",       icon:"💱", label:"Forex",        desc:"10 currency pairs" },
   { href:"/commodities", icon:"🥇", label:"Commodities",  desc:"Gold, Oil, Metals" },
   { href:"/bonds",       icon:"📜", label:"Bonds",        desc:"G-Secs & Corporate" },
-  { href:"/pulse",       icon:"📡", label:"Market Pulse", desc:"FII/DII flows" },
+  { href:"/pulse",       icon:"📡", label:"Economy Plus", desc:"FII/DII flows" },
   { href:"/compare",     icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
   { href:"/backtest",    icon:"🔬", label:"Backtest",     desc:"Strategy testing" },
 ];

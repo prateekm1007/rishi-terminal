@@ -1029,77 +1029,82 @@ export default function CompareTab() {
         </div>
       )}
 
-      {/* VIEW: HISTORICAL BATTLE */}
+      {/* VIEW: HISTORICAL BATTLE — Scholarly Performance Analysis */}
       {symbols.length > 0 && viewMode === 'historical' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-              <div style={{ fontSize: 10, color: "#64748B", letterSpacing: 1 }}>📈 HISTORICAL BATTLE — Performance Summary</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>HISTORICAL PERFORMANCE ANALYSIS</div>
+                <div style={{ fontSize: 13, color: '#D4AF37' }}>Normalized Total Return — {histTF} Period</div>
+              </div>
               <div style={{ display: 'flex', gap: 6 }}>
-                {(['1Y', '3Y', '5Y'] as HistoricalTF[]).map(tf => (
+                {(['1Y','3Y','5Y'] as const).map(tf => (
                   <button
                     key={tf}
                     onClick={() => setHistTF(tf)}
                     style={{
-                      padding: '6px 12px',
+                      padding: '6px 16px',
                       borderRadius: 6,
-                      cursor: 'pointer',
                       fontSize: 11,
                       fontWeight: histTF === tf ? 700 : 400,
                       background: histTF === tf ? 'rgba(212,175,55,0.15)' : 'transparent',
                       border: histTF === tf ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(30,41,59,0.6)',
                       color: histTF === tf ? '#D4AF37' : '#64748B',
+                      cursor: 'pointer'
                     }}
-                  >
-                    {tf}
-                  </button>
+                  >{tf}</button>
                 ))}
               </div>
             </div>
-
+          </div>
+          <div style={cardStyle}>
             {histLoading ? (
-              <div style={{ textAlign: 'center', padding: 40, color: '#64748B' }}>⟳ Fetching price history...</div>
+              <div style={{ textAlign: 'center', padding: 60, color: '#64748B' }}>Analyzing historical price series...</div>
             ) : normalizedHistData.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 40, color: '#64748B' }}>No history data available</div>
+              <div style={{ textAlign: 'center', padding: 60, color: '#64748B' }}>
+                Historical data not available for the selected symbols and timeframe.
+              </div>
             ) : (
-              <div style={{ color: '#475569', padding: 20, textAlign: 'center' }}>No historical data available.</div>
+              <>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
+                        <th style={{ ...thStyle, textAlign: 'left', width: 40 }}>#</th>
+                        <th style={{ ...thStyle, textAlign: 'left' }}>STOCK</th>
+                        <th style={thStyle}>SECTOR</th>
+                        <th style={{ ...thStyle, textAlign: 'right' }}>{histTF} RETURN</th>
+                        <th style={{ ...thStyle, textAlign: 'right' }}>RISHI SCORE</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>CATEGORY</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...enriched]
+                        .map((e: any) => {
+                          const first = (normalizedHistData[0] as any)?.[e.symbol] ?? 100;
+                          const last = (normalizedHistData[normalizedHistData.length - 1] as any)?.[e.symbol] ?? 100;
+                          return { ...e, ret: ((last - first) / first) * 100 };
+                        })
+                        .sort((a: any, b: any) => b.ret - a.ret)
+                        .map((e: any, idx: number) => (
+                          <tr key={e.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.4)' }}>
+                            <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 700, color: '#D4AF37' }}>{idx + 1}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 700, color: STOCK_COLORS[enriched.indexOf(e) % STOCK_COLORS.length] }}>{e.symbol}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left', color: '#64748B', fontSize: 11 }}>{e.sector}</td>
+                            <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 700, color: changeColor(e.ret) }}>{e.ret >= 0 ? '+' : ''}{e.ret.toFixed(1)}%</td>
+                            <td style={{ ...tdStyle, textAlign: 'right', color: scoreColor(e.consensus) }}>{e.consensus}</td>
+                            <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: '#94A3B8' }}>{e.category}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
-
-          {/* Performance summary */}
-          {normalizedHistData.length > 0 && (
-            <div style={cardStyle}>
-              <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>🏆 PERFORMANCE SUMMARY ({histTF})</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
-                {enriched.map((e: any, i: number) => {
-                  const first = (normalizedHistData[0] as any)?.[e.symbol] ?? 100;
-                  const last = (normalizedHistData[normalizedHistData.length - 1] as any)?.[e.symbol] ?? 100;
-                  const change = ((last - first) / first) * 100;
-                  return (
-                    <div
-                      key={e.symbol}
-                      style={{
-                        background: 'rgba(15,23,42,0.4)',
-                        border: `1px solid ${STOCK_COLORS[i % STOCK_COLORS.length]}44`,
-                        borderRadius: 8,
-                        padding: '10px 12px',
-                      }}
-                    >
-                      <div style={{ fontSize: 11, color: STOCK_COLORS[i % STOCK_COLORS.length], fontWeight: 800, marginBottom: 4 }}>{e.symbol}</div>
-                      <div style={{ fontSize: 16, fontWeight: 900, color: changeColor(change), fontFamily: 'monospace' }}>
-                        {change >= 0 ? '+' : ''}
-                        {change.toFixed(1)}%
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
-
-      {/* EPISTEMIC FOOTER */}
       {symbols.length > 1 && (
         <div style={{ ...cardStyle, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <div>

@@ -988,48 +988,8 @@ export default function CompareTab() {
       {symbols.length > 0 && viewMode === 'radar' && (
         <div style={cardStyle}>
           <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 16 }}>
-            📡 RADAR CHART — 6 Pillar Scores
+          <div style={{ fontSize: 10, color: "#64748B", letterSpacing: 1, marginBottom: 16 }}>📡 RADAR — 6 Pillar Score Table</div>
           </div>
-          <ResponsiveContainer width="100%" height={420}>
-            <RadarChart
-              data={['Moat', 'Valuation', 'Growth', 'Governance', 'Sentiment', 'Quality'].map(metric => {
-                const keyMap: Record<string, string> = {
-                  Moat: 'moatScore',
-                  Valuation: 'valuationScore',
-                  Growth: 'growthScore',
-                  Governance: 'governanceScore',
-                  Sentiment: 'sentimentScore',
-                  Quality: 'qualityScore',
-                };
-                const row: Record<string, any> = { metric };
-                enriched.forEach((e: any) => {
-                  row[e.symbol] = e[keyMap[metric]] ?? 0;
-                });
-                return row;
-              })}
-            >
-              <PolarGrid stroke="rgba(30,41,59,0.8)" />
-              <PolarAngleAxis dataKey="metric" tick={{ fill: '#64748B', fontSize: 11 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#475569', fontSize: 9 }} />
-              {enriched.map((e: any, i: number) => (
-                <Radar
-                  key={e.symbol}
-                  name={e.symbol}
-                  dataKey={e.symbol}
-                  stroke={STOCK_COLORS[i % STOCK_COLORS.length]}
-                  fill={STOCK_COLORS[i % STOCK_COLORS.length]}
-                  fillOpacity={0.08}
-                  strokeWidth={2}
-                />
-              ))}
-              <Legend formatter={(value: any) => <span style={{ color: '#94A3B8', fontSize: 12 }}>{value}</span>} />
-              <Tooltip
-                contentStyle={{ background: '#0B1221', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6 }}
-                labelStyle={{ color: '#D4AF37' }}
-                itemStyle={{ color: '#94A3B8' }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
 
           {/* Pillar table */}
           <div style={{ marginTop: 16, overflowX: 'auto' }}>
@@ -1074,7 +1034,7 @@ export default function CompareTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-              <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>📈 HISTORICAL BATTLE — Normalized Equity Curves</div>
+              <div style={{ fontSize: 10, color: "#64748B", letterSpacing: 1 }}>📈 HISTORICAL BATTLE — Performance Summary</div>
               <div style={{ display: 'flex', gap: 6 }}>
                 {(['1Y', '3Y', '5Y'] as HistoricalTF[]).map(tf => (
                   <button
@@ -1102,38 +1062,7 @@ export default function CompareTab() {
             ) : normalizedHistData.length === 0 ? (
               <div style={{ textAlign: 'center', padding: 40, color: '#64748B' }}>No history data available</div>
             ) : (
-              <ResponsiveContainer width="100%" height={380}>
-                <LineChart data={normalizedHistData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(30,41,59,0.5)" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fill: '#64748B', fontSize: 10 }}
-                    tickFormatter={(val) => {
-                      const d = new Date(val);
-                      return `${d.getMonth() + 1}/${d.getFullYear() % 100}`;
-                    }}
-                  />
-                  <YAxis tick={{ fill: '#64748B', fontSize: 10 }} label={{ value: 'Normalized (Base=100)', angle: -90, position: 'insideLeft', fill: '#64748B', fontSize: 10 }} />
-                  <Tooltip
-                    contentStyle={{ background: '#0B1221', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6 }}
-                    labelStyle={{ color: '#D4AF37', fontSize: 11 }}
-                    itemStyle={{ color: '#94A3B8', fontSize: 11 }}
-                    formatter={(value: any) => value.toFixed(1)}
-                  />
-                  <Legend formatter={(value: any) => <span style={{ color: '#94A3B8', fontSize: 12 }}>{value}</span>} />
-                  {enriched.map((e: any, i: number) => (
-                    <Line
-                      key={e.symbol}
-                      type="monotone"
-                      dataKey={e.symbol}
-                      stroke={STOCK_COLORS[i % STOCK_COLORS.length]}
-                      strokeWidth={2}
-                      dot={false}
-                      name={e.symbol}
-                    />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
+              <div style={{ color: '#475569', padding: 20, textAlign: 'center' }}>No historical data available.</div>
             )}
           </div>
 

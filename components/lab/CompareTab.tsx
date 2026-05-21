@@ -256,6 +256,12 @@ export default function CompareTab() {
           topBull: c.topBull?.full ?? '—',
           topBear: c.topBear?.full ?? '—',
           scores: c.scores,
+          moatScore: c.scores.find((r: any) => r.full === 'Warren Buffett')?.score ?? 0,
+          valuationScore: c.scores.find((r: any) => r.full === 'Benjamin Graham')?.score ?? 0,
+          growthScore: c.scores.find((r: any) => r.full === 'Peter Lynch')?.score ?? 0,
+          governanceScore: c.scores.find((r: any) => r.full === 'Charlie Munger')?.score ?? 0,
+          sentimentScore: c.scores.find((r: any) => r.full === 'George Soros')?.score ?? 0,
+          qualityScore: c.scores.find((r: any) => r.full === 'Philip Fisher')?.score ?? 0,
           ...pillarScores,
         };
       })

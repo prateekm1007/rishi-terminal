@@ -12,6 +12,7 @@ import {
   MACRO_INDICATORS,
   PHILOSOPHER_STANCES,
   CURRENCY_DATA,
+  SECTOR_ROTATION,
   getPhilosopherConsensus,
 } from '../../data/economyPlus/macroData';
 
@@ -49,7 +50,7 @@ function SectionTitle({ emoji, title, color = '#F59E0B' }: { emoji: string; titl
   );
 }
 
-type PulseTab = 'overview' | 'macro' | 'fii' | 'breadth' | 'derivatives' | 'movers' | 'blocks';
+type PulseTab = 'overview' | 'macro' | 'rotation' | 'fii' | 'breadth' | 'derivatives' | 'movers' | 'blocks';
 
 export default function MarketPulsePage() {
   const [tab, setTab] = useState<PulseTab>('overview');
@@ -68,6 +69,7 @@ export default function MarketPulsePage() {
   const tabs: { key: PulseTab; label: string; emoji: string }[] = [
     { key:'overview',    label:'Overview',    emoji:'📊' },
     { key:'macro',       label:'Macro Regime', emoji:'🧠' },
+    { key:'rotation',    label:'Sector Rotation', emoji:'🔄' },
     { key:'fii',         label:'FII / DII',   emoji:'🏦' },
     { key:'breadth',     label:'Breadth',     emoji:'📈' },
     { key:'derivatives', label:'Derivatives', emoji:'⚙️' },
@@ -340,6 +342,170 @@ export default function MarketPulsePage() {
         </div>
       )}
 
+
+      {/* ═══════════════════════════════════ */}
+      {/* SECTOR ROTATION TAB               */}
+      {/* ═══════════════════════════════════ */}
+      {tab === 'rotation' && (
+        <div>
+
+          {/* LEGEND */}
+          <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:16, marginBottom:24 }}>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:14, color:'#D4AF37', letterSpacing:2, fontWeight:700, marginBottom:12 }}>
+              🔄 SECTOR ROTATION OUTLOOK
+            </div>
+            <div style={{ fontSize:11, color:'#94A3B8', lineHeight:1.6, marginBottom:14 }}>
+              Each sector is scored independently by Hayek, Friedman, and Keynes based on the current macro regime.
+              Consensus = average of three scores. Spread = philosopher disagreement (higher = more divided).
+            </div>
+            <div style={{ display:'flex', gap:12, flexWrap:'wrap', fontSize:10 }}>
+              {[
+                { label:'Strong Buy', color:'#10B981' },
+                { label:'Accumulate', color:'#34D399' },
+                { label:'Neutral',    color:'#F59E0B' },
+                { label:'Reduce',     color:'#F97316' },
+                { label:'Avoid',      color:'#EF4444' },
+              ].map(b => (
+                <div key={b.label} style={{ display:'flex', alignItems:'center', gap:6 }}>
+                  <div style={{ width:10, height:10, borderRadius:3, background:b.color }} />
+                  <span style={{ color:'#64748B' }}>{b.label}</span>
+                </div>
+              ))}
+              <div style={{ marginLeft:'auto', color:'#475569', fontSize:9 }}>Scores: 0 = Strongly Avoid · 100 = Strongly Buy</div>
+            </div>
+          </div>
+
+          {/* PHILOSOPHER × SECTOR MATRIX HEADER */}
+          <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, overflow:'hidden', marginBottom:24 }}>
+            <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+                <thead>
+                  <tr style={{ background:'#06060D' }}>
+                    <th style={{ padding:'12px 16px', textAlign:'left',   color:'#475569', fontSize:9, letterSpacing:1, minWidth:140 }}>SECTOR</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#818CF8', fontSize:9, letterSpacing:1 }}>🏛️ HAYEK</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#34D399', fontSize:9, letterSpacing:1 }}>📊 FRIEDMAN</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#FB923C', fontSize:9, letterSpacing:1 }}>⚙️ KEYNES</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#D4AF37', fontSize:9, letterSpacing:1 }}>CONSENSUS</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#475569', fontSize:9, letterSpacing:1 }}>SPREAD</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#475569', fontSize:9, letterSpacing:1 }}>BIAS</th>
+                    <th style={{ padding:'12px 16px', textAlign:'left',   color:'#475569', fontSize:9, letterSpacing:1, minWidth:180 }}>KEY MACRO DRIVER</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SECTOR_ROTATION.map((s, i) => {
+                    const spreadCol = s.spread >= 50 ? '#EF4444' : s.spread >= 30 ? '#F59E0B' : '#10B981';
+                    const scoreCell = (score: number) => {
+                      const bg = score >= 70 ? '#10B98120' : score >= 55 ? '#F59E0B15' : '#EF444415';
+                      const fg = score >= 70 ? '#10B981'   : score >= 55 ? '#F59E0B'   : '#EF4444';
+                      return { bg, fg };
+                    };
+                    const hc = scoreCell(s.hayek.score);
+                    const fc = scoreCell(s.friedman.score);
+                    const kc = scoreCell(s.keynes.score);
+                    const cc = scoreCell(s.consensus);
+                    return (
+                      <tr key={s.sector} style={{ borderBottom:'1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#070710' }}>
+                        <td style={{ padding:'12px 16px' }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <span style={{ fontSize:16 }}>{s.icon}</span>
+                            <span style={{ color:'#F1F5F9', fontWeight:700 }}>{s.sector}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding:'12px 16px', textAlign:'center', background:hc.bg }}>
+                          <div style={{ fontWeight:800, color:hc.fg }}>{s.hayek.score}</div>
+                          <div style={{ fontSize:9, color:'#475569', marginTop:2 }}>{s.hayek.stance}</div>
+                        </td>
+                        <td style={{ padding:'12px 16px', textAlign:'center', background:fc.bg }}>
+                          <div style={{ fontWeight:800, color:fc.fg }}>{s.friedman.score}</div>
+                          <div style={{ fontSize:9, color:'#475569', marginTop:2 }}>{s.friedman.stance}</div>
+                        </td>
+                        <td style={{ padding:'12px 16px', textAlign:'center', background:kc.bg }}>
+                          <div style={{ fontWeight:800, color:kc.fg }}>{s.keynes.score}</div>
+                          <div style={{ fontSize:9, color:'#475569', marginTop:2 }}>{s.keynes.stance}</div>
+                        </td>
+                        <td style={{ padding:'12px 16px', textAlign:'center', background:cc.bg }}>
+                          <div style={{ fontWeight:800, color:cc.fg, fontSize:15 }}>{s.consensus}</div>
+                          <div style={{ marginTop:6, height:4, background:'#1E293B', borderRadius:999, overflow:'hidden', width:'80%', margin:'6px auto 0' }}>
+                            <div style={{ width: s.consensus + '%', height:'100%', background:cc.fg }} />
+                          </div>
+                        </td>
+                        <td style={{ padding:'12px 16px', textAlign:'center' }}>
+                          <span style={{ color:spreadCol, fontWeight:700 }}>{s.spread}</span>
+                          <div style={{ fontSize:9, color:'#334155', marginTop:2 }}>
+                            {s.spread >= 50 ? 'High conflict' : s.spread >= 30 ? 'Moderate' : 'Aligned'}
+                          </div>
+                        </td>
+                        <td style={{ padding:'12px 16px', textAlign:'center' }}>
+                          <span style={{
+                            background: s.biasColor + '20',
+                            border: '1px solid ' + s.biasColor + '50',
+                            color: s.biasColor,
+                            padding:'4px 10px',
+                            borderRadius:999,
+                            fontSize:10,
+                            fontWeight:700,
+                            whiteSpace:'nowrap'
+                          }}>
+                            {s.forwardBias}
+                          </span>
+                        </td>
+                        <td style={{ padding:'12px 16px', color:'#64748B', fontSize:10 }}>{s.keyMacroDriver}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* PHILOSOPHER RATIONALE DEEP CARDS */}
+          <div style={{ marginBottom:8 }}>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:13, color:'#D4AF37', letterSpacing:2, fontWeight:700, marginBottom:16 }}>
+              PHILOSOPHER RATIONALE — TOP CONVICTION SECTORS
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:14 }}>
+              {SECTOR_ROTATION.filter(s => s.forwardBias === 'Strong Buy' || s.forwardBias === 'Avoid').map(s => (
+                <div key={s.sector} style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:16 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <span style={{ fontSize:18 }}>{s.icon}</span>
+                      <span style={{ fontWeight:700, color:'#F1F5F9', fontSize:13 }}>{s.sector}</span>
+                    </div>
+                    <span style={{
+                      background: s.biasColor + '20',
+                      border:'1px solid ' + s.biasColor + '50',
+                      color: s.biasColor,
+                      padding:'3px 10px',
+                      borderRadius:999,
+                      fontSize:9,
+                      fontWeight:700
+                    }}>
+                      {s.forwardBias}
+                    </span>
+                  </div>
+
+                  {([
+                    { key:'🏛️ Hayek',    data: s.hayek,    color:'#818CF8' },
+                    { key:'📊 Friedman', data: s.friedman, color:'#34D399' },
+                    { key:'⚙️ Keynes',   data: s.keynes,   color:'#FB923C' },
+                  ] as const).map(p => (
+                    <div key={p.key} style={{ marginBottom:10, paddingBottom:10, borderBottom:'1px solid #0F172A' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                        <span style={{ fontSize:10, color:p.color, fontWeight:700 }}>{p.key}</span>
+                        <span style={{ fontSize:11, fontWeight:800, color:
+                          p.data.score >= 70 ? '#10B981' : p.data.score >= 55 ? '#F59E0B' : '#EF4444'
+                        }}>{p.data.score}</span>
+                      </div>
+                      <div style={{ fontSize:10, color:'#64748B', lineHeight:1.5 }}>{p.data.rationale}</div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
       {/* FII / DII TAB                       */}
       {/* ═══════════════════════════════════ */}
       {tab === 'fii' && (

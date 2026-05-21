@@ -300,3 +300,120 @@ export function getPhilosopherConsensus(): {
 
   return { avgAgreement: avg, spread, label, color, description };
 }
+// ── SECTOR ROTATION OUTLOOK ─────────────────────────────────────────────
+export interface SectorRotationEntry {
+  sector: string;
+  icon: string;
+  hayek:    { score: number; stance: string; rationale: string };
+  friedman: { score: number; stance: string; rationale: string };
+  keynes:   { score: number; stance: string; rationale: string };
+  consensus: number;   // avg of three scores
+  spread:    number;   // max - min
+  regimeOutlook: '3M' | '6M' | '12M';
+  forwardBias: 'Strong Buy' | 'Accumulate' | 'Neutral' | 'Reduce' | 'Avoid';
+  biasColor: string;
+  keyMacroDriver: string;
+}
+
+export const SECTOR_ROTATION: SectorRotationEntry[] = [
+  {
+    sector: 'Banking',
+    icon: '🏦',
+    hayek:    { score: 62, stance: 'Neutral',    rationale: 'Credit expansion healthy if backed by real savings. Watch NPA trajectory.' },
+    friedman: { score: 72, stance: 'Accumulate', rationale: 'Rate pause helps NIM stability. Monetisation risk is contained.' },
+    keynes:   { score: 80, stance: 'Strong Buy', rationale: 'Anchor of demand stimulus. Rate cut will boost credit and margins.' },
+    consensus: 71, spread: 18,
+    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    keyMacroDriver: 'Repo rate trajectory + credit growth',
+  },
+  {
+    sector: 'IT',
+    icon: '💻',
+    hayek:    { score: 70, stance: 'Accumulate', rationale: 'Capital-light, no debt, high FCF — Hayekian ideal. Global demand uncertainty is the risk.' },
+    friedman: { score: 58, stance: 'Neutral',    rationale: 'Dollar strength helps revenues but US slowdown concerns linger.' },
+    keynes:   { score: 44, stance: 'Reduce',     rationale: 'Export-oriented; domestic multiplier does not help IT directly.' },
+    consensus: 57, spread: 26,
+    regimeOutlook: '6M', forwardBias: 'Neutral', biasColor: '#F59E0B',
+    keyMacroDriver: 'USD/INR + US enterprise IT spend',
+  },
+  {
+    sector: 'Pharma',
+    icon: '💊',
+    hayek:    { score: 75, stance: 'Accumulate', rationale: 'Pricing power + export earnings + minimal govt dependency.' },
+    friedman: { score: 68, stance: 'Accumulate', rationale: 'Inflation-resistant revenues. Dollar earnings hedge INR weakness.' },
+    keynes:   { score: 60, stance: 'Neutral',    rationale: 'Domestic demand stable but not a direct beneficiary of stimulus.' },
+    consensus: 68, spread: 15,
+    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    keyMacroDriver: 'USD/INR + US FDA approvals + domestic formulations',
+  },
+  {
+    sector: 'Auto',
+    icon: '🚗',
+    hayek:    { score: 52, stance: 'Neutral',    rationale: 'Consumer debt-driven cycle. Watch credit quality in auto loans.' },
+    friedman: { score: 60, stance: 'Neutral',    rationale: 'Rate cuts would help EMI-driven demand; premature to price in.' },
+    keynes:   { score: 82, stance: 'Strong Buy', rationale: 'Animal spirits driver. Rate cut + rural demand revival = re-rating.' },
+    consensus: 65, spread: 30,
+    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    keyMacroDriver: 'Rate cuts + rural income + EV policy',
+  },
+  {
+    sector: 'FMCG',
+    icon: '🛒',
+    hayek:    { score: 68, stance: 'Accumulate', rationale: 'Pricing power and brand moat — resilient in all regimes.' },
+    friedman: { score: 72, stance: 'Accumulate', rationale: 'Low inflation environment helps volume recovery. Defensive.' },
+    keynes:   { score: 55, stance: 'Neutral',    rationale: 'Rural demand improving but urban discretionary spending muted.' },
+    consensus: 65, spread: 17,
+    regimeOutlook: '3M', forwardBias: 'Neutral', biasColor: '#F59E0B',
+    keyMacroDriver: 'Rural wage growth + food inflation trajectory',
+  },
+  {
+    sector: 'Infrastructure',
+    icon: '🏗️',
+    hayek:    { score: 28, stance: 'Avoid',      rationale: 'Government capex dependency = malinvestment risk. Long gestation, execution risk.' },
+    friedman: { score: 55, stance: 'Neutral',    rationale: 'Productive capex is fine but fiscal crowding-out is a concern.' },
+    keynes:   { score: 90, stance: 'Strong Buy', rationale: 'The multiplier is here. Every rupee of govt capex generates 2-3x downstream.' },
+    consensus: 58, spread: 62,
+    regimeOutlook: '12M', forwardBias: 'Neutral', biasColor: '#F59E0B',
+    keyMacroDriver: 'Budget capex allocation + order book visibility',
+  },
+  {
+    sector: 'Realty',
+    icon: '🏢',
+    hayek:    { score: 22, stance: 'Avoid',      rationale: 'Classic malinvestment sector. Credit-driven boom masks real demand.' },
+    friedman: { score: 48, stance: 'Reduce',     rationale: 'Rate-sensitive. No cuts yet = margin pressure on buyers.' },
+    keynes:   { score: 75, stance: 'Accumulate', rationale: 'Housing demand is real. Rate cut catalyst is powerful for realty.' },
+    consensus: 48, spread: 53,
+    regimeOutlook: '6M', forwardBias: 'Neutral', biasColor: '#F59E0B',
+    keyMacroDriver: 'Repo rate cuts + affordable housing demand',
+  },
+  {
+    sector: 'Metals',
+    icon: '⚙️',
+    hayek:    { score: 40, stance: 'Reduce',     rationale: 'China slowdown and commodity price cycles are unpredictable.' },
+    friedman: { score: 45, stance: 'Reduce',     rationale: 'Global dollar strength pressures commodity prices.' },
+    keynes:   { score: 62, stance: 'Neutral',    rationale: 'Infrastructure push supports domestic steel demand.' },
+    consensus: 49, spread: 22,
+    regimeOutlook: '6M', forwardBias: 'Reduce', biasColor: '#F97316',
+    keyMacroDriver: 'China demand + global commodity cycle + INR',
+  },
+  {
+    sector: 'Energy',
+    icon: '⚡',
+    hayek:    { score: 55, stance: 'Neutral',    rationale: 'Mixed: renewables distorted by subsidies; O&G has real pricing power.' },
+    friedman: { score: 60, stance: 'Neutral',    rationale: 'Energy inflation passthrough creates pricing complexity.' },
+    keynes:   { score: 72, stance: 'Accumulate', rationale: 'Renewables are infrastructure — government multiplier applies.' },
+    consensus: 62, spread: 17,
+    regimeOutlook: '12M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    keyMacroDriver: 'Crude oil price + renewables policy + subsidy regime',
+  },
+  {
+    sector: 'Consumer',
+    icon: '🛍️',
+    hayek:    { score: 65, stance: 'Accumulate', rationale: 'Organic demand-driven — legitimate. Prefer premium over mass market.' },
+    friedman: { score: 63, stance: 'Neutral',    rationale: 'Inflation squeeze on real wages is a drag. Monitor carefully.' },
+    keynes:   { score: 78, stance: 'Accumulate', rationale: 'Animal spirits and confidence are rising. Discretionary re-rates on cuts.' },
+    consensus: 69, spread: 15,
+    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    keyMacroDriver: 'Real wage growth + rate cut sentiment + urban confidence',
+  },
+];

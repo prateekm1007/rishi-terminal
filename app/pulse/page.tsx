@@ -81,6 +81,7 @@ export default function MarketPulsePage() {
   const [livePrices, setLivePrices] = useState<Record<string, any> | null>(null);
   const [livePricesErr, setLivePricesErr] = useState<string | null>(null);
   const [liveContext, setLiveContext] = useState<{ breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number; historicalSpread30d?: number; evidenceRecencyHours?: number; pricedIn?: boolean } | null>(null);
+  const [hist30d, setHist30d] = useState<number | null>(null); // Phase 4B
 
 
   // Deep-link tabs via ?tab= (client-side only; avoids useSearchParams + Suspense requirement)
@@ -171,13 +172,30 @@ export default function MarketPulsePage() {
         const fiiNetCr = usdInrChg > 0.3 ? -3000 : usdInrChg < -0.3 ? 3000 : 0;
         const derivativesSignal = goldChg > 0.5 ? -1 : goldChg < -0.5 ? 1 : 0;
 
-        const historicalSpread30d = 50;
+        const historicalSpread30d = hist30d ?? 50; // Phase 4B: real API, fallback 50
         const evidenceRecencyHours = 6;
         const pricedIn = Math.abs(niftyChg) > 1.5;
         if (!cancelled) setLiveContext({ breadthBullish, fiiNetCr, derivativesSignal, historicalSpread30d, evidenceRecencyHours, pricedIn });
       } catch {}
     };
     fetchLiveContext();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Phase 4B: fetch real historical spread from /api/history/breadth
+  useEffect(() => {
+    let cancelled = false;
+    const fetchHist = async () => {
+      try {
+        const res = await fetch("/api/history/breadth");
+        if (!res.ok) return;
+        const d = await res.json();
+        if (!cancelled && typeof d?.breadth30dAvg === "number") {
+          setHist30d(d.breadth30dAvg);
+        }
+      } catch {}
+    };
+    fetchHist();
     return () => { cancelled = true; };
   }, []);
 

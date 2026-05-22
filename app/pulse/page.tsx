@@ -116,9 +116,10 @@ export default function MarketPulsePage() {
       ph.philosopher,
       MACRO_REGIME.label,
       ph.indicators || [],
-      mood.score
+      mood.score,
+      liveContext ?? undefined
     ),
-  })), [mood.score]);
+  })), [mood.score, liveContext]);
 
   const consensus = useMemo(() => {
     const agreements = dynamicStances.map(s => s.agreement);
@@ -129,6 +130,7 @@ export default function MarketPulsePage() {
     return { avgAgreement, spread, label, color };
   }, [dynamicStances]);
   const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
+  const [liveContext, setLiveContext] = useState<{ breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number } | null>(null);
 
   // Persist philosopher lens across reloads
   useEffect(() => {
@@ -143,6 +145,25 @@ export default function MarketPulsePage() {
   useEffect(() => {
     try { window.localStorage.setItem('economyPlus.activeLens', activeLens); } catch {}
   }, [activeLens]);
+
+  // Phase 2: fetch live market context for dynamic agreement scoring
+  useEffect(() => {
+    let cancelled = false;
+    const fetchLiveContext = async () => {
+      try {
+        const res = await fetch('/api/prices');
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        const breadthBullish    = typeof data?.breadth?.bullishPct  === 'number' ? data.breadth.bullishPct  : 55;
+        const fiiNetCr          = typeof data?.fii?.netCr           === 'number' ? data.fii.netCr           : 0;
+        const derivativesSignal = typeof data?.derivatives?.signal === 'number' ? data.derivatives.signal   : 0;
+        if (!cancelled) setLiveContext({ breadthBullish, fiiNetCr, derivativesSignal });
+      } catch {}
+    };
+    fetchLiveContext();
+    return () => { cancelled = true; };
+  }, []);
+
   const brief = getDailyBrief();
   const regime = MACRO_REGIME;
   const councilReco =
@@ -170,7 +191,7 @@ export default function MarketPulsePage() {
     <div style={{ fontFamily:'JetBrains Mono, monospace', background:'#050508', color:'#E2E8F0', minHeight:'100vh', padding:24, maxWidth:1400, margin:'0 auto' }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap"/>
 
-      <span data-rt-debug="ep-debug:v1;dynAgreement=1;lensLS=1" style={{ display:'none' }} aria-hidden="true" />
+      <span data-rt-debug="ep-debug:v2;liveContext=1" style={{ display:'none' }} aria-hidden="true" />
       {/* HEADER */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>

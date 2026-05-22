@@ -550,13 +550,27 @@ export function deriveDynamicAgreement(
   philosopher: string,
   regimeLabel: string,
   indicators: { signal: string }[],
-  moodScore?: number
+  moodScore?: number,
+  liveContext?: { breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number }
 ): number {
   const positives = indicators.filter(i => i.signal === 'positive').length;
   const negatives = indicators.filter(i => i.signal === 'negative').length;
 
   // Base score from indicators
   let score = 50 + ((positives - negatives) * 10);
+  
+  // Phase 2: Live context scoring
+  if (liveContext) {
+    if (liveContext.breadthBullish !== undefined) {
+      score += liveContext.breadthBullish > 60 ? 8 : liveContext.breadthBullish < 40 ? -8 : 0;
+    }
+    if (liveContext.fiiNetCr !== undefined) {
+      score += liveContext.fiiNetCr > 2000 ? 6 : liveContext.fiiNetCr < -2000 ? -6 : 0;
+    }
+    if (liveContext.derivativesSignal !== undefined) {
+      score += liveContext.derivativesSignal > 0 ? 5 : liveContext.derivativesSignal < 0 ? -5 : 0;
+    }
+  }
 
   const regime = (regimeLabel || '').toUpperCase();
 

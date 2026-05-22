@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   FII_DII_HISTORY, MARKET_BREADTH, SECTOR_BREADTH,
@@ -19,6 +19,7 @@ import {
   HISTORICAL_CORRELATIONS,
   CURRENCY_SENSITIVITY,
   getDailyBrief,
+  deriveDynamicAgreement,
 } from '../../data/economyPlus/macroData';
 
 function fmt(n: number) {
@@ -108,8 +109,40 @@ export default function MarketPulsePage() {
   const mood    = getMarketMood();
   const fiiSum  = getFIISummary();
   const today   = FII_DII_HISTORY[0];
-  const consensus = getPhilosopherConsensus();
+  // Dynamic stances: derive agreement from indicators + regime + mood (SSR-safe)
+  const dynamicStances = useMemo(() => PHILOSOPHER_STANCES.map((ph) => ({
+    ...ph,
+    agreement: deriveDynamicAgreement(
+      ph.philosopher,
+      MACRO_REGIME.label,
+      ph.indicators || [],
+      mood.score
+    ),
+  })), [mood.score]);
+
+  const consensus = useMemo(() => {
+    const agreements = dynamicStances.map(s => s.agreement);
+    const avgAgreement = Math.round(agreements.reduce((a,b) => a + b, 0) / Math.max(1, agreements.length));
+    const spread = Math.max(...agreements) - Math.min(...agreements);
+    const label = avgAgreement >= 70 ? 'High Conviction' : avgAgreement >= 55 ? 'Moderate' : 'Low Conviction';
+    const color = avgAgreement >= 70 ? '#10B981' : avgAgreement >= 55 ? '#F59E0B' : '#EF4444';
+    return { avgAgreement, spread, label, color };
+  }, [dynamicStances]);
   const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
+
+  // Persist philosopher lens across reloads
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('economyPlus.activeLens');
+      if (saved === 'All' || saved === 'Hayek' || saved === 'Friedman' || saved === 'Keynes') {
+        setActiveLens(saved as any);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { window.localStorage.setItem('economyPlus.activeLens', activeLens); } catch {}
+  }, [activeLens]);
   const brief = getDailyBrief();
   const regime = MACRO_REGIME;
   const councilReco =

@@ -544,3 +544,34 @@ export function getDailyBrief(): { date: string; headline: string; regimeLabel: 
     ],
   };
 }
+
+// ── Dynamic philosopher agreement scoring ─────────────────────────────
+export function deriveDynamicAgreement(
+  philosopher: string,
+  regimeLabel: string,
+  indicators: { signal: string }[],
+  moodScore?: number
+): number {
+  const positives = indicators.filter(i => i.signal === 'positive').length;
+  const negatives = indicators.filter(i => i.signal === 'negative').length;
+
+  // Base score from indicators
+  let score = 50 + ((positives - negatives) * 10);
+
+  const regime = (regimeLabel || '').toUpperCase();
+
+  // Regime-aware tweak (deterministic)
+  if (regime.includes('LATE-CYCLE')) {
+    if (philosopher === 'Hayek') score += 10;
+    if (philosopher === 'Keynes') score -= 6;
+  }
+
+  // Mood-aware tweak (~ -12..+12)
+  if (typeof moodScore === 'number') {
+    const delta = Math.round((moodScore - 50) / 4);
+    if (philosopher === 'Keynes') score += delta;
+    if (philosopher === 'Hayek') score -= delta;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+}

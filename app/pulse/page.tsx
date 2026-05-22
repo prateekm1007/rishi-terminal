@@ -337,7 +337,7 @@ export default function MarketPulsePage() {
       {/* TAB BAR */}
       <div style={{ display:'flex', gap:8, marginBottom:24, flexWrap:'wrap' }}>
         {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
+          <button className="ep-tab-btn" key={t.key} onClick={() => setTab(t.key)}
             style={{ padding:'8px 16px', background: tab === t.key ? '#F59E0B15' : '#09090F', border: tab === t.key ? '1px solid #F59E0B' : '1px solid #1E293B', borderRadius:8, color: tab === t.key ? '#F59E0B' : '#475569', cursor:'pointer', fontSize:11, fontFamily:'JetBrains Mono, monospace', display:'flex', alignItems:'center', gap:6 }}>
             {t.emoji} {t.label}
           </button>

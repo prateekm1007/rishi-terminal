@@ -981,3 +981,38 @@ tr:hover td { background: rgba(31,41,59,0.4); }
   background: rgba(2,4,8,0.97) !important;
   backdrop-filter: blur(20px) !important;
 }
+
+/* ── Phase 4D: Economy Plus — Mobile Layout ─────────────────────── */
+@media (max-width: 640px) {
+  .ep-philosopher-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .ep-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .ep-regime-banner {
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+  }
+  .ep-tab-bar {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+  }
+  .ep-tab-bar::-webkit-scrollbar { display: none !important; }
+  .ep-tab-btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+  }
+  .ep-spread-bar { max-width: 100% !important; }
+  .ep-card {
+    padding: 12px !important;
+  }
+}

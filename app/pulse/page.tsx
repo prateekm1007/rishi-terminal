@@ -567,7 +567,168 @@ export default function MarketPulsePage() {
 
         </div>
       )}
-      {/* FII / DII TAB                       */}
+            {/* ═══════════════════════════════════ */}
+      {/* B: EVIDENCE TAB                    */}
+      {/* ═══════════════════════════════════ */}
+      {tab === 'evidence' && (
+        <div>
+          <div style={{ background:'#09090F', border:'1px solid #D4AF37', borderRadius:12, padding:16, marginBottom:24 }}>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:14, color:'#D4AF37', letterSpacing:2, fontWeight:700, marginBottom:8 }}>
+              📚 HISTORICAL EVIDENCE ENGINE
+            </div>
+            <div style={{ fontSize:11, color:'#94A3B8', lineHeight:1.6 }}>
+              Evidence cards: macro condition → historical outcome. Filtered by active lens.
+            </div>
+          </div>
+
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(320px, 1fr))', gap:14 }}>
+            {HISTORICAL_CORRELATIONS
+              .filter(c => activeLens === 'All' || c.philosopher === activeLens || c.philosopher === 'All')
+              .map(c => (
+                <div key={c.id} style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:18, position:'relative' }}>
+
+                  {c.regimeMatch && (
+                    <div style={{ position:'absolute', top:12, right:12, fontSize:9, color:'#10B981', background:'#10B98115', border:'1px solid #10B98130', padding:'3px 8px', borderRadius:999, fontWeight:700 }}>
+                      ✓ CURRENT REGIME MATCH
+                    </div>
+                  )}
+
+                  <div style={{ fontSize:12, color:'#F1F5F9', fontWeight:700, lineHeight:1.4, marginBottom:12, paddingRight:100 }}>
+                    {c.title}
+                  </div>
+
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:12 }}>
+                    <div style={{ background:'#050508', border:'1px solid #1E293B', borderRadius:10, padding:10, textAlign:'center' }}>
+                      <div style={{ fontSize:9, color:'#475569' }}>WIN RATE</div>
+                      <div style={{ fontSize:18, fontWeight:900, color: c.winRate >= 75 ? '#10B981' : c.winRate >= 60 ? '#F59E0B' : '#EF4444' }}>
+                        {c.winRate}%
+                      </div>
+                    </div>
+                    <div style={{ background:'#050508', border:'1px solid #1E293B', borderRadius:10, padding:10, textAlign:'center' }}>
+                      <div style={{ fontSize:9, color:'#475569' }}>AVG</div>
+                      <div style={{ fontSize:12, fontWeight:800, color:'#D4AF37' }}>{c.avgReturn}</div>
+                    </div>
+                    <div style={{ background:'#050508', border:'1px solid #1E293B', borderRadius:10, padding:10, textAlign:'center' }}>
+                      <div style={{ fontSize:9, color:'#475569' }}>N</div>
+                      <div style={{ fontSize:18, fontWeight:900, color:'#F1F5F9' }}>{c.instances}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize:10, color:'#64748B', lineHeight:1.6, marginBottom:8 }}>
+                    <span style={{ color:'#94A3B8', fontWeight:700 }}>Condition: </span>{c.condition}
+                  </div>
+                  <div style={{ fontSize:10, color:'#64748B', lineHeight:1.6, marginBottom:10 }}>
+                    <span style={{ color:'#94A3B8', fontWeight:700 }}>Outcome: </span>{c.outcome}
+                  </div>
+
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <span style={{ fontSize:9, color:c.confidenceColor, background:c.confidenceColor + '15', border:'1px solid ' + c.confidenceColor + '30', padding:'3px 8px', borderRadius:999, fontWeight:700 }}>
+                      {c.confidence} Confidence
+                    </span>
+                    <span style={{ fontSize:9, color:c.philosopherColor }}>
+                      {c.philosopher === 'All' ? '🌐 All' : c.philosopher === 'Hayek' ? '🏛️ Hayek' : c.philosopher === 'Friedman' ? '📊 Friedman' : '⚙️ Keynes'}
+                    </span>
+                  </div>
+
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════ */}
+      {/* C: CURRENCY TAB                    */}
+      {/* ═══════════════════════════════════ */}
+      {tab === 'currency' && (
+        <div>
+          <div style={{ background:'#09090F', border:'1px solid #D4AF37', borderRadius:12, padding:16, marginBottom:24 }}>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:14, color:'#D4AF37', letterSpacing:2, fontWeight:700, marginBottom:8 }}>
+              💱 CURRENCY SENSITIVITY MATRIX
+            </div>
+            <div style={{ fontSize:11, color:'#94A3B8', lineHeight:1.6 }}>
+              Estimated earnings sensitivity per 1% INR move (heuristic).
+            </div>
+          </div>
+
+          <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, overflow:'hidden' }}>
+            <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11 }}>
+                <thead>
+                  <tr style={{ background:'#06060D' }}>
+                    <th style={{ padding:'12px 16px', textAlign:'left', color:'#475569', fontSize:9, letterSpacing:1 }}>SECTOR</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#475569', fontSize:9, letterSpacing:1 }}>REV</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#475569', fontSize:9, letterSpacing:1 }}>COST</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#10B981', fontSize:9, letterSpacing:1 }}>INR WEAK +1%</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#EF4444', fontSize:9, letterSpacing:1 }}>INR STRONG +1%</th>
+                    <th style={{ padding:'12px 16px', textAlign:'center', color:'#475569', fontSize:9, letterSpacing:1 }}>BIAS</th>
+                    <th style={{ padding:'12px 16px', textAlign:'left', color:'#475569', fontSize:9, letterSpacing:1 }}>EXAMPLES</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CURRENCY_SENSITIVITY.map((s, i) => (
+                    <tr key={s.sector} style={{ borderBottom:'1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#070710' }}>
+                      <td style={{ padding:'12px 16px' }}>
+                        <span style={{ fontSize:16 }}>{s.icon}</span>
+                        <span style={{ color:'#F1F5F9', fontWeight:700, marginLeft:8 }}>{s.sector}</span>
+                      </td>
+                      <td style={{ padding:'12px 16px', textAlign:'center', color:'#94A3B8', fontSize:10 }}>{s.revenueExposure}</td>
+                      <td style={{ padding:'12px 16px', textAlign:'center', color:'#94A3B8', fontSize:10 }}>{s.costExposure}</td>
+                      <td style={{ padding:'12px 16px', textAlign:'center', fontWeight:900, color: s.inrDepreciation1pct >= 0 ? '#10B981' : '#EF4444' }}>
+                        {s.inrDepreciation1pct >= 0 ? '+' : ''}{s.inrDepreciation1pct.toFixed(1)}%
+                      </td>
+                      <td style={{ padding:'12px 16px', textAlign:'center', fontWeight:900, color: s.inrAppreciation1pct >= 0 ? '#10B981' : '#EF4444' }}>
+                        {s.inrAppreciation1pct >= 0 ? '+' : ''}{s.inrAppreciation1pct.toFixed(1)}%
+                      </td>
+                      <td style={{ padding:'12px 16px', textAlign:'center' }}>
+                        <span style={{ fontSize:9, color:s.biasColor, background:s.biasColor + '18', border:'1px solid ' + s.biasColor + '40', padding:'4px 10px', borderRadius:999, fontWeight:700 }}>
+                          {s.netBias}
+                        </span>
+                      </td>
+                      <td style={{ padding:'12px 16px', color:'#475569', fontSize:10 }}>{s.examples.join(' · ')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════ */}
+      {/* E: DAILY BRIEF TAB                 */}
+      {/* ═══════════════════════════════════ */}
+      {tab === 'brief' && (
+        <div>
+          {/* DAILY BRIEF TAB */}
+          <div style={{ background:'linear-gradient(135deg, #0A0F1C, #050508)', border:'1px solid #D4AF37', borderRadius:12, padding:24, marginBottom:24 }}>
+            <div style={{ fontSize:10, color:'#64748B', letterSpacing:2, marginBottom:4 }}>{brief.date}</div>
+            <div style={{ fontFamily:'Cinzel, Georgia', fontSize:20, color:'#D4AF37', letterSpacing:2, fontWeight:700, marginBottom:8 }}>
+              📰 {brief.headline}
+            </div>
+            <div style={{ fontSize:10, color:'#475569', letterSpacing:1 }}>{brief.regimeLabel}</div>
+          </div>
+
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            {brief.sections
+              .filter(s => activeLens === 'All' || !s.philosopher || s.philosopher === activeLens)
+              .map((s, i) => (
+                <div key={i} style={{ background:'#09090F', border:'1px solid ' + (s.philosopherColor ? s.philosopherColor + '30' : '#1E293B'), borderLeft:'3px solid ' + (s.philosopherColor || '#D4AF37'), borderRadius:10, padding:18 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+                    <span style={{ fontSize:18 }}>{s.icon}</span>
+                    <div style={{ fontWeight:700, color: s.philosopherColor || '#D4AF37', fontSize:12 }}>{s.title}</div>
+                    {s.philosopher && (
+                      <span style={{ marginLeft:'auto', fontSize:9, color:s.philosopherColor, background:s.philosopherColor + '15', border:'1px solid ' + s.philosopherColor + '30', padding:'3px 8px', borderRadius:999 }}>
+                        {s.philosopher}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize:11, color:'#CBD5E1', lineHeight:1.8 }}>{s.content}</div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+{/* FII / DII TAB                       */}
       {/* ═══════════════════════════════════ */}
       {tab === 'fii' && (
         <div>

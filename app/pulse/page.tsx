@@ -16,6 +16,9 @@ import {
   CURRENCY_DATA,
   SECTOR_ROTATION,
   getPhilosopherConsensus,
+  HISTORICAL_CORRELATIONS,
+  CURRENCY_SENSITIVITY,
+  getDailyBrief,
 } from '../../data/economyPlus/macroData';
 
 function fmt(n: number) {
@@ -52,7 +55,7 @@ function SectionTitle({ emoji, title, color = '#F59E0B' }: { emoji: string; titl
   );
 }
 
-type PulseTab = 'overview' | 'macro' | 'rotation' | 'fii' | 'breadth' | 'derivatives' | 'movers' | 'blocks';
+type PulseTab = 'overview' | 'macro' | 'rotation' | 'evidence' | 'currency' | 'brief' | 'fii' | 'breadth' | 'derivatives' | 'movers' | 'blocks';
 
 function isValidPulseTab(t: string | null): t is PulseTab {
   return (
@@ -63,6 +66,9 @@ function isValidPulseTab(t: string | null): t is PulseTab {
     t === 'breadth' ||
     t === 'derivatives' ||
     t === 'movers' ||
+    t === 'evidence' ||
+    t === 'currency' ||
+    t === 'brief' ||
     t === 'blocks'
   );
 }
@@ -99,6 +105,8 @@ export default function MarketPulsePage() {
   const fiiSum  = getFIISummary();
   const today   = FII_DII_HISTORY[0];
   const consensus = getPhilosopherConsensus();
+  const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
+  const brief = getDailyBrief();
   const regime = MACRO_REGIME;
   const councilReco =
     consensus.spread >= 55
@@ -111,6 +119,9 @@ export default function MarketPulsePage() {
     { key:'overview',    label:'Overview',    emoji:'📊' },
     { key:'macro',       label:'Macro Regime', emoji:'🧠' },
     { key:'rotation',    label:'Sector Rotation', emoji:'🔄' },
+    { key:'evidence',    label:'Evidence',       emoji:'📚' },
+    { key:'currency',    label:'Currency',       emoji:'💱' },
+    { key:'brief',       label:'Daily Brief',    emoji:'📰' },
     { key:'fii',         label:'FII / DII',   emoji:'🏦' },
     { key:'breadth',     label:'Breadth',     emoji:'📈' },
     { key:'derivatives', label:'Derivatives', emoji:'⚙️' },
@@ -172,6 +183,15 @@ export default function MarketPulsePage() {
         </div>
       </div>
       {/* PHILOSOPHER COUNCIL */}
+      {/* PHILOSOPHER_LENS_TOGGLE_MARKER */}
+      <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap', alignItems:'center' }}>
+        <span style={{ fontSize:10, color:'#475569', letterSpacing:1 }}>LENS:</span>
+        {(['All','Hayek','Friedman','Keynes'] as const).map(lens => (
+          <button key={lens} onClick={() => setActiveLens(lens)} style={{ padding:'5px 14px', borderRadius:999, cursor:'pointer', fontFamily:'JetBrains Mono, monospace', fontSize:10, fontWeight:700, background: activeLens === lens ? '#D4AF37' : '#09090F', color: activeLens === lens ? '#050508' : '#475569', border: activeLens === lens ? '1px solid #D4AF37' : '1px solid #1E293B' }}>
+            {lens === 'All' ? '🌐 All' : lens === 'Hayek' ? '🏛️ Hayek' : lens === 'Friedman' ? '📊 Friedman' : '⚙️ Keynes'}
+          </button>
+        ))}
+      </div>
       <div style={{ background:'#09090F', border:'1px solid #1E293B', borderRadius:12, padding:16, marginBottom:24 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, gap:12, flexWrap:'wrap' }}>
           <div style={{ fontFamily:'Cinzel, Georgia', fontSize:14, color:'#F59E0B', letterSpacing:2, fontWeight:700 }}>

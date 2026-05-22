@@ -230,6 +230,26 @@ export default function MarketPulsePage() {
       </div>
 
       {/* ECONOMY PLUS — REGIME BANNER + DISAGREEMENT INDEX */}
+          {/* Phase 4A: Animated spread bar */}
+          <div style={{ marginTop: 10, width: "100%", maxWidth: 360 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 11, color: "#94A3B8" }}>Disagreement Spread</span>
+              <span style={{ fontSize: 11, color: "#94A3B8" }}>{consensus.spread} pts</span>
+            </div>
+            <div style={{ width: "100%", height: 8, background: "#1E293B", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{
+                height: "100%",
+                width: `${Math.min(100, consensus.spread)}%`,
+                background: consensus.color,
+                borderRadius: 4,
+                transition: "width 0.7s ease, background 0.7s ease"
+              }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+              <span style={{ fontSize: 10, color: "#475569" }}>0 — Consensus</span>
+              <span style={{ fontSize: 10, color: "#475569" }}>100 — Max Disagreement</span>
+            </div>
+          </div>
       <div style={{ background:'#09090F', border:'1px solid #D4AF37', borderRadius:12, padding:16, marginBottom:16 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:12, flexWrap:'wrap' }}>
           <div>

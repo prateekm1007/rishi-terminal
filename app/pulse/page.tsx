@@ -170,6 +170,7 @@ export default function MarketPulsePage() {
     <div style={{ fontFamily:'JetBrains Mono, monospace', background:'#050508', color:'#E2E8F0', minHeight:'100vh', padding:24, maxWidth:1400, margin:'0 auto' }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap"/>
 
+      <span data-rt-debug="ep-debug:v1;dynAgreement=1;lensLS=1" style={{ display:'none' }} aria-hidden="true" />
       {/* HEADER */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>

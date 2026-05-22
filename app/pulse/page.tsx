@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   FII_DII_HISTORY, MARKET_BREADTH, SECTOR_BREADTH,
@@ -54,8 +54,47 @@ function SectionTitle({ emoji, title, color = '#F59E0B' }: { emoji: string; titl
 
 type PulseTab = 'overview' | 'macro' | 'rotation' | 'fii' | 'breadth' | 'derivatives' | 'movers' | 'blocks';
 
+function isValidPulseTab(t: string | null): t is PulseTab {
+  return (
+    t === 'overview' ||
+    t === 'macro' ||
+    t === 'rotation' ||
+    t === 'fii' ||
+    t === 'breadth' ||
+    t === 'derivatives' ||
+    t === 'movers' ||
+    t === 'blocks'
+  );
+}
+
+
 export default function MarketPulsePage() {
   const [tab, setTab] = useState<PulseTab>('overview');
+
+  // Deep-link tabs via ?tab= (client-side only; avoids useSearchParams + Suspense requirement)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const t = new URLSearchParams(window.location.search).get('tab');
+    if (isValidPulseTab(t)) setTab(t);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.history.replaceState(null, '', url.toString());
+  }, [tab]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onPop = () => {
+      const t = new URLSearchParams(window.location.search).get('tab');
+      if (isValidPulseTab(t)) setTab(t);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   const mood    = getMarketMood();
   const fiiSum  = getFIISummary();
   const today   = FII_DII_HISTORY[0];

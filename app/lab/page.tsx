@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import ErrorBoundary from '@/components/lab/ErrorBoundary';
@@ -26,6 +26,20 @@ function isValidTab(t: string | null): t is LabTab {
 }
 
 export default function PortfolioLabPage() {
+  // Shared philosopher lens - synced with Economy Plus via localStorage
+  const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('economyPlus.activeLens');
+      if (saved === 'All' || saved === 'Hayek' || saved === 'Friedman' || saved === 'Keynes') {
+        setActiveLens(saved as 'All' | 'Hayek' | 'Friedman' | 'Keynes');
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { window.localStorage.setItem('economyPlus.activeLens', activeLens); } catch {}
+  }, [activeLens]);
+
   return (
     <Suspense
       fallback={

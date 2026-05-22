@@ -80,7 +80,7 @@ export default function MarketPulsePage() {
   // ── LIVE DATA (real-time) — sourced from internal /api/prices ─────────────
   const [livePrices, setLivePrices] = useState<Record<string, any> | null>(null);
   const [livePricesErr, setLivePricesErr] = useState<string | null>(null);
-  const [liveContext, setLiveContext] = useState<{ breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number } | null>(null);
+  const [liveContext, setLiveContext] = useState<{ breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number; historicalSpread30d?: number; evidenceRecencyHours?: number; pricedIn?: boolean } | null>(null);
 
 
   // Deep-link tabs via ?tab= (client-side only; avoids useSearchParams + Suspense requirement)
@@ -154,10 +154,27 @@ export default function MarketPulsePage() {
         const res = await fetch('/api/prices');
         if (!res.ok || cancelled) return;
         const data = await res.json();
-        const breadthBullish    = typeof data?.breadth?.bullishPct  === 'number' ? data.breadth.bullishPct  : 55;
-        const fiiNetCr          = typeof data?.fii?.netCr           === 'number' ? data.fii.netCr           : 0;
-        const derivativesSignal = typeof data?.derivatives?.signal === 'number' ? data.derivatives.signal   : 0;
-        if (!cancelled) setLiveContext({ breadthBullish, fiiNetCr, derivativesSignal });
+        // Phase 3: derive from /api/prices real keys (NIFTY50, USD/INR, GOLD)
+        const getPct = (x: any): number => {
+          if (!x) return 0;
+          if (typeof x.changePercent === 'number') return x.changePercent;
+          if (typeof x.percentChange === 'number') return x.percentChange;
+          if (typeof x.pChange === 'number') return x.pChange;
+          if (typeof x.change === 'number' && typeof x.price === 'number' && x.price !== 0) return (x.change / x.price) * 100;
+          return 0;
+        };
+        const niftyChg  = getPct(data?.['NIFTY50']);
+        const usdInrChg = getPct(data?.['USD/INR']);
+        const goldChg   = getPct(data?.['GOLD']);
+
+        const breadthBullish = Math.max(0, Math.min(100, 50 + (niftyChg * 5)));
+        const fiiNetCr = usdInrChg > 0.3 ? -3000 : usdInrChg < -0.3 ? 3000 : 0;
+        const derivativesSignal = goldChg > 0.5 ? -1 : goldChg < -0.5 ? 1 : 0;
+
+        const historicalSpread30d = 50;
+        const evidenceRecencyHours = 6;
+        const pricedIn = Math.abs(niftyChg) > 1.5;
+        if (!cancelled) setLiveContext({ breadthBullish, fiiNetCr, derivativesSignal, historicalSpread30d, evidenceRecencyHours, pricedIn });
       } catch {}
     };
     fetchLiveContext();
@@ -191,7 +208,7 @@ export default function MarketPulsePage() {
     <div style={{ fontFamily:'JetBrains Mono, monospace', background:'#050508', color:'#E2E8F0', minHeight:'100vh', padding:24, maxWidth:1400, margin:'0 auto' }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap"/>
 
-      <span data-rt-debug="ep-debug:v2;liveContext=1" style={{ display:'none' }} aria-hidden="true" />
+      <span data-rt-debug="ep-debug:v3;priceDerived=1;labLens=1" style={{ display:'none' }} aria-hidden="true" />
       {/* HEADER */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div>

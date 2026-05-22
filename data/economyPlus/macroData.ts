@@ -551,7 +551,7 @@ export function deriveDynamicAgreement(
   regimeLabel: string,
   indicators: { signal: string }[],
   moodScore?: number,
-  liveContext?: { breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number }
+  liveContext?: { breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number; historicalSpread30d?: number; evidenceRecencyHours?: number; pricedIn?: boolean }
 ): number {
   const positives = indicators.filter(i => i.signal === 'positive').length;
   const negatives = indicators.filter(i => i.signal === 'negative').length;
@@ -571,6 +571,23 @@ export function deriveDynamicAgreement(
       score += liveContext.derivativesSignal > 0 ? 5 : liveContext.derivativesSignal < 0 ? -5 : 0;
     }
   }
+
+  // Phase 3: Historical spread deviation
+  if (liveContext?.historicalSpread30d !== undefined && liveContext?.breadthBullish !== undefined) {
+    const dev = liveContext.breadthBullish - liveContext.historicalSpread30d;
+    score += dev > 10 ? 5 : dev < -10 ? -5 : 0;
+  }
+
+  // Phase 3: Evidence recency
+  if (liveContext?.evidenceRecencyHours !== undefined) {
+    score += liveContext.evidenceRecencyHours < 6 ? 5 : liveContext.evidenceRecencyHours > 48 ? -4 : 0;
+  }
+
+  // Phase 3: Priced-in dampener
+  if (liveContext?.pricedIn === true) {
+    score = Math.round(score * 0.75);
+  }
+
 
   const regime = (regimeLabel || '').toUpperCase();
 

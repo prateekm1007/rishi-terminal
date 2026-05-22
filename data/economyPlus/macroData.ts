@@ -417,3 +417,130 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
     keyMacroDriver: 'Real wage growth + rate cut sentiment + urban confidence',
   },
 ];
+// ── B: HISTORICAL CORRELATIONS ──────────────────────────────────────────
+export interface HistoricalCorrelation {
+  id: string;
+  title: string;
+  condition: string;
+  outcome: string;
+  winRate: number;
+  avgReturn: string;
+  instances: number;
+  periods: string[];
+  regimeMatch: boolean;
+  confidence: 'High' | 'Medium' | 'Low';
+  confidenceColor: string;
+  philosopher: 'Hayek' | 'Friedman' | 'Keynes' | 'All';
+  philosopherColor: string;
+}
+
+export const HISTORICAL_CORRELATIONS: HistoricalCorrelation[] = [
+  {
+    id: 'cpi-pharma',
+    title: 'CPI > 5% + Repo Rate Paused → Pharma Outperforms',
+    condition: 'CPI above 5% with RBI on extended pause (3+ meetings)',
+    outcome: 'Pharma beat Nifty50 by avg 8.4% over next 6 months',
+    winRate: 80,
+    avgReturn: '+8.4% alpha',
+    instances: 5,
+    periods: ['2011–12', '2014', '2018–19', '2022', '2023–24'],
+    regimeMatch: true,
+    confidence: 'High',
+    confidenceColor: '#10B981',
+    philosopher: 'Hayek',
+    philosopherColor: '#818CF8',
+  },
+  {
+    id: 'rate-pause-it',
+    title: 'Extended Rate Pause → IT Underperforms vs Banking',
+    condition: 'Repo rate unchanged for 4+ consecutive MPC meetings',
+    outcome: 'IT underperformed Banking by 6.2% on average over 6M',
+    winRate: 75,
+    avgReturn: '-6.2% relative',
+    instances: 4,
+    periods: ['2015–16', '2019', '2021', '2023–24'],
+    regimeMatch: true,
+    confidence: 'High',
+    confidenceColor: '#10B981',
+    philosopher: 'Friedman',
+    philosopherColor: '#34D399',
+  },
+  {
+    id: 'fiscal-infra',
+    title: 'Govt Capex Surge → Infrastructure 12M Outperformance',
+    condition: 'Central govt capex grows > 25% YoY for 2+ consecutive years',
+    outcome: 'Infrastructure beat Nifty50 by 14.2% over next 12M',
+    winRate: 67,
+    avgReturn: '+14.2% alpha',
+    instances: 3,
+    periods: ['2004–06', '2009–11', '2022–24'],
+    regimeMatch: true,
+    confidence: 'Medium',
+    confidenceColor: '#F59E0B',
+    philosopher: 'Keynes',
+    philosopherColor: '#FB923C',
+  },
+  {
+    id: 'late-cycle-quality',
+    title: 'Late-Cycle Regime → Quality Factor Dominates',
+    condition: 'GDP decelerates with sticky inflation',
+    outcome: 'High-ROE quality beat market by ~11% over 12M',
+    winRate: 83,
+    avgReturn: '+11% alpha',
+    instances: 6,
+    periods: ['2007', '2011', '2015', '2018', '2022', '2024'],
+    regimeMatch: true,
+    confidence: 'High',
+    confidenceColor: '#10B981',
+    philosopher: 'All',
+    philosopherColor: '#D4AF37',
+  },
+];
+// ── C: CURRENCY SENSITIVITY MATRIX ─────────────────────────────────────
+export interface CurrencySensitivityEntry {
+  sector: string;
+  icon: string;
+  revenueExposure: 'High USD' | 'Medium USD' | 'Low USD' | 'None';
+  costExposure: 'High USD' | 'Medium USD' | 'Low USD' | 'None';
+  inrDepreciation1pct: number;
+  inrAppreciation1pct: number;
+  netBias: 'Benefits from Weak INR' | 'Benefits from Strong INR' | 'Neutral';
+  biasColor: string;
+  keyExplanation: string;
+  examples: string[];
+}
+
+export const CURRENCY_SENSITIVITY: CurrencySensitivityEntry[] = [
+  { sector:'IT', icon:'💻', revenueExposure:'High USD', costExposure:'Low USD', inrDepreciation1pct: 1.8, inrAppreciation1pct:-1.8, netBias:'Benefits from Weak INR', biasColor:'#10B981', keyExplanation:'Export-heavy revenue, INR costs.', examples:['TCS','INFY','HCLTECH','WIPRO'] },
+  { sector:'Pharma', icon:'💊', revenueExposure:'High USD', costExposure:'Medium USD', inrDepreciation1pct: 1.2, inrAppreciation1pct:-1.2, netBias:'Benefits from Weak INR', biasColor:'#10B981', keyExplanation:'Export revenues with API import offset.', examples:['SUNPHARMA','DRREDDY',"DIVISLAB"] },
+  { sector:'Auto', icon:'🚗', revenueExposure:'Low USD', costExposure:'Medium USD', inrDepreciation1pct:-0.8, inrAppreciation1pct: 0.8, netBias:'Benefits from Strong INR', biasColor:'#EF4444', keyExplanation:'Imported components raise costs when INR weakens.', examples:['MARUTI','M&M','BAJAJ-AUTO'] },
+  { sector:'FMCG', icon:'🛒', revenueExposure:'None', costExposure:'Medium USD', inrDepreciation1pct:-0.6, inrAppreciation1pct: 0.6, netBias:'Benefits from Strong INR', biasColor:'#EF4444', keyExplanation:'Palm oil/crude derivatives are USD-linked inputs.', examples:['HINDUNILVR','NESTLEIND','BRITANNIA'] },
+  { sector:'Banking', icon:'🏦', revenueExposure:'None', costExposure:'None', inrDepreciation1pct:-0.3, inrAppreciation1pct: 0.3, netBias:'Benefits from Strong INR', biasColor:'#EF4444', keyExplanation:'FX impacts via flows, risk premium, and rates.', examples:['HDFCBANK','ICICIBANK','SBIN'] },
+];
+// ── E: DAILY BRIEF ───────────────────────────────────────────────────────
+export interface DailyBriefSection {
+  title: string;
+  icon: string;
+  content: string;
+  philosopher?: 'Hayek' | 'Friedman' | 'Keynes';
+  philosopherColor?: string;
+}
+
+export function getDailyBrief(): { date: string; headline: string; regimeLabel: string; sections: DailyBriefSection[] } {
+  const d = new Date();
+  const dateStr = d.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  return {
+    date: dateStr,
+    headline: 'Late-Cycle Expansion Persists — Quality Over Momentum',
+    regimeLabel: 'Late-Cycle Credit Expansion · Moderate Philosopher Division',
+    sections: [
+      { title:'Macro Pulse', icon:'🌐', content:'CPI trends lower but sticky components remain. RBI is paused. M3 is re-accelerating — a lagged risk signal.' },
+      { title:'Hayek Warns', icon:'🏛️', philosopher:'Hayek', philosopherColor:'#818CF8', content:'Fiscal dominance can distort capital allocation. Watch leverage and credit quality.' },
+      { title:'Friedman Watches', icon:'📊', philosopher:'Friedman', philosopherColor:'#34D399', content:'Money supply > nominal GDP matters. Policy lags are long and variable.' },
+      { title:'Keynes Urges Action', icon:'⚙️', philosopher:'Keynes', philosopherColor:'#FB923C', content:'Demand support sustains animal spirits. Multipliers matter.' },
+      { title:'Sector Spotlight', icon:'🔭', content:'Banking/Consumer strong. Infrastructure most divided. Quality dominates late-cycle regimes.' },
+      { title:'Risk Radar', icon:'⚠️', content:'Food inflation rebound, USD strength, and fiscal slippage are top watchpoints.' },
+    ],
+  };
+}

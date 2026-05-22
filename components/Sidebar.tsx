@@ -21,6 +21,8 @@ const NAV_GROUPS = [
       { href: "/commodities", label: "Commodities",    icon: "gold"     },
       { href: "/bonds",       label: "Bonds",          icon: "bond"     },
       { href: "/pulse",       label: "Economy Plus",   icon: "pulse"    },
+      { href: "/pulse?tab=macro",    label: "↳ Macro Regime",     icon: "pulse"    },
+      { href: "/pulse?tab=rotation", label: "↳ Sector Rotation",  icon: "pulse"    },
     ],
   },
   {

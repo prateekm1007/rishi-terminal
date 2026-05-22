@@ -75,7 +75,11 @@ function isValidPulseTab(t: string | null): t is PulseTab {
 
 
 export default function MarketPulsePage() {
-  const [tab, setTab] = useState<PulseTab>('overview');
+  const [tab, setTab] = useState<PulseTab>('macro');
+  // ── LIVE DATA (real-time) — sourced from internal /api/prices ─────────────
+  const [livePrices, setLivePrices] = useState<Record<string, any> | null>(null);
+  const [livePricesErr, setLivePricesErr] = useState<string | null>(null);
+
 
   // Deep-link tabs via ?tab= (client-side only; avoids useSearchParams + Suspense requirement)
   useEffect(() => {
@@ -139,6 +143,49 @@ export default function MarketPulsePage() {
           <Link href="/" style={{ color:'#F59E0B', textDecoration:'none', fontSize:11, display:'block', marginBottom:8 }}>← Dashboard</Link>
           <div style={{ fontFamily:'Cinzel, Georgia', fontSize:20, color:'#F59E0B', letterSpacing:3, fontWeight:700 }}>🌐 ECONOMY PLUS</div>
           <div style={{ fontSize:9, color:'#334155', letterSpacing:2, marginTop:3 }}>MACRO INTELLIGENCE · PHILOSOPHER COUNCIL · REGIME ANALYSIS</div>
+          {/* LIVE SNAPSHOT (real-time, from /api/prices) */}
+          <div style={{ marginTop:12, marginBottom:14, border:'1px solid rgba(148,163,184,0.35)', borderRadius:12, padding:'10px 12px', background:'rgba(248,250,252,0.7)' }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+              <div style={{ fontSize:10, letterSpacing:2, color:'#0f172a', fontWeight:800 }}>LIVE SNAPSHOT</div>
+              <div style={{ fontSize:10, color:'#475569' }}>
+                {livePrices?.NIFTY50?.lastUpdated ? ('Updated: ' + new Date(livePrices.NIFTY50.lastUpdated).toLocaleTimeString('en-IN')) : (livePricesErr ? livePricesErr : 'Updating…')}
+              </div>
+            </div>
+
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, minmax(0, 1fr))', gap:10, marginTop:10 }}>
+              <div style={{ border:'1px solid rgba(34,197,94,0.25)', background:'rgba(34,197,94,0.06)', borderRadius:10, padding:'10px 10px' }}>
+                <div style={{ fontSize:10, color:'rgba(22,163,74,0.85)', marginBottom:4 }}>NIFTY 50</div>
+                <div style={{ fontSize:16, fontWeight:800, color:'#065f46' }}>
+                  {typeof livePrices?.NIFTY50?.price === 'number' ? livePrices.NIFTY50.price.toLocaleString('en-IN') : '—'}
+                  <span style={{ fontSize:11, fontWeight:700, marginLeft:8, color:'#16a34a' }}>
+                    {typeof livePrices?.NIFTY50?.change === 'number' ? ((livePrices.NIFTY50.change >= 0 ? '+' : '') + livePrices.NIFTY50.change.toFixed(1)) : ''}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ border:'1px solid rgba(59,130,246,0.25)', background:'rgba(59,130,246,0.06)', borderRadius:10, padding:'10px 10px' }}>
+                <div style={{ fontSize:10, color:'rgba(37,99,235,0.85)', marginBottom:4 }}>USD/INR</div>
+                <div style={{ fontSize:16, fontWeight:800, color:'#1e3a8a' }}>
+                  {typeof livePrices?.['USD/INR']?.price === 'number' ? livePrices['USD/INR'].price.toFixed(2) : '—'}
+                </div>
+              </div>
+
+              <div style={{ border:'1px solid rgba(234,179,8,0.25)', background:'rgba(234,179,8,0.06)', borderRadius:10, padding:'10px 10px' }}>
+                <div style={{ fontSize:10, color:'rgba(202,138,4,0.9)', marginBottom:4 }}>GOLD</div>
+                <div style={{ fontSize:16, fontWeight:800, color:'#92400e' }}>
+                  {typeof livePrices?.GOLD?.price === 'number' ? livePrices.GOLD.price.toLocaleString('en-IN') : '—'}
+                </div>
+              </div>
+
+              <div style={{ border:'1px solid rgba(244,63,94,0.25)', background:'rgba(244,63,94,0.06)', borderRadius:10, padding:'10px 10px' }}>
+                <div style={{ fontSize:10, color:'rgba(225,29,72,0.9)', marginBottom:4 }}>BRENT</div>
+                <div style={{ fontSize:16, fontWeight:800, color:'#881337' }}>
+                  {typeof livePrices?.BRENT?.price === 'number' ? livePrices.BRENT.price.toLocaleString('en-IN') : '—'}
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
         <div style={{ background:`${mood.color}15`, border:`1px solid ${mood.color}40`, borderRadius:10, padding:'12px 20px', textAlign:'center' }}>
           <div style={{ fontSize:9, color:'#475569', letterSpacing:2, marginBottom:4 }}>MARKET MOOD</div>

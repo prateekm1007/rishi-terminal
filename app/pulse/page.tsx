@@ -80,6 +80,7 @@ export default function MarketPulsePage() {
   // ── LIVE DATA (real-time) — sourced from internal /api/prices ─────────────
   const [livePrices, setLivePrices] = useState<Record<string, any> | null>(null);
   const [livePricesErr, setLivePricesErr] = useState<string | null>(null);
+  const [liveContext, setLiveContext] = useState<{ breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number } | null>(null);
 
 
   // Deep-link tabs via ?tab= (client-side only; avoids useSearchParams + Suspense requirement)
@@ -130,7 +131,6 @@ export default function MarketPulsePage() {
     return { avgAgreement, spread, label, color };
   }, [dynamicStances]);
   const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
-  const [liveContext, setLiveContext] = useState<{ breadthBullish?: number; fiiNetCr?: number; derivativesSignal?: number } | null>(null);
 
   // Persist philosopher lens across reloads
   useEffect(() => {

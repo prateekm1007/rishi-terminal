@@ -255,16 +255,10 @@ async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    const xmlBuf = await res.arrayBuffer();
-    let xml = '';
-    try {
-      xml = new TextDecoder('utf-8', { fatal: false }).decode(xmlBuf);
-    } catch {
-      xml = new TextDecoder().decode(xmlBuf);
-    }
+        const xmlBuf = await res.arrayBuffer();
+    let xml = new TextDecoder('utf-8').decode(xmlBuf);
     xml = fixMojibake(xml);
-    const parts = xml.split('<item');
-    const items: LiveNewsItem[] = [];
+    const parts = xml.split('<item');    const items: LiveNewsItem[] = [];
 
     for (let i = 1; i < parts.length; i++) {
       const chunk = parts[i];
@@ -293,8 +287,8 @@ async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
 
       items.push({
         id: feed.source.replace(/\s/g, '-') + '-' + i + '-' + Date.now(),
-        headline: title,
-        summary: desc || title,
+        headline: fixMojibake(title),
+        summary: fixMojibake(desc || title),
         source: feed.source,
         category: feed.category,
         subCategory: feed.category,

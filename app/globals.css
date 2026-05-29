@@ -1016,3 +1016,38 @@ tr:hover td { background: rgba(31,41,59,0.4); }
     padding: 12px !important;
   }
 }
+
+/* ── Economy Plus / Pulse — Mobile patch (max 640px) ─────────────────── */
+@media (max-width: 640px) {
+  /* Philosopher cards: stack vertically, full width */
+  .ep-philosopher-grid {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  /* Regime banner: tighten padding */
+  .ep-regime-banner {
+    padding: 12px !important;
+    font-size: 11px !important;
+  }
+  /* Spread bar container: full width */
+  .ep-spread-bar-wrap {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  /* Tab bar: compress padding */
+  .ep-tab-bar button {
+    padding: 8px 10px !important;
+    font-size: 10px !important;
+  }
+  /* Main pulse container: reduce padding */
+  .ep-pulse-root {
+    padding: 12px !important;
+  }
+  /* Disagreement index row: wrap on small screens */
+  .ep-disagree-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  /* ep-mobile-patch — marker for idempotency check */
+}

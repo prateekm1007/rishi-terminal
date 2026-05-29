@@ -88,7 +88,7 @@ function calcTWRRTotal(holdings: PortfolioHolding[], endDate: Date, historyBySym
 
 
 
-export default function OverviewTab() {
+export default function OverviewTab({ activeLens = 'All' }: { activeLens?: 'All' | 'Hayek' | 'Friedman' | 'Keynes' }) {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [benchmark, setBenchmark] = useState<'^NSEI' | '^BSESN'>('^NSEI');
 

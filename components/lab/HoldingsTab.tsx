@@ -26,7 +26,7 @@ function scoreColor(s: number): string {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444';
 }
 
-export default function HoldingsTab() {
+export default function HoldingsTab({ activeLens = 'All' }: { activeLens?: 'All' | 'Hayek' | 'Friedman' | 'Keynes' }) {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [innerTab, setInnerTab] = useState<InnerTab>('holdings');
 

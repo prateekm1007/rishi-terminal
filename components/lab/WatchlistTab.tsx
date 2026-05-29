@@ -434,7 +434,7 @@ function UpcomingCatalystsDashboard({ enriched }: { enriched: Array<{ symbol: st
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function WatchlistTab() {
+export default function WatchlistTab({ activeLens = 'All' }: { activeLens?: 'All' | 'Hayek' | 'Friedman' | 'Keynes' }) {
   const [lists, setLists] = useState<Record<string, WatchlistItem[]>>({
     default: [],
     highConviction: [],

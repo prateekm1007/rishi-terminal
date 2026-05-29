@@ -84,7 +84,7 @@ function fmtCr(v: number): string {
   return (v / 100).toFixed(0) + ' Cr';
 }
 
-export default function CompareTab() {
+export default function CompareTab({ activeLens = 'All' }: { activeLens?: 'All' | 'Hayek' | 'Friedman' | 'Keynes' }) {
   const [symbols, setSymbols] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('matrix');
   const [addSymbol, setAddSymbol] = useState('');

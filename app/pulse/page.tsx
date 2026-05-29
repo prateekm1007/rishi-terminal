@@ -173,8 +173,22 @@ export default function MarketPulsePage() {
         const derivativesSignal = goldChg > 0.5 ? -1 : goldChg < -0.5 ? 1 : 0;
 
         const historicalSpread30d = hist30d ?? 50; // Phase 4B: real API, fallback 50
-        const evidenceRecencyHours = 6;
-        const pricedIn = Math.abs(niftyChg) > 1.5;
+
+        // Item 1: Evidence recency from /api/news generatedAt timestamp
+        let evidenceRecencyHours = 6; // fallback
+        try {
+          const newsRes = await fetch('/api/news', { signal: AbortSignal.timeout(5000) });
+          if (newsRes.ok) {
+            const newsJson = await newsRes.json();
+            if (newsJson?.generatedAt) {
+              const diffMs = Date.now() - new Date(newsJson.generatedAt).getTime();
+              evidenceRecencyHours = Math.max(0, diffMs / (1000 * 60 * 60));
+            }
+          }
+        } catch { /* keep fallback 6 */ }
+        // Item 6: Multi-factor pricedIn — nifty move + gold divergence + INR stress
+        const volComposite = Math.abs(niftyChg) * 0.5 + Math.abs(goldChg) * 0.3 + Math.abs(usdInrChg) * 0.2;
+        const pricedIn = volComposite > 1.2 || (Math.abs(niftyChg) > 1.5 && Math.abs(goldChg) > 0.8);
         if (!cancelled) setLiveContext({ breadthBullish, fiiNetCr, derivativesSignal, historicalSpread30d, evidenceRecencyHours, pricedIn });
       } catch {}
     };

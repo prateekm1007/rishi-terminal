@@ -47,8 +47,8 @@ export default function HoldingsTab() {
   const enriched = useMemo(() => {
     return holdings.map(h => {
       const stock = STOCKS[h.symbol];
-      const livePrice = prices[h.symbol]?.price ?? (stock?.price ?? h.avgPrice);
-      console.log([HoldingsTab] Symbol: , HookPrice: , Fallback: , Final: );
+            const hookPrice = prices[h.symbol]?.price;
+      const livePrice = (typeof hookPrice === 'number' && hookPrice > 0) ? hookPrice : h.avgPrice;
       const invested = h.shares * h.avgPrice;
       const current = h.shares * livePrice;
       const pl = current - invested;

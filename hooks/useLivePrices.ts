@@ -37,10 +37,6 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const symbolsRef = useRef(symbols);
 
-  // Keep ref in sync without triggering re-renders
-  useEffect(() => {
-    symbolsRef.current = symbols;
-  }, [symbols]);
 
   const fetchPrices = useCallback(async () => {
     const currentSymbols = symbolsRef.current;
@@ -89,11 +85,13 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     }
   }, []); // stable — reads symbols from ref
 
+  // Sync symbols ref, fetch immediately when symbols change, then poll
   useEffect(() => {
+    symbolsRef.current = symbols;
     fetchPrices();
     const interval = setInterval(fetchPrices, refreshInterval);
     return () => clearInterval(interval);
-  }, [fetchPrices, refreshInterval]);
+  }, [symbols, fetchPrices, refreshInterval]);
 
   return { prices, loading, error, lastUpdated, refetch: fetchPrices };
 }

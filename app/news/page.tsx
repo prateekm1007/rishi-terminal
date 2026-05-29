@@ -215,8 +215,47 @@ export default function NewsPage() {
     .filter(n => region === 'ALL' || n.region === region)
     .filter(n => category === 'All' || n.category === category);
 
-  const regions: Region[]     = ['ALL', 'INDIA', 'GLOBAL', 'CRYPTO', 'SPORTS'];
+  const regions: Region[]     = ['ALL', 'INDIA', 'GLOBAL'];
   const categories: Category[] = ['All', 'Markets', 'Economy', 'Earnings', 'Cricket', 'IPL', 'Tech', 'Regulation', 'Corporate', 'Crypto'];
+
+  
+const regionCounts = useMemo(() => {
+  
+  const counts: Record<string, number> = {};
+  
+  for (const n of allNews) {
+  
+    if (category !== 'All' && n.category !== category) continue;
+  
+    counts[n.region] = (counts[n.region] || 0) + 1;
+  
+  }
+  
+  return counts;
+  
+}, [allNews, category]);
+
+  
+const categoryCounts = useMemo(() => {
+  
+  const counts: Record<string, number> = {};
+  
+  for (const n of allNews) {
+  
+    if (region !== 'ALL' && n.region !== region) continue;
+  
+    counts[n.category] = (counts[n.category] || 0) + 1;
+  
+  }
+  
+  return counts;
+  
+}, [allNews, region]);
+
+  
+const visibleRegions = regions.filter(r => r === 'ALL' || (regionCounts[r] || 0) > 0);
+  
+const visibleCategories = categories.filter(c => c === 'All' || (categoryCounts[c] || 0) > 0);
 
   return (
     <main className="page-container">
@@ -279,52 +318,7 @@ export default function NewsPage() {
       </div>
 
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
-        {/* Filters */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {regions.map(r => (
-              <button
-                key={r}
-                onClick={() => setRegion(r)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 6,
-                  fontSize: 11,
-                  cursor: 'pointer',
-                  fontWeight: region === r ? 700 : 400,
-                  border: region === r ? 'none' : '1px solid var(--border-primary)',
-                  background: region === r ? regionColor(r) + '30' : 'var(--bg-card)',
-                  color: region === r ? regionColor(r) : 'var(--text-muted)',
-                  fontFamily: 'monospace',
-                }}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {categories.map(c => (
-              <button
-                key={c}
-                onClick={() => setCategory(c)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 4,
-                  fontSize: 11,
-                  cursor: 'pointer',
-                  fontWeight: category === c ? 700 : 400,
-                  border: '1px solid var(--border-primary)',
-                  background: category === c ? 'var(--accent-gold)' + '20' : 'var(--bg-card)',
-                  color: category === c ? 'var(--accent-gold)' : 'var(--text-muted)',
-                  fontFamily: 'monospace',
-                }}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-
+        {/* Filters */}         <div style={{           display: 'flex',           gap: 8,           marginBottom: 24,           flexWrap: 'nowrap',           overflowX: 'auto',           paddingBottom: 6,           WebkitOverflowScrolling: 'touch',         }}>           {visibleRegions.map(r => (             <button               key={r}               onClick={() => setRegion(r)}               style={{                 padding: '6px 14px',                 borderRadius: 6,                 fontSize: 11,                 cursor: 'pointer',                 fontWeight: region === r ? 700 : 400,                 border: region === r ? 'none' : '1px solid var(--border-primary)',                 background: region === r ? regionColor(r) + '30' : 'var(--bg-card)',                 color: region === r ? regionColor(r) : 'var(--text-muted)',                 fontFamily: 'monospace',                 whiteSpace: 'nowrap',               }}             >               {r}{r !== 'ALL' ? (' (' + (regionCounts[r] || 0) + ')') : ''}             </button>           ))}                    <div style={{ width: 1, height: 22, background: 'var(--border-primary)', opacity: 0.6, alignSelf: 'center', margin: '0 6px' }} />                    {visibleCategories.map(c => (             <button               key={c}               onClick={() => setCategory(c)}               style={{                 padding: '6px 12px',                 borderRadius: 4,                 fontSize: 11,                 cursor: 'pointer',                 fontWeight: category === c ? 700 : 400,                 border: '1px solid var(--border-primary)',                 background: category === c ? 'var(--accent-gold)' + '20' : 'var(--bg-card)',                 color: category === c ? 'var(--accent-gold)' : 'var(--text-muted)',                 fontFamily: 'monospace',                 whiteSpace: 'nowrap',               }}             >               {c}{c !== 'All' ? (' (' + (categoryCounts[c] || 0) + ')') : ''}             </button>           ))}         </div> 
         {/* News Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
           {filtered.map(news => (

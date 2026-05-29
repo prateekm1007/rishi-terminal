@@ -221,11 +221,11 @@ function LabContent() {
           </div>
         )}
 
-        {activeTab === 'overview'     && <ErrorBoundary name="OverviewTab"><OverviewTabView     activeLens={activeLens} /></ErrorBoundary>}
-        {activeTab === 'holdings'     && <ErrorBoundary name="HoldingsTab"><HoldingsTabView     activeLens={activeLens} /></ErrorBoundary>}
-        {activeTab === 'watchlist'    && <ErrorBoundary name="WatchlistTab"><WatchlistTabView   activeLens={activeLens} /></ErrorBoundary>}
-        {activeTab === 'compare'      && <ErrorBoundary name="CompareTab"><CompareTabView       activeLens={activeLens} /></ErrorBoundary>}
-        {activeTab === 'intelligence' && <ErrorBoundary name="IntelligenceTab"><IntelligenceTabView activeLens={activeLens} /></ErrorBoundary>}
+        {activeTab === 'overview'     && <ErrorBoundary name="OverviewTab"><OverviewTabView /></ErrorBoundary>}
+        {activeTab === 'holdings'     && <ErrorBoundary name="HoldingsTab"><HoldingsTabView /></ErrorBoundary>}
+        {activeTab === 'watchlist'    && <ErrorBoundary name="WatchlistTab"><WatchlistTabView /></ErrorBoundary>}
+        {activeTab === 'compare'      && <ErrorBoundary name="CompareTab"><CompareTabView /></ErrorBoundary>}
+        {activeTab === 'intelligence' && <ErrorBoundary name="IntelligenceTab"><IntelligenceTabView /></ErrorBoundary>}
       </div>
     </div>
   );

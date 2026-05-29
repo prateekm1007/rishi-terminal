@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
+import { useLivePrices } from '@/hooks/useLivePrices';
 import { Stock } from '../../lib/types';
 
 interface PeerStock {
@@ -32,6 +34,18 @@ export function PeerComparison({ stock, peers }: Props) {
     },
     ...peers.map(p => ({ ...p, isCurrent: false })),
   ];
+
+  const symbols = useMemo(
+    () => [stock.symbol, ...peers.map(p => p.symbol)],
+    [stock.symbol, peers]
+  );
+
+  const { prices: livePrices } = useLivePrices(symbols);
+
+  const allStocksWithLivePrices = allStocks.map(s => ({
+    ...s,
+    price: livePrices[s.symbol]?.price ?? s.price,
+  }));
 
   const safeFixed = (v: any, d = 1) => {
     const n = Number(v);
@@ -71,7 +85,7 @@ export function PeerComparison({ stock, peers }: Props) {
             </tr>
           </thead>
           <tbody>
-            {allStocks.map((s, idx) => (
+            {allStocksWithLivePrices.map((s, idx) => (
               <tr
                 key={idx}
                 style={{

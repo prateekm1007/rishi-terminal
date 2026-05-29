@@ -26,7 +26,7 @@ function scoreColor(s: number): string {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444';
 }
 
-export default function HoldingsTab({ activeLens = 'All' }: { activeLens?: 'All' | 'Hayek' | 'Friedman' | 'Keynes' }) {
+export default function HoldingsTab() {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [innerTab, setInnerTab] = useState<InnerTab>('holdings');
 
@@ -127,10 +127,6 @@ export default function HoldingsTab({ activeLens = 'All' }: { activeLens?: 'All'
     letterSpacing: 1,
   };
 
-  const lensEnriched = useMemo(() => {
-    if (activeLens === 'All') return enriched;
-    return enriched.filter((h: any) => h?.philosophy === activeLens);
-  }, [enriched, activeLens]);
 
   return (
     <div>
@@ -243,7 +239,7 @@ export default function HoldingsTab({ activeLens = 'All' }: { activeLens?: 'All'
                   </tr>
                 </thead>
                 <tbody>
-                  {lensEnriched.map(h => (
+                  {enriched.map(h => (
                     <tr key={h.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.4)' }}>
                       <td style={{ padding: '12px 12px' }}>
                         <Link href={`/stock/${h.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 700, fontFamily: 'monospace' }}>

@@ -37,7 +37,7 @@ function spreadColor(spread: number): string {
   return spread < 20 ? '#22C55E' : spread < 40 ? '#A3E635' : spread < 60 ? '#F59E0B' : spread < 80 ? '#F97316' : '#EF4444';
 }
 
-export default function IntelligenceTab({ activeLens = 'All' }: { activeLens?: 'All' | 'Hayek' | 'Friedman' | 'Keynes' }) {
+export default function IntelligenceTab() {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
 
   useEffect(() => {

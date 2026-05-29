@@ -434,7 +434,7 @@ function UpcomingCatalystsDashboard({ enriched }: { enriched: Array<{ symbol: st
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function WatchlistTab({ activeLens = 'All' }: { activeLens?: 'All' | 'Hayek' | 'Friedman' | 'Keynes' }) {
+export default function WatchlistTab() {
   const [lists, setLists] = useState<Record<string, WatchlistItem[]>>({
     default: [],
     highConviction: [],
@@ -529,13 +529,6 @@ export default function WatchlistTab({ activeLens = 'All' }: { activeLens?: 'All
   }, [enriched, sortBy, catalystFilter]);
 
   
-const lensSorted = useMemo(() => {
-  
-  if (activeLens === 'All') return sorted;
-  
-  return sorted.filter((i: any) => i?.philosophy === activeLens);
-  
-}, [sorted, activeLens]);
 
   function addItem() {
     setError('');
@@ -789,7 +782,7 @@ const lensSorted = useMemo(() => {
               </tr>
             </thead>
             <tbody>
-              {lensSorted.map(i => {
+              {sorted.map(i => {
                 const isExpanded = expandedSymbol === i.symbol;
                 return (
                   <>

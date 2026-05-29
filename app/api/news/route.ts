@@ -255,7 +255,14 @@ async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    const xml = await res.text();
+    const xmlBuf = await res.arrayBuffer();
+    let xml = '';
+    try {
+      xml = new TextDecoder('utf-8', { fatal: false }).decode(xmlBuf);
+    } catch {
+      xml = new TextDecoder().decode(xmlBuf);
+    }
+    xml = fixMojibake(xml);
     const parts = xml.split('<item');
     const items: LiveNewsItem[] = [];
 

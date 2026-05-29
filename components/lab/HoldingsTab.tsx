@@ -48,6 +48,7 @@ export default function HoldingsTab() {
     return holdings.map(h => {
       const stock = STOCKS[h.symbol];
       const livePrice = prices[h.symbol]?.price ?? (stock?.price ?? h.avgPrice);
+      console.log([HoldingsTab] Symbol: , HookPrice: , Fallback: , Final: );
       const invested = h.shares * h.avgPrice;
       const current = h.shares * livePrice;
       const pl = current - invested;

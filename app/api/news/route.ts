@@ -78,59 +78,111 @@ function parseMinutesAgo(pubDate: string): number {
   }
 }
 
+function fixMojibake(s: string): string {
+  // UTF-8 sequences misread as Latin-1 (common in RSS feeds)
+  // Curly apostrophe / right single quote U+2019 (0xE2 0x80 0x99)
+  s = s.replace(/\u00e2\u0080\u0099/g, '\u2019');  // â€™ → '
+  s = s.replace(/â\u0080\u0099/g, '\u2019');
+  s = s.replace(/â€™/g, '\u2019');
+  // Left single quote U+2018 (0xE2 0x80 0x98)
+  s = s.replace(/\u00e2\u0080\u0098/g, '\u2018');
+  s = s.replace(/â€˜/g, '\u2018');
+  // Left double quote U+201C (0xE2 0x80 0x9C)
+  s = s.replace(/\u00e2\u0080\u009c/g, '\u201c');
+  s = s.replace(/â€œ/g, '\u201c');
+  // Right double quote U+201D (0xE2 0x80 0x9D)
+  s = s.replace(/\u00e2\u0080\u009d/g, '\u201d');
+  s = s.replace(/â€/g, '\u201d');
+  // En dash U+2013 (0xE2 0x80 0x93)
+  s = s.replace(/\u00e2\u0080\u0093/g, '\u2013');
+  s = s.replace(/â€"/g, '\u2013');
+  // Em dash U+2014 (0xE2 0x80 0x94)
+  s = s.replace(/\u00e2\u0080\u0094/g, '\u2014');
+  s = s.replace(/â€"/g, '\u2014');
+  // Ellipsis U+2026 (0xE2 0x80 0xA6)
+  s = s.replace(/\u00e2\u0080\u00a6/g, '\u2026');
+  s = s.replace(/â€¦/g, '\u2026');
+  // Indian Rupee U+20B9 (0xE2 0x82 0xB9)
+  s = s.replace(/\u00e2\u0082\u00b9/g, '\u20b9');
+  s = s.replace(/â¹/g, '\u20b9');
+  // Euro U+20AC (0xE2 0x82 0xAC)
+  s = s.replace(/\u00e2\u0082\u00ac/g, '\u20ac');
+  s = s.replace(/â¬/g, '\u20ac');
+  // Bullet U+2022 (0xE2 0x80 0xA2)
+  s = s.replace(/\u00e2\u0080\u00a2/g, '\u2022');
+  // Trademark U+2122 (0xE2 0x84 0xA2)
+  s = s.replace(/\u00e2\u0084\u00a2/g, '\u2122');
+  // Registered U+00AE (0xC2 0xAE)
+  s = s.replace(/\u00c2\u00ae/g, '\u00ae');
+  // Copyright U+00A9 (0xC2 0xA9)
+  s = s.replace(/\u00c2\u00a9/g, '\u00a9');
+  // Non-breaking space (0xC2 0xA0)
+  s = s.replace(/\u00c2\u00a0/g, ' ');
+  // Degree U+00B0 (0xC2 0xB0)
+  s = s.replace(/\u00c2\u00b0/g, '\u00b0');
+  // Pound U+00A3 (0xC2 0xA3)
+  s = s.replace(/\u00c2\u00a3/g, '\u00a3');
+  // Yen U+00A5 (0xC2 0xA5)
+  s = s.replace(/\u00c2\u00a5/g, '\u00a5');
+
+  // Fallback: strip remaining lone â, Â, Ã sequences that are unrecognised mojibake
+  s = s.replace(/â[^\w\s]/g, '\'');
+  s = s.replace(/Â\s*/g, '');
+  s = s.replace(/Ã\S*/g, '');
+
+  return s;
+}
+
 function decodeHtml(input: string): string {
-  let result = input
-    // Basic HTML entities
+  // Step 1: fix UTF-8 mojibake first
+  let result = fixMojibake(input);
+
+  // Step 2: decode named HTML entities
+  result = result
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
     .replace(/&apos;/g, "'")
-    
-    // Curly quotes and dashes (Windows-1252 / smart punctuation)
-    .replace(/&#8216;/g, "'")  // left single quote
-    .replace(/&#8217;/g, "'")  // right single quote / apostrophe
-    .replace(/&#8218;/g, "‚")  // single low-9 quote
-    .replace(/&#8220;/g, '"')  // left double quote
-    .replace(/&#8221;/g, '"')  // right double quote
-    .replace(/&#8222;/g, "„")  // double low-9 quote
-    .replace(/&#8211;/g, '–')  // en dash
-    .replace(/&#8212;/g, '—')  // em dash
-    .replace(/&#8230;/g, '…')  // ellipsis
-    
-    // Currency symbols
-    .replace(/&#8377;/g, '')  // Indian Rupee
-    .replace(/&#x20B9;/gi, '') // Indian Rupee (hex)
-    .replace(/&#36;/g, '$')    // Dollar
-    .replace(/&#163;/g, '£')   // Pound Sterling
-    .replace(/&#8364;/g, '€')  // Euro
-    .replace(/&#165;/g, '¥')   // Yen
-    
-    // Common symbols
-    .replace(/&#8226;/g, '•')  // bullet
-    .replace(/&#169;/g, '©')   // copyright
-    .replace(/&#174;/g, '®')   // registered trademark
-    .replace(/&#8482;/g, '™')  // trademark
-    .replace(/&#176;/g, '°')   // degree
-    .replace(/&#177;/g, '±')   // plus-minus
-    .replace(/&#215;/g, '×')   // multiplication
-    .replace(/&#247;/g, '÷');  // division
-  
-  // Generic numeric entity decoder (handles &#NNNN; patterns we might have missed)
-  result = result.replace(/&#(\d+);/g, (match, dec) => {
+    .replace(/&nbsp;/g, ' ')
+    // Curly quotes (named)
+    .replace(/&#8216;/g, '\u2018')
+    .replace(/&#8217;/g, '\u2019')
+    .replace(/&#8220;/g, '\u201c')
+    .replace(/&#8221;/g, '\u201d')
+    // Dashes
+    .replace(/&#8211;/g, '\u2013')
+    .replace(/&#8212;/g, '\u2014')
+    // Ellipsis
+    .replace(/&#8230;/g, '\u2026')
+    // Currency
+    .replace(/&#8377;/g, '\u20b9')
+    .replace(/&#x20B9;/gi, '\u20b9')
+    .replace(/&#8364;/g, '\u20ac')
+    .replace(/&#163;/g, '\u00a3')
+    .replace(/&#165;/g, '\u00a5')
+    .replace(/&#36;/g, '$')
+    // Symbols
+    .replace(/&#8226;/g, '\u2022')
+    .replace(/&#169;/g, '\u00a9')
+    .replace(/&#174;/g, '\u00ae')
+    .replace(/&#8482;/g, '\u2122')
+    .replace(/&#176;/g, '\u00b0');
+
+  // Step 3: generic numeric entity decoder (catches anything above missed)
+  result = result.replace(/&#(\d+);/g, (_m: string, dec: string) => {
     const code = parseInt(dec, 10);
-    return code > 0 && code < 1114111 ? String.fromCharCode(code) : match;
+    return (code > 31 && code < 1114111) ? String.fromCodePoint(code) : '';
   });
-  
-  // Hex entities (&#xHHHH;)
-  result = result.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
+
+  // Step 4: hex entity decoder
+  result = result.replace(/&#x([0-9A-Fa-f]+);/g, (_m: string, hex: string) => {
     const code = parseInt(hex, 16);
-    return code > 0 && code < 1114111 ? String.fromCharCode(code) : match;
+    return (code > 31 && code < 1114111) ? String.fromCodePoint(code) : '';
   });
-  
-  return result;
+
+  return result.trim();
 }
 
 function extractTag(xml: string, tag: string): string {

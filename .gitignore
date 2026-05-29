@@ -44,3 +44,6 @@ SNAPSHOT_*.txt
 bond-implementation-dump.txt
 .backups/
 *-backup.tsx
+
+# Local backup directories (never commit)
+backup_*/

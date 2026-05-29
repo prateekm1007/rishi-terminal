@@ -528,6 +528,15 @@ export default function WatchlistTab({ activeLens = 'All' }: { activeLens?: 'All
     return arr;
   }, [enriched, sortBy, catalystFilter]);
 
+  
+const lensSorted = useMemo(() => {
+  
+  if (activeLens === 'All') return sorted;
+  
+  return sorted.filter((i: any) => i?.philosophy === activeLens);
+  
+}, [sorted, activeLens]);
+
   function addItem() {
     setError('');
     const sym = addSymbol.trim().toUpperCase();
@@ -780,7 +789,7 @@ export default function WatchlistTab({ activeLens = 'All' }: { activeLens?: 'All
               </tr>
             </thead>
             <tbody>
-              {sorted.map(i => {
+              {lensSorted.map(i => {
                 const isExpanded = expandedSymbol === i.symbol;
                 return (
                   <>

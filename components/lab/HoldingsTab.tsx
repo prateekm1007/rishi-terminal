@@ -127,6 +127,11 @@ export default function HoldingsTab({ activeLens = 'All' }: { activeLens?: 'All'
     letterSpacing: 1,
   };
 
+  const lensEnriched = useMemo(() => {
+    if (activeLens === 'All') return enriched;
+    return enriched.filter((h: any) => h?.philosophy === activeLens);
+  }, [enriched, activeLens]);
+
   return (
     <div>
       {/* Inner tab bar */}
@@ -238,7 +243,7 @@ export default function HoldingsTab({ activeLens = 'All' }: { activeLens?: 'All'
                   </tr>
                 </thead>
                 <tbody>
-                  {enriched.map(h => (
+                  {lensEnriched.map(h => (
                     <tr key={h.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.4)' }}>
                       <td style={{ padding: '12px 12px' }}>
                         <Link href={`/stock/${h.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 700, fontFamily: 'monospace' }}>

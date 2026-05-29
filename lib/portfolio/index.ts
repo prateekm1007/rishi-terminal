@@ -1,12 +1,15 @@
 import { Stock } from '../types';
 import { RishiScore } from '../consensus/types';
 
+export type Philosophy = 'Hayek' | 'Friedman' | 'Keynes';
+
 export interface PortfolioHolding {
   symbol: string;
   shares: number;
   avgPrice: number;
   addedDate: string;
   notes?: string;
+  philosophy?: Philosophy;
 }
 
 export interface CustomRishiWeight {

@@ -210,7 +210,7 @@ export default function NewsPage() {
     localStorage.setItem('rishi_saved_news', JSON.stringify(updated));
   };
 
-  const allNews = [...liveNews, ...NEWS_FEED];
+  const allNews = liveNews; // Live-only: do not append stale static fallback stories
   const filtered = allNews
     .filter(n => region === 'ALL' || n.region === region)
     .filter(n => category === 'All' || n.category === category);

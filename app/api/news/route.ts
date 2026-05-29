@@ -18,50 +18,83 @@ interface LiveNewsItem {
   isTrending: boolean;
   region: 'INDIA' | 'GLOBAL' | 'CRYPTO' | 'SPORTS';
   url: string;
-  imageUrl?: string;
   pubDate: string;
 }
 
+// Fresh-only RSS feeds. Includes direct feeds + Google News RSS query feeds.
+// No API key, no payment, no quota. Age filter below removes stale feed entries.
 const RSS_FEEDS = [
-  { url: 'https://www.moneycontrol.com/rss/latestnews.xml',                     source: 'MoneyControl',      category: 'Markets', region: 'INDIA'  },
-  { url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms', source: 'Economic Times',    category: 'Markets', region: 'INDIA'  },
-  { url: 'https://www.business-standard.com/rss/markets-106.rss',               source: 'Business Standard', category: 'Markets', region: 'INDIA'  },
-  { url: 'https://www.livemint.com/rss/markets',                                 source: 'Mint',              category: 'Markets', region: 'INDIA'  },
-  { url: 'https://feeds.reuters.com/reuters/businessNews',                        source: 'Reuters',           category: 'Economy', region: 'GLOBAL' },
-  { url: 'https://www.investing.com/rss/news.rss',                               source: 'Investing.com',     category: 'Markets', region: 'GLOBAL' },
-  { url: 'https://cointelegraph.com/rss',                                         source: 'CoinTelegraph',     category: 'Crypto',  region: 'CRYPTO' },
-  { url: 'https://coindesk.com/arc/outboundfeeds/rss/',                           source: 'CoinDesk',          category: 'Crypto',  region: 'CRYPTO' },
-  { url: 'https://www.espncricinfo.com/rss/content/story/feeds/0.xml',            source: 'ESPNCricinfo',      category: 'Cricket', region: 'SPORTS' },
-  { url: 'https://sports.ndtv.com/cricket/rss',                                   source: 'NDTV Sports',       category: 'Cricket', region: 'SPORTS' },
+  // INDIA: Markets, Economy, Earnings, Corporate, Tech, Regulation
+  { url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms', source: 'Economic Times', category: 'Markets', region: 'INDIA' },
+  { url: 'https://www.livemint.com/rss/markets', source: 'Mint Markets', category: 'Markets', region: 'INDIA' },
+  { url: 'https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms', source: 'ET Economy', category: 'Economy', region: 'INDIA' },
+  { url: 'https://www.livemint.com/rss/economy', source: 'Mint Economy', category: 'Economy', region: 'INDIA' },
+  { url: 'https://economictimes.indiatimes.com/news/company/corporate-trends/rssfeeds/13357270.cms', source: 'ET Corporate', category: 'Corporate', region: 'INDIA' },
+  { url: 'https://www.livemint.com/rss/companies', source: 'Mint Companies', category: 'Earnings', region: 'INDIA' },
+  { url: 'https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms', source: 'ET Tech', category: 'Tech', region: 'INDIA' },
+
+  { url: 'https://news.google.com/rss/search?q=India%20stock%20market%20Nifty%20Sensex%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google India Markets', category: 'Markets', region: 'INDIA' },
+  { url: 'https://news.google.com/rss/search?q=RBI%20SEBI%20India%20economy%20inflation%20GDP%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google India Economy', category: 'Economy', region: 'INDIA' },
+  { url: 'https://news.google.com/rss/search?q=India%20company%20earnings%20quarterly%20results%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google Earnings', category: 'Earnings', region: 'INDIA' },
+  { url: 'https://news.google.com/rss/search?q=SEBI%20RBI%20regulation%20markets%20India%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google Regulation', category: 'Regulation', region: 'INDIA' },
+  { url: 'https://news.google.com/rss/search?q=India%20corporate%20business%20companies%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google Corporate', category: 'Corporate', region: 'INDIA' },
+  { url: 'https://news.google.com/rss/search?q=India%20technology%20startups%20AI%20IT%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google Tech', category: 'Tech', region: 'INDIA' },
+
+  // GLOBAL: Markets, Economy, Commodities/Forex mapped to Markets
+  { url: 'https://www.investing.com/rss/news.rss', source: 'Investing News', category: 'Markets', region: 'GLOBAL' },
+  { url: 'https://www.investing.com/rss/stock_market_news.rss', source: 'Investing Stocks', category: 'Markets', region: 'GLOBAL' },
+  { url: 'https://www.investing.com/rss/economy.rss', source: 'Investing Economy', category: 'Economy', region: 'GLOBAL' },
+  { url: 'https://www.investing.com/rss/commodities.rss', source: 'Investing Commodities', category: 'Markets', region: 'GLOBAL' },
+  { url: 'https://www.investing.com/rss/forex_market_news.rss', source: 'Investing Forex', category: 'Markets', region: 'GLOBAL' },
+
+  { url: 'https://news.google.com/rss/search?q=global%20markets%20stocks%20economy%20when:1d&hl=en-US&gl=US&ceid=US:en', source: 'Google Global Markets', category: 'Markets', region: 'GLOBAL' },
+  { url: 'https://news.google.com/rss/search?q=Federal%20Reserve%20inflation%20GDP%20global%20economy%20when:1d&hl=en-US&gl=US&ceid=US:en', source: 'Google Global Economy', category: 'Economy', region: 'GLOBAL' },
+  { url: 'https://news.google.com/rss/search?q=gold%20oil%20commodities%20market%20when:1d&hl=en-US&gl=US&ceid=US:en', source: 'Google Commodities', category: 'Markets', region: 'GLOBAL' },
+
+  // CRYPTO
+  { url: 'https://cointelegraph.com/rss', source: 'CoinTelegraph', category: 'Crypto', region: 'CRYPTO' },
+  { url: 'https://coindesk.com/arc/outboundfeeds/rss/', source: 'CoinDesk', category: 'Crypto', region: 'CRYPTO' },
+  { url: 'https://cointelegraph.com/rss/tag/bitcoin', source: 'CT Bitcoin', category: 'Crypto', region: 'CRYPTO' },
+  { url: 'https://cointelegraph.com/rss/tag/ethereum', source: 'CT Ethereum', category: 'Crypto', region: 'CRYPTO' },
+  { url: 'https://news.google.com/rss/search?q=bitcoin%20ethereum%20crypto%20market%20when:1d&hl=en-US&gl=US&ceid=US:en', source: 'Google Crypto', category: 'Crypto', region: 'CRYPTO' },
+
+  // SPORTS / CRICKET / IPL
+  { url: 'https://www.espncricinfo.com/rss/content/story/feeds/0.xml', source: 'ESPNCricinfo', category: 'Cricket', region: 'SPORTS' },
+  { url: 'https://timesofindia.indiatimes.com/rssfeeds/-2128818991.cms', source: 'TOI Sports', category: 'Cricket', region: 'SPORTS' },
+  { url: 'https://economictimes.indiatimes.com/news/sports/rssfeeds/1564431.cms', source: 'ET Sports', category: 'Cricket', region: 'SPORTS' },
+  { url: 'https://news.google.com/rss/search?q=India%20cricket%20BCCI%20match%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google Cricket', category: 'Cricket', region: 'SPORTS' },
+  { url: 'https://news.google.com/rss/search?q=IPL%20cricket%20RCB%20MI%20CSK%20KKR%20when:1d&hl=en-IN&gl=IN&ceid=IN:en', source: 'Google IPL', category: 'IPL', region: 'SPORTS' },
 ];
 
+const MAX_AGE_MINUTES = 48 * 60;
+
 function parseMinutesAgo(pubDate: string): number {
-  const pub = new Date(pubDate);
-  const now = new Date();
-  return Math.floor((now.getTime() - pub.getTime()) / 60000);
+  try {
+    const pub = new Date(pubDate);
+    if (isNaN(pub.getTime())) return 99999;
+    return Math.floor((Date.now() - pub.getTime()) / 60000);
+  } catch {
+    return 99999;
+  }
 }
 
-function detectImpact(text: string): 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL' {
-  const t = text.toLowerCase();
-  const positive = ['surge','rally','gain','jump','rise','high','bull','growth','profit','beat','record','up','strong'];
-  const negative = ['crash','fall','drop','plunge','loss','bear','decline','down','weak','miss','slump','cut','ban'];
-  const posScore = positive.filter(w => t.includes(w)).length;
-  const negScore = negative.filter(w => t.includes(w)).length;
-  if (posScore > negScore) return 'POSITIVE';
-  if (negScore > posScore) return 'NEGATIVE';
-  return 'NEUTRAL';
-}
-
-function extractTags(text: string, category: string): string[] {
-  const tags: string[] = [category];
-  const patterns = ['NIFTY','SENSEX','HDFC','RELIANCE','TCS','BITCOIN','BTC','ETHEREUM','ETH','IPL','CRICKET'];
-  const t = text.toUpperCase();
-  patterns.forEach(p => { if (t.includes(p)) tags.push(p); });
-  return [...new Set(tags)].slice(0, 5);
+function decodeHtml(input: string): string {
+  return input
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#8216;/g, "'")
+    .replace(/&#8217;/g, "'")
+    .replace(/&#8220;/g, '"')
+    .replace(/&#8221;/g, '"')
+    .replace(/&#8211;/g, '-')
+    .replace(/&#8212;/g, '-');
 }
 
 function extractTag(xml: string, tag: string): string {
-  // Extract content between XML tags — no dotAll flag, use split instead
   const open = '<' + tag;
   const close = '</' + tag + '>';
   const start = xml.indexOf(open);
@@ -70,74 +103,120 @@ function extractTag(xml: string, tag: string): string {
   if (contentStart === -1) return '';
   const end = xml.indexOf(close, contentStart);
   if (end === -1) return '';
+
   let content = xml.slice(contentStart + 1, end).trim();
-  // Strip CDATA
+
   if (content.startsWith('<![CDATA[') && content.endsWith(']]>')) {
     content = content.slice(9, content.length - 3).trim();
   }
-  // Strip remaining HTML tags
+
   content = content.replace(/<[^>]+>/g, '').trim();
-  return content;
+  return decodeHtml(content).trim();
+}
+
+function detectImpact(text: string): 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL' {
+  const t = text.toLowerCase();
+  const pos = ['surge','rally','gain','jump','rise','high','bull','growth','profit','beat','record','strong','boost','recover','up','win','victory','buy'];
+  const neg = ['crash','fall','drop','plunge','loss','bear','decline','down','weak','miss','slump','cut','ban','risk','warn','concern','sell','fear'];
+  const ps = pos.filter(w => t.includes(w)).length;
+  const ns = neg.filter(w => t.includes(w)).length;
+  if (ps > ns) return 'POSITIVE';
+  if (ns > ps) return 'NEGATIVE';
+  return 'NEUTRAL';
+}
+
+function extractTags(text: string, category: string): string[] {
+  const tags: string[] = [category];
+  const patterns = [
+    'NIFTY','SENSEX','HDFC','RELIANCE','TCS','INFOSYS','WIPRO','ADANI','TATA',
+    'BITCOIN','BTC','ETHEREUM','ETH','SOLANA','SOL','CRYPTO',
+    'IPL','CRICKET','VIRAT','ROHIT','RCB','MI','CSK',
+    'RBI','SEBI','FED','GDP','INFLATION','CPI',
+    'GOLD','SILVER','OIL','CRUDE','AI','TECH'
+  ];
+  const t = text.toUpperCase();
+  patterns.forEach(p => {
+    if (t.includes(p)) tags.push(p);
+  });
+  return [...new Set(tags)].slice(0, 6);
+}
+
+function headlineKey(headline: string): string {
+  return headline
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 8)
+    .join(' ');
 }
 
 async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
   try {
     const res = await fetch(feed.url, {
-      signal: AbortSignal.timeout(6000),
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RishiTerminal/1.0)' }
+      signal: AbortSignal.timeout(7000),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; RishiTerminal/1.0; +https://rishi-terminal.vercel.app)',
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
     });
+
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
     const xml = await res.text();
-
-    // Split on <item> boundaries — no dotAll regex needed
     const parts = xml.split('<item');
     const items: LiveNewsItem[] = [];
 
-    for (let i = 1; i < parts.length && items.length < 8; i++) {
+    for (let i = 1; i < parts.length; i++) {
       const chunk = parts[i];
       const closeIdx = chunk.indexOf('</item>');
       const itemXml = closeIdx !== -1 ? chunk.slice(0, closeIdx) : chunk;
 
-      const title   = extractTag(itemXml, 'title');
-      const desc    = extractTag(itemXml, 'description').slice(0, 300);
-      const pubDate = extractTag(itemXml, 'pubDate') || new Date().toISOString();
+      const title = extractTag(itemXml, 'title');
+      const desc = extractTag(itemXml, 'description').slice(0, 350);
+      const pubDate = extractTag(itemXml, 'pubDate') || extractTag(itemXml, 'dc:date');
 
-      // link is trickier — try extractTag first, then <link> text node pattern
       let link = extractTag(itemXml, 'link');
       if (!link) {
-        const linkMatch = itemXml.match(/<link>(https?:\/\/[^<]+)<\/link>/);
-        if (linkMatch) link = linkMatch[1].trim();
+        const hrefMatch = itemXml.match(/href=["']([^"']+)["']/);
+        if (hrefMatch) link = hrefMatch[1];
       }
       if (!link) link = '#';
 
-      if (!title) continue;
+      if (!title || title.length < 5) continue;
 
       const minutesAgo = parseMinutesAgo(pubDate);
-      const impact     = detectImpact(title + ' ' + desc);
+
+      // Hard stale filter: never return old articles.
+      if (minutesAgo > MAX_AGE_MINUTES) continue;
+
+      const impact = detectImpact(title + ' ' + desc);
 
       items.push({
-        id:          feed.source + '-' + i + '-' + Date.now(),
-        headline:    title,
-        summary:     desc || title,
-        source:      feed.source,
-        category:    feed.category,
+        id: feed.source.replace(/\s/g, '-') + '-' + i + '-' + Date.now(),
+        headline: title,
+        summary: desc || title,
+        source: feed.source,
+        category: feed.category,
         subCategory: feed.category,
-        time:        new Date(pubDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-        minutesAgo:  Math.max(0, minutesAgo),
+        time: new Date(pubDate || Date.now()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        minutesAgo: Math.max(0, minutesAgo),
         impact,
-        tags:        extractTags(title + ' ' + desc, feed.category),
-        isBreaking:  minutesAgo < 30,
-        isTrending:  minutesAgo < 120,
-        region:      feed.region as LiveNewsItem['region'],
-        url:         link,
-        pubDate,
+        tags: extractTags(title + ' ' + desc, feed.category),
+        isBreaking: minutesAgo < 30,
+        isTrending: minutesAgo < 180,
+        region: feed.region as LiveNewsItem['region'],
+        url: link,
+        pubDate: pubDate || new Date().toISOString(),
       });
+
+      if (items.length >= 12) break;
     }
 
     return items;
   } catch (err) {
-    console.error('Feed failed (' + feed.source + '):', err);
+    console.error('Feed failed (' + feed.source + '):', String(err));
     return [];
   }
 }
@@ -153,16 +232,35 @@ export async function GET(req: Request) {
 
     const results = await Promise.allSettled(feedsToFetch.map(f => fetchFeed(f)));
 
+    const seen = new Set<string>();
     const all: LiveNewsItem[] = [];
+
     results.forEach(r => {
-      if (r.status === 'fulfilled') all.push(...r.value);
+      if (r.status !== 'fulfilled') return;
+
+      r.value.forEach(item => {
+        const key = headlineKey(item.headline);
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        all.push(item);
+      });
     });
 
     all.sort((a, b) => a.minutesAgo - b.minutesAgo);
 
     return NextResponse.json(
-      { news: all, count: all.length, generatedAt: new Date().toISOString() },
-      { headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' } }
+      {
+        news: all,
+        count: all.length,
+        generatedAt: new Date().toISOString(),
+        maxAgeHours: MAX_AGE_MINUTES / 60,
+        feedCount: feedsToFetch.length,
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=240',
+        },
+      }
     );
   } catch (error) {
     return NextResponse.json(

@@ -1,57 +1,103 @@
 import { NextResponse } from "next/server";
 
 /**
- * Phase 4B: /api/history/breadth
- * Returns a rolling 30-day average breadth score (0-100).
- * Currently derived from NIFTY50 30-day momentum heuristic.
- * Replace body with real DB/cache lookup when history store is available.
+ * Phase 4B / High Priority TODO: /api/history/breadth
+ * Computes a REAL rolling 30-day average breadth score (0-100).
+ * Fetches 1M historical data from the local history endpoint for NIFTY, SENSEX, BANKNIFTY.
+ * Cached at the edge for 12 hours.
  */
 export const runtime = "edge";
+// Revalidate every 12 hours (43200 seconds)
+export const revalidate = 43200;
 
-export async function GET() {
+interface ChartPoint { t: number; c: number; v?: number }
+
+export async function GET(req: Request) {
   try {
-    // Fetch current prices to derive a momentum-based 30d avg proxy
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "https://rishi-terminal.vercel.app";
-    const res = await fetch(`${base}/api/prices`, { next: { revalidate: 300 } });
-    if (!res.ok) throw new Error("prices fetch failed");
-    const data = await res.json();
-
-    const getPct = (x: any): number => {
-      if (!x) return 0;
-      if (typeof x.changePercent === "number") return x.changePercent;
-      if (typeof x.percentChange === "number") return x.percentChange;
-      if (typeof x.pChange === "number") return x.pChange;
-      if (typeof x.change === "number" && typeof x.price === "number" && x.price !== 0)
-        return (x.change / x.price) * 100;
-      return 0;
+    
+    // Fetch 1M (30 days) of history for the 3 main indices
+    const fetchHistory = async (symbol: string): Promise<ChartPoint[]> => {
+      const url = base + '/api/history?symbol=' + symbol + '&timeframe=1M';
+      const res = await fetch(url, { next: { revalidate: 43200 } });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
     };
 
-    // Use multiple indices to build a breadth composite
-    const niftyChg    = getPct(data?.["NIFTY50"]);
-    const bankNiftyChg = getPct(data?.["BANK_NIFTY"]);
-    const sensexChg   = getPct(data?.["SENSEX"]);
+    const [nifty, sensex, bank] = await Promise.all([
+      fetchHistory("NIFTY50"),
+      fetchHistory("SENSEX"),
+      fetchHistory("BANK_NIFTY")
+    ]);
 
-    // Weight: NIFTY 50%, BANK_NIFTY 30%, SENSEX 20%
-    const composite = (niftyChg * 0.5) + (bankNiftyChg * 0.3) + (sensexChg * 0.2);
+    if (!nifty.length && !sensex.length && !bank.length) {
+      throw new Error("Failed to fetch historical data for indices");
+    }
 
-    // Scale composite % move to 0-100 breadth score
-    // +2% move → ~60, -2% move → ~40, flat → 50
-    const breadth30dAvg = Math.max(0, Math.min(100, 50 + (composite * 5)));
+    // Align timestamps (group by day)
+    // Map: YYYY-MM-DD -> { NIFTY: number, SENSEX: number, BANK: number }
+    const dailyPrices: Record<string, { n?: number; s?: number; b?: number }> = {};
+    
+    const addToMap = (data: ChartPoint[], key: 'n'|'s'|'b') => {
+      data.forEach(p => {
+        // convert unix timestamp to YYYY-MM-DD
+        const date = new Date(p.t).toISOString().split('T')[0];
+        if (!dailyPrices[date]) dailyPrices[date] = {};
+        dailyPrices[date][key] = p.c;
+      });
+    };
+
+    addToMap(nifty, 'n');
+    addToMap(sensex, 's');
+    addToMap(bank, 'b');
+
+    // Sort dates chronological
+    const dates = Object.keys(dailyPrices).sort();
+    
+    let totalBreadth = 0;
+    let validDays = 0;
+    const historyPoints: { date: string; breadth: number }[] = [];
+
+    // Calculate day-over-day changes to get breadth for each day
+    for (let i = 1; i < dates.length; i++) {
+      const today = dailyPrices[dates[i]];
+      const yesterday = dailyPrices[dates[i-1]];
+
+      let nChg = 0; let sChg = 0; let bChg = 0;
+
+      if (today.n && yesterday.n) nChg = ((today.n - yesterday.n) / yesterday.n) * 100;
+      if (today.s && yesterday.s) sChg = ((today.s - yesterday.s) / yesterday.s) * 100;
+      if (today.b && yesterday.b) bChg = ((today.b - yesterday.b) / yesterday.b) * 100;
+
+      // Composite day-over-day change
+      const compositeChg = (nChg * 0.5) + (bChg * 0.3) + (sChg * 0.2);
+      
+      // Scale % move to 0-100 breadth score (same formula as live prices)
+      const dailyBreadth = Math.max(0, Math.min(100, 50 + (compositeChg * 5)));
+      
+      totalBreadth += dailyBreadth;
+      validDays++;
+      historyPoints.push({ date: dates[i], breadth: Math.round(dailyBreadth * 10) / 10 });
+    }
+
+    const breadth30dAvg = validDays > 0 ? (totalBreadth / validDays) : 50;
 
     return NextResponse.json({
       breadth30dAvg: Math.round(breadth30dAvg * 10) / 10,
-      composite: Math.round(composite * 100) / 100,
-      inputs: { niftyChg, bankNiftyChg, sensexChg },
-      note: "Phase 4B: multi-index composite proxy. Replace with real 30d history when available.",
+      daysSampled: validDays,
+      note: "True 30-day rolling average derived from 1M historical chart data",
+      history: historyPoints,
       generatedAt: new Date().toISOString()
     });
+
   } catch (err: any) {
+    console.error("Breadth API Error:", err);
     // Fallback: return neutral breadth
     return NextResponse.json({
       breadth30dAvg: 50,
-      composite: 0,
-      inputs: {},
-      note: "fallback — prices fetch failed",
+      daysSampled: 0,
+      note: "fallback — history fetch failed",
       error: err?.message ?? "unknown",
       generatedAt: new Date().toISOString()
     }, { status: 200 });

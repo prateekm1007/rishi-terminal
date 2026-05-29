@@ -79,19 +79,58 @@ function parseMinutesAgo(pubDate: string): number {
 }
 
 function decodeHtml(input: string): string {
-  return input
+  let result = input
+    // Basic HTML entities
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
-    .replace(/&#8216;/g, "'")
-    .replace(/&#8217;/g, "'")
-    .replace(/&#8220;/g, '"')
-    .replace(/&#8221;/g, '"')
-    .replace(/&#8211;/g, '-')
-    .replace(/&#8212;/g, '-');
+    .replace(/&apos;/g, "'")
+    
+    // Curly quotes and dashes (Windows-1252 / smart punctuation)
+    .replace(/&#8216;/g, "'")  // left single quote
+    .replace(/&#8217;/g, "'")  // right single quote / apostrophe
+    .replace(/&#8218;/g, "‚")  // single low-9 quote
+    .replace(/&#8220;/g, '"')  // left double quote
+    .replace(/&#8221;/g, '"')  // right double quote
+    .replace(/&#8222;/g, "„")  // double low-9 quote
+    .replace(/&#8211;/g, '–')  // en dash
+    .replace(/&#8212;/g, '—')  // em dash
+    .replace(/&#8230;/g, '…')  // ellipsis
+    
+    // Currency symbols
+    .replace(/&#8377;/g, '')  // Indian Rupee
+    .replace(/&#x20B9;/gi, '') // Indian Rupee (hex)
+    .replace(/&#36;/g, '$')    // Dollar
+    .replace(/&#163;/g, '£')   // Pound Sterling
+    .replace(/&#8364;/g, '€')  // Euro
+    .replace(/&#165;/g, '¥')   // Yen
+    
+    // Common symbols
+    .replace(/&#8226;/g, '•')  // bullet
+    .replace(/&#169;/g, '©')   // copyright
+    .replace(/&#174;/g, '®')   // registered trademark
+    .replace(/&#8482;/g, '™')  // trademark
+    .replace(/&#176;/g, '°')   // degree
+    .replace(/&#177;/g, '±')   // plus-minus
+    .replace(/&#215;/g, '×')   // multiplication
+    .replace(/&#247;/g, '÷');  // division
+  
+  // Generic numeric entity decoder (handles &#NNNN; patterns we might have missed)
+  result = result.replace(/&#(\d+);/g, (match, dec) => {
+    const code = parseInt(dec, 10);
+    return code > 0 && code < 1114111 ? String.fromCharCode(code) : match;
+  });
+  
+  // Hex entities (&#xHHHH;)
+  result = result.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {
+    const code = parseInt(hex, 16);
+    return code > 0 && code < 1114111 ? String.fromCharCode(code) : match;
+  });
+  
+  return result;
 }
 
 function extractTag(xml: string, tag: string): string {

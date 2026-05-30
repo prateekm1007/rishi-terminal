@@ -49,7 +49,7 @@ const MARKETS = [
   { href:"/bonds",       icon:"📜", label:"Bonds",        desc:"G-Secs & Corporate" },
   { href:"/pulse?tab=macro",       icon:"📡", label:"Economy Plus", desc:"Macro regime & rotation" },
   { href:"/compare",     icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
-  { href:"/backtest",    icon:"🔬", label:"Backtest",     desc:"Strategy testing" },
+  
 ];
 
 const STATS = [

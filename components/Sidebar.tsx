@@ -26,7 +26,7 @@ const NAV_GROUPS = [
   {
     title: "INTELLIGENCE",
     items: [
-      { href: "/fno/builder", label: "F&O Builder",    icon: "fno"      },
+      
       { href: "/rishis",      label: "Chat with Rishis", icon: "rishi"  },
       { href: "/news",        label: "News",           icon: "news"     },
       { href: "/pricing",     label: "Pricing",        icon: "gem"      },

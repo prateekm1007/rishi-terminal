@@ -322,7 +322,7 @@ export async function fetchLivePrice(
     priceData = await fetchYahooQuote(YAHOO_INDEX_SYMBOLS[symbol]);
   }
   // 1. Crypto (CoinGecko)
-  if (COINGECKO_IDS[symbol]) {
+  else if (COINGECKO_IDS[symbol]) {
     priceData = await getCoinGeckoPrice(symbol);
   }
   // 2. Bonds (static yields)

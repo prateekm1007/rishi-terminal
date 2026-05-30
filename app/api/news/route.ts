@@ -201,8 +201,15 @@ function extractTag(xml: string, tag: string): string {
     content = content.slice(9, content.length - 3).trim();
   }
 
-  content = content.replace(/<[^>]+>/g, '').trim();
-  return decodeHtml(content).trim();
+  content = decodeHtml(content);
+
+  content = content
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return content;
 }
 
 function detectImpact(text: string): 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL' {

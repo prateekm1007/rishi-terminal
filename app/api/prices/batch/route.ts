@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
     const prices: Record<string, any> = {};
 
     // Strategy: Yahoo bulk for NSE stocks, fallback for others
-    const nseSymbols = symbols.filter(s => 
+    const INDEX_SYMBOLS = ['NIFTY50','SENSEX','BANK_NIFTY'];
+
+    const nseSymbols = symbols.filter(s =>
+      !INDEX_SYMBOLS.includes(s) && 
       !s.includes('/') && // not forex
       !s.startsWith('IN') && // not bonds
       !['BTC','ETH','BNB','SOL','ADA','AVAX','DOT','MATIC','LINK','UNI','AAVE','MKR','XRP','DOGE','SHIB'].includes(s) && // not crypto

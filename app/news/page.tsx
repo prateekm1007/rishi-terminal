@@ -200,8 +200,17 @@ export default function NewsPage() {
       const cached = localStorage.getItem('rishi.news.cache');
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setLiveNews(parsed);
+
+        const age = Date.now() - (parsed.ts || 0);
+
+        if (
+          parsed.news &&
+          Array.isArray(parsed.news) &&
+          parsed.news.length > 0 &&
+          age < 120000
+        ) {
+          setLiveNews(parsed.news);
+          return;
         }
       }
     } catch {}
@@ -217,7 +226,10 @@ export default function NewsPage() {
         try {
           localStorage.setItem(
             'rishi.news.cache',
-            JSON.stringify(news)
+            JSON.stringify({
+              ts: Date.now(),
+              news
+            })
           );
         } catch {}
 

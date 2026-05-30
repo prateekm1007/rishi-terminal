@@ -117,6 +117,11 @@ export default function Sidebar() {
                 <Link
                   href={item.href}
                   key={item.href}
+                   onMouseEnter={() => {
+                     if (item.href === "/news") {
+                       fetch("/api/news").catch(() => {});
+                     }
+                   }}
                   style={{ textDecoration: "none", display: "block" }}
                 >
                   <div style={{

@@ -84,6 +84,16 @@ function fixMojibake(s: string): string {
   s = s.replace(/\u00e2\u0080\u0099/g, '\u2019');  // â€™ → '
   s = s.replace(/â\u0080\u0099/g, '\u2019');
   s = s.replace(/â€™/g, '\u2019');
+s = s.replace(/â€œ/g, '"');
+s = s.replace(/â€/g, '"');
+s = s.replace(/â€‹/g, '');
+s = s.replace(/â€Œ/g, '');
+s = s.replace(/â/g, '');
+s = s.replace(/â€œ/g, '"');
+s = s.replace(/â€/g, '"');
+s = s.replace(/â€‹/g, '');
+s = s.replace(/â€Œ/g, '');
+s = s.replace(/â/g, '');
   // Left single quote U+2018 (0xE2 0x80 0x98)
   s = s.replace(/\u00e2\u0080\u0098/g, '\u2018');
   s = s.replace(/â€˜/g, '\u2018');
@@ -283,7 +293,16 @@ async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
       }
       if (!link) link = '#';
 
-      if (!title || title.length < 5) continue;
+            if (!title || title.length < 5) continue;
+
+      if (
+        /^(Form\s+(13|424|DEF)|SC\s+13|Schedule\s+13)/i.test(title) ||
+        /sells?\s+\$[\d\.]+/i.test(title) ||
+        /director\s+.*\s+sells?/i.test(title) ||
+        /CEO\s+.*\s+sells?/i.test(title)
+      ) {
+        continue;
+      }
 
       const minutesAgo = parseMinutesAgo(pubDate);
 

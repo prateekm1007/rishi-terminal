@@ -22,7 +22,7 @@ async function getNSEStockPrice(symbol: string): Promise<{ price: number; change
     const url = `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(symbol)}`;
     const res = await fetch(url, {
       headers: NSE_HEADERS,
-      signal: AbortSignal.timeout(8000),
+      signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 8000); return ac.signal; })(),
     });
     if (!res.ok) return null;
 
@@ -48,7 +48,7 @@ async function getNSEDerivativePrice(symbol: string): Promise<{ price: number; c
     const url = `https://www.nseindia.com/api/quote-derivative?symbol=${encodeURIComponent(symbol)}`;
     const res = await fetch(url, {
       headers: NSE_HEADERS,
-      signal: AbortSignal.timeout(8000),
+      signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 8000); return ac.signal; })(),
     });
     if (!res.ok) return null;
 
@@ -97,10 +97,17 @@ async function fetchYahooQuote(
 ): Promise<{ price: number; change: number } | null> {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-      signal: AbortSignal.timeout(6000),
-    });
+    const ac1 = new AbortController();
+    const t1 = setTimeout(() => ac1.abort(), 6000);
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: ac1.signal,
+      });
+    } finally {
+      clearTimeout(t1);
+    }
     if (!res.ok) return null;
     const json = await res.json();
     const meta = json?.chart?.result?.[0]?.meta;
@@ -179,7 +186,7 @@ async function fetchAllCoinGecko(): Promise<void> {
       const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
       const res = await fetch(url, {
         headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(8000),
+        signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 8000); return ac.signal; })(),
       });
       if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
 
@@ -226,7 +233,7 @@ async function fetchForexRates(): Promise<void> {
   forexFetchPromise = (async () => {
     try {
       const res = await fetch('https://open.er-api.com/v6/latest/USD', {
-        signal: AbortSignal.timeout(8000),
+        signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 8000); return ac.signal; })(),
       });
       if (!res.ok) throw new Error(`ExchangeRate HTTP ${res.status}`);
       const data = await res.json();

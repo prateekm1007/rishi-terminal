@@ -122,11 +122,13 @@ function NewsCard({ news, saved, toggleSave, t }: {
         {news.headline}
       </h3>
 
-      <p style={{
-        fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10,
-      }}>
-        {news.summary}
-      </p>
+      {news.summary && news.summary !== news.headline && news.summary.length > 30 && (
+        <p style={{
+          fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10,
+        }}>
+          {news.summary}
+        </p>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
         <div style={{ display: 'flex', gap: 8, fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>

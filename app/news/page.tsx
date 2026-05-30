@@ -195,15 +195,43 @@ export default function NewsPage() {
   }, []);
 
   useEffect(() => {
+
+    try {
+      const cached = localStorage.getItem('rishi.news.cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setLiveNews(parsed);
+        }
+      }
+    } catch {}
+
     async function loadLive() {
       setLoading(true);
-      const news = await fetchAllNews();
-      setLiveNews(news);
-      setLoading(false);
+
+      try {
+        const news = await fetchAllNews();
+
+        setLiveNews(news);
+
+        try {
+          localStorage.setItem(
+            'rishi.news.cache',
+            JSON.stringify(news)
+          );
+        } catch {}
+
+      } finally {
+        setLoading(false);
+      }
     }
+
     loadLive();
+
     const interval = setInterval(loadLive, 300000);
+
     return () => clearInterval(interval);
+
   }, []);
 
   const toggleSave = (id: string) => {

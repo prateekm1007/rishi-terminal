@@ -55,7 +55,7 @@ function NewsCard({ news, saved, toggleSave, t }: {
   const isLive  = !!(news as LiveNewsItem).pubDate && news.url !== '#';
 
   const handleClick = () => {
-    if (isLive && news.url && news.url !== '#') {
+    if (news.url && news.url !== '#') {
       window.open(news.url, '_blank', 'noopener,noreferrer');
     } else {
       router.push('/news/' + news.id);

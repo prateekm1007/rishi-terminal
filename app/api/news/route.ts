@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -81,43 +81,43 @@ function parseMinutesAgo(pubDate: string): number {
 function fixMojibake(s: string): string {
   // UTF-8 sequences misread as Latin-1 (common in RSS feeds)
   // Curly apostrophe / right single quote U+2019 (0xE2 0x80 0x99)
-  s = s.replace(/\u00e2\u0080\u0099/g, '\u2019');  // â€™ → '
-  s = s.replace(/â\u0080\u0099/g, '\u2019');
-  s = s.replace(/â€™/g, '\u2019');
-s = s.replace(/â€œ/g, '"');
-s = s.replace(/â€/g, '"');
-s = s.replace(/â€‹/g, '');
-s = s.replace(/â€Œ/g, '');
-s = s.replace(/â/g, '');
-s = s.replace(/â€œ/g, '"');
-s = s.replace(/â€/g, '"');
-s = s.replace(/â€‹/g, '');
-s = s.replace(/â€Œ/g, '');
-s = s.replace(/â/g, '');
+  s = s.replace(/\u00e2\u0080\u0099/g, '\u2019');  // Ã¢â‚¬â„¢ â†’ '
+  s = s.replace(/Ã¢\u0080\u0099/g, '\u2019');
+  s = s.replace(/Ã¢â‚¬â„¢/g, '\u2019');
+s = s.replace(/Ã¢â‚¬Å“/g, '"');
+s = s.replace(/Ã¢â‚¬/g, '"');
+s = s.replace(/Ã¢â‚¬â€¹/g, '');
+s = s.replace(/Ã¢â‚¬Å’/g, '');
+s = s.replace(/Ã¢Â/g, '');
+s = s.replace(/Ã¢â‚¬Å“/g, '"');
+s = s.replace(/Ã¢â‚¬/g, '"');
+s = s.replace(/Ã¢â‚¬â€¹/g, '');
+s = s.replace(/Ã¢â‚¬Å’/g, '');
+s = s.replace(/Ã¢Â/g, '');
   // Left single quote U+2018 (0xE2 0x80 0x98)
   s = s.replace(/\u00e2\u0080\u0098/g, '\u2018');
-  s = s.replace(/â€˜/g, '\u2018');
+  s = s.replace(/Ã¢â‚¬Ëœ/g, '\u2018');
   // Left double quote U+201C (0xE2 0x80 0x9C)
   s = s.replace(/\u00e2\u0080\u009c/g, '\u201c');
-  s = s.replace(/â€œ/g, '\u201c');
+  s = s.replace(/Ã¢â‚¬Å“/g, '\u201c');
   // Right double quote U+201D (0xE2 0x80 0x9D)
   s = s.replace(/\u00e2\u0080\u009d/g, '\u201d');
-  s = s.replace(/â€/g, '\u201d');
+  s = s.replace(/Ã¢â‚¬/g, '\u201d');
   // En dash U+2013 (0xE2 0x80 0x93)
   s = s.replace(/\u00e2\u0080\u0093/g, '\u2013');
-  s = s.replace(/â€"/g, '\u2013');
+  s = s.replace(/Ã¢â‚¬"/g, '\u2013');
   // Em dash U+2014 (0xE2 0x80 0x94)
   s = s.replace(/\u00e2\u0080\u0094/g, '\u2014');
-  s = s.replace(/â€"/g, '\u2014');
+  s = s.replace(/Ã¢â‚¬"/g, '\u2014');
   // Ellipsis U+2026 (0xE2 0x80 0xA6)
   s = s.replace(/\u00e2\u0080\u00a6/g, '\u2026');
-  s = s.replace(/â€¦/g, '\u2026');
+  s = s.replace(/Ã¢â‚¬Â¦/g, '\u2026');
   // Indian Rupee U+20B9 (0xE2 0x82 0xB9)
   s = s.replace(/\u00e2\u0082\u00b9/g, '\u20b9');
-  s = s.replace(/â¹/g, '\u20b9');
+  s = s.replace(/Ã¢Â¹/g, '\u20b9');
   // Euro U+20AC (0xE2 0x82 0xAC)
   s = s.replace(/\u00e2\u0082\u00ac/g, '\u20ac');
-  s = s.replace(/â¬/g, '\u20ac');
+  s = s.replace(/Ã¢Â¬/g, '\u20ac');
   // Bullet U+2022 (0xE2 0x80 0xA2)
   s = s.replace(/\u00e2\u0080\u00a2/g, '\u2022');
   // Trademark U+2122 (0xE2 0x84 0xA2)
@@ -135,10 +135,10 @@ s = s.replace(/â/g, '');
   // Yen U+00A5 (0xC2 0xA5)
   s = s.replace(/\u00c2\u00a5/g, '\u00a5');
 
-  // Fallback: strip remaining lone â, Â, Ã sequences that are unrecognised mojibake
-  s = s.replace(/â[^\w\s]/g, '\'');
-  s = s.replace(/Â\s*/g, '');
-  s = s.replace(/Ã\S*/g, '');
+  // Fallback: strip remaining lone Ã¢, Ã‚, Ãƒ sequences that are unrecognised mojibake
+  s = s.replace(/Ã¢[^\w\s]/g, '\'');
+  s = s.replace(/Ã‚\s*/g, '');
+  s = s.replace(/Ãƒ\S*/g, '');
 
   return s;
 }
@@ -286,12 +286,17 @@ async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
       const desc = extractTag(itemXml, 'description').slice(0, 350);
       const pubDate = extractTag(itemXml, 'pubDate') || extractTag(itemXml, 'dc:date');
 
-      let link = extractTag(itemXml, 'link');
-      if (!link) {
-        const hrefMatch = itemXml.match(/href=["']([^"']+)["']/);
-        if (hrefMatch) link = hrefMatch[1];
+      // Extract link with raw regex to avoid URL stripping in extractTag
+      let link = '#';
+      const linkTagMatch = itemXml.match(/<link[^>]*>([^<]+)<\/link>/i);
+      if (linkTagMatch && linkTagMatch[1]) {
+        link = linkTagMatch[1].trim();
       }
-      if (!link) link = '#';
+      if (!link || link === '' || link === '#') {
+        const hrefMatch = itemXml.match(/href=["']([^"']+)["']/i);
+        if (hrefMatch && hrefMatch[1]) link = hrefMatch[1].trim();
+      }
+      if (!link || link === '') link = '#';
 
             if (!title || title.length < 5) continue;
 
@@ -349,7 +354,6 @@ export async function GET(req: Request) {
       : RSS_FEEDS;
 
     const results = await Promise.allSettled(feedsToFetch.map(f => fetchFeed(f)));
-
     const seen = new Set<string>();
     const all: LiveNewsItem[] = [];
 

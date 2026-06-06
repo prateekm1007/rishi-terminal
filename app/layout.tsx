@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { LanguageProvider } from "@/lib/language";
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{
         margin: 0,
         padding: 0,
-        background: "#020408",
+        background: "#09090b",
         overflowX: "hidden"
       }}>
         <AuthProvider>

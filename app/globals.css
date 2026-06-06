@@ -1051,3 +1051,115 @@ tr:hover td { background: rgba(31,41,59,0.4); }
   }
   /* ep-mobile-patch — marker for idempotency check */
 }
+/* ═══════════════════════════════════════════════════════════
+   APPLE-LEVEL REFINEMENT — Phase 1
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --bg-secondary: rgba(255,255,255,0.04);
+  --bg-card: rgba(255,255,255,0.03);
+  --border-primary: rgba(255,255,255,0.06);
+  --accent-gold: #D4AF37;
+  --accent-green: #22C55E;
+  --accent-red: #EF4444;
+}
+
+body {
+  background: #09090b !important;
+  background-image: none !important;
+}
+
+body::before {
+  display: none !important;
+}
+
+.card-sacred {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.card-sacred::after {
+  display: none !important;
+}
+
+.card-sacred:hover {
+  background: rgba(255,255,255,0.055) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+}
+
+.card {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.card::before {
+  display: none !important;
+}
+
+.card:hover {
+  border-color: rgba(255,255,255,0.1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+  transform: none !important;
+}
+
+.card-glass {
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+
+.stat-card {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+.stat-card::before {
+  display: none !important;
+}
+
+.stat-card:hover {
+  border-color: rgba(255,255,255,0.1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.15) !important;
+}
+
+@keyframes skp {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.skeleton {
+  background: rgba(255,255,255,0.04) !important;
+  border-radius: 6px;
+  animation: skp 1.6s ease-in-out infinite;
+}
+
+.page-container {
+  min-height: 100vh;
+  background: #09090b;
+}
+
+.page-header {
+  padding: 32px 0 0;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}

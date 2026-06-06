@@ -1,7 +1,7 @@
 ﻿import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const revalidate = 120;
 
 interface LiveNewsItem {
   id: string;

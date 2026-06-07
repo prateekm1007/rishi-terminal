@@ -44,31 +44,25 @@ function StatBox({ label, value, sub, color, onClick }: {
   return (
     <div
       onClick={onClick}
-      style={{
-        background: '#09090F',
-        border: '1px solid #1E293B',
-        borderRadius: 10,
-        padding: '14px 16px',
-        textAlign: 'center',
-        cursor: onClick ? 'pointer' : 'default'
-      }}
+      className="stat-unified"
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
-      <div style={{ fontSize: 8, color: '#475569', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: color || '#F1F5F9', fontFamily: 'JetBrains Mono, monospace' }}>
+      <div className="stat-label">{label}</div>
+      <div className="stat-value" style={{ color: color || 'var(--text-primary)' }}>
         {value}
       </div>
-      {sub && <div style={{ fontSize: 9, color: '#334155', marginTop: 4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>{sub}</div>}
     </div>
   );
 }
 
-function SectionTitle({ emoji, title, color = '#F59E0B' }: { emoji: string; title: string; color?: string }) {
+function SectionTitle({ emoji, title, color = 'var(--accent-gold)' }: { emoji: string; title: string; color?: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, paddingBottom: 10, borderBottom: '1px solid #1E293B' }}>
-      <span style={{ fontSize: 18 }}>{emoji}</span>
-      <span style={{ fontFamily: 'Cinzel, Georgia', fontSize: 15, color, letterSpacing: 2, fontWeight: 700 }}>{title}</span>
+    <div className="section-header">
+      <h2 className="section-header-title" style={{ color }}>
+        <span style={{ marginRight: 10 }}>{emoji}</span>
+        {title}
+      </h2>
     </div>
   );
 }
@@ -209,7 +203,7 @@ export default function MarketPulsePage() {
     return () => { cancelled = true; clearInterval(t); };
   }, []);
 
-  // Fetch hist30d (already live endpoint)
+  // Fetch hist30d
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -224,7 +218,7 @@ export default function MarketPulsePage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Build live context for agreement scoring (no fake FII/DII)
+  // Build live context
   useEffect(() => {
     let cancelled = false;
 
@@ -279,12 +273,12 @@ export default function MarketPulsePage() {
     score = clamp(Math.round(score), 0, 100);
 
     let m = 'NEUTRAL';
-    let color = '#F59E0B';
+    let color = 'var(--amber)';
     let description = 'Mixed signals. Use selective positioning.';
 
-    if (score >= 70) { m = 'BULLISH'; color = '#10B981'; description = 'Broad strength and positive momentum.'; }
+    if (score >= 70) { m = 'BULLISH'; color = 'var(--green)'; description = 'Broad strength and positive momentum.'; }
     else if (score >= 55) { m = 'CAUTIOUSLY BULLISH'; color = '#34D399'; description = 'Positive bias, but stay selective.'; }
-    else if (score <= 30) { m = 'BEARISH'; color = '#EF4444'; description = 'Risk-off conditions. Reduce beta.'; }
+    else if (score <= 30) { m = 'BEARISH'; color = 'var(--red)'; description = 'Risk-off conditions. Reduce beta.'; }
     else if (score <= 45) { m = 'CAUTIOUSLY BEARISH'; color = '#FB923C'; description = 'Weak undertone. Prefer defensives.'; }
 
     return { mood: m, score, color, description };
@@ -306,7 +300,7 @@ export default function MarketPulsePage() {
     const avgAgreement = Math.round(agreements.reduce((a, b) => a + b, 0) / Math.max(1, agreements.length));
     const spread = Math.max(...agreements) - Math.min(...agreements);
     const label = avgAgreement >= 70 ? 'High Conviction' : avgAgreement >= 55 ? 'Moderate' : 'Low Conviction';
-    const color = avgAgreement >= 70 ? '#10B981' : avgAgreement >= 55 ? '#F59E0B' : '#EF4444';
+    const color = avgAgreement >= 70 ? 'var(--green)' : avgAgreement >= 55 ? 'var(--amber)' : 'var(--red)';
     return { avgAgreement, spread, label, color };
   }, [dynamicStances]);
 
@@ -344,572 +338,557 @@ export default function MarketPulsePage() {
   };
 
   return (
-    <div style={{ fontFamily: 'JetBrains Mono, monospace', background: '#050508', color: '#E2E8F0', minHeight: '100vh', padding: 24, maxWidth: 1400, margin: '0 auto' }}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" />
-
+    <div className="page-bg">
       {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <Link href="/" style={{ color: '#F59E0B', textDecoration: 'none', fontSize: 11, display: 'block', marginBottom: 8 }}>← Dashboard</Link>
-          <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 20, color: '#F59E0B', letterSpacing: 3, fontWeight: 700 }}>🌐 ECONOMY PLUS</div>
-          <div style={{ fontSize: 9, color: '#334155', letterSpacing: 2, marginTop: 3 }}>MACRO INTELLIGENCE · PHILOSOPHER COUNCIL · REGIME ANALYSIS</div>
+      <div className="page-content" style={{ paddingBottom: 0 }}>
+        <Link href="/" className="back-link">← Dashboard</Link>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h1 className="page-title" style={{ color: 'var(--accent-gold)' }}>
+              🌐 Economy Plus
+            </h1>
+            <p className="page-subtitle">
+              Macro Intelligence · Philosopher Council · Regime Analysis
+            </p>
+          </div>
+
+          <div className="card-unified" style={{ padding: '16px 24px', minWidth: 160, textAlign: 'center' }}>
+            <div className="stat-label">MARKET MOOD</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: mood.color, fontFamily: 'var(--font-serif)', lineHeight: 1 }}>
+              {mood.mood}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>Score: {mood.score}/100</div>
+          </div>
         </div>
 
-        <div style={{ background: mood.color + '15', border: '1px solid ' + mood.color + '40', borderRadius: 10, padding: '12px 20px', textAlign: 'center' }}>
-          <div style={{ fontSize: 9, color: '#475569', letterSpacing: 2, marginBottom: 4 }}>MARKET MOOD</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: mood.color, fontFamily: 'Cinzel, Georgia' }}>{mood.mood}</div>
-          <div style={{ fontSize: 9, color: '#475569', marginTop: 4 }}>Score: {mood.score}/100</div>
+        <div className="card-unified" style={{ padding: '12px 18px', marginBottom: 24, borderLeft: `3px solid ${mood.color}` }}>
+          <div style={{ fontSize: 13, color: mood.color }}>
+            ⚡ {mood.description}
+          </div>
         </div>
-      </div>
-
-      <div style={{ background: mood.color + '10', border: '1px solid ' + mood.color + '25', borderRadius: 8, padding: '10px 16px', marginBottom: 24, fontSize: 11, color: mood.color }}>
-        ⚡ {mood.description}
       </div>
 
       {/* REGIME BANNER */}
-      <div style={{ background: '#09090F', border: '1px solid #D4AF37', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <div style={{ fontSize: 9, color: '#64748B', letterSpacing: 2 }}>CURRENT MACRO REGIME</div>
-            <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 16, color: '#D4AF37', letterSpacing: 2, fontWeight: 700, marginTop: 4 }}>
-              {regime.label}
-            </div>
-            <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 6 }}>{regime.sublabel}</div>
-          </div>
-
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 9, color: '#64748B', letterSpacing: 2 }}>CONSENSUS SCORE</div>
-            <div style={{ marginTop: 4, fontSize: 14, fontWeight: 800, color: consensus.color }}>
-              {consensus.avgAgreement}/100 · {consensus.label}
-            </div>
-            <div style={{ marginTop: 6, fontSize: 10, color: '#94A3B8' }}>
-              Disagreement Index: <span style={{ color: consensus.spread >= 55 ? '#EF4444' : consensus.spread >= 35 ? '#F59E0B' : '#10B981', fontWeight: 800 }}>{consensus.spread}</span>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12, height: 6, background: '#1E293B', borderRadius: 999, overflow: 'hidden' }}>
-          <div style={{ width: Math.min(100, Math.max(0, consensus.spread)) + '%', height: '100%', background: consensus.spread >= 55 ? '#EF4444' : consensus.spread >= 35 ? '#F59E0B' : '#10B981' }} />
-        </div>
-
-        <div style={{ marginTop: 12, fontSize: 11, color: '#CBD5E1', lineHeight: 1.6 }}>
-          <span style={{ color: '#D4AF37', fontWeight: 800 }}>What the Council Recommends:</span> {councilReco}
-        </div>
-      </div>
-
-      {/* LENS */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-        <span style={{ fontSize: 10, color: '#475569', letterSpacing: 1 }}>LENS:</span>
-        {(['All', 'Hayek', 'Friedman', 'Keynes'] as const).map(lens => (
-          <button
-            key={lens}
-            onClick={() => setActiveLens(lens)}
-            style={{
-              padding: '5px 14px',
-              borderRadius: 999,
-              cursor: 'pointer',
-              fontFamily: 'JetBrains Mono, monospace',
-              fontSize: 10,
-              fontWeight: 700,
-              background: activeLens === lens ? '#D4AF37' : '#09090F',
-              color: activeLens === lens ? '#050508' : '#475569',
-              border: activeLens === lens ? '1px solid #D4AF37' : '1px solid #1E293B'
-            }}
-          >
-            {lens === 'All' ? '🌐 All' : lens === 'Hayek' ? '🏛️ Hayek' : lens === 'Friedman' ? '📊 Friedman' : '⚙️ Keynes'}
-          </button>
-        ))}
-      </div>
-
-      {/* TAB BAR */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            style={{
-              padding: '8px 16px',
-              background: tab === t.key ? '#F59E0B15' : '#09090F',
-              border: tab === t.key ? '1px solid #F59E0B' : '1px solid #1E293B',
-              borderRadius: 8,
-              color: tab === t.key ? '#F59E0B' : '#475569',
-              cursor: 'pointer',
-              fontSize: 11,
-              fontFamily: 'JetBrains Mono, monospace',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6
-            }}
-          >
-            {t.emoji} {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* OVERVIEW */}
-      {tab === 'overview' && (
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10, marginBottom: 24 }}>
-            <StatBox label="NIFTY 50" value={priceStr('NIFTY50', 2)} sub={pctStr('NIFTY50')} color={getPct(live('NIFTY50')) >= 0 ? '#10B981' : '#EF4444'} />
-            <StatBox label="SENSEX" value={priceStr('SENSEX', 2)} sub={pctStr('SENSEX')} color={getPct(live('SENSEX')) >= 0 ? '#10B981' : '#EF4444'} />
-            <StatBox label="BANK NIFTY" value={priceStr('BANK_NIFTY', 2)} sub={pctStr('BANK_NIFTY')} color={getPct(live('BANK_NIFTY')) >= 0 ? '#10B981' : '#EF4444'} />
-            <StatBox label="USD/INR" value={priceStr('USD/INR', 4)} sub={pctStr('USD/INR')} color={getPct(live('USD/INR')) >= 0 ? '#EF4444' : '#10B981'} />
-            <StatBox label="GOLD" value={priceStr('GOLD', 2)} sub={pctStr('GOLD')} color={getPct(live('GOLD')) >= 0 ? '#10B981' : '#EF4444'} />
-            <StatBox label="BTC" value={priceStr('BTC', 0)} sub={pctStr('BTC')} color={getPct(live('BTC')) >= 0 ? '#10B981' : '#EF4444'} />
-
-            <StatBox
-              label="Breadth (A/D)"
-              value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'}
-              sub={breadth?.breadth ? `${breadth.breadth.advances} up · ${breadth.breadth.declines} down` : undefined}
-              color="#F59E0B"
-              onClick={() => setTab('breadth')}
-            />
-            <StatBox
-              label="Block Deals"
-              value={blocks?.count ? String(blocks.count) : '—'}
-              sub={blocks?.timestamp ? String(blocks.timestamp) : undefined}
-              color="#D4AF37"
-              onClick={() => setTab('blocks')}
-            />
-          </div>
-
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, padding: 20 }}>
-            <SectionTitle emoji="📈" title="SECTOR SNAPSHOT (NSE INDICES)" />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
-              {(breadth?.sectors || []).slice(0, 12).map((s: any) => {
-                const pct = safeNum(s.changePct) ?? 0;
-                const col = pct >= 0 ? '#10B981' : '#EF4444';
-                return (
-                  <div key={s.sector} style={{ background: '#050508', border: '1px solid #1E293B', borderRadius: 10, padding: 14 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: '#F1F5F9' }}>{s.sector}</div>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: col }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</div>
-                    </div>
-                    <div style={{ marginTop: 8, fontSize: 10, color: '#94A3B8' }}>
-                      Last: {safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MACRO */}
-      {tab === 'macro' && (
-        <div>
-          <div style={{ background: '#09090F', border: '1px solid #D4AF37', borderRadius: 12, padding: 20, marginBottom: 24 }}>
-            <div style={{ fontSize: 10, color: '#475569', letterSpacing: 2, marginBottom: 6 }}>CURRENT MACRO REGIME</div>
-            <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 18, color: '#D4AF37', letterSpacing: 2, fontWeight: 700 }}>
-              {regime.label}
-            </div>
-            <div style={{ fontSize: 10, color: '#64748B', marginTop: 6 }}>{regime.sublabel}</div>
-            <div style={{ fontSize: 11, color: '#CBD5E1', lineHeight: 1.7, marginTop: 12 }}>{regime.description}</div>
-            <div style={{ marginTop: 12, fontSize: 10, color: '#475569' }}>
-              Historical Analog: {regime.historicalAnalog} ({regime.analogPeriod})
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 24 }}>
-            {MACRO_INDICATORS.map(ind => (
-              <div key={ind.label} style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 10, padding: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                  <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, textTransform: 'uppercase' }}>{ind.label}</div>
-                  <div style={{
-                    fontSize: 12,
-                    fontWeight: 800,
-                    color: ind.signal === 'bullish' ? '#10B981' : ind.signal === 'bearish' ? '#EF4444' : '#F59E0B'
-                  }}>
-                    {ind.value}{ind.unit}
-                  </div>
-                </div>
-                <div style={{ fontSize: 10, color: '#94A3B8', lineHeight: 1.6, marginTop: 8 }}>{ind.description}</div>
-                <div style={{ fontSize: 9, color: '#475569', marginTop: 10 }}>
-                  As of {ind.asOf} · {ind.trendValue}
-                </div>
+      <div className="page-content" style={{ paddingTop: 0 }}>
+        <div className="card-unified" style={{ borderColor: 'var(--border-gold)', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>CURRENT MACRO REGIME</div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginTop: 4 }}>
+                {regime.label}
               </div>
-            ))}
+              <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6 }}>{regime.sublabel}</div>
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>CONSENSUS SCORE</div>
+              <div style={{ marginTop: 4, fontSize: 16, fontWeight: 800, color: consensus.color, fontFamily: 'var(--font-mono)' }}>
+                {consensus.avgAgreement}/100 · {consensus.label}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
+                Disagreement Index: <span style={{ color: consensus.spread >= 55 ? 'var(--red)' : consensus.spread >= 35 ? 'var(--amber)' : 'var(--green)', fontWeight: 800 }}>{consensus.spread}</span>
+              </div>
+            </div>
           </div>
 
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, padding: 20 }}>
-            <SectionTitle emoji="💱" title="CURRENCY IMPACT — INR SNAPSHOT" color="#D4AF37" />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-              {(currencies || []).map((c: any) => {
-                const pos = (safeNum(c.changePct) ?? 0) >= 0;
-                const col = pos ? '#EF4444' : '#10B981';
-                const rate = safeNum(c.rate);
-                return (
-                  <div key={c.pair} style={{ background: '#050508', border: '1px solid #1E293B', borderRadius: 10, padding: 14 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                      <div style={{ fontSize: 12, fontWeight: 900, color: '#F1F5F9' }}>{c.pair}</div>
-                      <div style={{ fontSize: 12, fontWeight: 900, color: '#F1F5F9' }}>{rate !== null ? rate.toFixed(4) : '—'}</div>
-                    </div>
-                    <div style={{ marginTop: 8, fontSize: 10, color: col, fontWeight: 800 }}>
-                      {(safeNum(c.changePct) !== null) ? ((pos ? '+' : '') + Number(c.changePct).toFixed(2) + '%') : '—'}
-                      {' '}
-                      {(safeNum(c.change) !== null) ? '(' + (pos ? '+' : '') + Number(c.change).toFixed(4) + ')' : ''}
-                    </div>
-                    <div style={{ marginTop: 8, fontSize: 10, color: '#94A3B8', lineHeight: 1.6 }}>{c.signal || ''}</div>
-                    <div style={{ marginTop: 10, fontSize: 9, color: '#475569' }}>
-                      Trend: {c.trend || '—'} · Vol: {c.volatility || '—'}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          <div style={{ marginTop: 14, height: 8, background: 'rgba(51,65,85,0.3)', borderRadius: 999, overflow: 'hidden' }}>
+            <div style={{ width: Math.min(100, Math.max(0, consensus.spread)) + '%', height: '100%', background: consensus.spread >= 55 ? 'var(--red)' : consensus.spread >= 35 ? 'var(--amber)' : 'var(--green)', borderRadius: 999 }} />
+          </div>
+
+          <div style={{ marginTop: 14, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+            <span style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>What the Council Recommends:</span> {councilReco}
           </div>
         </div>
-      )}
 
-      {/* ROTATION */}
-      {tab === 'rotation' && (
-        <div>
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, padding: 16, marginBottom: 24 }}>
-            <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 14, color: '#D4AF37', letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>
-              🔄 SECTOR ROTATION OUTLOOK
-            </div>
-            <div style={{ fontSize: 11, color: '#94A3B8', lineHeight: 1.6 }}>
-              Scores are regime-based (updated when macro view is updated). Live market data is shown in Overview/Breadth/Currency/Blocks tabs.
-            </div>
-          </div>
-
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, overflow: 'hidden', marginBottom: 24 }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-                <thead>
-                  <tr style={{ background: '#06060D' }}>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', color: '#475569', fontSize: 9, letterSpacing: 1, minWidth: 140 }}>SECTOR</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#818CF8', fontSize: 9, letterSpacing: 1 }}>🏛️ HAYEK</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#34D399', fontSize: 9, letterSpacing: 1 }}>📊 FRIEDMAN</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#FB923C', fontSize: 9, letterSpacing: 1 }}>⚙️ KEYNES</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#D4AF37', fontSize: 9, letterSpacing: 1 }}>CONSENSUS</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#475569', fontSize: 9, letterSpacing: 1 }}>SPREAD</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#475569', fontSize: 9, letterSpacing: 1 }}>BIAS</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', color: '#475569', fontSize: 9, letterSpacing: 1, minWidth: 180 }}>KEY MACRO DRIVER</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {SECTOR_ROTATION.map((s, i) => {
-                    const spreadCol = s.spread >= 50 ? '#EF4444' : s.spread >= 30 ? '#F59E0B' : '#10B981';
-                    const scoreCell = (score: number) => {
-                      const bg = score >= 70 ? '#10B98120' : score >= 55 ? '#F59E0B15' : '#EF444415';
-                      const fg = score >= 70 ? '#10B981' : score >= 55 ? '#F59E0B' : '#EF4444';
-                      return { bg, fg };
-                    };
-                    const hc = scoreCell(s.hayek.score);
-                    const fc = scoreCell(s.friedman.score);
-                    const kc = scoreCell(s.keynes.score);
-                    const cc = scoreCell(s.consensus);
-
-                    return (
-                      <tr key={s.sector} style={{ borderBottom: '1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#070710' }}>
-                        <td style={{ padding: '12px 16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 16 }}>{s.icon}</span>
-                            <span style={{ color: '#F1F5F9', fontWeight: 700 }}>{s.sector}</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center', background: hc.bg }}>
-                          <div style={{ fontWeight: 800, color: hc.fg }}>{s.hayek.score}</div>
-                          <div style={{ fontSize: 9, color: '#475569', marginTop: 2 }}>{s.hayek.stance}</div>
-                        </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center', background: fc.bg }}>
-                          <div style={{ fontWeight: 800, color: fc.fg }}>{s.friedman.score}</div>
-                          <div style={{ fontSize: 9, color: '#475569', marginTop: 2 }}>{s.friedman.stance}</div>
-                        </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center', background: kc.bg }}>
-                          <div style={{ fontWeight: 800, color: kc.fg }}>{s.keynes.score}</div>
-                          <div style={{ fontSize: 9, color: '#475569', marginTop: 2 }}>{s.keynes.stance}</div>
-                        </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center', background: cc.bg }}>
-                          <div style={{ fontWeight: 800, color: cc.fg, fontSize: 15 }}>{s.consensus}</div>
-                        </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          <span style={{ color: spreadCol, fontWeight: 700 }}>{s.spread}</span>
-                        </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          <span style={{
-                            background: s.biasColor + '20',
-                            border: '1px solid ' + s.biasColor + '50',
-                            color: s.biasColor,
-                            padding: '4px 10px',
-                            borderRadius: 999,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {s.forwardBias}
-                          </span>
-                        </td>
-                        <td style={{ padding: '12px 16px', color: '#64748B', fontSize: 10 }}>{s.keyMacroDriver}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+        {/* LENS */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, fontFamily: 'var(--font-mono)' }}>LENS:</span>
+          {(['All', 'Hayek', 'Friedman', 'Keynes'] as const).map(lens => (
+            <button
+              key={lens}
+              onClick={() => setActiveLens(lens)}
+              className={activeLens === lens ? 'filter-pill active' : 'filter-pill'}
+            >
+              {lens === 'All' ? '🌐 All' : lens === 'Hayek' ? '🏛️ Hayek' : lens === 'Friedman' ? '📊 Friedman' : '⚙️ Keynes'}
+            </button>
+          ))}
         </div>
-      )}
 
-      {/* EVIDENCE */}
-      {tab === 'evidence' && (
-        <div>
-          <div style={{ background: '#09090F', border: '1px solid #D4AF37', borderRadius: 12, padding: 16, marginBottom: 24 }}>
-            <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 14, color: '#D4AF37', letterSpacing: 2, fontWeight: 700, marginBottom: 8 }}>
-              📚 HISTORICAL EVIDENCE ENGINE
+        {/* TAB BAR */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 28, flexWrap: 'wrap', overflowX: 'auto' }}>
+          {tabs.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={tab === t.key ? 'tab-btn active' : 'tab-btn'}
+            >
+              {t.emoji} {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* TAB CONTENT */}
+      <div className="page-content" style={{ paddingTop: 0 }}>
+
+        {/* OVERVIEW */}
+        {tab === 'overview' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginBottom: 28 }}>
+              <StatBox label="NIFTY 50" value={priceStr('NIFTY50', 2)} sub={pctStr('NIFTY50')} color={getPct(live('NIFTY50')) >= 0 ? 'var(--green)' : 'var(--red)'} />
+              <StatBox label="SENSEX" value={priceStr('SENSEX', 2)} sub={pctStr('SENSEX')} color={getPct(live('SENSEX')) >= 0 ? 'var(--green)' : 'var(--red)'} />
+              <StatBox label="BANK NIFTY" value={priceStr('BANK_NIFTY', 2)} sub={pctStr('BANK_NIFTY')} color={getPct(live('BANK_NIFTY')) >= 0 ? 'var(--green)' : 'var(--red)'} />
+              <StatBox label="USD/INR" value={priceStr('USD/INR', 4)} sub={pctStr('USD/INR')} color={getPct(live('USD/INR')) >= 0 ? 'var(--red)' : 'var(--green)'} />
+              <StatBox label="GOLD" value={priceStr('GOLD', 2)} sub={pctStr('GOLD')} color={getPct(live('GOLD')) >= 0 ? 'var(--green)' : 'var(--red)'} />
+              <StatBox label="BTC" value={priceStr('BTC', 0)} sub={pctStr('BTC')} color={getPct(live('BTC')) >= 0 ? 'var(--green)' : 'var(--red)'} />
+              <StatBox
+                label="Breadth (A/D)"
+                value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'}
+                sub={breadth?.breadth ? `${breadth.breadth.advances} up · ${breadth.breadth.declines} down` : undefined}
+                color="var(--amber)"
+                onClick={() => setTab('breadth')}
+              />
+              <StatBox
+                label="Block Deals"
+                value={blocks?.count ? String(blocks.count) : '—'}
+                sub={blocks?.timestamp ? String(blocks.timestamp) : undefined}
+                color="var(--accent-gold)"
+                onClick={() => setTab('blocks')}
+              />
             </div>
-            <div style={{ fontSize: 11, color: '#94A3B8', lineHeight: 1.6 }}>
-              Evidence cards: macro condition → historical outcome. Filtered by lens.
-            </div>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14 }}>
-            {HISTORICAL_CORRELATIONS
-              .filter(c => activeLens === 'All' || c.philosopher === activeLens || c.philosopher === 'All')
-              .map(c => (
-                <div key={c.id} style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, padding: 18, position: 'relative' }}>
-                  {c.regimeMatch && (
-                    <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, color: '#10B981', background: '#10B98115', border: '1px solid #10B98130', padding: '3px 8px', borderRadius: 999, fontWeight: 700 }}>
-                      ✓ CURRENT REGIME MATCH
-                    </div>
-                  )}
-
-                  <div style={{ fontSize: 12, color: '#F1F5F9', fontWeight: 700, lineHeight: 1.4, marginBottom: 12, paddingRight: 100 }}>
-                    {c.title}
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
-                    <div style={{ background: '#050508', border: '1px solid #1E293B', borderRadius: 10, padding: 10, textAlign: 'center' }}>
-                      <div style={{ fontSize: 9, color: '#475569' }}>WIN RATE</div>
-                      <div style={{ fontSize: 18, fontWeight: 900, color: c.winRate >= 75 ? '#10B981' : c.winRate >= 60 ? '#F59E0B' : '#EF4444' }}>
-                        {c.winRate}%
+            <div className="card-unified">
+              <SectionTitle emoji="📈" title="SECTOR SNAPSHOT (NSE INDICES)" />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+                {(breadth?.sectors || []).slice(0, 12).map((s: any) => {
+                  const pct = safeNum(s.changePct) ?? 0;
+                  const col = pct >= 0 ? 'var(--green)' : 'var(--red)';
+                  return (
+                    <div key={s.sector} className="card-unified" style={{ padding: 14 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>{s.sector}</div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: col, fontFamily: 'var(--font-mono)' }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</div>
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                        Last: {safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}
                       </div>
                     </div>
-                    <div style={{ background: '#050508', border: '1px solid #1E293B', borderRadius: 10, padding: 10, textAlign: 'center' }}>
-                      <div style={{ fontSize: 9, color: '#475569' }}>AVG</div>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: '#D4AF37' }}>{c.avgReturn}</div>
-                    </div>
-                    <div style={{ background: '#050508', border: '1px solid #1E293B', borderRadius: 10, padding: 10, textAlign: 'center' }}>
-                      <div style={{ fontSize: 9, color: '#475569' }}>N</div>
-                      <div style={{ fontSize: 18, fontWeight: 900, color: '#F1F5F9' }}>{c.instances}</div>
-                    </div>
-                  </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
-                  <div style={{ fontSize: 10, color: '#64748B', lineHeight: 1.6, marginBottom: 8 }}>
-                    <span style={{ color: '#94A3B8', fontWeight: 700 }}>Condition: </span>{c.condition}
-                  </div>
-                  <div style={{ fontSize: 10, color: '#64748B', lineHeight: 1.6, marginBottom: 10 }}>
-                    <span style={{ color: '#94A3B8', fontWeight: 700 }}>Outcome: </span>{c.outcome}
-                  </div>
+        {/* MACRO */}
+        {tab === 'macro' && (
+          <div>
+            <div className="card-unified" style={{ borderColor: 'var(--border-gold)', marginBottom: 24 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6, fontFamily: 'var(--font-mono)' }}>CURRENT MACRO REGIME</div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700 }}>
+                {regime.label}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{regime.sublabel}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginTop: 14 }}>{regime.description}</div>
+              <div style={{ marginTop: 14, fontSize: 11, color: 'var(--text-muted)' }}>
+                Historical Analog: {regime.historicalAnalog} ({regime.analogPeriod})
+              </div>
+            </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 9, color: c.confidenceColor, background: c.confidenceColor + '15', border: '1px solid ' + c.confidenceColor + '30', padding: '3px 8px', borderRadius: 999, fontWeight: 700 }}>
-                      {c.confidence} Confidence
-                    </span>
-                    <span style={{ fontSize: 9, color: c.philosopherColor }}>
-                      {c.philosopher}
-                    </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 24 }}>
+              {MACRO_INDICATORS.map(ind => (
+                <div key={ind.label} className="card-unified" style={{ padding: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>{ind.label}</div>
+                    <div style={{
+                      fontSize: 14,
+                      fontWeight: 800,
+                      fontFamily: 'var(--font-mono)',
+                      color: ind.signal === 'bullish' ? 'var(--green)' : ind.signal === 'bearish' ? 'var(--red)' : 'var(--amber)'
+                    }}>
+                      {ind.value}{ind.unit}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{ind.description}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10, fontFamily: 'var(--font-mono)' }}>
+                    As of {ind.asOf} · {ind.trendValue}
                   </div>
                 </div>
               ))}
-          </div>
-        </div>
-      )}
-
-      {/* CURRENCY TAB (sensitivity matrix is structural; live rates shown in Macro tab) */}
-      {tab === 'currency' && (
-        <div>
-          <div style={{ background: '#09090F', border: '1px solid #D4AF37', borderRadius: 12, padding: 16, marginBottom: 24 }}>
-            <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 14, color: '#D4AF37', letterSpacing: 2, fontWeight: 700, marginBottom: 8 }}>
-              💱 CURRENCY SENSITIVITY MATRIX
             </div>
-            <div style={{ fontSize: 11, color: '#94A3B8', lineHeight: 1.6 }}>
-              Estimated earnings sensitivity per 1% INR move (heuristic).
+
+            <div className="card-unified">
+              <SectionTitle emoji="💱" title="CURRENCY IMPACT — INR SNAPSHOT" color="var(--accent-gold)" />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
+                {(currencies || []).map((c: any) => {
+                  const pos = (safeNum(c.changePct) ?? 0) >= 0;
+                  const col = pos ? 'var(--red)' : 'var(--green)';
+                  const rate = safeNum(c.rate);
+                  return (
+                    <div key={c.pair} className="card-unified" style={{ padding: 16 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10, marginBottom: 10 }}>
+                        <div style={{ fontSize: 13, fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{c.pair}</div>
+                        <div style={{ fontSize: 13, fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{rate !== null ? rate.toFixed(4) : '—'}</div>
+                      </div>
+                      <div style={{ fontSize: 11, color: col, fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+                        {(safeNum(c.changePct) !== null) ? ((pos ? '+' : '') + Number(c.changePct).toFixed(2) + '%') : '—'}
+                        {' '}
+                        {(safeNum(c.change) !== null) ? '(' + (pos ? '+' : '') + Number(c.change).toFixed(4) + ')' : ''}
+                      </div>
+                      <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{c.signal || ''}</div>
+                      <div style={{ marginTop: 10, fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                        Trend: {c.trend || '—'} · Vol: {c.volatility || '—'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
+        )}
 
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-                <thead>
-                  <tr style={{ background: '#06060D' }}>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', color: '#475569', fontSize: 9, letterSpacing: 1 }}>SECTOR</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#475569', fontSize: 9, letterSpacing: 1 }}>REV</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#475569', fontSize: 9, letterSpacing: 1 }}>COST</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#10B981', fontSize: 9, letterSpacing: 1 }}>INR WEAK +1%</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#EF4444', fontSize: 9, letterSpacing: 1 }}>INR STRONG +1%</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'center', color: '#475569', fontSize: 9, letterSpacing: 1 }}>BIAS</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', color: '#475569', fontSize: 9, letterSpacing: 1 }}>EXAMPLES</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {CURRENCY_SENSITIVITY.map((s, i) => (
-                    <tr key={s.sector} style={{ borderBottom: '1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#070710' }}>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{ fontSize: 16 }}>{s.icon}</span>
-                        <span style={{ color: '#F1F5F9', fontWeight: 700, marginLeft: 8 }}>{s.sector}</span>
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94A3B8', fontSize: 10 }}>{s.revenueExposure}</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center', color: '#94A3B8', fontSize: 10 }}>{s.costExposure}</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 900, color: s.inrDepreciation1pct >= 0 ? '#10B981' : '#EF4444' }}>
-                        {(s.inrDepreciation1pct >= 0 ? '+' : '') + s.inrDepreciation1pct.toFixed(1) + '%'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 900, color: s.inrAppreciation1pct >= 0 ? '#10B981' : '#EF4444' }}>
-                        {(s.inrAppreciation1pct >= 0 ? '+' : '') + s.inrAppreciation1pct.toFixed(1) + '%'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                        <span style={{ fontSize: 9, color: s.biasColor, background: s.biasColor + '18', border: '1px solid ' + s.biasColor + '40', padding: '4px 10px', borderRadius: 999, fontWeight: 700 }}>
-                          {s.netBias}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#475569', fontSize: 10 }}>{s.examples.join(' · ')}</td>
+        {/* ROTATION */}
+        {tab === 'rotation' && (
+          <div>
+            <div className="card-unified" style={{ padding: 18, marginBottom: 24 }}>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>
+                🔄 SECTOR ROTATION OUTLOOK
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Scores are regime-based (updated when macro view is updated). Live market data is shown in Overview/Breadth/Currency/Blocks tabs.
+              </div>
+            </div>
+
+            <div className="card-unified" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="table-sacred" style={{ fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ minWidth: 140 }}>SECTOR</th>
+                      <th style={{ textAlign: 'center' }}>🏛️ HAYEK</th>
+                      <th style={{ textAlign: 'center' }}>📊 FRIEDMAN</th>
+                      <th style={{ textAlign: 'center' }}>⚙️ KEYNES</th>
+                      <th style={{ textAlign: 'center' }}>CONSENSUS</th>
+                      <th style={{ textAlign: 'center' }}>SPREAD</th>
+                      <th style={{ textAlign: 'center' }}>BIAS</th>
+                      <th style={{ minWidth: 180 }}>KEY MACRO DRIVER</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {SECTOR_ROTATION.map((s, i) => {
+                      const spreadCol = s.spread >= 50 ? 'var(--red)' : s.spread >= 30 ? 'var(--amber)' : 'var(--green)';
+                      const scoreCell = (score: number) => {
+                        const bg = score >= 70 ? 'rgba(34,197,94,0.1)' : score >= 55 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
+                        const fg = score >= 70 ? 'var(--green)' : score >= 55 ? 'var(--amber)' : 'var(--red)';
+                        return { bg, fg };
+                      };
+                      const hc = scoreCell(s.hayek.score);
+                      const fc = scoreCell(s.friedman.score);
+                      const kc = scoreCell(s.keynes.score);
+                      const cc = scoreCell(s.consensus);
+
+                      return (
+                        <tr key={s.sector}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: 16 }}>{s.icon}</span>
+                              <span style={{ fontWeight: 700 }}>{s.sector}</span>
+                            </div>
+                          </td>
+                          <td style={{ textAlign: 'center', background: hc.bg }}>
+                            <div style={{ fontWeight: 800, color: hc.fg, fontFamily: 'var(--font-mono)' }}>{s.hayek.score}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{s.hayek.stance}</div>
+                          </td>
+                          <td style={{ textAlign: 'center', background: fc.bg }}>
+                            <div style={{ fontWeight: 800, color: fc.fg, fontFamily: 'var(--font-mono)' }}>{s.friedman.score}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{s.friedman.stance}</div>
+                          </td>
+                          <td style={{ textAlign: 'center', background: kc.bg }}>
+                            <div style={{ fontWeight: 800, color: kc.fg, fontFamily: 'var(--font-mono)' }}>{s.keynes.score}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{s.keynes.stance}</div>
+                          </td>
+                          <td style={{ textAlign: 'center', background: cc.bg }}>
+                            <div style={{ fontWeight: 800, color: cc.fg, fontSize: 16, fontFamily: 'var(--font-mono)' }}>{s.consensus}</div>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <span style={{ color: spreadCol, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{s.spread}</span>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <span className="badge" style={{
+                              background: s.biasColor + '20',
+                              borderColor: s.biasColor + '50',
+                              color: s.biasColor,
+                              fontSize: 10
+                            }}>
+                              {s.forwardBias}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.keyMacroDriver}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* DAILY BRIEF */}
-      {tab === 'brief' && (
-        <div>
-          <div style={{ background: 'linear-gradient(135deg, #0A0F1C, #050508)', border: '1px solid #D4AF37', borderRadius: 12, padding: 24, marginBottom: 24 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 2, marginBottom: 4 }}>{brief.date}</div>
-            <div style={{ fontFamily: 'Cinzel, Georgia', fontSize: 20, color: '#D4AF37', letterSpacing: 2, fontWeight: 700, marginBottom: 8 }}>
-              📰 {brief.headline}
+        {/* EVIDENCE, CURRENCY, BRIEF, BREADTH, BLOCKS — Keep original inline styles but within new container */}
+        {tab === 'evidence' && (
+          <div>
+            <div style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: 18, marginBottom: 24 }}>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
+                📚 HISTORICAL EVIDENCE ENGINE
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Evidence cards: macro condition → historical outcome. Filtered by lens.
+              </div>
             </div>
-            <div style={{ fontSize: 10, color: '#475569', letterSpacing: 1 }}>{brief.regimeLabel}</div>
-          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {brief.sections
-              .filter(s => activeLens === 'All' || !s.philosopher || s.philosopher === activeLens)
-              .map((s, i) => (
-                <div key={i} style={{ background: '#09090F', border: '1px solid ' + (s.philosopherColor ? s.philosopherColor + '30' : '#1E293B'), borderLeft: '3px solid ' + (s.philosopherColor || '#D4AF37'), borderRadius: 10, padding: 18 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <span style={{ fontSize: 18 }}>{s.icon}</span>
-                    <div style={{ fontWeight: 700, color: s.philosopherColor || '#D4AF37', fontSize: 12 }}>{s.title}</div>
-                    {s.philosopher && (
-                      <span style={{ marginLeft: 'auto', fontSize: 9, color: s.philosopherColor, background: s.philosopherColor + '15', border: '1px solid ' + s.philosopherColor + '30', padding: '3px 8px', borderRadius: 999 }}>
-                        {s.philosopher}
-                      </span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+              {HISTORICAL_CORRELATIONS
+                .filter(c => activeLens === 'All' || c.philosopher === activeLens || c.philosopher === 'All')
+                .map(c => (
+                  <div key={c.id} style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 16, padding: 20, position: 'relative' }}>
+                    {c.regimeMatch && (
+                      <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, color: 'var(--green)', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '4px 10px', borderRadius: 999, fontWeight: 700 }}>
+                        ✓ CURRENT REGIME MATCH
+                      </div>
                     )}
+
+                    <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1.4, marginBottom: 14, paddingRight: 100 }}>
+                      {c.title}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
+                      <div style={{ background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, padding: 12, textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>WIN RATE</div>
+                        <div style={{ fontSize: 20, fontWeight: 900, color: c.winRate >= 75 ? 'var(--green)' : c.winRate >= 60 ? 'var(--amber)' : 'var(--red)' }}>
+                          {c.winRate}%
+                        </div>
+                      </div>
+                      <div style={{ background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, padding: 12, textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>AVG</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent-gold)' }}>{c.avgReturn}</div>
+                      </div>
+                      <div style={{ background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, padding: 12, textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>N</div>
+                        <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--text-primary)' }}>{c.instances}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 8 }}>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>Condition: </span>{c.condition}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 12 }}>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>Outcome: </span>{c.outcome}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 9, color: c.confidenceColor, background: c.confidenceColor + '15', border: '1px solid ' + c.confidenceColor + '30', padding: '4px 10px', borderRadius: 999, fontWeight: 700 }}>
+                        {c.confidence} Confidence
+                      </span>
+                      <span style={{ fontSize: 9, color: c.philosopherColor }}>
+                        {c.philosopher}
+                      </span>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 11, color: '#CBD5E1', lineHeight: 1.8 }}>{s.content}</div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {/* BREADTH */}
-      {tab === 'breadth' && (
-        <div>
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, padding: 20, marginBottom: 24 }}>
-            <SectionTitle emoji="📈" title="BREADTH (NSE INDICES SNAPSHOT)" />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
-              <StatBox label="Advancing" value={breadth?.breadth ? String(breadth.breadth.advances) : '—'} color="#10B981" />
-              <StatBox label="Declining" value={breadth?.breadth ? String(breadth.breadth.declines) : '—'} color="#EF4444" />
-              <StatBox label="Unchanged" value={breadth?.breadth ? String(breadth.breadth.unchanged) : '—'} color="#818CF8" />
-              <StatBox label="A/D Ratio" value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'} color="#F59E0B" />
+                ))}
             </div>
           </div>
+        )}
 
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #1E293B' }}>
-              <SectionTitle emoji="📊" title="SECTOR INDEX MOVES (LIVE)" />
+        {tab === 'currency' && (
+          <div>
+            <div style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: 18, marginBottom: 24 }}>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
+                💱 CURRENCY SENSITIVITY MATRIX
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                Estimated earnings sensitivity per 1% INR move (heuristic).
+              </div>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-                <thead>
-                  <tr style={{ background: '#06060D' }}>
-                    {['Sector','Last','% Chg','High','Low','Open','Prev Close'].map(h => (
-                      <th key={h} style={{ padding: '10px 14px', color: '#475569', fontSize: 9, textAlign: h === 'Sector' ? 'left' : 'right', letterSpacing: 1 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(breadth?.sectors || []).map((s: any, i: number) => {
-                    const pct = safeNum(s.changePct) ?? 0;
-                    const col = pct >= 0 ? '#10B981' : '#EF4444';
-                    return (
-                      <tr key={s.sector} style={{ borderBottom: '1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#07070E' }}>
-                        <td style={{ padding: '10px 14px', color: '#F1F5F9', fontWeight: 600 }}>{s.sector}</td>
-                        <td style={{ padding: '10px 14px', color: '#94A3B8', textAlign: 'right' }}>{safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}</td>
-                        <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 800, color: col }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</td>
-                        <td style={{ padding: '10px 14px', color: '#475569', textAlign: 'right' }}>{safeNum(s.high) !== null ? Number(s.high).toFixed(2) : '—'}</td>
-                        <td style={{ padding: '10px 14px', color: '#475569', textAlign: 'right' }}>{safeNum(s.low) !== null ? Number(s.low).toFixed(2) : '—'}</td>
-                        <td style={{ padding: '10px 14px', color: '#475569', textAlign: 'right' }}>{safeNum(s.open) !== null ? Number(s.open).toFixed(2) : '—'}</td>
-                        <td style={{ padding: '10px 14px', color: '#475569', textAlign: 'right' }}>{safeNum(s.prevClose) !== null ? Number(s.prevClose).toFixed(2) : '—'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* BLOCK DEALS */}
-      {tab === 'blocks' && (
-        <div>
-          <div style={{ background: '#F59E0B10', border: '1px solid #F59E0B30', borderRadius: 8, padding: '10px 16px', marginBottom: 20, fontSize: 11, color: '#F59E0B' }}>
-            💎 Live NSE block deal feed.
-          </div>
-
-          <div style={{ background: '#09090F', border: '1px solid #1E293B', borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
-                <thead>
-                  <tr style={{ background: '#06060D' }}>
-                    {['Time','Symbol','Qty','Price','Value (Cr)','Chg %','Side','Series'].map(h => (
-                      <th key={h} style={{ padding: '10px 14px', color: '#475569', fontSize: 9, textAlign: h === 'Symbol' ? 'left' : 'right', letterSpacing: 1 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(blocks?.deals || []).map((d: any, i: number) => {
-                    const pct = safeNum(d.changePct) ?? 0;
-                    const col = pct >= 0 ? '#10B981' : '#EF4444';
-                    return (
-                      <tr key={d.symbol + '-' + i} style={{ borderBottom: '1px solid #0F172A', background: i % 2 === 0 ? '#09090F' : '#07070E' }}>
-                        <td style={{ padding: '11px 14px', color: '#64748B', textAlign: 'right' }}>{d.time || '--:--'}</td>
-                        <td style={{ padding: '11px 14px', color: '#F59E0B', fontWeight: 700, textAlign: 'left' }}>{d.symbol}</td>
-                        <td style={{ padding: '11px 14px', textAlign: 'right', color: '#94A3B8' }}>{safeNum(d.quantity) !== null ? Number(d.quantity).toLocaleString() : '—'}</td>
-                        <td style={{ padding: '11px 14px', textAlign: 'right', color: '#94A3B8' }}>{safeNum(d.price) !== null ? Number(d.price).toFixed(2) : '—'}</td>
-                        <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 700, color: '#D4AF37' }}>{safeNum(d.value) !== null ? Number(d.value).toFixed(2) : '—'}</td>
-                        <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 800, color: col }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</td>
-                        <td style={{ padding: '11px 14px', textAlign: 'right' }}>
-                          <span style={{
-                            background: d.side === 'BUY' ? '#10B98120' : '#EF444420',
-                            border: '1px solid ' + (d.side === 'BUY' ? '#10B98140' : '#EF444440'),
-                            color: d.side === 'BUY' ? '#10B981' : '#EF4444',
-                            borderRadius: 4,
-                            padding: '3px 10px',
-                            fontSize: 9,
-                            fontWeight: 700
-                          }}>
-                            {d.side}
+            <div style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 16, overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="table-sacred" style={{ fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      <th>SECTOR</th>
+                      <th style={{ textAlign: 'center' }}>REV</th>
+                      <th style={{ textAlign: 'center' }}>COST</th>
+                      <th style={{ textAlign: 'center', color: 'var(--green)' }}>INR WEAK +1%</th>
+                      <th style={{ textAlign: 'center', color: 'var(--red)' }}>INR STRONG +1%</th>
+                      <th style={{ textAlign: 'center' }}>BIAS</th>
+                      <th>EXAMPLES</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CURRENCY_SENSITIVITY.map((s, i) => (
+                      <tr key={s.sector}>
+                        <td>
+                          <span style={{ fontSize: 16 }}>{s.icon}</span>
+                          <span style={{ fontWeight: 700, marginLeft: 8 }}>{s.sector}</span>
+                        </td>
+                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 11 }}>{s.revenueExposure}</td>
+                        <td style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 11 }}>{s.costExposure}</td>
+                        <td style={{ textAlign: 'center', fontWeight: 900, color: s.inrDepreciation1pct >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                          {(s.inrDepreciation1pct >= 0 ? '+' : '') + s.inrDepreciation1pct.toFixed(1) + '%'}
+                        </td>
+                        <td style={{ textAlign: 'center', fontWeight: 900, color: s.inrAppreciation1pct >= 0 ? 'var(--green)' : 'var(--red)' }}>
+                          {(s.inrAppreciation1pct >= 0 ? '+' : '') + s.inrAppreciation1pct.toFixed(1) + '%'}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span style={{ fontSize: 10, color: s.biasColor, background: s.biasColor + '18', border: '1px solid ' + s.biasColor + '40', padding: '5px 12px', borderRadius: 999, fontWeight: 700 }}>
+                            {s.netBias}
                           </span>
                         </td>
-                        <td style={{ padding: '11px 14px', textAlign: 'right', color: '#475569' }}>{d.series || ''}</td>
+                        <td style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.examples.join(' · ')}</td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {tab === 'brief' && (
+          <div>
+            <div style={{ background: 'linear-gradient(135deg, rgba(17,24,39,0.9), rgba(10,15,28,0.95))', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: 26, marginBottom: 24 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6 }}>{brief.date}</div>
+              <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
+                📰 {brief.headline}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1 }}>{brief.regimeLabel}</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {brief.sections
+                .filter(s => activeLens === 'All' || !s.philosopher || s.philosopher === activeLens)
+                .map((s, i) => (
+                  <div key={i} style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid ' + (s.philosopherColor ? s.philosopherColor + '30' : 'rgba(30,41,59,0.8)'), borderLeft: '3px solid ' + (s.philosopherColor || 'var(--accent-gold)'), borderRadius: 12, padding: 20 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                      <span style={{ fontSize: 20 }}>{s.icon}</span>
+                      <div style={{ fontWeight: 700, color: s.philosopherColor || 'var(--accent-gold)', fontSize: 13 }}>{s.title}</div>
+                      {s.philosopher && (
+                        <span style={{ marginLeft: 'auto', fontSize: 9, color: s.philosopherColor, background: s.philosopherColor + '15', border: '1px solid ' + s.philosopherColor + '30', padding: '4px 10px', borderRadius: 999 }}>
+                          {s.philosopher}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.8 }}>{s.content}</div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {tab === 'breadth' && (
+          <div>
+            <div className="card-unified" style={{ padding: 20, marginBottom: 24 }}>
+              <SectionTitle emoji="📈" title="BREADTH (NSE INDICES SNAPSHOT)" />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+                <StatBox label="Advancing" value={breadth?.breadth ? String(breadth.breadth.advances) : '—'} color="var(--green)" />
+                <StatBox label="Declining" value={breadth?.breadth ? String(breadth.breadth.declines) : '—'} color="var(--red)" />
+                <StatBox label="Unchanged" value={breadth?.breadth ? String(breadth.breadth.unchanged) : '—'} color="#818CF8" />
+                <StatBox label="A/D Ratio" value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'} color="var(--amber)" />
+              </div>
+            </div>
+
+            <div className="card-unified" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(30,41,59,0.8)' }}>
+                <SectionTitle emoji="📊" title="SECTOR INDEX MOVES (LIVE)" />
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="table-sacred" style={{ fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      {['Sector','Last','% Chg','High','Low','Open','Prev Close'].map(h => (
+                        <th key={h} style={{ textAlign: h === 'Sector' ? 'left' : 'right' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(breadth?.sectors || []).map((s: any, i: number) => {
+                      const pct = safeNum(s.changePct) ?? 0;
+                      const col = pct >= 0 ? 'var(--green)' : 'var(--red)';
+                      return (
+                        <tr key={s.sector}>
+                          <td style={{ fontWeight: 600 }}>{s.sector}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 800, color: col }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{safeNum(s.high) !== null ? Number(s.high).toFixed(2) : '—'}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{safeNum(s.low) !== null ? Number(s.low).toFixed(2) : '—'}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{safeNum(s.open) !== null ? Number(s.open).toFixed(2) : '—'}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{safeNum(s.prevClose) !== null ? Number(s.prevClose).toFixed(2) : '—'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'blocks' && (
+          <div>
+            <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 10, padding: '12px 18px', marginBottom: 22, fontSize: 12, color: 'var(--amber)' }}>
+              💎 Live NSE block deal feed.
+            </div>
+
+            <div className="card-unified" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="table-sacred" style={{ fontSize: 12 }}>
+                  <thead>
+                    <tr>
+                      {['Symbol','Qty','Price','Value (Cr)','Chg %','Side','Series'].map(h => (
+                        <th key={h} style={{ textAlign: h === 'Symbol' ? 'left' : 'right' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(blocks?.deals || []).map((d: any, i: number) => {
+                      const pct = safeNum(d.changePct) ?? 0;
+                      const col = pct >= 0 ? 'var(--green)' : 'var(--red)';
+                      return (
+                        <tr key={d.symbol + '-' + i}>
+                          <td style={{ color: 'var(--amber)', fontWeight: 700 }}>{d.symbol}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{safeNum(d.quantity) !== null ? Number(d.quantity).toLocaleString() : '—'}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{safeNum(d.price) !== null ? Number(d.price).toFixed(2) : '—'}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent-gold)' }}>{safeNum(d.value) !== null ? Number(d.value).toFixed(2) : '—'}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 800, color: col }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <span style={{
+                              background: d.side === 'BUY' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                              border: '1px solid ' + (d.side === 'BUY' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'),
+                              color: d.side === 'BUY' ? 'var(--green)' : 'var(--red)',
+                              borderRadius: 6,
+                              padding: '4px 12px',
+                              fontSize: 10,
+                              fontWeight: 700
+                            }}>
+                              {d.side}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{d.series || ''}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
 
       {/* FOOTER */}
-      <div style={{ textAlign: 'center', fontSize: 9, color: '#0F172A', letterSpacing: 1, marginTop: 32, paddingTop: 16, borderTop: '1px solid #0F172A' }}>
+      <div style={{ textAlign: 'center', fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginTop: 40, paddingTop: 20, borderTop: '1px solid var(--border)', fontFamily: 'var(--font-mono)' }}>
         NOT INVESTMENT ADVICE · EDUCATIONAL SIMULATION · RISHI TERMINAL
       </div>
     </div>

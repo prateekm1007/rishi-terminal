@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -70,12 +70,12 @@ export default function BondsPage() {
   const types: BondType[] = ['All', 'G-Sec', 'SDL', 'Corporate', 'T-Bill'];
 
   return (
-    <main className="page-container">
+    <main className="page-bg">
 
       {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">
-          <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
+          <div className="page-breadcrumb">
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             {' > '}
             <span>{t('bonds.breadcrumb')}</span>
@@ -83,7 +83,7 @@ export default function BondsPage() {
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 28 }}>
             <div>
-              <h1 className="philosophy-heading" style={{ fontSize: 36, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>
+              <h1 className="page-title" style={{ fontSize: 36, color: 'var(--accent-gold)', marginBottom: 8 }}>
                 {t('bonds.title')}
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>

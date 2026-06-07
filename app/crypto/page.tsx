@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
@@ -90,12 +90,12 @@ export default function CryptoPage() {
   }, [prices]);
 
   return (
-    <main className="page-container">
+    <main className="page-bg">
 
       {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 1, fontFamily: 'monospace' }}>
+          <div className="page-breadcrumb">
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             {' > '}
             <span>{t('crypto.breadcrumb')}</span>
@@ -111,7 +111,7 @@ export default function CryptoPage() {
             </div>
             {lastUpdated && (
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace', textAlign: 'right' }}>
-                <div style={{ color: '#00BA7C', fontWeight: 700 }}>● LIVE</div>
+                <div style={{ color: '#00BA7C', fontWeight: 700 }}>â— LIVE</div>
                 <div>Updated {lastUpdated.toLocaleTimeString()}</div>
               </div>
             )}
@@ -129,7 +129,7 @@ export default function CryptoPage() {
             { label: t('crypto.avgRsi'),          value: '62',                               color: 'var(--accent-gold)' },
             { label: t('crypto.sentiment'),        value: 'BULLISH',                          color: 'var(--accent-green)' },
             { label: t('crypto.btcDominance'),    value: MARKET_DOMINANCE.btc + '%',        color: 'var(--accent-gold)' },
-            { label: t('crypto.fearGreed'),     value: fgValue.toString() + ' – ' + fgLabel,                   color: fgColor },
+            { label: t('crypto.fearGreed'),     value: fgValue.toString() + ' â€“ ' + fgLabel,                   color: fgColor },
           ].map(stat => (
             <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
@@ -144,7 +144,7 @@ export default function CryptoPage() {
             <div>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6 }}>{t('crypto.fearGreedIndex')}</div>
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: fgColor }}>
-                {fgValue} – {fgLabel}
+                {fgValue} â€“ {fgLabel}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 24, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>

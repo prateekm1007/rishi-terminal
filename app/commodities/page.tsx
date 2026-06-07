@@ -94,14 +94,14 @@ export default function CommoditiesPage() {
   const brentData  = enrichedCommodities.find(c => c.symbol === 'BRENT');
 
   return (
-    <main className="page-container">
+    <main className="page-bg">
 
       {showUpgrade && <UpgradePrompt reason="limit_reached" onClose={() => setShowUpgrade(false)} />}
 
       {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2, fontFamily: 'monospace' }}>
+          <div className="page-breadcrumb">
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             {' > '}
             <span>{t('commodities.breadcrumb')}</span>
@@ -109,7 +109,7 @@ export default function CommoditiesPage() {
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
             <div>
-              <h1 className="philosophy-heading" style={{ fontSize: 32, color: 'var(--accent-gold)' }}>
+              <h1 className="page-title" style={{ fontSize: 32, color: 'var(--accent-gold)' }}>
                 {t('commodities.title')}
               </h1>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.6 }}>

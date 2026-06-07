@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -49,12 +49,12 @@ export default function ForexPage() {
     change > 0 ? 'var(--accent-green)' : change < 0 ? 'var(--accent-red)' : 'var(--text-muted)';
 
   return (
-    <main className="page-container">
+    <main className="page-bg">
 
       {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">
-          <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
+          <div className="page-breadcrumb">
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             {' > '}
             <span>{t('forex.breadcrumb')}</span>
@@ -70,7 +70,7 @@ export default function ForexPage() {
               </p>
               {lastUpdated && (
                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                  âš¡ Live â€¢ Updated {lastUpdated.toLocaleTimeString('en-IN')}
                 </div>
               )}
             </div>
@@ -95,7 +95,7 @@ export default function ForexPage() {
               { label: t('forex.volume24h'), value: '$' + (totalVolume / 1e9).toFixed(1) + 'B', color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)' },
               { 
                 label: t('forex.usdInrSpot'), 
-                value: usdInrPair ? usdInrPair.spotRate.toFixed(2) : '—', 
+                value: usdInrPair ? usdInrPair.spotRate.toFixed(2) : 'â€”', 
                 change: usdInrPair?.change24h,
                 color: '#60a5fa', 
                 bg: 'rgba(96,165,250,0.08)', 
@@ -103,7 +103,7 @@ export default function ForexPage() {
               },
               { 
                 label: t('forex.eurInrSpot'), 
-                value: eurInrPair ? eurInrPair.spotRate.toFixed(2) : '—', 
+                value: eurInrPair ? eurInrPair.spotRate.toFixed(2) : 'â€”', 
                 change: eurInrPair?.change24h,
                 color: '#c084fc', 
                 bg: 'rgba(192,132,252,0.08)', 
@@ -142,7 +142,7 @@ export default function ForexPage() {
       {loading && (
         <div className="content-wrapper" style={{ padding: '28px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-            ⚡ Fetching live forex rates...
+            âš¡ Fetching live forex rates...
           </div>
         </div>
       )}
@@ -158,7 +158,7 @@ export default function ForexPage() {
             fontSize: 12, 
             color: 'var(--accent-red)' 
           }}>
-            ⚠ {error}
+            âš  {error}
           </div>
         </div>
       )}

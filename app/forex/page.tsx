@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
@@ -70,7 +70,7 @@ export default function ForexPage() {
               </p>
               {lastUpdated && (
                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  âš¡ Live â€¢ Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN')}
                 </div>
               )}
             </div>
@@ -95,7 +95,7 @@ export default function ForexPage() {
               { label: t('forex.volume24h'), value: '$' + (totalVolume / 1e9).toFixed(1) + 'B', color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)' },
               { 
                 label: t('forex.usdInrSpot'), 
-                value: usdInrPair ? usdInrPair.spotRate.toFixed(2) : 'â€”', 
+                value: usdInrPair ? usdInrPair.spotRate.toFixed(2) : '—',
                 change: usdInrPair?.change24h,
                 color: '#60a5fa', 
                 bg: 'rgba(96,165,250,0.08)', 
@@ -103,7 +103,7 @@ export default function ForexPage() {
               },
               { 
                 label: t('forex.eurInrSpot'), 
-                value: eurInrPair ? eurInrPair.spotRate.toFixed(2) : 'â€”', 
+                value: eurInrPair ? eurInrPair.spotRate.toFixed(2) : '—',
                 change: eurInrPair?.change24h,
                 color: '#c084fc', 
                 bg: 'rgba(192,132,252,0.08)', 
@@ -142,7 +142,7 @@ export default function ForexPage() {
       {loading && (
         <div className="content-wrapper" style={{ padding: '28px 24px', textAlign: 'center' }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-            âš¡ Fetching live forex rates...
+            ⚡ Fetching live forex rates...
           </div>
         </div>
       )}
@@ -158,7 +158,7 @@ export default function ForexPage() {
             fontSize: 12, 
             color: 'var(--accent-red)' 
           }}>
-            âš  {error}
+            ⚠️ {error}
           </div>
         </div>
       )}

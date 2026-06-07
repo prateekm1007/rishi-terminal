@@ -1,4 +1,4 @@
-﻿export type WisdomTier = 'seeker' | 'student' | 'disciple';
+export type WisdomTier = 'seeker' | 'student' | 'disciple';
 
 export interface TierConfig {
   name:            string;

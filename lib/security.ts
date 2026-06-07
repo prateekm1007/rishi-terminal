@@ -1,4 +1,4 @@
-﻿// Security: Input validation for stock symbols
+// Security: Input validation for stock symbols
 const VALID_SYMBOL_REGEX = /^[A-Z]{1,10}$/;
 const VALID_EXCHANGES = ['NSE', 'BSE', 'NYSE', 'NASDAQ'];
 

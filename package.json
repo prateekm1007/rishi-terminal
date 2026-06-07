@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "fix:encoding": "npx tsx scripts/fixEncoding.ts",
+    "validate:encoding": "npx tsx scripts/validateEncoding.ts",
     "start": "next start",
     "lint": "eslint"
   },

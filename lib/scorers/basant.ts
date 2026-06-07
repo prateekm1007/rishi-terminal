@@ -1,4 +1,4 @@
-﻿import { Stock, RishiScore } from '../types';
+import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 
 export function scoreBasant(s: Stock): RishiScore {

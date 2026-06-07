@@ -43,7 +43,7 @@ export function BullBearBar({ topBull, topBear, spread }: Props) {
         <div className="text-xs text-secondary mt-3">
           {spread < 15 && 'œ“ Strong consensus among Rishis'}
           {spread >= 15 && spread < 30 && '†’ Moderate disagreement'}
-          {spread >= 30 && spread < 50 && 'š ï¸ Philosophical tension'}
+          {spread >= 30 && spread < 50 && '⚠️ Philosophical tension'}
           {spread >= 50 && 'š¡ Deep conflict in views'}
         </div>
       </div>

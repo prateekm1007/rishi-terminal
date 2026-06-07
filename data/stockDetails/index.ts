@@ -1,4 +1,4 @@
-﻿// data/stockDetails/index.ts
+// data/stockDetails/index.ts
 // Deep per-stock data modelled after MoneyControl stock pages
 
 export interface QuarterlyResult {

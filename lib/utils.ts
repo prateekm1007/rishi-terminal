@@ -1,4 +1,4 @@
-﻿export const clamp = (v: number, lo = 0, hi = 100) =>
+export const clamp = (v: number, lo = 0, hi = 100) =>
   Math.max(lo, Math.min(hi, v));
 
 export const sc = (s: number) =>

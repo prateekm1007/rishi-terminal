@@ -24,7 +24,7 @@ export default function BondScreenerPage() {
           </p>
 
           <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 42, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8 }}>
-            ðŸ“‹ Bond Screener
+            📋 Bond Screener
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480 }}>
             {bondList.length} bonds sorted by yield to maturity

@@ -1,4 +1,4 @@
-﻿import { Stock } from '../lib/types';
+import { Stock } from '../lib/types';
 import { STOCKS } from '../data/stocks';
 
 export interface QuarterlyResult {

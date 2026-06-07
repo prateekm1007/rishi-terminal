@@ -1,4 +1,4 @@
-﻿import { CryptoAsset } from '../../../data/crypto';
+import { CryptoAsset } from '../../../data/crypto';
 import { RishiScore } from '../../types';
 
 function clamp(v: number, lo = 0, hi = 100) {

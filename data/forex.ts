@@ -1,4 +1,4 @@
-﻿export interface ForexPair {
+export interface ForexPair {
   symbol:         string;
   name:           string;
   pair:           string;

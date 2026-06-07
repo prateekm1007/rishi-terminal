@@ -1,4 +1,4 @@
-﻿// data/marketPulse/index.ts
+// data/marketPulse/index.ts
 
 export interface FIIDIIData {
   date: string;

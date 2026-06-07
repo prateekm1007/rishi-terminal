@@ -1,4 +1,4 @@
-﻿// data/news/index.ts
+// data/news/index.ts
 // Fallback static stories shown while live API loads
 
 export interface NewsItem {

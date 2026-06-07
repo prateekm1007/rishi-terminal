@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import { STOCKS } from '../../data/stocks';
@@ -49,7 +49,7 @@ export default function ScreenerPage() {
                 {activePresetData ? (
                   <><strong style={{ color: '#D4AF37' }}>{activePresetData.emoji} {activePresetData.name}:</strong> {activePresetData.description}</>
                 ) : (
-                  `Filter ${stockList.length} Indian stocks by Rishi wisdom â€” Buffett Mode, Damani Mode, Graham Mode, Short Mode & more`
+                  `Filter ${stockList.length} Indian stocks by Rishi wisdom — Buffett Mode, Damani Mode, Graham Mode, Short Mode & more`
                 )}
               </p>
             </div>

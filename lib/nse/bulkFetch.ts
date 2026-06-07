@@ -1,4 +1,4 @@
-﻿// lib/nse/bulkFetch.ts
+// lib/nse/bulkFetch.ts
 // Bulk stock price fetching using Yahoo Finance v8/chart endpoint
 // Strategy: parallel batches of sequential calls + 60s cache
 

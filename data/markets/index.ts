@@ -1,4 +1,4 @@
-﻿export interface MarketIndex {
+export interface MarketIndex {
   symbol: string;
   name: string;
   value: number;

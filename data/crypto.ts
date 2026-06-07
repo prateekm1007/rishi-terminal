@@ -1,4 +1,4 @@
-﻿export interface CryptoAsset {
+export interface CryptoAsset {
   symbol: string;
   name: string;
   emoji: string;

@@ -1,4 +1,4 @@
-﻿export interface IndexData {
+export interface IndexData {
   symbol: string;
   name: string;
   flag: string;

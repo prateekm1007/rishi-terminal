@@ -1,4 +1,4 @@
-﻿import { supabase } from './db/supabase';
+import { supabase } from './db/supabase';
 
 export interface Holding {
   symbol:   string;

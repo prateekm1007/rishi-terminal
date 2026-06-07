@@ -154,10 +154,17 @@ export default function Sidebar() {
         </div>
         <button
           onClick={() => {
-            const current = document.body.classList.contains('theme-dark') ? 'dark' : 'blue';
+                        const root = document.documentElement;
+            const body = document.body;
+            const current = body.classList.contains('theme-dark') ? 'dark' : 'blue';
             const next = current === 'dark' ? 'blue' : 'dark';
-            document.body.classList.remove('theme-blue', 'theme-dark');
-            document.body.classList.add('theme-' + next);
+
+            root.classList.remove('theme-blue', 'theme-dark');
+            body.classList.remove('theme-blue', 'theme-dark');
+
+            root.classList.add('theme-' + next);
+            body.classList.add('theme-' + next);
+
             try { localStorage.setItem('rishi.theme', next); } catch {}
           }}
           style={{

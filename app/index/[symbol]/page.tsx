@@ -11,7 +11,7 @@ export default function IndexPage() {
 
   if (!indexData) {
     return (
-      <main className="page-container">
+      <main className="page-bg">
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>404</div>
@@ -29,7 +29,7 @@ export default function IndexPage() {
   const allIndexes = [...INDIAN_INDEXES, ...GLOBAL_INDEXES];
 
   return (
-    <main className="page-container">
+    <main className="page-bg">
       <div className="page-header">
         <div className="content-wrapper" style={{ padding: '0 24px' }}>
 

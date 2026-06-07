@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
@@ -210,7 +210,7 @@ export default function NewsPage() {
   }, [allNews, region]);
 
   return (
-    <main className="page-container">
+    <main className="page-bg">
       <style jsx>{`
         @keyframes scroll-ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         @keyframes skp { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }

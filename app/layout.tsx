@@ -19,14 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-scroll-behavior="smooth">
       <body style={{
         margin: 0,
-        padding: 0,
-        background: "#09090b",
-        overflowX: "hidden"
+        padding: 0,        overflowX: "hidden"
       }}>
       <script dangerouslySetInnerHTML={{__html: `
         (function() {
           try {
             const theme = localStorage.getItem('rishi.theme') || 'blue';
+            document.documentElement.classList.add('theme-' + theme);
             document.body.classList.add('theme-' + theme);
           } catch {}
         })();

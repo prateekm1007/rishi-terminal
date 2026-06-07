@@ -28,7 +28,7 @@ export default function PortfolioLabPage() {
   return (
     <Suspense
       fallback={
-        <div className="rishi-page" style={{ padding: 48, textAlign: 'center' }}>
+        <div className="page-bg" style={{ padding: 48, textAlign: 'center' }}>
           <p style={{ color: '#D4AF37' }}>Loading Lab...</p>
         </div>
       }
@@ -45,7 +45,7 @@ function LabContent() {
 
   // Shared philosopher lens — synced with Economy Plus via localStorage
   return (
-    <div className="rishi-page">
+    <div className="page-bg">
       {/* Header */}
       <div className="page-header">
         <div className="content-wrapper">

@@ -35,7 +35,7 @@ export default function PricingPage() {
   };
 
   return (
-    <main className="page-container">
+    <main className="page-bg">
       <div className="page-header">
         <div className="content-wrapper" style={{ padding: '0 24px' }}>
           <p style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>

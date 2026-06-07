@@ -23,6 +23,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         background: "#09090b",
         overflowX: "hidden"
       }}>
+      <script dangerouslySetInnerHTML={{__html: `
+        (function() {
+          try {
+            const theme = localStorage.getItem('rishi.theme') || 'blue';
+            document.body.classList.add('theme-' + theme);
+          } catch {}
+        })();
+      `}} />
         <AuthProvider>
           <LanguageProvider>
             <div style={{

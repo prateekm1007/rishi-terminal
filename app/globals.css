@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap");
 
 /* ============================================================
-   RISHI TERMINAL — SACRED SLEEK DESIGN SYSTEM v2.0 (10/10)
+   RISHI TERMINAL â€” SACRED SLEEK DESIGN SYSTEM v2.0 (10/10)
    ============================================================ */
 
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
@@ -700,7 +700,7 @@ a { text-decoration:none; color:inherit; transition:color var(--duration-fast) v
 }
 
 .glow-ring { animation:glow-ring 2.5s ease-in-out infinite; }
-/* ── Legacy CSS Variable Compatibility ─────────────────────── */
+/* â”€â”€ Legacy CSS Variable Compatibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --accent-green:   #22C55E;
   --accent-gold:    #D4AF37;
@@ -713,7 +713,7 @@ a { text-decoration:none; color:inherit; transition:color var(--duration-fast) v
   --border-color:   rgba(30,41,59,0.8);
 }
 
-/* ── Page Container Fix ─────────────────────────────────────── */
+/* â”€â”€ Page Container Fix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rishi-page, .page-container {
   min-height: 100vh;
   background: linear-gradient(160deg, #020408 0%, #0A0F1C 40%, #0D1220 100%);
@@ -723,7 +723,7 @@ a { text-decoration:none; color:inherit; transition:color var(--duration-fast) v
   overflow-x: hidden;
 }
 
-/* ── Knowledge Graph Fix ────────────────────────────────────── */
+/* â”€â”€ Knowledge Graph Fix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .knowledge-graph-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -741,36 +741,36 @@ a { text-decoration:none; color:inherit; transition:color var(--duration-fast) v
   color: #F8FAFC !important;
 }
 
-/* ── Graph Node Labels ──────────────────────────────────────── */
+/* â”€â”€ Graph Node Labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .graph-label {
   fill: #F8FAFC !important;
   font-family: var(--font-sans) !important;
   font-weight: 600 !important;
 }
 
-/* ── Ensure all text visible on dark ───────────────────────── */
+/* â”€â”€ Ensure all text visible on dark â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .card h1, .card h2, .card h3, .card h4, .card p, .card span { color: var(--text-primary); }
 
-/* ── Tab Active State ────────────────────────────────────────── */
+/* â”€â”€ Tab Active State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .tab-active {
   background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(139,92,246,0.1)) !important;
   border-color: rgba(212,175,55,0.4) !important;
   color: #D4AF37 !important;
 }
 
-/* ── Responsive Overflow Fixes ──────────────────────────────── */
+/* â”€â”€ Responsive Overflow Fixes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 * { max-width: 100%; }
 img, svg, canvas { max-width: 100%; height: auto; }
 pre, code { white-space: pre-wrap; word-break: break-word; }
 table { table-layout: fixed; width: 100%; }
 
-/* ── Force dark backgrounds on all panels ───────────────────── */
+/* â”€â”€ Force dark backgrounds on all panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 [class*='panel'], [class*='card'], [class*='widget'] {
   background-color: var(--bg-surface, #111827) !important;
   color: var(--text-primary, #F8FAFC) !important;
 }
 
-/* ── Complete CSS Variable System ─────────────────────────── */
+/* â”€â”€ Complete CSS Variable System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --accent-green:    #22C55E;
   --accent-gold:     #D4AF37;
@@ -797,7 +797,7 @@ table { table-layout: fixed; width: 100%; }
   --font-serif:      "Cinzel", "Playfair Display", Georgia, serif;
 }
 
-/* ── Tailwind-Compatible Utility Classes ───────────────────── */
+/* â”€â”€ Tailwind-Compatible Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .card-sacred {
   background: rgba(17,24,39,0.85);
   border: 1px solid rgba(30,41,59,0.8);
@@ -881,13 +881,13 @@ table { table-layout: fixed; width: 100%; }
 .z-100  { z-index: 100; }
 .z-1000 { z-index: 1000; }
 
-/* ── Responsive Grid ─────────────────────────────────────────── */
+/* â”€â”€ Responsive Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (min-width: 640px) {
   .sm\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* ── Animation Classes ───────────────────────────────────────── */
+/* â”€â”€ Animation Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .wisdom-reveal {
   animation: fadeInUp 0.4s ease both;
 }
@@ -906,7 +906,7 @@ table { table-layout: fixed; width: 100%; }
   to   { opacity: 1; transform: translateY(0);    }
 }
 
-/* ── Ticker Animation ───────────────────────────────────────── */
+/* â”€â”€ Ticker Animation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes ticker {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -917,14 +917,14 @@ table { table-layout: fixed; width: 100%; }
   width: max-content;
 }
 
-/* ── Pulse for Live Dot ──────────────────────────────────────── */
+/* â”€â”€ Pulse for Live Dot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.4; }
 }
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
 
-/* ── Skeleton Loading ───────────────────────────────────────── */
+/* â”€â”€ Skeleton Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .skeleton {
   background: linear-gradient(90deg, rgba(31,41,59,0.6) 25%, rgba(51,65,85,0.4) 50%, rgba(31,41,59,0.6) 75%);
   background-size: 200% 100%;
@@ -936,7 +936,7 @@ table { table-layout: fixed; width: 100%; }
   100% { background-position: -200% 0; }
 }
 
-/* ── Table Styles ───────────────────────────────────────────── */
+/* â”€â”€ Table Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -962,7 +962,7 @@ td {
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: rgba(31,41,59,0.4); }
 
-/* ── rishi-page container ───────────────────────────────────── */
+/* â”€â”€ rishi-page container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .rishi-page {
   min-height: 100vh;
   background: linear-gradient(160deg, #020408 0%, #0A0F1C 40%, #0D1220 100%);
@@ -973,7 +973,7 @@ tr:hover td { background: rgba(31,41,59,0.4); }
   color: #F8FAFC;
 }
 
-/* ── Knowledge Graph ─────────────────────────────────────────── */
+/* â”€â”€ Knowledge Graph â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .knowledge-graph-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -982,7 +982,7 @@ tr:hover td { background: rgba(31,41,59,0.4); }
   backdrop-filter: blur(20px) !important;
 }
 
-/* ── Phase 4D: Economy Plus — Mobile Layout ─────────────────────── */
+/* â”€â”€ Phase 4D: Economy Plus â€” Mobile Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 640px) {
   .ep-philosopher-grid {
     grid-template-columns: 1fr !important;
@@ -1017,7 +1017,7 @@ tr:hover td { background: rgba(31,41,59,0.4); }
   }
 }
 
-/* ── Economy Plus / Pulse — Mobile patch (max 640px) ─────────────────── */
+/* â”€â”€ Economy Plus / Pulse â€” Mobile patch (max 640px) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 640px) {
   /* Philosopher cards: stack vertically, full width */
   .ep-philosopher-grid {
@@ -1049,11 +1049,11 @@ tr:hover td { background: rgba(31,41,59,0.4); }
     align-items: flex-start !important;
     gap: 8px !important;
   }
-  /* ep-mobile-patch — marker for idempotency check */
+  /* ep-mobile-patch â€” marker for idempotency check */
 }
-/* ═══════════════════════════════════════════════════════════
-   APPLE-LEVEL REFINEMENT — Phase 1
-   ═══════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   APPLE-LEVEL REFINEMENT â€” Phase 1
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 :root {
   --bg-secondary: rgba(255,255,255,0.04);
@@ -1064,14 +1064,9 @@ tr:hover td { background: rgba(31,41,59,0.4); }
   --accent-red: #EF4444;
 }
 
-body {
-  background: #09090b !important;
-  background-image: none !important;
-}
 
-body::before {
-  display: none !important;
-}
+
+
 
 .card-sacred {
   background: rgba(255,255,255,0.03) !important;
@@ -1164,10 +1159,10 @@ body::before {
   padding: 0 24px;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   UI UNIFICATION — Phase 1
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   UI UNIFICATION â€” Phase 1
    Shared structural classes used by ALL pages
-   ══════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* -- Universal page background (matches Dashboard exactly) -- */
 .page-bg {
@@ -1380,7 +1375,7 @@ body::before {
   color: var(--accent-gold);
 }
 
-/* -- Universal back link (matches Dashboard → back navigation) -- */
+/* -- Universal back link (matches Dashboard â†’ back navigation) -- */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -1399,3 +1394,51 @@ body::before {
 }
 
 /* END UI UNIFICATION Phase 1 */
+
+/* ══════════════════════════════════════════════════════════════
+   DARK VARIANT — Pure Black Background Option
+   ══════════════════════════════════════════════════════════════ */
+
+.page-bg-dark {
+  min-height: 100vh;
+  background: #09090b;
+  background-image: none;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* END DARK VARIANT */
+
+/* ══════════════════════════════════════════════════════════════
+   GLOBAL THEME SYSTEM — User Choice
+   ══════════════════════════════════════════════════════════════ */
+
+/* Default: Blue Gradient Theme */
+body.theme-blue,
+body:not(.theme-dark) {
+  background: linear-gradient(160deg, #020408 0%, #0A0F1C 40%, #0D1220 100%) !important;
+}
+
+/* Optional: Pure Black Theme */
+body.theme-dark {
+  background: #09090b !important;
+  background-image: none !important;
+}
+
+/* Page backgrounds inherit from body theme */
+.page-bg {
+  min-height: 100vh;
+  background: transparent; /* inherit from body */
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Remove .page-bg-dark — no longer needed, use body.theme-dark instead */
+
+/* END GLOBAL THEME SYSTEM */

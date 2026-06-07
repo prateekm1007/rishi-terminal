@@ -141,6 +141,44 @@ export default function Sidebar() {
         ))}
       </nav>
 
+      <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{
+          fontSize: "10px",
+          fontWeight: 600,
+          color: "#27272a",
+          letterSpacing: "0.12em",
+          marginBottom: "8px",
+          fontFamily: "Inter, sans-serif",
+        }}>
+          THEME
+        </div>
+        <button
+          onClick={() => {
+            const current = document.body.classList.contains('theme-dark') ? 'dark' : 'blue';
+            const next = current === 'dark' ? 'blue' : 'dark';
+            document.body.classList.remove('theme-blue', 'theme-dark');
+            document.body.classList.add('theme-' + next);
+            try { localStorage.setItem('rishi.theme', next); } catch {}
+          }}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(255,255,255,0.03)",
+            color: "#a1a1aa",
+            fontSize: "12px",
+            cursor: "pointer",
+            transition: "all 0.15s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <span>🎨 Switch Theme</span>
+          <span style={{ fontSize: "10px", opacity: 0.6 }}>⌘T</span>
+        </button>
+      </div>
       <div style={{ padding: "20px 16px" }}>
         <div style={{
           display: "flex",

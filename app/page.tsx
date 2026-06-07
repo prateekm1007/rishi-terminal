@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import ShortOfTheDay from "@/components/dashboard/ShortOfTheDay";
 import DailyRitualWidget from "@/components/gamification/DailyRitual";
@@ -8,7 +8,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useLivePrices } from "@/hooks/useLivePrices";
 
-/* â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Constants ─────────────────────────────────────────────── */
 
 const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","BTC","ETH","GOLD","SILVER","WTI","USD/INR","SOL"];
 
@@ -37,18 +37,18 @@ const TOP_SHORTS = [
 ];
 
 const TOP_CRYPTO = [
-  { symbol:"BTC", name:"Bitcoin",  icon:"â‚¿", color:"#F7931A" },
-  { symbol:"ETH", name:"Ethereum", icon:"Îž", color:"#627EEA" },
-  { symbol:"SOL", name:"Solana",   icon:"â—Ž", color:"#9945FF" },
+  { symbol:"BTC", name:"Bitcoin",  icon:"₿", color:"#F7931A" },
+  { symbol:"ETH", name:"Ethereum", icon:"Ξ", color:"#627EEA" },
+  { symbol:"SOL", name:"Solana",   icon:"◎", color:"#9945FF" },
   { symbol:"BNB", name:"BNB",      icon:"B", color:"#F0B90B" },
 ];
 
 const MARKETS = [
-  { href:"/forex",       icon:"ðŸ’±", label:"Forex",        desc:"10 currency pairs" },
-  { href:"/commodities", icon:"ðŸ¥‡", label:"Commodities",  desc:"Gold, Oil, Metals" },
-  { href:"/bonds",       icon:"ðŸ“œ", label:"Bonds",        desc:"G-Secs & Corporate" },
-  { href:"/pulse?tab=macro",       icon:"ðŸ“¡", label:"Economy Plus", desc:"Macro regime & rotation" },
-  { href:"/compare",     icon:"âš–ï¸", label:"Compare",     desc:"Side-by-side analysis" },
+  { href:"/forex",       icon:"💱", label:"Forex",        desc:"10 currency pairs" },
+  { href:"/commodities", icon:"🥇", label:"Commodities",  desc:"Gold, Oil, Metals" },
+  { href:"/bonds",       icon:"📜", label:"Bonds",        desc:"G-Secs & Corporate" },
+  { href:"/pulse?tab=macro",       icon:"📡", label:"Economy Plus", desc:"Macro regime & rotation" },
+  { href:"/compare",     icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
   
 ];
 
@@ -61,7 +61,7 @@ const STATS = [
   { label:"USD/INR",    sym:"USD/INR",    usd:false },
 ];
 
-/* â”€â”€ Style Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Style Helpers ─────────────────────────────────────────── */
 
 const C = {
   bgVoid:   "#020408",
@@ -102,7 +102,7 @@ function scoreColor(s: number) {
   return s >= 80 ? C.green : s >= 65 ? C.amber : C.red;
 }
 
-/* â”€â”€ Sub-Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Sub-Components ────────────────────────────────────────── */
 
 function SectionHeader({ title, link, linkLabel }: { title: string; link?: string; linkLabel?: string }) {
   return (
@@ -112,7 +112,7 @@ function SectionHeader({ title, link, linkLabel }: { title: string; link?: strin
       </h2>
       {link && (
         <Link href={link} style={{ color:C.gold, fontSize:"12px", fontWeight:600, fontFamily:sans, letterSpacing:"0.03em" }}>
-          {linkLabel ?? "View All"} â†’
+          {linkLabel ?? "View All"} →
         </Link>
       )}
     </div>
@@ -128,7 +128,7 @@ function Divider() {
   );
 }
 
-/* â”€â”€ Main Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Main Dashboard ────────────────────────────────────────── */
 
 export default function DashboardPage() {
   const allSyms = useMemo(() => [
@@ -139,7 +139,7 @@ export default function DashboardPage() {
   ], []);
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms);
-  const [timeAgo, setTimeAgo] = useState("â€”");
+  const [timeAgo, setTimeAgo] = useState("—");
 
   useEffect(() => {
     if (!lastUpdated) return;
@@ -153,18 +153,18 @@ export default function DashboardPage() {
   }, [lastUpdated]);
 
   const fmtINR = (n?: number) =>
-    n ? "" + n.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "â€”";
+    n ? "" + n.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "—";
   const fmtUSD = (n?: number) =>
-    n ? "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "â€”";
+    n ? "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "—";
   const fmtPct = (n?: number) =>
-    n != null ? (n >= 0 ? "+" : "") + n.toFixed(2) + "%" : "â€”";
+    n != null ? (n >= 0 ? "+" : "") + n.toFixed(2) + "%" : "—";
   const upClr = (n?: number): React.CSSProperties =>
     ({ color: (n ?? 0) >= 0 ? C.green : C.red });
 
   return (
     <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }}>
 
-      {/* â”€â”€ LIVE TICKER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── LIVE TICKER ────────────────────────────────────── */}
       <div style={{
         background:"rgba(2,4,8,0.97)",
         borderBottom:"1px solid rgba(212,175,55,0.12)",
@@ -184,10 +184,10 @@ export default function DashboardPage() {
               }}>
                 <span style={{ color:C.textMuted, fontSize:"11px", fontWeight:700, letterSpacing:"0.08em", fontFamily:mono }}>{sym}</span>
                 <span style={{ color:C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
-                  {d?.price ? (useUSD ? "$" : "") + d.price.toLocaleString("en-IN",{maximumFractionDigits:2}) : "â€”"}
+                  {d?.price ? (useUSD ? "$" : "") + d.price.toLocaleString("en-IN",{maximumFractionDigits:2}) : "—"}
                 </span>
                 <span style={{ fontSize:"12px", fontWeight:600, color: up ? C.green : C.red, fontFamily:mono }}>
-                  {up ? "â–²" : "â–¼"} {Math.abs(d?.changePercent24h ?? 0).toFixed(2)}%
+                  {up ? "▲" : "▼"} {Math.abs(d?.changePercent24h ?? 0).toFixed(2)}%
                 </span>
               </span>
             );
@@ -195,7 +195,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* â”€â”€ TOP BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── TOP BAR ────────────────────────────────────────── */}
       <div style={{
         background:"rgba(5,8,16,0.8)",
         borderBottom:"1px solid rgba(212,175,55,0.06)",
@@ -212,10 +212,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* â”€â”€ PAGE CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── PAGE CONTENT ───────────────────────────────────── */}
       <div style={{ padding:"40px 32px", maxWidth:"1200px", margin:"0 auto", boxSizing:"border-box" }}>
 
-        {/* â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── HERO ─────────────────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"16px", marginBottom:"16px" }}>
             <div style={{
@@ -224,7 +224,7 @@ export default function DashboardPage() {
               border:"1px solid rgba(212,175,55,0.35)",
               display:"flex",alignItems:"center",justifyContent:"center",
               fontSize:"26px",boxShadow:"0 4px 16px rgba(212,175,55,0.15)",
-            }}>ðŸ§˜</div>
+            }}>🧘</div>
             <div>
               <h1 style={{
                 fontFamily:serif, fontSize:"44px", fontWeight:900, lineHeight:1.1,
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                 letterSpacing:"-0.01em", margin:0,
               }}>Rishi Terminal</h1>
               <div style={{ color:C.gold, fontSize:"11px", fontWeight:600, letterSpacing:"0.15em", marginTop:"4px", fontFamily:sans }}>
-                SACRED INVESTMENT INTELLIGENCE Â· v4.4
+                SACRED INVESTMENT INTELLIGENCE · v4.4
               </div>
             </div>
           </div>
@@ -244,12 +244,12 @@ export default function DashboardPage() {
 
           <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
             {[
-              { href:"/screener",  label:"ðŸ“Š Screener",   primary:true  },
-              { href:"/portfolio", label:"ðŸ’¼ Portfolio",   primary:false },
-              { href:"/watchlist", label:"â­ Watchlist",   primary:false },
-              { href:"/rishis",    label:"ðŸ§˜ The Rishis",  outline:true  },
-              { href:"/news",      label:"ðŸ“° News",        ghost:true    },
-              { href:"/compare",   label:"âš–ï¸ Compare",    ghost:true    },
+              { href:"/screener",  label:"📊 Screener",   primary:true  },
+              { href:"/portfolio", label:"💼 Portfolio",   primary:false },
+              { href:"/watchlist", label:"⭐ Watchlist",   primary:false },
+              { href:"/rishis",    label:"🧘 The Rishis",  outline:true  },
+              { href:"/news",      label:"📰 News",        ghost:true    },
+              { href:"/compare",   label:"⚖️ Compare",    ghost:true    },
             ].map(b => (
               <Link key={b.href} href={b.href} style={{
                 display:"inline-flex", alignItems:"center", gap:"6px",
@@ -277,7 +277,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* â”€â”€ MARKET STATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── MARKET STATS ─────────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title="Market Overview" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
@@ -297,7 +297,7 @@ export default function DashboardPage() {
                         {usd ? fmtUSD(d?.price) : fmtINR(d?.price)}
                       </div>
                       <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {up?"â–²":"â–¼"} {Math.abs(d?.changePercent24h??0).toFixed(2)}%
+                        {up?"▲":"▼"} {Math.abs(d?.changePercent24h??0).toFixed(2)}%
                       </div>
                     </>
                   )}
@@ -309,9 +309,9 @@ export default function DashboardPage() {
 
         <Divider />
 
-        {/* â”€â”€ STOCK OF THE DAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── STOCK OF THE DAY ─────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="ðŸŒŸ Stock of the Day" link={"/stock/" + STOCK_OF_DAY.symbol} linkLabel="Full Analysis" />
+          <SectionHeader title="🌟 Stock of the Day" link={"/stock/" + STOCK_OF_DAY.symbol} linkLabel="Full Analysis" />
           <div style={{
             background:"linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 40%,rgba(139,92,246,0.05) 100%)",
             border:"1px solid rgba(212,175,55,0.3)",
@@ -361,7 +361,7 @@ export default function DashboardPage() {
                   "{STOCK_OF_DAY.why}"
                 </div>
                 <div style={{ marginTop:"10px", fontSize:"12px", color:C.textMuted }}>
-                  â€” <span style={{ color:C.gold }}>Rishi {STOCK_OF_DAY.rishi}</span>
+                  — <span style={{ color:C.gold }}>Rishi {STOCK_OF_DAY.rishi}</span>
                 </div>
               </div>
 
@@ -398,16 +398,16 @@ export default function DashboardPage() {
                   fontSize:"14px", textDecoration:"none",
                   boxShadow:"0 4px 20px rgba(212,175,55,0.3)",
                 }}>
-                  View Full Analysis â†’
+                  View Full Analysis →
                 </Link>
               </div>
             </div>
           </div>
         </div>
 
-        {/* â”€â”€ TOP BUY SIGNALS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="ðŸŸ¢ Top Buy Signals" link="/screener" linkLabel="Full Screener" />
+          <SectionHeader title="🟢 Top Buy Signals" link="/screener" linkLabel="Full Screener" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
             {TOP_STOCKS.map((stock) => {
               const d  = prices[stock.symbol];
@@ -461,9 +461,9 @@ export default function DashboardPage() {
 
         <Divider />
 
-        {/* â”€â”€ SHORT OF THE DAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── SHORT OF THE DAY ──────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="ðŸ”´ Short Radar" />
+          <SectionHeader title="🔴 Short Radar" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
             {TOP_SHORTS.map(short => (
               <Link href={"/stock/" + short.symbol} key={short.symbol} style={{ textDecoration:"none" }}>
@@ -491,10 +491,10 @@ export default function DashboardPage() {
                       background:"rgba(239,68,68,0.15)", border:"1px solid rgba(239,68,68,0.3)",
                       color:C.red, padding:"3px 10px", borderRadius:"20px",
                       fontSize:"12px", fontWeight:700, fontFamily:mono,
-                    }}>ðŸ“‰ {short.shortScore}%</div>
+                    }}>📉 {short.shortScore}%</div>
                   </div>
                   <div style={{ fontSize:"12px", color:"#FCA5A5", lineHeight:1.6 }}>
-                    âš ï¸ {short.reason}
+                    ⚠️ {short.reason}
                   </div>
                 </div>
               </Link>
@@ -502,9 +502,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* â”€â”€ CRYPTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── CRYPTO ────────────────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="â‚¿ Cryptocurrency" link="/crypto" />
+          <SectionHeader title="₿ Cryptocurrency" link="/crypto" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(210px,1fr))", gap:"14px" }}>
             {TOP_CRYPTO.map(crypto => {
               const d  = prices[crypto.symbol];
@@ -548,9 +548,9 @@ export default function DashboardPage() {
 
         <Divider />
 
-        {/* â”€â”€ EXPLORE MARKETS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── EXPLORE MARKETS ───────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="ðŸŒ All Markets" />
+          <SectionHeader title="🌐 All Markets" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(170px,1fr))", gap:"14px" }}>
             {MARKETS.map(({ href, icon, label, desc }) => (
               <Link href={href} key={href} style={{ textDecoration:"none" }}>
@@ -575,7 +575,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* â”€â”€ RISHI WISDOM BANNER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── RISHI WISDOM BANNER ───────────────────────────── */}
         <div style={{
           background:"linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 50%,rgba(139,92,246,0.06) 100%)",
           border:"1px solid rgba(212,175,55,0.25)",
@@ -590,10 +590,10 @@ export default function DashboardPage() {
                 WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
                 marginBottom:"12px",
               }}>
-                ðŸ§˜ 20 Legendary Investors
+                🧘 20 Legendary Investors
               </h2>
               <p style={{ color:C.textSec, fontSize:"15px", lineHeight:1.8, maxWidth:"480px" }}>
-                Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos â€” all <span style={{ color:C.gold }}>scoring every stock</span> in real-time. Long and Short thesis. Every day.
+                Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — all <span style={{ color:C.gold }}>scoring every stock</span> in real-time. Long and Short thesis. Every day.
               </p>
             </div>
             <div style={{ display:"flex", gap:"12px", flexWrap:"wrap" }}>
@@ -601,13 +601,13 @@ export default function DashboardPage() {
                 padding:"13px 26px", background:"linear-gradient(135deg,#A88B20,#D4AF37)",
                 color:"#0A0F1C", borderRadius:"12px", fontWeight:700, fontSize:"14px",
                 textDecoration:"none", boxShadow:"0 4px 20px rgba(212,175,55,0.3)",
-              }}>ðŸ§˜ Meet the Rishis</Link>
+              }}>🧘 Meet the Rishis</Link>
               <Link href="/pricing" style={{
                 padding:"13px 26px",
                 background:"rgba(31,41,59,0.7)",
                 color:C.text, borderRadius:"12px", fontWeight:600, fontSize:"14px",
                 textDecoration:"none", border:"1px solid rgba(51,65,85,0.5)",
-              }}>ðŸ’Ž View Plans</Link>
+              }}>💎 View Plans</Link>
             </div>
           </div>
         </div>

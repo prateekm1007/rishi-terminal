@@ -231,13 +231,13 @@ export default function NewsPage() {
 
       <div className="page-header">
         <div className="content-wrapper">
-          <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
+          <div className="page-breadcrumb">
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             {' > '}
             <span>{t('news.breadcrumb')}</span>
           </div>
-          <h1 className="philosophy-heading" style={{ fontSize: 36, color: 'var(--accent-gold)', letterSpacing: 2, marginBottom: 8 }}>{t('news.title')}</h1>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.6 }}>{t('news.subtitle')}</p>
+          <h1 className="page-title" style={{ color: 'var(--accent-gold)', marginBottom: 8 }}>{t('news.title')}</h1>
+          <p className="page-subtitle" style={{ maxWidth: 600 }}>{t('news.subtitle')}</p>
         </div>
       </div>
 
@@ -248,7 +248,7 @@ export default function NewsPage() {
             const count = c === 'All' ? allNews.length : allNews.filter(n => n.category === c).length;
             if (c !== 'All' && count === 0) return null;
             return (
-              <button key={c} onClick={() => setCategory(c)} style={{ padding: '8px 16px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: category === c ? 700 : 500, border: category === c ? 'none' : '1px solid var(--border-primary)', background: category === c ? 'var(--accent-gold)20' : 'var(--bg-card)', color: category === c ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'monospace', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <button key={c} onClick={() => setCategory(c)} style={{ padding: '8px 16px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: category === c ? 700 : 500, border: category === c ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(30,41,59,0.8)', background: category === c ? 'rgba(212,175,55,0.15)' : 'rgba(17,24,39,0.85)', color: category === c ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'monospace', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {c} {count > 0 && <span style={{ opacity: 0.6 }}>({count})</span>}
               </button>
             );

@@ -1163,3 +1163,239 @@ body::before {
   margin: 0 auto;
   padding: 0 24px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   UI UNIFICATION — Phase 1
+   Shared structural classes used by ALL pages
+   ══════════════════════════════════════════════════════════════ */
+
+/* -- Universal page background (matches Dashboard exactly) -- */
+.page-bg {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #020408 0%, #0A0F1C 40%, #0D1220 100%);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* -- Universal content container (matches Dashboard padding/maxWidth) -- */
+.page-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 32px;
+  box-sizing: border-box;
+}
+
+/* -- Universal section header (title + optional View All link) -- */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+.section-header-title {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
+}
+
+.section-header-link {
+  color: var(--accent-gold);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+
+.section-header-link:hover {
+  color: var(--gold-light);
+}
+
+/* -- Universal gold divider (matches Dashboard Divider component) -- */
+.divider-section {
+  height: 1px;
+  margin: 40px 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(212, 175, 55, 0.3),
+    transparent
+  );
+}
+
+/* -- Universal page title (Cinzel, matches Dashboard hero h1 pattern) -- */
+.page-title {
+  font-family: var(--font-serif);
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+/* -- Universal page subtitle -- */
+.page-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* -- Universal breadcrumb -- */
+.page-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.page-breadcrumb a {
+  color: var(--accent-gold);
+  text-decoration: none;
+}
+
+.page-breadcrumb a:hover {
+  color: var(--gold-light);
+}
+
+/* -- Universal card (matches Dashboard card() function exactly) -- */
+.card-unified {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 16px;
+  padding: 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-unified:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+/* -- Universal stat box (matches Dashboard market stat cards) -- */
+.stat-unified {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 16px;
+  padding: 18px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  font-family: var(--font-sans);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.stat-change {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.stat-change.up   { color: var(--green); }
+.stat-change.down { color: var(--red); }
+
+/* -- Universal tab button (matches Lab/Pulse tab pattern, gold accent) -- */
+.tab-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  background: rgba(17, 24, 39, 0.85);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  border-color: rgba(212, 175, 55, 0.3);
+  color: var(--text-secondary);
+}
+
+.tab-btn.active {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.5);
+  color: var(--accent-gold);
+}
+
+/* -- Universal filter pill (matches News/Screener filter buttons) -- */
+.filter-pill {
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  background: rgba(17, 24, 39, 0.85);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filter-pill:hover {
+  border-color: rgba(212, 175, 55, 0.3);
+  color: var(--text-secondary);
+}
+
+.filter-pill.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.5);
+  color: var(--accent-gold);
+}
+
+/* -- Universal back link (matches Dashboard → back navigation) -- */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-gold);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  transition: color 0.15s ease;
+}
+
+.back-link:hover {
+  color: var(--gold-light);
+}
+
+/* END UI UNIFICATION Phase 1 */

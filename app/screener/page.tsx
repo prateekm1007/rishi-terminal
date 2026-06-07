@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { STOCKS } from '../../data/stocks';
@@ -29,12 +29,12 @@ export default function ScreenerPage() {
   ], [t, locale, stockList]);
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+    <main className="page-bg">
 
       <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)', padding: '40px 24px' }}>
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
 
-          <p style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
+          <p className="page-breadcrumb">
             <a href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</a>
             <span style={{ margin: '0 8px' }}>&rsaquo;</span>
             <span>SCREENER</span>
@@ -42,14 +42,14 @@ export default function ScreenerPage() {
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 32 }}>
             <div>
-              <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 42, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8, lineHeight: 1.1 }}>
+              <h1 className="page-title" style={{ fontSize: 42, marginBottom: 8 }}>
                 {t('screener.title')}
               </h1>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 520, lineHeight: 1.6 }}>
+              <p className="page-subtitle" style={{ maxWidth: 520 }}>
                 {activePresetData ? (
                   <><strong style={{ color: '#D4AF37' }}>{activePresetData.emoji} {activePresetData.name}:</strong> {activePresetData.description}</>
                 ) : (
-                  `Filter ${stockList.length} Indian stocks by Rishi wisdom — Buffett Mode, Damani Mode, Graham Mode, Short Mode & more`
+                  `Filter ${stockList.length} Indian stocks by Rishi wisdom â€” Buffett Mode, Damani Mode, Graham Mode, Short Mode & more`
                 )}
               </p>
             </div>

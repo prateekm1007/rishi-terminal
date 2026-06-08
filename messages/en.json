@@ -646,5 +646,32 @@
                "unavailable":  "Knowledge Graph unavailable",
                "elite":  "Elite Knowledge Graph",
                "consensusArchitecture":  "Consensus Architecture"
-           }
+           },
+    "overview":  {
+                     "totalInvested":  "Total Invested",
+                     "currentValue":  "Current Value",
+                     "portfolioRishiScore":  "Portfolio Rishi Score",
+                     "twrrTotal":  "TWRR Total",
+                     "holdings":  "Holdings",
+                     "avgHoldingPeriod":  "Avg Holding Period",
+                     "dailyEnlightenment":  "Daily Enlightenment",
+                     "sensex":  "Sensex",
+                     "riskSummary":  "Risk Summary",
+                     "hhiIndex":  "HHI Index",
+                     "liquidityRisk":  "Liquidity Risk",
+                     "governanceRisk":  "Governance Risk",
+                     "cyclicalExposure":  "Cyclical Exposure",
+                     "overallRisk":  "Overall Risk",
+                     "maxDrawdown":  "Max Drawdown",
+                     "fcfYield":  "FCF Yield",
+                     "portfolioBull":  "Portfolio Bull",
+                     "portfolioBear":  "Portfolio Bear",
+                     "disagreementIndex":  "Disagreement Index",
+                     "bestPerformer":  "Best Performer",
+                     "worstPerformer":  "Worst Performer",
+                     "symbol":  "Symbol",
+                     "newPortfolioValue":  "New Portfolio Value",
+                     "newRishiScore":  "New Rishi Score",
+                     "scoreImpact":  "Score Impact"
+                 }
 }

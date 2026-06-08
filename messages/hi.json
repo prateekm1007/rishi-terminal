@@ -647,5 +647,32 @@
                "unavailable":  "ज्ञान ग्राफ अनुपलब्ध",
                "elite":  "एलीट ज्ञान ग्राफ",
                "consensusArchitecture":  "कंसेंसस आर्किटेक्चर"
-           }
+           },
+    "overview":  {
+                     "totalInvested":  "कुल निवेश",
+                     "currentValue":  "वर्तमान मूल्य",
+                     "portfolioRishiScore":  "पोर्टफोलियो ऋषि स्कोर",
+                     "twrrTotal":  "TWRR कुल",
+                     "holdings":  "होल्डिंग्स",
+                     "avgHoldingPeriod":  "औसत होल्डिंग अवधि",
+                     "dailyEnlightenment":  "दैनिक ज्ञान",
+                     "sensex":  "सेंसेक्स",
+                     "riskSummary":  "जोखिम सारांश",
+                     "hhiIndex":  "HHI सूचकांक",
+                     "liquidityRisk":  "तरलता जोखिम",
+                     "governanceRisk":  "शासन जोखिम",
+                     "cyclicalExposure":  "चक्रीय एक्सपोजर",
+                     "overallRisk":  "समग्र जोखिम",
+                     "maxDrawdown":  "अधिकतम ड्रॉडाउन",
+                     "fcfYield":  "FCF यील्ड",
+                     "portfolioBull":  "पोर्टफोलियो बुल",
+                     "portfolioBear":  "पोर्टफोलियो बेयर",
+                     "disagreementIndex":  "असहमति सूचकांक",
+                     "bestPerformer":  "सर्वश्रेष्ठ प्रदर्शनकर्ता",
+                     "worstPerformer":  "सबसे कमजोर प्रदर्शनकर्ता",
+                     "symbol":  "प्रतीक",
+                     "newPortfolioValue":  "नया पोर्टफोलियो मूल्य",
+                     "newRishiScore":  "नया ऋषि स्कोर",
+                     "scoreImpact":  "स्कोर प्रभाव"
+                 }
 }

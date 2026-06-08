@@ -8,6 +8,7 @@ import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { useLanguage } from '../../lib/language';
 import {
   clamp, toISODateOnly, parseDateSafe, daysBetween,
   formatCurrency, fmtPct, plColor, scoreColor, scoreLabel,
@@ -89,6 +90,7 @@ function calcTWRRTotal(holdings: PortfolioHolding[], endDate: Date, historyBySym
 
 
 export default function OverviewTab() {
+  const { t } = useLanguage();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [benchmark, setBenchmark] = useState<'^NSEI' | '^BSESN'>('^NSEI');
 
@@ -666,13 +668,13 @@ export default function OverviewTab() {
       {/* Hero Cards Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
         <div style={card}>
-          <div style={label}>Total Invested</div>
+          <div style={label}>{t("overview.totalInvested")}</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#E2E8F0', fontFamily: 'monospace' }}>
             {formatCurrency(totals.totalInvested)}
           </div>
         </div>
         <div style={card}>
-          <div style={label}>Current Value</div>
+          <div style={label}>{t("overview.currentValue")}</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#D4AF37', fontFamily: 'monospace' }}>
             {formatCurrency(animatedCurrent)}
           </div>
@@ -684,7 +686,7 @@ export default function OverviewTab() {
           </div>
         </div>
         <div style={card}>
-          <div style={label}>Portfolio Rishi Score</div>
+          <div style={label}>{t("overview.portfolioRishiScore")}</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: scoreColor(totals.avgScore), fontFamily: 'monospace' }}>
             {totals.avgScore}/100
           </div>
@@ -710,25 +712,25 @@ export default function OverviewTab() {
           </div>
         </div>
         <div style={card}>
-          <div style={label}><InfoTip term="TWRR" icon={true}>TWRR Total</InfoTip></div>
+          <div style={label}><InfoTip term="TWRR" icon={true}>{t("overview.twrrTotal")}</InfoTip></div>
           <div style={{ fontSize: 22, fontWeight: 700, color: '#38BDF8', fontFamily: 'monospace' }}>
             {twrrTotalPct != null ? fmtPct(twrrTotalPct) : '—'}
           </div>
         </div>
         <div style={card}>
-          <div style={label}>Holdings</div>
+          <div style={label}>{t("overview.holdings")}</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: '#E2E8F0', fontFamily: 'monospace' }}>
             {holdings.length}
           </div>
         </div>
         <div style={card}>
-          <div style={label}>Avg Holding Period</div>
+          <div style={label}>{t("overview.avgHoldingPeriod")}</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: '#94A3B8', fontFamily: 'monospace' }}>
             {avgHoldingPeriodDays}d
           </div>
         </div>
         <div style={card}>
-          <div style={label}>Daily Enlightenment</div>
+          <div style={label}>{t("overview.dailyEnlightenment")}</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: scoreColor(enlightenmentScore), fontFamily: 'monospace' }}>
             {enlightenmentScore}/100
           </div>
@@ -757,14 +759,14 @@ export default function OverviewTab() {
         <div style={{ marginTop: 12, fontSize: 11, color: '#64748B' }}>
           Benchmark:
           <button onClick={() => setBenchmark('^NSEI')} style={{ marginLeft: 8, padding: '4px 8px', background: benchmark === '^NSEI' ? 'rgba(212,175,55,0.2)' : 'transparent', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 4, color: benchmark === '^NSEI' ? '#D4AF37' : '#94A3B8', cursor: 'pointer', fontSize: 10 }}>Nifty 50</button>
-          <button onClick={() => setBenchmark('^BSESN')} style={{ marginLeft: 6, padding: '4px 8px', background: benchmark === '^BSESN' ? 'rgba(212,175,55,0.2)' : 'transparent', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 4, color: benchmark === '^BSESN' ? '#D4AF37' : '#94A3B8', cursor: 'pointer', fontSize: 10 }}>Sensex</button>
+          <button onClick={() => setBenchmark('^BSESN')} style={{ marginLeft: 6, padding: '4px 8px', background: benchmark === '^BSESN' ? 'rgba(212,175,55,0.2)' : 'transparent', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 4, color: benchmark === '^BSESN' ? '#D4AF37' : '#94A3B8', cursor: 'pointer', fontSize: 10 }}>{t("overview.sensex")}</button>
         </div>
       </div>
 
 
       {/* Risk Summary */}
       <div style={card}>
-        <div style={label}>Risk Summary</div>
+        <div style={label}>{t("overview.riskSummary")}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginTop: 12 }}>
           <div style={{ textAlign: 'center' }}>
             {gauge(concentration.top5)}
@@ -772,30 +774,30 @@ export default function OverviewTab() {
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(concentration.hhi * 100)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}><InfoTip term="HHI" icon={false}>HHI Index</InfoTip></div>
+            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}><InfoTip term="HHI" icon={false}>{t("overview.hhiIndex")}</InfoTip></div>
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(liquidityRisk)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>Liquidity Risk</div>
+            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>{t("overview.liquidityRisk")}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(governanceRisk)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>Governance Risk</div>
+            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>{t("overview.governanceRisk")}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(cyclicalRisk)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>Cyclical Exposure</div>
+            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>{t("overview.cyclicalExposure")}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(overallRiskScore)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>Overall Risk</div>
+            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>{t("overview.overallRisk")}</div>
           </div>
         </div>
         <div style={{ marginTop: 16, fontSize: 11, color: '#64748B', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div><InfoTip term="Beta">Beta</InfoTip>: {beta != null ? beta.toFixed(2) : '—'}</div>
-          <div><InfoTip term="Max Drawdown">Max Drawdown</InfoTip>: {maxDD != null ? fmtPct(maxDD) : '—'}</div>
+          <div><InfoTip term="Max Drawdown">{t("overview.maxDrawdown")}</InfoTip>: {maxDD != null ? fmtPct(maxDD) : '—'}</div>
           <div>Recovery Elasticity: {recoveryElasticity != null ? Math.round(recoveryElasticity) : '—'}/100</div>
-          <div><InfoTip term="FCF Yield">FCF Yield</InfoTip>: {fmtPct(fcfYieldPct)}</div>
+          <div><InfoTip term="FCF Yield">{t("overview.fcfYield")}</InfoTip>: {fmtPct(fcfYieldPct)}</div>
         </div>
       </div>
 
@@ -811,15 +813,15 @@ export default function OverviewTab() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, fontSize: 11 }}>
             <div>
-              <div style={{ color: '#64748B', marginBottom: 4 }}>Portfolio Bull</div>
+              <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.portfolioBull")}</div>
               <div style={{ color: '#22C55E', fontWeight: 600 }}>{rishiCouncil.portfolioBull}</div>
             </div>
             <div>
-              <div style={{ color: '#64748B', marginBottom: 4 }}>Portfolio Bear</div>
+              <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.portfolioBear")}</div>
               <div style={{ color: '#EF4444', fontWeight: 600 }}>{rishiCouncil.portfolioBear}</div>
             </div>
             <div>
-              <div style={{ color: '#64748B', marginBottom: 4 }}><InfoTip term="Disagreement Index" icon={false}>Disagreement Index</InfoTip></div>
+              <div style={{ color: '#64748B', marginBottom: 4 }}><InfoTip term="Disagreement Index" icon={false}>{t("overview.disagreementIndex")}</InfoTip></div>
               <div style={{ color: '#F97316', fontWeight: 700 }}>{rishiCouncil.avgSpread}/100</div>
             </div>
           </div>
@@ -830,7 +832,7 @@ export default function OverviewTab() {
       {totals.best && totals.worst && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div style={card}>
-            <div style={label}>Best Performer</div>
+            <div style={label}>{t("overview.bestPerformer")}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#22C55E', marginTop: 8 }}>
               {totals.best.symbol}
             </div>
@@ -839,7 +841,7 @@ export default function OverviewTab() {
             </div>
           </div>
           <div style={card}>
-            <div style={label}>Worst Performer</div>
+            <div style={label}>{t("overview.worstPerformer")}</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#EF4444', marginTop: 8 }}>
               {totals.worst.symbol}
             </div>
@@ -878,7 +880,7 @@ export default function OverviewTab() {
         <div style={label}>🔮 What-If Simulator</div>
         <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
           <div>
-            <label style={{ fontSize: 11, color: '#64748B', display: 'block', marginBottom: 6 }}>Symbol</label>
+            <label style={{ fontSize: 11, color: '#64748B', display: 'block', marginBottom: 6 }}>{t("overview.symbol")}</label>
             <input
               type="text"
               value={whatIfSymbol}
@@ -906,15 +908,15 @@ export default function OverviewTab() {
             <div style={{ fontSize: 12, color: '#64748B', marginBottom: 8 }}>Impact if you add {whatIfShares.toFixed(2)} shares of {whatIfSymbol.toUpperCase()} @ {formatCurrency(whatIfLtp)}:</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, fontSize: 11 }}>
               <div>
-                <div style={{ color: '#64748B', marginBottom: 4 }}>New Portfolio Value</div>
+                <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.newPortfolioValue")}</div>
                 <div style={{ color: '#38BDF8', fontWeight: 700 }}>{formatCurrency(whatIfNewValue)}</div>
               </div>
               <div>
-                <div style={{ color: '#64748B', marginBottom: 4 }}>New Rishi Score</div>
+                <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.newRishiScore")}</div>
                 <div style={{ color: scoreColor(whatIfNewScore), fontWeight: 700 }}>{whatIfNewScore}/100</div>
               </div>
               <div>
-                <div style={{ color: '#64748B', marginBottom: 4 }}>Score Impact</div>
+                <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.scoreImpact")}</div>
                 <div style={{ color: plColor(whatIfNewScore - totals.avgScore), fontWeight: 700 }}>
                   {whatIfNewScore - totals.avgScore >= 0 ? '+' : ''}{whatIfNewScore - totals.avgScore}
                 </div>

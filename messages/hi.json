@@ -579,5 +579,32 @@
                                     "moderateConviction":  "मध्यम",
                                     "lowConviction":  "कम विश्वास"
                                 }
-              }
+              },
+    "dashboard2":  {
+                       "viewAll":  "सभी देखें",
+                       "fullAnalysis":  "पूर्ण विश्लेषण",
+                       "fullScreener":  "पूर्ण स्क्रीनर",
+                       "todaySuffix":  "आज",
+                       "rishiScore":  "ऋषि स्कोर",
+                       "rishiConsensus":  "ऋषि सर्वसम्मति",
+                       "bulls":  "तेजड़िए",
+                       "bears":  "मंदड़िए",
+                       "viewFullAnalysis":  "पूर्ण विश्लेषण देखें",
+                       "peLabel":  "PE",
+                       "roeLabel":  "ROE",
+                       "oemLabel":  "OPM",
+                       "sections":  {
+                                        "stockOfTheDay":  "दिन का स्टॉक",
+                                        "topBuySignals":  "शीर्ष खरीद संकेत",
+                                        "shortRadar":  "शॉर्ट रडार",
+                                        "cryptocurrency":  "क्रिप्टोकरेंसी",
+                                        "allMarkets":  "सभी बाजार"
+                                    },
+                       "wisdom":  {
+                                      "title":  "20 महान निवेशक",
+                                      "body":  "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — सभी हर स्टॉक को रियल-टाइम में स्कोर कर रहे हैं। लॉन्ग और शॉर्ट थीसिस। हर दिन।",
+                                      "bodyHighlight":  "हर स्टॉक को स्कोर",
+                                      "exploreBtn":  "सभी ऋषियों का अन्वेषण करें"
+                                  }
+                   }
 }

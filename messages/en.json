@@ -578,5 +578,32 @@
                                     "moderateConviction":  "Moderate",
                                     "lowConviction":  "Low Conviction"
                                 }
-              }
+              },
+    "dashboard2":  {
+                       "viewAll":  "View All",
+                       "fullAnalysis":  "Full Analysis",
+                       "fullScreener":  "Full Screener",
+                       "todaySuffix":  "today",
+                       "rishiScore":  "Rishi Score",
+                       "rishiConsensus":  "Rishi Consensus",
+                       "bulls":  "Bulls",
+                       "bears":  "Bears",
+                       "viewFullAnalysis":  "View Full Analysis",
+                       "peLabel":  "PE",
+                       "roeLabel":  "ROE",
+                       "oemLabel":  "OPM",
+                       "sections":  {
+                                        "stockOfTheDay":  "Stock of the Day",
+                                        "topBuySignals":  "Top Buy Signals",
+                                        "shortRadar":  "Short Radar",
+                                        "cryptocurrency":  "Cryptocurrency",
+                                        "allMarkets":  "All Markets"
+                                    },
+                       "wisdom":  {
+                                      "title":  "20 Legendary Investors",
+                                      "body":  "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — all scoring every stock in real-time. Long and Short thesis. Every day.",
+                                      "bodyHighlight":  "scoring every stock",
+                                      "exploreBtn":  "Explore All Rishis"
+                                  }
+                   }
 }

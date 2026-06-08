@@ -106,6 +106,7 @@ function scoreColor(s: number) {
 /* ── Sub-Components ────────────────────────────────────────── */
 
 function SectionHeader({ title, link, linkLabel }: { title: string; link?: string; linkLabel?: string }) {
+  const { t } = useLanguage();
   return (
     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:"20px" }}>
       <h2 style={{ fontFamily:serif, fontSize:"20px", fontWeight:700, color:C.text, letterSpacing:"0.01em" }}>
@@ -113,7 +114,7 @@ function SectionHeader({ title, link, linkLabel }: { title: string; link?: strin
       </h2>
       {link && (
         <Link href={link} style={{ color:C.gold, fontSize:"12px", fontWeight:600, fontFamily:sans, letterSpacing:"0.03em" }}>
-          {linkLabel ?? "View All"} →
+          {linkLabel ?? t("dashboard2.viewAll")} →
         </Link>
       )}
     </div>
@@ -314,7 +315,7 @@ export default function DashboardPage() {
 
         {/* ── STOCK OF THE DAY ─────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="🌟 Stock of the Day" link={"/stock/" + STOCK_OF_DAY.symbol} linkLabel="Full Analysis" />
+          <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + STOCK_OF_DAY.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
           <div style={{
             background:"linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 40%,rgba(139,92,246,0.05) 100%)",
             border:"1px solid rgba(212,175,55,0.3)",
@@ -337,7 +338,7 @@ export default function DashboardPage() {
 
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"16px" }}>
                   {[
-                    { label:"Rishi Score", value: STOCK_OF_DAY.consensus + "/100" },
+                    { label:t("dashboard2.rishiScore"), value: STOCK_OF_DAY.consensus + "/100" },
                     { label:"P/E",         value: STOCK_OF_DAY.pe.toString() },
                     { label:"ROE",         value: STOCK_OF_DAY.roe + "%" },
                     { label:"OPM",         value: STOCK_OF_DAY.opm + "%" },
@@ -373,7 +374,7 @@ export default function DashboardPage() {
                   {fmtINR(prices[STOCK_OF_DAY.symbol]?.price)}
                 </div>
                 <div style={{ fontSize:"14px", fontWeight:700, fontFamily:mono, marginBottom:"20px", ...upClr(prices[STOCK_OF_DAY.symbol]?.changePercent24h) }}>
-                  {fmtPct(prices[STOCK_OF_DAY.symbol]?.changePercent24h)} today
+                  {fmtPct(prices[STOCK_OF_DAY.symbol]?.changePercent24h)} {t("dashboard2.todaySuffix")}
                 </div>
 
                 <div style={{
@@ -382,12 +383,12 @@ export default function DashboardPage() {
                   marginBottom:"16px",
                 }}>
                   <div style={{ fontSize:"11px", color:C.textMuted, marginBottom:"10px", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.08em" }}>
-                    Rishi Consensus
+                    {t("dashboard2.rishiConsensus")}
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
-                    <span style={{ fontSize:"13px", color:C.green }}>Bulls</span>
+                    <span style={{ fontSize:"13px", color:C.green }}>{t("dashboard2.bulls")}</span>
                     <span style={{ fontSize:"20px", fontWeight:900, color:C.green, fontFamily:mono }}>{STOCK_OF_DAY.consensus}%</span>
-                    <span style={{ fontSize:"13px", color:C.red }}>Bears {100 - STOCK_OF_DAY.consensus}%</span>
+                    <span style={{ fontSize:"13px", color:C.red }}>{t("dashboard2.bears")} {100 - STOCK_OF_DAY.consensus}%</span>
                   </div>
                   <div style={{ height:"8px", background:"rgba(239,68,68,0.3)", borderRadius:"4px", overflow:"hidden" }}>
                     <div style={{ height:"100%", width: STOCK_OF_DAY.consensus + "%", background:"linear-gradient(90deg,#16A34A,#22C55E)", borderRadius:"4px" }} />
@@ -401,7 +402,7 @@ export default function DashboardPage() {
                   fontSize:"14px", textDecoration:"none",
                   boxShadow:"0 4px 20px rgba(212,175,55,0.3)",
                 }}>
-                  View Full Analysis →
+                  {t("dashboard2.viewFullAnalysis")} →
                 </Link>
               </div>
             </div>
@@ -410,7 +411,7 @@ export default function DashboardPage() {
 
         {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="🟢 Top Buy Signals" link="/screener" linkLabel="Full Screener" />
+          <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/screener" linkLabel={t("dashboard2.fullScreener")} />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
             {TOP_STOCKS.map((stock) => {
               const d  = prices[stock.symbol];
@@ -451,8 +452,8 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div style={{ textAlign:"right",color:C.textMuted,fontSize:"11px",lineHeight:1.8,fontFamily:mono }}>
-                        <div>PE {stock.pe}</div>
-                        <div>ROE {stock.roe}%</div>
+                        <div>{t("dashboard2.peLabel")} {stock.pe}</div>
+                        <div>{t("dashboard2.roeLabel")} {stock.roe}%</div>
                       </div>
                     </div>
                   </div>
@@ -466,7 +467,7 @@ export default function DashboardPage() {
 
         {/* ── SHORT OF THE DAY ──────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="🔴 Short Radar" />
+          <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
             {TOP_SHORTS.map(short => (
               <Link href={"/stock/" + short.symbol} key={short.symbol} style={{ textDecoration:"none" }}>
@@ -507,7 +508,7 @@ export default function DashboardPage() {
 
         {/* ── CRYPTO ────────────────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="₿ Cryptocurrency" link="/crypto" />
+          <SectionHeader title={"₿ " + t("dashboard2.sections.cryptocurrency")} link="/crypto" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(210px,1fr))", gap:"14px" }}>
             {TOP_CRYPTO.map(crypto => {
               const d  = prices[crypto.symbol];
@@ -553,7 +554,7 @@ export default function DashboardPage() {
 
         {/* ── EXPLORE MARKETS ───────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="🌐 All Markets" />
+          <SectionHeader title={"🌐 " + t("dashboard2.sections.allMarkets")} />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(170px,1fr))", gap:"14px" }}>
             {MARKETS.map(({ href, icon, label, desc }) => (
               <Link href={href} key={href} style={{ textDecoration:"none" }}>
@@ -593,10 +594,10 @@ export default function DashboardPage() {
                 WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent",
                 marginBottom:"12px",
               }}>
-                🧘 20 Legendary Investors
+                🧘 {t("dashboard2.wisdom.title")}
               </h2>
               <p style={{ color:C.textSec, fontSize:"15px", lineHeight:1.8, maxWidth:"480px" }}>
-                Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — all <span style={{ color:C.gold }}>scoring every stock</span> in real-time. Long and Short thesis. Every day.
+                {t("dashboard2.wisdom.body")}
               </p>
             </div>
             <div style={{ display:"flex", gap:"12px", flexWrap:"wrap" }}>

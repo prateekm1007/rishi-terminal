@@ -674,5 +674,21 @@
                      "newPortfolioValue":  "नया पोर्टफोलियो मूल्य",
                      "newRishiScore":  "नया ऋषि स्कोर",
                      "scoreImpact":  "स्कोर प्रभाव"
-                 }
+                 },
+    "compare":  {
+                    "arenaEmpty":  "अखाड़ा खाली है",
+                    "stock":  "स्टॉक",
+                    "price":  "मूल्य",
+                    "marketCap":  "मार्केट कैप",
+                    "score":  "स्कोर",
+                    "tension":  "तनाव",
+                    "rishi":  "ऋषि",
+                    "winner":  "विजेता",
+                    "rishiConsensus":  "ऋषि सर्वसम्मति",
+                    "sector":  "सेक्टर",
+                    "rishiScore":  "ऋषि स्कोर",
+                    "category":  "श्रेणी",
+                    "historicalPerformanceAnalysis":  "ऐतिहासिक प्रदर्शन विश्लेषण",
+                    "disagreementIndex":  "असहमति सूचकांक"
+                }
 }

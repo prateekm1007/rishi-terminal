@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { useLanguage } from '../../lib/language';
 import { fetchHistoryPoints } from '@/components/lab/helpers';
 import type { HistoryPoint } from '@/components/lab/helpers';
 import {
@@ -85,6 +86,7 @@ function fmtCr(v: number): string {
 }
 
 export default function CompareTab() {
+  const { t } = useLanguage();
   const [symbols, setSymbols] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('matrix');
   const [addSymbol, setAddSymbol] = useState('');
@@ -673,7 +675,7 @@ export default function CompareTab() {
       {symbols.length === 0 && (
         <div style={{ ...cardStyle, padding: 64, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#D4AF37', marginBottom: 8 }}>The Arena is Empty</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#D4AF37', marginBottom: 8 }}>{t("compare.arenaEmpty")}</div>
           <div style={{ color: '#64748B', marginBottom: 20, fontSize: 14 }}>Add 2–10 stocks to begin the battle.</div>
         </div>
       )}
@@ -685,18 +687,18 @@ export default function CompareTab() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
-                  <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221', zIndex: 10 }}>STOCK</th>
-                  <th style={thStyle}>PRICE</th>
+                  <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221', zIndex: 10 }}>{t("compare.stock")}</th>
+                  <th style={thStyle}>{t("compare.price")}</th>
                   <th style={thStyle}>24H%</th>
-                  <th style={thStyle}>MKT CAP</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>SCORE</th>
+                  <th style={thStyle}>{t("compare.marketCap")}</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>{t("compare.score")}</th>
                   <th style={thStyle}>P/E</th>
                   <th style={thStyle}>P/B</th>
                   <th style={thStyle}>ROE%</th>
                   <th style={thStyle}>ROCE%</th>
                   <th style={thStyle}>D/E</th>
                   <th style={thStyle}>FCF YLD%</th>
-                  <th style={{ ...thStyle, textAlign: 'center' }}>TENSION</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>{t("compare.tension")}</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>BULL</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>BEAR</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>✕</th>
@@ -790,13 +792,13 @@ export default function CompareTab() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
-                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 140, fontSize: 8 }}>RISHI</th>
+                    <th style={{ ...thStyle, textAlign: 'left', minWidth: 140, fontSize: 8 }}>{t("compare.rishi")}</th>
                     {enriched.map((e: any, i: number) => (
                       <th key={e.symbol} style={{ ...thStyle, textAlign: 'center', color: STOCK_COLORS[i % STOCK_COLORS.length], fontSize: 9 }}>
                         {e.symbol}
                       </th>
                     ))}
-                    <th style={{ ...thStyle, textAlign: 'center', fontSize: 8 }}>WINNER</th>
+                    <th style={{ ...thStyle, textAlign: 'center', fontSize: 8 }}>{t("compare.winner")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -846,7 +848,7 @@ export default function CompareTab() {
 
                   {/* CONSENSUS ROW */}
                   <tr style={{ borderTop: '2px solid rgba(212,175,55,0.3)', background: 'rgba(212,175,55,0.05)' }}>
-                    <td style={{ ...tdStyle, textAlign: 'left', color: '#D4AF37', fontWeight: 700, fontSize: 10 }}>RISHI CONSENSUS</td>
+                    <td style={{ ...tdStyle, textAlign: 'left', color: '#D4AF37', fontWeight: 700, fontSize: 10 }}>{t("compare.rishiConsensus")}</td>
                     {enriched.map((e: any, i: number) => {
                       const maxC = Math.max(...enriched.map((x: any) => x.consensus));
                       return (
@@ -918,7 +920,7 @@ export default function CompareTab() {
             <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
-                  <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221' }}>STOCK</th>
+                  <th style={{ ...thStyle, textAlign: 'left', position: 'sticky', left: 0, background: '#0B1221' }}>{t("compare.stock")}</th>
                   {['SCORE', 'P/E', 'P/B', 'ROE%', 'ROCE%', 'D/E', 'FCF%'].map(col => (
                     <th key={col} style={thStyle}>
                       {col}
@@ -996,7 +998,7 @@ export default function CompareTab() {
             <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(212,175,55,0.2)' }}>
-                  <th style={{ ...thStyle, textAlign: 'left' }}>STOCK</th>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>{t("compare.stock")}</th>
                   {['Moat', 'Valuation', 'Growth', 'Governance', 'Sentiment', 'Quality'].map(m => (
                     <th key={m} style={thStyle}>
                       {m.toUpperCase()}
@@ -1035,7 +1037,7 @@ export default function CompareTab() {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>HISTORICAL PERFORMANCE ANALYSIS</div>
+                <div style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>{t("compare.historicalPerformanceAnalysis")}</div>
                 <div style={{ fontSize: 13, color: '#D4AF37' }}>Normalized Total Return — {histTF} Period</div>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -1072,11 +1074,11 @@ export default function CompareTab() {
                     <thead>
                       <tr style={{ borderBottom: '2px solid rgba(212,175,55,0.3)' }}>
                         <th style={{ ...thStyle, textAlign: 'left', width: 40 }}>#</th>
-                        <th style={{ ...thStyle, textAlign: 'left' }}>STOCK</th>
-                        <th style={thStyle}>SECTOR</th>
+                        <th style={{ ...thStyle, textAlign: 'left' }}>{t("compare.stock")}</th>
+                        <th style={thStyle}>{t("compare.sector")}</th>
                         <th style={{ ...thStyle, textAlign: 'right' }}>{histTF} RETURN</th>
-                        <th style={{ ...thStyle, textAlign: 'right' }}>RISHI SCORE</th>
-                        <th style={{ ...thStyle, textAlign: 'center' }}>CATEGORY</th>
+                        <th style={{ ...thStyle, textAlign: 'right' }}>{t("compare.rishiScore")}</th>
+                        <th style={{ ...thStyle, textAlign: 'center' }}>{t("compare.category")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1108,7 +1110,7 @@ export default function CompareTab() {
       {symbols.length > 1 && (
         <div style={{ ...cardStyle, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 9, color: '#64748B', letterSpacing: 1 }}>DISAGREEMENT INDEX</div>
+            <div style={{ fontSize: 9, color: '#64748B', letterSpacing: 1 }}>{t("compare.disagreementIndex")}</div>
             <div style={{ fontSize: 22, fontWeight: 900, fontFamily: 'monospace', color: disagreementIndex > 60 ? '#EF4444' : disagreementIndex > 30 ? '#D4AF37' : '#22C55E' }}>
               {disagreementIndex}
               <span style={{ fontSize: 11, color: '#64748B', marginLeft: 4 }}>/100</span>

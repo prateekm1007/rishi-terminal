@@ -673,5 +673,21 @@
                      "newPortfolioValue":  "New Portfolio Value",
                      "newRishiScore":  "New Rishi Score",
                      "scoreImpact":  "Score Impact"
-                 }
+                 },
+    "compare":  {
+                    "arenaEmpty":  "The Arena is Empty",
+                    "stock":  "STOCK",
+                    "price":  "PRICE",
+                    "marketCap":  "MKT CAP",
+                    "score":  "SCORE",
+                    "tension":  "TENSION",
+                    "rishi":  "RISHI",
+                    "winner":  "WINNER",
+                    "rishiConsensus":  "RISHI CONSENSUS",
+                    "sector":  "SECTOR",
+                    "rishiScore":  "RISHI SCORE",
+                    "category":  "CATEGORY",
+                    "historicalPerformanceAnalysis":  "HISTORICAL PERFORMANCE ANALYSIS",
+                    "disagreementIndex":  "DISAGREEMENT INDEX"
+                }
 }

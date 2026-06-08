@@ -6,15 +6,25 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/language';
 import {
-  MACRO_REGIME,
-  MACRO_INDICATORS,
-  PHILOSOPHER_STANCES,
-  SECTOR_ROTATION,
-  HISTORICAL_CORRELATIONS,
-  CURRENCY_SENSITIVITY,
-  getDailyBrief,
+  MACRO_REGIME as MACRO_REGIME_EN,
+  MACRO_INDICATORS as MACRO_INDICATORS_EN,
+  PHILOSOPHER_STANCES as PHILOSOPHER_STANCES_EN,
+  SECTOR_ROTATION as SECTOR_ROTATION_EN,
+  HISTORICAL_CORRELATIONS as HISTORICAL_CORRELATIONS_EN,
+  CURRENCY_SENSITIVITY as CURRENCY_SENSITIVITY_EN,
+  getDailyBrief as getDailyBrief_EN,
   deriveDynamicAgreement,
 } from '../../data/economyPlus/macroData';
+
+import {
+  MACRO_REGIME as MACRO_REGIME_HI,
+  MACRO_INDICATORS as MACRO_INDICATORS_HI,
+  PHILOSOPHER_STANCES as PHILOSOPHER_STANCES_HI,
+  SECTOR_ROTATION as SECTOR_ROTATION_HI,
+  HISTORICAL_CORRELATIONS as HISTORICAL_CORRELATIONS_HI,
+  CURRENCY_SENSITIVITY as CURRENCY_SENSITIVITY_HI,
+  getDailyBrief as getDailyBrief_HI,
+} from '../../data/economyPlus/macroData.hi';
 
 type PulseTab =
   | 'overview'
@@ -87,7 +97,17 @@ function clamp(n: number, lo: number, hi: number) {
 }
 
 export default function MarketPulsePage() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+
+  // Select data based on locale
+  const MACRO_REGIME = locale === 'hi' ? MACRO_REGIME_HI : MACRO_REGIME_EN;
+  const MACRO_INDICATORS = locale === 'hi' ? MACRO_INDICATORS_HI : MACRO_INDICATORS_EN;
+  const PHILOSOPHER_STANCES = locale === 'hi' ? PHILOSOPHER_STANCES_HI : PHILOSOPHER_STANCES_EN;
+  const SECTOR_ROTATION = locale === 'hi' ? SECTOR_ROTATION_HI : SECTOR_ROTATION_EN;
+  const HISTORICAL_CORRELATIONS = locale === 'hi' ? HISTORICAL_CORRELATIONS_HI : HISTORICAL_CORRELATIONS_EN;
+  const CURRENCY_SENSITIVITY = locale === 'hi' ? CURRENCY_SENSITIVITY_HI : CURRENCY_SENSITIVITY_EN;
+  const getDailyBrief = locale === 'hi' ? getDailyBrief_HI : getDailyBrief_EN;
+
   const [tab, setTab] = useState<PulseTab>('macro');
   const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
 
@@ -447,7 +467,7 @@ export default function MarketPulsePage() {
               <StatBox
                 label={t('pulse.overview.breadthLabel')}
                 value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'}
-                sub={breadth?.breadth ? `${breadth.breadth.advances} up · ${breadth.breadth.declines} down` : undefined}
+                sub={breadth?.breadth ? `  ·  ` : undefined}
                 color="var(--amber)"
                 onClick={() => setTab('breadth')}
               />

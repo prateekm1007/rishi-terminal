@@ -7,7 +7,9 @@ interface Props {
   scores: RishiScore[];
 }
 
+import { useLanguage } from '../../lib/language';
 export function WisdomGraph({ stock, scores }: Props) {
+  const { t } = useLanguage();
   if (!stock || !scores || scores.length === 0) {
     return null;
   }
@@ -28,7 +30,7 @@ export function WisdomGraph({ stock, scores }: Props) {
         ))}
       </div>
       <div className="mt-6 p-4 bg-secondary/50 rounded-lg text-center text-xs text-muted">
-        Interactive knowledge graph coming soon
+        {t("kg.comingSoon")}
       </div>
     </div>
   );

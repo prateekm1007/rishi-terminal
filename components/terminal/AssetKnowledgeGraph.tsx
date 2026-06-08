@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '../../lib/language';
 import type {
   EliteKnowledgeGraph,
   DebateEntry,
@@ -114,13 +115,14 @@ export function AssetKnowledgeGraph({
   assetName,
   onClose
 }: Props) {
+  const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState<'debate' | 'technical' | 'timeline'>('debate');
 
   if (!graphData) {
     return (
       <div style={{ padding: '24px', color: 'var(--text-muted)' }}>
-        Knowledge Graph unavailable
+        {t("kg.unavailable")}
       </div>
     );
   }
@@ -163,10 +165,10 @@ export function AssetKnowledgeGraph({
             color: 'var(--text-primary)',
             marginBottom: '4px'
           }}>
-            Elite Knowledge Graph
+            {t("kg.elite")}
           </div>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            {assetName} - Consensus Architecture
+            {assetName} — {t("kg.consensusArchitecture")}
           </div>
         </div>
         <button

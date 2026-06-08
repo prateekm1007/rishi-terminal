@@ -640,6 +640,11 @@
                "noBearsPrice":  "No strong bears at current price levels",
                "noBullishSignals":  "No bullish signals at current levels",
                "noBullishMacro":  "No bullish macro signals",
-               "noBearishMacro":  "No bearish macro signals"
+               "noBearishMacro":  "No bearish macro signals",
+               "building":  "Building knowledge graph...",
+               "comingSoon":  "Interactive knowledge graph coming soon",
+               "unavailable":  "Knowledge Graph unavailable",
+               "elite":  "Elite Knowledge Graph",
+               "consensusArchitecture":  "Consensus Architecture"
            }
 }

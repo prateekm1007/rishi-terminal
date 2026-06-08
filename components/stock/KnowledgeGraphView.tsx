@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useLanguage } from '../../lib/language';
 import { Stock } from '../../lib/types';
 import { ConsensusResult } from '../../lib/consensus/types';
 import { buildEliteKnowledgeGraph, EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
@@ -414,6 +415,7 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
 
 /* -- Main KnowledgeGraphView ------------------------------------ */
 export function KnowledgeGraphView({ stock, consensus }: Props) {
+  const { t } = useLanguage();
   const [activeView, setActiveView] = useState<'debate' | 'historical' | 'technical' | 'timeline'>('debate');
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [graphData, setGraphData] = useState<EliteKnowledgeGraph | null>(null);
@@ -437,7 +439,7 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
   if (!graphData) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: '#64748B', fontSize: 13 }}>
-        Building knowledge graph...
+        {t("kg.building")}
       </div>
     );
   }

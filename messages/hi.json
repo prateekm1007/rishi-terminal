@@ -606,5 +606,25 @@
                                       "bodyHighlight":  "हर स्टॉक को स्कोर",
                                       "exploreBtn":  "सभी ऋषियों का अन्वेषण करें"
                                   }
-                   }
+                   },
+    "chat":  {
+                 "header":  "ऋषियों से संवाद",
+                 "debate":  "बहस",
+                 "solo":  "एकल",
+                 "askAbout":  "पूछें",
+                 "askTheRishis":  "ऋषियों से",
+                 "poweredBy":  "Google Gemini AI द्वारा संचालित",
+                 "personalityDriven":  "व्यक्तित्व-आधारित उत्तर",
+                 "thinking":  "विचार कर रहे हैं...",
+                 "consultingAI":  "Gemini AI से परामर्श...",
+                 "send":  "भेजें",
+                 "quickPrompts":  {
+                                      "view":  "इस स्टॉक पर आपका क्या दृष्टिकोण है?",
+                                      "buyHoldSell":  "क्या मुझे खरीदना, होल्ड करना या बेचना चाहिए?",
+                                      "risks":  "सबसे बड़े जोखिम क्या हैं?",
+                                      "thesis":  "पूर्ण निवेश थीसिस लिखें",
+                                      "changeMind":  "आपका विचार क्या बदल सकता है?",
+                                      "valuation":  "क्या मूल्यांकन उचित है?"
+                                  }
+             }
 }

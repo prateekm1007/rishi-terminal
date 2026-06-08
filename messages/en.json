@@ -605,5 +605,25 @@
                                       "bodyHighlight":  "scoring every stock",
                                       "exploreBtn":  "Explore All Rishis"
                                   }
-                   }
+                   },
+    "chat":  {
+                 "header":  "Chat with Rishis",
+                 "debate":  "Debate",
+                 "solo":  "Solo",
+                 "askAbout":  "Ask",
+                 "askTheRishis":  "the Rishis",
+                 "poweredBy":  "Powered by Google Gemini AI",
+                 "personalityDriven":  "Personality-driven responses",
+                 "thinking":  "thinking...",
+                 "consultingAI":  "Consulting Gemini AI...",
+                 "send":  "Send",
+                 "quickPrompts":  {
+                                      "view":  "What\u0027s your view on this stock?",
+                                      "buyHoldSell":  "Should I buy, hold, or sell?",
+                                      "risks":  "What are the biggest risks?",
+                                      "thesis":  "Write a full investment thesis",
+                                      "changeMind":  "What would change your mind?",
+                                      "valuation":  "Is the valuation justified?"
+                                  }
+             }
 }

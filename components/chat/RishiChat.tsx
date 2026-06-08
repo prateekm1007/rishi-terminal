@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Stock } from "@/lib/types";
 import { RishiScore } from "@/lib/consensus/types";
 import { RISHI_PERSONALITIES, getRishisByTier, type ChatContext } from "@/lib/chat/rishiEngine";
+import { useLanguage } from '../../lib/language';
 import {
   createSession, addMessageToSession, getSessionsBySymbol,
   type ChatMessage,
@@ -15,14 +16,6 @@ interface Props {
   userTier?: 'seeker' | 'student' | 'disciple';
 }
 
-const QUICK_PROMPTS = [
-  "What's your view on this stock?",
-  "Should I buy, hold, or sell?",
-  "What are the biggest risks?",
-  "Write a full investment thesis",
-  "What would change your mind?",
-  "Is the valuation justified?",
-];
 
 // Static fallback responses (used when API fails)
 function getStaticResponse(rishiId: string, prompt: string, stock: Stock, scores: RishiScore[]): string {
@@ -89,6 +82,16 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
   const [currentSession, setCurrentSession] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiStatus, setApiStatus] = useState<'idle' | 'calling' | 'ok' | 'fallback'>('idle');
+  const { t } = useLanguage();
+
+  const quickPrompts = [
+    t('chat.quickPrompts.view'),
+    t('chat.quickPrompts.buyHoldSell'),
+    t('chat.quickPrompts.risks'),
+    t('chat.quickPrompts.thesis'),
+    t('chat.quickPrompts.changeMind'),
+    t('chat.quickPrompts.valuation'),
+  ];
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const availableRishis = useMemo(() => getRishisByTier(userTier), [userTier]);
@@ -286,7 +289,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
       }}>
         <div>
           <div style={{ fontSize: "11px", fontWeight: 700, color: "#D4AF37", letterSpacing: "0.1em" }}>
-            💬 CHAT WITH RISHIS
+            💬 {t("chat.header")}
           </div>
           <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
             {debateMode
@@ -303,7 +306,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
             color: debateMode ? "#D4AF37" : "#64748B",
           }}
         >
-          {debateMode ? "⚔️ Debate" : "💬 Solo"}
+          {debateMode ? "⚔️ " + t("chat.debate") : "💬 " + t("chat.solo")}
         </button>
       </div>
 
@@ -363,9 +366,9 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
         {messages.length === 0 && (
           <div style={{ textAlign: "center", color: "#475569", fontSize: "13px", marginTop: "30px" }}>
             <div style={{ fontSize: "28px", marginBottom: "10px" }}>💬</div>
-            <div style={{ color: "#64748B" }}>Ask {debateMode ? "the Rishis" : rishi?.name} about {stock.symbol}</div>
+            <div style={{ color: "#64748B" }}>{t("chat.askAbout")} {debateMode ? t("chat.askTheRishis") : rishi?.name} {stock.symbol}</div>
             <div style={{ fontSize: 11, color: "#334155", marginTop: 6 }}>
-              Powered by Google Gemini AI · Personality-driven responses
+              {t("chat.poweredBy")} · {t("chat.personalityDriven")}
             </div>
           </div>
         )}
@@ -398,7 +401,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
         {loading && (
           <div style={{ alignSelf: "flex-start" }}>
             <div style={{ fontSize: "10px", color: "#64748B", marginBottom: 3 }}>
-              {rishi?.emoji} {rishi?.name} · thinking...
+              {rishi?.emoji} {rishi?.name} · {t("chat.thinking")}
             </div>
             <div style={{
               background: "rgba(17,24,39,0.8)", border: "1px solid rgba(51,65,85,0.4)",
@@ -414,7 +417,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
                   }} />
                 ))}
               </span>
-              Consulting Gemini AI...
+              {t("chat.consultingAI")}
             </div>
           </div>
         )}
@@ -425,7 +428,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
       {/* Quick Prompts */}
       <div style={{ padding: "8px 14px", borderTop: "1px solid rgba(51,65,85,0.4)", background: "rgba(5,8,16,0.4)" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-          {QUICK_PROMPTS.map(p => (
+          {quickPrompts.map(p => (
             <button
               key={p}
               onClick={() => !loading && sendMessage(p)}
@@ -449,7 +452,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
-            placeholder={`Ask ${debateMode ? "the Rishis" : rishi?.name} about ${stock.symbol}...`}
+            placeholder={`${t("chat.askAbout")} ${debateMode ? t("chat.askTheRishis") : rishi?.name} ${stock.symbol}...`}
             disabled={loading}
             style={{
               flex: 1, background: "rgba(17,24,39,0.8)",
@@ -468,7 +471,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
               border: "none", color: !input.trim() || loading ? "#64748B" : "#0A0F1C",
             }}
           >
-            {loading ? "…" : "Send"}
+            {loading ? "…" : t("chat.send")}
           </button>
         </div>
       </div>

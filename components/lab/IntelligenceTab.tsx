@@ -7,6 +7,7 @@ import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { useLanguage } from '../../lib/language';
 import InfoTip from '@/components/lab/InfoTip';
 
 function scoreColor(s: number): string {
@@ -38,6 +39,7 @@ function spreadColor(spread: number): string {
 }
 
 export default function IntelligenceTab() {
+  const { t } = useLanguage();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
 
   useEffect(() => {
@@ -249,24 +251,24 @@ export default function IntelligenceTab() {
 
       {/* Row 1: Portfolio Debate Summary */}
       <div style={{ ...card, borderLeft: '3px solid #D4AF37' }}>
-        <div style={sectionLabel}>Portfolio Rishi Debate</div>
+        <div style={sectionLabel}>{t("intel.portfolioDebate")}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16 }}>
           <div style={{ padding: 16, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}>MOST BULLISH ON PORTFOLIO</div>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}>{t("intel.mostBullish")}</div>
             <div style={{ color: '#22C55E', fontWeight: 900, fontSize: 15 }}>{portfolioBull?.full ?? '—'}</div>
             <div style={{ fontFamily: 'monospace', color: '#22C55E', marginTop: 6 }}>Avg: {portfolioBull?.avg ?? 0}</div>
             <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>{portfolioBull?.origin ?? ''}</div>
           </div>
 
           <div style={{ padding: 16, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}><InfoTip term="Disagreement Index" icon={true}>DISAGREEMENT INDEX</InfoTip></div>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}><InfoTip term="Disagreement Index" icon={true}>{t("intel.disagreementIndex")}</InfoTip></div>
             <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 28, color: spreadColor(avgSpread) }}>{avgSpread}</div>
             <div style={{ fontSize: 12, color: spreadColor(avgSpread), marginTop: 6 }}>{spreadLabel(avgSpread)}</div>
             <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>Avg spread across {enriched.length} holding{enriched.length !== 1 ? 's' : ''}</div>
           </div>
 
           <div style={{ padding: 16, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}>MOST BEARISH ON PORTFOLIO</div>
+            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}>{t("intel.mostBearish")}</div>
             <div style={{ color: '#EF4444', fontWeight: 900, fontSize: 15 }}>{portfolioBear?.full ?? '—'}</div>
             <div style={{ fontFamily: 'monospace', color: '#EF4444', marginTop: 6 }}>Avg: {portfolioBear?.avg ?? 0}</div>
             <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>{portfolioBear?.origin ?? ''}</div>
@@ -306,13 +308,13 @@ export default function IntelligenceTab() {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: 10, color: '#64748B', fontWeight: 600 }}>Symbol</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: 10, color: '#64748B', fontWeight: 600 }}>{t("intel.symbol")}</th>
                   {heatmapRishis.map(r => (
                     <th key={r} style={{ padding: '8px 6px', textAlign: 'center', fontSize: 9, color: '#64748B', fontWeight: 600, whiteSpace: 'nowrap' }}>
                       {r.slice(0, 8)}
                     </th>
                   ))}
-                  <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: 10, color: '#64748B', fontWeight: 600 }}>Spread</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: 10, color: '#64748B', fontWeight: 600 }}>{t("intel.spread")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -420,7 +422,7 @@ export default function IntelligenceTab() {
 
       {/* Knowledge Coverage */}
       <div style={{ ...card, borderLeft: '3px solid #38BDF8' }}>
-        <div style={sectionLabel}>Knowledge Coverage</div>
+        <div style={sectionLabel}>{t("intel.knowledgeCoverage")}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 48, fontWeight: 900, fontFamily: 'monospace', color: knowledgeCoverage >= 75 ? '#22C55E' : knowledgeCoverage >= 50 ? '#D4AF37' : '#EF4444' }}>
@@ -471,14 +473,14 @@ export default function IntelligenceTab() {
 
       {/* Macro Regime Fit */}
       <div style={card}>
-        <div style={sectionLabel}>Macro Regime Fit</div>
+        <div style={sectionLabel}>{t("intel.macroRegimeFit")}</div>
         <div style={{ padding: 16, background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: 8 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: macroRegimeFit.color, marginBottom: 12 }}>
             {macroRegimeFit.label}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>CYCLICAL EXPOSURE</div>
+              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>{t("intel.cyclicalExposure")}</div>
               <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 900, color: '#F97316' }}>
                 {macroRegimeFit.cyclical}%
               </div>
@@ -487,7 +489,7 @@ export default function IntelligenceTab() {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>DEFENSIVE EXPOSURE</div>
+              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>{t("intel.defensiveExposure")}</div>
               <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 900, color: '#22C55E' }}>
                 {macroRegimeFit.defensive}%
               </div>

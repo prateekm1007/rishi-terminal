@@ -689,5 +689,17 @@
                     "category":  "CATEGORY",
                     "historicalPerformanceAnalysis":  "HISTORICAL PERFORMANCE ANALYSIS",
                     "disagreementIndex":  "DISAGREEMENT INDEX"
-                }
+                },
+    "intel":  {
+                  "portfolioDebate":  "Portfolio Rishi Debate",
+                  "mostBullish":  "MOST BULLISH ON PORTFOLIO",
+                  "disagreementIndex":  "DISAGREEMENT INDEX",
+                  "mostBearish":  "MOST BEARISH ON PORTFOLIO",
+                  "symbol":  "Symbol",
+                  "spread":  "Spread",
+                  "knowledgeCoverage":  "Knowledge Coverage",
+                  "macroRegimeFit":  "Macro Regime Fit",
+                  "cyclicalExposure":  "CYCLICAL EXPOSURE",
+                  "defensiveExposure":  "DEFENSIVE EXPOSURE"
+              }
 }

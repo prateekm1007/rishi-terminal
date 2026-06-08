@@ -690,5 +690,17 @@
                     "category":  "श्रेणी",
                     "historicalPerformanceAnalysis":  "ऐतिहासिक प्रदर्शन विश्लेषण",
                     "disagreementIndex":  "असहमति सूचकांक"
-                }
+                },
+    "intel":  {
+                  "portfolioDebate":  "पोर्टफोलियो ऋषि बहस",
+                  "mostBullish":  "पोर्टफोलियो पर सबसे बुलिश",
+                  "disagreementIndex":  "असहमति सूचकांक",
+                  "mostBearish":  "पोर्टफोलियो पर सबसे बेयरिश",
+                  "symbol":  "प्रतीक",
+                  "spread":  "स्प्रेड",
+                  "knowledgeCoverage":  "ज्ञान कवरेज",
+                  "macroRegimeFit":  "मैक्रो रेजिम फिट",
+                  "cyclicalExposure":  "चक्रीय एक्सपोजर",
+                  "defensiveExposure":  "रक्षात्मक एक्सपोजर"
+              }
 }

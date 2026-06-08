@@ -28,7 +28,12 @@
                 "bonds":  "बॉन्ड",
                 "watchlist":  "वॉचलिस्ट",
                 "main":  "मुख्य",
-                "markets":  "बाज़ार"
+                "markets":  "बाज़ार",
+                "portfolioLab":  "पोर्टफोलियो लैब",
+                "economyPlus":  "इकोनॉमी प्लस",
+                "chatWithRishis":  "ऋषियों से बात करें",
+                "core":  "मुख्य",
+                "intelligence":  "इंटेलिजेंस"
             },
     "header":  {
                    "title":  "ऋषि टर्मिनल",

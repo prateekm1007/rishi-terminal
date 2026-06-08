@@ -28,7 +28,12 @@
                 "bonds":  "Bonds",
                 "watchlist":  "Watchlist",
                 "main":  "MAIN",
-                "markets":  "MARKETS"
+                "markets":  "MARKETS",
+                "portfolioLab":  "Portfolio Lab",
+                "economyPlus":  "Economy Plus",
+                "chatWithRishis":  "Chat with Rishis",
+                "core":  "CORE",
+                "intelligence":  "INTELLIGENCE"
             },
     "header":  {
                    "title":  "RISHI TERMINAL",

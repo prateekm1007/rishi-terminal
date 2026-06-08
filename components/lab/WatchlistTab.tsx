@@ -7,6 +7,7 @@ import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { addHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { useLanguage } from '../../lib/language';
 import type { ConsensusResult, RishiScore } from '@/lib/consensus/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -435,6 +436,7 @@ function UpcomingCatalystsDashboard({ enriched }: { enriched: Array<{ symbol: st
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function WatchlistTab() {
+  const { t } = useLanguage();
   const [lists, setLists] = useState<Record<string, WatchlistItem[]>>({
     default: [],
     highConviction: [],
@@ -601,7 +603,7 @@ export default function WatchlistTab() {
       {promoteDialog && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setPromoteDialog(null)}>
           <div style={{ background: '#0F172A', border: '1px solid rgba(212,175,55,0.4)', borderRadius: 12, padding: 28, minWidth: 360, maxWidth: 440 }} onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 16, fontWeight: 900, color: '#D4AF37', marginBottom: 4, fontFamily: 'monospace' }}>Promote {promoteDialog.symbol} → Holdings</div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: '#D4AF37', marginBottom: 4, fontFamily: 'monospace' }}>{t("lab.promoteDialog.promote")} {promoteDialog.symbol} → {t("lab.promoteDialog.holdings")}</div>
             <div style={{ fontSize: 11, color: '#64748B', marginBottom: 20 }}>{STOCKS[promoteDialog.symbol]?.name ?? ''}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
               <div style={{ padding: 12, background: 'rgba(30,41,59,0.6)', borderRadius: 8 }}>
@@ -614,7 +616,7 @@ export default function WatchlistTab() {
               </div>
             </div>
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SHARES (suggested: {promoteDialog.suggestedShares} ≈ 10,000)</div>
+              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("lab.promoteDialog.shares")} ({t("lab.promoteDialog.suggested")}: {promoteDialog.suggestedShares} ≈ 10,000)</div>
               <input type="number" min={1} value={promoteDialog.shares} onChange={e => setPromoteDialog({ ...promoteDialog, shares: Math.max(1, Number(e.target.value)) })} style={{ ...inputStyle, fontSize: 18, fontWeight: 900, textAlign: 'center' }} />
             </div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -630,12 +632,12 @@ export default function WatchlistTab() {
             {!isSmart && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <input type="checkbox" id="keepInWl" checked={promoteDialog.keepInWatchlist} onChange={e => setPromoteDialog({ ...promoteDialog, keepInWatchlist: e.target.checked })} style={{ accentColor: '#D4AF37', width: 16, height: 16 }} />
-                <label htmlFor="keepInWl" style={{ fontSize: 12, color: '#94A3B8', cursor: 'pointer' }}>Keep in watchlist after promoting</label>
+                <label htmlFor="keepInWl" style={{ fontSize: 12, color: '#94A3B8', cursor: 'pointer' }}>{t("lab.promoteDialog.keepInWatchlist")}</label>
               </div>
             )}
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={confirmPromote} style={{ ...btnGold, flex: 1, padding: '12px 16px', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>✓ CONFIRM PROMOTE</button>
-              <button onClick={() => setPromoteDialog(null)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 6, color: '#64748B', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={confirmPromote} style={{ ...btnGold, flex: 1, padding: '12px 16px', fontSize: 13, fontWeight: 900, letterSpacing: 2 }}>{t("lab.promoteDialog.confirm")}</button>
+              <button onClick={() => setPromoteDialog(null)} style={{ padding: '12px 16px', background: 'transparent', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 6, color: '#64748B', fontSize: 12, cursor: 'pointer' }}>{t("lab.promoteDialog.cancel")}</button>
             </div>
           </div>
         </div>
@@ -653,7 +655,7 @@ export default function WatchlistTab() {
       {/* Smart list banner */}
       {isSmart && (
         <div style={{ padding: '10px 16px', marginBottom: 16, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, fontSize: 12, color: '#22C55E' }}>
-          ⚡ Auto-generated — all stocks where Rishi Consensus Score exceeds 75. Read-only.
+ {t("lab.smartList.autoGenerated")}
         </div>
       )}
 
@@ -736,10 +738,10 @@ export default function WatchlistTab() {
           <div style={{ minWidth: 220 }}>
             <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SORT</div>
             <select value={sortBy} onChange={e => setSortBy(e.target.value as 'added' | 'score' | 'change' | 'conviction')} style={inputStyle}>
-              <option value="added">Recently Added</option>
-              <option value="score">Rishi Score</option>
-              <option value="conviction">Conviction Level</option>
-              <option value="change">24h Change</option>
+              <option value="added">{t("lab.sort.recentlyAdded")}</option>
+              <option value="score">{t("lab.sort.rishiScore")}</option>
+              <option value="conviction">{t("lab.sort.convictionLevel")}</option>
+              <option value="change">{t("lab.sort.change24h")}</option>
             </select>
           </div>
           <div style={{ fontSize: 12, color: '#64748B' }}>{loading ? 'Fetching prices…' : `${items.length} item${items.length !== 1 ? 's' : ''}`}</div>
@@ -751,8 +753,8 @@ export default function WatchlistTab() {
         <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
           <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>SORT</div>
           <select value={sortBy} onChange={e => setSortBy(e.target.value as 'added' | 'score' | 'change' | 'conviction')} style={{ ...inputStyle, width: 200 }}>
-            <option value="score">Rishi Score</option>
-            <option value="change">24h Change</option>
+            <option value="score">{t("lab.sort.rishiScore")}</option>
+            <option value="change">{t("lab.sort.change24h")}</option>
           </select>
           <div style={{ fontSize: 12, color: '#64748B' }}>{loading ? 'Fetching…' : `${items.length} stocks`}</div>
         </div>
@@ -775,7 +777,7 @@ export default function WatchlistTab() {
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>STOCK</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>PRICE</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>24H %</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>RISHI SCORE</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>{t("lab.scoreHeader")}</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>CONVICTION</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>TOP BULL</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 9, color: '#475569', letterSpacing: 1, fontWeight: 700 }}>ACTIONS</th>
@@ -820,13 +822,13 @@ export default function WatchlistTab() {
                       <td style={{ padding: '12px 12px', fontSize: 11, color: '#22C55E', fontWeight: 700 }}>{i.topBull}</td>
                       <td style={{ padding: '12px 12px' }}>
                         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                          <button onClick={() => openPromoteDialog(i.symbol)} style={btnGold}>Promote →</button>
+                          <button onClick={() => openPromoteDialog(i.symbol)} style={btnGold}>{t("lab.promoteButton")}</button>
                           {!isSmart && (
                             <>
                               <button onClick={() => setExpandedSymbol(isExpanded ? null : i.symbol)} style={{ background: isExpanded ? 'rgba(212,175,55,0.12)' : 'none', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 4, color: isExpanded ? '#D4AF37' : '#64748B', cursor: 'pointer', fontSize: 11, padding: '4px 8px' }}>
                                 {isExpanded ? '▲ Hide' : '▼ Analysis'}
                               </button>
-                              <button onClick={() => removeItem(i.symbol)} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 14 }} title="Remove">✕</button>
+                              <button onClick={() => removeItem(i.symbol)} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 14 }} title={t("lab.remove")}>✕</button>
                             </>
                           )}
                         </div>
@@ -862,7 +864,7 @@ export default function WatchlistTab() {
             </tbody>
           </table>
           <div style={{ marginTop: 10, fontSize: 11, color: '#475569' }}>
-            {isSmart ? 'Smart list auto-generated. Promote opens dialog to set share quantity.' : 'Conviction = avg of your slider + Rishi score. Click ▼ Analysis to see full Rishi Catalyst Engine.'}
+            {isSmart ? t("lab.smartList.description") : t("lab.conviction.description")}
           </div>
         </div>
       )}

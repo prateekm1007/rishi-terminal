@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import SadhuVectorLogo from "./SadhuVectorLogo";
 
@@ -35,6 +36,19 @@ const NAV_GROUPS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+
+  const [theme, setTheme] = useState<"blue" | "dark">("blue");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("rishi.theme");
+      if (saved === "dark") {
+        setTheme("dark");
+      } else {
+        setTheme("blue");
+      }
+    } catch {}
+  }, []);
 
   return (
     <aside style={{
@@ -166,6 +180,7 @@ export default function Sidebar() {
             body.classList.add('theme-' + next);
 
             try { localStorage.setItem('rishi.theme', next); } catch {}
+            setTheme(next as 'blue' | 'dark');
           }}
           style={{
             width: "100%",
@@ -182,8 +197,8 @@ export default function Sidebar() {
             justifyContent: "space-between",
           }}
         >
-          <span>🎨 Switch Theme</span>
-          <span style={{ fontSize: "10px", opacity: 0.6 }}>⌘T</span>
+          <span>{theme === "blue" ? "● Blue Gradient" : "○ Blue Gradient"}</span>
+          <span style={{ fontSize: "10px", opacity: 0.6 }}>{theme === "dark" ? "● Dark Terminal" : "○ Dark Terminal"}</span>
         </button>
       </div>
       <div style={{ padding: "20px 16px" }}>

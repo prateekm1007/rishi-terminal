@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '../../lib/language';
 import {
   MACRO_REGIME,
   MACRO_INDICATORS,
@@ -86,6 +87,7 @@ function clamp(n: number, lo: number, hi: number) {
 }
 
 export default function MarketPulsePage() {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<PulseTab>('macro');
   const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
 
@@ -299,7 +301,7 @@ export default function MarketPulsePage() {
     const agreements = dynamicStances.map(s => s.agreement);
     const avgAgreement = Math.round(agreements.reduce((a, b) => a + b, 0) / Math.max(1, agreements.length));
     const spread = Math.max(...agreements) - Math.min(...agreements);
-    const label = avgAgreement >= 70 ? 'High Conviction' : avgAgreement >= 55 ? 'Moderate' : 'Low Conviction';
+    const label = avgAgreement >= 70 ? t('pulse.consensus.highConviction') : avgAgreement >= 55 ? t('pulse.consensus.moderateConviction') : t('pulse.consensus.lowConviction');
     const color = avgAgreement >= 70 ? 'var(--green)' : avgAgreement >= 55 ? 'var(--amber)' : 'var(--red)';
     return { avgAgreement, spread, label, color };
   }, [dynamicStances]);
@@ -315,14 +317,14 @@ export default function MarketPulsePage() {
       : 'Mixed regime. Stay barbell: quality defensives + selective cyclicals. Keep cash for volatility.';
 
   const tabs: { key: PulseTab; label: string; emoji: string }[] = [
-    { key: 'overview', label: 'Overview', emoji: '📊' },
-    { key: 'macro', label: 'Macro Regime', emoji: '🧠' },
-    { key: 'rotation', label: 'Sector Rotation', emoji: '🔄' },
-    { key: 'evidence', label: 'Evidence', emoji: '📚' },
-    { key: 'currency', label: 'Currency', emoji: '💱' },
-    { key: 'brief', label: 'Daily Brief', emoji: '📰' },
-    { key: 'breadth', label: 'Breadth', emoji: '📈' },
-    { key: 'blocks', label: 'Block Deals', emoji: '💎' },
+    { key: 'overview', label: t('pulse.tabs.overview'), emoji: '📊' },
+    { key: 'macro', label: t('pulse.tabs.macro'), emoji: '🧠' },
+    { key: 'rotation', label: t('pulse.tabs.rotation'), emoji: '🔄' },
+    { key: 'evidence', label: t('pulse.tabs.evidence'), emoji: '📚' },
+    { key: 'currency', label: t('pulse.tabs.currency'), emoji: '💱' },
+    { key: 'brief', label: t('pulse.tabs.brief'), emoji: '📰' },
+    { key: 'breadth', label: t('pulse.tabs.breadth'), emoji: '📈' },
+    { key: 'blocks', label: t('pulse.tabs.blocks'), emoji: '💎' },
   ];
 
   const live = (k: string) => prices?.[k];
@@ -341,24 +343,24 @@ export default function MarketPulsePage() {
     <div className="page-bg">
       {/* HEADER */}
       <div className="page-content" style={{ paddingBottom: 0 }}>
-        <Link href="/" className="back-link">← Dashboard</Link>
+        <Link href="/" className="back-link">← {t('pulse.backToDashboard')}</Link>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h1 className="page-title" style={{ color: 'var(--accent-gold)' }}>
-              🌐 Economy Plus
+              🌐 {t('pulse.title')}
             </h1>
             <p className="page-subtitle">
-              Macro Intelligence · Philosopher Council · Regime Analysis
+              {t('pulse.subtitle')}
             </p>
           </div>
 
           <div className="card-unified" style={{ padding: '16px 24px', minWidth: 160, textAlign: 'center' }}>
-            <div className="stat-label">MARKET MOOD</div>
+            <div className="stat-label">{t('pulse.marketMood')}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: mood.color, fontFamily: 'var(--font-serif)', lineHeight: 1 }}>
               {mood.mood}
             </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>Score: {mood.score}/100</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{t('pulse.scoreLabel')}: {mood.score}/100</div>
           </div>
         </div>
 
@@ -374,7 +376,7 @@ export default function MarketPulsePage() {
         <div className="card-unified" style={{ borderColor: 'var(--border-gold)', marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
             <div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>CURRENT MACRO REGIME</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>{t('pulse.currentMacroRegime')}</div>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginTop: 4 }}>
                 {regime.label}
               </div>
@@ -382,12 +384,12 @@ export default function MarketPulsePage() {
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>CONSENSUS SCORE</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'var(--font-mono)' }}>{t('pulse.consensusScore')}</div>
               <div style={{ marginTop: 4, fontSize: 16, fontWeight: 800, color: consensus.color, fontFamily: 'var(--font-mono)' }}>
                 {consensus.avgAgreement}/100 · {consensus.label}
               </div>
               <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
-                Disagreement Index: <span style={{ color: consensus.spread >= 55 ? 'var(--red)' : consensus.spread >= 35 ? 'var(--amber)' : 'var(--green)', fontWeight: 800 }}>{consensus.spread}</span>
+                {t('pulse.disagreementIndex')}: <span style={{ color: consensus.spread >= 55 ? 'var(--red)' : consensus.spread >= 35 ? 'var(--amber)' : 'var(--green)', fontWeight: 800 }}>{consensus.spread}</span>
               </div>
             </div>
           </div>
@@ -397,20 +399,20 @@ export default function MarketPulsePage() {
           </div>
 
           <div style={{ marginTop: 14, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            <span style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>What the Council Recommends:</span> {councilReco}
+            <span style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>{t('pulse.councilRecommends')}</span> {councilReco}
           </div>
         </div>
 
         {/* LENS */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, fontFamily: 'var(--font-mono)' }}>LENS:</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, fontFamily: 'var(--font-mono)' }}>{t('pulse.lensLabel')}</span>
           {(['All', 'Hayek', 'Friedman', 'Keynes'] as const).map(lens => (
             <button
               key={lens}
               onClick={() => setActiveLens(lens)}
               className={activeLens === lens ? 'filter-pill active' : 'filter-pill'}
             >
-              {lens === 'All' ? '🌐 All' : lens === 'Hayek' ? '🏛️ Hayek' : lens === 'Friedman' ? '📊 Friedman' : '⚙️ Keynes'}
+              {lens === 'All' ? ('🌐 ' + t('pulse.lensAll')) : lens === 'Hayek' ? ('🏛️ ' + t('pulse.lensHayek')) : lens === 'Friedman' ? ('📊 ' + t('pulse.lensFriedman')) : ('⚙️ ' + t('pulse.lensKeynes'))}
             </button>
           ))}
         </div>
@@ -443,14 +445,14 @@ export default function MarketPulsePage() {
               <StatBox label="GOLD" value={priceStr('GOLD', 2)} sub={pctStr('GOLD')} color={getPct(live('GOLD')) >= 0 ? 'var(--green)' : 'var(--red)'} />
               <StatBox label="BTC" value={priceStr('BTC', 0)} sub={pctStr('BTC')} color={getPct(live('BTC')) >= 0 ? 'var(--green)' : 'var(--red)'} />
               <StatBox
-                label="Breadth (A/D)"
+                label={t('pulse.overview.breadthLabel')}
                 value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'}
                 sub={breadth?.breadth ? `${breadth.breadth.advances} up · ${breadth.breadth.declines} down` : undefined}
                 color="var(--amber)"
                 onClick={() => setTab('breadth')}
               />
               <StatBox
-                label="Block Deals"
+                label={t('pulse.overview.blockDealsLabel')}
                 value={blocks?.count ? String(blocks.count) : '—'}
                 sub={blocks?.timestamp ? String(blocks.timestamp) : undefined}
                 color="var(--accent-gold)"
@@ -459,7 +461,7 @@ export default function MarketPulsePage() {
             </div>
 
             <div className="card-unified">
-              <SectionTitle emoji="📈" title="SECTOR SNAPSHOT (NSE INDICES)" />
+              <SectionTitle emoji="📈" title={t('pulse.overview.sectorSnapshot')} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
                 {(breadth?.sectors || []).slice(0, 12).map((s: any) => {
                   const pct = safeNum(s.changePct) ?? 0;
@@ -471,7 +473,7 @@ export default function MarketPulsePage() {
                         <div style={{ fontSize: 12, fontWeight: 800, color: col, fontFamily: 'var(--font-mono)' }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</div>
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
-                        Last: {safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}
+                        {t('pulse.overview.lastLabel')}: {safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}
                       </div>
                     </div>
                   );
@@ -485,14 +487,14 @@ export default function MarketPulsePage() {
         {tab === 'macro' && (
           <div>
             <div className="card-unified" style={{ borderColor: 'var(--border-gold)', marginBottom: 24 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6, fontFamily: 'var(--font-mono)' }}>CURRENT MACRO REGIME</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6, fontFamily: 'var(--font-mono)' }}>{t('pulse.currentMacroRegime')}</div>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700 }}>
                 {regime.label}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{regime.sublabel}</div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginTop: 14 }}>{regime.description}</div>
               <div style={{ marginTop: 14, fontSize: 11, color: 'var(--text-muted)' }}>
-                Historical Analog: {regime.historicalAnalog} ({regime.analogPeriod})
+                {t('pulse.macro.historicalAnalog')}: {regime.historicalAnalog} ({regime.analogPeriod})
               </div>
             </div>
 
@@ -512,14 +514,14 @@ export default function MarketPulsePage() {
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{ind.description}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10, fontFamily: 'var(--font-mono)' }}>
-                    As of {ind.asOf} · {ind.trendValue}
+                    {t('pulse.macro.asOfLabel')} {ind.asOf} · {ind.trendValue}
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="card-unified">
-              <SectionTitle emoji="💱" title="CURRENCY IMPACT — INR SNAPSHOT" color="var(--accent-gold)" />
+              <SectionTitle emoji="💱" title={t('pulse.macro.currencyImpact')} color="var(--accent-gold)" />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                 {(currencies || []).map((c: any) => {
                   const pos = (safeNum(c.changePct) ?? 0) >= 0;
@@ -538,7 +540,7 @@ export default function MarketPulsePage() {
                       </div>
                       <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{c.signal || ''}</div>
                       <div style={{ marginTop: 10, fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                        Trend: {c.trend || '—'} · Vol: {c.volatility || '—'}
+                        {t('pulse.macro.trendLabel')}: {c.trend || '—'} · {t('pulse.macro.volLabel')}: {c.volatility || '—'}
                       </div>
                     </div>
                   );
@@ -553,10 +555,10 @@ export default function MarketPulsePage() {
           <div>
             <div className="card-unified" style={{ padding: 18, marginBottom: 24 }}>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginBottom: 12 }}>
-                🔄 SECTOR ROTATION OUTLOOK
+                🔄 {t('pulse.rotation.title')}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Scores are regime-based (updated when macro view is updated). Live market data is shown in Overview/Breadth/Currency/Blocks tabs.
+                {t('pulse.rotation.description')}
               </div>
             </div>
 
@@ -565,14 +567,14 @@ export default function MarketPulsePage() {
                 <table className="table-sacred" style={{ fontSize: 12 }}>
                   <thead>
                     <tr>
-                      <th style={{ minWidth: 140 }}>SECTOR</th>
-                      <th style={{ textAlign: 'center' }}>🏛️ HAYEK</th>
-                      <th style={{ textAlign: 'center' }}>📊 FRIEDMAN</th>
-                      <th style={{ textAlign: 'center' }}>⚙️ KEYNES</th>
-                      <th style={{ textAlign: 'center' }}>CONSENSUS</th>
-                      <th style={{ textAlign: 'center' }}>SPREAD</th>
-                      <th style={{ textAlign: 'center' }}>BIAS</th>
-                      <th style={{ minWidth: 180 }}>KEY MACRO DRIVER</th>
+                      <th style={{ minWidth: 140 }}>{t('pulse.rotation.tableHeaders.sector')}</th>
+                      <th style={{ textAlign: 'center' }}>🏛️ {t('pulse.rotation.tableHeaders.hayek')}</th>
+                      <th style={{ textAlign: 'center' }}>📊 {t('pulse.rotation.tableHeaders.friedman')}</th>
+                      <th style={{ textAlign: 'center' }}>⚙️ {t('pulse.rotation.tableHeaders.keynes')}</th>
+                      <th style={{ textAlign: 'center' }}>{t('pulse.rotation.tableHeaders.consensus')}</th>
+                      <th style={{ textAlign: 'center' }}>{t('pulse.rotation.tableHeaders.spread')}</th>
+                      <th style={{ textAlign: 'center' }}>{t('pulse.rotation.tableHeaders.bias')}</th>
+                      <th style={{ minWidth: 180 }}>{t('pulse.rotation.tableHeaders.driver')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -640,10 +642,10 @@ export default function MarketPulsePage() {
           <div>
             <div style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: 18, marginBottom: 24 }}>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
-                📚 HISTORICAL EVIDENCE ENGINE
+                📚 {t('pulse.evidence.title')}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Evidence cards: macro condition → historical outcome. Filtered by lens.
+                {t('pulse.evidence.description')}
               </div>
             </div>
 
@@ -654,7 +656,7 @@ export default function MarketPulsePage() {
                   <div key={c.id} style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 16, padding: 20, position: 'relative' }}>
                     {c.regimeMatch && (
                       <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, color: 'var(--green)', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '4px 10px', borderRadius: 999, fontWeight: 700 }}>
-                        ✓ CURRENT REGIME MATCH
+                        ✓ {t('pulse.evidence.regimeMatch')}
                       </div>
                     )}
 
@@ -664,31 +666,31 @@ export default function MarketPulsePage() {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
                       <div style={{ background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, padding: 12, textAlign: 'center' }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>WIN RATE</div>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{t('pulse.evidence.winRate')}</div>
                         <div style={{ fontSize: 20, fontWeight: 900, color: c.winRate >= 75 ? 'var(--green)' : c.winRate >= 60 ? 'var(--amber)' : 'var(--red)' }}>
                           {c.winRate}%
                         </div>
                       </div>
                       <div style={{ background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, padding: 12, textAlign: 'center' }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>AVG</div>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{t('pulse.evidence.avg')}</div>
                         <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent-gold)' }}>{c.avgReturn}</div>
                       </div>
                       <div style={{ background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.5)', borderRadius: 10, padding: 12, textAlign: 'center' }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>N</div>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{t('pulse.evidence.instances')}</div>
                         <div style={{ fontSize: 20, fontWeight: 900, color: 'var(--text-primary)' }}>{c.instances}</div>
                       </div>
                     </div>
 
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 8 }}>
-                      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>Condition: </span>{c.condition}
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{t('pulse.evidence.conditionLabel')} </span>{c.condition}
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 12 }}>
-                      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>Outcome: </span>{c.outcome}
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{t('pulse.evidence.outcomeLabel')} </span>{c.outcome}
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: 9, color: c.confidenceColor, background: c.confidenceColor + '15', border: '1px solid ' + c.confidenceColor + '30', padding: '4px 10px', borderRadius: 999, fontWeight: 700 }}>
-                        {c.confidence} Confidence
+                        {c.confidence} {t('pulse.evidence.confidenceSuffix')}
                       </span>
                       <span style={{ fontSize: 9, color: c.philosopherColor }}>
                         {c.philosopher}
@@ -704,10 +706,10 @@ export default function MarketPulsePage() {
           <div>
             <div style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, padding: 18, marginBottom: 24 }}>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', letterSpacing: 2, fontWeight: 700, marginBottom: 10 }}>
-                💱 CURRENCY SENSITIVITY MATRIX
+                💱 {t('pulse.currency.title')}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Estimated earnings sensitivity per 1% INR move (heuristic).
+                {t('pulse.currency.description')}
               </div>
             </div>
 
@@ -716,13 +718,13 @@ export default function MarketPulsePage() {
                 <table className="table-sacred" style={{ fontSize: 12 }}>
                   <thead>
                     <tr>
-                      <th>SECTOR</th>
-                      <th style={{ textAlign: 'center' }}>REV</th>
-                      <th style={{ textAlign: 'center' }}>COST</th>
-                      <th style={{ textAlign: 'center', color: 'var(--green)' }}>INR WEAK +1%</th>
-                      <th style={{ textAlign: 'center', color: 'var(--red)' }}>INR STRONG +1%</th>
-                      <th style={{ textAlign: 'center' }}>BIAS</th>
-                      <th>EXAMPLES</th>
+                      <th>{t('pulse.currency.tableHeaders.sector')}</th>
+                      <th style={{ textAlign: 'center' }}>{t('pulse.currency.tableHeaders.rev')}</th>
+                      <th style={{ textAlign: 'center' }}>{t('pulse.currency.tableHeaders.cost')}</th>
+                      <th style={{ textAlign: 'center', color: 'var(--green)' }}>{t('pulse.currency.tableHeaders.inrWeak')}</th>
+                      <th style={{ textAlign: 'center', color: 'var(--red)' }}>{t('pulse.currency.tableHeaders.inrStrong')}</th>
+                      <th style={{ textAlign: 'center' }}>{t('pulse.rotation.tableHeaders.bias')}</th>
+                      <th>{t('pulse.currency.tableHeaders.examples')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -789,26 +791,34 @@ export default function MarketPulsePage() {
         {tab === 'breadth' && (
           <div>
             <div className="card-unified" style={{ padding: 20, marginBottom: 24 }}>
-              <SectionTitle emoji="📈" title="BREADTH (NSE INDICES SNAPSHOT)" />
+              <SectionTitle emoji="📈" title={t('pulse.breadth.title')} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-                <StatBox label="Advancing" value={breadth?.breadth ? String(breadth.breadth.advances) : '—'} color="var(--green)" />
-                <StatBox label="Declining" value={breadth?.breadth ? String(breadth.breadth.declines) : '—'} color="var(--red)" />
-                <StatBox label="Unchanged" value={breadth?.breadth ? String(breadth.breadth.unchanged) : '—'} color="#818CF8" />
-                <StatBox label="A/D Ratio" value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'} color="var(--amber)" />
+                <StatBox label={t('pulse.breadth.advancing')} value={breadth?.breadth ? String(breadth.breadth.advances) : '—'} color="var(--green)" />
+                <StatBox label={t('pulse.breadth.declining')} value={breadth?.breadth ? String(breadth.breadth.declines) : '—'} color="var(--red)" />
+                <StatBox label={t('pulse.breadth.unchanged')} value={breadth?.breadth ? String(breadth.breadth.unchanged) : '—'} color="#818CF8" />
+                <StatBox label={t('pulse.breadth.adRatio')} value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'} color="var(--amber)" />
               </div>
             </div>
 
             <div className="card-unified" style={{ padding: 0, overflow: 'hidden' }}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(30,41,59,0.8)' }}>
-                <SectionTitle emoji="📊" title="SECTOR INDEX MOVES (LIVE)" />
+                <SectionTitle emoji="📊" title={t('pulse.breadth.sectorMovesTitle')} />
               </div>
               <div style={{ overflowX: 'auto' }}>
                 <table className="table-sacred" style={{ fontSize: 12 }}>
                   <thead>
                     <tr>
-                      {['Sector','Last','% Chg','High','Low','Open','Prev Close'].map(h => (
-                        <th key={h} style={{ textAlign: h === 'Sector' ? 'left' : 'right' }}>{h}</th>
-                      ))}
+                      {[
+  { key: 'sector', label: t('pulse.breadth.tableHeaders.sector'), align: 'left' as const },
+  { key: 'last', label: t('pulse.breadth.tableHeaders.last'), align: 'right' as const },
+  { key: 'change', label: t('pulse.breadth.tableHeaders.change'), align: 'right' as const },
+  { key: 'high', label: t('pulse.breadth.tableHeaders.high'), align: 'right' as const },
+  { key: 'low', label: t('pulse.breadth.tableHeaders.low'), align: 'right' as const },
+  { key: 'open', label: t('pulse.breadth.tableHeaders.open'), align: 'right' as const },
+  { key: 'prevClose', label: t('pulse.breadth.tableHeaders.prevClose'), align: 'right' as const },
+].map(h => (
+  <th key={h.key} style={{ textAlign: h.align }}>{h.label}</th>
+))}
                     </tr>
                   </thead>
                   <tbody>
@@ -837,7 +847,7 @@ export default function MarketPulsePage() {
         {tab === 'blocks' && (
           <div>
             <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 10, padding: '12px 18px', marginBottom: 22, fontSize: 12, color: 'var(--amber)' }}>
-              💎 Live NSE block deal feed.
+              💎 {t('pulse.blocks.description')}
             </div>
 
             <div className="card-unified" style={{ padding: 0, overflow: 'hidden' }}>
@@ -845,9 +855,17 @@ export default function MarketPulsePage() {
                 <table className="table-sacred" style={{ fontSize: 12 }}>
                   <thead>
                     <tr>
-                      {['Symbol','Qty','Price','Value (Cr)','Chg %','Side','Series'].map(h => (
-                        <th key={h} style={{ textAlign: h === 'Symbol' ? 'left' : 'right' }}>{h}</th>
-                      ))}
+                      {[
+  { key: 'symbol', label: t('pulse.blocks.tableHeaders.symbol'), align: 'left' as const },
+  { key: 'qty', label: t('pulse.blocks.tableHeaders.qty'), align: 'right' as const },
+  { key: 'price', label: t('pulse.blocks.tableHeaders.price'), align: 'right' as const },
+  { key: 'value', label: t('pulse.blocks.tableHeaders.value'), align: 'right' as const },
+  { key: 'change', label: t('pulse.blocks.tableHeaders.change'), align: 'right' as const },
+  { key: 'side', label: t('pulse.blocks.tableHeaders.side'), align: 'right' as const },
+  { key: 'series', label: t('pulse.blocks.tableHeaders.series'), align: 'right' as const },
+].map(h => (
+  <th key={h.key} style={{ textAlign: h.align }}>{h.label}</th>
+))}
                     </tr>
                   </thead>
                   <tbody>

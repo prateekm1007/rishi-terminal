@@ -466,5 +466,118 @@
                   "category":  "श्रेणी",
                   "overviewDesc":  "सहमति और मेट्रिक्स",
                   "technicalsDesc":  "चार्ट और संकेतक"
+              },
+    "pulse":  {
+                  "title":  "अर्थव्यवस्था प्लस",
+                  "subtitle":  "मैक्रो इंटेलिजेंस · दार्शनिक परिषद · व्यवस्था विश्लेषण",
+                  "backToDashboard":  "डैशबोर्ड",
+                  "marketMood":  "बाजार मूड",
+                  "scoreLabel":  "स्कोर",
+                  "currentMacroRegime":  "वर्तमान मैक्रो व्यवस्था",
+                  "consensusScore":  "सर्वसम्मति स्कोर",
+                  "disagreementIndex":  "असहमति सूचकांक",
+                  "councilRecommends":  "परिषद की सिफारिश:",
+                  "lensLabel":  "दृष्टिकोण:",
+                  "lensAll":  "सभी",
+                  "lensHayek":  "हायेक",
+                  "lensFriedman":  "फ्रीडमैन",
+                  "lensKeynes":  "केन्स",
+                  "tabs":  {
+                               "overview":  "सारांश",
+                               "macro":  "मैक्रो व्यवस्था",
+                               "rotation":  "सेक्टर रोटेशन",
+                               "evidence":  "साक्ष्य",
+                               "currency":  "मुद्रा",
+                               "brief":  "दैनिक संक्षिप्त",
+                               "breadth":  "व्यापकता",
+                               "blocks":  "ब्लॉक सौदे"
+                           },
+                  "overview":  {
+                                   "sectorSnapshot":  "सेक्टर स्नैपशॉट (NSE सूचकांक)",
+                                   "breadthLabel":  "व्यापकता (A/D)",
+                                   "blockDealsLabel":  "ब्लॉक सौदे",
+                                   "upSuffix":  "ऊपर",
+                                   "downSuffix":  "नीचे",
+                                   "lastLabel":  "अंतिम"
+                               },
+                  "macro":  {
+                                "historicalAnalog":  "ऐतिहासिक समानता",
+                                "currencyImpact":  "मुद्रा प्रभाव – INR स्नैपशॉट",
+                                "asOfLabel":  "तिथि",
+                                "trendLabel":  "रुझान",
+                                "volLabel":  "अस्थिरता"
+                            },
+                  "rotation":  {
+                                   "title":  "सेक्टर रोटेशन दृष्टिकोण",
+                                   "description":  "स्कोर व्यवस्था-आधारित हैं (मैक्रो दृष्टिकोण अपडेट होने पर अपडेट)। लाइव बाजार डेटा सारांश/व्यापकता/मुद्रा/ब्लॉक टैब में दिखाया गया है।",
+                                   "tableHeaders":  {
+                                                        "sector":  "सेक्टर",
+                                                        "hayek":  "हायेक",
+                                                        "friedman":  "फ्रीडमैन",
+                                                        "keynes":  "केन्स",
+                                                        "consensus":  "सर्वसम्मति",
+                                                        "spread":  "प्रसार",
+                                                        "bias":  "पूर्वाग्रह",
+                                                        "driver":  "मुख्य मैक्रो चालक"
+                                                    }
+                               },
+                  "evidence":  {
+                                   "title":  "ऐतिहासिक साक्ष्य इंजन",
+                                   "description":  "साक्ष्य कार्ड: मैक्रो स्थिति → ऐतिहासिक परिणाम। दृष्टिकोण द्वारा फ़िल्टर किया गया।",
+                                   "regimeMatch":  "वर्तमान व्यवस्था मेल",
+                                   "winRate":  "जीत दर",
+                                   "avg":  "औसत",
+                                   "instances":  "N",
+                                   "conditionLabel":  "शर्त:",
+                                   "outcomeLabel":  "परिणाम:",
+                                   "confidenceSuffix":  "विश्वास"
+                               },
+                  "currency":  {
+                                   "title":  "मुद्रा संवेदनशीलता मैट्रिक्स",
+                                   "description":  "1% INR परिवर्तन पर अनुमानित आय संवेदनशीलता (अनुमानित)।",
+                                   "tableHeaders":  {
+                                                        "sector":  "सेक्टर",
+                                                        "rev":  "राजस्व",
+                                                        "cost":  "लागत",
+                                                        "inrWeak":  "INR कमजोर +1%",
+                                                        "inrStrong":  "INR मजबूत +1%",
+                                                        "bias":  "पूर्वाग्रह",
+                                                        "examples":  "उदाहरण"
+                                                    }
+                               },
+                  "breadth":  {
+                                  "title":  "व्यापकता (NSE सूचकांक स्नैपशॉट)",
+                                  "advancing":  "बढ़ते",
+                                  "declining":  "गिरते",
+                                  "unchanged":  "अपरिवर्तित",
+                                  "adRatio":  "A/D अनुपात",
+                                  "sectorMovesTitle":  "सेक्टर इंडेक्स चाल (लाइव)",
+                                  "tableHeaders":  {
+                                                       "sector":  "सेक्टर",
+                                                       "last":  "अंतिम",
+                                                       "change":  "% परिवर्तन",
+                                                       "high":  "उच्च",
+                                                       "low":  "निम्न",
+                                                       "open":  "खुला",
+                                                       "prevClose":  "पिछला बंद"
+                                                   }
+                              },
+                  "blocks":  {
+                                 "description":  "लाइव NSE ब्लॉक डील फीड।",
+                                 "tableHeaders":  {
+                                                      "symbol":  "प्रतीक",
+                                                      "qty":  "मात्रा",
+                                                      "price":  "मूल्य",
+                                                      "value":  "मूल्य (करोड़)",
+                                                      "change":  "परिवर्तन %",
+                                                      "side":  "पक्ष",
+                                                      "series":  "श्रृंखला"
+                                                  }
+                             },
+                  "consensus":  {
+                                    "highConviction":  "उच्च विश्वास",
+                                    "moderateConviction":  "मध्यम",
+                                    "lowConviction":  "कम विश्वास"
+                                }
               }
 }

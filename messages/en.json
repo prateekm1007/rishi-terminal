@@ -465,5 +465,118 @@
                   "category":  "Category",
                   "overviewDesc":  "Consensus \u0026 Metrics",
                   "technicalsDesc":  "Charts \u0026 Indicators"
+              },
+    "pulse":  {
+                  "title":  "Economy Plus",
+                  "subtitle":  "Macro Intelligence · Philosopher Council · Regime Analysis",
+                  "backToDashboard":  "Dashboard",
+                  "marketMood":  "MARKET MOOD",
+                  "scoreLabel":  "Score",
+                  "currentMacroRegime":  "CURRENT MACRO REGIME",
+                  "consensusScore":  "CONSENSUS SCORE",
+                  "disagreementIndex":  "Disagreement Index",
+                  "councilRecommends":  "What the Council Recommends:",
+                  "lensLabel":  "LENS:",
+                  "lensAll":  "All",
+                  "lensHayek":  "Hayek",
+                  "lensFriedman":  "Friedman",
+                  "lensKeynes":  "Keynes",
+                  "tabs":  {
+                               "overview":  "Overview",
+                               "macro":  "Macro Regime",
+                               "rotation":  "Sector Rotation",
+                               "evidence":  "Evidence",
+                               "currency":  "Currency",
+                               "brief":  "Daily Brief",
+                               "breadth":  "Breadth",
+                               "blocks":  "Block Deals"
+                           },
+                  "overview":  {
+                                   "sectorSnapshot":  "SECTOR SNAPSHOT (NSE INDICES)",
+                                   "breadthLabel":  "Breadth (A/D)",
+                                   "blockDealsLabel":  "Block Deals",
+                                   "upSuffix":  "up",
+                                   "downSuffix":  "down",
+                                   "lastLabel":  "Last"
+                               },
+                  "macro":  {
+                                "historicalAnalog":  "Historical Analog",
+                                "currencyImpact":  "CURRENCY IMPACT – INR SNAPSHOT",
+                                "asOfLabel":  "As of",
+                                "trendLabel":  "Trend",
+                                "volLabel":  "Vol"
+                            },
+                  "rotation":  {
+                                   "title":  "SECTOR ROTATION OUTLOOK",
+                                   "description":  "Scores are regime-based (updated when macro view is updated). Live market data is shown in Overview/Breadth/Currency/Blocks tabs.",
+                                   "tableHeaders":  {
+                                                        "sector":  "SECTOR",
+                                                        "hayek":  "HAYEK",
+                                                        "friedman":  "FRIEDMAN",
+                                                        "keynes":  "KEYNES",
+                                                        "consensus":  "CONSENSUS",
+                                                        "spread":  "SPREAD",
+                                                        "bias":  "BIAS",
+                                                        "driver":  "KEY MACRO DRIVER"
+                                                    }
+                               },
+                  "evidence":  {
+                                   "title":  "HISTORICAL EVIDENCE ENGINE",
+                                   "description":  "Evidence cards: macro condition → historical outcome. Filtered by lens.",
+                                   "regimeMatch":  "CURRENT REGIME MATCH",
+                                   "winRate":  "WIN RATE",
+                                   "avg":  "AVG",
+                                   "instances":  "N",
+                                   "conditionLabel":  "Condition:",
+                                   "outcomeLabel":  "Outcome:",
+                                   "confidenceSuffix":  "Confidence"
+                               },
+                  "currency":  {
+                                   "title":  "CURRENCY SENSITIVITY MATRIX",
+                                   "description":  "Estimated earnings sensitivity per 1% INR move (heuristic).",
+                                   "tableHeaders":  {
+                                                        "sector":  "SECTOR",
+                                                        "rev":  "REV",
+                                                        "cost":  "COST",
+                                                        "inrWeak":  "INR WEAK +1%",
+                                                        "inrStrong":  "INR STRONG +1%",
+                                                        "bias":  "BIAS",
+                                                        "examples":  "EXAMPLES"
+                                                    }
+                               },
+                  "breadth":  {
+                                  "title":  "BREADTH (NSE INDICES SNAPSHOT)",
+                                  "advancing":  "Advancing",
+                                  "declining":  "Declining",
+                                  "unchanged":  "Unchanged",
+                                  "adRatio":  "A/D Ratio",
+                                  "sectorMovesTitle":  "SECTOR INDEX MOVES (LIVE)",
+                                  "tableHeaders":  {
+                                                       "sector":  "Sector",
+                                                       "last":  "Last",
+                                                       "change":  "% Chg",
+                                                       "high":  "High",
+                                                       "low":  "Low",
+                                                       "open":  "Open",
+                                                       "prevClose":  "Prev Close"
+                                                   }
+                              },
+                  "blocks":  {
+                                 "description":  "Live NSE block deal feed.",
+                                 "tableHeaders":  {
+                                                      "symbol":  "Symbol",
+                                                      "qty":  "Qty",
+                                                      "price":  "Price",
+                                                      "value":  "Value (Cr)",
+                                                      "change":  "Chg %",
+                                                      "side":  "Side",
+                                                      "series":  "Series"
+                                                  }
+                             },
+                  "consensus":  {
+                                    "highConviction":  "High Conviction",
+                                    "moderateConviction":  "Moderate",
+                                    "lowConviction":  "Low Conviction"
+                                }
               }
 }

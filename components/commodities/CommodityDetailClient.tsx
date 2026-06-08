@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CommodityData as Commodity } from '../../data/markets';
 import { scoreJimRogers } from '../../lib/scorers/commodity/jimrogers';
@@ -42,6 +43,7 @@ function signalColor(signal: string) {
 }
 
 export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
 
@@ -113,16 +115,16 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               CLOSE
             </button>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#D4AF37', marginBottom: 24 }}>
-              {commodity.name} — Knowledge Graph
+              {commodity.name} — {t("kg.knowledgeGraph")}
             </div>
 
             {/* Bulls vs Bears */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', marginBottom: 12 }}>
-                  BULL CASE ({bulls.length})
+                  {t("kg.bullCase")} ({bulls.length})
                 </div>
-                {bulls.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>No strong bulls at current levels</div>}
+                {bulls.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBulls")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12, padding: 12, background: 'rgba(34,197,94,0.05)', borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -136,9 +138,9 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               </div>
               <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', marginBottom: 12 }}>
-                  BEAR CASE ({bears.length})
+                  {t("kg.bearCase")} ({bears.length})
                 </div>
-                {bears.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>No strong bears at current levels</div>}
+                {bears.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBears")}</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12, padding: 12, background: 'rgba(239,68,68,0.05)', borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -433,8 +435,8 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
           <div style={{ display: 'grid', gap: 20 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div className="card-sacred" style={{ padding: 24, borderTop: '2px solid #22C55E' }}>
-                <div style={{ fontSize: 9, color: '#22C55E', letterSpacing: 2, marginBottom: 16 }}>BULL CASE ({bulls.length})</div>
-                {bulls.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No strong bulls at current price levels</div>}
+                <div style={{ fontSize: 9, color: '#22C55E', letterSpacing: 2, marginBottom: 16 }}>{t("kg.bullCase")} ({bulls.length})</div>
+                {bulls.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("kg.noBullsPrice")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -447,8 +449,8 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                 ))}
               </div>
               <div className="card-sacred" style={{ padding: 24, borderTop: '2px solid #EF4444' }}>
-                <div style={{ fontSize: 9, color: '#EF4444', letterSpacing: 2, marginBottom: 16 }}>BEAR CASE ({bears.length})</div>
-                {bears.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No strong bears at current price levels</div>}
+                <div style={{ fontSize: 9, color: '#EF4444', letterSpacing: 2, marginBottom: 16 }}>{t("kg.bearCase")} ({bears.length})</div>
+                {bears.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("kg.noBearsPrice")}</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>

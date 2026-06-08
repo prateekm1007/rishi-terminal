@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CryptoAsset } from '../../data/crypto';
 import { scoreSatoshiBodhi } from '../../lib/scorers/crypto/satoshibodhi';
@@ -54,6 +55,7 @@ function signalColor(s: string) {
 }
 
 export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
 
@@ -81,12 +83,12 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
       {showGraph && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ background: '#0A0F1C', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, width: '100%', maxWidth: 900, maxHeight: '85vh', overflow: 'auto', padding: 32, position: 'relative' }}>
-            <button onClick={() => setShowGraph(false)} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(239,68,68,0.1)', border: '1px solid #EF4444', color: '#EF4444', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>CLOSE</button>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#D4AF37', marginBottom: 24 }}>{asset.name} — Knowledge Graph</div>
+            <button onClick={() => setShowGraph(false)} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(239,68,68,0.1)', border: '1px solid #EF4444', color: '#EF4444', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>{t("kg.close")}</button>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#D4AF37', marginBottom: 24 }}>{asset.name} — {t("kg.knowledgeGraph")}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', marginBottom: 12 }}>BULL CASE ({bulls.length})</div>
-                {bulls.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>No strong bulls at current levels</div>}
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', marginBottom: 12 }}>{t("kg.bullCase")} ({bulls.length})</div>
+                {bulls.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBulls")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -98,8 +100,8 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                 ))}
               </div>
               <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12, padding: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', marginBottom: 12 }}>BEAR CASE ({bears.length})</div>
-                {bears.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>No strong bears at current levels</div>}
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', marginBottom: 12 }}>{t("kg.bearCase")} ({bears.length})</div>
+                {bears.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBears")}</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -356,8 +358,8 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
           <div style={{ display: 'grid', gap: 20 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div className="card-sacred" style={{ padding: 24, borderTop: '2px solid #22C55E' }}>
-                <div style={{ fontSize: 9, color: '#22C55E', letterSpacing: 2, marginBottom: 16 }}>BULL CASE ({bulls.length})</div>
-                {bulls.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No strong bulls at current price</div>}
+                <div style={{ fontSize: 9, color: '#22C55E', letterSpacing: 2, marginBottom: 16 }}>{t("kg.bullCase")} ({bulls.length})</div>
+                {bulls.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("kg.noBullsPrice")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -370,8 +372,8 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                 ))}
               </div>
               <div className="card-sacred" style={{ padding: 24, borderTop: '2px solid #EF4444' }}>
-                <div style={{ fontSize: 9, color: '#EF4444', letterSpacing: 2, marginBottom: 16 }}>BEAR CASE ({bears.length})</div>
-                {bears.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>No strong bears at current price</div>}
+                <div style={{ fontSize: 9, color: '#EF4444', letterSpacing: 2, marginBottom: 16 }}>{t("kg.bearCase")} ({bears.length})</div>
+                {bears.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("kg.noBearsPrice")}</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>

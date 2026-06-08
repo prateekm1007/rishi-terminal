@@ -5,38 +5,42 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import SadhuVectorLogo from "./SadhuVectorLogo";
 import { LanguageSelector } from "./LanguageSelector";
+import { useLanguage } from "../lib/language";
 
-const NAV_GROUPS = [
-  {
-    title: "CORE",
-    items: [
-      { href: "/",            label: "Dashboard",      icon: "\u25C6" },
-      { href: "/screener",    label: "Screener",       icon: "\u25C7" },
-      { href: "/lab",         label: "Portfolio Lab",  icon: "\u25A1" },
-    ],
-  },
-  {
-    title: "MARKETS",
-    items: [
-      { href: "/crypto",      label: "Crypto",         icon: "\u20BF" },
-      { href: "/forex",       label: "Forex",          icon: "\u00A4" },
-      { href: "/commodities", label: "Commodities",    icon: "\u25C6" },
-      { href: "/bonds",       label: "Bonds",          icon: "\u25AD" },
-      { href: "/pulse",       label: "Economy Plus",   icon: "\u25CF" },
-    ],
-  },
-  {
-    title: "INTELLIGENCE",
-    items: [
-      { href: "/rishis",      label: "Chat with Rishis", icon: "\u2726" },
-      { href: "/news",        label: "News",           icon: "\u25C8" },
-      { href: "/pricing",     label: "Pricing",        icon: "\u25C7" },
-    ],
-  },
-];
+
 
 export default function Sidebar() {
   const pathname = usePathname();
+
+  const { t } = useLanguage();
+  const NAV_GROUPS = [
+    {
+      title: t("nav.core"),
+      items: [
+        { href: "/",            label: t("nav.dashboard"),      icon: "\u25C6" },
+        { href: "/screener",    label: t("nav.screener"),       icon: "\u25C7" },
+        { href: "/lab",         label: t("nav.portfolioLab"),   icon: "\u25A1" },
+      ],
+    },
+    {
+      title: t("nav.markets"),
+      items: [
+        { href: "/crypto",      label: t("nav.crypto"),         icon: "\u20BF" },
+        { href: "/forex",       label: t("nav.forex"),          icon: "\u00A4" },
+        { href: "/commodities", label: t("nav.commodities"),    icon: "\u25C6" },
+        { href: "/bonds",       label: t("nav.bonds"),          icon: "\u25AD" },
+        { href: "/pulse",       label: t("nav.economyPlus"),    icon: "\u25CF" },
+      ],
+    },
+    {
+      title: t("nav.intelligence"),
+      items: [
+        { href: "/rishis",      label: t("nav.chatWithRishis"), icon: "\u2726" },
+        { href: "/news",        label: t("nav.news"),           icon: "\u25C8" },
+        { href: "/pricing",     label: t("nav.pricing"),        icon: "\u25C7" },
+      ],
+    },
+  ];
 
   const [theme, setTheme] = useState<"blue" | "dark">("blue");
 

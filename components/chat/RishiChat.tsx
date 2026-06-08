@@ -5,6 +5,7 @@ import { Stock } from "@/lib/types";
 import { RishiScore } from "@/lib/consensus/types";
 import { RISHI_PERSONALITIES, getRishisByTier, type ChatContext } from "@/lib/chat/rishiEngine";
 import { useLanguage } from '../../lib/language';
+import { getStaticResponseHi } from '../../lib/chat/fallbackResponses.hi';
 import {
   createSession, addMessageToSession, getSessionsBySymbol,
   type ChatMessage,
@@ -29,39 +30,39 @@ function getStaticResponse(rishiId: string, prompt: string, stock: Stock, scores
 
   const LINES: Record<string, Record<string, string>> = {
     jhunjhunwala: {
-      buy: score >= 70 ? `Arrey wah! ${stock.symbol} at ${score}/100 — yeh mast hai yaar! ROE ${stock.roe}%, clean sector story. Accumulate on every dip. Yeh multibagger ban sakta hai.` : `${stock.symbol} scores ${score}/100 — abhi nahi. PE ${stock.pe}x is too high for the growth on offer. Wait karo.`,
-      risk: `Main risk for ${stock.symbol}: ${stock.de > 1 ? 'Debt at ' + stock.de + 'x D/E — any slowdown hurts equity hard.' : 'Execution risk — management must deliver.' } Also watch sector regulation. But long-term India story remains intact.`,
-      thesis: `Jhunjhunwala Thesis — ${stock.symbol}:\n1. Score: ${score}/100\n2. ROE: ${stock.roe}% — ${stock.roe > 18 ? 'Strong' : 'Moderate'}\n3. Growth CAGR: ${stock.revcagr}%\n4. Debt: ${stock.de}x — ${stock.de < 0.5 ? 'Clean' : 'Watch'}\n5. Conviction: ${score >= 75 ? 'BUY with size on dips' : 'Watchlist'}\n\nIndia growth story intact. Patient compounding wins.`,
+      buy: score >= 70 ? `Arrey wah! ${stock.symbol} at ${score}/100 â€” yeh mast hai yaar! ROE ${stock.roe}%, clean sector story. Accumulate on every dip. Yeh multibagger ban sakta hai.` : `${stock.symbol} scores ${score}/100 â€” abhi nahi. PE ${stock.pe}x is too high for the growth on offer. Wait karo.`,
+      risk: `Main risk for ${stock.symbol}: ${stock.de > 1 ? 'Debt at ' + stock.de + 'x D/E â€” any slowdown hurts equity hard.' : 'Execution risk â€” management must deliver.' } Also watch sector regulation. But long-term India story remains intact.`,
+      thesis: `Jhunjhunwala Thesis â€” ${stock.symbol}:\n1. Score: ${score}/100\n2. ROE: ${stock.roe}% â€” ${stock.roe > 18 ? 'Strong' : 'Moderate'}\n3. Growth CAGR: ${stock.revcagr}%\n4. Debt: ${stock.de}x â€” ${stock.de < 0.5 ? 'Clean' : 'Watch'}\n5. Conviction: ${score >= 75 ? 'BUY with size on dips' : 'Watchlist'}\n\nIndia growth story intact. Patient compounding wins.`,
     },
     damani: {
-      buy: score >= 70 ? `${stock.symbol} passes the sleep test at ${score}/100. ROE ${stock.roe}%, D/E ${stock.de}x. ${stock.pe < 25 ? 'Margin of safety exists at PE ' + stock.pe + 'x.' : 'Price is full — wait for better entry.'} Patience compounds.` : `${stock.symbol} at ${score}/100 does not meet my standard. ${stock.de > 0.5 ? 'Debt of ' + stock.de + 'x disturbs me.' : 'ROE ' + stock.roe + '% is insufficient.'} First rule: do not lose money.`,
+      buy: score >= 70 ? `${stock.symbol} passes the sleep test at ${score}/100. ROE ${stock.roe}%, D/E ${stock.de}x. ${stock.pe < 25 ? 'Margin of safety exists at PE ' + stock.pe + 'x.' : 'Price is full â€” wait for better entry.'} Patience compounds.` : `${stock.symbol} at ${score}/100 does not meet my standard. ${stock.de > 0.5 ? 'Debt of ' + stock.de + 'x disturbs me.' : 'ROE ' + stock.roe + '% is insufficient.'} First rule: do not lose money.`,
       risk: `${stock.symbol} permanent loss risk: ${stock.de > 1 ? '(1) Debt refinancing in downturn' : '(1) Competitive margin erosion'}, (2) Management quality degradation, (3) Macro shock. I size positions to survive the worst.`,
-      thesis: `Damani Checklist — ${stock.symbol}:\nROE ${stock.roe >= 20 ? '✓' : '✗'} (${stock.roe}%)\nDebt ${stock.de < 0.3 ? '✓' : '✗'} (${stock.de}x)\nPE ${stock.pe < 25 ? '✓' : '✗'} (${stock.pe}x)\nPromoter ${stock.promo > 50 ? '✓' : '✗'} (${stock.promo}%)\n\nVerdict: ${score >= 75 ? 'Accumulate with 5yr horizon' : 'Watchlist — await margin of safety'}.`,
+      thesis: `Damani Checklist â€” ${stock.symbol}:\nROE ${stock.roe >= 20 ? 'âœ“' : 'âœ—'} (${stock.roe}%)\nDebt ${stock.de < 0.3 ? 'âœ“' : 'âœ—'} (${stock.de}x)\nPE ${stock.pe < 25 ? 'âœ“' : 'âœ—'} (${stock.pe}x)\nPromoter ${stock.promo > 50 ? 'âœ“' : 'âœ—'} (${stock.promo}%)\n\nVerdict: ${score >= 75 ? 'Accumulate with 5yr horizon' : 'Watchlist â€” await margin of safety'}.`,
     },
     buffett: {
-      buy: score >= 70 ? `${stock.symbol} has a moat worth respecting — ${score}/100. ROE ${stock.roe}% over time suggests pricing power. ${stock.pe < 30 ? 'Fair price for a good business.' : 'Full price, but quality commands premium.'} Would I hold this for 10 years? ${score >= 78 ? 'Yes.' : 'Probably.'}` : `${stock.symbol} at ${score}/100 is not a wonderful business at a fair price. ${stock.roe < 15 ? 'ROE ' + stock.roe + '% suggests no durable moat.' : 'Valuation leaves no room for error.'} Better opportunities exist.`,
-      risk: `Three risks for ${stock.symbol}: (1) Moat erosion from competition/tech disruption in ${stock.sector}, (2) Management capital misallocation — check buybacks vs acquisitions, (3) Valuation at PE ${stock.pe}x ${stock.pe > 30 ? 'leaves no margin of safety' : 'is reasonable'}. Promoter ${stock.promo}% ${stock.promo > 50 ? 'aligned' : 'watch'}.`,
-      thesis: `Buffett Analysis — ${stock.symbol}:\nMoat: ${stock.roe >= 25 ? 'Wide' : stock.roe >= 15 ? 'Narrow' : 'Questionable'}\nOwner Earnings: ${stock.fcf > 0 ? 'Positive FCF' : 'Needs evaluation'}\nManagement: Promoter ${stock.promo}% ${stock.promo >= 50 ? '— skin in game ✓' : '— watch governance'}\nValuation: ${stock.pe < 20 ? 'Attractive' : stock.pe < 30 ? 'Fair' : 'Full'}\nVerdict: ${score >= 75 ? 'Buy and hold forever' : 'Not yet a wonderful business'}.`,
+      buy: score >= 70 ? `${stock.symbol} has a moat worth respecting â€” ${score}/100. ROE ${stock.roe}% over time suggests pricing power. ${stock.pe < 30 ? 'Fair price for a good business.' : 'Full price, but quality commands premium.'} Would I hold this for 10 years? ${score >= 78 ? 'Yes.' : 'Probably.'}` : `${stock.symbol} at ${score}/100 is not a wonderful business at a fair price. ${stock.roe < 15 ? 'ROE ' + stock.roe + '% suggests no durable moat.' : 'Valuation leaves no room for error.'} Better opportunities exist.`,
+      risk: `Three risks for ${stock.symbol}: (1) Moat erosion from competition/tech disruption in ${stock.sector}, (2) Management capital misallocation â€” check buybacks vs acquisitions, (3) Valuation at PE ${stock.pe}x ${stock.pe > 30 ? 'leaves no margin of safety' : 'is reasonable'}. Promoter ${stock.promo}% ${stock.promo > 50 ? 'aligned' : 'watch'}.`,
+      thesis: `Buffett Analysis â€” ${stock.symbol}:\nMoat: ${stock.roe >= 25 ? 'Wide' : stock.roe >= 15 ? 'Narrow' : 'Questionable'}\nOwner Earnings: ${stock.fcf > 0 ? 'Positive FCF' : 'Needs evaluation'}\nManagement: Promoter ${stock.promo}% ${stock.promo >= 50 ? 'â€” skin in game âœ“' : 'â€” watch governance'}\nValuation: ${stock.pe < 20 ? 'Attractive' : stock.pe < 30 ? 'Fair' : 'Full'}\nVerdict: ${score >= 75 ? 'Buy and hold forever' : 'Not yet a wonderful business'}.`,
     },
     munger: {
-      buy: `Invert first: what makes ${stock.symbol} a terrible investment? ${stock.de > 1.5 ? 'High debt — one bad year destroys equity.' : stock.pe > 50 ? 'Paying for perfection at PE ' + stock.pe + 'x.' : 'Competition eroding moat.'} Now the answer: ${score >= 70 ? 'Surprisingly, it avoids obvious stupidity. Score ' + score + '/100 passes.' : 'Score ' + score + '/100 — too many risks remain uninverted.'}`,
-      risk: `Munger inversion for ${stock.symbol}: failure modes are (1) ${stock.sector} structural disruption nobody sees coming, (2) Incentive misalignment in management — always check options grants vs buybacks, (3) ${stock.de > 0.5 ? 'Leverage amplifying downside' : 'Complacency at good prices'}. Avoiding stupidity beats seeking brilliance.`,
-      thesis: `Munger Mental Model — ${stock.symbol}:\nINVERT: Failure requires ${stock.de > 1 ? 'debt spiral' : 'moat collapse'} + ${stock.pe > 40 ? 'valuation mean reversion' : 'earnings miss'} + governance breakdown\nPROBABILITY of avoiding all: ${score >= 75 ? 'High' : 'Moderate'}\nOPPORTUNITY COST vs index: ${score >= 70 ? 'Favorable' : 'Unfavorable'}\nVERDICT: ${score >= 70 ? 'Small position — monitor intensely' : 'Avoid — better to miss than lose permanently'}.`,
+      buy: `Invert first: what makes ${stock.symbol} a terrible investment? ${stock.de > 1.5 ? 'High debt â€” one bad year destroys equity.' : stock.pe > 50 ? 'Paying for perfection at PE ' + stock.pe + 'x.' : 'Competition eroding moat.'} Now the answer: ${score >= 70 ? 'Surprisingly, it avoids obvious stupidity. Score ' + score + '/100 passes.' : 'Score ' + score + '/100 â€” too many risks remain uninverted.'}`,
+      risk: `Munger inversion for ${stock.symbol}: failure modes are (1) ${stock.sector} structural disruption nobody sees coming, (2) Incentive misalignment in management â€” always check options grants vs buybacks, (3) ${stock.de > 0.5 ? 'Leverage amplifying downside' : 'Complacency at good prices'}. Avoiding stupidity beats seeking brilliance.`,
+      thesis: `Munger Mental Model â€” ${stock.symbol}:\nINVERT: Failure requires ${stock.de > 1 ? 'debt spiral' : 'moat collapse'} + ${stock.pe > 40 ? 'valuation mean reversion' : 'earnings miss'} + governance breakdown\nPROBABILITY of avoiding all: ${score >= 75 ? 'High' : 'Moderate'}\nOPPORTUNITY COST vs index: ${score >= 70 ? 'Favorable' : 'Unfavorable'}\nVERDICT: ${score >= 70 ? 'Small position â€” monitor intensely' : 'Avoid â€” better to miss than lose permanently'}.`,
     },
     chanos: {
-      buy: `Short thesis check for ${stock.symbol}: Overvalued? PE ${stock.pe}x ${stock.pe > 40 ? '— YES, significantly.' : '— Reasonable.'} Deteriorating fundamentals? CAGR ${stock.revcagr}% ${stock.revcagr < 5 ? '— Slowing.' : '— Intact.'} Accounting flags? D/E ${stock.de}x ${stock.de > 2 ? '— Elevated, check footnotes.' : '— Clean.'}\nShort conviction: ${score >= 70 ? 'ZERO — this is quality, wrong side to be on.' : 'LOW-MODERATE — watchlist for catalysts.'}`,
-      risk: `For ${stock.symbol} short risk (squeeze/positive catalyst): ${stock.promo > 60 ? 'High promoter holding — they can support price.' : 'Retail momentum could persist.'} Also watch for: M&A activity, regulatory approval, index inclusion. I only short when narrative is provably false AND catalyst is imminent.`,
-      thesis: `Chanos Short Checklist — ${stock.symbol}:\nOvervaluation: ${stock.pe > 40 ? 'YES — PE ' + stock.pe + 'x' : 'NO'}\nFundamental Decay: ${stock.revcagr < 0 ? 'YES' : 'NO'}\nAccounting Red Flags: ${stock.de > 2 ? 'Possible — high debt' : 'Clean'}\nNarrative Gap: ${stock.pe > 40 && stock.revcagr < 10 ? 'Wide — market believes story numbers dont support' : 'Aligned'}\nShort Rating: ${score >= 75 ? 'AVOID SHORT — quality business' : score >= 50 ? 'MONITOR' : 'POTENTIAL SHORT'}.`,
+      buy: `Short thesis check for ${stock.symbol}: Overvalued? PE ${stock.pe}x ${stock.pe > 40 ? 'â€” YES, significantly.' : 'â€” Reasonable.'} Deteriorating fundamentals? CAGR ${stock.revcagr}% ${stock.revcagr < 5 ? 'â€” Slowing.' : 'â€” Intact.'} Accounting flags? D/E ${stock.de}x ${stock.de > 2 ? 'â€” Elevated, check footnotes.' : 'â€” Clean.'}\nShort conviction: ${score >= 70 ? 'ZERO â€” this is quality, wrong side to be on.' : 'LOW-MODERATE â€” watchlist for catalysts.'}`,
+      risk: `For ${stock.symbol} short risk (squeeze/positive catalyst): ${stock.promo > 60 ? 'High promoter holding â€” they can support price.' : 'Retail momentum could persist.'} Also watch for: M&A activity, regulatory approval, index inclusion. I only short when narrative is provably false AND catalyst is imminent.`,
+      thesis: `Chanos Short Checklist â€” ${stock.symbol}:\nOvervaluation: ${stock.pe > 40 ? 'YES â€” PE ' + stock.pe + 'x' : 'NO'}\nFundamental Decay: ${stock.revcagr < 0 ? 'YES' : 'NO'}\nAccounting Red Flags: ${stock.de > 2 ? 'Possible â€” high debt' : 'Clean'}\nNarrative Gap: ${stock.pe > 40 && stock.revcagr < 10 ? 'Wide â€” market believes story numbers dont support' : 'Aligned'}\nShort Rating: ${score >= 75 ? 'AVOID SHORT â€” quality business' : score >= 50 ? 'MONITOR' : 'POTENTIAL SHORT'}.`,
     },
     lynch: {
-      buy: `${stock.symbol} — is this a GARP opportunity? Growth ${stock.revcagr}%, PE ${stock.pe}x, PEG ${stock.revcagr > 0 ? (stock.pe / stock.revcagr).toFixed(1) : 'N/A'}. ${stock.pe > 0 && stock.revcagr > 0 && (stock.pe / stock.revcagr) < 1 ? 'Excellent PEG under 1 — growth cheaply priced!' : 'PEG over 1 — paying up for growth.'} Score ${score}/100. ${stock.mktcap < 50000 ? 'Still small enough to be undiscovered.' : 'Well-known — institutions already in.'}`,
+      buy: `${stock.symbol} â€” is this a GARP opportunity? Growth ${stock.revcagr}%, PE ${stock.pe}x, PEG ${stock.revcagr > 0 ? (stock.pe / stock.revcagr).toFixed(1) : 'N/A'}. ${stock.pe > 0 && stock.revcagr > 0 && (stock.pe / stock.revcagr) < 1 ? 'Excellent PEG under 1 â€” growth cheaply priced!' : 'PEG over 1 â€” paying up for growth.'} Score ${score}/100. ${stock.mktcap < 50000 ? 'Still small enough to be undiscovered.' : 'Well-known â€” institutions already in.'}`,
       risk: `GARP risk for ${stock.symbol}: growth rate must continue to justify PE ${stock.pe}x. Watch for: competition entering ${stock.sector}, management distraction, institutional crowding ${stock.mktcap > 100000 ? '(already large cap)' : '(still manageable)'}. Best stocks are ones your neighbour doesn't know yet.`,
-      thesis: `Lynch GARP Analysis — ${stock.symbol}:\nGrowth: ${stock.revcagr}% CAGR — ${stock.revcagr > 20 ? 'Tenbagger potential' : stock.revcagr > 12 ? 'Solid' : 'Moderate'}\nPE: ${stock.pe}x — ${stock.pe < 20 ? 'Cheap' : stock.pe < 30 ? 'Fair' : 'Full'}\nPEG: ${stock.revcagr > 0 ? (stock.pe / stock.revcagr).toFixed(1) : 'N/A'} — ${stock.revcagr > 0 && (stock.pe / stock.revcagr) < 1.2 ? 'Attractive' : 'Elevated'}\nDiscovery: ${stock.mktcap < 20000 ? 'Early — huge upside' : 'Late — priced in'}\nVerdict: ${score >= 70 ? 'Accumulate — GARP opportunity' : 'Wait for better price/growth combo'}.`,
+      thesis: `Lynch GARP Analysis â€” ${stock.symbol}:\nGrowth: ${stock.revcagr}% CAGR â€” ${stock.revcagr > 20 ? 'Tenbagger potential' : stock.revcagr > 12 ? 'Solid' : 'Moderate'}\nPE: ${stock.pe}x â€” ${stock.pe < 20 ? 'Cheap' : stock.pe < 30 ? 'Fair' : 'Full'}\nPEG: ${stock.revcagr > 0 ? (stock.pe / stock.revcagr).toFixed(1) : 'N/A'} â€” ${stock.revcagr > 0 && (stock.pe / stock.revcagr) < 1.2 ? 'Attractive' : 'Elevated'}\nDiscovery: ${stock.mktcap < 20000 ? 'Early â€” huge upside' : 'Late â€” priced in'}\nVerdict: ${score >= 70 ? 'Accumulate â€” GARP opportunity' : 'Wait for better price/growth combo'}.`,
     },
     soros: {
-      buy: `Reflexivity lens on ${stock.symbol}: the market's belief in ${stock.sector} growth is ${score >= 70 ? 'creating a self-fulfilling cycle — stock rising attracts capital, enabling real growth, justifying higher prices. Ride the boom phase.' : 'diverging from fundamentals — narrative stronger than numbers. The reflexive reversal is coming.'}  Score ${score}/100. Macro cycle: ${stock.revcagr > 15 ? 'Early growth, tailwinds intact.' : 'Maturing, watch for regime change.'}`,
-      risk: `Soros macro risks for ${stock.symbol}: (1) Central bank policy shift — RBI rate changes affect ${stock.sector} valuations, (2) Reflexive reversal — if sentiment turns, prices fall faster than fundamentals, (3) Geopolitical capital flow disruption. I size based on conviction and exit fast when wrong.`,
-      thesis: `Soros Reflexivity Framework — ${stock.symbol}:\nMarket Bias: ${score >= 70 ? 'Positive feedback loop — expectations driving real growth' : 'Neutral to negative reflexivity'}\nCycle Phase: ${stock.revcagr > 20 ? 'Boom early innings' : stock.revcagr > 10 ? 'Mid cycle' : 'Late or turning'}\nPolicy Support: ${stock.sector === 'Banking' ? 'RBI-sensitive' : stock.sector === 'IT' ? 'USD-INR and US demand driven' : 'Domestic demand driven'}\nPosition: ${score >= 70 ? 'Long with trailing stop — ride the reflexive boom' : 'Neutral — wait for clear directional bias'}.`,
+      buy: `Reflexivity lens on ${stock.symbol}: the market's belief in ${stock.sector} growth is ${score >= 70 ? 'creating a self-fulfilling cycle â€” stock rising attracts capital, enabling real growth, justifying higher prices. Ride the boom phase.' : 'diverging from fundamentals â€” narrative stronger than numbers. The reflexive reversal is coming.'}  Score ${score}/100. Macro cycle: ${stock.revcagr > 15 ? 'Early growth, tailwinds intact.' : 'Maturing, watch for regime change.'}`,
+      risk: `Soros macro risks for ${stock.symbol}: (1) Central bank policy shift â€” RBI rate changes affect ${stock.sector} valuations, (2) Reflexive reversal â€” if sentiment turns, prices fall faster than fundamentals, (3) Geopolitical capital flow disruption. I size based on conviction and exit fast when wrong.`,
+      thesis: `Soros Reflexivity Framework â€” ${stock.symbol}:\nMarket Bias: ${score >= 70 ? 'Positive feedback loop â€” expectations driving real growth' : 'Neutral to negative reflexivity'}\nCycle Phase: ${stock.revcagr > 20 ? 'Boom early innings' : stock.revcagr > 10 ? 'Mid cycle' : 'Late or turning'}\nPolicy Support: ${stock.sector === 'Banking' ? 'RBI-sensitive' : stock.sector === 'IT' ? 'USD-INR and US demand driven' : 'Domestic demand driven'}\nPosition: ${score >= 70 ? 'Long with trailing stop â€” ride the reflexive boom' : 'Neutral â€” wait for clear directional bias'}.`,
     },
   };
 
@@ -82,7 +83,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
   const [currentSession, setCurrentSession] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiStatus, setApiStatus] = useState<'idle' | 'calling' | 'ok' | 'fallback'>('idle');
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const quickPrompts = [
     t('chat.quickPrompts.view'),
@@ -187,8 +188,8 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
           callGeminiAPI(`Respond to this from ${r2}'s perspective, potentially disagreeing: ${text}`, messages),
         ]);
 
-        responseText = resp1.status === 'fulfilled' ? resp1.value : getStaticResponse(r1, text, stock, scores);
-        const resp2Text = resp2.status === 'fulfilled' ? resp2.value : getStaticResponse(r2, text, stock, scores);
+        responseText = resp1.status === 'fulfilled' ? resp1.value : (locale === 'hi' ? getStaticResponseHi(r1, text, stock, scores) : getStaticResponse(r1, text, stock, scores));
+        const resp2Text = resp2.status === 'fulfilled' ? resp2.value : (locale === 'hi' ? getStaticResponseHi(r2, text, stock, scores) : getStaticResponse(r2, text, stock, scores));
 
         // Add first Rishi response
         const rishi1 = RISHI_PERSONALITIES[r1];
@@ -229,7 +230,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
         setApiStatus('ok');
       } catch (err) {
         console.warn('[RishiChat] API failed, using static fallback:', err);
-        responseText = getStaticResponse(selectedRishi, text, stock, scores);
+        responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, stock, scores) : getStaticResponse(selectedRishi, text, stock, scores));
         setApiStatus('fallback');
       }
 
@@ -249,7 +250,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
 
     } catch (err) {
       // Final fallback
-      const responseText = getStaticResponse(selectedRishi, text, stock, scores);
+      const responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, stock, scores) : getStaticResponse(selectedRishi, text, stock, scores));
       const rishi = RISHI_PERSONALITIES[selectedRishi];
       const rishiMsg: ChatMessage = {
         id: Date.now().toString() + '_r',
@@ -289,12 +290,12 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
       }}>
         <div>
           <div style={{ fontSize: "11px", fontWeight: 700, color: "#D4AF37", letterSpacing: "0.1em" }}>
-            💬 {t("chat.header")}
+            ðŸ’¬ {t("chat.header")}
           </div>
           <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
             {debateMode
-              ? `⚔️ ${debateRishis.map(r => RISHI_PERSONALITIES[r]?.name).join(' vs ')}`
-              : `${rishi?.emoji} ${rishi?.name} · ${apiStatus === 'ok' ? '🟢 AI' : apiStatus === 'fallback' ? '🟡 Static' : '⚡ Gemini'}`}
+              ? `âš”ï¸ ${debateRishis.map(r => RISHI_PERSONALITIES[r]?.name).join(' vs ')}`
+              : `${rishi?.emoji} ${rishi?.name} Â· ${apiStatus === 'ok' ? 'ðŸŸ¢ AI' : apiStatus === 'fallback' ? 'ðŸŸ¡ Static' : 'âš¡ Gemini'}`}
           </div>
         </div>
         <button
@@ -306,7 +307,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
             color: debateMode ? "#D4AF37" : "#64748B",
           }}
         >
-          {debateMode ? "⚔️ " + t("chat.debate") : "💬 " + t("chat.solo")}
+          {debateMode ? "âš”ï¸ " + t("chat.debate") : "ðŸ’¬ " + t("chat.solo")}
         </button>
       </div>
 
@@ -331,7 +332,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
               >
                 <span>{r.emoji}</span>
                 <span>{r.name}</span>
-                {!isAvailable && <span style={{ fontSize: 8 }}>🔒</span>}
+                {!isAvailable && <span style={{ fontSize: 8 }}>ðŸ”’</span>}
               </button>
             );
           })}
@@ -365,10 +366,10 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
       <div style={{ flex: 1, overflowY: "auto", padding: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
         {messages.length === 0 && (
           <div style={{ textAlign: "center", color: "#475569", fontSize: "13px", marginTop: "30px" }}>
-            <div style={{ fontSize: "28px", marginBottom: "10px" }}>💬</div>
+            <div style={{ fontSize: "28px", marginBottom: "10px" }}>ðŸ’¬</div>
             <div style={{ color: "#64748B" }}>{t("chat.askAbout")} {debateMode ? t("chat.askTheRishis") : rishi?.name} {stock.symbol}</div>
             <div style={{ fontSize: 11, color: "#334155", marginTop: 6 }}>
-              {t("chat.poweredBy")} · {t("chat.personalityDriven")}
+              {t("chat.poweredBy")} Â· {t("chat.personalityDriven")}
             </div>
           </div>
         )}
@@ -401,7 +402,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
         {loading && (
           <div style={{ alignSelf: "flex-start" }}>
             <div style={{ fontSize: "10px", color: "#64748B", marginBottom: 3 }}>
-              {rishi?.emoji} {rishi?.name} · {t("chat.thinking")}
+              {rishi?.emoji} {rishi?.name} Â· {t("chat.thinking")}
             </div>
             <div style={{
               background: "rgba(17,24,39,0.8)", border: "1px solid rgba(51,65,85,0.4)",
@@ -439,7 +440,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
                 color: loading ? "#334155" : "#64748B", cursor: loading ? "not-allowed" : "pointer",
               }}
             >
-              {p.length > 22 ? p.slice(0, 22) + '…' : p}
+              {p.length > 22 ? p.slice(0, 22) + 'â€¦' : p}
             </button>
           ))}
         </div>
@@ -471,7 +472,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
               border: "none", color: !input.trim() || loading ? "#64748B" : "#0A0F1C",
             }}
           >
-            {loading ? "…" : t("chat.send")}
+            {loading ? "â€¦" : t("chat.send")}
           </button>
         </div>
       </div>

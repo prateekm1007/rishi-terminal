@@ -28,12 +28,13 @@
                 "bonds":  "बॉन्ड",
                 "watchlist":  "वॉचलिस्ट",
                 "main":  "मुख्य",
-                "markets":  "बाज़ार",
+                "markets":  "बाज़ार",
                 "portfolioLab":  "पोर्टफोलियो लैब",
                 "economyPlus":  "इकोनॉमी प्लस",
                 "chatWithRishis":  "ऋषियों से बात करें",
                 "core":  "मुख्य",
-                "intelligence":  "इंटेलिजेंस"
+                "intelligence":  "इंटेलिजेंस",
+                "compare":  "तुलना"
             },
     "header":  {
                    "title":  "ऋषि टर्मिनल",
@@ -52,7 +53,23 @@
                       "globalMarkets":  "वैश्विक बाज़ार — देखने के लिए क्लिक करें",
                       "topBuySignals":  "शीर्ष खरीद संकेत — ऋषि सर्वसम्मति 65 से अधिक",
                       "fullScreener":  "पूर्ण स्क्रीनर",
-                      "notInvestmentAdvice":  "निवेश सलाह नहीं — शैक्षिक सिमुलेशन — ऋषि टर्मिनल v4.2 — 20 ऋषि सक्रिय"
+                      "notInvestmentAdvice":  "निवेश सलाह नहीं — शैक्षिक सिमुलेशन — ऋषि टर्मिनल v4.2 — 20 ऋषि सक्रिय",
+                      "heroWisdomSuffix":  " से। लाइव कीमतें, डुअल-मोड स्कोरिंग, शॉर्ट थीसिस और दार्शनिक अंतर्दृष्टि।",
+                      "updatedPrefix":  "अपडेट ",
+                      "timeAgoMinutesSuffix":  " मिनट पहले",
+                      "timeAgoSecondsSuffix":  " सेकंड पहले",
+                      "connecting":  "कनेक्ट हो रहा है...",
+                      "heroWisdomHighlight":  "20 महान निवेशकों",
+                      "heroWisdomPrefix":  "ज्ञान ",
+                      "heroTagline":  "पवित्र निवेश इंटेलिजेंस · v4.4",
+                      "liveMarketData":  "लाइव मार्केट डेटा",
+                      "markets":  {
+                                      "forexDesc":  "10 मुद्रा जोड़े",
+                                      "commoditiesDesc":  "सोना, तेल, धातुएँ",
+                                      "bondsDesc":  "सरकारी व कॉर्पोरेट",
+                                      "economyPlusDesc":  "मैक्रो रेजीम व रोटेशन",
+                                      "compareDesc":  "साइड-बाय-साइड विश्लेषण"
+                                  }
                   },
     "stock":  {
                   "overview":  "अवलोकन",

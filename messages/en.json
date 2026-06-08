@@ -28,12 +28,13 @@
                 "bonds":  "Bonds",
                 "watchlist":  "Watchlist",
                 "main":  "MAIN",
-                "markets":  "MARKETS",
+                "markets":  "MARKETS",
                 "portfolioLab":  "Portfolio Lab",
                 "economyPlus":  "Economy Plus",
                 "chatWithRishis":  "Chat with Rishis",
                 "core":  "CORE",
-                "intelligence":  "INTELLIGENCE"
+                "intelligence":  "INTELLIGENCE",
+                "compare":  "Compare"
             },
     "header":  {
                    "title":  "RISHI TERMINAL",
@@ -52,7 +53,23 @@
                       "globalMarkets":  "GLOBAL MARKETS - CLICK TO EXPLORE",
                       "topBuySignals":  "TOP BUY SIGNALS - RISHI CONSENSUS ABOVE 65",
                       "fullScreener":  "FULL SCREENER",
-                      "notInvestmentAdvice":  "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE"
+                      "notInvestmentAdvice":  "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE",
+                      "heroWisdomSuffix":  ". Live prices, dual-mode scoring, short thesis, philosophical insights.",
+                      "updatedPrefix":  "Updated ",
+                      "timeAgoMinutesSuffix":  "m ago",
+                      "timeAgoSecondsSuffix":  "s ago",
+                      "connecting":  "Connecting...",
+                      "heroWisdomHighlight":  "20 legendary investors",
+                      "heroWisdomPrefix":  "Wisdom from ",
+                      "heroTagline":  "SACRED INVESTMENT INTELLIGENCE · v4.4",
+                      "liveMarketData":  "Live Market Data",
+                      "markets":  {
+                                      "forexDesc":  "10 currency pairs",
+                                      "commoditiesDesc":  "Gold, Oil, Metals",
+                                      "bondsDesc":  "G-Secs \u0026 Corporate",
+                                      "economyPlusDesc":  "Macro regime \u0026 rotation",
+                                      "compareDesc":  "Side-by-side analysis"
+                                  }
                   },
     "stock":  {
                   "overview":  "Overview",

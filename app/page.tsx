@@ -7,6 +7,7 @@ import ProgressBar from "@/components/gamification/ProgressBar";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useLivePrices } from "@/hooks/useLivePrices";
+import { useLanguage } from "@/lib/language";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
@@ -131,6 +132,8 @@ function Divider() {
 /* ── Main Dashboard ────────────────────────────────────────── */
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
+
   const allSyms = useMemo(() => [
     ...TICKER_SYMS,
     ...TOP_STOCKS.map(s => s.symbol),
@@ -145,11 +148,11 @@ export default function DashboardPage() {
     if (!lastUpdated) return;
     const update = () => {
       const s = Math.floor((Date.now() - lastUpdated.getTime()) / 1000);
-      setTimeAgo(s < 60 ? s + "s ago" : Math.floor(s / 60) + "m ago");
+            setTimeAgo(s < 60 ? (s + t("dashboard.timeAgoSecondsSuffix")) : (Math.floor(s / 60) + t("dashboard.timeAgoMinutesSuffix")));
     };
     update();
-    const t = setInterval(update, 1000);
-    return () => clearInterval(t);
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
   }, [lastUpdated]);
 
   const fmtINR = (n?: number) =>
@@ -204,10 +207,10 @@ export default function DashboardPage() {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
             <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:C.green,boxShadow:"0 0 8px rgba(34,197,94,0.7)" }} className="animate-pulse" />
-            <span style={{ color:C.green, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>Live Market Data</span>
+            <span style={{ color:C.green, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.liveMarketData")}</span>
           </div>
           <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
-            {lastUpdated ? "Updated " + timeAgo : "Connecting..."}
+            {lastUpdated ? (t("dashboard.updatedPrefix") + timeAgo) : t("dashboard.connecting")}
           </span>
         </div>
       </div>
@@ -233,23 +236,23 @@ export default function DashboardPage() {
                 letterSpacing:"-0.01em", margin:0,
               }}>Rishi Terminal</h1>
               <div style={{ color:C.gold, fontSize:"11px", fontWeight:600, letterSpacing:"0.15em", marginTop:"4px", fontFamily:sans }}>
-                SACRED INVESTMENT INTELLIGENCE · v4.4
+                {t("dashboard.heroTagline")}
               </div>
             </div>
           </div>
 
           <p style={{ fontSize:"16px", color:C.textSec, maxWidth:"580px", lineHeight:1.8, marginBottom:"28px" }}>
-            Wisdom from <span style={{ color:C.gold }}>20 legendary investors</span>. Live prices, dual-mode scoring, short thesis, philosophical insights.
+            {t("dashboard.heroWisdomPrefix")}<span style={{ color:C.gold }}>{t("dashboard.heroWisdomHighlight")}</span>{t("dashboard.heroWisdomSuffix")}
           </p>
 
           <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
             {[
-              { href:"/screener",  label:"📊 Screener",   primary:true  },
-              { href:"/portfolio", label:"💼 Portfolio",   primary:false },
-              { href:"/watchlist", label:"⭐ Watchlist",   primary:false },
-              { href:"/rishis",    label:"🧘 The Rishis",  outline:true  },
-              { href:"/news",      label:"📰 News",        ghost:true    },
-              { href:"/compare",   label:"⚖️ Compare",    ghost:true    },
+              { href:"/screener",  label:"📊 " + t("nav.screener"),   primary:true  },
+              { href:"/portfolio", label:"💼 " + t("nav.portfolio"),  primary:false },
+              { href:"/watchlist", label:"⭐ " + t("nav.watchlist"),  primary:false },
+              { href:"/rishis",    label:"🧘 " + t("nav.allRishis"), outline:true  },
+              { href:"/news",      label:"📰 " + t("nav.news"),       ghost:true    },
+              { href:"/compare",   label:"⚖️ " + t("nav.compare"),    ghost:true    },
             ].map(b => (
               <Link key={b.href} href={b.href} style={{
                 display:"inline-flex", alignItems:"center", gap:"6px",
@@ -567,8 +570,8 @@ export default function DashboardPage() {
                   }}
                 >
                   <div style={{ fontSize:"36px", marginBottom:"12px" }}>{icon}</div>
-                  <div style={{ fontSize:"14px",fontWeight:700,color:C.text,marginBottom:"5px",fontFamily:serif }}>{label}</div>
-                  <div style={{ fontSize:"11px",color:C.textMuted }}>{desc}</div>
+                  <div style={{ fontSize:"14px",fontWeight:700,color:C.text,marginBottom:"5px",fontFamily:serif }}>{href === "/forex" ? t("nav.forex") : href === "/commodities" ? t("nav.commodities") : href === "/bonds" ? t("nav.bonds") : href.startsWith("/pulse") ? t("nav.economyPlus") : href === "/compare" ? t("nav.compare") : label}</div>
+                  <div style={{ fontSize:"11px",color:C.textMuted }}>{href === "/forex" ? t("dashboard.markets.forexDesc") : href === "/commodities" ? t("dashboard.markets.commoditiesDesc") : href === "/bonds" ? t("dashboard.markets.bondsDesc") : href.startsWith("/pulse") ? t("dashboard.markets.economyPlusDesc") : href === "/compare" ? t("dashboard.markets.compareDesc") : desc}</div>
                 </div>
               </Link>
             ))}

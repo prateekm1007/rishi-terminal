@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import SadhuVectorLogo from "./SadhuVectorLogo";
+import { LanguageSelector } from "./LanguageSelector";
 
 const NAV_GROUPS = [
   {
@@ -200,6 +201,19 @@ export default function Sidebar() {
           <span>{theme === "blue" ? "● Blue Gradient" : "○ Blue Gradient"}</span>
           <span style={{ fontSize: "10px", opacity: 0.6 }}>{theme === "dark" ? "● Dark Terminal" : "○ Dark Terminal"}</span>
         </button>
+      </div>
+      <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{
+          fontSize: "10px",
+          fontWeight: 600,
+          color: "#27272a",
+          letterSpacing: "0.12em",
+          marginBottom: "8px",
+          fontFamily: "Inter, sans-serif",
+        }}>
+          LANGUAGE
+        </div>
+        <LanguageSelector />
       </div>
       <div style={{ padding: "20px 16px" }}>
         <div style={{

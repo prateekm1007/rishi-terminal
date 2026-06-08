@@ -6,7 +6,6 @@ import { useLanguage } from '../lib/language';
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
-  { code: 'gu', name: 'ગુજરાતી', flag: '🇮🇳' },
 ] as const;
 
 export function LanguageSelector() {

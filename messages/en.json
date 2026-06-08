@@ -625,5 +625,21 @@
                                       "changeMind":  "What would change your mind?",
                                       "valuation":  "Is the valuation justified?"
                                   }
-             }
+             },
+    "kg":  {
+               "close":  "CLOSE",
+               "knowledgeGraph":  "Knowledge Graph",
+               "macroKnowledgeGraph":  "Macro Knowledge Graph",
+               "bullCase":  "BULL CASE",
+               "bearCase":  "BEAR CASE",
+               "bullishMacro":  "BULLISH MACRO",
+               "bearishMacro":  "BEARISH MACRO",
+               "noBulls":  "No strong bulls at current levels",
+               "noBears":  "No strong bears at current levels",
+               "noBullsPrice":  "No strong bulls at current price levels",
+               "noBearsPrice":  "No strong bears at current price levels",
+               "noBullishSignals":  "No bullish signals at current levels",
+               "noBullishMacro":  "No bullish macro signals",
+               "noBearishMacro":  "No bearish macro signals"
+           }
 }

@@ -684,8 +684,19 @@
                 "bonds":  "बॉन्ड्स",
                 "forex":  "फॉरेक्स",
                 "rishis":  "ऋषि",
+                "pairs":  "जोड़े",
+                "core":  "मुख्य",
+                "dashboard":  "डैशबोर्ड",
                 "screener":  "स्क्रीनर",
-                "pairs":  "जोड़े"
+                "portfolioLab":  "पोर्टफोलियो लैब",
+                "markets":  "बाज़ार",
+                "crypto":  "क्रिप्टो",
+                "commodities":  "कमोडिटी",
+                "economyPlus":  "इकोनॉमी प्लस",
+                "intelligence":  "विश्लेषण",
+                "chatWithRishis":  "ऋषियों से चैट",
+                "news":  "समाचार",
+                "pricing":  "मूल्य निर्धारण"
             },
     "alerts":  {
                    "symbol":  "प्रतीक",

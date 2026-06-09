@@ -267,7 +267,7 @@
                  "stories":  "बातम्या",
                  "saved":  "जतन केले",
                  "liveRssActive":  "लाइव्ह RSS सक्रिय",
-                 "autoRefresh": "प्रत्येक ५ मिनिटांनी ऑटो-रिफ्रेश होते",
+                 "autoRefresh":  "प्रत्येक ५ मिनिटांनी ऑटो-रिफ्रेश होते",
                  "searchPlaceholder":  "शोधा — RBI, इन्फोसिस, बिटकॉइन, विराट कोहली, IPL...",
                  "all":  "सर्व",
                  "bullish":  "बुलिश",
@@ -435,7 +435,7 @@
                                    "blockDealsLabel":  "ब्लॉक डील",
                                    "upSuffix":  "वर",
                                    "downSuffix":  "खाली",
-                                   "lastLabel": "शेवटचे"
+                                   "lastLabel":  "शेवटचे"
                                },
                   "macro":  {
                                 "historicalAnalog":  "ऐतिहासिक समानता",
@@ -684,8 +684,19 @@
                 "bonds":  "बॉन्ड",
                 "forex":  "फॉरेक्स",
                 "rishis":  "ऋषी",
+                "pairs":  "जोड्या",
+                "chatWithRishis":  "ऋषींशी चॅट",
+                "economyPlus":  "इकॉनॉमी प्लस",
+                "markets":  "बाजार",
+                "news":  "बातम्या",
+                "commodities":  "कमोडिटी",
+                "pricing":  "किंमत",
+                "dashboard":  "डॅशबोर्ड",
+                "intelligence":  "विश्लेषण",
                 "screener":  "स्क्रीनर",
-                "pairs":  "जोड्या"
+                "core":  "मुख्य",
+                "portfolioLab":  "पोर्टफोलिओ लॅब",
+                "crypto":  "क्रिप्टो"
             },
     "alerts":  {
                    "symbol":  "प्रतीक",

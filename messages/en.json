@@ -684,8 +684,19 @@
                 "bonds":  "BONDS",
                 "forex":  "FOREX",
                 "rishis":  "RISHIS",
-                "screener":  "SCREENER",
-                "pairs":  "PAIRS"
+                "pairs":  "PAIRS",
+                "core":  "CORE",
+                "dashboard":  "Dashboard",
+                "screener":  "Screener",
+                "portfolioLab":  "Portfolio Lab",
+                "markets":  "MARKETS",
+                "crypto":  "Crypto",
+                "commodities":  "Commodities",
+                "economyPlus":  "Economy Plus",
+                "intelligence":  "INTELLIGENCE",
+                "chatWithRishis":  "Chat with Rishis",
+                "news":  "News",
+                "pricing":  "Pricing"
             },
     "alerts":  {
                    "symbol":  "SYMBOL",

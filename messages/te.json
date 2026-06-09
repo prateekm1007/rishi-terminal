@@ -53,16 +53,16 @@
                       "markets":  {
                                       "forexDesc":  "10 కరెన్సీ జతలు",
                                       "commoditiesDesc":  "బంగారం, నూనె, లోహాలు",
-                                      "bondsDesc":  "ప్రభుత్వ సెక్యూరిటీలు & కార్పొరేట్",
-                                      "economyPlusDesc":  "మాక్రో రెజీమ్ & రొటేషన్",
+                                      "bondsDesc":  "ప్రభుత్వ సెక్యూరిటీలు \u0026 కార్పొరేట్",
+                                      "economyPlusDesc":  "మాక్రో రెజీమ్ \u0026 రొటేషన్",
                                       "compareDesc":  "పక్కపక్కన విశ్లేషణ"
                                   }
                   },
     "stock":  {
                   "overview":  "అవలోకనం",
-                  "overviewDesc":  "ప్రాథమికాలు & ఏకాభిప్రాయం",
+                  "overviewDesc":  "ప్రాథమికాలు \u0026 ఏకాభిప్రాయం",
                   "technicals":  "టెక్నికల్స్",
-                  "technicalsDesc":  "ధర చర్య & సూచికలు",
+                  "technicalsDesc":  "ధర చర్య \u0026 సూచికలు",
                   "rishiWisdom":  "ఋషి జ్ఞానం",
                   "wisdomDesc":  "అన్ని 20 తత్వవేత్తల స్కోర్లు",
                   "consensusScore":  "ఏకాభిప్రాయ స్కోర్",
@@ -93,7 +93,7 @@
                   "quarterlyPerformance":  "త్రైమాసిక పనితీరు",
                   "shareholdingPattern":  "షేర్‌హోల్డింగ్ ప్యాటర్న్",
                   "knowledgeGraph":  "జ్ఞాన గ్రాఫ్",
-                  "graphSubtitle":  "సంబంధాలు, సమాంతరాలు & అంతర్దృష్టి",
+                  "graphSubtitle":  "సంబంధాలు, సమాంతరాలు \u0026 అంతర్దృష్టి",
                   "graph":  "గ్రాఫ్",
                   "rishiDebate":  "ఋషి చర్చ",
                   "historicalParallels":  "చారిత్రక సమాంతరాలు",
@@ -128,7 +128,7 @@
                       "holdings":  "హోల్డింగ్‌లు",
                       "holdingsDesc":  "మీ పొజిషన్లు",
                       "myReturns":  "నా రాబడులు",
-                      "returnsDesc":  "పనితీరు & CAGR",
+                      "returnsDesc":  "పనితీరు \u0026 CAGR",
                       "addStock":  "హోల్డింగ్ జోడించు",
                       "addFirstHolding":  "మొదటి హోల్డింగ్ జోడించు",
                       "addToPortfolio":  "పోర్ట్‌ఫోలియోకు జోడించు",
@@ -158,7 +158,7 @@
                       "total":  "మొత్తం",
                       "confirmRemove":  "పోర్ట్‌ఫోలియో నుండి తొలగించాలా?",
                       "chartTitle":  "కాలక్రమంలో పోర్ట్‌ఫోలియో విలువ",
-                      "chartSubtitle":  "ప్రస్తుత హోల్డింగ్‌లు & మార్కెట్ ప్రవాహం ఆధారంగా సిమ్యులేటెడ్",
+                      "chartSubtitle":  "ప్రస్తుత హోల్డింగ్‌లు \u0026 మార్కెట్ ప్రవాహం ఆధారంగా సిమ్యులేటెడ్",
                       "portfolioValue":  "పోర్ట్‌ఫోలియో విలువ",
                       "costBasis":  "ఖర్చు ఆధారం",
                       "positionReturns":  "పొజిషన్ రాబడులు",
@@ -171,7 +171,7 @@
                       "invalidWeight":  "బరువు 0-10 మధ్య ఉండాలి",
                       "default":  "డిఫాల్ట్",
                       "reset":  "రీసెట్",
-                      "saveClose":  "సేవ్ & మూసివేయి",
+                      "saveClose":  "సేవ్ \u0026 మూసివేయి",
                       "buyPrice":  "కొనుగోలు ధర",
                       "currentPrice":  "ప్రస్తుత ధర",
                       "gainLoss":  "లాభం / నష్టం",
@@ -300,8 +300,8 @@
                    "avgRsi":  "సగటు RSI",
                    "sentiment":  "సెంటిమెంట్",
                    "btcDominance":  "BTC ఆధిపత్యం",
-                   "fearGreed":  "భయం & దురాశ",
-                   "fearGreedIndex":  "క్రిప్టో భయం & దురాశ సూచిక",
+                   "fearGreed":  "భయం \u0026 దురాశ",
+                   "fearGreedIndex":  "క్రిప్టో భయం \u0026 దురాశ సూచిక",
                    "extremeFear":  "తీవ్ర భయం",
                    "fear":  "భయం",
                    "neutral":  "తటస్థ",
@@ -384,7 +384,7 @@
                      "gujarati":  "ગુજરાતી"
                  },
     "asset":  {
-                  "graphSubtitle":  "సంబంధాలు & అంతర్దృష్టి",
+                  "graphSubtitle":  "సంబంధాలు \u0026 అంతర్దృష్టి",
                   "overview":  "అవలోకనం",
                   "marketCap":  "మార్కెట్ క్యాప్",
                   "technicals":  "టెక్నికల్ విశ్లేషణ",
@@ -401,8 +401,8 @@
                   "topRishiSubtitle":  "తాత్విక ఏకాభిప్రాయ ర్యాంకింగ్",
                   "topRishiScores":  "టాప్ ఋషి స్కోర్లు",
                   "category":  "వర్గం",
-                  "overviewDesc":  "ఏకాభిప్రాయం & మెట్రిక్స్",
-                  "technicalsDesc":  "చార్ట్లు & సూచికలు"
+                  "overviewDesc":  "ఏకాభిప్రాయం \u0026 మెట్రిక్స్",
+                  "technicalsDesc":  "చార్ట్లు \u0026 సూచికలు"
               },
     "pulse":  {
                   "title":  "ఎకానమీ ప్లస్",
@@ -684,8 +684,19 @@
                 "bonds":  "బాండ్లు",
                 "forex":  "ఫారెక్స్",
                 "rishis":  "ఋషులు",
+                "pairs":  "జతలు",
+                "chatWithRishis":  "ఋషులతో చాట్",
+                "economyPlus":  "ఎకానమీ ప్లస్",
+                "markets":  "మార్కెట్లు",
+                "news":  "వార్తలు",
+                "commodities":  "కమోడిటీలు",
+                "pricing":  "ధర నిర్ణయం",
+                "dashboard":  "డ్యాష్‌బోర్డ్",
+                "intelligence":  "విశ్లేషణ",
                 "screener":  "స్క్రీనర్",
-                "pairs":  "జతలు"
+                "core":  "ముఖ్యం",
+                "portfolioLab":  "పోర్ట్‌ఫోలియో లాబ్",
+                "crypto":  "క్రిప్టో"
             },
     "alerts":  {
                    "symbol":  "చిహ్నం",

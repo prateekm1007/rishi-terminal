@@ -684,8 +684,19 @@
                 "bonds":  "বন্ড",
                 "forex":  "ফরেক্স",
                 "rishis":  "ঋষি",
+                "pairs":  "জোড়া",
+                "chatWithRishis":  "ঋষিদের সাথে চ্যাট",
+                "economyPlus":  "ইকোনমি প্লাস",
+                "markets":  "বাজার",
+                "news":  "সংবাদ",
+                "commodities":  "কমোডিটি",
+                "pricing":  "মূল্য নির্ধারণ",
+                "dashboard":  "ড্যাশবোর্ড",
+                "intelligence":  "বিশ্লেষণ",
                 "screener":  "স্ক্রিনার",
-                "pairs":  "জোড়া"
+                "core":  "মূল",
+                "portfolioLab":  "পোর্টফোলিও ল্যাব",
+                "crypto":  "ক্রিপ্টো"
             },
     "alerts":  {
                    "symbol":  "প্রতীক",

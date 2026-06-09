@@ -10,6 +10,10 @@ const LANGUAGES = [
   { code: 'mr', name: 'मराठी', flag: '🇮🇳' },
   { code: 'te', name: 'తెలుగు', flag: '🇮🇳' },
   { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' },
+  { code: 'bn', name: 'বাংলা', flag: '🇮🇳' },
+  { code: 'mr', name: 'मराठी', flag: '🇮🇳' },
+  { code: 'te', name: 'తెలుగు', flag: '🇮🇳' },
+  { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' },
 ] as const;
 
 export function LanguageSelector() {

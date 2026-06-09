@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useLanguage } from '../../lib/language';
 import { calculateRishiScore } from "@/lib/scorers/rishiScoreV2";
 import { getScoreColors, colors, fonts, shadows } from "@/lib/design";
 import type { StockMetrics, RishiScoreResult, ScoreMode, PillarScore } from "@/lib/scorers/types";
@@ -134,6 +135,7 @@ interface Props {
 }
 
 export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props) {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<ScoreMode>(defaultMode);
 
   const result: RishiScoreResult = useMemo(
@@ -166,7 +168,7 @@ export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props)
       <div style={{ position:"relative", zIndex:1 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"32px" }}>
           <div>
-            <div style={{ fontFamily: fonts.serif, fontSize:"20px", fontWeight:700, color: colors.gold, letterSpacing:"0.05em", marginBottom:"4px" }}>RISHI SCORE</div>
+            <div style={{ fontFamily: fonts.serif, fontSize:"20px", fontWeight:700, color: colors.gold, letterSpacing:"0.05em", marginBottom:"4px" }}>{t("common.rishiScore")}</div>
             <div style={{ fontSize:"11px", color: colors.textMuted, fontFamily: fonts.mono, fontWeight:500 }}>v2.0 · {result.dataQuality} Data · {metrics.sector}</div>
           </div>
 

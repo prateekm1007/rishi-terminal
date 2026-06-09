@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage } from '@/lib/language';
 
 import { DialogueSet } from '../../lib/wisdom/dialogue';
 
@@ -7,11 +8,12 @@ interface Props {
 }
 
 export function RishiDialogue({ dialogues }: Props) {
+  const { t } = useLanguage();
   if (!dialogues || dialogues.length === 0) {
     return (
       <div className="card p-8 text-center">
         <div className="text-4xl mb-4">💬</div>
-        <p className="text-muted">No philosophical debates detected for this stock</p>
+        <p className="text-muted">{t("common.noDebates")}</p>
       </div>
     );
   }

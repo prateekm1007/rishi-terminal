@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage } from '@/lib/language';
 
 interface ShareholdingEntry {
   quarter: string;
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function ShareholdingChart({ history }: Props) {
+  const { t } = useLanguage();
   if (!history || history.length === 0) return null;
 
   const latest = history[0];
@@ -26,7 +28,7 @@ export function ShareholdingChart({ history }: Props) {
 
   return (
     <div className="card-sacred p-6">
-      <div className="philosophy-heading text-lg mb-6">Shareholding Pattern</div>
+      <div className="philosophy-heading text-lg mb-6">{t("common.shareholdingPattern")}</div>
       <div className="philosophy-subheading text-xs text-muted mb-4">As of {latest.quarter}</div>
 
       {/* Stacked Bar */}

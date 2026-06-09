@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage } from '@/lib/language';
 
 import type { UniversalAsset } from '../../lib/types/asset';
 import { MetricCard, StatGroup } from './StyleGuide';
@@ -15,6 +16,7 @@ function getColor(value: number, threshold: number, inverse = false): 'green' | 
 }
 
 export function AssetMetricsPanel({ asset }: Props) {
+  const { t } = useLanguage();
   if (!asset) return null;
 
   const metrics = [
@@ -30,7 +32,7 @@ export function AssetMetricsPanel({ asset }: Props) {
 
   return (
     <div className="card-sacred p-6">
-      <div className="philosophy-heading text-lg mb-6">Key Metrics</div>
+      <div className="philosophy-heading text-lg mb-6">{t("common.keyMetrics")}</div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {metrics.map((m, idx) => (
@@ -45,7 +47,7 @@ export function AssetMetricsPanel({ asset }: Props) {
       </div>
 
       <div className="pt-6 border-t border-border-primary">
-        <div className="philosophy-subheading text-xs mb-4">VALUATION SNAPSHOT</div>
+        <div className="philosophy-subheading text-xs mb-4">{t("common.valuationSnapshot")}</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatGroup title="P/B Ratio" stats={[
             { label: 'Price / Book', value: (asset.metadata?.bvps || 1) > 0 ? (asset.price / (asset.metadata?.bvps || 1)).toFixed(2) : 'N/A', unit: 'x' }

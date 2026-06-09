@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../lib/language';
 
 interface Props {
   disagreementIndex: number;
@@ -6,6 +7,7 @@ interface Props {
 }
 
 export const DisagreementMeter: React.FC<Props> = ({ disagreementIndex, label }) => {
+  const { t } = useLanguage();
   const percentage = disagreementIndex * 100;
   
   let color = '#22C55E'; // Green
@@ -16,7 +18,7 @@ export const DisagreementMeter: React.FC<Props> = ({ disagreementIndex, label })
   return (
     <div className="p-4 bg-gray-900 rounded-lg border border-gray-800">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-gray-400">Consensus Disagreement</span>
+        <span className="text-sm font-medium text-gray-400">{t("epistemic.consensusDisagreement")}</span>
         <span className="text-xs font-bold" style={{ color }}>{label}</span>
       </div>
       <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">

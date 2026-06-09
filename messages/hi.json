@@ -13,29 +13,16 @@
                    "delete":  "हटाएं",
                    "edit":  "संपादित करें",
                    "add":  "जोड़ें",
-                   "viewDetails":  "विवरण देखें"
+                   "viewDetails":  "विवरण देखें",
+                   "streak":  "स्ट्रीक",
+                   "stack":  "स्टैक",
+                   "rishiScore":  "ऋषि स्कोर",
+                   "philosophicalSpread":  "दार्शनिक स्प्रेड",
+                   "keyMetrics":  "प्रमुख मेट्रिक्स",
+                   "valuationSnapshot":  "मूल्यांकन स्नैपशॉट",
+                   "shareholdingPattern":  "शेयरहोल्डिंग पैटर्न",
+                   "noDebates":  "इस स्टॉक के लिए कोई दार्शनिक बहस नहीं मिली"
                },
-    "nav":  {
-                "dashboard":  "डैशबोर्ड",
-                "screener":  "स्क्रीनर",
-                "portfolio":  "पोर्टफोलियो",
-                "allRishis":  "सभी ऋषि",
-                "news":  "समाचार",
-                "pricing":  "मूल्य निर्धारण",
-                "crypto":  "क्रिप्टो",
-                "forex":  "विदेशी मुद्रा",
-                "commodities":  "वस्तुएं",
-                "bonds":  "बॉन्ड",
-                "watchlist":  "वॉचलिस्ट",
-                "main":  "मुख्य",
-                "markets":  "बाज़ार",
-                "portfolioLab":  "पोर्टफोलियो लैब",
-                "economyPlus":  "इकोनॉमी प्लस",
-                "chatWithRishis":  "ऋषियों से बात करें",
-                "core":  "मुख्य",
-                "intelligence":  "इंटेलिजेंस",
-                "compare":  "तुलना"
-            },
     "header":  {
                    "title":  "ऋषि टर्मिनल",
                    "subtitle":  "20 ऋषि — शेयर — क्रिप्टो — विदेशी मुद्रा — वस्तुएं — बॉन्ड",
@@ -342,27 +329,6 @@
                    "currentAnalysis":  "वर्तमान विश्लेषण",
                    "at":  "पर"
                },
-    "forex":  {
-                  "title":  "विदेशी मुद्रा डैशबोर्ड",
-                  "subtitle":  "व्यापक आर्थिक ऋषि दृष्टिकोण के माध्यम से प्रमुख मुद्रा जोड़े का विश्लेषण",
-                  "breadcrumb":  "विदेशी मुद्रा",
-                  "pairs":  "जोड़े",
-                  "inrCrossRates":  "INR क्रॉस दरें",
-                  "avgVolatility":  "औसत अस्थिरता",
-                  "volume24h":  "24 घंटे की मात्रा",
-                  "usdInrSpot":  "USD/INR स्पॉट",
-                  "eurInrSpot":  "EUR/INR स्पॉट",
-                  "currencyPairs":  "मुद्रा जोड़े — देखने के लिए क्लिक करें",
-                  "pair":  "जोड़ी",
-                  "spot":  "स्पॉट",
-                  "bid":  "बोली",
-                  "ask":  "पूछना",
-                  "spread":  "स्प्रेड",
-                  "forward1m":  "1 महीने आगे",
-                  "volatility":  "अस्थिरता %",
-                  "ppp":  "PPP",
-                  "footer":  "विदेशी मुद्रा बाजार डेटा — ऋषि टर्मिनल v4.1 — बहु-संपत्ति ज्ञान OS"
-              },
     "commodities":  {
                         "title":  "वस्तु बाजार",
                         "subtitle":  "Jim Rogers, Rick Rule, Daniel Yergin — सुपरसाइकिल, कीमती धातुएं और ऊर्जा भू-राजनीति।",
@@ -382,35 +348,6 @@
                         "high52w":  "52 सप्ताह उच्च",
                         "position52w":  "52 सप्ताह स्थिति"
                     },
-    "bonds":  {
-                  "title":  "बॉन्ड बाजार",
-                  "subtitle":  "G-Secs, SDLs, कॉर्पोरेट बॉन्ड और T-Bills निश्चित आय ऋषि ज्ञान के माध्यम से विश्लेषण",
-                  "breadcrumb":  "बॉन्ड बाजार",
-                  "totalBonds":  "कुल बॉन्ड",
-                  "sovereignCorporate":  "सॉवरेन + कॉर्पोरेट",
-                  "gSecs":  "G-Secs",
-                  "sdls":  "SDLs",
-                  "corporate":  "कॉर्पोरेट",
-                  "tBills":  "T-Bills",
-                  "avgYtm":  "औसत YTM",
-                  "avgDuration":  "औसत अवधि",
-                  "all":  "सभी",
-                  "gSec":  "G-Sec",
-                  "sdl":  "SDL",
-                  "tBill":  "T-Bill",
-                  "sortYtm":  "YTM",
-                  "sortDuration":  "अवधि",
-                  "sortMaturity":  "परिपक्वता",
-                  "bond":  "बॉन्ड",
-                  "type":  "प्रकार",
-                  "coupon":  "कूपन",
-                  "ytm":  "YTM",
-                  "price":  "मूल्य",
-                  "duration":  "अवधि",
-                  "rating":  "रेटिंग",
-                  "maturity":  "परिपक्वता",
-                  "footer":  "बॉन्ड बाजार डेटा — ऋषि टर्मिनल v4.1 — बहु-संपत्ति ज्ञान OS"
-              },
     "marketSections":  {
                            "crypto":  "क्रिप्टो",
                            "cryptoTag":  "डिजिटल संपत्तियां",
@@ -730,5 +667,55 @@
                   "loading":  "लोड हो रहा है…",
                   "loadFailed":  "डेटा लोड करने में विफल",
                   "noData":  "इस अवधि के लिए कोई डेटा नहीं"
+              },
+    "epistemic":  {
+                      "consensusDisagreement":  "सर्वसम्मति असहमति",
+                      "knowledgeGaps":  "ज्ञान अंतराल",
+                      "opposingViews":  "विरोधी विचार",
+                      "philosophyDivergence":  "दर्शन विभेद"
+                  },
+    "legal":  {
+                  "rishiDisclaimer":  "सभी \"ऋषि\" दिखाए गए हैं",
+                  "fictional":  "पूरी तरह से काल्पनिक व्याख्याएं",
+                  "inspired":  "सार्वजनिक दर्शन से प्रेरित"
+              },
+    "nav":  {
+                "terminal":  "ऋषि टर्मिनल",
+                "bonds":  "बॉन्ड्स",
+                "forex":  "फॉरेक्स",
+                "rishis":  "ऋषि",
+                "screener":  "स्क्रीनर",
+                "pairs":  "जोड़े"
+            },
+    "alerts":  {
+                   "symbol":  "प्रतीक",
+                   "alertType":  "अलर्ट प्रकार",
+                   "targetValue":  "लक्ष्य मूल्य"
+               },
+    "bonds":  {
+                  "coupon":  "कूपन",
+                  "price":  "कीमत",
+                  "duration":  "अवधि",
+                  "rating":  "रेटिंग",
+                  "spread":  "स्प्रेड"
+              },
+    "fno":  {
+                "underlying":  "अंडरलाइंग",
+                "strategy":  "रणनीति",
+                "lotSize":  "लॉट साइज़",
+                "configureStrategy":  "अपनी रणनीति कॉन्फ़िगर करें और बैकटेस्ट चलाएं क्लिक करें",
+                "action":  "कार्रवाई",
+                "strike":  "स्ट्राइक",
+                "premium":  "प्रीमियम",
+                "clear":  "साफ़ करें",
+                "noLegs":  "अभी कोई लेग नहीं",
+                "wisdomDesc1":  "ऑप्शन रणनीतियां बनाएं",
+                "wisdomDesc2":  "ऋषि ज्ञान",
+                "wisdomDesc3":  "निष्पादन से पहले अपने पेऑफ, ग्रीक्स और जोखिम को समझें।"
+            },
+    "forex":  {
+                  "spread":  "स्प्रेड",
+                  "volatility":  "वोलैटिलिटी",
+                  "pppValue":  "PPP मूल्य"
               }
 }

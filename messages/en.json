@@ -13,29 +13,16 @@
                    "delete":  "Remove",
                    "edit":  "Edit",
                    "add":  "Add",
-                   "viewDetails":  "View Details"
+                   "viewDetails":  "View Details",
+                   "streak":  "Streak",
+                   "stack":  "stack",
+                   "rishiScore":  "RISHI SCORE",
+                   "philosophicalSpread":  "PHILOSOPHICAL SPREAD",
+                   "keyMetrics":  "Key Metrics",
+                   "valuationSnapshot":  "VALUATION SNAPSHOT",
+                   "shareholdingPattern":  "Shareholding Pattern",
+                   "noDebates":  "No philosophical debates detected for this stock"
                },
-    "nav":  {
-                "dashboard":  "Dashboard",
-                "screener":  "Screener",
-                "portfolio":  "Portfolio",
-                "allRishis":  "All Rishis",
-                "news":  "News",
-                "pricing":  "Pricing",
-                "crypto":  "Crypto",
-                "forex":  "Forex",
-                "commodities":  "Commodities",
-                "bonds":  "Bonds",
-                "watchlist":  "Watchlist",
-                "main":  "MAIN",
-                "markets":  "MARKETS",
-                "portfolioLab":  "Portfolio Lab",
-                "economyPlus":  "Economy Plus",
-                "chatWithRishis":  "Chat with Rishis",
-                "core":  "CORE",
-                "intelligence":  "INTELLIGENCE",
-                "compare":  "Compare"
-            },
     "header":  {
                    "title":  "RISHI TERMINAL",
                    "subtitle":  "20 RISHIS - STOCKS - CRYPTO - FOREX - COMMODITIES - BONDS",
@@ -342,27 +329,6 @@
                    "currentAnalysis":  "CURRENT ANALYSIS",
                    "at":  "at"
                },
-    "forex":  {
-                  "title":  "Forex Dashboard",
-                  "subtitle":  "Major currency pairs analyzed through macro-economic Rishi perspectives",
-                  "breadcrumb":  "FOREX",
-                  "pairs":  "PAIRS",
-                  "inrCrossRates":  "INR Cross Rates",
-                  "avgVolatility":  "Avg Volatility",
-                  "volume24h":  "24h Volume",
-                  "usdInrSpot":  "USD/INR Spot",
-                  "eurInrSpot":  "EUR/INR Spot",
-                  "currencyPairs":  "CURRENCY PAIRS - CLICK TO EXPLORE",
-                  "pair":  "Pair",
-                  "spot":  "Spot",
-                  "bid":  "Bid",
-                  "ask":  "Ask",
-                  "spread":  "Spread",
-                  "forward1m":  "1M Fwd",
-                  "volatility":  "Vol %",
-                  "ppp":  "PPP",
-                  "footer":  "FOREX MARKET DATA - RISHI TERMINAL v4.1 - MULTI-ASSET WISDOM OS"
-              },
     "commodities":  {
                         "title":  "Commodity Markets",
                         "subtitle":  "Jim Rogers, Rick Rule, Daniel Yergin - supercycles, precious metals, and energy geopolitics.",
@@ -382,34 +348,6 @@
                         "high52w":  "52W High",
                         "position52w":  "52W Position"
                     },
-    "bonds":  {
-                  "title":  "Bond Market",
-                  "subtitle":  "G-Secs, SDLs, Corporate Bonds \u0026 T-Bills analyzed through fixed-income Rishi wisdom",
-                  "breadcrumb":  "BOND MARKET",
-                  "totalBonds":  "TOTAL BONDS",
-                  "sovereignCorporate":  "Sovereign + Corporate",
-                  "gSecs":  "G-Secs",
-                  "sdls":  "SDLs",
-                  "corporate":  "Corporate",
-                  "tBills":  "T-Bills",
-                  "avgYtm":  "Avg YTM",
-                  "avgDuration":  "Avg Duration",
-                  "all":  "All",
-                  "gSec":  "G-Sec",
-                  "sdl":  "SDL",
-                  "tBill":  "T-Bill",
-                  "sortYtm":  "YTM",
-                  "sortDuration":  "Duration",
-                  "sortMaturity":  "Maturity",
-                  "bond":  "Bond",
-                  "type":  "Type",
-                  "coupon":  "Coupon",
-                  "ytm":  "YTM",
-                  "price":  "Price",
-                  "duration":  "Duration",
-                  "maturity":  "Maturity",
-                  "footer":  "BOND MARKET DATA - RISHI TERMINAL v4.1 - MULTI-ASSET WISDOM OS"
-              },
     "marketSections":  {
                            "crypto":  "Crypto",
                            "cryptoTag":  "DIGITAL ASSETS",
@@ -729,5 +667,55 @@
                   "loading":  "Loading…",
                   "loadFailed":  "Failed to load data",
                   "noData":  "No data for this period"
+              },
+    "epistemic":  {
+                      "consensusDisagreement":  "Consensus Disagreement",
+                      "knowledgeGaps":  "Knowledge Gaps",
+                      "opposingViews":  "Opposing Views",
+                      "philosophyDivergence":  "Philosophy Divergence"
+                  },
+    "legal":  {
+                  "rishiDisclaimer":  "All \"Rishis\" shown are",
+                  "fictional":  "purely fictional interpretations",
+                  "inspired":  "inspired by the public philosophies"
+              },
+    "nav":  {
+                "terminal":  "RISHI TERMINAL",
+                "bonds":  "BONDS",
+                "forex":  "FOREX",
+                "rishis":  "RISHIS",
+                "screener":  "SCREENER",
+                "pairs":  "PAIRS"
+            },
+    "alerts":  {
+                   "symbol":  "SYMBOL",
+                   "alertType":  "ALERT TYPE",
+                   "targetValue":  "TARGET VALUE"
+               },
+    "bonds":  {
+                  "coupon":  "COUPON",
+                  "price":  "PRICE",
+                  "duration":  "DURATION",
+                  "rating":  "RATING",
+                  "spread":  "SPREAD"
+              },
+    "fno":  {
+                "underlying":  "UNDERLYING",
+                "strategy":  "STRATEGY",
+                "lotSize":  "LOT SIZE",
+                "configureStrategy":  "Configure your strategy and click Run Backtest",
+                "action":  "ACTION",
+                "strike":  "STRIKE",
+                "premium":  "PREMIUM",
+                "clear":  "Clear",
+                "noLegs":  "No legs yet",
+                "wisdomDesc1":  "Build options strategies with",
+                "wisdomDesc2":  "Rishi wisdom",
+                "wisdomDesc3":  "Understand your payoff, Greeks, and risk before you execute."
+            },
+    "forex":  {
+                  "spread":  "SPREAD",
+                  "volatility":  "VOLATILITY",
+                  "pppValue":  "PPP Value"
               }
 }

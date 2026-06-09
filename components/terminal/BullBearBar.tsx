@@ -1,4 +1,5 @@
 'use client';
+import { useLanguage } from '@/lib/language';
 
 import { RishiScore } from '../../lib/types';
 import { ProgressBar } from './StyleGuide';
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function BullBearBar({ topBull, topBear, spread }: Props) {
+  const { t } = useLanguage();
   if (!topBull || !topBear) return null;
 
   return (
@@ -38,7 +40,7 @@ export function BullBearBar({ topBull, topBear, spread }: Props) {
 
       {/* Opinion Spread */}
       <div className="mt-6 pt-6 border-t border-border-primary">
-        <div className="philosophy-subheading text-xs mb-4">PHILOSOPHICAL SPREAD</div>
+        <div className="philosophy-subheading text-xs mb-4">{t("common.philosophicalSpread")}</div>
         <ProgressBar value={spread} color="#D4AF37" />
         <div className="text-xs text-secondary mt-3">
           {spread < 15 && 'œ“ Strong consensus among Rishis'}

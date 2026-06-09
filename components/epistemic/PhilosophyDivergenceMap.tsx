@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../lib/language';
 
 interface PhilosophySignal {
   score: number;
@@ -11,11 +12,12 @@ interface Props {
 }
 
 export const PhilosophyDivergenceMap: React.FC<Props> = ({ philosophyDivergence }) => {
+  const { t } = useLanguage();
   const entries = Object.entries(philosophyDivergence);
 
   return (
     <div className="p-4 bg-gray-900 rounded-lg border border-gray-800 h-full overflow-y-auto">
-      <h4 className="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wide">Philosophy Divergence</h4>
+      <h4 className="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wide">{t("epistemic.philosophyDivergence")}</h4>
       <div className="space-y-3">
         {entries.map(([name, data]) => (
           <div key={name} className="flex items-center justify-between p-2 bg-gray-800/50 rounded">

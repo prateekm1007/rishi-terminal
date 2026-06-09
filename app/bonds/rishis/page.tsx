@@ -1,54 +1,54 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Bond Rishis — Rishi Terminal',
-  description: 'Fixed-income wisdom from legendary bond investors',
+  title: 'Forex Rishis — Rishi Terminal',
+  description: 'Currency trading wisdom from legendary macro investors',
 };
 
-const BOND_RISHIS = [
+const FOREX_RISHIS = [
   {
-    name: 'Bill Gross',
-    title: 'The Bond King',
-    philosophy: 'Total Return Focus',
+    name: 'George Soros',
+    title: 'The Man Who Broke the Bank of England',
+    philosophy: 'Reflexivity Theory',
     origin: 'Global',
-    icon: '👑',
+    icon: '🦅',
     color: 'var(--accent-gold)',
-    expertise: 'Macro trends, duration management, credit analysis',
-    quote: 'Invest in the best house in a bad neighborhood, not the worst house in a good neighborhood.',
+    expertise: 'Central bank psychology, currency crises, macro trends',
+    quote: 'Markets are constantly in a state of uncertainty and flux, and money is made by discounting the obvious and betting on the unexpected.',
   },
   {
-    name: 'Jeffrey Gundlach',
-    title: 'The New Bond King',
-    philosophy: 'Contrarian Value',
+    name: 'Stanley Druckenmiller',
+    title: 'Macro Master',
+    philosophy: 'Top-Down Analysis',
     origin: 'Global',
     icon: '🎯',
     color: '#60a5fa',
-    expertise: 'Distressed debt, mortgage-backed securities',
-    quote: 'The most important thing is to not lose money. The second most important thing is to not forget the first thing.',
+    expertise: 'Regime change detection, position sizing, trend following',
+    quote: 'The way to build long-term returns is through preservation of capital and home runs.',
   },
   {
-    name: 'Ray Dalio',
-    title: 'All Weather Strategist',
-    philosophy: 'Risk Parity',
+    name: 'Paul Tudor Jones',
+    title: 'Defensive Trader',
+    philosophy: 'Risk-First Approach',
     origin: 'Global',
-    icon: '🌊',
+    icon: '🛡️',
     color: 'var(--accent-green)',
-    expertise: 'Economic cycles, inflation hedging, sovereign debt',
-    quote: 'Cash is trash in an inflationary environment.',
+    expertise: 'Technical analysis, macro overlays, volatility trading',
+    quote: 'Where you want to be is always in control, never wishing, always trading, and always, first and foremost protecting your butt.',
   },
   {
     name: 'Raghuram Rajan',
-    title: 'The Institutional Guru',
-    philosophy: 'Policy-Aware Investing',
+    title: 'The Institutional Thinker',
+    philosophy: 'Policy-Aware Macro',
     origin: 'India',
     icon: '🏛️',
     color: '#c084fc',
-    expertise: 'Central bank policy, emerging markets, currency risk',
-    quote: 'The best time to buy bonds is when interest rates peak.',
+    expertise: 'Emerging markets, central bank actions, capital flows',
+    quote: 'The rupee finds its level based on fundamentals, not speculation.',
   },
 ];
 
-export default function BondRishisPage() {
+export default function ForexRishisPage() {
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
 
@@ -59,16 +59,16 @@ export default function BondRishisPage() {
           <p style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--text-muted)', marginBottom: 16, letterSpacing: 2 }}>
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             <span style={{ margin: '0 8px' }}>›</span>
-            <Link href="/bonds" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>BONDS</Link>
+            <Link href="/forex" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>FOREX</Link>
             <span style={{ margin: '0 8px' }}>›</span>
             <span>RISHIS</span>
           </p>
 
           <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 42, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8 }}>
-            💎 Bond Rishis
+            🗿 Forex Rishis
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480 }}>
-            Fixed-income wisdom from legendary bond investors
+            Currency wisdom from legendary macro investors
           </p>
         </div>
       </div>
@@ -76,7 +76,7 @@ export default function BondRishisPage() {
       {/* Rishis Grid */}
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-          {BOND_RISHIS.map(rishi => (
+          {FOREX_RISHIS.map(rishi => (
             <div
               key={rishi.name}
               style={{
@@ -84,7 +84,6 @@ export default function BondRishisPage() {
                 border: '1px solid var(--border-primary)',
                 borderRadius: 12,
                 padding: 24,
-                transition: 'all 0.3s ease',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
@@ -169,10 +168,10 @@ export default function BondRishisPage() {
         }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🚧</div>
           <h3 style={{ fontSize: 18, fontFamily: 'Cinzel, serif', color: 'var(--text-primary)', marginBottom: 8 }}>
-            Bond Rishi Scoring Engine
+            Forex Rishi Scoring Engine
           </h3>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 480, margin: '0 auto' }}>
-            Full bond analysis through these Rishi perspectives coming soon. Each will score bonds based on their unique philosophy.
+            Full currency analysis through these Rishi perspectives coming soon. Each will analyze pairs based on their unique macro philosophy.
           </p>
         </div>
       </div>

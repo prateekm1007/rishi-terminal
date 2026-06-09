@@ -1,6 +1,8 @@
 'use client';
+import { useLanguage } from '@/lib/language';
 
 export function LegalDisclaimer() {
+  const { t } = useLanguage();
   return (
     <div style={{
       borderTop: '1px solid rgba(30,41,59,0.8)',
@@ -13,7 +15,7 @@ export function LegalDisclaimer() {
     }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         <strong style={{ color: '#D4AF37' }}>⚠️ Important Disclaimer:</strong> This is an educational and entertainment platform only.
-        All "Rishis" shown are <strong>purely fictional interpretations</strong> inspired by the public philosophies
+        {t("legal.rishiDisclaimer")} <strong>{t("legal.fictional")}</strong> {t("legal.inspired")}
         and public statements of real investors. <strong>No investment advice is being given.</strong>{' '}
         Past performance is not indicative of future results. Always do your own research and consult a licensed financial advisor.
         <div style={{ marginTop: '12px', fontSize: '9px', opacity: 0.7 }}>

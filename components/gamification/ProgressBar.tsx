@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from '../../lib/language';
 import { loadProgress, getLevelFromXP, getXPForNextLevel, EnlightenmentLevel } from "@/lib/gamification";
 
 const LEVEL_COLORS: Record<EnlightenmentLevel, string> = {
@@ -20,6 +21,7 @@ const LEVEL_EMOJI: Record<EnlightenmentLevel, string> = {
 };
 
 export default function ProgressBar() {
+  const { t } = useLanguage();
   const [xp, setXP] = useState(0);
   const [level, setLevel] = useState<EnlightenmentLevel>("Seeker");
   const [streak, setStreak] = useState(0);
@@ -80,7 +82,7 @@ export default function ProgressBar() {
         }}>
           <span style={{ fontSize: "16px" }}>🔥</span>
           <div>
-            <div style={{ fontSize: "10px", color: "#64748B" }}>Streak</div>
+            <div style={{ fontSize: "10px", color: "#64748B" }}>{t("common.streak")}</div>
             <div style={{ fontSize: "14px", fontWeight: 800, color: "#EF4444", fontFamily: "JetBrains Mono, monospace" }}>
               {streak}
             </div>

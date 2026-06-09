@@ -1,16 +1,10 @@
-"use client";
+'use client';
 
+import { useLanguage } from '@/lib/language';
 import Link from "next/link";
 
 const FEATURES = [
-  {
-    href:  "/fno/builder",
-    icon:  "🎯",
-    title: "Strategy Builder",
-    desc:  "Build multi-leg options strategies with live payoff charts, Greeks, and Rishi wisdom.",
-    tag:   "Core Feature",
-    color: "#D4AF37",
-  },
+  
   {
     href:  "/fno/builder",
     icon:  "🧘",
@@ -53,6 +47,7 @@ const CAT_COLORS: Record<string,string> = {
 };
 
 export default function FnOHubPage() {
+  const { t } = useLanguage();
   return (
     <div style={{
       minHeight: "100vh",
@@ -75,7 +70,7 @@ export default function FnOHubPage() {
             F&O Intelligence Suite
           </h1>
           <p style={{ fontSize: "16px", color: "#94A3B8", maxWidth: "560px", margin: "0 auto 32px", lineHeight: 1.8 }}>
-            Build options strategies with <span style={{ color: "#D4AF37" }}>Rishi wisdom</span>. Understand your payoff, Greeks, and risk before you execute.
+            {t("fno.wisdomDesc1")} <span style={{ color: "#D4AF37" }}>{t("fno.wisdomDesc2")}</span>. {t("fno.wisdomDesc3")}
           </p>
           <Link href="/fno/builder" style={{
             display: "inline-flex", alignItems: "center", gap: "8px",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useLanguage } from '@/lib/language';
 
 interface BacktestConfig {
   symbol: string;
@@ -110,6 +111,7 @@ function runSimulatedBacktest(config: BacktestConfig): BacktestResult {
 }
 
 export default function FnoBacktesterPage() {
+  const { t } = useLanguage();
   const [config, setConfig] = useState<BacktestConfig>({
     symbol: 'NIFTY',
     strategy: 'short_straddle',
@@ -170,7 +172,7 @@ export default function FnoBacktesterPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>UNDERLYING</label>
+                <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("fno.underlying")}</label>
                 <select
                   value={config.symbol}
                   onChange={e => setConfig(c => ({ ...c, symbol: e.target.value }))}
@@ -187,7 +189,7 @@ export default function FnoBacktesterPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>STRATEGY</label>
+                <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("fno.strategy")}</label>
                 {STRATEGIES.map(s => (
                   <div
                     key={s.id}
@@ -210,7 +212,7 @@ export default function FnoBacktesterPage() {
               </div>
 
               <div>
-                <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>LOT SIZE</label>
+                <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("fno.lotSize")}</label>
                 <input
                   type="number" min="1" max="10"
                   value={config.lotSize}
@@ -249,7 +251,7 @@ export default function FnoBacktesterPage() {
                 borderRadius: 16, color: '#64748B',
               }}>
                 <div style={{ fontSize: 48 }}>📊</div>
-                <div style={{ fontSize: 14 }}>Configure your strategy and click Run Backtest</div>
+                <div style={{ fontSize: 14 }}>{t("fno.configureStrategy")}</div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

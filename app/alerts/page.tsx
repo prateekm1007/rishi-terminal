@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useLanguage } from '../../lib/language';
 import {
   loadAlerts, saveAlerts, createAlert, deleteAlert, toggleAlert,
   checkAlerts, getAlertTypeLabel, getAlertEmoji,
@@ -14,6 +15,7 @@ const ALERT_TYPES: AlertType[] = [
 ];
 
 export default function AlertsPage() {
+  const { t } = useLanguage();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [formSymbol, setFormSymbol] = useState('');
@@ -254,7 +256,7 @@ export default function AlertsPage() {
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
                 <div>
-                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>SYMBOL</label>
+                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.symbol")}</label>
                   <input
                     type="text" placeholder="e.g., TCS, RELIANCE, BTC"
                     value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())}
@@ -266,7 +268,7 @@ export default function AlertsPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>ALERT TYPE</label>
+                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.alertType")}</label>
                   <select
                     value={formType} onChange={e => setFormType(e.target.value as AlertType)}
                     style={{
@@ -281,7 +283,7 @@ export default function AlertsPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>TARGET VALUE</label>
+                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.targetValue")}</label>
                   <input
                     type="number" placeholder={formType.includes('rishi') ? "Score (0-100)" : formType.includes('percent') ? "% change" : "Price ()"}
                     value={formValue} onChange={e => setFormValue(e.target.value)}

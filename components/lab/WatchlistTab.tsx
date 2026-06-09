@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { STOCKS } from '@/data/stocks/index';
@@ -787,8 +787,8 @@ export default function WatchlistTab() {
               {sorted.map(i => {
                 const isExpanded = expandedSymbol === i.symbol;
                 return (
-                  <>
-                    <tr key={i.symbol} style={{ borderBottom: isExpanded ? 'none' : '1px solid rgba(30,41,59,0.4)', background: isExpanded ? 'rgba(212,175,55,0.04)' : 'transparent' }}>
+                  <Fragment key={i.symbol}>
+                    <tr style={{ borderBottom: isExpanded ? 'none' : '1px solid rgba(30,41,59,0.4)', background: isExpanded ? 'rgba(212,175,55,0.04)' : 'transparent' }}>
                       <td style={{ padding: '12px 12px' }}>
                         <Link href={`/stock/${i.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 800, fontFamily: 'monospace', fontSize: 13 }}>{i.symbol}</Link>
                         <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{i.stock?.name ?? '—'}</div>
@@ -858,7 +858,7 @@ export default function WatchlistTab() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

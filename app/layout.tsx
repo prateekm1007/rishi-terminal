@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import TopBar from "@/components/TopBar";
 import { LanguageProvider } from "@/lib/language";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { GlobalSearchBar } from "@/components/ui/GlobalSearchBar";
@@ -17,46 +18,48 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body style={{
-        margin: 0,
-        padding: 0,        overflowX: "hidden"
-      }}>
-      <script dangerouslySetInnerHTML={{__html: `
-        (function() {
-          try {
-            const theme = localStorage.getItem('rishi.theme') || 'blue';
-            document.documentElement.classList.add('theme-' + theme);
-            document.body.classList.add('theme-' + theme);
-          } catch {}
-        })();
-      `}} />
+      <body style={{ margin: 0, padding: 0, overflowX: "hidden" }}>
+        <script dangerouslySetInnerHTML={{__html: `
+          (function() {
+            try {
+              var theme = localStorage.getItem('rishi.theme') || 'blue';
+              document.documentElement.classList.add('theme-' + theme);
+              document.body.classList.add('theme-' + theme);
+            } catch {}
+          })();
+        `}} />
         <AuthProvider>
           <LanguageProvider>
-            <div style={{
-              display: "flex",
-              minHeight: "100vh",
-              position: "relative"
-            }}>
+            <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
+
+              {/* Fixed left sidebar — nav only */}
               <Sidebar />
+
+              {/* Fixed top bar — theme + language */}
+              <TopBar />
+
+              {/* Main content — offset for sidebar (220px) and topbar (52px) */}
               <main style={{
-                marginLeft: "240px",
+                marginLeft: "220px",
+                marginTop: "52px",
                 flex: 1,
-                minHeight: "100vh",
+                minHeight: "calc(100vh - 52px)",
                 overflowX: "hidden",
                 overflowY: "auto",
                 position: "relative",
-                width: "calc(100vw - 240px)",
-                maxWidth: "calc(100vw - 240px)",
+                width: "calc(100vw - 220px)",
+                maxWidth: "calc(100vw - 220px)",
               }}>
                 <div style={{
-  padding: "16px 24px 0 24px",
-  position: "relative",
-  zIndex: 50
-}}>
-  <GlobalSearchBar />
-</div>
-{children}
+                  padding: "16px 24px 0 24px",
+                  position: "relative",
+                  zIndex: 50,
+                }}>
+                  <GlobalSearchBar />
+                </div>
+                {children}
               </main>
+
             </div>
           </LanguageProvider>
         </AuthProvider>

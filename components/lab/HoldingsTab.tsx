@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
 import { loadPortfolio, addHolding, removeHolding, type PortfolioHolding } from '@/lib/portfolio/index';
+import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import PortfolioXRay from '@/components/portfolio/PortfolioXRay';
 import InfoTip from '@/components/lab/InfoTip';
@@ -27,6 +28,7 @@ function scoreColor(s: number): string {
 }
 
 export default function HoldingsTab() {
+  const { t } = useLanguage();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [innerTab, setInnerTab] = useState<InnerTab>('holdings');
 
@@ -191,7 +193,7 @@ export default function HoldingsTab() {
             <div style={{ padding: 20, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, marginBottom: 20 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SYMBOL</div>
+                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.symbol")}</div>
                   <input value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" list="holdings-stocks-list" autoComplete="off" style={inputStyle} />
                   <datalist id="holdings-stocks-list">
                     {Object.entries(STOCKS).map(([sym, s]) => (
@@ -200,15 +202,15 @@ export default function HoldingsTab() {
                   </datalist>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>SHARES</div>
+                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.shares")}</div>
                   <input value={formShares} onChange={e => setFormShares(e.target.value)} placeholder="10" type="number" style={inputStyle} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>AVG PRICE</div>
+                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.avgPrice")}</div>
                   <input value={formAvgPrice} onChange={e => setFormAvgPrice(e.target.value)} placeholder="3500" type="number" style={inputStyle} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>PURCHASE DATE</div>
+                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.purchaseDate")}</div>
                   <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} style={inputStyle} />
                 </div>
                 <button onClick={handleAdd} style={{ ...btnGold, whiteSpace: 'nowrap' }}>Add</button>

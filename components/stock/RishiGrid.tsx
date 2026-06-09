@@ -5,6 +5,7 @@ import { RISHI_WEIGHT_CONFIG } from "../../lib/consensus/weights";
 import { getRishisVisible, isPremium, getCurrentTier } from "../../lib/premium";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useLanguage } from '../../lib/language';
 
 interface Props {
   scores: RishiScore[];
@@ -42,6 +43,7 @@ function getWeightForRishi(name: string): number {
 }
 
 export function RishiGrid({ scores }: Props) {
+  const { t } = useLanguage();
   const [visibleCount, setVisibleCount] = useState(20);
   const [premium, setPremium] = useState(true);
   const [expandedRishi, setExpandedRishi] = useState<string | null>(null);
@@ -72,15 +74,15 @@ export function RishiGrid({ scores }: Props) {
           <div className="flex items-center gap-3 text-xs">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />
-              <span className="text-muted">Legend</span>
+              <span className="text-muted">{t("rishiGrid.legend")}</span>
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />
-              <span className="text-muted">Master</span>
+              <span className="text-muted">{t("rishiGrid.master")}</span>
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-zinc-500 inline-block" />
-              <span className="text-muted">Specialist</span>
+              <span className="text-muted">{t("rishiGrid.specialist")}</span>
             </span>
           </div>
         </div>
@@ -106,7 +108,20 @@ export function RishiGrid({ scores }: Props) {
               {/* Card Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span style={{ 
+                      fontSize: "9px", 
+                      padding: "2px 6px", 
+                      background: "rgba(251,191,36,0.1)", 
+                      color: "#FFC107", 
+                      border: "1px solid rgba(251,191,36,0.3)", 
+                      borderRadius: "4px", 
+                      fontWeight: 600, 
+                      letterSpacing: "0.5px",
+                      whiteSpace: "nowrap"
+                    }}>
+                      Inspired by
+                    </span>
                     <span className="font-bold text-sm text-primary truncate">
                       {rishi.full}
                     </span>
@@ -178,7 +193,7 @@ export function RishiGrid({ scores }: Props) {
 
                   {/* Weight info */}
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted">Consensus weight</span>
+                    <span className="text-muted">{t("rishiGrid.consensusWeight")}</span>
                     <span className={`font-mono ${tierColor.split(' ')[0]}`}>
                       {weight}x
                     </span>

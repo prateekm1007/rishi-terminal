@@ -702,5 +702,33 @@
                   "macroRegimeFit":  "मैक्रो रेजिम फिट",
                   "cyclicalExposure":  "चक्रीय एक्सपोजर",
                   "defensiveExposure":  "रक्षात्मक एक्सपोजर"
+              },
+    "holdings":  {
+                     "symbol":  "प्रतीक",
+                     "shares":  "शेयर्स",
+                     "avgPrice":  "औसत कीमत",
+                     "purchaseDate":  "खरीद तिथि"
+                 },
+    "quarterly":  {
+                      "title":  "तिमाही परिणाम",
+                      "revenue":  "राजस्व",
+                      "netProfit":  "शुद्ध लाभ",
+                      "margins":  "मार्जिन"
+                  },
+    "rishiGrid":  {
+                      "legend":  "संकेतिका",
+                      "master":  "मास्टर",
+                      "specialist":  "विशेषज्ञ",
+                      "consensusWeight":  "सर्वसम्मति भार"
+                  },
+    "analyst":  {
+                    "avgTargetPrice":  "औसत लक्ष्य कीमत",
+                    "upsidePotential":  "ऊपर की संभावना"
+                },
+    "chart":  {
+                  "priceChart":  "कीमत चार्ट",
+                  "loading":  "लोड हो रहा है…",
+                  "loadFailed":  "डेटा लोड करने में विफल",
+                  "noData":  "इस अवधि के लिए कोई डेटा नहीं"
               }
 }

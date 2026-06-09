@@ -701,5 +701,33 @@
                   "macroRegimeFit":  "Macro Regime Fit",
                   "cyclicalExposure":  "CYCLICAL EXPOSURE",
                   "defensiveExposure":  "DEFENSIVE EXPOSURE"
+              },
+    "holdings":  {
+                     "symbol":  "SYMBOL",
+                     "shares":  "SHARES",
+                     "avgPrice":  "AVG PRICE",
+                     "purchaseDate":  "PURCHASE DATE"
+                 },
+    "quarterly":  {
+                      "title":  "Quarterly Results",
+                      "revenue":  "Revenue",
+                      "netProfit":  "Net Profit",
+                      "margins":  "Margins"
+                  },
+    "rishiGrid":  {
+                      "legend":  "Legend",
+                      "master":  "Master",
+                      "specialist":  "Specialist",
+                      "consensusWeight":  "Consensus weight"
+                  },
+    "analyst":  {
+                    "avgTargetPrice":  "Avg Target Price",
+                    "upsidePotential":  "Upside Potential"
+                },
+    "chart":  {
+                  "priceChart":  "PRICE CHART",
+                  "loading":  "Loading…",
+                  "loadFailed":  "Failed to load data",
+                  "noData":  "No data for this period"
               }
 }

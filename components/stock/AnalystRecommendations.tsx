@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useLanguage } from '../../lib/language';
 
 interface AnalystRec {
   firm: string;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function AnalystRecommendations({ recommendations, currentPrice }: Props) {
+  const { t } = useLanguage();
   if (!recommendations || recommendations.length === 0 || !currentPrice) return null;
 
   const safeNum = (v: any) => isNaN(Number(v)) ? 0 : Number(v);
@@ -79,13 +81,13 @@ export function AnalystRecommendations({ recommendations, currentPrice }: Props)
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>Avg Target Price</div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>{t("analyst.avgTargetPrice")}</div>
             <div style={{ fontSize: 28, fontWeight: 900, color: '#D4AF37', fontFamily: 'JetBrains Mono, monospace' }}>
               {avgTarget.toFixed(2)}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>Upside Potential</div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 4 }}>{t("analyst.upsidePotential")}</div>
             <div style={{
               fontSize: 24, fontWeight: 900,
               color: avgUpside >= 0 ? '#22C55E' : '#EF4444',

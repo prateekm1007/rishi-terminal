@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useLanguage } from '../../lib/language';
 import { Stock } from '../../lib/types';
 import { usePriceHistory, type Timeframe, type PricePoint } from '../../hooks/usePriceHistory';
 
@@ -164,6 +165,7 @@ function LineChart({ points, positive }: { points: PricePoint[]; positive: boole
 export function PriceChartPanel({ stock }: Props) {
   const [tf, setTf] = useState<Timeframe>('1M');
   const { points, loading, error, source } = usePriceHistory(stock?.symbol ?? '', tf);
+  const { t } = useLanguage();
   if (!stock || !stock.price) return null;
 
   const first  = points[0]?.v ?? stock.price;
@@ -175,7 +177,7 @@ export function PriceChartPanel({ stock }: Props) {
     <div className="card-sacred p-6">
       <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:20, flexWrap:'wrap', gap:12 }}>
         <div>
-          <div style={{ fontSize:10, color:'var(--text-muted)', letterSpacing:'0.1em', fontFamily:'Cinzel,serif', marginBottom:8 }}>PRICE CHART</div>
+          <div style={{ fontSize:10, color:'var(--text-muted)', letterSpacing:'0.1em', fontFamily:'Cinzel,serif', marginBottom:8 }}>{t("chart.priceChart")}</div>
           <div style={{ fontSize:36, fontWeight:700, fontFamily:'JetBrains Mono,monospace', color:'var(--text-primary)' }}>
             {loading ? stock.price.toLocaleString('en-IN') : last.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </div>
@@ -197,10 +199,10 @@ export function PriceChartPanel({ stock }: Props) {
       </div>
 
       <div style={{ height:240, background:'rgba(255,255,255,0.02)', borderRadius:8, border:'1px solid var(--border-subtle)', position:'relative', overflow:'hidden' }}>
-        {loading && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:12,fontFamily:'monospace' }}>Loading…</div>}
-        {!loading && error && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--accent-red)',fontSize:11,fontFamily:'monospace' }}>Failed to load data</div>}
+        {loading && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:12,fontFamily:'monospace' }}>{t("chart.loading")}</div>}
+        {!loading && error && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--accent-red)',fontSize:11,fontFamily:'monospace' }}>{t("chart.loadFailed")}</div>}
         {!loading && !error && points.length>=2 && <LineChart points={points} positive={pos}/>}
-        {!loading && !error && points.length<2 && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:11 }}>No data for this period</div>}
+        {!loading && !error && points.length<2 && <div style={{ position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',color:'var(--text-muted)',fontSize:11 }}>{t("chart.noData")}</div>}
       </div>
 
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:8 }}>

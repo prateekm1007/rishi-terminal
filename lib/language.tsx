@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type Locale = 'en' | 'hi' | 'gu';
+type Locale = 'en' | 'hi' | 'bn' | 'mr' | 'te' | 'ta';
 
 interface Messages {
   [key: string]: any;
@@ -25,7 +25,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   // Initialize locale from localStorage on mount
   useEffect(() => {
     const savedLocale = localStorage.getItem('rishi_locale') as Locale;
-    if (savedLocale && ['en', 'hi', 'gu'].includes(savedLocale)) {
+    if (savedLocale && ['en', 'hi', 'bn', 'mr', 'te', 'ta'].includes(savedLocale)) {
       setLocaleState(savedLocale);
     } else {
       setLocaleState('en');

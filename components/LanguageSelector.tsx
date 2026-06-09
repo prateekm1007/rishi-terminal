@@ -6,6 +6,10 @@ import { useLanguage } from '../lib/language';
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
+  { code: 'bn', name: 'বাংলা', flag: '🇮🇳' },
+  { code: 'mr', name: 'मराठी', flag: '🇮🇳' },
+  { code: 'te', name: 'తెలుగు', flag: '🇮🇳' },
+  { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' },
 ] as const;
 
 export function LanguageSelector() {

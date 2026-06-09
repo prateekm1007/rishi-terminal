@@ -4,15 +4,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../lib/language';
 
 const LANGUAGES = [
-  { code: 'en', name: 'English',   nativeName: 'English',  flag: '🇬🇧' },
-  { code: 'hi', name: 'Hindi',     nativeName: 'हिंदी',    flag: '🇮🇳' },
-  { code: 'bn', name: 'Bengali',   nativeName: 'বাংলা',    flag: '🇮🇳' },
-  { code: 'mr', name: 'Marathi',   nativeName: 'मराठी',    flag: '🇮🇳' },
-  { code: 'te', name: 'Telugu',    nativeName: 'తెలుగు',   flag: '🇮🇳' },
-  { code: 'ta', name: 'Tamil',     nativeName: 'தமிழ்',    flag: '🇮🇳' },
+  { code: 'en', short: 'EN', name: 'English',  nativeName: 'English' },
+  { code: 'hi', short: 'HI', name: 'Hindi',    nativeName: 'हिंदी' },
+  { code: 'bn', short: 'BN', name: 'Bengali',  nativeName: 'বাংলা' },
+  { code: 'mr', short: 'MR', name: 'Marathi',  nativeName: 'मराठी' },
+  { code: 'te', short: 'TE', name: 'Telugu',   nativeName: 'తెలుగు' },
+  { code: 'ta', short: 'TA', name: 'Tamil',    nativeName: 'தமிழ்' },
 ] as const;
-
-type LangCode = typeof LANGUAGES[number]['code'];
 
 export function LanguageSelector() {
   const { locale, setLocale } = useLanguage();
@@ -31,61 +29,76 @@ export function LanguageSelector() {
 
   const currentLang = LANGUAGES.find(l => l.code === locale) || LANGUAGES[0];
 
+  const badgeStyle: React.CSSProperties = {
+    minWidth: 30,
+    height: 18,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 7,
+    border: '1px solid rgba(255,255,255,0.10)',
+    background: 'rgba(255,255,255,0.03)',
+    color: '#a1a1aa',
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: '0.10em',
+    fontFamily: 'Inter, sans-serif',
+    flexShrink: 0,
+  };
+
   return (
     <div ref={dropdownRef} style={{ position: 'relative' }}>
-      {/* Trigger button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen(v => !v)}
         style={{
           width: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 8,
-          padding: '8px 12px',
+          gap: 10,
+          padding: '9px 10px',
           background: 'rgba(255,255,255,0.03)',
           border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: 6,
-          color: '#a1a1aa',
+          borderRadius: 10,
+          color: '#e4e4e7',
           fontSize: 12,
           cursor: 'pointer',
-          transition: 'all 0.2s',
+          transition: 'all 0.15s ease',
           fontFamily: 'Inter, sans-serif',
         }}
-        onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,215,0,0.3)')}
+        onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,215,0,0.25)')}
         onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 15 }}>{currentLang.flag}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={badgeStyle}>{currentLang.short}</span>
           <span style={{ color: '#e4e4e7' }}>{currentLang.nativeName}</span>
         </div>
-        <span style={{ fontSize: 9, color: '#52525b' }}>
-          {isOpen ? '▲' : '▼'}
-        </span>
+        <span style={{ fontSize: 10, color: '#71717a' }}>{isOpen ? '▲' : '▼'}</span>
       </button>
 
-      {/* Dropdown */}
       {isOpen && (
-        <div style={{
-          position: 'absolute',
-          bottom: '100%',
-          left: 0,
-          right: 0,
-          marginBottom: 4,
-          background: '#18181b',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 8,
-          overflow: 'hidden',
-          boxShadow: '0 -8px 24px rgba(0,0,0,0.5)',
-          zIndex: 1000,
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '100%',
+            left: 0,
+            right: 0,
+            marginBottom: 6,
+            background: '#0b0b0f',
+            border: '1px solid rgba(255,255,255,0.10)',
+            borderRadius: 12,
+            overflow: 'hidden',
+            boxShadow: '0 -12px 30px rgba(0,0,0,0.55)',
+            zIndex: 2000,
+          }}
+        >
           {LANGUAGES.map((lang, idx) => {
             const isActive = locale === lang.code;
             return (
               <button
                 key={lang.code}
                 onClick={() => {
-                  setLocale(lang.code as LangCode);
+                  setLocale(lang.code as any);
                   setIsOpen(false);
                 }}
                 style={{
@@ -93,28 +106,28 @@ export function LanguageSelector() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
-                  padding: '9px 12px',
-                  background: isActive ? 'rgba(255,215,0,0.08)' : 'transparent',
+                  padding: '10px 10px',
+                  background: isActive ? 'rgba(255,215,0,0.10)' : 'transparent',
                   border: 'none',
-                  borderBottom: idx < LANGUAGES.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                  color: isActive ? '#fbbf24' : '#71717a',
-                  fontSize: 12,
+                  borderBottom: idx < LANGUAGES.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                   cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.15s',
                   fontFamily: 'Inter, sans-serif',
                 }}
-                onMouseEnter={e => {
-                  if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = isActive ? 'rgba(255,215,0,0.08)' : 'transparent';
-                }}
               >
-                <span style={{ fontSize: 14 }}>{lang.flag}</span>
-                <span style={{ flex: 1, color: isActive ? '#fbbf24' : '#a1a1aa' }}>{lang.nativeName}</span>
-                <span style={{ fontSize: 10, color: '#52525b' }}>{lang.name}</span>
-                {isActive && <span style={{ color: '#fbbf24', fontSize: 11 }}>✓</span>}
+                <span style={{
+                  ...badgeStyle,
+                  color: isActive ? '#fbbf24' : '#a1a1aa',
+                  borderColor: isActive ? 'rgba(255,215,0,0.25)' : 'rgba(255,255,255,0.10)'
+                }}>
+                  {lang.short}
+                </span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
+                  <span style={{ fontSize: 12, color: isActive ? '#fbbf24' : '#e4e4e7' }}>{lang.nativeName}</span>
+                  <span style={{ fontSize: 10, color: '#71717a' }}>{lang.name}</span>
+                </div>
+
+                {isActive && <span style={{ marginLeft: 'auto', color: '#fbbf24', fontSize: 12, fontWeight: 700 }}>✓</span>}
               </button>
             );
           })}

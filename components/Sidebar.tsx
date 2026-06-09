@@ -13,27 +13,27 @@ export default function Sidebar() {
     {
       title: t("nav.core"),
       items: [
-        { href: "/",            label: t("nav.dashboard"),      icon: "\u25C6" },
-        { href: "/screener",    label: t("nav.screener"),       icon: "\u25C7" },
-        { href: "/lab",         label: t("nav.portfolioLab"),   icon: "\u25A1" },
+        { href: "/",            label: t("nav.dashboard"),      icon: "◆" },
+        { href: "/screener",    label: t("nav.screener"),       icon: "◇" },
+        { href: "/lab",         label: t("nav.portfolioLab"),   icon: "□" },
       ],
     },
     {
       title: t("nav.markets"),
       items: [
-        { href: "/crypto",      label: t("nav.crypto"),         icon: "\u20BF" },
-        { href: "/forex",       label: t("nav.forex"),          icon: "\u00A4" },
-        { href: "/commodities", label: t("nav.commodities"),    icon: "\u25C6" },
-        { href: "/bonds",       label: t("nav.bonds"),          icon: "\u25AD" },
-        { href: "/pulse",       label: t("nav.economyPlus"),    icon: "\u25CF" },
+        { href: "/crypto",      label: t("nav.crypto"),         icon: "₿" },
+        { href: "/forex",       label: t("nav.forex"),          icon: "¤" },
+        { href: "/commodities", label: t("nav.commodities"),    icon: "◆" },
+        { href: "/bonds",       label: t("nav.bonds"),          icon: "▭" },
+        { href: "/pulse",       label: t("nav.economyPlus"),    icon: "●" },
       ],
     },
     {
       title: t("nav.intelligence"),
       items: [
-        { href: "/rishis",      label: t("nav.chatWithRishis"), icon: "\u2726" },
-        { href: "/news",        label: t("nav.news"),           icon: "\u25C8" },
-        { href: "/pricing",     label: t("nav.pricing"),        icon: "\u25C7" },
+        { href: "/rishis",      label: t("nav.chatWithRishis"), icon: "✦" },
+        { href: "/news",        label: t("nav.news"),           icon: "◈" },
+        { href: "/pricing",     label: t("nav.pricing"),        icon: "◇" },
       ],
     },
   ];
@@ -43,8 +43,8 @@ export default function Sidebar() {
       width: "220px",
       minHeight: "100vh",
       height: "100vh",
-      background: "#09090b",
-      borderRight: "1px solid rgba(255,255,255,0.06)",
+      background: "#111116",
+      borderRight: "1px solid rgba(255,255,255,0.07)",
       display: "flex",
       flexDirection: "column",
       position: "fixed",
@@ -56,34 +56,38 @@ export default function Sidebar() {
       overflowX: "hidden",
     }}>
 
-      {/* Logo */}
-      <div style={{ padding: "24px 20px 20px" }}>
-        <SadhuVectorLogo size={52} showText={true} />
+      {/* Logo area */}
+      <div style={{
+        padding: "28px 20px 20px",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+        marginBottom: 8,
+      }}>
+        <SadhuVectorLogo size={48} showText={true} />
         <div style={{
           fontFamily: "Inter, sans-serif",
           fontSize: "9px",
-          color: "#52525b",
-          letterSpacing: "0.14em",
-          marginTop: 12,
-          fontWeight: 500,
+          color: "#6b6b7a",
+          letterSpacing: "0.16em",
+          marginTop: 10,
+          fontWeight: 600,
         }}>
           INVESTMENT INTELLIGENCE
         </div>
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: "4px 10px 24px", overflowY: "auto" }}>
+      <nav style={{ flex: 1, padding: "12px 10px 24px", overflowY: "auto" }}>
         {NAV_GROUPS.map((group) => (
-          <div key={group.title} style={{ marginBottom: "28px" }}>
+          <div key={group.title} style={{ marginBottom: "24px" }}>
 
             {/* Group heading */}
             <div style={{
               fontSize: "10px",
-              fontWeight: 600,
-              color: "#52525b",
-              letterSpacing: "0.12em",
-              padding: "0 10px",
-              marginBottom: "6px",
+              fontWeight: 700,
+              color: "#6b6b7a",
+              letterSpacing: "0.14em",
+              padding: "0 12px",
+              marginBottom: "4px",
               fontFamily: "Inter, sans-serif",
               textTransform: "uppercase",
             }}>
@@ -111,47 +115,64 @@ export default function Sidebar() {
                       display: "flex",
                       alignItems: "center",
                       gap: "10px",
-                      padding: "9px 10px",
+                      padding: "8px 12px",
                       borderRadius: "8px",
-                      marginBottom: "1px",
+                      marginBottom: "2px",
                       cursor: "pointer",
-                      background: isActive ? "rgba(255,255,255,0.06)" : "transparent",
+                      background: isActive
+                        ? "rgba(251,191,36,0.08)"
+                        : "transparent",
+                      border: isActive
+                        ? "1px solid rgba(251,191,36,0.12)"
+                        : "1px solid transparent",
                       transition: "all 0.15s ease",
                     }}
                     onMouseEnter={e => {
-                      if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)";
+                      if (!isActive) {
+                        (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)";
+                        (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.06)";
+                      }
                     }}
                     onMouseLeave={e => {
-                      (e.currentTarget as HTMLDivElement).style.background = isActive ? "rgba(255,255,255,0.06)" : "transparent";
+                      if (!isActive) {
+                        (e.currentTarget as HTMLDivElement).style.background = "transparent";
+                        (e.currentTarget as HTMLDivElement).style.borderColor = "transparent";
+                      }
                     }}
                   >
+                    {/* Icon */}
                     <span style={{
-                      width: "18px",
+                      width: "16px",
                       textAlign: "center",
-                      color: isActive ? "#e4e4e7" : "#52525b",
-                      fontSize: "12px",
+                      color: isActive ? "#fbbf24" : "#8b8b9a",
+                      fontSize: "11px",
                       flexShrink: 0,
                       transition: "color 0.15s ease",
                     }}>
                       {item.icon}
                     </span>
+
+                    {/* Label */}
                     <span style={{
                       fontSize: "13px",
                       fontWeight: isActive ? 600 : 400,
-                      color: isActive ? "#fafafa" : "#71717a",
+                      color: isActive ? "#fef3c7" : "#9b9baa",
                       fontFamily: "Inter, sans-serif",
                       transition: "color 0.15s ease",
                       letterSpacing: "0.01em",
+                      flex: 1,
                     }}>
                       {item.label}
                     </span>
+
+                    {/* Active indicator dot */}
                     {isActive && (
                       <div style={{
-                        marginLeft: "auto",
-                        width: 3,
-                        height: 16,
-                        borderRadius: 2,
-                        background: "linear-gradient(180deg, #fbbf24, #f59e0b)",
+                        width: 4,
+                        height: 4,
+                        borderRadius: "50%",
+                        background: "#fbbf24",
+                        boxShadow: "0 0 6px rgba(251,191,36,0.6)",
                         flexShrink: 0,
                       }} />
                     )}
@@ -162,6 +183,21 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
+
+      {/* Bottom version tag */}
+      <div style={{
+        padding: "12px 20px 16px",
+        borderTop: "1px solid rgba(255,255,255,0.05)",
+      }}>
+        <div style={{
+          fontSize: "10px",
+          color: "#4b4b5a",
+          fontFamily: "Inter, sans-serif",
+          letterSpacing: "0.08em",
+        }}>
+          RISHI TERMINAL v4.4
+        </div>
+      </div>
 
     </aside>
   );

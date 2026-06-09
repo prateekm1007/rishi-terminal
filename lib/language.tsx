@@ -20,7 +20,22 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en');
   const [messages, setMessages] = useState<Messages>({});
+  const [fallbackMessages, setFallbackMessages] = useState<Messages>({});
   const [isLoading, setIsLoading] = useState(true);
+
+
+  // Always load English fallback messages (prevents showing raw keys if locale file is missing/incomplete)
+  useEffect(() => {
+    (async () => {
+      try {
+        const fallback = await import('../messages/en.json');
+        setFallbackMessages(fallback.default || fallback);
+      } catch (e) {
+        console.error('Failed to load fallback English messages', e);
+        setFallbackMessages({});
+      }
+    })();
+  }, []);
 
   // Initialize locale from localStorage on mount
   useEffect(() => {
@@ -44,7 +59,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         console.error(`Failed to load messages for ${locale}`, error);
         try {
           // Fallback to English
-          const fallback = await import(`../messages/en.json`);
+          const fallback = await import('../messages/en.json');
           setMessages(fallback.default || fallback);
         } catch (fallbackError) {
           console.error('Failed to load fallback English messages', fallbackError);
@@ -62,23 +77,27 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const t = (key: string): string => {
-    if (!messages || Object.keys(messages).length === 0) {
-      return key; // Return key if messages not loaded yet
-    }
-
-    const keys = key.split('.');
-    let value: any = messages;
-
-    for (const k of keys) {
-      if (value && typeof value === 'object' && k in value) {
-        value = value[k];
-      } else {
-        console.warn(`Translation key not found: ${key}`);
-        return key; // Return key if translation not found
+    const getValue = (src: any, k: string): string | null => {
+      if (!src) return null;
+      const parts = k.split('.');
+      let v: any = src;
+      for (const p of parts) {
+        if (v && typeof v === 'object' && p in v) {
+          v = v[p];
+        } else {
+          return null;
+        }
       }
-    }
+      return typeof v === 'string' ? v : null;
+    };
 
-    return typeof value === 'string' ? value : key;
+    const primary = getValue(messages, key);
+    if (primary) return primary;
+
+    const fallback = getValue(fallbackMessages, key);
+    if (fallback) return fallback;
+
+    return key;
   };
 
   return (

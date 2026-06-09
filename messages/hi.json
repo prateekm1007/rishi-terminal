@@ -696,7 +696,11 @@
                 "intelligence":  "विश्लेषण",
                 "chatWithRishis":  "ऋषियों से चैट",
                 "news":  "समाचार",
-                "pricing":  "मूल्य निर्धारण"
+                "pricing":  "मूल्य निर्धारण",
+                "compare":  "तुलना",
+                "portfolio":  "पोर्टफोलियो",
+                "watchlist":  "वॉचलिस्ट",
+                "allRishis":  "सभी ऋषि"
             },
     "alerts":  {
                    "symbol":  "प्रतीक",

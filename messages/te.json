@@ -696,7 +696,11 @@
                 "screener":  "స్క్రీనర్",
                 "core":  "ముఖ్యం",
                 "portfolioLab":  "పోర్ట్‌ఫోలియో లాబ్",
-                "crypto":  "క్రిప్టో"
+                "crypto":  "క్రిప్టో",
+                "compare":  "పోల్చండి",
+                "portfolio":  "పోర్ట్‌ఫోలియో",
+                "watchlist":  "వాచ్‌లిస్ట్",
+                "allRishis":  "అందరు ఋషులు"
             },
     "alerts":  {
                    "symbol":  "చిహ్నం",

@@ -696,7 +696,11 @@
                 "intelligence":  "INTELLIGENCE",
                 "chatWithRishis":  "Chat with Rishis",
                 "news":  "News",
-                "pricing":  "Pricing"
+                "pricing":  "Pricing",
+                "compare":  "Compare",
+                "portfolio":  "Portfolio",
+                "watchlist":  "Watchlist",
+                "allRishis":  "All Rishis"
             },
     "alerts":  {
                    "symbol":  "SYMBOL",

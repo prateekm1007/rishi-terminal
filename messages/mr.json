@@ -696,7 +696,11 @@
                 "screener":  "स्क्रीनर",
                 "core":  "मुख्य",
                 "portfolioLab":  "पोर्टफोलिओ लॅब",
-                "crypto":  "क्रिप्टो"
+                "crypto":  "क्रिप्टो",
+                "compare":  "तुलना",
+                "portfolio":  "पोर्टफोलिओ",
+                "watchlist":  "वॉचलिस्ट",
+                "allRishis":  "सर्व ऋषी"
             },
     "alerts":  {
                    "symbol":  "प्रतीक",

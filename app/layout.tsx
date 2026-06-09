@@ -32,13 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LanguageProvider>
             <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
 
-              {/* Fixed left sidebar — nav only */}
               <Sidebar />
 
-              {/* Fixed top bar — theme + language */}
               <TopBar />
 
-              {/* Main content — offset for sidebar (220px) and topbar (52px) */}
               <main style={{
                 marginLeft: "220px",
                 marginTop: "52px",

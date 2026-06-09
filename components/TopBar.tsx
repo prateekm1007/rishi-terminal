@@ -33,21 +33,19 @@ export default function TopBar() {
       right: 0,
       left: 220,
       height: 52,
-      background: 'rgba(9,9,11,0.92)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      borderBottom: '1px solid rgba(255,255,255,0.06)',
+      background: '#0d0d10',
+      borderBottom: '1px solid rgba(255,255,255,0.07)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
       gap: 10,
       padding: '0 20px',
-      zIndex: 90,
+      zIndex: 80,
       fontFamily: 'Inter, sans-serif',
     }}>
 
       {/* Live indicator */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 4 }}>
         <div style={{
           width: 6,
           height: 6,
@@ -58,39 +56,36 @@ export default function TopBar() {
         <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 500 }}>Live</span>
       </div>
 
-      {/* Divider */}
-      <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
+      <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)' }} />
 
-      {/* Theme Toggle */}
+      {/* Theme toggle */}
       <button
         onClick={toggleTheme}
         style={{
           display: 'flex',
           alignItems: 'center',
           gap: 7,
-          padding: '6px 12px',
-          borderRadius: 8,
-          border: '1px solid rgba(255,255,255,0.08)',
+          padding: '5px 12px',
+          borderRadius: 7,
+          border: '1px solid rgba(255,255,255,0.09)',
           background: 'rgba(255,255,255,0.03)',
           color: '#e4e4e7',
           fontSize: 12,
           cursor: 'pointer',
           fontFamily: 'Inter, sans-serif',
-          transition: 'border-color 0.15s ease',
           whiteSpace: 'nowrap',
         }}
         onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,215,0,0.30)')}
-        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)')}
       >
         <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
         <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
       </button>
 
-      {/* Divider */}
-      <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
+      <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.08)' }} />
 
-      {/* Language Selector */}
-      <div style={{ width: 170, flexShrink: 0, position: 'relative', zIndex: 9999 }}>
+      {/* Language selector — fixed width, no overflow clipping */}
+      <div style={{ width: 168, flexShrink: 0 }}>
         <LanguageSelector />
       </div>
 

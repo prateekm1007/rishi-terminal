@@ -207,7 +207,13 @@ export default function CommoditiesPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
           {filtered.map(commodity => {
             const isExpanded  = expandedCard === commodity.symbol;
-            const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(commodity) }));
+            const liveCommodity = {
+              ...commodity,
+              price: commodity.price,
+              changePct: commodity.change24h ?? commodity.changePct ?? 0,
+              change: commodity.change ?? 0,
+            };
+            const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(liveCommodity) }));
             const avgScore    = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
             const isLive      = !!prices[commodity.symbol];
 

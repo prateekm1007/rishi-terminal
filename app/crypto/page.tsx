@@ -247,7 +247,12 @@ export default function CryptoPage() {
           {CRYPTO_RISHIS.map(guru => {
             const crypto = CRYPTO_ASSETS.find(c => c.symbol === guru.target);
             if (!crypto) return null;
-            const result = guru.scorer(crypto);
+            const liveCrypto = {
+              ...crypto,
+              price: crypto.price,
+              change24h: crypto.change24h,
+            };
+            const result = guru.scorer(liveCrypto);
             const isExpanded = expandedCard === guru.id;
             const canView = premium || result.score >= 50;
 

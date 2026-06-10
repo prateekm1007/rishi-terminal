@@ -53,7 +53,13 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
   const { price: livePriceData } = usePrice(commodity.symbol);
   const displayPrice = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : commodity.price;
   const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : commodity.changePct;
-  const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(commodity) }));
+  const liveCommodity = {
+    ...commodity,
+    price: displayPrice,
+    changePct: displayChange,
+    change: livePriceData?.change ?? commodity.change,
+  };
+  const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(liveCommodity) }));
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
 
   const chartAsset: UniversalAsset = {

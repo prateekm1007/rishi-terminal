@@ -16,32 +16,41 @@ const CACHE_TTL = 60_000; // 60 seconds
 
 // Fetch single stock from Yahoo Finance v8/chart (works without auth)
 async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
-  try {
-    // Convert NSE symbol to Yahoo format (TCS -> TCS.NS)
-    const yahooSymbol = symbol.includes('.') ? symbol : `${symbol}.NS`;
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}`;
-    
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-      signal: AbortSignal.timeout(5000),
-    });
-    
-    if (!res.ok) return null;
-    
-    const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
-    
-    if (!meta?.regularMarketPrice) return null;
-    
-    const price = Number(meta.regularMarketPrice) || 0;
-    const prevClose = Number(meta.previousClose) || price;
-    const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
-    const volume = Number(meta.regularMarketVolume) || 0;
-    
-    return { price, change, volume };
-  } catch (err) {
-    return null;
+  const suffixes = ['.NS', '.BO'];
+  for (const suffix of suffixes) {
+    try {
+      const yahooSymbol = symbol.includes('.') ? symbol : `${symbol}${suffix}`;
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=1d&range=2d`;
+
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; RishiTerminal/1.0)' },
+        signal: AbortSignal.timeout(8000),
+      });
+
+      if (!res.ok) continue;
+
+      const data = await res.json();
+      const meta = data?.chart?.result?.[0]?.meta;
+
+      if (!meta?.regularMarketPrice) continue;
+
+      const price = Number(meta.regularMarketPrice) || 0;
+      if (price < 20) continue; // Reject US ADR prices (INFY without suffix ≈ $12)
+
+      const prevClose = Number(meta.previousClose) || price;
+      const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
+      const volume = Number(meta.regularMarketVolume) || 0;
+
+      console.log(`[Yahoo-Bulk] ${symbol} -> ${yahooSymbol} : ${price.toFixed(2)}`);
+
+      return { price, change, volume };
+    } catch (err) {
+      continue; // Try next suffix
+    }
   }
+
+  console.warn(`[Yahoo-Bulk] Failed to fetch ${symbol} after .NS + .BO`);
+  return null;
 }
 
 // Process one batch of symbols sequentially

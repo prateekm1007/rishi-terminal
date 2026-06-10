@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CommodityData as Commodity } from '../../data/markets';
+import { usePrice } from '../../hooks/useLivePrices';
 import type { UniversalAsset } from '../../lib/types/asset';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
 import { scoreJimRogers } from '../../lib/scorers/commodity/jimrogers';
@@ -49,6 +50,9 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
 
+  const { price: livePriceData } = usePrice(commodity.symbol);
+  const displayPrice = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : commodity.price;
+  const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : commodity.changePct;
   const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(commodity) }));
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
 
@@ -291,10 +295,10 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1 }}>
-                {commodity.price.toLocaleString('en-US')}<span style={{ fontSize: 16, color: 'var(--text-muted)', marginLeft: 6 }}>{commodity.unit}</span>
+                {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}<span style={{ fontSize: 16, color: 'var(--text-muted)', marginLeft: 6 }}>{commodity.unit}</span>
               </div>
-              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: commodity.changePct >= 0 ? '#22C55E' : '#EF4444' }}>
-                {commodity.changePct >= 0 ? '+' : ''}{commodity.changePct.toFixed(2)}%
+              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
+                {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}%
               </div>
             </div>
           </div>
@@ -569,7 +573,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>PERFORMANCE</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
                 {[
-                  { label: '1D Change', value: `${commodity.changePct >= 0 ? '+' : ''}${commodity.changePct.toFixed(2)}%`, color: commodity.changePct >= 0 ? '#22C55E' : '#EF4444' },
+                  { label: '1D Change', value: `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}%`, color: displayChange >= 0 ? '#22C55E' : '#EF4444' },
                   { label: 'From 52W Low', value: `+${((commodity.price - commodity.low52w) / commodity.low52w * 100).toFixed(1)}%`, color: '#22C55E' },
                   { label: 'From 52W High', value: `${((commodity.price - commodity.high52w) / commodity.high52w * 100).toFixed(1)}%`, color: '#EF4444' },
                   { label: '52W Avg', value: `${((commodity.low52w + commodity.high52w) / 2).toFixed(2)} ${commodity.unit}`, color: '#D4AF37' },

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CryptoAsset } from '../../data/crypto';
+import { usePrice } from '../../hooks/useLivePrices';
 import { CRYPTO_ONCHAIN } from '../../data/crypto';
 import type { UniversalAsset } from '../../lib/types/asset';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
@@ -63,6 +64,9 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
   const [showGraph, setShowGraph] = useState(false);
 
   const rishiScores = CRYPTO_RISHIS.map(r => ({ ...r, result: r.scorer(asset) }));
+  const { price: livePrice, price: livePriceData } = usePrice(asset.symbol);
+  const displayPrice = livePrice?.price && livePrice.price > 0 ? livePrice.price : asset.price;
+  const displayChange = livePrice?.changePercent24h !== undefined ? livePrice.changePercent24h : asset.change24h;
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
 
   const aboveMa200 = asset.price > asset.moving200d;
@@ -243,10 +247,10 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1 }}>
-                ${asset.price.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
               </div>
-              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: asset.change24h >= 0 ? '#22C55E' : '#EF4444' }}>
-                {asset.change24h >= 0 ? '+' : ''}{asset.change24h.toFixed(2)}% (24h)
+              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
+                {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}% (24h)
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
                 7D: {asset.change7d >= 0 ? '+' : ''}{asset.change7d.toFixed(2)}%

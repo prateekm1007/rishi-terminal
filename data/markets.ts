@@ -87,9 +87,9 @@ export const COMMODITIES: CommodityData[] = [
     seasonalityIndex: 65,        // Moderate seasonal strength
     usdCorrelation: -0.82        // Strong inverse correlation to USD
   },
-  { symbol: 'SILVER', name: 'Silver', emoji: '🥈', category: 'Precious Metals', price: 32.5, unit: '$/oz', change: 0.85, changePct: 2.68, high52w: 35, low52w: 22 },
-  { symbol: 'PLATINUM', name: 'Platinum', emoji: '⚪', category: 'Precious Metals', price: 1050, unit: '$/oz', change: -5.2, changePct: -0.49, high52w: 1200, low52w: 950 },
-  { symbol: 'PALLADIUM', name: 'Palladium', emoji: '⚫', category: 'Precious Metals', price: 980, unit: '$/oz', change: -8.5, changePct: -0.86, high52w: 1500, low52w: 900 },
+  { symbol: 'SILVER', name: 'Silver', emoji: '🥈', category: 'Precious Metals', price: 32.5, unit: '$/oz', change: 0.85, changePct: 2.68, high52w: 35, low52w: 22, contango: -0.5, supercyclePhase: 'mid', supercycleScore: 68, inventoryDays: 120, inventoryVs5YAvg: -8, productionCost: 18, costMargin: 80.6, seasonalityIndex: 60, usdCorrelation: -0.75 },
+  { symbol: 'PLATINUM', name: 'Platinum', emoji: '⚪', category: 'Precious Metals', price: 1050, unit: '$/oz', change: -5.2, changePct: -0.49, high52w: 1200, low52w: 950, contango: 0.3, supercyclePhase: 'decline', supercycleScore: 35, inventoryDays: 60, inventoryVs5YAvg: 15, productionCost: 950, costMargin: 10.5, seasonalityIndex: 42, usdCorrelation: -0.60 },
+  { symbol: 'PALLADIUM', name: 'Palladium', emoji: '⚫', category: 'Precious Metals', price: 980, unit: '$/oz', change: -8.5, changePct: -0.86, high52w: 1500, low52w: 900, contango: 1.8, supercyclePhase: 'decline', supercycleScore: 28, inventoryDays: 35, inventoryVs5YAvg: 22, productionCost: 800, costMargin: 22.5, seasonalityIndex: 38, usdCorrelation: -0.45 },
   {
     symbol: 'WTI',
     name: 'Crude Oil WTI',
@@ -111,11 +111,11 @@ export const COMMODITIES: CommodityData[] = [
     seasonalityIndex: 55,        // Moderate demand season
     usdCorrelation: -0.65        // Inverse correlation to USD
   },
-  { symbol: 'BRENT', name: 'Brent Crude', emoji: '🛢️', category: 'Energy', price: 76.8, unit: '$/bbl', change: 2.15, changePct: 2.88, high52w: 98, low52w: 70 },
-  { symbol: 'NATGAS', name: 'Natural Gas', emoji: '🔥', category: 'Energy', price: 3.45, unit: '$/MMBtu', change: -0.12, changePct: -3.36, high52w: 5.5, low52w: 2.8 },
-  { symbol: 'COPPER', name: 'Copper', emoji: '🔶', category: 'Base Metals', price: 9850, unit: '$/ton', change: 125.5, changePct: 1.29, high52w: 11000, low52w: 8500 },
-  { symbol: 'ALUMINUM', name: 'Aluminum', emoji: '⬜', category: 'Base Metals', price: 2580, unit: '$/ton', change: 45.2, changePct: 1.78, high52w: 2900, low52w: 2200 },
-  { symbol: 'ZINC', name: 'Zinc', emoji: '⬛', category: 'Base Metals', price: 3150, unit: '$/ton', change: -28.5, changePct: -0.90, high52w: 3600, low52w: 2800 },
+  { symbol: 'BRENT', name: 'Brent Crude', emoji: '🛢️', category: 'Energy', price: 76.8, unit: '$/bbl', change: 2.15, changePct: 2.88, high52w: 98, low52w: 70, contango: 2.2, supercyclePhase: 'decline', supercycleScore: 40, inventoryDays: 30, inventoryVs5YAvg: 6, productionCost: 45, costMargin: 70.7, seasonalityIndex: 55, usdCorrelation: -0.68 },
+  { symbol: 'NATGAS', name: 'Natural Gas', emoji: '🔥', category: 'Energy', price: 3.45, unit: '$/MMBtu', change: -0.12, changePct: -3.36, high52w: 5.5, low52w: 2.8, contango: 3.5, supercyclePhase: 'early', supercycleScore: 55, inventoryDays: 42, inventoryVs5YAvg: -3, productionCost: 2.8, costMargin: 23.2, seasonalityIndex: 48, usdCorrelation: -0.25 },
+  { symbol: 'COPPER', name: 'Copper', emoji: '🔶', category: 'Base Metals', price: 9850, unit: '$/ton', change: 125.5, changePct: 1.29, high52w: 11000, low52w: 8500, contango: -1.2, supercyclePhase: 'mid', supercycleScore: 75, inventoryDays: 18, inventoryVs5YAvg: -18, productionCost: 6500, costMargin: 51.5, seasonalityIndex: 65, usdCorrelation: -0.72 },
+  { symbol: 'ALUMINUM', name: 'Aluminum', emoji: '🟡', category: 'Base Metals', price: 2580, unit: '$/ton', change: 45.2, changePct: 1.78, high52w: 2900, low52w: 2200, contango: 0.8, supercyclePhase: 'mid', supercycleScore: 58, inventoryDays: 22, inventoryVs5YAvg: -5, productionCost: 1900, costMargin: 35.8, seasonalityIndex: 52, usdCorrelation: -0.58 },
+  { symbol: 'ZINC', name: 'Zinc', emoji: '⬛', category: 'Base Metals', price: 3150, unit: '$/ton', change: -28.5, changePct: -0.90, high52w: 3600, low52w: 2800, contango: 0.5, supercyclePhase: 'mid', supercycleScore: 62, inventoryDays: 14, inventoryVs5YAvg: -22, productionCost: 2200, costMargin: 43.2, seasonalityIndex: 55, usdCorrelation: -0.55 },
   {
     symbol: 'WHEAT',
     name: 'Wheat',
@@ -137,12 +137,12 @@ export const COMMODITIES: CommodityData[] = [
     seasonalityIndex: 72,        // Strong seasonal demand (planting season)
     usdCorrelation: -0.45        // Moderate inverse USD correlation
   },
-  { symbol: 'CORN', name: 'Corn', emoji: '🌽', category: 'Agriculture', price: 485, unit: '$/bu', change: -5.2, changePct: -1.06, high52w: 650, low52w: 420 },
-  { symbol: 'SOYBEAN', name: 'Soybeans', emoji: '🫘', category: 'Agriculture', price: 1280, unit: '$/bu', change: 12.5, changePct: 0.98, high52w: 1550, low52w: 1150 },
-  { symbol: 'COTTON', name: 'Cotton', emoji: '☁️', category: 'Agriculture', price: 82.5, unit: '$/lb', change: 1.85, changePct: 2.29, high52w: 95, low52w: 72 },
-  { symbol: 'GOLDMCX', name: 'Gold MCX', emoji: '🥇', category: 'MCX India', price: 72500, unit: '/10g', change: 350, changePct: 0.48, high52w: 75000, low52w: 60000 },
-  { symbol: 'SILVERMCX', name: 'Silver MCX', emoji: '🥈', category: 'MCX India', price: 88500, unit: '/kg', change: 1200, changePct: 1.37, high52w: 95000, low52w: 65000 },
-  { symbol: 'CRUDEOILMCX', name: 'Crude Oil MCX', emoji: '🛢️', category: 'MCX India', price: 6150, unit: '/bbl', change: 85, changePct: 1.40, high52w: 7500, low52w: 5200 },
+  { symbol: 'CORN', name: 'Corn', emoji: '🌽', category: 'Agriculture', price: 485, unit: '$/bu', change: -5.2, changePct: -1.06, high52w: 650, low52w: 420, contango: 0.8, supercyclePhase: 'early', supercycleScore: 52, inventoryDays: 95, inventoryVs5YAvg: 8, productionCost: 380, costMargin: 27.6, seasonalityIndex: 65, usdCorrelation: -0.42 },
+  { symbol: 'SOYBEAN', name: 'Soybeans', emoji: '🫘', category: 'Agriculture', price: 1280, unit: '$/bu', change: 12.5, changePct: 0.98, high52w: 1550, low52w: 1150, contango: 0.4, supercyclePhase: 'early', supercycleScore: 60, inventoryDays: 78, inventoryVs5YAvg: -4, productionCost: 950, costMargin: 34.7, seasonalityIndex: 70, usdCorrelation: -0.48 },
+  { symbol: 'COTTON', name: 'Cotton', emoji: '☁️', category: 'Agriculture', price: 82.5, unit: '$/lb', change: 1.85, changePct: 2.29, high52w: 95, low52w: 72, contango: -0.3, supercyclePhase: 'early', supercycleScore: 55, inventoryDays: 88, inventoryVs5YAvg: -6, productionCost: 65, costMargin: 26.9, seasonalityIndex: 58, usdCorrelation: -0.38 },
+  { symbol: 'GOLDMCX', name: 'Gold MCX', emoji: '🥇', category: 'MCX India', price: 72500, unit: '/10g', change: 350, changePct: 0.48, high52w: 75000, low52w: 60000, contango: -0.8, supercyclePhase: 'mid', supercycleScore: 72, inventoryDays: 45, inventoryVs5YAvg: -12, productionCost: 50000, costMargin: 45.0, seasonalityIndex: 65, usdCorrelation: -0.82 },
+  { symbol: 'SILVERMCX', name: 'Silver MCX', emoji: '🥈', category: 'MCX India', price: 88500, unit: '/kg', change: 1200, changePct: 1.37, high52w: 95000, low52w: 65000, contango: -0.5, supercyclePhase: 'mid', supercycleScore: 68, inventoryDays: 120, inventoryVs5YAvg: -8, productionCost: 55000, costMargin: 60.9, seasonalityIndex: 60, usdCorrelation: -0.75 },
+  { symbol: 'CRUDEOILMCX', name: 'Crude Oil MCX', emoji: '🛢️', category: 'MCX India', price: 6150, unit: '/bbl', change: 85, changePct: 1.40, high52w: 7500, low52w: 5200, contango: 2.5, supercyclePhase: 'decline', supercycleScore: 38, inventoryDays: 28, inventoryVs5YAvg: 8, productionCost: 4500, costMargin: 36.7, seasonalityIndex: 55, usdCorrelation: -0.65 },
 ];
 
 export function getMarketSummary() {

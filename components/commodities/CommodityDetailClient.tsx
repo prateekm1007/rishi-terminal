@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CommodityData as Commodity } from '../../data/markets';
+import type { UniversalAsset } from '../../lib/types/asset';
+import { AssetPriceChart } from '../terminal/AssetPriceChart';
 import { scoreJimRogers } from '../../lib/scorers/commodity/jimrogers';
 import { scoreRickRule } from '../../lib/scorers/commodity/rickrule';
 import { scoreDanielYergin } from '../../lib/scorers/commodity/danielyergin';
@@ -49,6 +51,15 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
 
   const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(commodity) }));
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
+
+  const chartAsset: UniversalAsset = {
+    symbol: commodity.symbol,
+    name: commodity.name,
+    category: 'commodity',
+    price: commodity.price,
+    change24h: commodity.changePct,
+    metadata: commodity,
+  };
 
   const range52w = commodity.high52w - commodity.low52w;
   const pos52w = range52w > 0 ? ((commodity.price - commodity.low52w) / range52w) * 100 : 50;
@@ -330,26 +341,137 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               </div>
             </div>
 
-            {/* Key Metrics */}
+            {/* Commodity Native Fundamentals */}
             <div className="card-sacred" style={{ padding: 24 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>KEY METRICS</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
-                {[
-                  { label: 'Current Price', value: `${commodity.price.toLocaleString()} ${commodity.unit}`, color: 'var(--text-primary)' },
-                  { label: '52W Low', value: `${commodity.low52w.toLocaleString()} ${commodity.unit}`, color: '#EF4444' },
-                  { label: '52W High', value: `${commodity.high52w.toLocaleString()} ${commodity.unit}`, color: '#22C55E' },
-                  { label: '52W Position', value: `${pos52w.toFixed(0)}%`, color: scoreColor(pos52w) },
-                  { label: 'Category', value: commodity.category, color: 'var(--text-primary)' },
-                  { label: 'Exchange', value: (commodity as any).exchange || "Global", color: 'var(--text-primary)' },
-                ].map(m => (
-                  <div key={m.label} style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{m.label.toUpperCase()}</div>
-                    <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'monospace', color: m.color }}>{m.value}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 20 }}>COMMODITY FUNDAMENTALS</div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+                {commodity.contango !== undefined && (
+                  <div style={{
+                    padding: 18,
+                    borderRadius: 10,
+                    background: commodity.contango < -1 ? 'rgba(34,197,94,0.06)' : commodity.contango > 1 ? 'rgba(239,68,68,0.06)' : 'rgba(212,175,55,0.06)',
+                    border: `1px solid ${commodity.contango < -1 ? 'rgba(34,197,94,0.3)' : commodity.contango > 1 ? 'rgba(239,68,68,0.3)' : 'rgba(212,175,55,0.3)'}`
+                  }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>CURVE STRUCTURE</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', color: commodity.contango < -1 ? '#22C55E' : commodity.contango > 1 ? '#EF4444' : '#D4AF37', marginBottom: 4 }}>
+                      {commodity.contango < 0 ? '' : '+'}{commodity.contango.toFixed(2)}%
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, color: commodity.contango < -1 ? '#22C55E' : commodity.contango > 1 ? '#EF4444' : '#D4AF37' }}>
+                      {commodity.contango < -1 ? 'BACKWARDATION' : commodity.contango > 1 ? 'CONTANGO' : 'FLAT CURVE'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                      {commodity.contango < -1 ? 'Tight spot supply — strong immediate demand signal' : commodity.contango > 1 ? 'Oversupply — carry cost erodes forward returns' : 'Balanced supply/demand in futures market'}
+                    </div>
                   </div>
-                ))}
+                )}
+
+                {commodity.inventoryVs5YAvg !== undefined && (
+                  <div style={{
+                    padding: 18,
+                    borderRadius: 10,
+                    background: commodity.inventoryVs5YAvg < -10 ? 'rgba(34,197,94,0.06)' : commodity.inventoryVs5YAvg > 10 ? 'rgba(239,68,68,0.06)' : 'rgba(212,175,55,0.06)',
+                    border: `1px solid ${commodity.inventoryVs5YAvg < -10 ? 'rgba(34,197,94,0.3)' : commodity.inventoryVs5YAvg > 10 ? 'rgba(239,68,68,0.3)' : 'rgba(212,175,55,0.3)'}`
+                  }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>INVENTORY TIGHTNESS</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', color: commodity.inventoryVs5YAvg < -10 ? '#22C55E' : commodity.inventoryVs5YAvg > 10 ? '#EF4444' : '#D4AF37', marginBottom: 4 }}>
+                      {commodity.inventoryVs5YAvg >= 0 ? '+' : ''}{commodity.inventoryVs5YAvg}% vs 5Y
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, color: commodity.inventoryVs5YAvg < -10 ? '#22C55E' : commodity.inventoryVs5YAvg > 10 ? '#EF4444' : '#D4AF37' }}>
+                      {commodity.inventoryVs5YAvg < -10 ? 'TIGHT SUPPLY' : commodity.inventoryVs5YAvg > 10 ? 'OVERSUPPLY' : 'NORMAL'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                      {commodity.inventoryDays ?? 'n/a'} days supply on hand
+                    </div>
+                  </div>
+                )}
+
+                {commodity.productionCost !== undefined && (
+                  <div style={{
+                    padding: 18,
+                    borderRadius: 10,
+                    background: 'rgba(212,175,55,0.06)',
+                    border: '1px solid rgba(212,175,55,0.3)'
+                  }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>PRODUCTION COST</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', color: '#D4AF37', marginBottom: 4 }}>
+                      {commodity.productionCost.toLocaleString()} {commodity.unit}
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, color: (costMargin ?? 0) > 30 ? '#22C55E' : (costMargin ?? 0) < 5 ? '#EF4444' : '#D4AF37' }}>
+                      {(costMargin ?? 0).toFixed(0)}% ABOVE BREAKEVEN
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                      {(costMargin ?? 0) > 30 ? 'Producers highly profitable — watch for supply response' : (costMargin ?? 0) < 5 ? 'Near breakeven — supply cuts likely' : 'Marginal profitability zone'}
+                    </div>
+                  </div>
+                )}
+
+                {commodity.seasonalityIndex !== undefined && (
+                  <div style={{
+                    padding: 18,
+                    borderRadius: 10,
+                    background: commodity.seasonalityIndex > 70 ? 'rgba(34,197,94,0.06)' : commodity.seasonalityIndex < 40 ? 'rgba(239,68,68,0.06)' : 'rgba(212,175,55,0.06)',
+                    border: `1px solid ${commodity.seasonalityIndex > 70 ? 'rgba(34,197,94,0.3)' : commodity.seasonalityIndex < 40 ? 'rgba(239,68,68,0.3)' : 'rgba(212,175,55,0.3)'}`
+                  }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>SEASONALITY</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', color: commodity.seasonalityIndex > 70 ? '#22C55E' : commodity.seasonalityIndex < 40 ? '#EF4444' : '#D4AF37', marginBottom: 4 }}>
+                      {commodity.seasonalityIndex}/100
+                    </div>
+                    <div style={{ height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, marginBottom: 6, overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${commodity.seasonalityIndex}%`,
+                        background: commodity.seasonalityIndex > 70 ? '#22C55E' : commodity.seasonalityIndex < 40 ? '#EF4444' : '#D4AF37',
+                        borderRadius: 3
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                      {commodity.seasonalityIndex > 70 ? 'Peak demand season — historically bullish window' : commodity.seasonalityIndex < 40 ? 'Off-season — subdued demand expected' : 'Normal seasonal conditions'}
+                    </div>
+                  </div>
+                )}
+
+                {commodity.supercycleScore !== undefined && (
+                  <div style={{
+                    padding: 18,
+                    borderRadius: 10,
+                    background: commodity.supercycleScore > 70 ? 'rgba(34,197,94,0.06)' : commodity.supercycleScore < 40 ? 'rgba(239,68,68,0.06)' : 'rgba(212,175,55,0.06)',
+                    border: `1px solid ${commodity.supercycleScore > 70 ? 'rgba(34,197,94,0.3)' : commodity.supercycleScore < 40 ? 'rgba(239,68,68,0.3)' : 'rgba(212,175,55,0.3)'}`
+                  }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>SUPERCYCLE (JIM ROGERS)</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', color: commodity.supercycleScore > 70 ? '#22C55E' : commodity.supercycleScore < 40 ? '#EF4444' : '#D4AF37', marginBottom: 4 }}>
+                      {commodity.supercycleScore}/100
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', color: commodity.supercycleScore > 70 ? '#22C55E' : commodity.supercycleScore < 40 ? '#EF4444' : '#D4AF37' }}>
+                      {commodity.supercyclePhase ?? 'Unknown'} phase
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                      {commodity.supercyclePhase === 'early' ? 'Best accumulation zone — lowest risk entry' : commodity.supercyclePhase === 'mid' ? 'Momentum phase — ride the trend' : commodity.supercyclePhase === 'late' ? 'Exhaustion risk — reduce exposure' : 'Wait for capitulation and supply cuts'}
+                    </div>
+                  </div>
+                )}
+
+                {commodity.usdCorrelation !== undefined && (
+                  <div style={{
+                    padding: 18,
+                    borderRadius: 10,
+                    background: 'rgba(96,165,250,0.06)',
+                    border: '1px solid rgba(96,165,250,0.3)'
+                  }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>USD / DXY SENSITIVITY</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, fontFamily: 'monospace', color: '#60a5fa', marginBottom: 4 }}>
+                      {commodity.usdCorrelation.toFixed(2)}
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', marginBottom: 6 }}>
+                      {Math.abs(commodity.usdCorrelation) > 0.6 ? 'HIGH USD SENSITIVITY' : Math.abs(commodity.usdCorrelation) > 0.3 ? 'MODERATE SENSITIVITY' : 'LOW SENSITIVITY'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                      {commodity.usdCorrelation < -0.6 ? 'USD weakness is a strong tailwind' : commodity.usdCorrelation < -0.3 ? 'Moderate inverse correlation — monitor DXY' : 'Weak USD linkage — other factors dominate'}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-
             {/* 52W Range */}
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>52-WEEK PRICE RANGE</div>
@@ -384,6 +506,12 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
         {/* TECHNICAL TAB */}
         {activeTab === 'technical' && (
           <div style={{ display: 'grid', gap: 20 }}>
+
+            {/* Live Price Chart */}
+            <div className="card-sacred" style={{ padding: 24 }}>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>LIVE PRICE CHART</div>
+              <AssetPriceChart asset={chartAsset} />
+            </div>
 
                         {/* Commodity Fundamentals Signals */}
             <div className="card-sacred" style={{ padding: 24 }}>

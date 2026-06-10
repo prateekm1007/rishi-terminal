@@ -26,6 +26,46 @@ import {
   getDailyBrief as getDailyBrief_HI,
 } from '../../data/economyPlus/macroData.hi';
 
+import {
+  MACRO_REGIME as MACRO_REGIME_BN,
+  MACRO_INDICATORS as MACRO_INDICATORS_BN,
+  PHILOSOPHER_STANCES as PHILOSOPHER_STANCES_BN,
+  SECTOR_ROTATION as SECTOR_ROTATION_BN,
+  HISTORICAL_CORRELATIONS as HISTORICAL_CORRELATIONS_BN,
+  CURRENCY_SENSITIVITY as CURRENCY_SENSITIVITY_BN,
+  getDailyBrief as getDailyBrief_BN,
+} from '../../data/economyPlus/macroData.bn';
+
+import {
+  MACRO_REGIME as MACRO_REGIME_MR,
+  MACRO_INDICATORS as MACRO_INDICATORS_MR,
+  PHILOSOPHER_STANCES as PHILOSOPHER_STANCES_MR,
+  SECTOR_ROTATION as SECTOR_ROTATION_MR,
+  HISTORICAL_CORRELATIONS as HISTORICAL_CORRELATIONS_MR,
+  CURRENCY_SENSITIVITY as CURRENCY_SENSITIVITY_MR,
+  getDailyBrief as getDailyBrief_MR,
+} from '../../data/economyPlus/macroData.mr';
+
+import {
+  MACRO_REGIME as MACRO_REGIME_TE,
+  MACRO_INDICATORS as MACRO_INDICATORS_TE,
+  PHILOSOPHER_STANCES as PHILOSOPHER_STANCES_TE,
+  SECTOR_ROTATION as SECTOR_ROTATION_TE,
+  HISTORICAL_CORRELATIONS as HISTORICAL_CORRELATIONS_TE,
+  CURRENCY_SENSITIVITY as CURRENCY_SENSITIVITY_TE,
+  getDailyBrief as getDailyBrief_TE,
+} from '../../data/economyPlus/macroData.te';
+
+import {
+  MACRO_REGIME as MACRO_REGIME_TA,
+  MACRO_INDICATORS as MACRO_INDICATORS_TA,
+  PHILOSOPHER_STANCES as PHILOSOPHER_STANCES_TA,
+  SECTOR_ROTATION as SECTOR_ROTATION_TA,
+  HISTORICAL_CORRELATIONS as HISTORICAL_CORRELATIONS_TA,
+  CURRENCY_SENSITIVITY as CURRENCY_SENSITIVITY_TA,
+  getDailyBrief as getDailyBrief_TA,
+} from '../../data/economyPlus/macroData.ta';
+
 type PulseTab =
   | 'overview'
   | 'macro'
@@ -100,13 +140,23 @@ export default function MarketPulsePage() {
   const { t, locale } = useLanguage();
 
   // Select data based on locale
-  const MACRO_REGIME = locale === 'hi' ? MACRO_REGIME_HI : MACRO_REGIME_EN;
-  const MACRO_INDICATORS = locale === 'hi' ? MACRO_INDICATORS_HI : MACRO_INDICATORS_EN;
-  const PHILOSOPHER_STANCES = locale === 'hi' ? PHILOSOPHER_STANCES_HI : PHILOSOPHER_STANCES_EN;
-  const SECTOR_ROTATION = locale === 'hi' ? SECTOR_ROTATION_HI : SECTOR_ROTATION_EN;
-  const HISTORICAL_CORRELATIONS = locale === 'hi' ? HISTORICAL_CORRELATIONS_HI : HISTORICAL_CORRELATIONS_EN;
-  const CURRENCY_SENSITIVITY = locale === 'hi' ? CURRENCY_SENSITIVITY_HI : CURRENCY_SENSITIVITY_EN;
-  const getDailyBrief = locale === 'hi' ? getDailyBrief_HI : getDailyBrief_EN;
+  // Select data based on locale (all 6 languages)
+  const localeDataMap: Record<string, any> = {
+    en: { MACRO_REGIME: MACRO_REGIME_EN, MACRO_INDICATORS: MACRO_INDICATORS_EN, PHILOSOPHER_STANCES: PHILOSOPHER_STANCES_EN, SECTOR_ROTATION: SECTOR_ROTATION_EN, HISTORICAL_CORRELATIONS: HISTORICAL_CORRELATIONS_EN, CURRENCY_SENSITIVITY: CURRENCY_SENSITIVITY_EN, getDailyBrief: getDailyBrief_EN },
+    hi: { MACRO_REGIME: MACRO_REGIME_HI, MACRO_INDICATORS: MACRO_INDICATORS_HI, PHILOSOPHER_STANCES: PHILOSOPHER_STANCES_HI, SECTOR_ROTATION: SECTOR_ROTATION_HI, HISTORICAL_CORRELATIONS: HISTORICAL_CORRELATIONS_HI, CURRENCY_SENSITIVITY: CURRENCY_SENSITIVITY_HI, getDailyBrief: getDailyBrief_HI },
+    bn: { MACRO_REGIME: MACRO_REGIME_BN, MACRO_INDICATORS: MACRO_INDICATORS_BN, PHILOSOPHER_STANCES: PHILOSOPHER_STANCES_BN, SECTOR_ROTATION: SECTOR_ROTATION_BN, HISTORICAL_CORRELATIONS: HISTORICAL_CORRELATIONS_BN, CURRENCY_SENSITIVITY: CURRENCY_SENSITIVITY_BN, getDailyBrief: getDailyBrief_BN },
+    mr: { MACRO_REGIME: MACRO_REGIME_MR, MACRO_INDICATORS: MACRO_INDICATORS_MR, PHILOSOPHER_STANCES: PHILOSOPHER_STANCES_MR, SECTOR_ROTATION: SECTOR_ROTATION_MR, HISTORICAL_CORRELATIONS: HISTORICAL_CORRELATIONS_MR, CURRENCY_SENSITIVITY: CURRENCY_SENSITIVITY_MR, getDailyBrief: getDailyBrief_MR },
+    te: { MACRO_REGIME: MACRO_REGIME_TE, MACRO_INDICATORS: MACRO_INDICATORS_TE, PHILOSOPHER_STANCES: PHILOSOPHER_STANCES_TE, SECTOR_ROTATION: SECTOR_ROTATION_TE, HISTORICAL_CORRELATIONS: HISTORICAL_CORRELATIONS_TE, CURRENCY_SENSITIVITY: CURRENCY_SENSITIVITY_TE, getDailyBrief: getDailyBrief_TE },
+    ta: { MACRO_REGIME: MACRO_REGIME_TA, MACRO_INDICATORS: MACRO_INDICATORS_TA, PHILOSOPHER_STANCES: PHILOSOPHER_STANCES_TA, SECTOR_ROTATION: SECTOR_ROTATION_TA, HISTORICAL_CORRELATIONS: HISTORICAL_CORRELATIONS_TA, CURRENCY_SENSITIVITY: CURRENCY_SENSITIVITY_TA, getDailyBrief: getDailyBrief_TA },
+  };
+  const localeData = localeDataMap[locale] || localeDataMap.en;
+  const MACRO_REGIME = localeData.MACRO_REGIME;
+  const MACRO_INDICATORS = localeData.MACRO_INDICATORS;
+  const PHILOSOPHER_STANCES = localeData.PHILOSOPHER_STANCES;
+  const SECTOR_ROTATION = localeData.SECTOR_ROTATION;
+  const HISTORICAL_CORRELATIONS = localeData.HISTORICAL_CORRELATIONS;
+  const CURRENCY_SENSITIVITY = localeData.CURRENCY_SENSITIVITY;
+  const getDailyBrief = localeData.getDailyBrief;
 
   const [tab, setTab] = useState<PulseTab>('macro');
   const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
@@ -306,7 +356,7 @@ export default function MarketPulsePage() {
     return { mood: m, score, color, description };
   }, [breadth, prices]);
 
-  const dynamicStances = useMemo(() => PHILOSOPHER_STANCES.map(ph => ({
+  const dynamicStances = useMemo(() => PHILOSOPHER_STANCES.map((ph: any) => ({
     ...ph,
     agreement: deriveDynamicAgreement(
       ph.philosopher,
@@ -318,8 +368,8 @@ export default function MarketPulsePage() {
   })), [mood.score, liveContext]);
 
   const consensus = useMemo(() => {
-    const agreements = dynamicStances.map(s => s.agreement);
-    const avgAgreement = Math.round(agreements.reduce((a, b) => a + b, 0) / Math.max(1, agreements.length));
+    const agreements = dynamicStances.map((s: any) => s.agreement);
+    const avgAgreement = Math.round(agreements.reduce((a: any, b: any) => a + b, 0) / Math.max(1, agreements.length));
     const spread = Math.max(...agreements) - Math.min(...agreements);
     const label = avgAgreement >= 70 ? t('pulse.consensus.highConviction') : avgAgreement >= 55 ? t('pulse.consensus.moderateConviction') : t('pulse.consensus.lowConviction');
     const color = avgAgreement >= 70 ? 'var(--green)' : avgAgreement >= 55 ? 'var(--amber)' : 'var(--red)';
@@ -439,7 +489,7 @@ export default function MarketPulsePage() {
 
         {/* TAB BAR */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 28, flexWrap: 'wrap', overflowX: 'auto' }}>
-          {tabs.map(t => (
+          {tabs.map((t: any) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
@@ -519,7 +569,7 @@ export default function MarketPulsePage() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 24 }}>
-              {MACRO_INDICATORS.map(ind => (
+              {MACRO_INDICATORS.map((ind: any) => (
                 <div key={ind.label} className="card-unified" style={{ padding: 16 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>{ind.label}</div>
@@ -598,7 +648,7 @@ export default function MarketPulsePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {SECTOR_ROTATION.map((s, i) => {
+                    {SECTOR_ROTATION.map((s: any, i: number) => {
                       const spreadCol = s.spread >= 50 ? 'var(--red)' : s.spread >= 30 ? 'var(--amber)' : 'var(--green)';
                       const scoreCell = (score: number) => {
                         const bg = score >= 70 ? 'rgba(34,197,94,0.1)' : score >= 55 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
@@ -671,8 +721,8 @@ export default function MarketPulsePage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
               {HISTORICAL_CORRELATIONS
-                .filter(c => activeLens === 'All' || c.philosopher === activeLens || c.philosopher === 'All')
-                .map(c => (
+                .filter((c: any) => activeLens === 'All' || c.philosopher === activeLens || c.philosopher === 'All')
+                .map((c: any) => (
                   <div key={c.id} style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 16, padding: 20, position: 'relative' }}>
                     {c.regimeMatch && (
                       <div style={{ position: 'absolute', top: 12, right: 12, fontSize: 9, color: 'var(--green)', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', padding: '4px 10px', borderRadius: 999, fontWeight: 700 }}>
@@ -748,7 +798,7 @@ export default function MarketPulsePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {CURRENCY_SENSITIVITY.map((s, i) => (
+                    {CURRENCY_SENSITIVITY.map((s: any, i: number) => (
                       <tr key={s.sector}>
                         <td>
                           <span style={{ fontSize: 16 }}>{s.icon}</span>
@@ -789,8 +839,8 @@ export default function MarketPulsePage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {brief.sections
-                .filter(s => activeLens === 'All' || !s.philosopher || s.philosopher === activeLens)
-                .map((s, i) => (
+                .filter((s: any) => activeLens === 'All' || !s.philosopher || s.philosopher === activeLens)
+                .map((s: any, i: number) => (
                   <div key={i} style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid ' + (s.philosopherColor ? s.philosopherColor + '30' : 'rgba(30,41,59,0.8)'), borderLeft: '3px solid ' + (s.philosopherColor || 'var(--accent-gold)'), borderRadius: 12, padding: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                       <span style={{ fontSize: 20 }}>{s.icon}</span>
@@ -836,7 +886,7 @@ export default function MarketPulsePage() {
   { key: 'low', label: t('pulse.breadth.tableHeaders.low'), align: 'right' as const },
   { key: 'open', label: t('pulse.breadth.tableHeaders.open'), align: 'right' as const },
   { key: 'prevClose', label: t('pulse.breadth.tableHeaders.prevClose'), align: 'right' as const },
-].map(h => (
+].map((h: any) => (
   <th key={h.key} style={{ textAlign: h.align }}>{h.label}</th>
 ))}
                     </tr>
@@ -883,7 +933,7 @@ export default function MarketPulsePage() {
   { key: 'change', label: t('pulse.blocks.tableHeaders.change'), align: 'right' as const },
   { key: 'side', label: t('pulse.blocks.tableHeaders.side'), align: 'right' as const },
   { key: 'series', label: t('pulse.blocks.tableHeaders.series'), align: 'right' as const },
-].map(h => (
+].map((h: any) => (
   <th key={h.key} style={{ textAlign: h.align }}>{h.label}</th>
 ))}
                     </tr>

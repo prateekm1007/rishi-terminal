@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CryptoAsset } from '../../data/crypto';
+import { CRYPTO_ONCHAIN } from '../../data/crypto';
+import type { UniversalAsset } from '../../lib/types/asset';
+import { AssetPriceChart } from '../terminal/AssetPriceChart';
 import { scoreSatoshiBodhi } from '../../lib/scorers/crypto/satoshibodhi';
 import { scoreVitalikVeda } from '../../lib/scorers/crypto/vitalikVeda';
 import { scoreMichaelSaylor } from '../../lib/scorers/crypto/michaelsaylor';
@@ -69,7 +72,80 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
   const bears = rishiScores.filter(r => r.result.score < 45);
   const neutrals = rishiScores.filter(r => r.result.score >= 45 && r.result.score < 65);
 
+  const chartAsset: UniversalAsset = {
+    symbol: asset.symbol,
+    name: asset.name,
+    category: 'crypto',
+    price: asset.price,
+    change24h: asset.change24h,
+    metadata: asset,
+  };
+
+  const onchain = CRYPTO_ONCHAIN[asset.symbol] ?? {};
+  const onchainEdge = [
+    ...(onchain.dominance !== undefined ? [{
+      metric: 'Market Dominance',
+      stockVal: onchain.dominance, sectorAvg: 5, unit: '%', higherIsBetter: true,
+      insight: onchain.dominance > 15
+        ? `${onchain.dominance}% dominance — capital concentration, institutional-grade liquidity`
+        : onchain.dominance > 2
+        ? `${onchain.dominance}% dominance — established mid-cap with real market share`
+        : `${onchain.dominance}% dominance — small-cap, higher beta and higher risk`,
+    }] : []),
+    ...(onchain.fundingRate !== undefined ? [{
+      metric: 'Funding Rate (8h Perps)',
+      stockVal: onchain.fundingRate, sectorAvg: 0.01, unit: '%', higherIsBetter: false,
+      insight: onchain.fundingRate > 0.02
+        ? 'Elevated funding — longs crowded, squeeze risk if momentum stalls'
+        : onchain.fundingRate < 0
+        ? 'Negative funding — shorts pay longs, contrarian bullish setup'
+        : 'Neutral funding — leverage balanced, healthy derivatives market',
+    }] : []),
+    ...(onchain.openInterest !== undefined ? [{
+      metric: 'Futures Open Interest',
+      stockVal: onchain.openInterest, sectorAvg: 1, unit: '$B', higherIsBetter: true,
+      insight: onchain.openInterest > 10
+        ? `$${onchain.openInterest}B OI — deep derivatives market, watch for cascading liquidations`
+        : `$${onchain.openInterest}B OI — moderate leverage in the system`,
+    }] : []),
+    ...(onchain.exchangeNetflow !== undefined ? [{
+      metric: 'Exchange Netflow (7D)',
+      stockVal: onchain.exchangeNetflow, sectorAvg: 0, unit: 'K', higherIsBetter: false,
+      insight: onchain.exchangeNetflow < -10
+        ? `${Math.abs(onchain.exchangeNetflow)}K coins LEFT exchanges — accumulation / self-custody, bullish`
+        : onchain.exchangeNetflow > 10
+        ? `${onchain.exchangeNetflow}K coins moved TO exchanges — potential sell pressure`
+        : 'Balanced exchange flows — no strong accumulation or distribution signal',
+    }] : []),
+    ...(onchain.mvrv !== undefined ? [{
+      metric: 'MVRV Ratio',
+      stockVal: onchain.mvrv, sectorAvg: 1.8, unit: 'x', higherIsBetter: false,
+      insight: onchain.mvrv > 3.5
+        ? `MVRV ${onchain.mvrv} — historically overvalued zone, average holder in heavy profit`
+        : onchain.mvrv < 1
+        ? `MVRV ${onchain.mvrv} — below realized value, historically a generational accumulation zone`
+        : `MVRV ${onchain.mvrv} — fair-value band, neither euphoria nor capitulation`,
+    }] : []),
+    ...(onchain.tvl !== undefined ? [{
+      metric: 'DeFi TVL',
+      stockVal: onchain.tvl, sectorAvg: 2, unit: '$B', higherIsBetter: true,
+      insight: onchain.tvl > 10
+        ? `$${onchain.tvl}B locked — major DeFi hub, strong protocol revenue base`
+        : `$${onchain.tvl}B locked — growing on-chain economic activity`,
+    }] : []),
+    ...(onchain.activeAddresses !== undefined ? [{
+      metric: 'Active Addresses (Daily)',
+      stockVal: onchain.activeAddresses, sectorAvg: 100, unit: 'K', higherIsBetter: true,
+      insight: onchain.activeAddresses > 500
+        ? `${onchain.activeAddresses}K daily actives — strong organic network usage`
+        : onchain.activeAddresses > 100
+        ? `${onchain.activeAddresses}K daily actives — moderate network adoption`
+        : `${onchain.activeAddresses}K daily actives — low usage, speculative valuation`,
+    }] : []),
+  ];
+
   const technicalEdge = [
+    ...onchainEdge,
     { metric: 'RSI (14)', stockVal: asset.rsi, sectorAvg: 50, unit: '', higherIsBetter: true, insight: asset.rsi > 70 ? 'Overbought — consider waiting for pullback to accumulate' : asset.rsi < 30 ? 'Oversold — Satoshi Bodhi sees this as accumulation zone' : `RSI ${asset.rsi} — healthy momentum, trend continuation likely` },
     { metric: 'Price vs 200D MA', stockVal: Number(((asset.price - asset.moving200d) / asset.moving200d * 100).toFixed(1)), sectorAvg: 0, unit: '%', higherIsBetter: true, insight: aboveMa200 ? `${asset.symbol} trades ${((asset.price - asset.moving200d) / asset.moving200d * 100).toFixed(1)}% above 200D MA — long-term bull structure intact` : 'Below 200D MA — bearish long-term structure, high risk' },
     { metric: 'Distance from ATH', stockVal: asset.fromAth, sectorAvg: -30, unit: '%', higherIsBetter: true, insight: asset.fromAth > -20 ? 'Near all-time high — strong momentum and institutional conviction' : asset.fromAth > -50 ? 'Mid-correction phase — accumulation opportunity for HODLers' : 'Deep correction — high risk but also highest reward entry zone' },
@@ -260,6 +336,12 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
         {/* TECHNICAL TAB */}
         {activeTab === 'technical' && (
           <div style={{ display: 'grid', gap: 20 }}>
+
+            {/* Live Price Chart */}
+            <div className="card-sacred" style={{ padding: 24 }}>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>LIVE PRICE CHART</div>
+              <AssetPriceChart asset={chartAsset} />
+            </div>
 
             {/* Technical Signals */}
             <div className="card-sacred" style={{ padding: 24 }}>

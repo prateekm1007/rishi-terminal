@@ -55,3 +55,29 @@ export function getCryptoMetrics() {
   
   return { totalMarketCap, totalVolume, avgChange24h, avgRSI, gainers, losers, sentiment };
 }
+
+// ── Crypto-Native On-Chain Metrics ──────────────────────────────────────────
+export interface CryptoOnChain {
+  dominance?: number;        // % of total crypto market cap
+  fundingRate?: number;      // 8h perpetual funding rate (%)
+  openInterest?: number;     // futures open interest ($B)
+  exchangeNetflow?: number;  // 7d net exchange flow (K coins; negative = outflow = bullish)
+  mvrv?: number;             // Market Value / Realized Value ratio
+  tvl?: number;              // DeFi Total Value Locked ($B)
+  activeAddresses?: number;  // daily active addresses (thousands)
+}
+
+export const CRYPTO_ONCHAIN: Record<string, CryptoOnChain> = {
+  BTC:   { dominance: 58.2, fundingRate: 0.012, openInterest: 32.5, exchangeNetflow: -42.0, mvrv: 2.1, activeAddresses: 950 },
+  ETH:   { dominance: 18.5, fundingRate: 0.009, openInterest: 14.2, exchangeNetflow: -180.0, mvrv: 1.6, tvl: 58.0, activeAddresses: 480 },
+  BNB:   { dominance: 3.8,  fundingRate: 0.005, openInterest: 0.9,  exchangeNetflow: 12.0,  mvrv: 1.4, tvl: 5.2,  activeAddresses: 210 },
+  SOL:   { dominance: 4.6,  fundingRate: 0.021, openInterest: 3.8,  exchangeNetflow: -310.0, mvrv: 2.8, tvl: 9.5,  activeAddresses: 1250 },
+  ADA:   { dominance: 1.6,  fundingRate: 0.004, openInterest: 0.5,  exchangeNetflow: 45.0,  mvrv: 1.1, tvl: 0.4,  activeAddresses: 65 },
+  AVAX:  { dominance: 0.7,  fundingRate: 0.015, openInterest: 0.6,  exchangeNetflow: -22.0, mvrv: 1.3, tvl: 1.3,  activeAddresses: 48 },
+  DOT:   { dominance: 0.6,  fundingRate: 0.002, openInterest: 0.3,  exchangeNetflow: 18.0,  mvrv: 0.9, tvl: 0.2,  activeAddresses: 32 },
+  MATIC: { dominance: 0.3,  fundingRate: 0.011, openInterest: 0.4,  exchangeNetflow: -65.0, mvrv: 1.2, tvl: 0.9,  activeAddresses: 410 },
+  LINK:  { dominance: 0.7,  fundingRate: 0.008, openInterest: 0.7,  exchangeNetflow: -15.0, mvrv: 1.5, tvl: 0.6,  activeAddresses: 38 },
+  UNI:   { dominance: 0.5,  fundingRate: 0.006, openInterest: 0.3,  exchangeNetflow: 8.0,   mvrv: 1.2, tvl: 4.8,  activeAddresses: 22 },
+  AAVE:  { dominance: 0.2,  fundingRate: 0.014, openInterest: 0.25, exchangeNetflow: -4.5,  mvrv: 1.7, tvl: 11.2, activeAddresses: 9 },
+  MKR:   { dominance: 0.1,  fundingRate: 0.007, openInterest: 0.1,  exchangeNetflow: -1.2,  mvrv: 1.4, tvl: 5.4,  activeAddresses: 4 },
+};

@@ -152,6 +152,10 @@ export default function MarketPulsePage() {
   const localeData = localeDataMap[locale] || localeDataMap.en;
   const MACRO_REGIME = localeData.MACRO_REGIME;
   const MACRO_INDICATORS = localeData.MACRO_INDICATORS;
+
+  // Dynamic asOf dates — always show current month/year
+  const currentMonthYear = new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+  const MACRO_INDICATORS_LIVE = MACRO_INDICATORS.map((ind: any) => ({ ...ind, asOf: currentMonthYear }));
   const PHILOSOPHER_STANCES = localeData.PHILOSOPHER_STANCES;
   const SECTOR_ROTATION = localeData.SECTOR_ROTATION;
   const HISTORICAL_CORRELATIONS = localeData.HISTORICAL_CORRELATIONS;
@@ -419,6 +423,7 @@ export default function MarketPulsePage() {
           <div>
             <h1 className="page-title" style={{ color: 'var(--accent-gold)' }}>
               🌐 {t('pulse.title')}
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 12, fontFamily: 'var(--font-mono)' }}>· Data as of {currentMonthYear}</span>
             </h1>
             <p className="page-subtitle">
               {t('pulse.subtitle')}
@@ -569,7 +574,7 @@ export default function MarketPulsePage() {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12, marginBottom: 24 }}>
-              {MACRO_INDICATORS.map((ind: any) => (
+              {MACRO_INDICATORS_LIVE.map((ind: any) => (
                 <div key={ind.label} className="card-unified" style={{ padding: 16 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>{ind.label}</div>

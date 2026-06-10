@@ -48,7 +48,7 @@
                       "connecting":  "Connecting...",
                       "heroWisdomHighlight":  "20 legendary investors",
                       "heroWisdomPrefix":  "Wisdom from ",
-                      "heroTagline":  "SACRED INVESTMENT INTELLIGENCE · v4.4",
+                      "heroTagline":  "SACRED INVESTMENT INTELLIGENCE Â· v4.4",
                       "liveMarketData":  "Live Market Data",
                       "markets":  {
                                       "forexDesc":  "10 currency pairs",
@@ -380,8 +380,8 @@
     "language":  {
                      "select":  "Language",
                      "english":  "English",
-                     "hindi":  "हिंदी",
-                     "gujarati":  "ગુજરાતી"
+                     "hindi":  "à¤¹à¤¿à¤‚à¤¦à¥€",
+                     "gujarati":  "àª—à«àªœàª°àª¾àª¤à«€"
                  },
     "asset":  {
                   "graphSubtitle":  "Relationships \u0026 Insights",
@@ -406,7 +406,7 @@
               },
     "pulse":  {
                   "title":  "Economy Plus",
-                  "subtitle":  "Macro Intelligence · Philosopher Council · Regime Analysis",
+                  "subtitle":  "Macro Intelligence Â· Philosopher Council Â· Regime Analysis",
                   "backToDashboard":  "Dashboard",
                   "marketMood":  "MARKET MOOD",
                   "scoreLabel":  "Score",
@@ -439,7 +439,7 @@
                                },
                   "macro":  {
                                 "historicalAnalog":  "Historical Analog",
-                                "currencyImpact":  "CURRENCY IMPACT – INR SNAPSHOT",
+                                "currencyImpact":  "CURRENCY IMPACT â€“ INR SNAPSHOT",
                                 "asOfLabel":  "As of",
                                 "trendLabel":  "Trend",
                                 "volLabel":  "Vol"
@@ -460,7 +460,7 @@
                                },
                   "evidence":  {
                                    "title":  "HISTORICAL EVIDENCE ENGINE",
-                                   "description":  "Evidence cards: macro condition → historical outcome. Filtered by lens.",
+                                   "description":  "Evidence cards: macro condition â†’ historical outcome. Filtered by lens.",
                                    "regimeMatch":  "CURRENT REGIME MATCH",
                                    "winRate":  "WIN RATE",
                                    "avg":  "AVG",
@@ -539,7 +539,7 @@
                                     },
                        "wisdom":  {
                                       "title":  "20 Legendary Investors",
-                                      "body":  "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — all scoring every stock in real-time. Long and Short thesis. Every day.",
+                                      "body":  "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos â€” all scoring every stock in real-time. Long and Short thesis. Every day.",
                                       "bodyHighlight":  "scoring every stock",
                                       "exploreBtn":  "Explore All Rishis"
                                   }
@@ -664,7 +664,7 @@
                 },
     "chart":  {
                   "priceChart":  "PRICE CHART",
-                  "loading":  "Loading…",
+                  "loading":  "Loadingâ€¦",
                   "loadFailed":  "Failed to load data",
                   "noData":  "No data for this period"
               },
@@ -729,8 +729,24 @@
                 "wisdomDesc3":  "Understand your payoff, Greeks, and risk before you execute."
             },
     "forex":  {
+                  "eurInrSpot":  "EUR/INR SPOT",
+                  "spot":  "SPOT",
+                  "forward1m":  "1M FORWARD",
+                  "bid":  "BID",
+                  "title":  "FOREX",
+                  "ask":  "ASK",
                   "spread":  "SPREAD",
+                  "ppp":  "PPP",
+                  "volume24h":  "24H VOLUME",
+                  "usdInrSpot":  "USD/INR SPOT",
+                  "pairs":  "PAIRS",
+                  "pppValue":  "PPP Value",
+                  "breadcrumb":  "FOREX",
                   "volatility":  "VOLATILITY",
-                  "pppValue":  "PPP Value"
+                  "subtitle":  "Live currency markets with macro analysis from legendary traders",
+                  "currencyPairs":  "CURRENCY PAIRS",
+                  "inrCrossRates":  "INR Cross Rates",
+                  "pair":  "PAIR",
+                  "avgVolatility":  "AVG VOLATILITY"
               }
 }

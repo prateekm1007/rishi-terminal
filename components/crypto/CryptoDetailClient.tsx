@@ -63,15 +63,16 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
 
+  const { price: livePriceData } = usePrice(asset.symbol);
+  const displayPrice = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : asset.price;
+  const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : asset.change24h;
+
   const liveAsset = {
     ...asset,
     price: displayPrice,
     change24h: displayChange,
   };
   const rishiScores = CRYPTO_RISHIS.map(r => ({ ...r, result: r.scorer(liveAsset) }));
-  const { price: livePrice, price: livePriceData } = usePrice(asset.symbol);
-  const displayPrice = livePrice?.price && livePrice.price > 0 ? livePrice.price : asset.price;
-  const displayChange = livePrice?.changePercent24h !== undefined ? livePrice.changePercent24h : asset.change24h;
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
 
   const aboveMa200 = asset.price > asset.moving200d;

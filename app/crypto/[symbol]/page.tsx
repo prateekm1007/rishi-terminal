@@ -1,41 +1,27 @@
 import { notFound } from 'next/navigation';
 import { CRYPTO_ASSETS } from '../../../data/crypto';
-import { adaptCrypto } from '../../../lib/adapters/cryptoAdapter';
-import { buildUniversalConsensus } from '../../../lib/consensus/universalConsensus';
-import { AssetTerminal } from '../../../components/terminal/AssetTerminal';
+import { CryptoDetailClient } from '../../../components/crypto/CryptoDetailClient';
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
 }
 
 export async function generateStaticParams() {
-  return CRYPTO_ASSETS.map((asset) => ({
-    symbol: asset.symbol,
+  return CRYPTO_ASSETS.map((a) => ({
+    symbol: a.symbol,
   }));
 }
 
-export default async function CryptoDetailPage({ params }: PageProps) {
+export default async function CryptoPage({ params }: PageProps) {
   const { symbol } = await params;
 
-  const crypto = CRYPTO_ASSETS.find(
+  const asset = CRYPTO_ASSETS.find(
     (a) => a.symbol.toUpperCase() === symbol.toUpperCase()
   );
 
-  if (!crypto) {
+  if (!asset) {
     notFound();
   }
 
-  const asset = adaptCrypto(crypto);
-  const consensus = buildUniversalConsensus(asset);
-
-  return (
-    <AssetTerminal
-      asset={asset}
-      consensus={consensus as any}
-      detail={{
-        description: `${crypto.name} (${crypto.symbol}) is a ${crypto.sector} cryptocurrency with a market cap of $${(crypto.marketCap / 1e9).toFixed(1)}B.`,
-        metadata: {},
-      }}
-    />
-  );
+  return <CryptoDetailClient asset={asset} />;
 }

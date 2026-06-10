@@ -53,54 +53,119 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
   const range52w = commodity.high52w - commodity.low52w;
   const pos52w = range52w > 0 ? ((commodity.price - commodity.low52w) / range52w) * 100 : 50;
 
-  // Technical indicators derived from price data
-  const sma20 = commodity.price * 0.98;
-  const sma50 = commodity.price * 0.95;
-  const sma200 = commodity.price * 0.88;
-  const rsi = Math.round(40 + (pos52w * 0.4));
-  const aboveSma20 = commodity.price > sma20;
-  const aboveSma50 = commodity.price > sma50;
-  const aboveSma200 = commodity.price > sma200;
-  const macd = commodity.changePct > 1 ? 'BULLISH' : commodity.changePct < -1 ? 'BEARISH' : 'NEUTRAL';
-
   // Knowledge graph data
   const bulls = rishiScores.filter(r => r.result.score >= 65);
   const bears = rishiScores.filter(r => r.result.score < 45);
   const neutrals = rishiScores.filter(r => r.result.score >= 45 && r.result.score < 65);
-
   // Technical edge vs commodity benchmarks
+  // NOTE: For commodities, stock-style RSI/SMA/MACD are low-utility without a true OHLC history pipeline.
+  // We instead show commodity-specific fundamentals that matter most: curve structure, inventories, supercycle, cost, seasonality, USD sensitivity.
+  const costMargin = commodity.costMargin ??
+    (commodity.productionCost
+      ? Number((((commodity.price - commodity.productionCost) / commodity.productionCost) * 100).toFixed(1))
+      : undefined);
+
   const technicalEdge = [
+    ...(commodity.contango !== undefined ? [{
+      metric: 'Contango/Backwardation',
+      stockVal: commodity.contango,           // signed (%); negative = backwardation (bullish structure)
+      sectorAvg: 0,
+      unit: '%',
+      higherIsBetter: false,
+      insight: commodity.contango > 1
+        ? `${commodity.contango.toFixed(1)}% contango — curve suggests oversupply / weak spot demand`
+        : commodity.contango < -1
+          ? `${Math.abs(commodity.contango).toFixed(1)}% backwardation — tight supply / strong spot demand`
+          : 'Flat curve — balanced supply/demand',
+    }] : []),
+
+    ...(commodity.inventoryVs5YAvg !== undefined ? [{
+      metric: 'Inventory vs 5Y Avg',
+      stockVal: commodity.inventoryVs5YAvg,   // signed (%); negative = tight (bullish)
+      sectorAvg: 0,
+      unit: '%',
+      higherIsBetter: false,
+      insight: commodity.inventoryVs5YAvg < -10
+        ? `Inventories ${Math.abs(commodity.inventoryVs5YAvg)}% below avg — squeeze risk`
+        : commodity.inventoryVs5YAvg > 10
+          ? `Inventories ${commodity.inventoryVs5YAvg}% above avg — oversupply`
+          : `Near normal inventories (${commodity.inventoryDays ?? 'n/a'} days)`,
+    }] : []),
+
+    ...(commodity.supercycleScore !== undefined ? [{
+      metric: 'Supercycle Position (Rogers)',
+      stockVal: commodity.supercycleScore,    // 0-100
+      sectorAvg: 50,
+      unit: '',
+      higherIsBetter: true,
+      insight: commodity.supercyclePhase === 'early'
+        ? 'Early-cycle — accumulation phase'
+        : commodity.supercyclePhase === 'mid'
+          ? 'Mid-cycle — fundamentals support continuation'
+          : commodity.supercyclePhase === 'late'
+            ? 'Late-cycle — exhaustion risk; consider de-risking'
+            : commodity.supercyclePhase === 'decline'
+              ? 'Decline — wait for capitulation / supply cuts'
+              : 'Cycle unknown',
+    }] : []),
+
+    ...(costMargin !== undefined ? [{
+      metric: 'Price vs Production Cost',
+      stockVal: costMargin,                  // %
+      sectorAvg: 20,
+      unit: '%',
+      higherIsBetter: false,                 // lower margin = closer to cost (often better forward returns)
+      insight: commodity.productionCost
+        ? `Breakeven ~${commodity.productionCost.toLocaleString()} ${commodity.unit}; margin ${costMargin.toFixed(0)}%`
+        : `Cost margin ${costMargin.toFixed(0)}%`,
+    }] : []),
+
+    ...(commodity.seasonalityIndex !== undefined ? [{
+      metric: 'Seasonality Strength',
+      stockVal: commodity.seasonalityIndex,  // 0-100
+      sectorAvg: 50,
+      unit: '',
+      higherIsBetter: true,
+      insight: commodity.seasonalityIndex > 70
+        ? 'Peak seasonal demand period'
+        : commodity.seasonalityIndex < 40
+          ? 'Off-season — historically weaker demand'
+          : 'Normal seasonal conditions',
+    }] : []),
+
+    ...(commodity.usdCorrelation !== undefined ? [{
+      metric: 'USD Sensitivity (|corr|)',
+      stockVal: Math.abs(commodity.usdCorrelation) * 100, // 0..100
+      sectorAvg: 50,
+      unit: '%',
+      higherIsBetter: false,
+      insight: `${commodity.usdCorrelation.toFixed(2)} correlation vs USD (DXY). Higher sensitivity = bigger USD-driven swings.`,
+    }] : []),
+
     {
       metric: '52W Range Position',
       stockVal: pos52w,
       sectorAvg: 50,
       unit: '%',
       higherIsBetter: true,
-      insight: pos52w > 70 ? 'Near 52W high — strong bullish momentum' : pos52w < 30 ? 'Near 52W low — potential accumulation zone' : 'Mid-range — wait for directional breakout',
+      insight: pos52w > 70
+        ? 'Near 52W high — strong momentum'
+        : pos52w < 30
+          ? 'Near 52W low — potential accumulation'
+          : 'Mid-range — wait for breakout',
     },
-    {
-      metric: 'Price vs SMA 200',
-      stockVal: Number(((commodity.price - sma200) / sma200 * 100).toFixed(1)),
-      sectorAvg: 0,
-      unit: '%',
-      higherIsBetter: true,
-      insight: aboveSma200 ? 'Above 200D MA — long-term bull trend intact' : 'Below 200D MA — bearish structure, caution warranted',
-    },
+
     {
       metric: 'Momentum (1D)',
       stockVal: commodity.changePct,
       sectorAvg: 0,
       unit: '%',
       higherIsBetter: true,
-      insight: commodity.changePct > 2 ? 'Strong daily momentum — trend following opportunity' : commodity.changePct < -2 ? 'Sharp decline — monitor for reversal signals' : 'Low volatility — consolidation phase',
-    },
-    {
-      metric: 'RSI (14)',
-      stockVal: rsi,
-      sectorAvg: 50,
-      unit: '',
-      higherIsBetter: true,
-      insight: rsi > 70 ? 'Overbought — consider trimming or waiting for pullback' : rsi < 30 ? 'Oversold — contrarian accumulation signal per Jim Rogers' : 'Healthy RSI range — trend continuation likely',
+      insight: commodity.changePct > 2
+        ? 'Strong daily momentum'
+        : commodity.changePct < -2
+          ? 'Sharp decline — watch reversal / mean reversion'
+          : 'Quiet day — consolidation',
     },
   ];
 
@@ -155,7 +220,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             </div>
 
             {/* Technical Edge */}
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#D4AF37', marginBottom: 16 }}>TECHNICAL EDGE</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#D4AF37', marginBottom: 16 }}>COMMODITY FUNDAMENTALS</div>
             {technicalEdge.map((te, i) => {
               const delta = te.stockVal - te.sectorAvg;
               const outperforming = te.higherIsBetter ? delta > 0 : delta < 0;
@@ -168,7 +233,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                     </span>
                   </div>
                   <div style={{ height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, marginBottom: 8, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: Math.min(100, Math.max(0, te.stockVal)) + '%', background: outperforming ? '#22C55E' : '#EF4444', borderRadius: 3 }} />
+                    <div style={{ height: '100%', width: Math.min(100, Math.max(0, Math.abs(te.stockVal))) + '%', background: outperforming ? '#22C55E' : '#EF4444', borderRadius: 3 }} />
                   </div>
                   <div style={{ fontSize: 10, color: '#D4AF37' }}>{te.insight}</div>
                 </div>
@@ -320,17 +385,46 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
         {activeTab === 'technical' && (
           <div style={{ display: 'grid', gap: 20 }}>
 
-            {/* Technical Signals */}
+                        {/* Commodity Fundamentals Signals */}
             <div className="card-sacred" style={{ padding: 24 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>TECHNICAL SIGNALS</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>COMMODITY FUNDAMENTALS</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                 {[
-                  { label: 'RSI (14)', value: rsi.toString(), signal: rsi > 70 ? 'OVERBOUGHT' : rsi < 30 ? 'OVERSOLD' : 'NEUTRAL' },
-                  { label: 'MACD', value: macd, signal: macd === 'BULLISH' ? 'BUY' : macd === 'BEARISH' ? 'SELL' : 'NEUTRAL' },
-                  { label: 'SMA 20', value: `${sma20.toFixed(2)} ${commodity.unit}`, signal: aboveSma20 ? 'BUY' : 'SELL' },
-                  { label: 'SMA 50', value: `${sma50.toFixed(2)} ${commodity.unit}`, signal: aboveSma50 ? 'BUY' : 'SELL' },
-                  { label: 'SMA 200', value: `${sma200.toFixed(2)} ${commodity.unit}`, signal: aboveSma200 ? 'BUY' : 'SELL' },
-                  { label: '52W Position', value: `${pos52w.toFixed(0)}%`, signal: pos52w > 70 ? 'BUY' : pos52w < 30 ? 'SELL' : 'NEUTRAL' },
+                  ...(commodity.contango !== undefined ? [{
+                    label: 'Curve',
+                    value: `${commodity.contango >= 0 ? '+' : ''}${commodity.contango.toFixed(2)}%`,
+                    signal: commodity.contango < -1 ? 'BUY' : commodity.contango > 1 ? 'SELL' : 'NEUTRAL'
+                  }] : []),
+
+                  ...(commodity.inventoryVs5YAvg !== undefined ? [{
+                    label: 'Inventory vs 5Y',
+                    value: `${commodity.inventoryVs5YAvg >= 0 ? '+' : ''}${commodity.inventoryVs5YAvg.toFixed(0)}%`,
+                    signal: commodity.inventoryVs5YAvg < -10 ? 'BUY' : commodity.inventoryVs5YAvg > 10 ? 'SELL' : 'NEUTRAL'
+                  }] : []),
+
+                  ...(costMargin !== undefined ? [{
+                    label: 'Cost Margin',
+                    value: `${costMargin.toFixed(0)}%`,
+                    signal: costMargin < 10 ? 'BUY' : costMargin > 40 ? 'SELL' : 'NEUTRAL'
+                  }] : []),
+
+                  ...(commodity.seasonalityIndex !== undefined ? [{
+                    label: 'Seasonality',
+                    value: `${commodity.seasonalityIndex.toFixed(0)}/100`,
+                    signal: commodity.seasonalityIndex > 70 ? 'BUY' : commodity.seasonalityIndex < 40 ? 'SELL' : 'NEUTRAL'
+                  }] : []),
+
+                  ...(commodity.supercycleScore !== undefined ? [{
+                    label: 'Supercycle',
+                    value: `${commodity.supercycleScore.toFixed(0)}/100`,
+                    signal: commodity.supercycleScore > 70 ? 'BUY' : commodity.supercycleScore < 40 ? 'SELL' : 'NEUTRAL'
+                  }] : []),
+
+                  {
+                    label: '52W Position',
+                    value: `${pos52w.toFixed(0)}%`,
+                    signal: pos52w > 70 ? 'BUY' : pos52w < 30 ? 'SELL' : 'NEUTRAL'
+                  },
                 ].map(ind => (
                   <div key={ind.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -342,8 +436,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                 ))}
               </div>
             </div>
-
-            {/* Performance */}
+{/* Performance */}
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>PERFORMANCE</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
@@ -363,10 +456,10 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
 
             {/* Technical Edge Bars */}
             <div className="card-sacred" style={{ padding: 24 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>TECHNICAL EDGE ANALYSIS</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>COMMODITY FUNDAMENTALS ANALYSIS</div>
               {technicalEdge.map((te, i) => {
                 const outperforming = te.higherIsBetter ? te.stockVal > te.sectorAvg : te.stockVal < te.sectorAvg;
-                const barWidth = Math.min(100, Math.max(0, te.stockVal));
+                const barWidth = Math.min(100, Math.max(0, Math.abs(te.stockVal)));
                 return (
                   <div key={i} style={{ marginBottom: 16, padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: `1px solid ${outperforming ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -480,7 +573,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               </div>
             )}
             <div className="card-sacred" style={{ padding: 24 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>TECHNICAL EDGE</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>COMMODITY FUNDAMENTALS</div>
               {technicalEdge.map((te, i) => {
                 const outperforming = te.higherIsBetter ? te.stockVal > te.sectorAvg : te.stockVal < te.sectorAvg;
                 return (
@@ -494,7 +587,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       </div>
                     </div>
                     <div style={{ height: 8, background: 'rgba(51,65,85,0.5)', borderRadius: 4, marginBottom: 10, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: Math.min(100, Math.max(0, te.stockVal)) + '%', background: outperforming ? '#22C55E' : '#EF4444', borderRadius: 4 }} />
+                      <div style={{ height: '100%', width: Math.min(100, Math.max(0, Math.abs(te.stockVal))) + '%', background: outperforming ? '#22C55E' : '#EF4444', borderRadius: 4 }} />
                     </div>
                     <div style={{ padding: 10, background: outperforming ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', borderRadius: 6, fontSize: 11, color: '#E2E8F0' }}>
                       {te.insight}

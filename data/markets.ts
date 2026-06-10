@@ -22,6 +22,17 @@ export interface CommodityData {
   changePct: number;
   high52w: number;
   low52w: number;
+  
+  // ── Commodity-Specific Metrics ──
+  contango?: number;           // % (positive = contango, negative = backwardation)
+  supercyclePhase?: 'early' | 'mid' | 'late' | 'decline';
+  supercycleScore?: number;    // 0-100 (Jim Rogers lens)
+  inventoryDays?: number;      // Days of supply
+  inventoryVs5YAvg?: number;   // % vs 5-year average (-20 = 20% below avg)
+  productionCost?: number;     // Breakeven price in same unit
+  costMargin?: number;         // % above production cost
+  seasonalityIndex?: number;   // 0-100 (100 = peak season strength)
+  usdCorrelation?: number;     // -1 to 1 (negative = inverse to DXY)
 }
 
 export const INDIAN_INDEXES: IndexData[] = [
@@ -55,17 +66,77 @@ export const FOREIGN_INDEXES: IndexData[] = [
 ];
 
 export const COMMODITIES: CommodityData[] = [
-  { symbol: 'GOLD', name: 'Gold', emoji: '🥇', category: 'Precious Metals', price: 2650, unit: '$/oz', change: 12.5, changePct: 0.47, high52w: 2750, low52w: 2200 },
+  {
+    symbol: 'GOLD',
+    name: 'Gold',
+    emoji: '🥇',
+    category: 'Precious Metals',
+    price: 2650,
+    unit: '$/oz',
+    change: 12.5,
+    changePct: 0.47,
+    high52w: 2750,
+    low52w: 2200,
+    contango: -0.8,              // Slight backwardation (safe-haven demand)
+    supercyclePhase: 'mid',
+    supercycleScore: 72,         // Jim Rogers: Mid-cycle strength
+    inventoryDays: 45,           // COMEX warehouse stocks
+    inventoryVs5YAvg: -12,       // 12% below 5Y average
+    productionCost: 1850,        // Global all-in sustaining cost
+    costMargin: 43.2,            // 43% above production cost
+    seasonalityIndex: 65,        // Moderate seasonal strength
+    usdCorrelation: -0.82        // Strong inverse correlation to USD
+  },
   { symbol: 'SILVER', name: 'Silver', emoji: '🥈', category: 'Precious Metals', price: 32.5, unit: '$/oz', change: 0.85, changePct: 2.68, high52w: 35, low52w: 22 },
   { symbol: 'PLATINUM', name: 'Platinum', emoji: '⚪', category: 'Precious Metals', price: 1050, unit: '$/oz', change: -5.2, changePct: -0.49, high52w: 1200, low52w: 950 },
   { symbol: 'PALLADIUM', name: 'Palladium', emoji: '⚫', category: 'Precious Metals', price: 980, unit: '$/oz', change: -8.5, changePct: -0.86, high52w: 1500, low52w: 900 },
-  { symbol: 'WTI', name: 'Crude Oil WTI', emoji: '🛢️', category: 'Energy', price: 72.5, unit: '$/bbl', change: 1.85, changePct: 2.62, high52w: 95, low52w: 65 },
+  {
+    symbol: 'WTI',
+    name: 'Crude Oil WTI',
+    emoji: '🛢️',
+    category: 'Energy',
+    price: 72.5,
+    unit: '$/bbl',
+    change: 1.85,
+    changePct: 2.62,
+    high52w: 95,
+    low52w: 65,
+    contango: 2.5,               // Contango (oversupply signal)
+    supercyclePhase: 'decline',
+    supercycleScore: 38,         // Jim Rogers: Late cycle weakness
+    inventoryDays: 28,           // US commercial crude stocks
+    inventoryVs5YAvg: 8,         // 8% above 5Y average
+    productionCost: 55,          // US shale breakeven
+    costMargin: 31.8,            // 32% above breakeven
+    seasonalityIndex: 55,        // Moderate demand season
+    usdCorrelation: -0.65        // Inverse correlation to USD
+  },
   { symbol: 'BRENT', name: 'Brent Crude', emoji: '🛢️', category: 'Energy', price: 76.8, unit: '$/bbl', change: 2.15, changePct: 2.88, high52w: 98, low52w: 70 },
   { symbol: 'NATGAS', name: 'Natural Gas', emoji: '🔥', category: 'Energy', price: 3.45, unit: '$/MMBtu', change: -0.12, changePct: -3.36, high52w: 5.5, low52w: 2.8 },
   { symbol: 'COPPER', name: 'Copper', emoji: '🔶', category: 'Base Metals', price: 9850, unit: '$/ton', change: 125.5, changePct: 1.29, high52w: 11000, low52w: 8500 },
   { symbol: 'ALUMINUM', name: 'Aluminum', emoji: '⬜', category: 'Base Metals', price: 2580, unit: '$/ton', change: 45.2, changePct: 1.78, high52w: 2900, low52w: 2200 },
   { symbol: 'ZINC', name: 'Zinc', emoji: '⬛', category: 'Base Metals', price: 3150, unit: '$/ton', change: -28.5, changePct: -0.90, high52w: 3600, low52w: 2800 },
-  { symbol: 'WHEAT', name: 'Wheat', emoji: '🌾', category: 'Agriculture', price: 650, unit: '$/bu', change: 8.5, changePct: 1.32, high52w: 850, low52w: 580 },
+  {
+    symbol: 'WHEAT',
+    name: 'Wheat',
+    emoji: '🌾',
+    category: 'Agriculture',
+    price: 650,
+    unit: '$/bu',
+    change: 8.5,
+    changePct: 1.32,
+    high52w: 850,
+    low52w: 580,
+    contango: 1.2,               // Contango (harvest pressure)
+    supercyclePhase: 'early',
+    supercycleScore: 58,         // Jim Rogers: Early cycle potential
+    inventoryDays: 85,           // Global ending stocks
+    inventoryVs5YAvg: -5,        // 5% below 5Y average
+    productionCost: 520,         // US Great Plains production cost
+    costMargin: 25.0,            // 25% above production cost
+    seasonalityIndex: 72,        // Strong seasonal demand (planting season)
+    usdCorrelation: -0.45        // Moderate inverse USD correlation
+  },
   { symbol: 'CORN', name: 'Corn', emoji: '🌽', category: 'Agriculture', price: 485, unit: '$/bu', change: -5.2, changePct: -1.06, high52w: 650, low52w: 420 },
   { symbol: 'SOYBEAN', name: 'Soybeans', emoji: '🫘', category: 'Agriculture', price: 1280, unit: '$/bu', change: 12.5, changePct: 0.98, high52w: 1550, low52w: 1150 },
   { symbol: 'COTTON', name: 'Cotton', emoji: '☁️', category: 'Agriculture', price: 82.5, unit: '$/lb', change: 1.85, changePct: 2.29, high52w: 95, low52w: 72 },

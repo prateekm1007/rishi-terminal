@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
 import { COMMODITIES } from '../../../data/markets';
-import { adaptCommodity } from '../../../lib/adapters/commodityAdapter';
-import { buildUniversalConsensus } from '../../../lib/consensus/universalConsensus';
-import { AssetTerminal } from '../../../components/terminal/AssetTerminal';
+import { CommodityDetailClient } from '../../../components/commodities/CommodityDetailClient';
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
@@ -25,17 +23,5 @@ export default async function CommodityPage({ params }: PageProps) {
     notFound();
   }
 
-  const asset = adaptCommodity(commodity);
-  const consensus = buildUniversalConsensus(asset);
-
-  return (
-    <AssetTerminal
-      asset={asset}
-      consensus={consensus as any}
-      detail={{
-        description: `${commodity.name} is a ${commodity.category} commodity trading at ${commodity.price}${commodity.unit}.`,
-        metadata: {},
-      }}
-    />
-  );
+  return <CommodityDetailClient commodity={commodity} />;
 }

@@ -66,13 +66,13 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     symbol: commodity.symbol,
     name: commodity.name,
     category: 'commodity',
-    price: commodity.price,
-    change24h: commodity.changePct,
+    price: displayPrice,
+    change24h: displayChange,
     metadata: commodity,
   };
 
   const range52w = commodity.high52w - commodity.low52w;
-  const pos52w = range52w > 0 ? ((commodity.price - commodity.low52w) / range52w) * 100 : 50;
+  const pos52w = range52w > 0 ? ((displayPrice - commodity.low52w) / range52w) * 100 : 50;
 
   // Knowledge graph data
   const bulls = rishiScores.filter(r => r.result.score >= 65);
@@ -83,7 +83,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
   // We instead show commodity-specific fundamentals that matter most: curve structure, inventories, supercycle, cost, seasonality, USD sensitivity.
   const costMargin = commodity.costMargin ??
     (commodity.productionCost
-      ? Number((((commodity.price - commodity.productionCost) / commodity.productionCost) * 100).toFixed(1))
+      ? Number((((displayPrice - commodity.productionCost) / commodity.productionCost) * 100).toFixed(1))
       : undefined);
 
   const technicalEdge = [
@@ -178,13 +178,13 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
 
     {
       metric: 'Momentum (1D)',
-      stockVal: commodity.changePct,
+      stockVal: displayChange,
       sectorAvg: 0,
       unit: '%',
       higherIsBetter: true,
-      insight: commodity.changePct > 2
+      insight: displayChange > 2
         ? 'Strong daily momentum'
-        : commodity.changePct < -2
+        : displayChange < -2
           ? 'Sharp decline — watch reversal / mean reversion'
           : 'Quiet day — consolidation',
     },
@@ -580,8 +580,8 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
                 {[
                   { label: '1D Change', value: `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}%`, color: displayChange >= 0 ? '#22C55E' : '#EF4444' },
-                  { label: 'From 52W Low', value: `+${((commodity.price - commodity.low52w) / commodity.low52w * 100).toFixed(1)}%`, color: '#22C55E' },
-                  { label: 'From 52W High', value: `${((commodity.price - commodity.high52w) / commodity.high52w * 100).toFixed(1)}%`, color: '#EF4444' },
+                  { label: 'From 52W Low', value: `+${((displayPrice - commodity.low52w) / commodity.low52w * 100).toFixed(1)}%`, color: '#22C55E' },
+                  { label: 'From 52W High', value: `${((displayPrice - commodity.high52w) / commodity.high52w * 100).toFixed(1)}%`, color: '#EF4444' },
                   { label: '52W Avg', value: `${((commodity.low52w + commodity.high52w) / 2).toFixed(2)} ${commodity.unit}`, color: '#D4AF37' },
                 ].map(p => (
                   <div key={p.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>

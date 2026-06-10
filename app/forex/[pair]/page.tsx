@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
 import { FOREX_PAIRS } from '../../../data/forex';
-import { adaptForex } from '../../../lib/adapters/forexAdapter';
-import { buildUniversalConsensus } from '../../../lib/consensus/universalConsensus';
-import { AssetTerminal } from '../../../components/terminal/AssetTerminal';
+import { ForexDetailClient } from '../../../components/forex/ForexDetailClient';
 
 export async function generateStaticParams() {
   return FOREX_PAIRS.map(pair => ({
@@ -16,26 +14,14 @@ interface PageProps {
 
 export default async function ForexDetailPage({ params }: PageProps) {
   const { pair } = await params;
-  
+
   const forexPair = FOREX_PAIRS.find(
     p => p.symbol.toUpperCase() === pair.toUpperCase()
   );
-  
+
   if (!forexPair) {
     notFound();
   }
 
-  const asset = adaptForex(forexPair);
-  const consensus = buildUniversalConsensus(asset);
-
-  return (
-    <AssetTerminal
-      asset={asset}
-      consensus={consensus as any}
-      detail={{
-        description: `${forexPair.name} is trading at ${forexPair.spotRate.toFixed(4)} with a 24h change of ${forexPair.change24h >= 0 ? '+' : ''}${forexPair.change24h.toFixed(2)}%.`,
-        metadata: {},
-      }}
-    />
-  );
+  return <ForexDetailClient pair={forexPair} />;
 }

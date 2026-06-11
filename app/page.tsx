@@ -56,12 +56,14 @@ const MARKETS = [
 
 
 const WORLD_MARKETS = [
-  { label:"S&P 500", sym:"SPX" },
-  { label:"Dow Jones", sym:"DJI" },
-  { label:"Nasdaq", sym:"IXIC" },
-  { label:"DAX", sym:"DAX" },
-  { label:"FTSE", sym:"FTSE" },
-  { label:"Hang Seng", sym:"HSI" },
+  { label:"S&P 500",    sym:"SPX"  },
+  { label:"Dow Jones",  sym:"DJI"  },
+  { label:"Nasdaq",     sym:"IXIC" },
+  { label:"DAX",        sym:"DAX"  },
+  { label:"FTSE 100",   sym:"FTSE" },
+  { label:"Nikkei 225", sym:"N225" },
+  { label:"Hang Seng",  sym:"HSI"  },
+  { label:"VIX",        sym:"VIX"  },
 ];
 const STATS = [
   { label:"NIFTY 50",   sym:"NIFTY50",    usd:false },

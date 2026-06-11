@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { ForexPair } from '../../data/forex';
+import { usePrice } from '../../hooks/useLivePrices';
 
 const TABS = [
   { id: 'overview',   label: 'Overview',       desc: 'Rates & Fundamentals'        },
@@ -80,12 +81,21 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
+  const { price: livePriceData } = usePrice(pair.symbol);
+  const displayRate = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : pair.spotRate;
+  const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : pair.change24h;
+  
+  const livePair = {
+    ...pair,
+    spotRate: displayRate,
+    change24h: displayChange,
+  };
 
-  const change1D = pair.change24h || 0;
-  const pppDeviation = ((pair.spotRate - pair.pppValue) / pair.pppValue * 100);
-  const isOvervalued = pair.spotRate > pair.pppValue;
+  const change1D = livePair.change24h || 0;
+  const pppDeviation = ((livePair.spotRate - livePair.pppValue) / livePair.pppValue * 100);
+  const isOvervalued = livePair.spotRate > livePair.pppValue;
 
-  const rishiScores = MACRO_RISHIS.map(r => ({ ...r, result: scoreMacroRishi(pair, r.name) }));
+  const rishiScores = MACRO_RISHIS.map(r => ({ ...r, result: scoreMacroRishi(livePair, r.name) }));
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
 
   const bulls = rishiScores.filter(r => r.result.score >= 65);
@@ -93,10 +103,10 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
   const neutrals = rishiScores.filter(r => r.result.score >= 45 && r.result.score < 65);
 
   const technicalEdge = [
-    { metric: 'Carry Trade Yield', stockVal: Math.abs(pair.interestDiff.diff), sectorAvg: 1.5, unit: '%', higherIsBetter: true, insight: pair.interestDiff.diff > 1.5 ? `Strong positive carry of ${pair.interestDiff.diff.toFixed(2)}% favors ${pair.baseCurrency} longs` : 'Low carry yield — FX gains required for profitability' },
-    { metric: 'PPP Deviation', stockVal: Math.abs(pppDeviation), sectorAvg: 5, unit: '%', higherIsBetter: false, insight: `${pair.baseCurrency} is ${isOvervalued ? 'overvalued' : 'undervalued'} by ${Math.abs(pppDeviation).toFixed(1)}% vs PPP fair value` },
-    { metric: 'Volatility', stockVal: pair.volatility, sectorAvg: 5, unit: '%', higherIsBetter: false, insight: pair.volatility < 5 ? 'Low volatility — stable trend regime' : pair.volatility < 7 ? 'Moderate volatility — size positions carefully' : 'High volatility — use tighter stops' },
-    { metric: 'Rate Differential', stockVal: pair.interestDiff.base, sectorAvg: pair.interestDiff.quote, unit: '%', higherIsBetter: true, insight: `${pair.baseCurrency} at ${pair.interestDiff.base.toFixed(2)}% vs ${pair.quoteCurrency} at ${pair.interestDiff.quote.toFixed(2)}%` },
+    { metric: 'Carry Trade Yield', stockVal: Math.abs(livePair.interestDiff.diff), sectorAvg: 1.5, unit: '%', higherIsBetter: true, insight: livePair.interestDiff.diff > 1.5 ? `Strong positive carry of ${livePair.interestDiff.diff.toFixed(2)}% favors ${livePair.baseCurrency} longs` : 'Low carry yield — FX gains required for profitability' },
+    { metric: 'PPP Deviation', stockVal: Math.abs(pppDeviation), sectorAvg: 5, unit: '%', higherIsBetter: false, insight: `${livePair.baseCurrency} is ${isOvervalued ? 'overvalued' : 'undervalued'} by ${Math.abs(pppDeviation).toFixed(1)}% vs PPP fair value` },
+    { metric: 'Volatility', stockVal: livePair.volatility, sectorAvg: 5, unit: '%', higherIsBetter: false, insight: livePair.volatility < 5 ? 'Low volatility — stable trend regime' : livePair.volatility < 7 ? 'Moderate volatility — size positions carefully' : 'High volatility — use tighter stops' },
+    { metric: 'Rate Differential', stockVal: livePair.interestDiff.base, sectorAvg: livePair.interestDiff.quote, unit: '%', higherIsBetter: true, insight: `${livePair.baseCurrency} at ${livePair.interestDiff.base.toFixed(2)}% vs ${livePair.quoteCurrency} at ${livePair.interestDiff.quote.toFixed(2)}%` },
   ];
 
   return (
@@ -107,7 +117,7 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ background: '#0A0F1C', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 16, width: '100%', maxWidth: 900, maxHeight: '85vh', overflow: 'auto', padding: 32, position: 'relative' }}>
             <button onClick={() => setShowGraph(false)} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(239,68,68,0.1)', border: '1px solid #EF4444', color: '#EF4444', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>{t("kg.close")}</button>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#D4AF37', marginBottom: 24 }}>{pair.baseCurrency}/{pair.quoteCurrency} — {t("kg.macroKnowledgeGraph")}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#D4AF37', marginBottom: 24 }}>{livePair.baseCurrency}/{livePair.quoteCurrency} — {t("kg.macroKnowledgeGraph")}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', marginBottom: 12 }}>{t("kg.bullishMacro")} ({bulls.length})</div>
@@ -171,29 +181,29 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
             {' > '}
             <Link href="/forex" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>FOREX</Link>
-            {' > ' + pair.symbol}
+            {' > ' + livePair.symbol}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 24 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
                 <span style={{ fontSize: 32 }}>💱</span>
-                <h1 className="philosophy-heading" style={{ fontSize: 28, color: 'var(--accent-gold)', letterSpacing: 2 }}>{pair.baseCurrency}/{pair.quoteCurrency}</h1>
-                <span style={{ fontFamily: 'monospace', fontSize: 11, padding: '3px 8px', background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', borderRadius: 4, color: 'var(--accent-gold)' }}>{pair.symbol}</span>
+                <h1 className="philosophy-heading" style={{ fontSize: 28, color: 'var(--accent-gold)', letterSpacing: 2 }}>{livePair.baseCurrency}/{livePair.quoteCurrency}</h1>
+                <span style={{ fontFamily: 'monospace', fontSize: 11, padding: '3px 8px', background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.3)', borderRadius: 4, color: 'var(--accent-gold)' }}>{livePair.symbol}</span>
               </div>
               <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                <span>{pair.name}</span>
+                <span>{livePair.name}</span>
                 <span>|</span>
-                <span>Vol: {pair.volatility.toFixed(1)}%</span>
+                <span>Vol: {livePair.volatility.toFixed(1)}%</span>
                 <span>|</span>
                 <span style={{ color: scoreColor(avgScore), fontWeight: 600 }}>Macro Consensus: {avgScore}/100</span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1 }}>{pair.spotRate.toFixed(4)}</div>
+              <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1 }}>{livePair.spotRate.toFixed(4)}</div>
               <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: trendColor(change1D) }}>
                 {change1D >= 0 ? '+' : ''}{change1D.toFixed(2)}%
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Spread: {pair.spread.toFixed(4)}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Spread: {livePair.spread.toFixed(4)}</div>
             </div>
           </div>
         </div>
@@ -226,7 +236,7 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 MACRO RISHI CONSENSUS</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(avgScore), lineHeight: 1 }}>{avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
-                {avgScore >= 70 ? 'Bullish — Macro conditions favor ' + pair.baseCurrency : avgScore >= 50 ? 'Neutral — Mixed signals, range-bound likely' : 'Bearish — Macro headwinds for ' + pair.baseCurrency}
+                {avgScore >= 70 ? 'Bullish — Macro conditions favor ' + livePair.baseCurrency : avgScore >= 50 ? 'Neutral — Mixed signals, range-bound likely' : 'Bearish — Macro headwinds for ' + livePair.baseCurrency}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (
@@ -244,10 +254,10 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>BID / ASK / SPREAD</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
                 {[
-                  { label: 'Bid', value: pair.bid.toFixed(4), color: '#22C55E' },
-                  { label: 'Ask', value: pair.ask.toFixed(4), color: '#EF4444' },
-                  { label: 'Spread', value: pair.spread.toFixed(4), color: '#D4AF37' },
-                  { label: 'Mid', value: ((pair.bid + pair.ask) / 2).toFixed(4), color: 'var(--text-primary)' },
+                  { label: 'Bid', value: livePair.bid.toFixed(4), color: '#22C55E' },
+                  { label: 'Ask', value: livePair.ask.toFixed(4), color: '#EF4444' },
+                  { label: 'Spread', value: livePair.spread.toFixed(4), color: '#D4AF37' },
+                  { label: 'Mid', value: ((livePair.bid + livePair.ask) / 2).toFixed(4), color: 'var(--text-primary)' },
                 ].map(m => (
                   <div key={m.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{m.label.toUpperCase()}</div>
@@ -262,10 +272,10 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>FORWARD RATES</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
                 {[
-                  { label: '1 Month', value: pair.forward1M.toFixed(4) },
-                  { label: '3 Months', value: pair.forward3M.toFixed(4) },
-                  { label: '6 Months', value: pair.forward6M.toFixed(4) },
-                  { label: '12 Months', value: pair.forward12M.toFixed(4) },
+                  { label: '1 Month', value: livePair.forward1M.toFixed(4) },
+                  { label: '3 Months', value: livePair.forward3M.toFixed(4) },
+                  { label: '6 Months', value: livePair.forward6M.toFixed(4) },
+                  { label: '12 Months', value: livePair.forward12M.toFixed(4) },
                 ].map(f => (
                   <div key={f.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>{f.label}</div>
@@ -280,9 +290,9 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>INTEREST RATE DIFFERENTIAL</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
                 {[
-                  { label: `${pair.baseCurrency} Rate`, value: `${pair.interestDiff.base.toFixed(2)}%`, color: '#60a5fa' },
-                  { label: `${pair.quoteCurrency} Rate`, value: `${pair.interestDiff.quote.toFixed(2)}%`, color: '#c084fc' },
-                  { label: 'Differential', value: `${pair.interestDiff.diff >= 0 ? '+' : ''}${pair.interestDiff.diff.toFixed(2)}%`, color: pair.interestDiff.diff >= 0 ? '#22C55E' : '#EF4444' },
+                  { label: `${livePair.baseCurrency} Rate`, value: `${livePair.interestDiff.base.toFixed(2)}%`, color: '#60a5fa' },
+                  { label: `${livePair.quoteCurrency} Rate`, value: `${livePair.interestDiff.quote.toFixed(2)}%`, color: '#c084fc' },
+                  { label: 'Differential', value: `${livePair.interestDiff.diff >= 0 ? '+' : ''}${livePair.interestDiff.diff.toFixed(2)}%`, color: livePair.interestDiff.diff >= 0 ? '#22C55E' : '#EF4444' },
                 ].map(r => (
                   <div key={r.label} style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{r.label.toUpperCase()}</div>
@@ -305,9 +315,9 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
                 {[
                   { label: '1 Day', value: change1D },
-                  { label: 'Volatility', value: pair.volatility, isVol: true },
-                  { label: 'From 52W High', value: -Math.abs(((pair.high52w - pair.spotRate) / pair.high52w) * 100) },
-                  { label: 'From 52W Low', value: Math.abs(((pair.spotRate - pair.low52w) / pair.low52w) * 100) },
+                  { label: 'Volatility', value: livePair.volatility, isVol: true },
+                  { label: 'From 52W High', value: -Math.abs(((livePair.high52w - livePair.spotRate) / livePair.high52w) * 100) },
+                  { label: 'From 52W Low', value: Math.abs(((livePair.spotRate - livePair.low52w) / livePair.low52w) * 100) },
                 ].map(p => (
                   <div key={p.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>{p.label}</div>
@@ -324,8 +334,8 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>PURCHASING POWER PARITY (PPP)</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 16 }}>
                 {[
-                  { label: 'Spot Rate', value: pair.spotRate.toFixed(4), color: 'var(--text-primary)' },
-                  { label: 'PPP Fair Value', value: pair.pppValue.toFixed(4), color: '#D4AF37' },
+                  { label: 'Spot Rate', value: livePair.spotRate.toFixed(4), color: 'var(--text-primary)' },
+                  { label: 'PPP Fair Value', value: livePair.pppValue.toFixed(4), color: '#D4AF37' },
                   { label: 'Over/Under Valued', value: `${pppDeviation >= 0 ? '+' : ''}${pppDeviation.toFixed(1)}%`, color: isOvervalued ? '#EF4444' : '#22C55E' },
                 ].map(p => (
                   <div key={p.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
@@ -337,8 +347,8 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: '3px solid #D4AF37' }}>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
                   {isOvervalued
-                    ? `${pair.baseCurrency} is overvalued by ${Math.abs(pppDeviation).toFixed(1)}% vs ${pair.quoteCurrency} based on PPP. Ray Dalio's debt cycle model suggests mean reversion risk.`
-                    : `${pair.baseCurrency} is undervalued by ${Math.abs(pppDeviation).toFixed(1)}% vs ${pair.quoteCurrency} based on PPP. Druckenmiller sees potential upside catalyst if macro turns.`}
+                    ? `${livePair.baseCurrency} is overvalued by ${Math.abs(pppDeviation).toFixed(1)}% vs ${livePair.quoteCurrency} based on PPP. Ray Dalio's debt cycle model suggests mean reversion risk.`
+                    : `${livePair.baseCurrency} is undervalued by ${Math.abs(pppDeviation).toFixed(1)}% vs ${livePair.quoteCurrency} based on PPP. Druckenmiller sees potential upside catalyst if macro turns.`}
                 </p>
               </div>
             </div>
@@ -368,9 +378,9 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>24H TRADING STATISTICS</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
                 {[
-                  { label: '24h Volume', value: `$${(pair.volume24h / 1e9).toFixed(2)}B`, color: '#60a5fa' },
-                  { label: 'Liquidity', value: pair.liquidity, color: pair.liquidity === 'HIGH' ? '#22C55E' : '#D4AF37' },
-                  { label: 'Volatility Class', value: pair.volatility < 5 ? 'LOW' : pair.volatility < 7 ? 'MEDIUM' : 'HIGH', color: volColor(pair.volatility) },
+                  { label: '24h Volume', value: `$${(livePair.volume24h / 1e9).toFixed(2)}B`, color: '#60a5fa' },
+                  { label: 'Liquidity', value: livePair.liquidity, color: livePair.liquidity === 'HIGH' ? '#22C55E' : '#D4AF37' },
+                  { label: 'Volatility Class', value: livePair.volatility < 5 ? 'LOW' : livePair.volatility < 7 ? 'MEDIUM' : 'HIGH', color: volColor(livePair.volatility) },
                 ].map(s => (
                   <div key={s.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>{s.label}</div>
@@ -392,8 +402,8 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>CENTRAL BANK POLICY STANCE</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                 {[
-                  { country: pair.baseCurrency, rate: pair.interestDiff.base },
-                  { country: pair.quoteCurrency, rate: pair.interestDiff.quote },
+                  { country: livePair.baseCurrency, rate: livePair.interestDiff.base },
+                  { country: livePair.quoteCurrency, rate: livePair.interestDiff.quote },
                 ].map(cb => {
                   const stance = cb.rate > 6 ? 'HAWKISH' : cb.rate > 4 ? 'NEUTRAL' : 'DOVISH';
                   const stanceColor = stance === 'HAWKISH' ? '#EF4444' : stance === 'NEUTRAL' ? '#D4AF37' : '#22C55E';
@@ -455,14 +465,14 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
             {/* Carry Trade */}
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>CARRY TRADE ANALYSIS</div>
-              <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 10, borderLeft: `3px solid ${pair.interestDiff.diff >= 0 ? '#22C55E' : '#EF4444'}`, marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: pair.interestDiff.diff >= 0 ? '#22C55E' : '#EF4444', marginBottom: 8 }}>
-                  {pair.interestDiff.diff >= 0 ? 'POSITIVE CARRY OPPORTUNITY' : 'NEGATIVE CARRY — REVERSE TRADE'}
+              <div style={{ padding: 20, background: 'var(--bg-secondary)', borderRadius: 10, borderLeft: `3px solid ${livePair.interestDiff.diff >= 0 ? '#22C55E' : '#EF4444'}`, marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: livePair.interestDiff.diff >= 0 ? '#22C55E' : '#EF4444', marginBottom: 8 }}>
+                  {livePair.interestDiff.diff >= 0 ? 'POSITIVE CARRY OPPORTUNITY' : 'NEGATIVE CARRY — REVERSE TRADE'}
                 </div>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
-                  {pair.interestDiff.diff >= 0
-                    ? `Borrowing ${pair.quoteCurrency} at ${pair.interestDiff.quote.toFixed(2)}% to invest in ${pair.baseCurrency} at ${pair.interestDiff.base.toFixed(2)}% yields +${pair.interestDiff.diff.toFixed(2)}% annually (excluding FX risk). Soros would size this based on trend confirmation.`
-                    : `Negative carry of ${pair.interestDiff.diff.toFixed(2)}%. ${pair.baseCurrency} yields less than ${pair.quoteCurrency}. Dalio suggests this pair needs strong trend momentum to overcome carry drag.`}
+                  {livePair.interestDiff.diff >= 0
+                    ? `Borrowing ${livePair.quoteCurrency} at ${livePair.interestDiff.quote.toFixed(2)}% to invest in ${livePair.baseCurrency} at ${livePair.interestDiff.base.toFixed(2)}% yields +${livePair.interestDiff.diff.toFixed(2)}% annually (excluding FX risk). Soros would size this based on trend confirmation.`
+                    : `Negative carry of ${livePair.interestDiff.diff.toFixed(2)}%. ${livePair.baseCurrency} yields less than ${livePair.quoteCurrency}. Dalio suggests this pair needs strong trend momentum to overcome carry drag.`}
                 </p>
               </div>
             </div>

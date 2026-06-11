@@ -5,6 +5,7 @@ import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { ForexPair } from '../../data/forex';
 import { usePrice } from '../../hooks/useLivePrices';
+import { AssetPriceChart } from '../terminal/AssetPriceChart';
 
 const TABS = [
   { id: 'overview',   label: 'Overview',       desc: 'Rates & Fundamentals'        },
@@ -81,7 +82,8 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
-  const { price: livePriceData } = usePrice(pair.symbol);
+  const forexSymbol = `${pair.baseCurrency}/${pair.quoteCurrency}`;
+const { price: livePriceData } = usePrice(forexSymbol);
   const displayRate = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : pair.spotRate;
   const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : pair.change24h;
   
@@ -392,6 +394,23 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
 
           </div>
         )}
+
+
+            {/* LIVE PRICE CHART */}
+            <div className="card-sacred" style={{ padding: 24 }}>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>
+                LIVE PRICE CHART
+              </div>
+
+              <AssetPriceChart
+                asset={{
+                  symbol: forexSymbol,
+                  name: pair.name,
+                  category: 'forex',
+                  price: livePair.spotRate,
+                } as any}
+              />
+            </div>
 
         {/* WISDOM TAB */}
         {activeTab === 'wisdom' && (

@@ -1,6 +1,7 @@
 'use client';
 
 import type { Bond } from '../../data/bonds';
+import { usePrice } from '../../hooks/useLivePrices';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
 import type { UniversalAsset } from '../../lib/types/asset';
 
@@ -9,6 +10,10 @@ function scoreColor(v: number) {
 }
 
 export function BondDetailClient({ bond }: { bond: Bond }) {
+  const { price: livePriceData } = usePrice(bond.symbol);
+  const displayPrice = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : bond.price;
+  const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : 0;
+
   const durationScore =
     bond.duration < 3 ? 85 :
     bond.duration < 7 ? 70 :
@@ -66,7 +71,7 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
     name: bond.name,
     assetClass: 'bond',
     category: 'bond',
-    price: bond.price,
+    price: displayPrice,
     change24h: 0,
     changePercent24h: 0,
     marketCap: 0,
@@ -91,6 +96,33 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
 
         <div style={{ color: '#999' }}>
           {bond.issuer} • {bond.type} • {bond.country}
+        </div>
+      </div>
+
+
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        marginBottom: 24,
+        padding: '16px 20px',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 12
+      }}>
+        <div>
+          <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>LIVE PRICE</div>
+          <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace' }}>
+            {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+          </div>
+          <div style={{ fontSize: 13, fontFamily: 'monospace', marginTop: 4,
+            color: displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
+            {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}%
+          </div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 12, color: '#888' }}>YTM</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }}>{bond.ytm}%</div>
+          <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>Duration: {bond.duration}y</div>
         </div>
       </div>
 

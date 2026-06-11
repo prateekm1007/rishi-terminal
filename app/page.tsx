@@ -71,7 +71,6 @@ const STATS = [
   { label:"BANK NIFTY", sym:"BANK_NIFTY", usd:false },
   { label:"Bitcoin",    sym:"BTC",        usd:true  },
   { label:"Gold / oz",  sym:"GOLD",       usd:true  },
-  { label:"USD/INR",    sym:"USD/INR",    usd:false },
 ];
 
 /* ── Style Helpers ─────────────────────────────────────────── */
@@ -149,7 +148,7 @@ export default function DashboardPage() {
 
   const rotatingStocks = useMemo(() => {
     return Object.values(STOCKS)
-      .filter((s:any) => s.pe > 0)
+      .filter((s:any) => s.pe > 0 && s.symbol !== "HINDUNILVR")
       .slice(0,6)
       .map((s:any) => ({
         symbol:s.symbol,

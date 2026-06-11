@@ -349,6 +349,38 @@ export default function DashboardPage() {
 
         <Divider />
 
+        {/* ── WORLD MARKETS ────────────────────────────────── */}
+        <div style={{ marginBottom:"48px" }}>
+          <SectionHeader title="🌍 World Markets" />
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
+            {WORLD_MARKETS.map(({ label, sym }) => {
+              const d  = prices[sym];
+              const up = (d?.changePercent24h ?? 0) >= 0;
+              return (
+                <div key={sym} style={{ ...card(), padding:"18px" }}>
+                  <div style={{ fontSize:"10px",fontWeight:700,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px",fontFamily:sans }}>
+                    {label}
+                  </div>
+                  {loading ? (
+                    <div className="skeleton" style={{ height:"28px", marginBottom:"8px" }} />
+                  ) : (
+                    <>
+                      <div style={{ fontSize:"22px",fontWeight:800,color:C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
+                        {d?.price ? d.price.toLocaleString("en-US",{maximumFractionDigits:2}) : "—"}
+                      </div>
+                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
+                        {up?"▲":"▼"} {Math.abs(d?.changePercent24h??0).toFixed(2)}%
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <Divider />
+
         {/* ── STOCK OF THE DAY ─────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + STOCK_OF_DAY.symbol} linkLabel={t("dashboard2.fullAnalysis")} />

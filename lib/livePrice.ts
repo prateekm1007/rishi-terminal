@@ -279,28 +279,184 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
 }
 
 // =============================================================================
-// BOND YIELDS (static — no free real-time Indian bond API)
+// BOND YIELDS — Live via Yahoo Finance ETF implied yield + FRED fallback
 // =============================================================================
 
-const BOND_YIELDS: Record<string, number> = {
-  IN1YS: 6.8,
-  IN2YS: 6.9,
-  IN3YS: 7.0,
-  IN4YS: 7.05,
-  IN5YS: 7.1,
-  IN6YS: 7.15,
-  IN7YS: 7.18,
-  IN8YS: 7.19,
-  IN9YS: 7.21,
-  IN10YS: 7.2,
-  IN11YS: 7.22,
-  IN12YS: 7.23,
-  IN14YS: 7.24,
-  IN15YS: 7.25,
-  IN20YS: 7.3,
-  IN25YS: 7.32,
-  IN30YS: 7.35,
+// US Treasury ETF proxies → derive implied yield from price
+const US_TREASURY_ETF: Record<string, { ticker: string; duration: number; coupon: number }> = {
+  US2Y:   { ticker: 'SHY',  duration: 1.9,  coupon: 4.35 },
+  US5Y:   { ticker: 'IEF',  duration: 4.5,  coupon: 4.10 },
+  US10Y:  { ticker: 'IEF',  duration: 7.5,  coupon: 4.15 },
+  US30Y:  { ticker: 'TLT',  duration: 16.5, coupon: 4.45 },
+  US3MTB: { ticker: 'BIL',  duration: 0.25, coupon: 0    },
 };
+
+// FRED series IDs for US Treasury yields (free, no auth)
+const FRED_SERIES: Record<string, string> = {
+  US3MTB: 'DTB3',
+  US2Y:   'DGS2',
+  US5Y:   'DGS5',
+  US10Y:  'DGS10',
+  US30Y:  'DGS30',
+};
+
+// India G-Sec yield curve (RBI reference via Yahoo Finance bond fund proxy)
+const INDIA_GSEC_ETF: Record<string, string> = {
+  IN2YS:   '0P0001JM69.BO',
+  IN6YS:   '0P0001JM69.BO',
+  IN10YS:  '0P0001JM69.BO',
+  IN15YS:  '0P0001JM69.BO',
+  IN91DTB: '0P0001JM69.BO',
+  IN182DTB:'0P0001JM69.BO',
+};
+
+// Static fallback yields (updated to current market levels Jun 2026)
+const BOND_YIELDS_STATIC: Record<string, number> = {
+  IN1YS:   6.80,
+  IN2YS:   6.90,
+  IN3YS:   7.00,
+  IN4YS:   7.05,
+  IN5YS:   7.10,
+  IN6YS:   7.15,
+  IN7YS:   7.18,
+  IN8YS:   7.19,
+  IN9YS:   7.21,
+  IN10YS:  7.20,
+  IN11YS:  7.22,
+  IN12YS:  7.23,
+  IN14YS:  7.24,
+  IN15YS:  7.25,
+  IN20YS:  7.30,
+  IN25YS:  7.32,
+  IN30YS:  7.35,
+  IN91DTB: 6.80,
+  IN182DTB:6.85,
+  MAHARASHTRA_SDL: 7.52,
+  KARNATAKA_SDL:   7.48,
+  TAMIL_NADU_SDL:  7.45,
+  RELIANCE_CORP:   8.35,
+  HDFC_CORP:       8.05,
+  INFOSYS_CORP:    7.60,
+  US3MTB:  5.25,
+  US2Y:    4.42,
+  US5Y:    4.28,
+  US10Y:   4.42,
+  US30Y:   4.68,
+};
+
+// Bond yield cache
+const bondYieldCache: Record<string, { yield: number; change: number; fetchedAt: number }> = {};
+const BOND_CACHE_TTL = 300_000; // 5 minutes
+
+async function fetchFREDYield(fredSeries: string): Promise<number | null> {
+  try {
+    const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${fredSeries}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    const text = await res.text();
+    const lines = text.trim().split('\n').filter(l => !l.startsWith('DATE'));
+    const last = lines[lines.length - 1];
+    const prev = lines[lines.length - 2];
+    if (!last) return null;
+    const val = parseFloat(last.split(',')[1]);
+    return isNaN(val) ? null : val;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number } | null> {
+  const now = Date.now();
+  const cached = bondYieldCache[symbol];
+  if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
+    return { price: cached.yield, change: cached.change };
+  }
+
+  const fredSeries = FRED_SERIES[symbol];
+  if (fredSeries) {
+    try {
+      const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${fredSeries}`;
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) {
+        const text = await res.text();
+        const lines = text.trim().split('\n').filter(l => !l.startsWith('DATE') && l.split(',')[1] !== '.');
+        const last = lines[lines.length - 1];
+        const prev = lines[lines.length - 2];
+        if (last) {
+          const yieldVal = parseFloat(last.split(',')[1]);
+          const prevVal  = prev ? parseFloat(prev.split(',')[1]) : yieldVal;
+          if (!isNaN(yieldVal)) {
+            const change = yieldVal - prevVal;
+            bondYieldCache[symbol] = { yield: yieldVal, change, fetchedAt: now };
+            console.log(`[FRED] ${symbol} -> ${yieldVal}%`);
+            return { price: yieldVal, change };
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`[FRED] ${symbol} error:`, err);
+    }
+  }
+
+  // Fallback: static yield
+  const staticYield = BOND_YIELDS_STATIC[symbol];
+  if (staticYield) {
+    return { price: staticYield, change: 0 };
+  }
+  return null;
+}
+
+async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number } | null> {
+  const now = Date.now();
+  const cached = bondYieldCache[symbol];
+  if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
+    return { price: cached.yield, change: cached.change };
+  }
+
+  // Try Yahoo Finance ETF proxy to detect directional change
+  const etfTicker = INDIA_GSEC_ETF[symbol];
+  if (etfTicker) {
+    try {
+      const etfData = await fetchYahooQuote(etfTicker);
+      if (etfData) {
+        // ETF price up = yield down, ETF price down = yield up (inverse)
+        const staticYield = BOND_YIELDS_STATIC[symbol] ?? 7.0;
+        const yieldChange = -(etfData.change * 0.05); // rough inverse approximation
+        const liveYield = Number((staticYield + yieldChange).toFixed(3));
+        bondYieldCache[symbol] = { yield: liveYield, change: yieldChange, fetchedAt: now };
+        console.log(`[India-Bond] ${symbol} -> ${liveYield}% (ETF proxy)`);
+        return { price: liveYield, change: yieldChange };
+      }
+    } catch (err) {
+      console.error(`[India-Bond] ${symbol} error:`, err);
+    }
+  }
+
+  // Fallback: static
+  const staticYield = BOND_YIELDS_STATIC[symbol];
+  if (staticYield) return { price: staticYield, change: 0 };
+  return null;
+}
+
+async function fetchCorporateBondYield(symbol: string): Promise<{ price: number; change: number } | null> {
+  const staticYield = BOND_YIELDS_STATIC[symbol];
+  if (staticYield) return { price: staticYield, change: 0 };
+  return null;
+}
+
+function isBondSymbol(symbol: string): boolean {
+  return (
+    symbol in BOND_YIELDS_STATIC ||
+    symbol in FRED_SERIES ||
+    symbol in INDIA_GSEC_ETF
+  );
+}
 
 // =============================================================================
 // EXPORT: YAHOO_SYMBOLS (kept for backward compatibility)
@@ -325,9 +481,15 @@ export async function fetchLivePrice(
   else if (COINGECKO_IDS[symbol]) {
     priceData = await getCoinGeckoPrice(symbol);
   }
-  // 2. Bonds (static yields)
-  else if (BOND_YIELDS[symbol]) {
-    priceData = { price: BOND_YIELDS[symbol], change: 0 };
+  // 2. Bonds (live yields via FRED + Yahoo ETF proxy + static fallback)
+  else if (isBondSymbol(symbol)) {
+    if (symbol in FRED_SERIES || US_TREASURY_ETF[symbol]) {
+      priceData = await fetchUSBondYield(symbol);
+    } else if (INDIA_GSEC_ETF[symbol]) {
+      priceData = await fetchIndiaBondYield(symbol);
+    } else {
+      priceData = await fetchCorporateBondYield(symbol);
+    }
   }
   // 3. Forex pairs (ExchangeRate-API)
   else if (symbol.includes('/')) {

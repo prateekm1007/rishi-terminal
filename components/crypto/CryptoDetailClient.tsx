@@ -75,7 +75,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
   const rishiScores = CRYPTO_RISHIS.map(r => ({ ...r, result: r.scorer(liveAsset) }));
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
 
-  const aboveMa200 = asset.price > asset.moving200d;
+  const aboveMa200 = liveAsset.price > asset.moving200d;
   const maLabel = asset.macd === 'BULLISH' ? 'BUY' : asset.macd === 'BEARISH' ? 'SELL' : 'NEUTRAL';
 
   const bulls = rishiScores.filter(r => r.result.score >= 65);
@@ -86,8 +86,8 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     symbol: asset.symbol,
     name: asset.name,
     category: 'crypto',
-    price: asset.price,
-    change24h: asset.change24h,
+    price: displayPrice,
+    change24h: displayChange,
     metadata: asset,
   };
 

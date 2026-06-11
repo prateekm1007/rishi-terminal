@@ -25,6 +25,35 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
   const convexity = Number((bond.duration * bond.duration * 0.12).toFixed(2));
   const dv01 = Number((bond.duration * bond.price * 0.0001).toFixed(4));
 
+  
+  const durationBucket =
+    bond.duration < 3 ? "SHORT DURATION" :
+    bond.duration < 10 ? "INTERMEDIATE DURATION" :
+    "LONG DURATION";
+
+  const curvePosition =
+    bond.maturityYears < 2 ? "FRONT END" :
+    bond.maturityYears < 10 ? "BELLY" :
+    "LONG END";
+
+  const termPremium =
+    Number(Math.max(0, bond.ytm - bond.couponRate).toFixed(2));
+
+  const realYield =
+    Number((bond.ytm - 3.5).toFixed(2));
+
+  const rateSensitivity =
+    bond.duration < 3 ? "LOW" :
+    bond.duration < 8 ? "MEDIUM" :
+    "HIGH";
+
+  const curveRegime =
+    bond.maturityYears >= 10 && bond.ytm > 7
+      ? "STEEPENING"
+      : bond.maturityYears >= 10
+      ? "NEUTRAL"
+      : "FRONT-END DOMINATED";
+
   const overall = Math.round(
     (durationScore + creditScore + spreadScore) / 3
   );
@@ -121,6 +150,55 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
             color:scoreColor(overall)
           }}>
             {overall}
+          </div>
+        </div>
+      </div>
+    
+      <div style={{
+        display:'grid',
+        gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',
+        gap:16,
+        marginTop:16
+      }}>
+        <div style={{ border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:20 }}>
+          <h3>Yield Curve Position</h3>
+          <div style={{ fontSize:24, fontWeight:700 }}>
+            {curvePosition}
+          </div>
+        </div>
+
+        <div style={{ border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:20 }}>
+          <h3>Duration Bucket</h3>
+          <div style={{ fontSize:24, fontWeight:700 }}>
+            {durationBucket}
+          </div>
+        </div>
+
+        <div style={{ border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:20 }}>
+          <h3>Real Yield</h3>
+          <div style={{ fontSize:24, fontWeight:700 }}>
+            {realYield}%
+          </div>
+        </div>
+
+        <div style={{ border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:20 }}>
+          <h3>Term Premium</h3>
+          <div style={{ fontSize:24, fontWeight:700 }}>
+            {termPremium}%
+          </div>
+        </div>
+
+        <div style={{ border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:20 }}>
+          <h3>Rate Sensitivity</h3>
+          <div style={{ fontSize:24, fontWeight:700 }}>
+            {rateSensitivity}
+          </div>
+        </div>
+
+        <div style={{ border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:20 }}>
+          <h3>Curve Regime</h3>
+          <div style={{ fontSize:24, fontWeight:700 }}>
+            {curveRegime}
           </div>
         </div>
       </div>

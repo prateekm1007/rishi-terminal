@@ -65,6 +65,30 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
     (durationScore + creditScore + spreadScore) / 3
   );
 
+  const bondRishis = [
+    {
+      name: 'Bill Gross',
+      tag: 'Bond King',
+      score: Math.round((durationScore * 0.40) + (spreadScore * 0.35) + (creditScore * 0.25)),
+      signal: bond.duration <= 5 ? 'DURATION CONTROLLED' : 'WATCH RATE RISK',
+      thesis: bond.duration <= 5 ? 'Shorter duration keeps rate shocks contained.' : 'Long duration needs tighter rate-risk discipline.' ,
+    },
+    {
+      name: 'Jeffrey Gundlach',
+      tag: 'DoubleLine',
+      score: Math.round((spreadScore * 0.40) + (Math.max(0, 100 - Math.abs(termPremium) * 10) * 0.30) + (durationScore * 0.30)),
+      signal: curveRegime === 'STEEPENING' ? 'CURVE COMPENSATION' : 'CURVE IS FLAT',
+      thesis: termPremium > 0 ? 'Positive term premium supports selective carry.' : 'Curve compensation is thin; prefer quality and carry.',
+    },
+    {
+      name: 'Mohamed El-Erian',
+      tag: 'Macro Strategist',
+      score: Math.round((creditScore * 0.45) + (durationScore * 0.25) + (spreadScore * 0.30)),
+      signal: creditScore >= 80 ? 'QUALITY DEFENSIVE' : 'RISK SELECTIVE',
+      thesis: creditScore >= 80 ? 'High-grade balance sheets fit defensive macro portfolios.' : 'Watch liquidity and spread volatility.',
+    },
+  ];
+
 
   const chartAsset = {
     symbol: bond.symbol,
@@ -252,6 +276,25 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
           <div style={{ fontSize:24, fontWeight:700 }}>
             {curveRegime}
           </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 24, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: 20 }}>
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 12, letterSpacing: 1 }}>BOND RISHIS</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 16 }}>
+          {bondRishis.map(r => (
+            <div key={r.name} style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 16, background: 'rgba(255,255,255,0.02)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700 }}>{r.name}</div>
+                  <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{r.tag}</div>
+                </div>
+                <div style={{ fontSize: 26, fontWeight: 700, color: scoreColor(r.score) }}>{r.score}</div>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 11, color: scoreColor(r.score), fontWeight: 700, letterSpacing: 0.6 }}>{r.signal}</div>
+              <div style={{ marginTop: 8, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>{r.thesis}</div>
+            </div>
+          ))}
         </div>
       </div>
     </main>

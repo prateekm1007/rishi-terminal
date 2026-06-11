@@ -107,6 +107,7 @@ const YAHOO_SPECIAL: Record<string, string> = {
   US3MTB:     "BIL",
 
   // India bonds - ETF proxy (closest available)
+  IN6YS:          "0P0001JM69.BO",
   IN10YS:         "0P0001JM69.BO",
   IN15YS:         "0P0001JM69.BO",
   IN2YS:          "0P0001JM69.BO",

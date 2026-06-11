@@ -1,3 +1,4 @@
+import { STOCKS } from '../data/stocks';
 // lib/livePrice.ts
 // Universal live pricing
 // Stocks/Commodities: NSE India API
@@ -527,6 +528,16 @@ export async function fetchLivePrice(
   }
 
   if (!priceData) {
+    const fallback = (STOCKS as any)?.[symbol];
+
+    if (fallback?.price) {
+      return {
+        price: fallback.price,
+        change: 0,
+        lastUpdated: new Date().toISOString()
+      };
+    }
+
     return { price: 0, change: 0, lastUpdated: new Date().toISOString() };
   }
 

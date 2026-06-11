@@ -8,10 +8,11 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useLivePrices } from "@/hooks/useLivePrices";
 import { useLanguage } from "@/lib/language";
+import { STOCKS } from "@/data/stocks";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
-const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","BTC","ETH","GOLD","SILVER","WTI","USD/INR","SOL"];
+const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","USD/INR","SOL"];
 
 const STOCK_OF_DAY = {
   symbol: "TCS", name: "Tata Consultancy Services", sector: "IT",
@@ -22,7 +23,7 @@ const STOCK_OF_DAY = {
   tag: "Compounding Machine",
 };
 
-const TOP_STOCKS = [
+const ROTATING_STOCKS = [
   { symbol:"RELIANCE",  name:"Reliance Industries", sector:"Energy",  consensus:82, pe:28.4, roe:14.2 },
   { symbol:"TCS",       name:"Tata Consultancy",    sector:"IT",      consensus:88, pe:31.2, roe:48.6 },
   { symbol:"INFY",      name:"Infosys Ltd",          sector:"IT",      consensus:85, pe:27.8, roe:32.1 },
@@ -31,7 +32,7 @@ const TOP_STOCKS = [
   { symbol:"SBIN",      name:"State Bank of India",  sector:"Banking", consensus:74, pe:10.8, roe:14.9 },
 ];
 
-const TOP_SHORTS = [
+const ROTATING_SHORTS = [
   { symbol:"ADANIENT", name:"Adani Enterprises", shortScore:78, reason:"Elevated valuation + governance concerns" },
   { symbol:"ZOMATO",   name:"Zomato Ltd",         shortScore:72, reason:"Negative FCF + PE > 300x" },
   { symbol:"PAYTM",    name:"One97 Comms",        shortScore:81, reason:"Cash burn + regulatory risk" },
@@ -53,6 +54,15 @@ const MARKETS = [
   
 ];
 
+
+const WORLD_MARKETS = [
+  { label:"S&P 500", sym:"SPX" },
+  { label:"Dow Jones", sym:"DJI" },
+  { label:"Nasdaq", sym:"IXIC" },
+  { label:"DAX", sym:"DAX" },
+  { label:"FTSE", sym:"FTSE" },
+  { label:"Hang Seng", sym:"HSI" },
+];
 const STATS = [
   { label:"NIFTY 50",   sym:"NIFTY50",    usd:false },
   { label:"SENSEX",     sym:"SENSEX",     usd:false },
@@ -135,9 +145,35 @@ function Divider() {
 export default function DashboardPage() {
   const { t } = useLanguage();
 
+  const rotatingStocks = useMemo(() => {
+    return Object.values(STOCKS)
+      .filter((s:any) => s.pe > 0)
+      .slice(0,6)
+      .map((s:any) => ({
+        symbol:s.symbol,
+        name:s.name,
+        sector:s.sector,
+        consensus:80,
+        pe:s.pe,
+        roe:s.roe
+      }));
+  }, []);
+
+  const rotatingShorts = useMemo(() => {
+    return Object.values(STOCKS)
+      .filter((s:any) => s.pe === 0 || s.pe > 70 || s.fcf < 0 || s.de > 2)
+      .slice(0,3)
+      .map((s:any) => ({
+        symbol:s.symbol,
+        name:s.name,
+        shortScore:75,
+        reason:"Risk factors detected"
+      }));
+  }, []);
+
   const allSyms = useMemo(() => [
     ...TICKER_SYMS,
-    ...TOP_STOCKS.map(s => s.symbol),
+    ...ROTATING_STOCKS.map(s => s.symbol),
     ...TOP_CRYPTO.map(c => c.symbol),
     STOCK_OF_DAY.symbol,
   ], []);
@@ -413,7 +449,7 @@ export default function DashboardPage() {
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/screener" linkLabel={t("dashboard2.fullScreener")} />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
-            {TOP_STOCKS.map((stock) => {
+            {rotatingStocks.map((stock) => {
               const d  = prices[stock.symbol];
               const up = (d?.changePercent24h ?? 0) >= 0;
               const sc = scoreColor(stock.consensus);
@@ -469,7 +505,7 @@ export default function DashboardPage() {
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
-            {TOP_SHORTS.map(short => (
+            {rotatingShorts.map(short => (
               <Link href={"/stock/" + short.symbol} key={short.symbol} style={{ textDecoration:"none" }}>
                 <div style={{
                   ...card(),

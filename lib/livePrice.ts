@@ -77,6 +77,14 @@ const YAHOO_INDEX_SYMBOLS: Record<string, string> = {
   NIFTY50:    '^NSEI',
   SENSEX:     '^BSESN',
   BANK_NIFTY: '^NSEBANK',
+  SPX:        '^GSPC',
+  DJI:        '^DJI',
+  IXIC:       '^IXIC',
+  DAX:        '^GDAXI',
+  FTSE:       '^FTSE',
+  HSI:        '^HSI',
+  N225:       '^N225',
+  VIX:        '^VIX',
 };
 
 const YAHOO_COMMODITY_SYMBOLS: Record<string, string> = {
@@ -468,10 +476,15 @@ export const YAHOO_SYMBOLS: Record<string, string> = {};
 // MAIN EXPORT FUNCTION
 // =============================================================================
 
+const STOCK_ALIASES: Record<string,string> = {
+  BGV01: 'BSLIMITED',
+};
 export async function fetchLivePrice(
   symbol: string
 ): Promise<{ price: number; change: number; lastUpdated: string }> {
   let priceData: { price: number; change: number } | null = null;
+
+  symbol = STOCK_ALIASES[symbol] ?? symbol;
 
   // 0. Market indices (Yahoo Finance)
   if (YAHOO_INDEX_SYMBOLS[symbol]) {

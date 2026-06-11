@@ -53,6 +53,7 @@ const COINGECKO_IDS: Record<string, string> = {
 };
 
 const YAHOO_SPECIAL: Record<string, string> = {
+  BGV01: 'BSLIMITED.NS',
   // Indexes
   NIFTY50:    "^NSEI",
   SENSEX:     "^BSESN",

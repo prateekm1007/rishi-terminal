@@ -2,10 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { BONDS } from "@/data/bonds";
-import { adaptBond } from "@/lib/adapters/bondAdapter";
-import { buildUniversalConsensus } from "@/lib/consensus/universalConsensus";
-
-import { AssetTerminal } from "@/components/terminal/AssetTerminal";
+import { BondDetailClient } from "@/components/bonds/BondDetailClient";
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
@@ -27,14 +24,12 @@ export async function generateMetadata({
   );
 
   if (!bond) {
-    return {
-      title: "Bond Not Found",
-    };
+    return { title: "Bond Not Found" };
   }
 
   return {
     title: `${bond.name} - Bond Analysis | Rishi Terminal`,
-    description: `${bond.name} government bond analysis with yield, duration, spread, and Rishi consensus scoring.`,
+    description: `${bond.name} bond analysis`,
   };
 }
 
@@ -51,30 +46,5 @@ export default async function BondPage({
     notFound();
   }
 
-  const asset = adaptBond(bond);
-
-  const consensus = buildUniversalConsensus(asset);
-
-  return (
-    <AssetTerminal
-      asset={asset}
-      consensus={consensus as any}
-      detail={{
-        description: `${bond.name} is a ${bond.type} bond issued by ${bond.issuer} with a yield to maturity of ${bond.ytm}% and duration of ${bond.duration} years.`,
-        metadata: {
-          issuer: bond.issuer,
-          type: bond.type,
-          country: bond.country,
-          maturityYears: bond.maturityYears,
-          maturityDate: bond.maturityDate,
-          couponRate: bond.couponRate,
-          ytm: bond.ytm,
-          duration: bond.duration,
-          spread: bond.spread,
-          rating: bond.rating,
-          riskRating: bond.riskRating,
-        },
-      }}
-    />
-  );
+  return <BondDetailClient bond={bond} />;
 }

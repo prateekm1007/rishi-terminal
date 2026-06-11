@@ -232,6 +232,23 @@ const { price: livePriceData } = usePrice(forexSymbol);
         {activeTab === 'overview' && (
           <div style={{ display: 'grid', gap: 20 }}>
 
+            {/* LIVE PRICE CHART */}
+            <div className="card-sacred" style={{ padding: 24 }}>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>
+                LIVE PRICE CHART
+              </div>
+
+              <AssetPriceChart
+                asset={{
+                  symbol: forexSymbol,
+                  name: pair.name,
+                  category: 'forex',
+                  price: livePair.spotRate,
+                } as any}
+              />
+            </div>
+
+
             {/* Macro Consensus Hero */}
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
@@ -310,6 +327,23 @@ const { price: livePriceData } = usePrice(forexSymbol);
         {/* TECHNICAL TAB */}
         {activeTab === 'technical' && (
           <div style={{ display: 'grid', gap: 20 }}>
+
+            {/* LIVE PRICE CHART */}
+            <div className="card-sacred" style={{ padding: 24 }}>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>
+                LIVE PRICE CHART
+              </div>
+
+              <AssetPriceChart
+                asset={{
+                  symbol: forexSymbol,
+                  name: pair.name,
+                  category: 'forex',
+                  price: livePair.spotRate,
+                } as any}
+              />
+            </div>
+
 
             {/* Performance */}
             <div className="card-sacred" style={{ padding: 24 }}>
@@ -396,6 +430,12 @@ const { price: livePriceData } = usePrice(forexSymbol);
         )}
 
 
+
+
+        {/* WISDOM TAB */}
+        {activeTab === 'wisdom' && (
+          <div style={{ display: 'grid', gap: 20 }}>
+
             {/* LIVE PRICE CHART */}
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>
@@ -412,9 +452,6 @@ const { price: livePriceData } = usePrice(forexSymbol);
               />
             </div>
 
-        {/* WISDOM TAB */}
-        {activeTab === 'wisdom' && (
-          <div style={{ display: 'grid', gap: 20 }}>
 
             {/* Central Bank Policy */}
             <div className="card-sacred" style={{ padding: 24 }}>
@@ -502,6 +539,23 @@ const { price: livePriceData } = usePrice(forexSymbol);
         {/* KNOWLEDGE GRAPH TAB */}
         {activeTab === 'knowledge' && (
           <div style={{ display: 'grid', gap: 20 }}>
+
+            {/* LIVE PRICE CHART */}
+            <div className="card-sacred" style={{ padding: 24 }}>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>
+                LIVE PRICE CHART
+              </div>
+
+              <AssetPriceChart
+                asset={{
+                  symbol: forexSymbol,
+                  name: pair.name,
+                  category: 'forex',
+                  price: livePair.spotRate,
+                } as any}
+              />
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div className="card-sacred" style={{ padding: 24, borderTop: '2px solid #22C55E' }}>
                 <div style={{ fontSize: 9, color: '#22C55E', letterSpacing: 2, marginBottom: 16 }}>{t("kg.bullishMacro")} ({bulls.length})</div>

@@ -1,6 +1,8 @@
 'use client';
 
 import type { Bond } from '../../data/bonds';
+import { AssetPriceChart } from '../terminal/AssetPriceChart';
+import type { UniversalAsset } from '../../lib/types/asset';
 
 function scoreColor(v: number) {
   return v >= 75 ? '#22C55E' : v >= 55 ? '#D4AF37' : '#EF4444';
@@ -58,9 +60,27 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
     (durationScore + creditScore + spreadScore) / 3
   );
 
+
+  const chartAsset = {
+    symbol: bond.symbol,
+    name: bond.name,
+    assetClass: 'bond',
+    category: 'bond',
+    price: bond.price,
+    change24h: 0,
+    changePercent24h: 0,
+    marketCap: 0,
+    volume24h: 0,
+    country: bond.country,
+    sector: bond.type,
+  } as unknown as UniversalAsset;
+
   return (
     <main style={{ maxWidth: 1400, margin: '0 auto', padding: 24 }}>
       <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 24 }}>
+          <AssetPriceChart asset={chartAsset} />
+        </div>
         <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>
           BONDS
         </div>

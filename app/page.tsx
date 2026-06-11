@@ -12,7 +12,7 @@ import { STOCKS } from "@/data/stocks";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
-const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","USD/INR","SOL"];
+const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","SOL"];
 
 const STOCK_OF_DAY = {
   symbol: "TCS", name: "Tata Consultancy Services", sector: "IT",
@@ -61,9 +61,7 @@ const WORLD_MARKETS = [
   { label:"Nasdaq",     sym:"IXIC" },
   { label:"DAX",        sym:"DAX"  },
   { label:"FTSE 100",   sym:"FTSE" },
-  { label:"Nikkei 225", sym:"N225" },
   { label:"Hang Seng",  sym:"HSI"  },
-  { label:"VIX",        sym:"VIX"  },
 ];
 const STATS = [
   { label:"NIFTY 50",   sym:"NIFTY50",    usd:false },

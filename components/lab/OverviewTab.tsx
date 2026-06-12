@@ -126,7 +126,7 @@ export default function OverviewTab() {
       }, Date.now());
 
       const years = (Date.now() - minAdded) / (1000 * 60 * 60 * 24 * 365);
-      const tf = years > 2.2 ? '5Y' : years > 1.2 ? '2Y' : '1Y';
+      const tf = years > 2.5 ? '5Y' : years > 2 ? '3Y' : '1Y';
 
       try {
         const map: Record<string, HistoryPoint[]> = {};
@@ -505,41 +505,6 @@ const [beta, setBeta] = useState<number | null>(null);
     return { score, regime: MACRO_REGIME.label, aligned, misaligned };
   }, [sectorAlloc]);
 
-  const rebalanceSuggestions = useMemo(() => {
-    const total = totals.totalCurrent;
-    if (total <= 0) return [];
-
-    const list = enriched.map(h => ({
-      symbol: h.symbol,
-      weight: h.current / total,
-      score: h.score,
-      sector: h.sector,
-    }));
-
-    const suggestions: Array<{ kind: 'trim' | 'add' | 'review'; text: string }> = [];
-
-    for (const h of list) {
-      if (h.weight >= 0.22 && h.score < 60) {
-        suggestions.push({ kind: 'trim', text: 'Trim ' + h.symbol + ' (weight ' + Math.round(h.weight * 100) + '%, score ' + h.score + '). Consider reducing concentration.' });
-      }
-    }
-
-    for (const h of list) {
-      if (h.weight <= 0.06 && h.score >= 75) {
-        suggestions.push({ kind: 'add', text: 'Add to ' + h.symbol + ' (score ' + h.score + ', underweighted). Strong conviction deserves sizing.' });
-      }
-    }
-
-    for (const h of enriched) {
-      if ((h.tensionSpread || 0) >= 40) {
-        suggestions.push({ kind: 'review', text: 'Review thesis for ' + h.symbol + ' (spread ' + h.tensionSpread + '). ' + (h.tensionSpread < 40 ? 'Mild disagreement.' : h.tensionSpread < 60 ? 'Moderate disagreement.' : h.tensionSpread < 80 ? 'Significant disagreement.' : 'Sharp division.') });
-      }
-    }
-
-    if (suggestions.length === 0) suggestions.push({ kind: 'review', text: 'No urgent actions. Maintain discipline; revisit positions with new information.' });
-    return suggestions.slice(0, 6);
-  }, [enriched, totals.totalCurrent]);
-
   const card: React.CSSProperties = {
     padding: 20,
     background: 'rgba(15,23,42,0.6)',
@@ -777,29 +742,6 @@ const [beta, setBeta] = useState<number | null>(null);
           </div>
         </div>
       )}
-
-      {/* Quick Actions */}
-      <div style={card}>
-        <div style={label}>⚡ Quick Actions & Rebalance Suggestions</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-          {rebalanceSuggestions.map((sug, i) => (
-            <div key={i} style={{ padding: 10, background: sug.kind === 'trim' ? 'rgba(239,68,68,0.08)' : sug.kind === 'add' ? 'rgba(34,197,94,0.08)' : 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 6, fontSize: 12, color: '#CBD5E1', lineHeight: 1.6 }}>
-              <span style={{ color: sug.kind === 'trim' ? '#EF4444' : sug.kind === 'add' ? '#22C55E' : '#F97316', fontWeight: 600, marginRight: 6 }}>
-                {sug.kind === 'trim' ? '▼' : sug.kind === 'add' ? '▲' : '◉'}
-              </span>
-              {sug.text}
-            </div>
-          ))}
-        </div>
-        <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
-          <Link href="/lab?tab=intelligence" style={{ flex: 1, padding: 12, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, textAlign: 'center', color: '#D4AF37', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
-            Run Full Analysis →
-          </Link>
-          <Link href="/lab?tab=holdings" style={{ flex: 1, padding: 12, background: 'rgba(148,163,184,0.12)', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 6, textAlign: 'center', color: '#94A3B8', textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
-            Manage Holdings
-          </Link>
-        </div>
-      </div>
 
       {/* What-If Simulator */}
       <div style={{ ...card, background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(15,23,42,0.6))' }}>

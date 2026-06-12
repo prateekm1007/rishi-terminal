@@ -46,7 +46,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     }
 
     try {
-      setLoading(true);
+      if (Object.keys(prices).length === 0) setLoading(true);
       setError(null);
 
       // Split into chunks of 150 (well under the 200 API limit)

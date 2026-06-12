@@ -17,7 +17,7 @@ const WORLD_MARKETS = [
 const REGIONS = ['US', 'Europe', 'Asia', 'India'];
 
 export function WorldMarketsGrid() {
-  const symbols = WORLD_MARKETS.map(m => m.sym);
+  const symbols = useMemo(() => WORLD_MARKETS.map(m => m.sym), []);
   const { prices, loading } = useLivePrices(symbols);
   const [selectedRegion, setSelectedRegion] = useState<string>('All');
 

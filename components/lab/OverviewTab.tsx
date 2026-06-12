@@ -410,62 +410,6 @@ const [beta, setBeta] = useState<number | null>(null);
     setMaxDD(dd);
 }, [symbols.join('|'), benchHistory.length, Object.keys(historyBySymbol).length, holdings]);
 
-  const timeframes = useMemo(() => ([
-    { key: '7D', days: 7 },
-    { key: '30D', days: 30 },
-    { key: '90D', days: 90 },
-    { key: '1Y', days: 365 },
-  ]), []);
-
-  const timeframeReturns = useMemo(() => {
-    const end = new Date();
-    const bench = benchHistory;
-    const out: Array<{ key: string; portRetPct: number | null; benchRetPct: number | null; outperfPct: number | null; holdingsUsed: number }> = [];
-
-    for (const tf of timeframes) {
-      const start = new Date(end.getTime() - tf.days * 24 * 60 * 60 * 1000);
-
-      // Price-only trailing return for holdings that existed at the start of the window.
-      // This becomes historically accurate ONLY if addedDate is the true purchase date.
-      let startValue = 0;
-      let endValue = 0;
-      let used = 0;
-
-      for (const h of holdings) {
-        const ad = parseDateSafe(h.addedDate);
-        if (ad.getTime() > start.getTime()) continue;
-
-        const sym = String(h.symbol ?? '').trim().toUpperCase();
-        const stock = (STOCKS as any)[sym];
-        const startPx = closestClose(historyBySymbol[sym], start) ?? stock?.price ?? h.avgPrice;
-        const endPx = prices[sym]?.price ?? stock?.price ?? h.avgPrice;
-
-        if (!Number.isFinite(startPx) || startPx <= 0) continue;
-        if (!Number.isFinite(endPx) || endPx <= 0) continue;
-
-        startValue += h.shares * startPx;
-        endValue += h.shares * endPx;
-        used++;
-      }
-
-      const portRet: number | null = startValue > 0 ? ((endValue / startValue) - 1) * 100 : null;
-
-      let benchRet: number | null = null;
-      if (bench && bench.length > 5) {
-        const b0 = closestClose(bench, start);
-        const b1 = bench[bench.length - 1]?.close;
-        if (b0 != null && b1 != null && Number.isFinite(b0) && Number.isFinite(b1) && b0 > 0) {
-          benchRet = ((b1 / b0) - 1) * 100;
-        }
-      }
-
-      const outperf = (portRet != null && benchRet != null) ? (portRet - benchRet) : null;
-      console.log('[TF]', tf.key, 'used=' + used, 'startVal=' + startValue, 'portRet=' + portRet);
-      out.push({ key: tf.key, portRetPct: portRet, benchRetPct: benchRet, outperfPct: outperf, holdingsUsed: used });
-    }
-
-    return out;
-  }, [holdings, historyBySymbol, benchHistory, prices, timeframes]);
 
   const xirrPct = useMemo(() => {
     if (holdings.length === 0 || totals.totalCurrent <= 0) return null;
@@ -674,22 +618,7 @@ const [beta, setBeta] = useState<number | null>(null);
 
       {/* Timeframe Returns */}
       <div style={card}>
-        <div style={label}>Multi-Timeframe Returns vs {benchmark === '^NSEI' ? 'Nifty 50' : 'Sensex'}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginTop: 12 }}>
-          {timeframeReturns.map(tf => (
-            <div key={tf.key} style={{ padding: 12, background: 'rgba(15,23,42,0.4)', borderRadius: 6 }}>
-              <div style={{ fontSize: 11, color: '#64748B', marginBottom: 6 }}>{tf.key}</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: plColor(tf.portRetPct ?? 0), fontFamily: 'monospace' }}>
-                {tf.portRetPct != null ? fmtPct(tf.portRetPct) : '—'}
-              </div>
-              {tf.outperfPct != null && (
-                <div style={{ fontSize: 10, color: plColor(tf.outperfPct), marginTop: 2 }}>
-                  {fmtPct(tf.outperfPct)} vs bench
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <div style={label}> {benchmark === '^NSEI' ? 'Nifty 50' : 'Sensex'}</div>
         <div style={{ marginTop: 12, fontSize: 11, color: '#64748B' }}>
           Benchmark:
           <button onClick={() => setBenchmark('^NSEI')} style={{ marginLeft: 8, padding: '4px 8px', background: benchmark === '^NSEI' ? 'rgba(212,175,55,0.2)' : 'transparent', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 4, color: benchmark === '^NSEI' ? '#D4AF37' : '#94A3B8', cursor: 'pointer', fontSize: 10 }}>Nifty 50</button>

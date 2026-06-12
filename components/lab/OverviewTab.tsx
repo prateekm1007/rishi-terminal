@@ -618,11 +618,7 @@ const [beta, setBeta] = useState<number | null>(null);
 
       {/* Timeframe Returns */}
       <div style={card}>
-        <div style={label}> {benchmark === '^NSEI' ? 'Nifty 50' : 'Sensex'}</div>
         <div style={{ marginTop: 12, fontSize: 11, color: '#64748B' }}>
-          Benchmark:
-          <button onClick={() => setBenchmark('^NSEI')} style={{ marginLeft: 8, padding: '4px 8px', background: benchmark === '^NSEI' ? 'rgba(212,175,55,0.2)' : 'transparent', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 4, color: benchmark === '^NSEI' ? '#D4AF37' : '#94A3B8', cursor: 'pointer', fontSize: 10 }}>Nifty 50</button>
-          <button onClick={() => setBenchmark('^BSESN')} style={{ marginLeft: 6, padding: '4px 8px', background: benchmark === '^BSESN' ? 'rgba(212,175,55,0.2)' : 'transparent', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 4, color: benchmark === '^BSESN' ? '#D4AF37' : '#94A3B8', cursor: 'pointer', fontSize: 10 }}>{t("overview.sensex")}</button>
         </div>
       </div>
 

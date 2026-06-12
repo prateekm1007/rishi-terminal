@@ -354,13 +354,13 @@ export default function DashboardPage() {
 
         {/* ── WORLD MARKETS ────────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title="🌍 World Markets" />
+          <Link href="/pulse?tab=markets" style={{ textDecoration:"none" }}><SectionHeader title="🌍 World Markets →" /></Link>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
             {WORLD_MARKETS.map(({ label, sym }) => {
               const d  = prices[sym];
               const up = (d?.changePercent24h ?? 0) >= 0;
               return (
-                <div key={sym} style={{ ...card(), padding:"18px" }}>
+                <Link href="/pulse?tab=markets" key={sym} style={{ textDecoration:"none" }}><div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
                   <div style={{ fontSize:"10px",fontWeight:700,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px",fontFamily:sans }}>
                     {label}
                   </div>
@@ -377,6 +377,7 @@ export default function DashboardPage() {
                     </>
                   )}
                 </div>
+                </Link>
               );
             })}
           </div>

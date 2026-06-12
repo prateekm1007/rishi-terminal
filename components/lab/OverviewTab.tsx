@@ -628,6 +628,10 @@ const rebalanceSuggestions = useMemo(() => {
           <div style={{ fontSize: 28, fontWeight: 800, color: plColor(totals.totalPL), fontFamily: 'monospace' }}>
             {formatCurrency(totals.totalPL)} ({fmtPct(totals.totalPLPct)})
           </div>
+          <div style={{ fontSize: 10, color: '#64748B', marginTop: 6, display: 'flex', gap: 12 }}>
+            {totals.best && <span style={{ color: '#22C55E' }}>▲ {totals.best.symbol} {fmtPct(totals.best.plPct)}</span>}
+            {totals.worst && <span style={{ color: '#EF4444' }}>▼ {totals.worst.symbol} {fmtPct(totals.worst.plPct)}</span>}
+          </div>
         </div>
         <div style={card}>
           <div style={label}>{t("overview.portfolioRishiScore")}</div>
@@ -758,30 +762,6 @@ const rebalanceSuggestions = useMemo(() => {
             <div>
               <div style={{ color: '#64748B', marginBottom: 4 }}><InfoTip term="Disagreement Index" icon={false}>{t("overview.disagreementIndex")}</InfoTip></div>
               <div style={{ color: '#F97316', fontWeight: 700 }}>{rishiCouncil.avgSpread}/100</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Best / Worst Performers */}
-      {totals.best && totals.worst && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div style={card}>
-            <div style={label}>{t("overview.bestPerformer")}</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#22C55E', marginTop: 8 }}>
-              {totals.best.symbol}
-            </div>
-            <div style={{ fontSize: 13, color: '#CBD5E1', marginTop: 4 }}>
-              {fmtPct(totals.best.plPct)} · {formatCurrency(totals.best.pl)}
-            </div>
-          </div>
-          <div style={card}>
-            <div style={label}>{t("overview.worstPerformer")}</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#EF4444', marginTop: 8 }}>
-              {totals.worst.symbol}
-            </div>
-            <div style={{ fontSize: 13, color: '#CBD5E1', marginTop: 4 }}>
-              {fmtPct(totals.worst.plPct)} · {formatCurrency(totals.worst.pl)}
             </div>
           </div>
         </div>

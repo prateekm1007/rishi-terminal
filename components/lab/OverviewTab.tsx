@@ -93,10 +93,12 @@ function calcTWRRTotal(holdings: PortfolioHolding[], endDate: Date, historyBySym
 export default function OverviewTab() {
   const { t } = useLanguage();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
+  const [portfolioLoaded, setPortfolioLoaded] = useState(false);
   const [benchmark, setBenchmark] = useState<'^NSEI' | '^BSESN'>('^NSEI');
 
   useEffect(() => {
     setHoldings(loadPortfolio().holdings);
+    setPortfolioLoaded(true);
   }, []);
 
   const [whatIfSymbol, setWhatIfSymbol] = useState('');
@@ -570,6 +572,8 @@ const [beta, setBeta] = useState<number | null>(null);
       </svg>
     );
   };
+
+  if (!portfolioLoaded) return null;
 
   if (holdings.length === 0) {
     return (

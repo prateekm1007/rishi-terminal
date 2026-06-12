@@ -95,6 +95,10 @@ export default function OverviewTab() {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [benchmark, setBenchmark] = useState<'^NSEI' | '^BSESN'>('^NSEI');
 
+  useEffect(() => {
+    setHoldings(loadPortfolio().holdings);
+  }, []);
+
   const [whatIfSymbol, setWhatIfSymbol] = useState('');
   const [whatIfAmount, setWhatIfAmount] = useState<number>(50000);
 

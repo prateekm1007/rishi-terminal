@@ -506,18 +506,21 @@ const [beta, setBeta] = useState<number | null>(null);
   }, [sectorAlloc]);
 
   const card: React.CSSProperties = {
-    padding: 20,
-    background: 'rgba(15,23,42,0.6)',
-    border: '1px solid rgba(30,41,59,0.8)',
-    borderRadius: 10,
+    padding: 24,
+    background: 'rgba(15,23,42,0.4)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(148,163,184,0.1)',
+    borderRadius: 16,
+    boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
   };
 
   const label: React.CSSProperties = {
-    fontSize: 10,
-    color: '#64748B',
-    letterSpacing: 1,
-    marginBottom: 10,
+    fontSize: 11,
+    color: '#94A3B8',
+    letterSpacing: 1.2,
+    marginBottom: 12,
     textTransform: 'uppercase' as const,
+    fontWeight: 600,
   };
 
   const gauge = (v: number) => {
@@ -582,9 +585,9 @@ const [beta, setBeta] = useState<number | null>(null);
     : totals.avgScore;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
       {/* Hero Cards Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
         <div style={card}>
           <div style={label}>{t("overview.totalInvested")}</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: '#E2E8F0', fontFamily: 'monospace' }}>
@@ -617,7 +620,7 @@ const [beta, setBeta] = useState<number | null>(null);
       </div>
 
       {/* Metrics Row 2 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
         <div style={card}>
           <div style={label}>Today P&L</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: plColor(totals.todayPL), fontFamily: 'monospace' }}>

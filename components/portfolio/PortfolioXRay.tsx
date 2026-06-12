@@ -27,11 +27,17 @@ const SECTOR_MAP: Record<string, string> = {
   BHARTIARTL:"Telecom", BAJFINANCE:"NBFC", BAJAJFINSV:"NBFC", HDFCLIFE:"Insurance", SBILIFE:"Insurance",
 };
 
-const STRESS_SCENARIOS = [
-  { label: "2008 Global Crisis", drawdown: -52, color: "#EF4444" },
-  { label: "2020 COVID Crash", drawdown: -38, color: "#F59E0B" },
-  { label: "2022 Rate Hike Cycle", drawdown: -18, color: "#F59E0B" },
-  { label: "IT Sector -30%", drawdown: -30, color: "#EF4444", sector: "IT" },
+const SCENARIOS = [
+  { label: "2008 Global Crisis", mode: "portfolio", pct: -52, color: "#EF4444" },
+  { label: "2020 COVID Crash", mode: "portfolio", pct: -38, color: "#F59E0B" },
+  { label: "2022 Rate Hike Cycle", mode: "portfolio", pct: -18, color: "#F59E0B" },
+  { label: "IT Sector -30%", mode: "sector", sector: "IT", pct: -30, color: "#EF4444" },
+
+  { label: "Oil +30%", mode: "impact", color: "#F97316", impacts: { Energy: 5, Auto: -4, Infra: -2, FMCG: -1, Banking: -1 } },
+  { label: "USDINR +10%", mode: "impact", color: "#F59E0B", impacts: { IT: 4, Pharma: 2, Auto: -2, Consumer: -1, Energy: -1 } },
+  { label: "Fed Cuts 100bps", mode: "impact", color: "#22C55E", impacts: { Banking: 2, NBFC: 3, Infra: 2, Consumer: 2, IT: 1 } },
+  { label: "China Stimulus", mode: "impact", color: "#3B82F6", impacts: { Metals: 5, Energy: 2, Infra: 2, Auto: 1 } },
+  { label: "India Slowdown", mode: "impact", color: "#EF4444", impacts: { Banking: -6, NBFC: -6, Auto: -5, Consumer: -4, Infra: -5, IT: -2 } },
 ];
 
 const SECTOR_COLORS: Record<string, string> = {
@@ -76,21 +82,30 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
       }))
       .sort((a, b) => b.value - a.value);
 
-    const stressTests = STRESS_SCENARIOS.map(sc => {
-      let projected = totalValue;
-      if (sc.sector) {
-        const sectAlloc = sectorAllocation.find(s => s.sector === sc.sector);
-        if (sectAlloc) {
-          const sectValue = sectAlloc.value;
-          projected = totalValue - sectValue * Math.abs(sc.drawdown / 100);
-        }
-      } else {
-        projected = totalValue * (1 + sc.drawdown / 100);
+        const stressTests = SCENARIOS.map((sc: any) => {
+      let loss = 0;
+
+      if (sc.mode === "portfolio") {
+        loss = totalValue * (sc.pct / 100);
+      } else if (sc.mode === "sector") {
+        const hit = sectorAllocation.find(s => s.sector === sc.sector);
+        loss = hit ? (hit.value * (sc.pct / 100)) : 0;
+      } else if (sc.mode === "impact") {
+        loss = Object.entries(sc.impacts || {}).reduce((sum, [sector, pct]) => {
+          const hit = sectorAllocation.find(s => s.sector === sector);
+          return hit ? sum + (hit.value * (Number(pct) / 100)) : sum;
+        }, 0);
       }
+
+      const projected = totalValue + loss;
+      const movePct = totalValue > 0 ? (loss / totalValue) * 100 : 0;
+
       return {
         ...sc,
         projectedValue: projected,
-        loss: projected - totalValue,
+        loss,
+        movePct,
+        affectedSectors: sc.mode === "impact" ? Object.keys(sc.impacts || {}) : (sc.mode === "sector" ? [sc.sector] : ["All"]),
       };
     });
 
@@ -272,7 +287,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
                   {st.label}
                 </div>
                 <div style={{ fontSize: "13px", color: "#94A3B8", marginBottom: "10px" }}>
-                  Drawdown: <span style={{ fontWeight: 700 }}>{st.drawdown}%</span>
+                  Move: <span style={{ fontWeight: 700 }}>{(st as any).movePct >= 0 ? "+" : ""}{(st as any).movePct.toFixed(1)}%</span>
                 </div>
                 <div style={{ fontSize: "12px", color: "#64748B", marginBottom: "4px" }}>
                   Portfolio value:
@@ -281,7 +296,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
                   {st.projectedValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                 </div>
                 <div style={{ fontSize: "13px", fontWeight: 700, color: st.color, fontFamily: "JetBrains Mono, monospace", marginTop: "4px" }}>
-                  Loss: {Math.abs(st.loss).toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                  Loss: {Math.abs(st.loss).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</div><div style={{ fontSize: "11px", color: "#64748B", marginTop: "6px" }}>Sectors: {(st as any).affectedSectors?.join(", ")}
                 </div>
               </div>
             ))}

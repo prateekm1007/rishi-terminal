@@ -17,6 +17,7 @@ import {
   type HistoryPoint
 } from './helpers';
 import InfoTip from '@/components/lab/InfoTip';
+import { MACRO_REGIME } from '@/data/economyPlus/macroData';
 
 function useAnimatedNumber(value: number, durationMs = 650) {
   const [display, setDisplay] = useState(value);
@@ -94,48 +95,13 @@ export default function OverviewTab() {
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [benchmark, setBenchmark] = useState<'^NSEI' | '^BSESN'>('^NSEI');
 
+  const [whatIfSymbol, setWhatIfSymbol] = useState('');
+  const [whatIfAmount, setWhatIfAmount] = useState<number>(50000);
+
   const [histLoading, setHistLoading] = useState(false);
   const [historyBySymbol, setHistoryBySymbol] = useState<Record<string, HistoryPoint[]>>({});
   const [benchHistory, setBenchHistory] = useState<HistoryPoint[]>([]);
   const [histError, setHistError] = useState<string | null>(null);
-
-  const [streak, setStreak] = useState<{ streak: number; last: string }>({ streak: 1, last: '' });
-
-  const [whatIfSymbol, setWhatIfSymbol] = useState('');
-  const [whatIfAmount, setWhatIfAmount] = useState<number>(50000);
-
-  useEffect(() => {
-    setHoldings(loadPortfolio().holdings);
-
-    try {
-      const key = 'rishi_overview_streak_v1';
-      const today = toISODateOnly(new Date());
-      const raw = localStorage.getItem(key);
-      if (!raw) {
-        const v = { streak: 1, last: today };
-        localStorage.setItem(key, JSON.stringify(v));
-        setStreak(v);
-        return;
-      }
-      const prev = JSON.parse(raw);
-      const last = String(prev.last || '');
-      const prevStreak = Number(prev.streak || 1);
-
-      const dToday = parseDateSafe(today);
-      const dLast = parseDateSafe(last);
-      const delta = Math.round(daysBetween(dLast, dToday));
-
-      let next = { streak: 1, last: today };
-      if (last === today) next = { streak: prevStreak, last: today };
-      else if (delta === 1) next = { streak: prevStreak + 1, last: today };
-      else next = { streak: 1, last: today };
-
-      localStorage.setItem(key, JSON.stringify(next));
-      setStreak(next);
-    } catch {
-      // ignore
-    }
-  }, []);
 
   const symbols = useMemo(() => holdings.map(h => h.symbol), [holdings]);
   const { prices, loading: liveLoading } = useLivePrices(symbols);
@@ -285,19 +251,14 @@ export default function OverviewTab() {
         value: h.current,
         score: h.score ?? 0,
       }));
-  }, [topHoldings, totals.totalCurrent]);
-
-  const concentration = useMemo(() => {
+  }, [topHoldings, totals.totalCurrent]);  const concentration = useMemo(() => {
     const total = totals.totalCurrent;
-    if (total <= 0) return { top5: 0, hhi: 0 };
+    if (total <= 0) return { top5: 0 };
     const sorted = [...enriched].sort((a, b) => b.current - a.current);
-    const top5 = sorted.slice(0, 5).reduce((s, h) => s + h.current, 0) / total * 100;
-    const weights = enriched.map(h => h.current / total);
-    const hhi = weights.reduce((s, w) => s + w * w, 0);
-    return { top5, hhi };
+    const top5 = (sorted.slice(0, 5).reduce((s, h) => s + h.current, 0) / total) * 100;
+    return { top5 };
   }, [enriched, totals.totalCurrent]);
-
-  const avgHoldingPeriodDays = useMemo(() => {
+const avgHoldingPeriodDays = useMemo(() => {
     if (holdings.length === 0) return 0;
     const now = new Date();
     const ds = holdings.map(h => Math.max(0, daysBetween(parseDateSafe(h.addedDate), now)));
@@ -397,31 +358,12 @@ export default function OverviewTab() {
     }
     return risk;
   }, [enriched, totals.totalCurrent]);
-
-  const governanceRisk = useMemo(() => {
-    const total = totals.totalCurrent;
-    if (total <= 0) return 0;
-
-    let risk = 0;
-    for (const h of enriched) {
-      const promo = typeof h.stock?.promo === 'number' ? h.stock.promo : 0;
-      const de = typeof h.stock?.de === 'number' ? h.stock.de : 0;
-      const promoRisk = promo <= 0 ? 50 : clamp(((30 - promo) / 30) * 100, 0, 100);
-      const deRisk = clamp((de / 2) * 100, 0, 100);
-      const per = 0.6 * promoRisk + 0.4 * deRisk;
-      const w = h.current / total;
-      risk += w * per;
-    }
-    return risk;
-  }, [enriched, totals.totalCurrent]);
-
-  const [beta, setBeta] = useState<number | null>(null);
-  const [recoveryElasticity, setRecoveryElasticity] = useState<number | null>(null);
+const [beta, setBeta] = useState<number | null>(null);
   const [maxDD, setMaxDD] = useState<number | null>(null);
 
   useEffect(() => {
     if (symbols.length === 0) return;
-    if (!benchHistory || benchHistory.length < 40) { setBeta(null); setRecoveryElasticity(null); setMaxDD(null); return; }
+    if (!benchHistory || benchHistory.length < 40) { setBeta(null); setMaxDD(null); return; }
 
     const benchTail = benchHistory.slice(-260);
     const benchMap = buildCloseMap(benchTail);
@@ -454,13 +396,7 @@ export default function OverviewTab() {
 
     const dd = maxDrawdownPct(pv);
     setMaxDD(dd);
-
-    const peak = Math.max(...pv);
-    const end = pv[pv.length - 1] || 0;
-    const recovery = peak > 0 ? (end / peak) : 0;
-    const score = clamp((100 - dd) * (0.85 + 0.15 * recovery), 0, 100);
-    setRecoveryElasticity(score);
-  }, [symbols.join('|'), benchHistory.length, Object.keys(historyBySymbol).length, holdings]);
+}, [symbols.join('|'), benchHistory.length, Object.keys(historyBySymbol).length, holdings]);
 
   const timeframes = useMemo(() => ([
     { key: '7D', days: 7 },
@@ -534,27 +470,35 @@ export default function OverviewTab() {
   const twrrTotalPct = useMemo(() => {
     if (holdings.length === 0 || totals.totalCurrent <= 0) return null;
     return calcTWRRTotal(holdings, new Date(), historyBySymbol);
-  }, [holdings, totals.totalCurrent, Object.keys(historyBySymbol).length]);
-
-  const overallRiskScore = useMemo(() => {
+  }, [holdings, totals.totalCurrent, Object.keys(historyBySymbol).length]);  const overallRiskScore = useMemo(() => {
     const betaRisk = beta == null ? 50 : clamp(50 + (beta - 1) * 35, 0, 100);
     const concRisk = clamp((concentration.top5 / 80) * 100, 0, 100);
-    const hhiRisk = clamp(concentration.hhi * 140, 0, 100);
     const macroRisk = clamp(cyclicalRisk, 0, 100);
-
-    const score = (0.22 * concRisk) + (0.18 * hhiRisk) + (0.22 * betaRisk) + (0.18 * liquidityRisk) + (0.12 * governanceRisk) + (0.08 * macroRisk);
+    const score = (0.30 * concRisk) + (0.30 * betaRisk) + (0.25 * liquidityRisk) + (0.15 * macroRisk);
     return clamp(score, 0, 100);
-  }, [beta, concentration.top5, concentration.hhi, cyclicalRisk, liquidityRisk, governanceRisk]);
+  }, [beta, concentration.top5, cyclicalRisk, liquidityRisk]);
 
-  const enlightenmentScore = useMemo(() => {
-    const s1 = clamp(totals.avgScore, 0, 100);
-    const s2 = clamp(100 - (rishiCouncil?.avgSpread ?? 0), 0, 100);
-    const s3 = clamp(100 - concentration.top5, 0, 100);
-    const s4 = clamp(100 - overallRiskScore, 0, 100);
-    return Math.round(0.35 * s1 + 0.25 * s2 + 0.2 * s3 + 0.2 * s4);
-  }, [totals.avgScore, rishiCouncil?.avgSpread, concentration.top5, overallRiskScore]);
+  const macroFit = useMemo(() => {
+    const aligned = sectorAlloc
+      .filter(s => ['Banking','FMCG','Consumer','Insurance'].includes(s.sector))
+      .sort((a, b) => b.pct - a.pct)
+      .slice(0, 2);
 
-  const rebalanceSuggestions = useMemo(() => {
+    const misaligned = sectorAlloc
+      .filter(s => ['Metals','Realty','Infra','Energy','Auto','NBFC'].includes(s.sector))
+      .sort((a, b) => b.pct - a.pct)
+      .slice(0, 2);
+
+    const score = clamp(
+      70 + aligned.reduce((sum, s) => sum + Math.min(10, s.pct * 0.35), 0)
+         - misaligned.reduce((sum, s) => sum + Math.min(10, s.pct * 0.35), 0),
+      0,
+      100
+    );
+
+    return { score, regime: MACRO_REGIME.label, aligned, misaligned };
+  }, [sectorAlloc]);
+const rebalanceSuggestions = useMemo(() => {
     const total = totals.totalCurrent;
     if (total <= 0) return [];
 
@@ -728,15 +672,15 @@ export default function OverviewTab() {
           <div style={{ fontSize: 22, fontWeight: 700, color: '#94A3B8', fontFamily: 'monospace' }}>
             {avgHoldingPeriodDays}d
           </div>
-        </div>
-        <div style={card}>
-          <div style={label}>{t("overview.dailyEnlightenment")}</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: scoreColor(enlightenmentScore), fontFamily: 'monospace' }}>
-            {enlightenmentScore}/100
+        </div>        <div style={card}>
+          <div style={label}>Macro Regime Fit</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: scoreColor(macroFit.score), fontFamily: 'monospace' }}>
+            {macroFit.score}/100
           </div>
-          <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>Streak: {streak.streak}d</div>
-        </div>
-      </div>
+          <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>
+            {macroFit.regime}
+          </div>
+        </div>      </div>
 
       {/* Timeframe Returns */}
       <div style={card}>
@@ -773,16 +717,8 @@ export default function OverviewTab() {
             <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>Top 5 Concentration</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            {gauge(concentration.hhi * 100)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}><InfoTip term="HHI" icon={false}>{t("overview.hhiIndex")}</InfoTip></div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
             {gauge(liquidityRisk)}
             <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>{t("overview.liquidityRisk")}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            {gauge(governanceRisk)}
-            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>{t("overview.governanceRisk")}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             {gauge(cyclicalRisk)}
@@ -796,7 +732,6 @@ export default function OverviewTab() {
         <div style={{ marginTop: 16, fontSize: 11, color: '#64748B', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div><InfoTip term="Beta">Beta</InfoTip>: {beta != null ? beta.toFixed(2) : '—'}</div>
           <div><InfoTip term="Max Drawdown">{t("overview.maxDrawdown")}</InfoTip>: {maxDD != null ? fmtPct(maxDD) : '—'}</div>
-          <div>Recovery Elasticity: {recoveryElasticity != null ? Math.round(recoveryElasticity) : '—'}/100</div>
           <div><InfoTip term="FCF Yield">{t("overview.fcfYield")}</InfoTip>: {fmtPct(fcfYieldPct)}</div>
         </div>
       </div>

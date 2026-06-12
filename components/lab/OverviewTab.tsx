@@ -684,7 +684,8 @@ const rebalanceSuggestions = useMemo(() => {
           <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>
             {macroFit.regime}
           </div>
-        </div>      </div>
+        </div>
+      </div>
 
       {/* Timeframe Returns */}
       <div style={card}>

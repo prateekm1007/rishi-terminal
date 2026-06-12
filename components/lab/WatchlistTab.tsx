@@ -437,7 +437,7 @@ export default function WatchlistTab() {
       if (raw) {
         const parsed = JSON.parse(raw);
         setLists(parsed.lists ?? { default: [], highConviction: [], valueTraps: [], earningsWatch: [] });
-        setActiveList(parsed.activeList ?? 'default');
+        setActiveList('default');
       } else {
         const oldRaw = localStorage.getItem('rishi_watchlist_v2');
         if (oldRaw) {
@@ -558,11 +558,7 @@ export default function WatchlistTab() {
   };
 
   const listConfigs = [
-    { id: 'default', label: 'Default', icon: '★', smart: false },
-    { id: 'highConviction', label: 'High Conviction', icon: '🔥', smart: false },
-    { id: 'valueTraps', label: 'Value Traps', icon: '⚠️', smart: false },
-    { id: 'earningsWatch', label: 'Earnings Watch', icon: '📊', smart: false },
-    { id: 'smartHighScore', label: 'Smart: Score > 75', icon: '⚡', smart: true },
+    { id: 'default', label: 'Watchlist', icon: '★', smart: false },
   ];
 
   return (

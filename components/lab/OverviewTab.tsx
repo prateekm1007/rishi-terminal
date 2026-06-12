@@ -616,12 +616,6 @@ const [beta, setBeta] = useState<number | null>(null);
         </div>
       </div>
 
-      {/* Timeframe Returns */}
-      <div style={card}>
-        <div style={{ marginTop: 12, fontSize: 11, color: '#64748B' }}>
-        </div>
-      </div>
-
 
       {/* Risk Summary */}
       <div style={card}>

@@ -166,7 +166,7 @@ export default function MarketPulsePage() {
   const getDailyBrief = localeData.getDailyBrief;
 
   const [tab, setTab] = useState<PulseTab>('macro');
-  const [activeLens, setActiveLens] = useState<'All' | 'Hayek' | 'Friedman' | 'Keynes'>('All');
+  const [activeLens, setActiveLens] = useState<'None' | 'All' | 'Hayek' | 'Friedman' | 'Keynes'>('None');
 
   const [prices, setPrices] = useState<Record<string, any> | null>(null);
   const [breadth, setBreadth] = useState<any | null>(null);
@@ -210,7 +210,7 @@ export default function MarketPulsePage() {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem('economyPlus.activeLens');
-      if (saved === 'All' || saved === 'Hayek' || saved === 'Friedman' || saved === 'Keynes') setActiveLens(saved as any);
+      if (saved === 'None' || saved === 'All' || saved === 'Hayek' || saved === 'Friedman' || saved === 'Keynes') setActiveLens(saved as any);
     } catch {}
   }, []);
 
@@ -485,13 +485,13 @@ export default function MarketPulsePage() {
         {/* LENS */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, fontFamily: 'var(--font-mono)' }}>{t('pulse.lensLabel')}</span>
-          {(['All', 'Hayek', 'Friedman', 'Keynes'] as const).map(lens => (
+          {(['None', 'All', 'Hayek', 'Friedman', 'Keynes'] as const).map(lens => (
             <button
               key={lens}
               onClick={() => setActiveLens(lens)}
               className={activeLens === lens ? 'filter-pill active' : 'filter-pill'}
             >
-              {lens === 'All' ? ('🌐 ' + t('pulse.lensAll')) : lens === 'Hayek' ? ('🏛️ ' + t('pulse.lensHayek')) : lens === 'Friedman' ? ('📊 ' + t('pulse.lensFriedman')) : ('⚙️ ' + t('pulse.lensKeynes'))}
+              {lens === 'None' ? '⚪ None' : lens === 'All' ? ('🌐 ' + t('pulse.lensAll')) : lens === 'Hayek' ? ('🏛️ ' + t('pulse.lensHayek')) : lens === 'Friedman' ? ('📊 ' + t('pulse.lensFriedman')) : ('⚙️ ' + t('pulse.lensKeynes'))}
             </button>
           ))}
         </div>
@@ -730,7 +730,7 @@ export default function MarketPulsePage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
               {HISTORICAL_CORRELATIONS
-                .filter((c: any) => activeLens === 'All' || c.philosopher === activeLens || c.philosopher === 'All')
+                .filter((c: any) => activeLens === 'None' ? true : activeLens === 'All' || c.philosopher === activeLens || c.philosopher === 'All')
                 .map((c: any) => (
                   <div key={c.id} style={{ background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 16, padding: 20, position: 'relative' }}>
                     {c.regimeMatch && (
@@ -983,7 +983,7 @@ export default function MarketPulsePage() {
         )}
         {tab === 'markets' && (
           <div>
-            <WorldMarketsGrid />
+            <WorldMarketsGrid activeLens={activeLens} />
           </div>
         )}
 

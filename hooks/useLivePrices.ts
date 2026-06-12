@@ -10,7 +10,6 @@ export interface PriceData {
   lastUpdated: string;
 }
 
-// Split array into chunks of given size
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -19,7 +18,6 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return chunks;
 }
 
-// Fetch one batch chunk (max 150 symbols)
 async function fetchChunk(symbols: string[]): Promise<Record<string, any>> {
   const response = await fetch('/api/prices/batch', {
     method: 'POST',
@@ -35,8 +33,13 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const symbolsRef = useRef(symbols);
 
+  const symbolsRef = useRef<string[]>(symbols);
+  const initialLoadDone = useRef(false);
+  const symbolsKey = symbols.slice().sort().join(',');
+
+  // Keep ref current without triggering re-renders
+  symbolsRef.current = symbols;
 
   const fetchPrices = useCallback(async () => {
     const currentSymbols = symbolsRef.current;
@@ -45,21 +48,21 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
       return;
     }
 
+    // Only show loading spinner on very first fetch
+    if (!initialLoadDone.current) {
+      setLoading(true);
+    }
+
     try {
-      if (Object.keys(prices).length === 0) setLoading(true);
       setError(null);
 
-      // Split into chunks of 150 (well under the 200 API limit)
       const chunks = chunkArray(currentSymbols, 150);
-
-      // Fetch all chunks sequentially to avoid hammering Yahoo Finance
       const merged: Record<string, any> = {};
       for (const chunk of chunks) {
         const chunkData = await fetchChunk(chunk);
         Object.assign(merged, chunkData);
       }
 
-      // Normalize — ensure every field exists with a safe fallback
       const normalized: Record<string, PriceData> = {};
       for (const sym of currentSymbols) {
         const raw = merged[sym];
@@ -77,6 +80,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
 
       setPrices(normalized);
       setLastUpdated(new Date());
+      initialLoadDone.current = true;
     } catch (err) {
       console.error('[useLivePrices] fetch error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -85,19 +89,24 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     }
   }, []); // stable — reads symbols from ref
 
-  // Sync symbols ref, fetch immediately when symbols change, then poll
+  // Reset and re-fetch when symbol set changes
   useEffect(() => {
-    symbolsRef.current = symbols;
+    initialLoadDone.current = false;
     fetchPrices();
     const interval = setInterval(fetchPrices, refreshInterval);
     return () => clearInterval(interval);
-  }, [symbols, fetchPrices, refreshInterval]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbolsKey, refreshInterval]);
 
   return { prices, loading, error, lastUpdated, refetch: fetchPrices };
 }
 
-// Convenience: single symbol
+// Convenience: single symbol — stable key prevents re-mount loop
 export function usePrice(symbol: string) {
-  const { prices, loading, error, lastUpdated } = useLivePrices([symbol]);
+  const symbols = useRef([symbol]);
+  if (symbols.current[0] !== symbol) {
+    symbols.current = [symbol];
+  }
+  const { prices, loading, error, lastUpdated } = useLivePrices(symbols.current);
   return { price: prices[symbol] || null, loading, error, lastUpdated };
 }

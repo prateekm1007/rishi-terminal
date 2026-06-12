@@ -143,6 +143,12 @@ export default function OverviewTab() {
         if (!cancelled) {
           setHistoryBySymbol(map);
           setBenchHistory(bench);
+          console.log('[OverviewTab] History loaded:', {
+            symbols: Object.keys(map),
+            dataPoints: Object.entries(map).map(([s, pts]) => s + ': ' + pts.length + ' points'),
+            benchPoints: bench.length,
+            tf
+          });
         }
       } catch (e: any) {
         if (!cancelled) setHistError(String(e?.message || e));
@@ -454,6 +460,7 @@ const [beta, setBeta] = useState<number | null>(null);
       }
 
       const outperf = (portRet != null && benchRet != null) ? (portRet - benchRet) : null;
+      console.log('[TF]', tf.key, 'used=' + used, 'startVal=' + startValue, 'portRet=' + portRet);
       out.push({ key: tf.key, portRetPct: portRet, benchRetPct: benchRet, outperfPct: outperf, holdingsUsed: used });
     }
 

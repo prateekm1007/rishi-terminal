@@ -74,7 +74,8 @@ type PulseTab =
   | 'currency'
   | 'brief'
   | 'breadth'
-  | 'blocks';
+  | 'blocks'
+  | 'markets';
 
 function isValidPulseTab(t: string | null): t is PulseTab {
   return (
@@ -85,7 +86,8 @@ function isValidPulseTab(t: string | null): t is PulseTab {
     t === 'currency' ||
     t === 'brief' ||
     t === 'breadth' ||
-    t === 'blocks'
+    t === 'blocks' ||
+    t === 'markets'
   );
 }
 
@@ -399,6 +401,7 @@ export default function MarketPulsePage() {
     { key: 'brief', label: t('pulse.tabs.brief'), emoji: '📰' },
     { key: 'breadth', label: t('pulse.tabs.breadth'), emoji: '📈' },
     { key: 'blocks', label: t('pulse.tabs.blocks'), emoji: '💎' },
+    { key: 'markets', label: 'Markets', emoji: '🌍' },
   ];
 
   const live = (k: string) => prices?.[k];
@@ -975,6 +978,28 @@ export default function MarketPulsePage() {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+        {tab === 'markets' && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 48, padding: '40px 20px' }}>
+            <div style={{ fontSize: 48, marginBottom: 20 }}>🌍</div>
+            <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 12, color: 'var(--text-primary)' }}>World Markets Command Center</div>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 500, textAlign: 'center', marginBottom: 28, lineHeight: 1.6 }}>Real-time global market intelligence — capital flows, regime detection, and cross-market signals</p>
+            <a href="/pulse/markets" style={{
+              display: 'inline-block',
+              padding: '14px 32px',
+              background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(17,24,39,0.95))',
+              border: '1px solid rgba(212,175,55,0.4)',
+              borderRadius: 8,
+              color: 'var(--gold)',
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: 'none',
+              letterSpacing: 0.5,
+              cursor: 'pointer'
+            }}>
+              Open Command Center →
+            </a>
           </div>
         )}
 

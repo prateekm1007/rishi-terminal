@@ -172,10 +172,12 @@ export default function DashboardPage() {
 
   const allSyms = useMemo(() => [
     ...TICKER_SYMS,
-    ...ROTATING_STOCKS.map(s => s.symbol),
+    ...rotatingStocks.map(s => s.symbol),
+    ...rotatingShorts.map(s => s.symbol),
+    ...WORLD_MARKETS.map(m => m.sym),
     ...TOP_CRYPTO.map(c => c.symbol),
     STOCK_OF_DAY.symbol,
-  ], []);
+  ], [rotatingStocks, rotatingShorts]);
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms);
   const [timeAgo, setTimeAgo] = useState("—");
@@ -324,7 +326,8 @@ export default function DashboardPage() {
               const d  = prices[sym];
               const up = (d?.changePercent24h ?? 0) >= 0;
               return (
-                <div key={sym} style={{ ...card(), padding:"18px" }}>
+                <Link href="/pulse/markets" key={sym} style={{ textDecoration:"none" }}>
+                  <div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
                   <div style={{ fontSize:"10px",fontWeight:700,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px",fontFamily:sans }}>
                     {label}
                   </div>
@@ -340,7 +343,8 @@ export default function DashboardPage() {
                       </div>
                     </>
                   )}
-                </div>
+                  </div>
+                </Link>
               );
             })}
           </div>

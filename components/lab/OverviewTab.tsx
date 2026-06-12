@@ -498,7 +498,8 @@ const [beta, setBeta] = useState<number | null>(null);
 
     return { score, regime: MACRO_REGIME.label, aligned, misaligned };
   }, [sectorAlloc]);
-const rebalanceSuggestions = useMemo(() => {
+
+  const rebalanceSuggestions = useMemo(() => {
     const total = totals.totalCurrent;
     if (total <= 0) return [];
 
@@ -676,7 +677,8 @@ const rebalanceSuggestions = useMemo(() => {
           <div style={{ fontSize: 22, fontWeight: 700, color: '#94A3B8', fontFamily: 'monospace' }}>
             {avgHoldingPeriodDays}d
           </div>
-        </div>        <div style={card}>
+        </div>
+        <div style={card}>
           <div style={label}>Macro Regime Fit</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: scoreColor(macroFit.score), fontFamily: 'monospace' }}>
             {macroFit.score}/100

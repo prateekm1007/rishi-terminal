@@ -173,6 +173,7 @@ function CatalystEngine({ c }: { c: ConsensusResult }) {
   const bulls = c.scores.slice(0, 3);
   const bears = c.scores.slice(-2).reverse();
   const midRishis = c.scores.slice(3, c.scores.length - 2);
+  const [showMatrix, setShowMatrix] = useState(false);
 
   const sectionLabel: React.CSSProperties = {
     fontSize: 9,
@@ -216,48 +217,21 @@ function CatalystEngine({ c }: { c: ConsensusResult }) {
 
         {/* ── Bull Perspectives ── */}
         <div style={{ marginBottom: 20 }}>
-          <div style={sectionLabel}>📈 Bull Perspectives — Top Council Members</div>
-          {bulls.map((r, idx) => {
-            const topComp = (r.comps || []).slice().sort((a, b) => b.wt - a.wt)[0];
-            const convLabel = getRishiConvictionLabel(r.score);
-            const impact = getImpactOnValuation(r.score);
-            return (
-              <div key={r.full} style={{ ...card, border: '1px solid rgba(34,197,94,0.2)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ fontSize: 16 }}>{idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</div>
-                    <div>
-                      <div style={{ fontWeight: 800, color: '#F1F5F9', fontSize: 13 }}>{r.full}</div>
-                      <div style={{ fontSize: 10, color: '#64748B', marginTop: 1 }}>{r.label}</div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 18, color: scoreColor(r.score) }}>{r.score}</div>
-                    <div style={{ fontSize: 9, color: '#64748B' }}>/ 100</div>
-                  </div>
+          <div style={sectionLabel}>📈 Bulls — Top 3</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+          {bulls.map((r, idx) => (
+            <div key={r.full} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 8 }}>
+              <div style={{ fontSize: 14, flexShrink: 0 }}>{idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <div style={{ fontWeight: 700, color: '#F1F5F9', fontSize: 12 }}>{r.full}</div>
+                  <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 14, color: scoreColor(r.score), flexShrink: 0 }}>{r.score}</div>
                 </div>
-                <div style={{ fontSize: 12, color: '#CBD5E1', lineHeight: 1.6, marginBottom: 10, padding: '8px 12px', background: 'rgba(30,41,59,0.5)', borderRadius: 6, borderLeft: '2px solid rgba(34,197,94,0.4)' }}>
-                  {r.insight}
-                </div>
-                <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ fontSize: 9, color: '#475569', letterSpacing: 1 }}>CONVICTION</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: scoreColor(r.score) }}>{convLabel}</div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 9, color: '#475569', letterSpacing: 1 }}>IMPACT ON VALUATION</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#D4AF37' }}>{impact}</div>
-                  </div>
-                  {topComp && (
-                    <div>
-                      <div style={{ fontSize: 9, color: '#475569', letterSpacing: 1 }}>KEY METRIC</div>
-                      <div style={{ fontSize: 11, color: '#94A3B8', fontFamily: 'monospace' }}>{topComp.label} — {topComp.detail}</div>
-                    </div>
-                  )}
-                </div>
+                <div style={{ fontSize: 11, color: '#94A3B8', lineHeight: 1.5 }}>{r.insight}</div>
               </div>
-            );
-          })}
+            </div>
+          ))}
+          </div>
 
           {/* Additional Rishis toggle */}
           {midRishis.length > 0 && (
@@ -287,8 +261,10 @@ function CatalystEngine({ c }: { c: ConsensusResult }) {
 
         {/* ── Catalyst Types + Probability Matrix ── */}
         <div style={{ marginBottom: 20 }}>
-          <div style={sectionLabel}>⚡ Catalyst Types & Probability Matrix</div>
-          <div style={{ border: '1px solid rgba(30,41,59,0.6)', borderRadius: 8, overflow: 'hidden' }}>
+          <button onClick={() => setShowMatrix(!showMatrix)} style={{ background: 'none', border: '1px solid rgba(30,41,59,0.8)', borderRadius: 6, color: '#64748B', cursor: 'pointer', fontSize: 11, padding: '6px 12px', marginBottom: 10 }}>
+            {showMatrix ? '▲ Hide Catalyst Matrix' : '▼ Show Catalyst Matrix'}
+          </button>
+          {showMatrix && <div style={{ border: '1px solid rgba(30,41,59,0.6)', borderRadius: 8, overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr style={{ background: 'rgba(30,41,59,0.6)' }}>
@@ -318,7 +294,7 @@ function CatalystEngine({ c }: { c: ConsensusResult }) {
                 })}
               </tbody>
             </table>
-          </div>
+          </div>}
         </div>
 
         {/* ── Bear Risks ── */}

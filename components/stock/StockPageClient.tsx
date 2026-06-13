@@ -20,6 +20,7 @@ import { useLanguage } from '../../lib/language';
 import RishiScoreDual             from '../score/RishiScoreDual';
 import { calculateDualScore }     from '../../lib/scorers/rishiScoreV2';
 import type { StockMetrics }      from '../../lib/scorers/types';
+import { useFundamentals } from '../../hooks/useFundamentals';
 
 interface Props {
   stock: Stock;
@@ -31,6 +32,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
+  const { fundamentals: liveFundamentals } = useFundamentals(stock.symbol);
 
   const TABS = [
     { id: 'overview',  label: t('stock.overview'),   desc: t('stock.overviewDesc')   },
@@ -261,11 +263,11 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   {(() => {
                     const metrics: StockMetrics = {
                       symbol: stock.symbol, name: stock.name, sector: stock.sector,
-                      pe: stock.pe, pb: stock.price / stock.bvps,
-                      roe: stock.roe, roce: stock.roce, opm: stock.opm,
+                      pe: liveFundamentals?.pe ?? stock.pe, pb: stock.price / (liveFundamentals?.bookValue ?? stock.bvps),
+                      roe: liveFundamentals?.roe ?? stock.roe, roce: liveFundamentals?.roce ?? stock.roce, opm: stock.opm,
                       debtToEquity: stock.de, revenueCAGR3Y: stock.revcagr,
                       epsCAGR3Y: stock.epscagr, promoterHolding: stock.promo,
-                      marketCap: stock.mktcap, fcfMargin: (stock.fcf / stock.rev) * 100,
+                      marketCap: liveFundamentals?.marketCap ? liveFundamentals.marketCap / 10000000 : stock.mktcap, fcfMargin: (stock.fcf / stock.rev) * 100,
                     };
                     return <RishiScoreDual metrics={metrics} />;
                   })()}

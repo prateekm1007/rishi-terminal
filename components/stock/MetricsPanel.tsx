@@ -1,6 +1,6 @@
 'use client';
 import { useLanguage } from '@/lib/language';
-
+import { useFundamentals } from '@/hooks/useFundamentals';
 import { Stock } from '../../lib/types';
 import { MetricCard, StatGroup } from './StyleGuide';
 
@@ -17,22 +17,52 @@ function getColor(value: number, threshold: number, inverse = false): 'green' | 
 
 export function MetricsPanel({ stock }: Props) {
   const { t } = useLanguage();
+  const { fundamentals, loading, isLive } = useFundamentals(stock.symbol);
+
   if (!stock) return null;
 
+  // Merge live fundamentals over static stock data
+  const pe = fundamentals?.pe ?? stock.pe;
+  const roe = fundamentals?.roe ?? stock.roe;
+  const roce = fundamentals?.roce ?? stock.roce;
+  const mktcap = fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap; // convert to Crores if live
+  const bvps = fundamentals?.bookValue ?? stock.bvps;
+  const eps = fundamentals?.eps ?? (stock.np && stock.sh ? stock.np / stock.sh : 0);
+
   const metrics = [
-    { label: 'P/E Ratio',     value: stock.pe,       unit: 'x',     threshold: 20,  inverse: true  },
-    { label: 'ROE',           value: stock.roe,      unit: '%',     threshold: 15,  inverse: false },
-    { label: 'ROCE',          value: stock.roce,     unit: '%',     threshold: 15,  inverse: false },
+    { label: 'P/E Ratio',     value: pe,             unit: 'x',     threshold: 20,  inverse: true  },
+    { label: 'ROE',           value: roe,            unit: '%',     threshold: 15,  inverse: false },
+    { label: 'ROCE',          value: roce,           unit: '%',     threshold: 15,  inverse: false },
     { label: 'D/E Ratio',     value: stock.de,       unit: 'x',     threshold: 1,   inverse: true  },
     { label: 'OPM',           value: stock.opm,      unit: '%',     threshold: 10,  inverse: false },
     { label: 'Revenue CAGR',  value: stock.revcagr,  unit: '%',     threshold: 15,  inverse: false },
     { label: 'EPS CAGR',      value: stock.epscagr,  unit: '%',     threshold: 15,  inverse: false },
-    { label: 'Mkt Cap',       value: stock.mktcap / 1000, unit: 'K Cr', threshold: 100, inverse: false },
+    { label: 'Mkt Cap',       value: mktcap / 1000,  unit: 'K Cr',  threshold: 100, inverse: false },
   ];
 
   return (
     <div className="card-sacred p-6">
-      <div className="philosophy-heading text-lg mb-6">{t("common.keyMetrics")}</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div className="philosophy-heading text-lg">{t("common.keyMetrics")}</div>
+        {isLive && (
+          <div style={{
+            padding: '4px 10px',
+            background: 'rgba(34,197,94,0.15)',
+            border: '1px solid rgba(34,197,94,0.4)',
+            borderRadius: 6,
+            fontSize: 10,
+            color: '#22C55E',
+            fontWeight: 700,
+            letterSpacing: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E' }} />
+            LIVE
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         {metrics.map((m, idx) => (
@@ -50,10 +80,10 @@ export function MetricsPanel({ stock }: Props) {
         <div className="philosophy-subheading text-xs mb-4">{t("common.valuationSnapshot")}</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatGroup title="P/B Ratio" stats={[
-            { label: 'Price / Book', value: stock.bvps > 0 ? (stock.price / stock.bvps).toFixed(2) : 'N/A', unit: 'x' }
+            { label: 'Price / Book', value: bvps > 0 ? (stock.price / bvps).toFixed(2) : 'N/A', unit: 'x' }
           ]} />
           <StatGroup title="PEG Ratio" stats={[
-            { label: 'P/E / Growth', value: (stock.pe && stock.epscagr) ? (stock.pe / stock.epscagr).toFixed(2) : 'N/A' }
+            { label: 'P/E / Growth', value: (pe && stock.epscagr) ? (pe / stock.epscagr).toFixed(2) : 'N/A' }
           ]} />
           <StatGroup title="FCF Yield" stats={[
             { label: 'FCF / Mkt Cap', value: (stock.fcf && stock.mktcap) ? ((stock.fcf / stock.mktcap) * 100).toFixed(2) : 'N/A', unit: '%' }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useFundamentals } from '@/hooks/useFundamentals';
 import { Stock, RishiScore } from '../../lib/types';
 
 interface WisdomSidebarProps {
@@ -111,6 +112,10 @@ const RISHI_PROMPTS: Record<string, string> = {
 };
 
 export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
+  const { fundamentals } = useFundamentals(stock.symbol);
+  const pe = fundamentals?.pe ?? stock.pe;
+  const roe = fundamentals?.roe ?? stock.roe;
+  const mktcap = fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap;
   const [activeMode, setActiveMode] = useState<"wisdom" | "chat">("wisdom");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -140,7 +145,7 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
     try {
       // Build context about the stock
       const stockContext = `You are analyzing ${stock.symbol} (${stock.name}). 
-Stock details: PE ${stock.pe}, ROE ${stock.roe}%, Debt/Equity ${stock.de}, Revenue CAGR ${stock.revcagr}%, Market Cap ${stock.mktcap}Cr, Sector: ${stock.sector}.
+Stock details: PE ${pe}, ROE ${roe}%, Debt/Equity ${stock.de}, Revenue CAGR ${stock.revcagr}%, Market Cap ${mktcap}Cr, Sector: ${stock.sector}.
 User question about this stock:`;
 
       const systemPrompt = (RISHI_PROMPTS[selectedRishi] || RISHI_PROMPTS['Warren Buffett']) + '\n\n' + stockContext;

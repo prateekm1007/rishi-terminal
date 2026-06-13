@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '../../lib/language';
+import { useFundamentals } from '@/hooks/useFundamentals';
 import { Stock } from '../../lib/types';
 import { ConsensusResult } from '../../lib/consensus/types';
 import { buildEliteKnowledgeGraph, EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
@@ -415,6 +416,8 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
 
 /* -- Main KnowledgeGraphView ------------------------------------ */
 export function KnowledgeGraphView({ stock, consensus }: Props) {
+  const { fundamentals } = useFundamentals(stock.symbol);
+  const liveStock: Stock = { ...stock, pe: fundamentals?.pe ?? stock.pe, roe: fundamentals?.roe ?? stock.roe };
   const { t } = useLanguage();
   const [activeView, setActiveView] = useState<'debate' | 'historical' | 'technical' | 'timeline'>('debate');
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -444,7 +447,7 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
     );
   }
 
-  const relevantPlays = getRelevantPlays(stock);
+  const relevantPlays = getRelevantPlays(liveStock);
 
   const VIEWS = [
     { id: 'debate',     label: 'Bulls vs Bears' },
@@ -588,7 +591,7 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
                 <PlayCard
                   key={i}
                   play={play}
-                  relevanceNote={getRelevanceNote(play, stock)}
+                  relevanceNote={getRelevanceNote(play, liveStock)}
                 />
               ))}
             </div>

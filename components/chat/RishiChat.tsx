@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Stock } from "@/lib/types";
+import { useFundamentals } from '@/hooks/useFundamentals';
 import { RishiScore } from "@/lib/consensus/types";
 import { RISHI_PERSONALITIES, getRishisByTier, type ChatContext } from "@/lib/chat/rishiEngine";
 import { useLanguage } from '../../lib/language';
@@ -84,6 +85,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
   const [loading, setLoading] = useState(false);
   const [apiStatus, setApiStatus] = useState<'idle' | 'calling' | 'ok' | 'fallback'>('idle');
   const { t, locale } = useLanguage();
+  const { fundamentals } = useFundamentals(stock.symbol);
 
   const quickPrompts = [
     t('chat.quickPrompts.view'),
@@ -119,14 +121,21 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
     stockName: stock.name,
     sector: stock.sector,
     rishiScore: scores.find(s => s.name.toLowerCase().includes(selectedRishi.slice(0, 4)))?.score ?? 50,
-    pe: stock.pe,
-    roe: stock.roe,
+    pe: (fundamentals?.pe ?? stock.pe),
+    roe: (fundamentals?.roe ?? stock.roe),
     de: stock.de,
     revcagr: stock.revcagr,
     promo: stock.promo,
-    mktcap: stock.mktcap,
+    mktcap: (fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap),
     fcf: stock.fcf,
   }), [stock, scores, selectedRishi]);
+
+  const liveStock = useMemo(() => ({
+    ...stock,
+    pe: fundamentals?.pe ?? stock.pe,
+    roe: fundamentals?.roe ?? stock.roe,
+    mktcap: fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap,
+  }), [stock, fundamentals]);
 
   async function callGeminiAPI(
     prompt: string,
@@ -188,8 +197,8 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
           callGeminiAPI(`Respond to this from ${r2}'s perspective, potentially disagreeing: ${text}`, messages),
         ]);
 
-        responseText = resp1.status === 'fulfilled' ? resp1.value : (locale === 'hi' ? getStaticResponseHi(r1, text, stock, scores) : getStaticResponse(r1, text, stock, scores));
-        const resp2Text = resp2.status === 'fulfilled' ? resp2.value : (locale === 'hi' ? getStaticResponseHi(r2, text, stock, scores) : getStaticResponse(r2, text, stock, scores));
+        responseText = resp1.status === 'fulfilled' ? resp1.value : (locale === 'hi' ? getStaticResponseHi(r1, text, liveStock, scores) : getStaticResponse(r1, text, liveStock, scores));
+        const resp2Text = resp2.status === 'fulfilled' ? resp2.value : (locale === 'hi' ? getStaticResponseHi(r2, text, liveStock, scores) : getStaticResponse(r2, text, liveStock, scores));
 
         // Add first Rishi response
         const rishi1 = RISHI_PERSONALITIES[r1];
@@ -230,7 +239,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
         setApiStatus('ok');
       } catch (err) {
         console.warn('[RishiChat] API failed, using static fallback:', err);
-        responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, stock, scores) : getStaticResponse(selectedRishi, text, stock, scores));
+        responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, liveStock, scores) : getStaticResponse(selectedRishi, text, liveStock, scores));
         setApiStatus('fallback');
       }
 
@@ -250,7 +259,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
 
     } catch (err) {
       // Final fallback
-      const responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, stock, scores) : getStaticResponse(selectedRishi, text, stock, scores));
+      const responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, liveStock, scores) : getStaticResponse(selectedRishi, text, liveStock, scores));
       const rishi = RISHI_PERSONALITIES[selectedRishi];
       const rishiMsg: ChatMessage = {
         id: Date.now().toString() + '_r',

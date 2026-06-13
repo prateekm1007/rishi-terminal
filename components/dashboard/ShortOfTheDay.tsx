@@ -5,6 +5,7 @@ import Link from "next/link";
 import { calculateRishiScore } from "@/lib/scorers/rishiScoreV2";
 import { STOCKS } from "@/data/stocks";
 import type { StockMetrics } from "@/lib/scorers/types";
+import { useFundamentals } from '@/hooks/useFundamentals';
 
 const C = {
   red: "#EF4444",
@@ -33,6 +34,8 @@ export default function ShortOfTheDay() {
     scored.sort((a, b) => b.shortScore - a.shortScore);
     return scored[0];
   }, []);
+  const symbol = shortOfDay?.stock?.symbol ?? Object.keys(STOCKS)[0] ?? 'TCS';
+  const { fundamentals } = useFundamentals(symbol);
 
   if (!shortOfDay) return null;
 
@@ -92,9 +95,9 @@ export default function ShortOfTheDay() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
           {[
-            { label: "P/E", value: stock.pe.toFixed(1) + "x" },
+            { label: "P/E", value: (fundamentals?.pe ?? stock.pe).toFixed(1) + "x" },
             { label: "D/E", value: stock.de.toFixed(2) + "x" },
-            { label: "ROE", value: stock.roe.toFixed(1) + "%" },
+            { label: "ROE", value: (fundamentals?.roe ?? stock.roe).toFixed(1) + "%" },
             { label: "Conviction", value: conviction.replace(/_/g, " ").slice(0, 12) },
           ].map(m => (
             <div key={m.label} style={{

@@ -1,8 +1,10 @@
 'use client';
 
 import { usePriceHistory } from '../../hooks/usePriceHistory';
-
 import type { UniversalAsset } from '../../lib/types/asset';
+
+
+import { useFundamentals } from '@/hooks/useFundamentals';
 
 interface Props {
   asset: UniversalAsset;
@@ -27,7 +29,9 @@ function IndicatorCard({ title, children }: { title: string; children: React.Rea
   );
 }
 
+
 export function AssetTechnicalIndicators({ asset }: Props) {
+  const { fundamentals } = useFundamentals(asset.symbol);
   const { points } = usePriceHistory(asset?.symbol ?? '', '1M');
   const last = points.length > 0 ? points[points.length-1].v : (asset?.price ?? 0);
 
@@ -42,7 +46,7 @@ export function AssetTechnicalIndicators({ asset }: Props) {
   const upper      = last * 1.08;
   const middle     = last * 1.02;
   const lower      = last * 0.94;
-  const supertrend = last * ((asset.metadata?.roe || 10) > 15 ? 0.97 : 1.03);
+  const supertrend = last * ((fundamentals?.roe ?? asset.metadata?.roe ?? 10) > 15 ? 0.97 : 1.03);
 
   const isBullish    = rsi < 70 && adx > 25 && macd > 0;
   const isOverbought = rsi > 70;

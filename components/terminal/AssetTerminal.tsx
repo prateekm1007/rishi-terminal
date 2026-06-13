@@ -19,7 +19,6 @@ import { LegalDisclaimer } from '../ui/LegalDisclaimer';
 import RishiScoreDual             from '../score/RishiScoreDual';
 import { BondMetricsPanel }  from './BondMetricsPanel';
 import { YieldCurveChart }    from './YieldCurveChart';
-import { usePrice } from '../../hooks/useLivePrices';
 
 interface Props {
   asset: UniversalAsset;
@@ -31,24 +30,6 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
-
-  const { price: livePriceData } = usePrice(asset.symbol);
-
-  const displayPrice =
-    livePriceData?.price && livePriceData.price > 0
-      ? livePriceData.price
-      : asset.price;
-
-  const displayChange =
-    livePriceData?.changePercent24h !== undefined
-      ? livePriceData.changePercent24h
-      : asset.change24h;
-
-  const liveAsset = {
-    ...asset,
-    price: displayPrice,
-    change24h: displayChange,
-  };
 
   const TABS = [
     { id: 'overview',  label: t('asset.overview'),   desc: t('asset.overviewDesc')   },
@@ -155,7 +136,7 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                 </span>
               </div>
             </div>
-            <LivePriceWidget symbol={liveAsset.symbol} price={liveAsset.price} change24h={liveAsset.change24h} />
+            <LivePriceWidget symbol={asset.symbol} price={asset.price} change24h={asset.change24h} />
           </div>
         </div>
       </div>
@@ -226,7 +207,7 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                       name: asset.name,
                       sector: asset.metadata?.sector ?? '',
                       pe: asset.metadata?.pe ?? 0,
-                      pb: asset.metadata?.bvps ? liveAsset.price / asset.metadata.bvps : 0,
+                      pb: asset.metadata?.bvps ? asset.price / asset.metadata.bvps : 0,
                       roe: asset.metadata?.roe ?? 0,
                       roce: asset.metadata?.roce ?? 0,
                       opm: asset.metadata?.opm ?? 0,
@@ -244,7 +225,7 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
-                  <AssetMetricsPanel asset={liveAsset} />
+                  <AssetMetricsPanel asset={asset} />
                 </div>
 
                 <div className="wisdom-reveal-delay-2 card-sacred" style={{ padding: 24, position: 'relative' }}>
@@ -345,7 +326,7 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
             {activeTab === 'technical' && (
               <>
                 <div className="wisdom-reveal">
-                  {liveAsset.category === 'bond' ? <YieldCurveChart /> : <AssetPriceChart asset={liveAsset} />}
+                  {asset.category === 'bond' ? <YieldCurveChart /> : <AssetPriceChart asset={asset} />}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
@@ -378,7 +359,7 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
 
           <div style={{ position: 'sticky', top: 80 }}>
             <div className="wisdom-reveal-delay-2">
-              <AssetWisdomSidebar asset={liveAsset} scores={consensus.scores} />
+              <AssetWisdomSidebar asset={asset} scores={consensus.scores} />
             </div>
           </div>
 

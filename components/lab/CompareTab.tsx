@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
 import { buildConsensus } from '@/lib/consensus';
+
+import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
 import { fetchHistoryPoints } from '@/components/lab/helpers';
@@ -120,7 +122,8 @@ export default function CompareTab() {
     } catch {}
   }
 
-  const { prices, loading } = useLivePrices(symbols);
+  
+  const { fundamentals: bulkFund } = useBulkFundamentals(symbols);
 
   function handleInput(val: string) {
     setAddSymbol(val.toUpperCase());
@@ -221,6 +224,8 @@ export default function CompareTab() {
       .map(s => s.symbol);
   }, [symbols]);
 
+  const { prices, loading } = useLivePrices(symbols);
+
   const enriched = useMemo(() => {
     return symbols
       .map(sym => {
@@ -229,7 +234,8 @@ export default function CompareTab() {
         const c = buildConsensus(stock);
         const live = prices[sym]?.price ?? stock.price ?? 0;
         const chg = prices[sym]?.changePercent24h ?? 0;
-        const fcfYield = stock.mktcap > 0 && stock.fcf ? (stock.fcf / stock.mktcap) * 100 : 0;
+        const liveMktcap = (bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : stock.mktcap);
+        const fcfYield = liveMktcap > 0 && stock.fcf ? (stock.fcf / liveMktcap) * 100 : 0;
 
         // Extract pillar scores by matching full names
         const pillarScores: Record<string, number> = {};
@@ -244,13 +250,13 @@ export default function CompareTab() {
           sector: stock.sector ?? '—',
           live,
           changePct: chg,
-          pe: stock.pe ?? 0,
-          pb: (stock.price && stock.bvps) ? stock.price / stock.bvps : 0,
-          roe: stock.roe ?? 0,
-          roce: stock.roce ?? 0,
+          pe: bulkFund[stock.symbol]?.pe ?? stock.pe ?? 0,
+          pb: (stock.price && (bulkFund[stock.symbol]?.bookValue ?? stock.bvps)) ? stock.price / (bulkFund[stock.symbol]?.bookValue ?? stock.bvps) : 0,
+          roe: bulkFund[stock.symbol]?.roe ?? stock.roe ?? 0,
+          roce: bulkFund[stock.symbol]?.roce ?? stock.roce ?? 0,
           de: stock.de ?? 0,
           fcfYield,
-          mktcap: stock.mktcap ?? 0,
+          mktcap: bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : (stock.mktcap ?? 0),
           consensus: c.consensus,
           category: c.category,
           tension: c.tension,

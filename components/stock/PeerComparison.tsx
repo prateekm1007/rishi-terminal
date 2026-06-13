@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import { Stock } from '@/lib/types';
 import { useLivePrices } from '@/hooks/useLivePrices';
-import { Stock } from '../../lib/types';
+import { useBulkFundamentals } from '@/hooks/useFundamentals';
 
 interface PeerStock {
   symbol: string;
@@ -22,30 +23,30 @@ interface Props {
 export function PeerComparison({ stock, peers }: Props) {
   if (!stock || !peers) return null;
 
-  const allStocks = [
-    {
-      symbol: stock.symbol,
-      name: stock.name,
-      price: stock.price,
-      marketCap: stock.mktcap,
-      pe: stock.pe,
-      roe: stock.roe,
-      isCurrent: true,
-    },
-    ...peers.map(p => ({ ...p, isCurrent: false })),
-  ];
-
   const symbols = useMemo(
     () => [stock.symbol, ...peers.map(p => p.symbol)],
     [stock.symbol, peers]
   );
 
-  const { prices: livePrices } = useLivePrices(symbols);
+  const { prices } = useLivePrices(symbols);
+  const { fundamentals: bulkFund } = useBulkFundamentals(symbols);
 
-  const allStocksWithLivePrices = allStocks.map(s => ({
-    ...s,
-    price: livePrices[s.symbol]?.price ?? s.price,
-  }));
+  const allStocks = [
+    {
+      symbol: stock.symbol,
+      name: stock.name,
+      price: prices[stock.symbol]?.price ?? stock.price,
+      marketCap: bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : stock.mktcap,
+      pe: bulkFund[stock.symbol]?.pe ?? stock.pe,
+      roe: bulkFund[stock.symbol]?.roe ?? stock.roe,
+      isCurrent: true,
+    },
+    ...peers.map(p => ({
+      ...p,
+      price: prices[p.symbol]?.price ?? p.price,
+      isCurrent: false,
+    })),
+  ];
 
   const safeFixed = (v: any, d = 1) => {
     const n = Number(v);
@@ -76,63 +77,44 @@ export function PeerComparison({ stock, peers }: Props) {
                 <th key={h} style={{
                   fontSize: 11, fontWeight: 700, color: '#64748B',
                   textTransform: 'uppercase' as const, letterSpacing: '0.08em',
-                  padding: '10px 12px',
-                  borderBottom: '1px solid rgba(51,65,85,0.5)',
-                  textAlign: h === 'Company' ? 'left' as const : 'right' as const,
-                  background: 'rgba(17,24,39,0.5)',
+                  padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid rgba(30,41,59,0.8)',
                 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {allStocksWithLivePrices.map((s, idx) => (
+            {allStocks.map((s, idx) => (
               <tr
                 key={idx}
                 style={{
                   background: s.isCurrent ? 'rgba(212,175,55,0.06)' : 'transparent',
                   borderLeft: s.isCurrent ? '3px solid #D4AF37' : '3px solid transparent',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => {
-                  if (!s.isCurrent) (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(31,41,59,0.5)';
-                }}
-                onMouseLeave={e => {
-                  if (!s.isCurrent) (e.currentTarget as HTMLTableRowElement).style.background = 'transparent';
                 }}
               >
-                <td style={{ padding: '12px', borderBottom: '1px solid rgba(30,41,59,0.5)' }}>
-                  {s.isCurrent ? (
-                    <div>
-                      <div style={{ fontWeight: 700, color: '#D4AF37', fontSize: 13 }}>{s.name}</div>
-                      <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>{s.symbol} · Current</div>
+                <td style={{ padding: '10px 12px' }}>
+                  <Link href={`/stock/${s.symbol}`} style={{ textDecoration: 'none' }}>
+                    <div style={{
+                      fontWeight: 600, color: '#F8FAFC', fontSize: 13,
+                      transition: 'color 0.15s',
+                    }}
+                      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.color = '#D4AF37'}
+                      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.color = '#F8FAFC'}
+                    >
+                      {s.name}
                     </div>
-                  ) : (
-                    <Link href={`/stock/${s.symbol}`} style={{ textDecoration: 'none' }}>
-                      <div style={{
-                        fontWeight: 600, color: '#F8FAFC', fontSize: 13,
-                        transition: 'color 0.15s',
-                      }}
-                        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.color = '#D4AF37'}
-                        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.color = '#F8FAFC'}
-                      >
-                        {s.name}
-                      </div>
-                      <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>{s.symbol} →</div>
-                    </Link>
-                  )}
+                    <div style={{ fontSize: 11, color: '#64748B' }}>{s.symbol}</div>
+                  </Link>
                 </td>
-                <td style={{ padding: '12px', textAlign: 'right', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: '#F8FAFC', borderBottom: '1px solid rgba(30,41,59,0.5)' }}>
-                  {safeFixed(s.price, 2)}
+                <td style={{ padding: '10px 12px', color: '#F8FAFC', fontSize: 13, fontWeight: 500 }}>
+                  {safeFixed(s.price)}
                 </td>
-                <td style={{ padding: '12px', textAlign: 'right', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: '#F8FAFC', borderBottom: '1px solid rgba(30,41,59,0.5)' }}>
-                  {s.marketCap ? (s.marketCap / 1000).toFixed(0) + 'K Cr' : 'N/A'}
+                <td style={{ padding: '10px 12px', color: '#94A3B8', fontSize: 13 }}>
+                  {s.marketCap > 0 ? `${safeFixed(s.marketCap / 1000)}K Cr` : 'N/A'}
                 </td>
-                <td style={{ padding: '12px', textAlign: 'right', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color: '#F8FAFC', borderBottom: '1px solid rgba(30,41,59,0.5)' }}>
+                <td style={{ padding: '10px 12px', color: '#94A3B8', fontSize: 13 }}>
                   {safeFixed(s.pe)}x
                 </td>
-                <td style={{ padding: '12px', textAlign: 'right', fontFamily: 'JetBrains Mono, monospace', fontSize: 13, borderBottom: '1px solid rgba(30,41,59,0.5)',
-                  color: Number(s.roe) >= 15 ? '#22C55E' : Number(s.roe) >= 10 ? '#D4AF37' : '#EF4444',
-                }}>
+                <td style={{ padding: '10px 12px', color: '#94A3B8', fontSize: 13 }}>
                   {safeFixed(s.roe)}%
                 </td>
               </tr>

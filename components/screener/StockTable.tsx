@@ -4,7 +4,9 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Stock } from "../../lib/types";
 import { buildConsensus } from "../../lib/consensus";
-import { useLivePrices } from "../../hooks/useLivePrices";
+
+import { useBulkFundamentals } from '@/hooks/useFundamentals';
+import { useLivePrices } from '@/hooks/useLivePrices';
 
 interface StockRow extends Stock {
   consensus: number;
@@ -38,7 +40,10 @@ export function StockTable({ stocks }: Props) {
 
   // Get live prices for all stocks
   const stockSymbols = useMemo(() => stocks.map(s => s.symbol), [stocks]);
+
   const { prices } = useLivePrices(stockSymbols);
+  
+  const { fundamentals: bulkFund } = useBulkFundamentals(stockSymbols);
 
   const enrichedStocks = useMemo<StockRow[]>(() => {
     return stocks.map(stock => {
@@ -216,10 +221,10 @@ export function StockTable({ stocks }: Props) {
                   {stock.change24h > 0 ? "+" : ""}{stock.change24h.toFixed(2)}%
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {stock.pe > 0 ? stock.pe.toFixed(1) : "—"}
+                  {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "—"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {stock.roe > 0 ? (stock.roe * 100).toFixed(1) + "%" : "—"}
+                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? ((bulkFund[stock.symbol]?.roe ?? stock.roe) * 100).toFixed(1) + "%" : "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span

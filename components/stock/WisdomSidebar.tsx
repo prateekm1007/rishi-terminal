@@ -116,6 +116,9 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
   const pe = fundamentals?.pe ?? stock.pe;
   const roe = fundamentals?.roe ?? stock.roe;
   const mktcap = fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap;
+  const debtToEquity = fundamentals?.debtToEquity ?? stock.de;
+  const revCagr = fundamentals?.revCagr3y ?? stock.revcagr;
+  const promoter = fundamentals?.promoterHolding ?? stock.promo;
   const [activeMode, setActiveMode] = useState<"wisdom" | "chat">("wisdom");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -145,7 +148,7 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
     try {
       // Build context about the stock
       const stockContext = `You are analyzing ${stock.symbol} (${stock.name}). 
-Stock details: PE ${pe}, ROE ${roe}%, Debt/Equity ${stock.de}, Revenue CAGR ${stock.revcagr}%, Market Cap ${mktcap}Cr, Sector: ${stock.sector}.
+Stock details: PE ${pe}, ROE ${roe}%, Debt/Equity ${debtToEquity}, Revenue CAGR ${revCagr}%, Market Cap ${mktcap}Cr, Sector: ${stock.sector}.
 User question about this stock:`;
 
       const systemPrompt = (RISHI_PROMPTS[selectedRishi] || RISHI_PROMPTS['Warren Buffett']) + '\n\n' + stockContext;

@@ -264,10 +264,10 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                     const metrics: StockMetrics = {
                       symbol: stock.symbol, name: stock.name, sector: stock.sector,
                       pe: liveFundamentals?.pe ?? stock.pe, pb: stock.price / (liveFundamentals?.bookValue ?? stock.bvps),
-                      roe: liveFundamentals?.roe ?? stock.roe, roce: liveFundamentals?.roce ?? stock.roce, opm: stock.opm,
-                      debtToEquity: stock.de, revenueCAGR3Y: stock.revcagr,
-                      epsCAGR3Y: stock.epscagr, promoterHolding: stock.promo,
-                      marketCap: liveFundamentals?.marketCap ? liveFundamentals.marketCap / 10000000 : stock.mktcap, fcfMargin: (stock.fcf / stock.rev) * 100,
+                      roe: liveFundamentals?.roe ?? stock.roe, roce: liveFundamentals?.roce ?? stock.roce, opm: liveFundamentals?.opm ?? stock.opm,
+                      debtToEquity: liveFundamentals?.debtToEquity ?? stock.de, revenueCAGR3Y: liveFundamentals?.revCagr3y ?? stock.revcagr,
+                      epsCAGR3Y: liveFundamentals?.epsCagr ?? stock.epscagr, promoterHolding: liveFundamentals?.promoterHolding ?? stock.promo,
+                      marketCap: liveFundamentals?.marketCap ? liveFundamentals.marketCap / 10000000 : stock.mktcap, fcfMargin: liveFundamentals?.fcf ? (liveFundamentals.fcf / 100) : (stock.fcf / stock.rev) * 100,
                     };
                     return <RishiScoreDual metrics={metrics} />;
                   })()}

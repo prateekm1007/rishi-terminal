@@ -30,15 +30,21 @@ export function MetricsPanel({ stock }: Props) {
     : stock.mktcap;                        // static data already in Crores
   const bvps = fundamentals?.bookValue ?? stock.bvps;
   const eps = fundamentals?.eps ?? (stock.np && stock.sh ? stock.np / stock.sh : 0);
+  const debtToEquity = fundamentals?.debtToEquity ?? stock.de;
+  const opm = fundamentals?.opm ?? stock.opm;
+  const revCagr = fundamentals?.revCagr3y ?? stock.revcagr;
+  const epsCagr = fundamentals?.epsCagr ?? stock.epscagr;
+  const promoter = fundamentals?.promoterHolding ?? stock.promo;
+  const fcf = fundamentals?.fcf ?? stock.fcf;
 
   const metrics = [
     { label: 'P/E Ratio',     value: pe,             unit: 'x',     threshold: 20,  inverse: true  },
     { label: 'ROE',           value: roe,            unit: '%',     threshold: 15,  inverse: false },
     { label: 'ROCE',          value: roce,           unit: '%',     threshold: 15,  inverse: false },
-    { label: 'D/E Ratio',     value: stock.de,       unit: 'x',     threshold: 1,   inverse: true  },
-    { label: 'OPM',           value: stock.opm,      unit: '%',     threshold: 10,  inverse: false },
-    { label: 'Revenue CAGR',  value: stock.revcagr,  unit: '%',     threshold: 15,  inverse: false },
-    { label: 'EPS CAGR',      value: stock.epscagr,  unit: '%',     threshold: 15,  inverse: false },
+    { label: 'D/E Ratio',     value: debtToEquity,       unit: 'x',     threshold: 1,   inverse: true  },
+    { label: 'OPM',           value: opm,      unit: '%',     threshold: 10,  inverse: false },
+    { label: 'Revenue CAGR',  value: revCagr,  unit: '%',     threshold: 15,  inverse: false },
+    { label: 'EPS CAGR',      value: epsCagr,  unit: '%',     threshold: 15,  inverse: false },
     { label: 'Mkt Cap',       value: mktcap / 1000,  unit: 'K Cr',  threshold: 100, inverse: false },
   ];
 
@@ -85,13 +91,13 @@ export function MetricsPanel({ stock }: Props) {
             { label: 'Price / Book', value: bvps > 0 ? (stock.price / bvps).toFixed(2) : 'N/A', unit: 'x' }
           ]} />
           <StatGroup title="PEG Ratio" stats={[
-            { label: 'P/E / Growth', value: (pe && stock.epscagr) ? (pe / stock.epscagr).toFixed(2) : 'N/A' }
+            { label: 'P/E / Growth', value: (pe && epsCagr) ? (pe / epsCagr).toFixed(2) : 'N/A' }
           ]} />
           <StatGroup title="FCF Yield" stats={[
-            { label: 'FCF / Mkt Cap', value: (stock.fcf && stock.mktcap) ? ((stock.fcf / stock.mktcap) * 100).toFixed(2) : 'N/A', unit: '%' }
+            { label: 'FCF / Mkt Cap', value: (fcf && mktcap) ? ((fcf / mktcap) * 100).toFixed(2) : 'N/A', unit: '%' }
           ]} />
           <StatGroup title="Promoter" stats={[
-            { label: 'Promoter Hold', value: stock.promo.toFixed(1), unit: '%' }
+            { label: 'Promoter Hold', value: promoter.toFixed(1), unit: '%' }
           ]} />
         </div>
       </div>

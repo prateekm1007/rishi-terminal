@@ -96,7 +96,7 @@ export default function ShortOfTheDay() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
           {[
             { label: "P/E", value: (fundamentals?.pe ?? stock.pe).toFixed(1) + "x" },
-            { label: "D/E", value: stock.de.toFixed(2) + "x" },
+            { label: "D/E", value: (fundamentals?.debtToEquity ?? stock.de).toFixed(2) + "x" },
             { label: "ROE", value: (fundamentals?.roe ?? stock.roe).toFixed(1) + "%" },
             { label: "Conviction", value: conviction.replace(/_/g, " ").slice(0, 12) },
           ].map(m => (

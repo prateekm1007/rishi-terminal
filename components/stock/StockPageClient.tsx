@@ -387,11 +387,11 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 </div>
 
                 <div className="wisdom-reveal-delay-2">
-                  <QuarterlyChart quarters={detail.quarterlyResults} />
+                  <QuarterlyChart symbol={stock.symbol} />
                 </div>
 
                 <div className="wisdom-reveal-delay-2">
-                  <ShareholdingChart history={detail.shareholdingHistory} />
+                  <ShareholdingChart symbol={stock.symbol} />
                 </div>
               </>
             )}

@@ -43,7 +43,7 @@ export function ShareholdingChart({ symbol, refreshMs = 3_600_000 }: Props) {
         );
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        const h: HoldingRow[] = Array.isArray(json?.history) ? json.history : [];
+        const h: HoldingRow[] = Array.isArray(json?.history) ? json.history.slice(-8) : [];
         if (mounted) {
           setHistory(h);
           setError(null);

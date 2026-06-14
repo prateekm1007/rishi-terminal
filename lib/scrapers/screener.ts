@@ -1,155 +1,111 @@
 // lib/scrapers/screener.ts
-// Scrapes Screener.in for live Indian stock fundamentals
-// No auth required for basic company page
-
 const BASE = "https://www.screener.in/company";
-
 const HEADERS: Record<string, string> = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-  "Accept-Language": "en-US,en;q=0.9",
+  "Accept-Language": "en-US,en;q=0.5",
 };
+
+// Helper to parse numbers from strings like "1,234.56" or "12.5%"
+function num(s: string): number {
+  if (!s) return 0;
+  const cleaned = s.replace(/[,%]/g, "").trim();
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+// ========== FUNDAMENTALS ==========
 
 export interface ScreenerFundamentals {
   pe: number;
-  bookValue: number;
-  debtToEquity: number;
   roe: number;
   roce: number;
+  bookValue: number;
+  fcf: number;
+  roa: number;
+  debtToEquity: number;
   opm: number;
   revCagr3y: number;
   epsCagr: number;
   promoterHolding: number;
   marketCap: number;
-  fcf: number;
-  roa: number;
 }
-
-function num(val: string | undefined | null): number {
-  if (!val) return 0;
-  const n = parseFloat(val.replace(/,/g, "").replace(/[^0-9.\-]/g, ""));
-  return isNaN(n) ? 0 : n;
-}
-
-// ========== TOP-RATIOS: PE, Book Value, ROCE, ROE, Market Cap, Div Yield, Face Value ==========
 
 function extractRatioBlock(html: string): Record<string, number> {
-  const result: Record<string, number> = {};
   const section = html.match(/<ul id="top-ratios"[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? "";
-  const items = section.match(/<li[^>]*>[\s\S]*?<\/li>/g) ?? [];
-
+  const items = section.match(/<li[^>]*>([\s\S]*?)<\/li>/g) ?? [];
+  const result: Record<string, number> = {};
   for (const item of items) {
-    const name = item.match(/<span class="name">([\s\S]*?)<\/span>/)?.[1]?.trim();
-    const value = item.match(/<span class="number"[^>]*>([\s\S]*?)<\/span>/)?.[1]
-      ?.replace(/<[^>]*>/g, "").trim();
-    if (name && value) {
-      result[name] = num(value);
+    const nameMatch = item.match(/<span class="name"[^>]*>(.*?)<\/span>/);
+    const valueMatch = item.match(/<span class="number"[^>]*>(.*?)<\/span>/);
+    if (nameMatch && valueMatch) {
+      const name = nameMatch[1].replace(/<[^>]*>/g, "").trim();
+      const value = num(valueMatch[1]);
+      if (name) result[name] = value;
     }
   }
   return result;
 }
 
-// ========== PROFIT & LOSS → OPM (latest period) ==========
-
 function extractOPM(html: string): number {
-  // Find profit-loss section or search entire HTML for OPM % row
-  const plSection = html.match(/<section id="profit-loss"[^>]*>([\s\S]*?)(?=<section id=|$)/)?.[1] ?? html;
-
-  // Find all rows, locate the one with "OPM %" text
-  const rows = plSection.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) ?? [];
+  const plSection = html.match(/<section id="profit-loss"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
+  const rows = plSection.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
   for (const row of rows) {
-    if (row.includes("OPM %")) {
-      // Extract all numeric <td> values
-      const cells = row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [];
-      // Last cell with a number that's not the label
-      let last = 0;
-      for (const cell of cells) {
-        const text = cell.replace(/<[^>]*>/g, "").trim();
-        const n = num(text);
-        if (n > 0) last = n;
-      }
-      return last;
+    const text = row.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    if (text.toLowerCase().includes("opm")) {
+      const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
+        .map((c: string) => c.replace(/<[^>]*>/g, "").trim());
+      if (cells.length >= 2) return num(cells[cells.length - 1]);
     }
   }
   return 0;
 }
 
-// ========== BALANCE SHEET → D/E = Borrowings / (Equity Capital + Reserves) ==========
-
 function extractBalanceSheetDE(html: string): number {
-  const bsSection = html.match(/<section id="balance-sheet"[^>]*>([\s\S]*?)(?=<section id=|$)/)?.[1] ?? html;
-
-  let equityCapital = 0;
-  let reserves = 0;
-  let borrowings = 0;
-
-  // Helper to get last numeric td from a row matching label
-  function getLastValue(section: string, label: string): number {
-    const rows = section.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) ?? [];
-    for (const row of rows) {
-      if (row.includes(label)) {
-        const cells = row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [];
-        // Get all numeric values, take the last one
-        const values: number[] = [];
-        for (const cell of cells) {
-          const text = cell.replace(/<[^>]*>/g, "").trim();
-          const n = num(text);
-          if (text && n > 0) values.push(n);
-        }
-        return values.length > 0 ? values[values.length - 1] : 0;
-      }
+  const bsSection = html.match(/<section id="balance-sheet"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
+  const rows = bsSection.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
+  for (const row of rows) {
+    const text = row.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    if (text.toLowerCase().includes("debt to equity") || text.toLowerCase().includes("debt equity")) {
+      const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
+        .map((c: string) => c.replace(/<[^>]*>/g, "").trim());
+      if (cells.length >= 2) return num(cells[cells.length - 1]);
     }
-    return 0;
   }
-
-  equityCapital = getLastValue(bsSection, "Equity Capital");
-  reserves = getLastValue(bsSection, "Reserves");
-  borrowings = getLastValue(bsSection, "Borrowings");
-
-  const equity = equityCapital + reserves;
-  if (equity <= 0) return 0;
-  return Number((borrowings / equity).toFixed(2));
+  return 0;
 }
-
-// ========== RANGES-TABLE → Revenue CAGR 3Y, EPS CAGR 3Y ==========
 
 function extractCAGR(html: string): { revCagr3y: number; epsCagr3y: number } {
-  let rev = 0;
-  let eps = 0;
-
-  // Find all ranges-tables
-  const tables = html.match(/<table class="ranges-table"[^>]*>[\s\S]*?<\/table>/g) ?? [];
-
-  for (const table of tables) {
-    const isSales = table.includes("Compounded Sales Growth");
-    const isProfit = table.includes("Compounded Profit Growth");
-    if (!isSales && !isProfit) continue;
-
-    // Extract all rows
-    const rows = table.match(/<tr[^>]*>[\s\S]*?<\/tr>/g) ?? [];
-    for (const row of rows) {
-      if (row.includes("3 Years:")) {
-        const cells = row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [];
-        // The second td has the value
-        const valCell = cells.length >= 2 ? cells[1] : null;
-        if (valCell) {
-          const val = num(valCell.replace(/<[^>]*>/g, "").trim());
-          if (isSales) rev = val;
-          if (isProfit) eps = val;
-        }
-      }
+  const cagrSection = html.match(/<section id="analysis"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
+  const rows = cagrSection.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
+  let revCagr3y = 0;
+  let epsCagr3y = 0;
+  for (const row of rows) {
+    const text = row.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
+      .map((c: string) => c.replace(/<[^>]*>/g, "").trim());
+    if (text.includes("Sales CAGR") || text.includes("Revenue CAGR")) {
+      if (cells.length >= 2) revCagr3y = num(cells[1]);
+    }
+    if (text.includes("EPS CAGR")) {
+      if (cells.length >= 2) epsCagr3y = num(cells[1]);
     }
   }
-
-  return { revCagr3y: rev, epsCagr3y: eps };
+  return { revCagr3y, epsCagr3y };
 }
 
-// ========== META DESCRIPTION → Promoter Holding ==========
-
 function extractPromoterFromMeta(html: string): number {
-  const meta = html.match(/<meta\s+name="description"\s+content="([^"]+)"/)?.[1] ?? "";
-  const match = meta.match(/Promoter Holding:\s*([\d.]+)%/);
-  return match ? Number(match[1]) : 0;
+  const metaMatch = html.match(/<meta name="description" content="([^"]+)"/);
+  if (!metaMatch) return 0;
+  const desc = metaMatch[1];
+  const match = desc.match(/Promoter.*?(\d+(\.\d+)?)\s*%/i);
+  return match ? parseFloat(match[1]) : 0;
+}
+
+function extractMarketCap(html: string): number {
+  const rangeSection = html.match(/<div class="ranges-table"[^>]*>([\s\S]*?)<\/div>/)?.[0] ?? "";
+  const match = rangeSection.match(/Market Cap[^<]*<span[^>]*>([\d,]+)/i);
+  return match ? num(match[1]) : 0;
 }
 
 // ========== SHAREHOLDING ==========
@@ -158,20 +114,24 @@ function extractShareholding(html: string): {
   period: string; promoter: number; fii: number; dii: number; public: number;
 }[] {
   const section = html.match(/<section id="shareholding"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
-  const rows = section.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
-  const result: { period: string; promoter: number; fii: number; dii: number; public: number }[] = [];
+  const quarterlyDiv = section.match(/<div id="quarterly-shp"[^>]*>([\s\S]*?)<\/div>/)?.[1] ?? "";
+  if (!quarterlyDiv) return [];
 
-  // Extract headers (periods)
-  const headRow = rows.find(r => r.includes("<th") && r.includes("<td"));
+  const thead = quarterlyDiv.match(/<thead>([\s\S]*?)<\/thead>/)?.[1] ?? "";
+  const tbody = quarterlyDiv.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
+  
+  // Extract periods from <th> tags (skip first empty <th>)
   const periods: string[] = [];
-  if (headRow) {
-    const headers = (headRow.match(/<th[^>]*>([^<]*)<\/th>/g) ?? [])
-      .map((h: string) => h.replace(/<[^>]*>/g, "").trim())
-      .filter((h: string) => h.length > 0);
-    for (const h of headers) periods.push(h);
+  const thMatches = thead.match(/<th[^>]*>([\s\S]*?)<\/th>/g) ?? [];
+  for (let i = 1; i < thMatches.length; i++) {
+    const period = thMatches[i].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    if (period) periods.push(period);
   }
 
-  // Extract data rows (Promoters, FIIs, DIIs, Public)
+  if (periods.length === 0) return [];
+
+  // Extract data rows
+  const rows = tbody.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
   const promoters: number[] = [];
   const fiis: number[] = [];
   const diis: number[] = [];
@@ -180,25 +140,24 @@ function extractShareholding(html: string): {
   for (const row of rows) {
     const text = row.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
-      .map((c: string) => {
-        const t = c.replace(/<[^>]*>/g, "").trim();
-        return t;
-      })
+      .map((c: string) => c.replace(/<[^>]*>/g, "").trim())
       .filter((c: string) => c.length > 0);
 
     if (cells.length < 2) continue;
 
+    // Skip first cell (label), extract values from cells[1] onwards
     if (text.includes("Promoters") && !text.includes("Foreign")) {
       for (let i = 1; i < cells.length; i++) promoters.push(num(cells[i]));
-    } else if (text.includes("FII") || (text.includes("Foreign") && text.includes("Institution"))) {
+    } else if (text.includes("FII")) {
       for (let i = 1; i < cells.length; i++) fiis.push(num(cells[i]));
-    } else if (text.includes("DII") || (text.includes("Domestic") && text.includes("Institution"))) {
+    } else if (text.includes("DII")) {
       for (let i = 1; i < cells.length; i++) diis.push(num(cells[i]));
     } else if (text.includes("Public") || text.includes("Retail")) {
       for (let i = 1; i < cells.length; i++) publicH.push(num(cells[i]));
     }
   }
 
+  const result: { period: string; promoter: number; fii: number; dii: number; public: number }[] = [];
   for (let i = 0; i < periods.length; i++) {
     result.push({
       period: periods[i],
@@ -221,13 +180,17 @@ function extractQuarters(html: string): {
   if (!section) return [];
 
   const thead = section.match(/<thead>([\s\S]*?)<\/thead>/)?.[1] ?? "";
-  const headers = (thead.match(/<th[^>]*>([\s\S]*?)<\/th>/g) ?? [])
-    .map((h: string) => h.replace(/<[^>]*>/g, "").trim())
-    .filter((h: string) => h.length > 0);
-
   const tbody = section.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? "";
-  const allRows = tbody.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
 
+  // Periods from <th> (skip first empty label cell)
+  const thMatches = thead.match(/<th[^>]*>([\s\S]*?)<\/th>/g) ?? [];
+  const periods: string[] = [];
+  for (let i = 1; i < thMatches.length; i++) {
+    const p = thMatches[i].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    periods.push(p);
+  }
+
+  const allRows = tbody.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
   let salesRow: string[] = [];
   let netRow: string[] = [];
   let opmRow: string[] = [];
@@ -236,22 +199,38 @@ function extractQuarters(html: string): {
     const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
       .map((c: string) => c.replace(/<[^>]*>/g, "").trim());
     if (!cells[0]) continue;
-    if (cells[0].toLowerCase().includes("sales")) salesRow = cells;
-    if (cells[0].toLowerCase().includes("net profit")) netRow = cells;
-    if (cells[0].toLowerCase().includes("opm")) opmRow = cells;
+
+    const k = cells[0].toLowerCase();
+    if (k.includes("sales")) salesRow = cells;
+    if (k.includes("net profit")) netRow = cells;
+    if (k.includes("opm")) opmRow = cells;
   }
 
+  const salesVals = salesRow.slice(1);
+  const netVals = netRow.slice(1);
+  const opmVals = opmRow.slice(1);
+
+  // Align from the END (latest quarters), in case one of the rows has fewer early cells.
+  const n = Math.min(periods.length, salesVals.length, netVals.length, opmVals.length);
+  if (n <= 0) return [];
+
+  const periodsUse = periods.slice(-n);
+  const salesUse = salesVals.slice(-n);
+  const netUse = netVals.slice(-n);
+  const opmUse = opmVals.slice(-n);
+
   const result: { period: string; revenue: number; netProfit: number; opm: number }[] = [];
-  for (let i = 1; i < Math.min(headers.length, salesRow.length, netRow.length, 13); i++) {
-    const period = headers[i];
+  for (let i = 0; i < n; i++) {
+    const period = periodsUse[i];
     if (!period) continue;
     result.push({
       period,
-      revenue: num(salesRow[i]),
-      netProfit: num(netRow[i]),
-      opm: num(opmRow[i]),
+      revenue: num(salesUse[i]),
+      netProfit: num(netUse[i]),
+      opm: num(opmUse[i]),
     });
   }
+
   return result;
 }
 
@@ -294,17 +273,17 @@ export async function fetchScreenerFundamentals(symbol: string): Promise<Screene
 
   return {
     pe: r["Stock P/E"] ?? 0,
-    bookValue: r["Book Value"] ?? 0,
-    debtToEquity: de,
-    roe: r["Return on Equity"] ?? r["ROE"] ?? 0,
+    roe: r["ROE"] ?? 0,
     roce: r["ROCE"] ?? 0,
-    opm: opm > 0 ? opm : (r["OPM"] ?? 0),
-    revCagr3y: revCagr3y > 0 ? revCagr3y : (r["Sales growth 3Years"] ?? r["Revenue Growth 3Yr"] ?? 0),
-    epsCagr: epsCagr3y > 0 ? epsCagr3y : (r["Profit growth 3Years"] ?? r["EPS Growth"] ?? 0),
-    promoterHolding: promoter > 0 ? promoter : (r["Promoter holding"] ?? 0),
-    marketCap: r["Market Cap"] ?? 0,
-    fcf: r["Free Cash Flow"] ?? 0,
-    roa: r["Return on Assets"] ?? r["ROA"] ?? 0,
+    bookValue: r["Book Value"] ?? 0,
+    fcf: 0, // TODO: Extract from cash flow statement
+    roa: 0, // TODO: Calculate from ratios
+    debtToEquity: de,
+    opm,
+    revCagr3y,
+    epsCagr: epsCagr3y,
+    promoterHolding: promoter,
+    marketCap: extractMarketCap(html),
   };
 }
 

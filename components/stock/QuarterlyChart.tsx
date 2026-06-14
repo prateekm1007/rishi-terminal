@@ -72,7 +72,7 @@ export function QuarterlyChart({ symbol, refreshMs = 3_600_000 }: Props) {
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      const q: QuarterRow[] = Array.isArray(json?.quarters) ? json.quarters : [];
+      const q: QuarterRow[] = Array.isArray(json?.quarters) ? json.quarters.slice(-8) : [];
       setRows(q);
       setError(null);
     } catch (e: any) {

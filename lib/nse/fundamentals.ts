@@ -1,7 +1,6 @@
 // lib/nse/fundamentals.ts
-// Live fundamentals via Yahoo Finance (free, no auth)
-// Provides: P/E, EPS, Market Cap, ROE, Book Value, Dividend Yield
-// ROCE not available from Yahoo - falls back to static
+// Live fundamentals: NSE API (primary) + Yahoo Finance (fallback)
+// NSE works server-side, no CORS issues in Next.js API routes
 
 export interface LiveFundamentals {
   symbol: string;
@@ -17,7 +16,79 @@ export interface LiveFundamentals {
 }
 
 // =============================================================================
-// Yahoo Finance - primary source (free, server-side safe)
+// NSE India API (primary source - free, server-side only)
+// =============================================================================
+
+const NSE_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+  'Accept': 'application/json',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+};
+
+export async function fetchNSEFundamentals(symbol: string): Promise<Partial<LiveFundamentals> | null> {
+  try {
+    const url = `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(symbol)}`;
+
+    const ac = new AbortController();
+    const timeout = setTimeout(() => ac.abort(), 8000);
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        headers: NSE_HEADERS,
+        signal: ac.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!res.ok) {
+      console.error(`[NSE] ${symbol}: HTTP ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    
+    // NSE response structure:
+    // priceInfo: { lastPrice, change, pChange, totalTradedVolume, totalMarketCap }
+    // info: { symbol, companyName, industry, isin }
+    // metadata: { isin, industryInfo }
+    // securityInfo: { faceValue, issuedSize }
+
+    const priceInfo = data?.priceInfo || {};
+    const info = data?.info || {};
+    const securityInfo = data?.securityInfo || {};
+
+    // Calculate market cap: lastPrice * issuedSize
+    const lastPrice = parseFloat(priceInfo?.lastPrice) || 0;
+    const issuedSize = parseFloat(securityInfo?.issuedSize) || 0;
+    const marketCap = lastPrice * issuedSize;
+
+    // P/E not directly available in NSE API
+    // EPS not directly available
+    // Book value not directly available
+    
+    return {
+      symbol,
+      pe: 0, // Not available from NSE
+      eps: 0,
+      marketCap: marketCap || 0,
+      bookValue: 0,
+      roe: 0,
+      roce: 0,
+      dividendYield: 0,
+      faceValue: parseFloat(securityInfo?.faceValue) || 10,
+      lastUpdated: new Date().toISOString(),
+    };
+  } catch (err) {
+    console.error(`[NSE] ${symbol} error:`, (err as Error).message);
+    return null;
+  }
+}
+
+// =============================================================================
+// Yahoo Finance (fallback - provides P/E, ROE, etc)
 // =============================================================================
 
 export async function fetchYahooFundamentals(symbol: string): Promise<Partial<LiveFundamentals> | null> {
@@ -32,7 +103,7 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
     try {
       res = await fetch(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           'Accept': 'application/json',
         },
         signal: ac.signal,
@@ -42,7 +113,7 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
     }
 
     if (!res.ok) {
-      console.error(`[Yahoo-Fund] ${symbol}: HTTP ${res.status}`);
+      console.error(`[Yahoo] ${symbol}: HTTP ${res.status}`);
       return null;
     }
 
@@ -50,14 +121,14 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
     const result = data?.quoteSummary?.result?.[0];
     if (!result) return null;
 
-    const stats    = result.defaultKeyStatistics || {};
-    const fin      = result.financialData        || {};
-    const summary  = result.summaryDetail        || {};
+    const stats   = result.defaultKeyStatistics || {};
+    const fin     = result.financialData || {};
+    const summary = result.summaryDetail || {};
 
-    const pe           = parseFloat(stats?.trailingPE?.raw)          || parseFloat(summary?.trailingPE?.raw)      || 0;
-    const eps          = parseFloat(stats?.trailingEps?.raw)         || 0;
-    const marketCap    = parseFloat(stats?.marketCap?.raw)           || 0;
-    const bookValue    = parseFloat(stats?.bookValue?.raw)           || 0;
+    const pe           = parseFloat(stats?.trailingPE?.raw) || parseFloat(summary?.trailingPE?.raw) || 0;
+    const eps          = parseFloat(stats?.trailingEps?.raw) || 0;
+    const marketCap    = parseFloat(stats?.marketCap?.raw) || 0;
+    const bookValue    = parseFloat(stats?.bookValue?.raw) || 0;
     const roe          = fin?.returnOnEquity?.raw ? fin.returnOnEquity.raw * 100 : 0;
     const dividendYield = summary?.dividendYield?.raw ? summary.dividendYield.raw * 100 : 0;
 
@@ -74,90 +145,37 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
       lastUpdated: new Date().toISOString(),
     };
   } catch (err) {
-    console.error(`[Yahoo-Fund] ${symbol} error:`, (err as Error).message);
+    console.error(`[Yahoo] ${symbol} error:`, (err as Error).message);
     return null;
   }
 }
 
 // =============================================================================
-// Yahoo Finance v8 quote (faster, more fields)
-// =============================================================================
-
-export async function fetchYahooQuote(symbol: string): Promise<Partial<LiveFundamentals> | null> {
-  try {
-    const yahooSymbol = `${symbol}.NS`;
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?interval=1d&range=1d`;
-
-    const ac = new AbortController();
-    const timeout = setTimeout(() => ac.abort(), 6000);
-
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
-        signal: ac.signal,
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    if (!res.ok) return null;
-    const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
-    if (!meta) return null;
-
-    return {
-      symbol,
-      marketCap: meta.marketCap || 0,
-      pe: 0,
-      eps: 0,
-      bookValue: 0,
-      roe: 0,
-      roce: 0,
-      dividendYield: 0,
-      faceValue: 10,
-      lastUpdated: new Date().toISOString(),
-    };
-  } catch {
-    return null;
-  }
-}
-
-// =============================================================================
-// Hybrid Fetch: Try Yahoo quoteSummary, fallback to v8 quote
+// Hybrid Strategy: NSE market cap + Yahoo fundamentals
 // =============================================================================
 
 export async function fetchLiveFundamentals(symbol: string): Promise<LiveFundamentals | null> {
-  const yahoo = await fetchYahooFundamentals(symbol);
+  // Fetch both in parallel
+  const [nse, yahoo] = await Promise.allSettled([
+    fetchNSEFundamentals(symbol),
+    fetchYahooFundamentals(symbol),
+  ]);
 
-  if (yahoo && (yahoo.pe || 0) > 0) {
+  const nseData = nse.status === 'fulfilled' ? nse.value : null;
+  const yahooData = yahoo.status === 'fulfilled' ? yahoo.value : null;
+
+  // Prefer NSE market cap (more accurate), Yahoo for P/E, ROE
+  if (yahooData || nseData) {
     return {
       symbol,
-      pe:            yahoo.pe            ?? 0,
-      eps:           yahoo.eps           ?? 0,
-      marketCap:     yahoo.marketCap     ?? 0,
-      roe:           yahoo.roe           ?? 0,
+      pe:            yahooData?.pe ?? 0,
+      eps:           yahooData?.eps ?? 0,
+      marketCap:     nseData?.marketCap ?? yahooData?.marketCap ?? 0,
+      roe:           yahooData?.roe ?? 0,
       roce:          0,
-      bookValue:     yahoo.bookValue     ?? 0,
-      dividendYield: yahoo.dividendYield ?? 0,
-      faceValue:     10,
-      lastUpdated:   new Date().toISOString(),
-    };
-  }
-
-  // Fallback: v8 quote for at least market cap
-  const quote = await fetchYahooQuote(symbol);
-  if (quote && (quote.marketCap || 0) > 0) {
-    return {
-      symbol,
-      pe:            0,
-      eps:           0,
-      marketCap:     quote.marketCap ?? 0,
-      roe:           0,
-      roce:          0,
-      bookValue:     0,
-      dividendYield: 0,
-      faceValue:     10,
+      bookValue:     yahooData?.bookValue ?? 0,
+      dividendYield: yahooData?.dividendYield ?? 0,
+      faceValue:     nseData?.faceValue ?? yahooData?.faceValue ?? 10,
       lastUpdated:   new Date().toISOString(),
     };
   }
@@ -172,10 +190,10 @@ export async function fetchLiveFundamentals(symbol: string): Promise<LiveFundame
 export async function fetchBulkFundamentals(symbols: string[]): Promise<Record<string, LiveFundamentals>> {
   const results: Record<string, LiveFundamentals> = {};
 
-  // 3 parallel at a time to avoid Yahoo rate limits
+  // 2 parallel at a time to respect NSE rate limits
   const chunks: string[][] = [];
-  for (let i = 0; i < symbols.length; i += 3) {
-    chunks.push(symbols.slice(i, i + 3));
+  for (let i = 0; i < symbols.length; i += 2) {
+    chunks.push(symbols.slice(i, i + 2));
   }
 
   for (const chunk of chunks) {
@@ -185,9 +203,9 @@ export async function fetchBulkFundamentals(symbols: string[]): Promise<Record<s
         results[chunk[idx]] = result.value;
       }
     });
-    // 500ms between chunks
+    // 1 second between chunks
     if (chunks.indexOf(chunk) < chunks.length - 1) {
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 1000));
     }
   }
 

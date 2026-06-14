@@ -25,7 +25,9 @@ export function MetricsPanel({ stock }: Props) {
   const pe = fundamentals?.pe ?? stock.pe;
   const roe = fundamentals?.roe ?? stock.roe;
   const roce = fundamentals?.roce ?? stock.roce;
-  const mktcap = fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap; // convert to Crores if live
+  const mktcap = fundamentals?.marketCap && fundamentals.marketCap > 10000000
+    ? fundamentals.marketCap / 10000000   // Yahoo returns absolute value, convert to Crores
+    : stock.mktcap;                        // static data already in Crores
   const bvps = fundamentals?.bookValue ?? stock.bvps;
   const eps = fundamentals?.eps ?? (stock.np && stock.sh ? stock.np / stock.sh : 0);
 

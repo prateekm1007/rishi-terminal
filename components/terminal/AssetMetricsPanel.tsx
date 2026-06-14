@@ -25,7 +25,7 @@ export function AssetMetricsPanel({ asset }: Props) {
     { label: 'P/E Ratio',     value: ((liveFund?.pe ?? asset.metadata?.pe ?? 0)),       unit: 'x',     threshold: 20,  inverse: true  },
     { label: 'ROE',           value: ((liveFund?.roe ?? asset.metadata?.roe ?? 0)),      unit: '%',     threshold: 15,  inverse: false },
     { label: 'ROCE',          value: ((liveFund?.roce ?? asset.metadata?.roce ?? 0)),     unit: '%',     threshold: 15,  inverse: false },
-    { label: 'D/E Ratio',     value: (asset.metadata?.debt || 0),       unit: 'x',     threshold: 1,   inverse: true  },
+    { label: 'D/E Ratio',     value: (asset.metadata?.de ?? asset.metadata?.debt ?? 0),       unit: 'x',     threshold: 1,   inverse: true  },
     { label: 'OPM',           value: (asset.metadata?.opm || 0),      unit: '%',     threshold: 10,  inverse: false },
     { label: 'Revenue CAGR',  value: (asset.metadata?.revcagr || 0),  unit: '%',     threshold: 15,  inverse: false },
     { label: 'EPS CAGR',      value: (asset.metadata?.epscagr || 0),  unit: '%',     threshold: 15,  inverse: false },

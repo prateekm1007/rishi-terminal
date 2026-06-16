@@ -18,6 +18,158 @@ const NSE_HEADERS = {
 };
 
 // NSE equity quote
+// =============================================================================
+// YAHOO FINANCE v8 — Indian stock price (NSE suffix)
+// =============================================================================
+const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number; ts: number }> = {};
+
+async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change: number } | null> {
+  const now = Date.now();
+  const cached = YAHOO_STOCK_CACHE[symbol];
+  if (cached && now - cached.ts < 60000) return cached;
+
+  try {
+    const yahooSym = `${symbol}.NS`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSym)}?interval=1d&range=2d`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 6000); return ac.signal; })(),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const meta = json?.chart?.result?.[0]?.meta;
+    if (!meta?.regularMarketPrice) return null;
+    const price = Number(meta.regularMarketPrice);
+    const prev = Number(meta.previousClose) || price;
+    const change = prev > 0 ? ((price - prev) / prev) * 100 : 0;
+    const result = { price, change };
+    YAHOO_STOCK_CACHE[symbol] = { ...result, ts: now };
+    return result;
+  } catch {
+    return null;
+  }
+}
+
+// =============================================================================
+// YAHOO FINANCE v7 — alternate endpoint (different rate limit pool)
+// =============================================================================
+async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; change: number } | null> {
+  try {
+    const yahooSym = `${symbol}.NS`;
+    const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yahooSym)}`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' },
+      signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 6000); return ac.signal; })(),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const q = json?.quoteResponse?.result?.[0];
+    if (!q?.regularMarketPrice) return null;
+    const price = Number(q.regularMarketPrice);
+    const change = Number(q.regularMarketChangePercent) || 0;
+    return { price, change };
+  } catch {
+    return null;
+  }
+}
+
+// =============================================================================
+// SCREENER.IN — HTML scrape fallback (Indian stocks)
+// =============================================================================
+const SCREENER_PRICE_CACHE: Record<string, { price: number; change: number; ts: number }> = {};
+const SCREENER_COOLDOWN: Record<string, number> = {};
+
+async function getScreenerPrice(symbol: string): Promise<{ price: number; change: number } | null> {
+  const now = Date.now();
+  if (SCREENER_COOLDOWN[symbol] && now < SCREENER_COOLDOWN[symbol]) return null;
+  const cached = SCREENER_PRICE_CACHE[symbol];
+  if (cached && now - cached.ts < 120000) return cached;
+
+  try {
+    const url = `https://www.screener.in/company/${encodeURIComponent(symbol)}/consolidated/`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 10000); return ac.signal; })(),
+    });
+    if (res.status === 429 || res.status === 403) {
+      SCREENER_COOLDOWN[symbol] = now + 300000; return null;
+    }
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    // Extract Current Price from top-ratios ul
+    const section = html.match(/<ul id="top-ratios"[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? "";
+    const items = section.match(/<li[^>]*>([\s\S]*?)<\/li>/g) ?? [];
+    let price = 0;
+    let change = 0;
+
+    for (const item of items) {
+      const text = item.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (text.includes('Current Price')) {
+        const m = item.match(/<span class="number"[^>]*>([\d,]+(?:\.\d+)?)<\/span>/);
+        if (m) price = parseFloat(m[1].replace(/,/g, ''));
+      }
+    }
+
+    // Extract change from price area span
+    const upMatch = html.match(/icon-circle-up[\s\S]{0,80}?([\d.]+)%/);
+    const dnMatch = html.match(/icon-circle-down[\s\S]{0,80}?([\d.]+)%/);
+    if (upMatch) change = parseFloat(upMatch[1]);
+    else if (dnMatch) change = -parseFloat(dnMatch[1]);
+
+    if (price <= 0) return null;
+    const result = { price, change };
+    SCREENER_PRICE_CACHE[symbol] = { ...result, ts: now };
+    delete SCREENER_COOLDOWN[symbol];
+    return result;
+  } catch {
+    SCREENER_COOLDOWN[symbol] = Date.now() + 120000;
+    return null;
+  }
+}
+
+// =============================================================================
+// BSE INDIA API — additional free source for Indian stocks
+// =============================================================================
+const BSE_SCRIP_MAP: Record<string, string> = {
+  RELIANCE: '500325', TCS: '532540', INFY: '500209', WIPRO: '507685',
+  HDFCBANK: '500180', ICICIBANK: '532174', SBIN: '500112', ITC: '500875',
+  HINDUNILVR: '500696', BHARTIARTL: '532454', KOTAKBANK: '500247',
+  LT: '500510', AXISBANK: '532215', BAJFINANCE: '500034', ASIANPAINT: '500820',
+  MARUTI: '532500', HCLTECH: '532281', SUNPHARMA: '524715', TATAMOTORS: '500570',
+  TITAN: '500114', ADANIENT: '512599', ULTRACEMCO: '532538', NTPC: '532555',
+  POWERGRID: '532898', ONGC: '500312', JSWSTEEL: '500228', TATASTEEL: '500470',
+  TECHM: '532755', NESTLE: '500790', DRREDDY: '500124', CIPLA: '500087',
+  DIVISLAB: '532488', HINDALCO: '500440', COALINDIA: '533278', BPCL: '500547',
+  EICHERMOT: '505200', BAJAJFINSV: '532978', GRASIM: '500300', APOLLOHOSP: '508869',
+};
+
+async function getBSEPrice(symbol: string): Promise<{ price: number; change: number } | null> {
+  const scripCode = BSE_SCRIP_MAP[symbol];
+  if (!scripCode) return null;
+  try {
+    const url = `https://api.bseindia.com/BseIndiaAPI/api/getScripHeaderData/w?Debtflag=&scripcode=${scripCode}&seriesid=`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Referer': 'https://www.bseindia.com/',
+        'Accept': 'application/json',
+      },
+      signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 6000); return ac.signal; })(),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const price = parseFloat(json?.CurrRate ?? json?.Ltp ?? '0');
+    const change = parseFloat(json?.PcntChange ?? json?.Change ?? '0');
+    if (price <= 0) return null;
+    return { price, change };
+  } catch {
+    return null;
+  }
+}
 async function getNSEStockPrice(symbol: string): Promise<{ price: number; change: number } | null> {
   try {
     const url = `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(symbol)}`;
@@ -524,7 +676,12 @@ export async function fetchLivePrice(
   }
   // 6. Indian stocks (NSE equity API)
   else {
-    priceData = await getNSEStockPrice(symbol);
+    // Multi-source fallback chain — stops at first success
+    priceData = await getNSEStockPrice(symbol)
+      ?? await getYahooNSEPrice(symbol)
+      ?? await getYahooNSEPriceV7(symbol)
+      ?? await getBSEPrice(symbol)
+      ?? await getScreenerPrice(symbol);
   }
 
   if (!priceData) {

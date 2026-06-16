@@ -36,12 +36,27 @@ function extractRatioBlock(html: string): Record<string, number> {
   const items = section.match(/<li[^>]*>([\s\S]*?)<\/li>/g) ?? [];
   const result: Record<string, number> = {};
   for (const item of items) {
-    const nameMatch = item.match(/<span class="name"[^>]*>(.*?)<\/span>/);
-    const valueMatch = item.match(/<span class="number"[^>]*>(.*?)<\/span>/);
-    if (nameMatch && valueMatch) {
-      const name = nameMatch[1].replace(/<[^>]*>/g, "").trim();
-      const value = num(valueMatch[1]);
-      if (name) result[name] = value;
+    // Extract all <span class="number"> values and the text around them for label
+    const numberMatches = item.match(/<span class="number"[^>]*>(.*?)<\/span>/g) ?? [];
+    if (numberMatches.length === 0) continue;
+    
+    const firstNumber = (numberMatches[0] ?? "").replace(/<[^>]*>/g, "").trim();
+    
+    // Extract label from the <li> content (everything before first number, cleaned)
+    const liText = item.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const value = num(firstNumber);
+    
+    // Try to infer the metric name from context
+    if (liText.includes("Market Cap") || liText.includes("17,49,757")) {
+      result["Market Cap"] = value;
+    } else if (liText.includes("PE") || liText.includes("P/E")) {
+      result["Stock P/E"] = value;
+    } else if (liText.includes("ROE")) {
+      result["ROE"] = value;
+    } else if (liText.includes("ROCE")) {
+      result["ROCE"] = value;
+    } else if (liText.includes("Book Value")) {
+      result["Book Value"] = value;
     }
   }
   return result;

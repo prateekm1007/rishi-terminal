@@ -383,7 +383,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
-                  <TechnicalIndicators stock={stock} />
+                  <TechnicalIndicators symbol={stock.symbol} />
                 </div>
 
                 <div className="wisdom-reveal-delay-2">

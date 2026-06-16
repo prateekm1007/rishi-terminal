@@ -8,7 +8,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useLivePrices } from "@/hooks/useLivePrices";
 
-import { useFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
+import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import { STOCKS } from "@/data/stocks";
 
 /* ── Constants ─────────────────────────────────────────────── */
@@ -182,7 +182,7 @@ export default function DashboardPage() {
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms);
   const { fundamentals: sodFund, loading: sodFundLoading } = useFundamentals(STOCK_OF_DAY.symbol);
-  const [timeAgo, setTimeAgo] = useState("—");
+  const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));const [timeAgo, setTimeAgo] = useState("—");
 
   useEffect(() => {
     if (!lastUpdated) return;
@@ -526,8 +526,8 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div style={{ textAlign:"right",color:C.textMuted,fontSize:"11px",lineHeight:1.8,fontFamily:mono }}>
-                        <div>{t("dashboard2.peLabel")} {stock.pe}</div>
-                        <div>{t("dashboard2.roeLabel")} {stock.roe}%</div>
+                        <div>{t("dashboard2.peLabel")} {(buyFund[stock.symbol]?.pe ?? stock.pe)}</div>
+                        <div>{t("dashboard2.roeLabel")} {(buyFund[stock.symbol]?.roe ?? stock.roe)}%</div>
                       </div>
                     </div>
                   </div>

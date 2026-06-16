@@ -43,6 +43,25 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    // Fallback: NSE symbols missing from Yahoo bulk -> fetchLivePrice() (multi-source)
+    const missingNseSymbols = nseSymbols.filter(s => !prices[s]);
+
+    for (let i = 0; i < missingNseSymbols.length; i += 25) {
+      const chunk = missingNseSymbols.slice(i, i + 25);
+      const chunkResults = await Promise.allSettled(chunk.map(s => fetchLivePrice(s)));
+      chunkResults.forEach((r, j) => {
+        if (r.status === "fulfilled" && r.value) {
+          const sym = chunk[j];
+          prices[sym] = {
+            price: r.value.price,
+            change: r.value.change,
+            changePercent24h: r.value.change,
+            volume24h: null,
+            lastUpdated: r.value.lastUpdated,
+          };
+        }
+      });
+    }
     // Fetch non-NSE symbols (crypto/forex/bonds/commodities) via individual calls
     if (otherSymbols.length > 0) {
       const results = await Promise.allSettled(

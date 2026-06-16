@@ -7,7 +7,8 @@ import ProgressBar from "@/components/gamification/ProgressBar";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useLivePrices } from "@/hooks/useLivePrices";
-import { useLanguage } from "@/lib/language";
+
+import { useFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import { STOCKS } from "@/data/stocks";
 
 /* ── Constants ─────────────────────────────────────────────── */
@@ -16,7 +17,7 @@ const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","F
 
 const STOCK_OF_DAY = {
   symbol: "TCS", name: "Tata Consultancy Services", sector: "IT",
-  consensus: 88, pe: 31.2, pb: 13.4, roe: 48.6, opm: 24.2,
+  consensus: 88,
   revenueCAGR: 14.2, eps: 118, marketCap: "14.2L Cr",
   why: "Consistent ROE above 45%, zero debt, world-class capital allocation, and a management team that has compounded earnings at 15%+ for over a decade. Damani would call this a business worth owning forever.",
   rishi: "Damani",
@@ -180,6 +181,7 @@ export default function DashboardPage() {
   ], [rotatingStocks, rotatingShorts]);
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms);
+  const { fundamentals: sodFund, loading: sodFundLoading } = useFundamentals(STOCK_OF_DAY.symbol);
   const [timeAgo, setTimeAgo] = useState("—");
 
   useEffect(() => {
@@ -411,9 +413,9 @@ export default function DashboardPage() {
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"16px" }}>
                   {[
                     { label:t("dashboard2.rishiScore"), value: STOCK_OF_DAY.consensus + "/100" },
-                    { label:"P/E",         value: STOCK_OF_DAY.pe.toString() },
-                    { label:"ROE",         value: STOCK_OF_DAY.roe + "%" },
-                    { label:"OPM",         value: STOCK_OF_DAY.opm + "%" },
+                    { label:"P/E", value: sodFundLoading ? "—" : (sodFund?.pe ? (sodFund.pe.toFixed(1) + "x") : "—") },
+                    { label:"ROE", value: sodFundLoading ? "—" : (sodFund?.roe ? (sodFund.roe.toFixed(1) + "%") : "—") },
+                    { label:"OPM", value: sodFundLoading ? "—" : (sodFund?.opm ? (sodFund.opm.toFixed(1) + "%") : "—") },
                   ].map(m => (
                     <div key={m.label} style={{
                       background:"rgba(31,41,59,0.6)", border:"1px solid rgba(51,65,85,0.5)",

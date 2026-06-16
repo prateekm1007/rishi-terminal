@@ -47,19 +47,19 @@ export function TechnicalIndicators({ symbol }: Props) {
 
   const currentPrice = Number(indicators.lastPrice ?? 0);
 
-  # RSI zones
+  // RSI zones
   const rsiColor = rsi < 30 ? "text-green-600" : rsi > 70 ? "text-red-600" : "text-blue-600";
   const rsiLabel = rsi < 30 ? "Oversold" : rsi > 70 ? "Overbought" : "Neutral";
 
-  # ADX zones
+  // ADX zones
   const adxColor = adx < 20 ? "text-gray-500" : adx < 40 ? "text-yellow-600" : "text-green-600";
   const adxLabel = adx < 20 ? "Weak Trend" : adx < 40 ? "Strong Trend" : "Very Strong";
 
-  # MACD
+  // MACD
   const macdMomentum = macdHistogram > 0 ? "Bullish Momentum" : "Bearish Momentum";
   const macdColor = macdHistogram > 0 ? "text-green-600" : "text-red-600";
 
-  # Bollinger position
+  // Bollinger position
   const bollPct =
     bollUpper > bollLower
       ? ((currentPrice - bollLower) / (bollUpper - bollLower)) * 100
@@ -67,7 +67,7 @@ export function TechnicalIndicators({ symbol }: Props) {
   const bollPosition =
     bollPct < 20 ? "Near Lower Band" : bollPct > 80 ? "Near Upper Band" : "Mid-Range";
 
-  # deterministic sparkline (no randomness)
+  // deterministic sparkline (no randomness)
   const sparkN = 14;
   const sparkData = Array.from({ length: sparkN }, (_, i) => {
     const t = i / (sparkN - 1);

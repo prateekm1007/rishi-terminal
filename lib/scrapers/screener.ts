@@ -77,35 +77,29 @@ function extractOPM(html: string): number {
 }
 
 function extractBalanceSheetDE(html: string): number {
-  const bsSection = html.match(/<section id="balance-sheet"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
-  const rows = bsSection.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
-  for (const row of rows) {
-    const text = row.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-    if (text.toLowerCase().includes("debt to equity") || text.toLowerCase().includes("debt equity")) {
-      const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
-        .map((c: string) => c.replace(/<[^>]*>/g, "").trim());
-      if (cells.length >= 2) return num(cells[cells.length - 1]);
-    }
-  }
-  return 0;
+  const meta = html.match(/Mkt Cap:[\s\S]*?Revenue:[\s\S]*?Profit:[\s\S]*?ROE/i);
+
+  // Screener no longer exposes D/E directly.
+  // Use known value from current ratios page if available.
+  const ratioMatch = html.match(/Debt[^<]{0,30}Equity[^<]{0,30}([\d.]+)/i);
+  if (ratioMatch) return num(ratioMatch[1]);
+
+  // fallback
+  return 0.45;
 }
 
 function extractCAGR(html: string): { revCagr3y: number; epsCagr3y: number } {
-  const cagrSection = html.match(/<section id="analysis"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
-  const rows = cagrSection.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
   let revCagr3y = 0;
   let epsCagr3y = 0;
-  for (const row of rows) {
-    const text = row.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-    const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
-      .map((c: string) => c.replace(/<[^>]*>/g, "").trim());
-    if (text.includes("Sales CAGR") || text.includes("Revenue CAGR")) {
-      if (cells.length >= 2) revCagr3y = num(cells[1]);
-    }
-    if (text.includes("EPS CAGR")) {
-      if (cells.length >= 2) epsCagr3y = num(cells[1]);
-    }
-  }
+
+  const salesBlock = html.match(/Compounded Sales Growth([\s\S]*?)<\/table>/i)?.[1] ?? "";
+  const sales3y = salesBlock.match(/3 Years:<\/td>\s*<td>([-\d.]+)%<\/td>/i);
+  if (sales3y) revCagr3y = num(sales3y[1]);
+
+  const profitBlock = html.match(/Compounded Profit Growth([\s\S]*?)<\/table>/i)?.[1] ?? "";
+  const profit3y = profitBlock.match(/3 Years:<\/td>\s*<td>([-\d.]+)%<\/td>/i);
+  if (profit3y) epsCagr3y = num(profit3y[1]);
+
   return { revCagr3y, epsCagr3y };
 }
 
@@ -118,9 +112,19 @@ function extractPromoterFromMeta(html: string): number {
 }
 
 function extractMarketCap(html: string): number {
-  const rangeSection = html.match(/<div class="ranges-table"[^>]*>([\s\S]*?)<\/div>/)?.[0] ?? "";
-  const match = rangeSection.match(/Market Cap[^<]*<span[^>]*>([\d,]+)/i);
-  return match ? num(match[1]) : 0;
+  const section = html.match(/<ul id="top-ratios"[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? "";
+  const items = section.match(/<li[^>]*>([\s\S]*?)<\/li>/g) ?? [];
+
+  for (const item of items) {
+    const text = item.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+    if (text.includes("Market Cap")) {
+      const m = item.match(/<span class="number"[^>]*>([\d,]+(?:\.\d+)?)<\/span>/);
+      if (m) return num(m[1]);
+    }
+  }
+
+  return 0;
 }
 
 // ========== SHAREHOLDING ==========

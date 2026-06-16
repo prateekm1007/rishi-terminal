@@ -81,10 +81,31 @@ export async function POST(req: NextRequest) {
       `(Yahoo bulk: ${Object.keys(bulkResults).length}, fallback: ${otherSymbols.length})`
     );
 
-    return NextResponse.json(prices, {
-      headers: { 'Cache-Control': 'public, s-maxage=30' },
+        // Normalize payload shape for clients:
+    // - Provide { prices: ... } wrapper (expected by hooks/useLivePrices in UI)
+    // - Keep legacy top-level symbol keys for backward compatibility
+    // - Ensure changePercent24h exists by aliasing from change/changePercent
+    const normalized: Record<string, any> = {};
+    Object.keys(prices || {}).forEach((k) => {
+      const v: any = (prices as any)[k];
+      if (!v) return;
+
+      const ch =
+        v.changePercent24h !== undefined
+          ? v.changePercent24h
+          : (v.changePercent !== undefined ? v.changePercent : v.change);
+
+      normalized[k] = {
+        ...v,
+        change: v.change !== undefined ? v.change : ch,
+        changePercent24h: ch,
+      };
     });
-  } catch (error) {
+
+    return NextResponse.json(
+      { prices: normalized, ...normalized },
+      { headers: { 'Cache-Control': 'public, s-maxage=30' } }
+    );} catch (error) {
     console.error('[/api/prices/batch] error:', error);
     return NextResponse.json(
       { error: 'Batch fetch failed', details: (error as Error).message },

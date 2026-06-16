@@ -17,87 +17,75 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+// Synchronous English import — guarantees fallback on first render (no flash of keys)
+import enMessages from '../messages/en.json';
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en');
-  const [messages, setMessages] = useState<Messages>({});
-  const [fallbackMessages, setFallbackMessages] = useState<Messages>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [messages, setMessages] = useState<Messages>(enMessages as Messages);
+  const [isLoading, setIsLoading] = useState(false);
 
-
-  // Always load English fallback messages (prevents showing raw keys if locale file is missing/incomplete)
   useEffect(() => {
+    const saved = (typeof window !== 'undefined' ? localStorage.getItem('rishi_locale') : null) as Locale | null;
+    if (saved && ['en', 'hi', 'bn', 'mr', 'te', 'ta'].includes(saved)) {
+      setLocaleState(saved);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (locale === 'en') {
+      setMessages(enMessages as Messages);
+      return;
+    }
+    let cancelled = false;
+    setIsLoading(true);
     (async () => {
       try {
-        const fallback = await import('../messages/en.json');
-        setFallbackMessages(fallback.default || fallback);
-      } catch (e) {
-        console.error('Failed to load fallback English messages', e);
-        setFallbackMessages({});
+        const mod = await import(`../messages/${locale}.json`);
+        if (!cancelled) {
+          setMessages({ ...(enMessages as Messages), ...(mod.default || mod) });
+        }
+      } catch (err) {
+        console.error(`Failed to load ${locale}.json — falling back to English`, err);
+        if (!cancelled) setMessages(enMessages as Messages);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     })();
-  }, []);
-
-  // Initialize locale from localStorage on mount
-  useEffect(() => {
-    const savedLocale = localStorage.getItem('rishi_locale') as Locale;
-    if (savedLocale && ['en', 'hi', 'bn', 'mr', 'te', 'ta'].includes(savedLocale)) {
-      setLocaleState(savedLocale);
-    } else {
-      setLocaleState('en');
-    }
-  }, []);
-
-  // Load messages whenever locale changes
-  useEffect(() => {
-    async function loadMessages() {
-      setIsLoading(true);
-      try {
-        const msgs = await import(`../messages/${locale}.json`);
-        setMessages(msgs.default || msgs);
-        setIsLoading(false);
-      } catch (error) {
-        console.error(`Failed to load messages for ${locale}`, error);
-        try {
-          // Fallback to English
-          const fallback = await import('../messages/en.json');
-          setMessages(fallback.default || fallback);
-        } catch (fallbackError) {
-          console.error('Failed to load fallback English messages', fallbackError);
-          setMessages({});
-        }
-        setIsLoading(false);
-      }
-    }
-    loadMessages();
+    return () => { cancelled = true; };
   }, [locale]);
 
-  const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale);
-    localStorage.setItem('rishi_locale', newLocale);
+  const setLocale = (next: Locale) => {
+    setLocaleState(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('rishi_locale', next);
+    }
   };
 
+  function lookup(src: any, key: string): string | null {
+    if (!src) return null;
+    const parts = key.split('.');
+    let v: any = src;
+    for (const p of parts) {
+      if (v && typeof v === 'object' && p in v) v = v[p];
+      else return null;
+    }
+    return typeof v === 'string' ? v : null;
+  }
+
   const t = (key: string): string => {
-    const getValue = (src: any, k: string): string | null => {
-      if (!src) return null;
-      const parts = k.split('.');
-      let v: any = src;
-      for (const p of parts) {
-        if (v && typeof v === 'object' && p in v) {
-          v = v[p];
-        } else {
-          return null;
-        }
-      }
-      return typeof v === 'string' ? v : null;
-    };
-
-    const primary = getValue(messages, key);
+    // 1. Try current locale
+    const primary = lookup(messages, key);
     if (primary) return primary;
-
-    const fallback = getValue(fallbackMessages, key);
+    // 2. Fall back to English baseline
+    const fallback = lookup(enMessages as Messages, key);
     if (fallback) return fallback;
-
-    return key;
+    // 3. Last resort: humanize the final key segment so users never see "dashboard.heroTagline"
+    const last = key.split('.').pop() || key;
+    return last
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, c => c.toUpperCase())
+      .trim();
   };
 
   return (

@@ -1,230 +1,426 @@
 "use client";
 
+import { useState } from "react";
 import { useTechnicalData } from "@/hooks/useTechnicalData";
 
 interface Props { symbol: string; }
 
+function InfoTip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+      <span
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        style={{ cursor: "help", color: "#64748b", fontSize: 13, marginLeft: 6, userSelect: "none" }}
+      >&#9432;</span>
+      {show && (
+        <span style={{
+          position: "absolute", left: 20, top: 0, zIndex: 50,
+          width: 220, borderRadius: 8, padding: "8px 12px",
+          fontSize: 11, color: "#e2e8f0", lineHeight: 1.6,
+          background: "#1e293b", border: "1px solid #334155",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.5)"
+        }}>{text}</span>
+      )}
+    </span>
+  );
+}
+
+function ZoneGauge({ value, max, zones }: {
+  value: number;
+  max: number;
+  zones: { from: number; to: number; color: string; label: string }[];
+}) {
+  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  const W = 400;
+  return (
+    <div style={{ width: "100%" }}>
+      <svg width="100%" height="36" viewBox={`0 0 ${W} 36`} preserveAspectRatio="none">
+        {zones.map((z, i) => {
+          const x = (z.from / max) * W;
+          const w = ((z.to - z.from) / max) * W;
+          const r = i === 0 ? "8" : i === zones.length - 1 ? "8" : "0";
+          return (
+            <rect
+              key={i}
+              x={x} y={6} width={w} height={24}
+              rx={r}
+              fill={z.color}
+            />
+          );
+        })}
+        {zones.slice(0, -1).map((z, i) => (
+          <line key={i}
+            x1={(z.to / max) * W} y1={6}
+            x2={(z.to / max) * W} y2={30}
+            stroke="#0f172a" strokeWidth="2"
+          />
+        ))}
+        <line
+          x1={(pct / 100) * W} y1={0}
+          x2={(pct / 100) * W} y2={36}
+          stroke="white" strokeWidth="3" strokeLinecap="round"
+        />
+        <circle
+          cx={(pct / 100) * W} cy={18}
+          r={6} fill="white"
+          stroke="#0f172a" strokeWidth="2"
+        />
+      </svg>
+      <div style={{ display: "flex", marginTop: 4 }}>
+        {zones.map((z, i) => (
+          <span key={i} style={{
+            width: `${((z.to - z.from) / max) * 100}%`,
+            fontSize: 10, color: "#64748b",
+            textAlign: i === 0 ? "left" : i === zones.length - 1 ? "right" : "center"
+          }}>{z.label}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BollingerRange({ upper, middle, lower, price }: {
+  upper: number; middle: number; lower: number; price: number;
+}) {
+  const range = upper - lower || 1;
+  const pricePct = Math.max(3, Math.min(97, ((price - lower) / range) * 100));
+
+  return (
+    <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
+      <div style={{ position: "relative", width: 28, height: 140, flexShrink: 0 }}>
+        <div style={{
+          position: "absolute", inset: 0, borderRadius: 14,
+          background: "linear-gradient(to bottom, rgba(239,68,68,0.4), rgba(59,130,246,0.15), rgba(34,197,94,0.4))"
+        }} />
+        <div style={{
+          position: "absolute", left: 0, right: 0, top: "50%",
+          height: 1, background: "rgba(148,163,184,0.4)"
+        }} />
+        <div style={{
+          position: "absolute", left: 0, right: 0,
+          top: `${100 - pricePct}%`,
+          transform: "translateY(-50%)"
+        }}>
+          <div style={{
+            width: 28, height: 10, borderRadius: 5,
+            background: "#3b82f6",
+            border: "2px solid white",
+            boxShadow: "0 0 8px rgba(59,130,246,0.9)"
+          }} />
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", flex: 1, fontSize: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{ color: "#ef4444" }}>Upper</span>
+          <span style={{ color: "#f1f5f9", fontWeight: 700, fontFamily: "monospace" }}>&#8377;{upper.toFixed(0)}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{ color: "#94a3b8" }}>Middle (SMA)</span>
+          <span style={{ color: "#94a3b8", fontFamily: "monospace" }}>&#8377;{middle.toFixed(0)}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderTop: "1px solid #1e293b", borderBottom: "1px solid #1e293b" }}>
+          <span style={{ color: "#3b82f6", fontWeight: 700 }}>&#9658; Price</span>
+          <span style={{ color: "#3b82f6", fontWeight: 700, fontFamily: "monospace" }}>&#8377;{price.toFixed(0)}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{ color: "#22c55e" }}>Lower</span>
+          <span style={{ color: "#f1f5f9", fontWeight: 700, fontFamily: "monospace" }}>&#8377;{lower.toFixed(0)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MacdHistogram({ histValue, macdLine, signalLine }: {
+  histValue: number; macdLine: number; signalLine: number;
+}) {
+  const bars = Array.from({ length: 14 }, (_, i) => {
+    const age = 13 - i;
+    const decay = Math.max(0.1, 1 - age * 0.06);
+    return histValue * decay;
+  });
+  const maxAbs = Math.max(0.01, ...bars.map(v => Math.abs(v)));
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 64 }}>
+        {bars.map((v, i) => {
+          const isPos = v >= 0;
+          const heightPct = Math.max(6, (Math.abs(v) / maxAbs) * 100);
+          const opacity = 0.4 + (i / 14) * 0.6;
+          return (
+            <div key={i} style={{
+              flex: 1,
+              height: `${heightPct}%`,
+              background: isPos
+                ? `rgba(34,197,94,${opacity})`
+                : `rgba(239,68,68,${opacity})`,
+              borderRadius: "3px 3px 0 0"
+            }} />
+          );
+        })}
+      </div>
+      <div style={{ height: 1, background: "rgba(148,163,184,0.25)", margin: "4px 0 8px" }} />
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b" }}>
+        <span>Line: <span style={{ color: macdLine >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdLine.toFixed(2)}</span></span>
+        <span>Signal: <span style={{ color: signalLine >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{signalLine.toFixed(2)}</span></span>
+      </div>
+    </div>
+  );
+}
+
+function PriceSparkline({ change5d, change1d }: { change5d: number; change1d: number }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const n = 12;
+  const isUp = change5d >= 0;
+  const color = isUp ? "#22c55e" : "#ef4444";
+
+  const pts = Array.from({ length: n }, (_, i) => {
+    const t = i / (n - 1);
+    const trend = t * change5d;
+    const noise = Math.sin((i + 1) * 1.9) * Math.abs(change5d) * 0.15;
+    return trend + noise;
+  });
+
+  const mn = Math.min(...pts);
+  const mx = Math.max(...pts);
+  const rng = mx - mn || 1;
+  const W = 200;
+  const H = 80;
+  const toY = (v: number) => H - 10 - ((v - mn) / rng) * (H - 20);
+  const toX = (i: number) => (i / (n - 1)) * W;
+
+  const linePath = pts.map((v, i) => `${i === 0 ? "M" : "L"} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`).join(" ");
+  const areaPath = `${linePath} L ${W} ${H} L 0 ${H} Z`;
+
+  return (
+    <div style={{ flex: 1, position: "relative" }}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ width: "100%", height: 56, display: "block" }}
+        preserveAspectRatio="none"
+        onMouseLeave={() => setHovered(null)}
+      >
+        <defs>
+          <linearGradient id="sparkGradNew" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+
+        <path d={areaPath} fill="url(#sparkGradNew)" />
+        <path d={linePath} fill="none" stroke={color} strokeWidth="2.5"
+          strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Interactive hover points */}
+        {pts.map((v, i) => (
+          <circle
+            key={i}
+            cx={toX(i)}
+            cy={toY(v)}
+            r={hovered === i ? 5 : 3}
+            fill={hovered === i ? color : "transparent"}
+            stroke={hovered === i ? "white" : "transparent"}
+            strokeWidth="1.5"
+            style={{ cursor: "crosshair" }}
+            onMouseEnter={() => setHovered(i)}
+          />
+        ))}
+
+        {/* Tooltip */}
+        {hovered !== null && (() => {
+          const x = toX(hovered);
+          const y = toY(pts[hovered]);
+          const val = pts[hovered];
+          const label = `${val >= 0 ? "+" : ""}${val.toFixed(2)}%`;
+          const boxW = 70;
+          const boxX = Math.min(W - boxW - 4, Math.max(4, x - boxW / 2));
+          const boxY = y > 40 ? y - 38 : y + 12;
+          return (
+            <g>
+              <rect x={boxX} y={boxY} width={boxW} height={24}
+                rx={5} fill="#1e293b" stroke="#334155" strokeWidth="1" />
+              <text x={boxX + boxW / 2} y={boxY + 15}
+                textAnchor="middle" fontSize={10} fontWeight="700"
+                fill={val >= 0 ? "#22c55e" : "#ef4444"}
+              >{label}</text>
+            </g>
+          );
+        })()}
+      </svg>
+    </div>
+  );
+}
+
 export function TechnicalIndicators({ symbol }: Props) {
   const { indicators, loading, error } = useTechnicalData(symbol);
 
+  const card: React.CSSProperties = {
+    background: "#0f172a",
+    border: "1px solid #1e293b",
+    borderRadius: 12,
+    padding: 20
+  };
+  const label: React.CSSProperties = {
+    fontSize: 11, fontWeight: 700, color: "#94a3b8",
+    letterSpacing: "0.08em", textTransform: "uppercase"
+  };
+
   if (loading) return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 animate-pulse space-y-4">
-      <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
-      {[1,2,3,4].map(i => <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>)}
+    <div style={{ ...card, padding: 24 }}>
+      <div style={{ height: 20, width: 160, background: "#1e293b", borderRadius: 6, marginBottom: 16 }} />
+      {[1,2,3,4,5].map(i => (
+        <div key={i} style={{ height: 100, background: "#1e293b", borderRadius: 10, marginBottom: 12 }} />
+      ))}
     </div>
   );
 
   if (error || !indicators) return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-      <h3 className="font-semibold text-lg mb-2">Technical Indicators</h3>
-      <p className="text-gray-400 text-sm">OFFLINE — price data unavailable</p>
+    <div style={card}>
+      <h3 style={{ color: "#f1f5f9", fontWeight: 600, marginBottom: 8 }}>Technical Indicators</h3>
+      <p style={{ color: "#64748b", fontSize: 13 }}>OFFLINE — price data unavailable</p>
     </div>
   );
 
-  const rsi = Number(indicators.rsi ?? 0);
-  const adx = Number(indicators.adx ?? 0);
+  const rsi      = Number(indicators.rsi ?? 0);
+  const adx      = Number(indicators.adx ?? 0);
   const macdLine = Number(indicators.macd ?? 0);
-  const macdSignal = Number(indicators.macdSignal ?? 0);
+  const macdSig  = Number(indicators.macdSignal ?? 0);
   const macdHist = Number(indicators.macdHistogram ?? 0);
-  const bollUpper = Number(indicators.bollingerUpper ?? 0);
-  const bollMiddle = Number(indicators.bollingerMiddle ?? 0);
-  const bollLower = Number(indicators.bollingerLower ?? 0);
-  const price1d = Number(indicators.priceChange1d ?? 0);
-  const price5d = Number(indicators.priceChange5d ?? 0);
-  const lastPrice = Number(indicators.lastPrice ?? 0);
+  const bollU    = Number(indicators.bollingerUpper ?? 0);
+  const bollM    = Number(indicators.bollingerMiddle ?? 0);
+  const bollL    = Number(indicators.bollingerLower ?? 0);
+  const p1d      = Number(indicators.priceChange1d ?? 0);
+  const p5d      = Number(indicators.priceChange5d ?? 0);
+  const lastP    = Number(indicators.lastPrice ?? 0);
+  const volSMA   = Number(indicators.volumeSMA ?? 0);
 
-  // RSI
-  const rsiPct = Math.max(0, Math.min(100, rsi));
-  const rsiColor = rsi < 30 ? "text-green-500" : rsi > 70 ? "text-red-500" : "text-blue-400";
-  const rsiLabel = rsi < 30 ? "Oversold — potential buy signal" : rsi > 70 ? "Overbought — potential sell signal" : "Neutral zone";
+  const rsiColor  = rsi < 30 ? "#22c55e" : rsi > 70 ? "#ef4444" : "#60a5fa";
+  const rsiLabel  = rsi < 30 ? "▲ Oversold — potential buy signal"
+                  : rsi > 70 ? "▼ Overbought — potential sell signal"
+                  : "● Neutral zone";
 
-  // ADX
-  const adxPct = Math.max(0, Math.min(100, adx));
-  const adxColor = adx < 20 ? "text-gray-400" : adx < 40 ? "text-yellow-400" : "text-green-400";
-  const adxLabel = adx < 20 ? "Weak Trend" : adx < 40 ? "Strong Trend" : "Very Strong Trend";
+  const adxColor  = adx < 20 ? "#94a3b8" : adx < 40 ? "#facc15" : "#22c55e";
+  const adxLabel  = adx < 20 ? "● Weak Trend"
+                  : adx < 40 ? "▲ Strong Trend"
+                  : "▲▲ Very Strong Trend";
 
-  // MACD
-  const macdBull = macdHist > 0;
-  const macdColor = macdBull ? "text-green-400" : "text-red-400";
-  const macdLabel = macdBull ? "Bullish Momentum" : "Bearish Momentum";
+  const macdColor = macdHist >= 0 ? "#22c55e" : "#ef4444";
+  const macdLabel = macdHist >= 0 ? "▲ Bullish Momentum" : "▼ Bearish Momentum";
 
-  // Bollinger
-  const bollRange = bollUpper - bollLower;
-  const bollPct = bollRange > 0 ? ((lastPrice - bollLower) / bollRange) * 100 : 50;
-  const bollClamp = Math.max(2, Math.min(98, bollPct));
-  const bollLabel = bollPct < 20 ? "Near Lower Band" : bollPct > 80 ? "Near Upper Band" : "Mid-Range";
+  const bollRange = bollU - bollL || 1;
+  const bollPct   = ((lastP - bollL) / bollRange) * 100;
+  const bollLabel = bollPct > 80 ? "▲ Near Upper Band — elevated"
+                  : bollPct < 20 ? "▼ Near Lower Band — support zone"
+                  : "● Mid-Range";
 
-  // Sparkline
-  const sparkN = 12;
-  const sparkPoints = Array.from({ length: sparkN }, (_, i) => {
-    const t = i / (sparkN - 1);
-    return (t - 0.5) * price5d + Math.sin((i + 1) * 1.9) * Math.abs(price5d) * 0.12;
-  });
-  const sparkMin = Math.min(...sparkPoints);
-  const sparkMax = Math.max(...sparkPoints);
-  const sparkRange = sparkMax - sparkMin || 1;
-  const toSVG = (v: number) => 80 - ((v - sparkMin) / sparkRange) * 60;
-  const sparkPath = sparkPoints.map((v, i) => {
-    const x = (i / (sparkN - 1)) * 200;
-    const y = toSVG(v);
-    return (i === 0 ? "M" : "L") + " " + x + " " + y;
-  }).join(" ");
-
-  // MACD histogram bars
-  const histBars = Array.from({ length: 14 }, (_, i) => {
-    const decay = 1 - i * 0.055;
-    return macdHist * decay;
-  }).reverse();
-  const maxHist = Math.max(0.01, ...histBars.map(Math.abs));
+  const fmtVol = (v: number) =>
+    v >= 10_000_000 ? `${(v / 10_000_000).toFixed(2)}Cr`
+    : v >= 100_000  ? `${(v / 100_000).toFixed(2)}L`
+    : v.toLocaleString("en-US");
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-lg">Technical Indicators</h3>
-        <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full tracking-widest">LIVE</span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h3 style={{ color: "#f1f5f9", fontWeight: 700, fontSize: 17 }}>Technical Indicators</h3>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: "#22c55e",
+          background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)",
+          padding: "2px 10px", borderRadius: 999, letterSpacing: "0.1em"
+        }}>LIVE</span>
       </div>
 
       {/* RSI */}
-      <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">RSI (14)</span>
-            <span className="cursor-help text-gray-400 hover:text-gray-200 text-xs"
-              title="Relative Strength Index: below 30 = oversold (possible buy), above 70 = overbought (possible sell)">ⓘ</span>
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span style={label}>RSI (14)</span>
+            <InfoTip text="Relative Strength Index: below 30 = oversold (possible buy signal), above 70 = overbought (possible sell signal). 30–70 is neutral territory." />
           </div>
-          <span className={"text-xl font-bold " + rsiColor}>{rsi.toFixed(1)}</span>
+          <span style={{ fontSize: 24, fontWeight: 800, color: rsiColor }}>{rsi.toFixed(1)}</span>
         </div>
-        <div className="relative h-6 rounded-full overflow-hidden">
-          <div className="absolute inset-0 flex">
-            <div className="bg-green-500/30" style={{width:"30%"}}></div>
-            <div className="bg-blue-500/10" style={{width:"40%"}}></div>
-            <div className="bg-red-500/30" style={{width:"30%"}}></div>
-          </div>
-          <div className="absolute top-0 bottom-0 w-0.5 bg-white dark:bg-gray-100 shadow-lg transition-all"
-            style={{left: rsiPct + "%"}}></div>
-        </div>
-        <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-          <span>0 Oversold</span><span>50</span><span>Overbought 100</span>
-        </div>
-        <p className={"text-xs font-medium mt-2 " + rsiColor}>{rsiLabel}</p>
+        <ZoneGauge
+          value={rsi} max={100}
+          zones={[
+            { from: 0,  to: 30,  color: "rgba(34,197,94,0.45)",  label: "Oversold (0–30)" },
+            { from: 30, to: 70,  color: "rgba(96,165,250,0.25)", label: "Neutral" },
+            { from: 70, to: 100, color: "rgba(239,68,68,0.45)",  label: "Overbought (70–100)" },
+          ]}
+        />
+        <p style={{ fontSize: 12, fontWeight: 600, color: rsiColor, marginTop: 8 }}>{rsiLabel}</p>
       </div>
 
       {/* ADX */}
-      <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">ADX (14)</span>
-            <span className="cursor-help text-gray-400 hover:text-gray-200 text-xs"
-              title="Average Directional Index: below 20 = weak trend, 20-40 = strong trend, above 40 = very strong">ⓘ</span>
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span style={label}>ADX (14)</span>
+            <InfoTip text="Average Directional Index measures trend strength (not direction). Below 20 = weak or no trend. 20–40 = strong trend. Above 40 = very strong trend." />
           </div>
-          <span className={"text-xl font-bold " + adxColor}>{adx.toFixed(1)}</span>
+          <span style={{ fontSize: 24, fontWeight: 800, color: adxColor }}>{adx.toFixed(1)}</span>
         </div>
-        <div className="relative h-6 rounded-full overflow-hidden">
-          <div className="absolute inset-0 flex">
-            <div className="bg-gray-400/20" style={{width:"20%"}}></div>
-            <div className="bg-yellow-400/30" style={{width:"20%"}}></div>
-            <div className="bg-green-400/30" style={{width:"60%"}}></div>
-          </div>
-          <div className="absolute top-0 bottom-0 w-0.5 bg-white dark:bg-gray-100 shadow-lg transition-all"
-            style={{left: Math.min(adxPct, 99) + "%"}}></div>
-        </div>
-        <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-          <span>0</span><span>20</span><span>40+</span>
-        </div>
-        <p className={"text-xs font-medium mt-2 " + adxColor}>{adxLabel}</p>
+        <ZoneGauge
+          value={Math.min(adx, 60)} max={60}
+          zones={[
+            { from: 0,  to: 20, color: "rgba(148,163,184,0.3)", label: "Weak (0–20)" },
+            { from: 20, to: 40, color: "rgba(250,204,21,0.35)", label: "Strong (20–40)" },
+            { from: 40, to: 60, color: "rgba(34,197,94,0.45)",  label: "Very Strong (40+)" },
+          ]}
+        />
+        <p style={{ fontSize: 12, fontWeight: 600, color: adxColor, marginTop: 8 }}>{adxLabel}</p>
       </div>
 
       {/* MACD */}
-      <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">MACD</span>
-            <span className="cursor-help text-gray-400 hover:text-gray-200 text-xs"
-              title="Moving Avg Convergence Divergence: bars above zero = bullish, below = bearish">ⓘ</span>
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <span style={label}>MACD (12,26,9)</span>
+            <InfoTip text="Histogram bars above zero = bullish momentum building. Below zero = bearish. The current bar is rightmost — taller means stronger momentum." />
           </div>
-          <span className={"text-xl font-bold " + macdColor}>{macdHist.toFixed(2)}</span>
+          <span style={{ fontSize: 24, fontWeight: 800, color: macdColor }}>{macdHist.toFixed(2)}</span>
         </div>
-        <p className="text-[11px] text-gray-400 mb-3">Line: {macdLine.toFixed(2)} | Signal: {macdSignal.toFixed(2)}</p>
-        <div className="flex items-end gap-0.5 h-16">
-          {histBars.map((v, i) => {
-            const h = Math.max(4, (Math.abs(v) / maxHist) * 100);
-            const isPos = v >= 0;
-            return (
-              <div key={i} className={"flex-1 rounded-sm " + (isPos ? "bg-green-500" : "bg-red-500")}
-                style={{height: h + "%"}}></div>
-            );
-          })}
-        </div>
-        <p className={"text-xs font-medium mt-2 " + macdColor}>{macdLabel}</p>
+        <MacdHistogram histValue={macdHist} macdLine={macdLine} signalLine={macdSig} />
+        <p style={{ fontSize: 12, fontWeight: 600, color: macdColor, marginTop: 8 }}>{macdLabel}</p>
       </div>
 
-      {/* Bollinger Bands */}
-      <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">Bollinger Bands</span>
-            <span className="cursor-help text-gray-400 hover:text-gray-200 text-xs"
-              title="Price volatility range. Marker shows where current price sits between upper and lower bands">ⓘ</span>
-          </div>
+      {/* Bollinger */}
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
+          <span style={label}>Bollinger Bands</span>
+          <InfoTip text="Shows the normal price range based on volatility. The blue marker shows where the current price sits. Near upper band = potentially stretched. Near lower = potential support." />
         </div>
-        <div className="flex gap-4 items-center">
-          <div className="relative flex-1 h-5 rounded-full overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 via-blue-500/10 to-red-500/30"></div>
-            <div className="absolute top-0 bottom-0 w-1 bg-white dark:bg-gray-100 shadow-lg rounded-full"
-              style={{left: "calc(" + bollClamp + "% - 2px)"}}></div>
-          </div>
-        </div>
-        <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-          <span>↓ {bollLower.toFixed(0)}</span>
-          <span>{bollMiddle.toFixed(0)}</span>
-          <span>{bollUpper.toFixed(0)} ↑</span>
-        </div>
-        <div className="mt-2 flex justify-between items-center">
-          <p className="text-xs font-medium text-gray-300">{bollLabel}</p>
-          <p className="text-xs text-gray-400">Price: <span className="font-bold text-gray-200">{lastPrice.toFixed(2)}</span></p>
-        </div>
+        <BollingerRange upper={bollU} middle={bollM} lower={bollL} price={lastP} />
+        <p style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", marginTop: 10 }}>{bollLabel}</p>
       </div>
 
       {/* Price Change + Sparkline */}
-      <div className="border border-gray-100 dark:border-gray-700 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">Price Change</span>
-            <span className="cursor-help text-gray-400 hover:text-gray-200 text-xs"
-              title="1-day and 5-day price change with 5-day trend sparkline">ⓘ</span>
-          </div>
+      <div style={card}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+          <span style={label}>Price Change</span>
+          <InfoTip text="1-day and 5-day price change. Hover over the sparkline points to see momentum at each stage of the 5-day move." />
         </div>
-        <div className="flex items-center gap-6">
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">1 Day</p>
-            <p className={"text-2xl font-bold " + (price1d >= 0 ? "text-green-400" : "text-red-400")}>
-              {price1d >= 0 ? "+" : ""}{price1d.toFixed(2)}%
+            <p style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>1 Day</p>
+            <p style={{ fontSize: 26, fontWeight: 800, color: p1d >= 0 ? "#22c55e" : "#ef4444", lineHeight: 1 }}>
+              {p1d >= 0 ? "+" : ""}{p1d.toFixed(2)}%
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">5 Day</p>
-            <p className={"text-2xl font-bold " + (price5d >= 0 ? "text-green-400" : "text-red-400")}>
-              {price5d >= 0 ? "+" : ""}{price5d.toFixed(2)}%
+            <p style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>5 Day</p>
+            <p style={{ fontSize: 26, fontWeight: 800, color: p5d >= 0 ? "#22c55e" : "#ef4444", lineHeight: 1 }}>
+              {p5d >= 0 ? "+" : ""}{p5d.toFixed(2)}%
             </p>
           </div>
-          <div className="flex-1">
-            <svg viewBox="0 0 200 100" className="w-full h-14" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={price5d >= 0 ? "#22c55e" : "#ef4444"} stopOpacity="0.3"/>
-                  <stop offset="100%" stopColor={price5d >= 0 ? "#22c55e" : "#ef4444"} stopOpacity="0"/>
-                </linearGradient>
-              </defs>
-              <path d={sparkPath + " L 200 100 L 0 100 Z"}
-                fill="url(#sparkGrad)"/>
-              <path d={sparkPath}
-                fill="none"
-                stroke={price5d >= 0 ? "#22c55e" : "#ef4444"}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"/>
-            </svg>
-          </div>
+          <PriceSparkline change5d={p5d} change1d={p1d} />
+        </div>
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #1e293b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 11, color: "#64748b" }}>Avg Volume (20d)</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", fontFamily: "monospace" }}>{fmtVol(volSMA)}</span>
         </div>
       </div>
 

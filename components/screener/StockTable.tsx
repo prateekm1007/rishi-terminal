@@ -224,7 +224,7 @@ export function StockTable({ stocks }: Props) {
                   {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "—"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? ((bulkFund[stock.symbol]?.roe ?? stock.roe) * 100).toFixed(1) + "%" : "—"}
+                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? (bulkFund[stock.symbol]?.roe ?? stock.roe).toFixed(1) + "%" : "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span

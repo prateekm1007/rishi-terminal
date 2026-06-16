@@ -5,6 +5,7 @@ import TopBar from "@/components/TopBar";
 import { LanguageProvider } from "@/lib/language";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { GlobalSearchBar } from "@/components/ui/GlobalSearchBar";
+import { LegalDisclaimer } from "@/components/ui/LegalDisclaimer";
 
 export const metadata: Metadata = {
   title: "Rishi Terminal - Sacred Investment Intelligence",
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <GlobalSearchBar />
                 </div>
                 {children}
+                              <LegalDisclaimer />
               </main>
 
             </div>

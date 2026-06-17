@@ -36,7 +36,7 @@ export function PeerComparison({ stock, peers }: Props) {
       symbol: stock.symbol,
       name: stock.name,
       price: prices[stock.symbol]?.price ?? stock.price,
-      marketCap: bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : stock.mktcap,
+      marketCap: bulkFund[stock.symbol]?.marketCap ?? stock.mktcap,
       pe: bulkFund[stock.symbol]?.pe ?? stock.pe,
       roe: bulkFund[stock.symbol]?.roe ?? stock.roe,
       isCurrent: true,

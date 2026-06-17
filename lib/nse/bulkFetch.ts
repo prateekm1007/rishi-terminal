@@ -37,7 +37,7 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
       const price = Number(meta.regularMarketPrice) || 0;
       if (price < 20) continue; // Reject US ADR prices (INFY without suffix ≈ $12)
 
-      const prevClose = Number(meta.previousClose) || price;
+      const prevClose = Number(meta.previousClose) || Number(meta.chartPreviousClose) || price;
       const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
       const volume = Number(meta.regularMarketVolume) || 0;
 

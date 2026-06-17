@@ -10,6 +10,7 @@ import { useLivePrices } from "@/hooks/useLivePrices";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import { STOCKS } from "@/data/stocks";
+import { buildConsensus } from "@/lib/consensus";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
@@ -153,7 +154,7 @@ export default function DashboardPage() {
         symbol:s.symbol,
         name:s.name,
         sector:s.sector,
-        consensus:80,
+        consensus:buildConsensus(s).consensus,
         pe:s.pe,
         roe:s.roe
       }));
@@ -166,7 +167,7 @@ export default function DashboardPage() {
       .map((s:any) => ({
         symbol:s.symbol,
         name:s.name,
-        shortScore:75,
+        shortScore:buildConsensus(s).consensus,
         reason:"Risk factors detected"
       }));
   }, []);

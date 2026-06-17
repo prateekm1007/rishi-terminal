@@ -30,6 +30,15 @@ export async function GET(req: NextRequest) {
       if (r.status === "fulfilled" && r.value) prices[list[i]] = r.value;
     });
 
+    // If single symbol requested, return unwrapped object (not Record)
+    if (sym && list.length === 1) {
+      const singlePrice = prices[sym] ?? null;
+      return NextResponse.json(singlePrice, {
+        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+      });
+    }
+
+    // Multi-symbol: return Record
     return NextResponse.json(prices, {
       headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
     });

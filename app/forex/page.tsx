@@ -13,13 +13,13 @@ export default function ForexPage() {
   const pairList = Object.values(FOREX_PAIRS);
 
   // Extract symbols for live price fetching
-  const symbols = useMemo(() => pairList.map(p => p.symbol), []);
+  const symbols = useMemo(() => pairList.map(p => p.pair), []);
   const { prices, loading, error, lastUpdated } = useLivePrices(symbols);
 
   // Merge live prices with static data
   const enrichedPairs = useMemo(() => {
     return pairList.map(pair => {
-      const liveData = prices[pair.symbol];
+      const liveData = prices[pair.pair];
       if (liveData) {
         const liveSpot = liveData.price;
         const spread = (pair as any).spread || (pair.ask - pair.bid);

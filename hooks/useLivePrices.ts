@@ -25,7 +25,8 @@ async function fetchChunk(symbols: string[]): Promise<Record<string, any>> {
     body: JSON.stringify({ symbols }),
   });
   if (!response.ok) throw new Error('Price API returned ' + response.status);
-  return response.json();
+  const data = await response.json();
+  return data?.prices ?? data;
 }
 
 export function useLivePrices(symbols: string[], refreshInterval = 60000) {

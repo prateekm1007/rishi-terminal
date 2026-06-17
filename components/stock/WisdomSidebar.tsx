@@ -251,7 +251,7 @@ User question about this stock:`;
                 <div style={{ fontSize: "10px", color: "#64748B", fontWeight: 700, marginBottom: "8px" }}>
                   SIMILAR COMPANIES:
                 </div>
-                {parallel.companies.map((c, i) => (
+                {parallel.companies.filter(c => !c.toLowerCase().includes(stock.symbol.toLowerCase()) && !stock.name.toLowerCase().includes(c.toLowerCase())).map((c, i) => (
                   <div key={i} style={{
                     fontSize: "11px", color: "#94A3B8",
                     borderLeft: "2px solid rgba(212,175,55,0.3)",

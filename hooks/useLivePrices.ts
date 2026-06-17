@@ -69,12 +69,11 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
         const raw = merged[sym];
         if (raw) {
           normalized[sym] = {
-            price:            typeof raw.price            === 'number' ? raw.price            : 0,
-            change:           typeof raw.change           === 'number' ? raw.change           : 0,
-            changePercent24h: typeof raw.changePercent24h === 'number' ? raw.changePercent24h
-                            : typeof raw.change           === 'number' ? raw.change           : 0,
-            volume24h:        typeof raw.volume24h        === 'number' ? raw.volume24h        : 0,
-            lastUpdated:      raw.lastUpdated || new Date().toISOString(),
+            price: typeof raw.price === 'number' ? raw.price : 0,
+            change: typeof raw.change === 'number' ? raw.change : (typeof raw.changePercent24h === 'number' ? raw.changePercent24h : 0),
+            changePercent24h: typeof raw.changePercent24h === 'number' ? raw.changePercent24h : (typeof raw.change === 'number' ? raw.change : 0),
+            volume24h: typeof raw.volume24h === 'number' ? raw.volume24h : 0,
+            lastUpdated: raw.lastUpdated || new Date().toISOString(),
           };
         }
       }
@@ -88,7 +87,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     } finally {
       setLoading(false);
     }
-  }, []); // stable — reads symbols from ref
+  }, []); // stable â€” reads symbols from ref
 
   // Reset and re-fetch when symbol set changes
   useEffect(() => {
@@ -102,7 +101,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
   return { prices, loading, error, lastUpdated, refetch: fetchPrices };
 }
 
-// Convenience: single symbol — stable key prevents re-mount loop
+// Convenience: single symbol â€” stable key prevents re-mount loop
 export function usePrice(symbol: string) {
   const symbols = useRef([symbol]);
   if (symbols.current[0] !== symbol) {

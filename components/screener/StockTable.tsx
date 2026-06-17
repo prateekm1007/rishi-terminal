@@ -53,10 +53,10 @@ export function StockTable({ stocks }: Props) {
       const change24h = prices[stock.symbol]?.change ?? 0;
       return {
         ...stock,
-        consensus: report.consensus,
+        consensus: Number.isFinite(report.consensus) ? report.consensus : 0,
         topRishi: topScore.name,
         topRishiScore: topScore.score,
-        category: consensusCategory(report.consensus),
+        category: Number.isFinite(report.consensus) ? consensusCategory(report.consensus) : "N/A",
         livePrice,
         change24h,
       };
@@ -230,7 +230,7 @@ export function StockTable({ stocks }: Props) {
                   <span
                     className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
                   >
-                    {stock.consensus.toFixed(0)}
+                    {Number.isFinite(stock.consensus) ? stock.consensus.toFixed(0) : "—"}
                   </span>
                 </td>
               </tr>

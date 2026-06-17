@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth">
-      <body style={{ margin: 0, padding: 0, overflowX: "hidden" }}>
+    <html lang="en" data-scroll-behavior="smooth" className="theme-blue" suppressHydrationWarning>
+      <body className="theme-blue" suppressHydrationWarning style={{ margin: 0, padding: 0, overflowX: "hidden" }}>
         <script dangerouslySetInnerHTML={{__html: `
           (function() {
             try {

@@ -1,31 +1,74 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-
-function InfoTooltip({ text }: { text: string }) {
-  return (
-    <span
-      title={text}
-      style={{
-        display: 'inline-block',
-        marginLeft: 6,
-        cursor: 'help',
-        color: 'var(--accent-gold)',
-        fontWeight: 700,
-        fontSize: 11,
-        lineHeight: 1
-      }}
-    >
-      i
-    </span>
-  );
-}
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FOREX_PAIRS } from '../../data/forex';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 
+function InfoTooltip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+
+  return (
+    <span
+      style={{ position: 'relative', display: 'inline-block', marginLeft: 6, cursor: 'help' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      onFocus={() => setShow(true)}
+      onBlur={() => setShow(false)}
+      tabIndex={0}
+      aria-label={text}
+    >
+      <span style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 14,
+        height: 14,
+        borderRadius: '50%',
+        border: '1px solid var(--accent-gold)',
+        color: 'var(--accent-gold)',
+        fontSize: 9,
+        fontWeight: 800,
+        lineHeight: 1,
+        verticalAlign: 'middle'
+      }}>ⓘ</span>
+
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(100% + 6px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '7px 11px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--accent-gold)',
+          borderRadius: 6,
+          fontSize: 11,
+          color: 'var(--text-primary)',
+          whiteSpace: 'nowrap',
+          zIndex: 9999,
+          boxShadow: '0 6px 20px rgba(0,0,0,0.55)',
+          pointerEvents: 'none'
+        }}>
+          {text}
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '5px solid transparent',
+            borderRight: '5px solid transparent',
+            borderTop: '5px solid var(--accent-gold)'
+          }} />
+        </div>
+      )}
+    </span>
+  );
+}
 export default function ForexPage() {
   const { t } = useLanguage();
   const router = useRouter();

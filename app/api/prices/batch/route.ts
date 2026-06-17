@@ -105,7 +105,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { prices: normalized, ...normalized },
       { headers: { 'Cache-Control': 'public, s-maxage=30' } }
-    );} catch (error) {
+    );
+  } catch (error) {
     console.error('[/api/prices/batch] error:', error);
     return NextResponse.json(
       { error: 'Batch fetch failed', details: (error as Error).message },

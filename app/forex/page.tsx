@@ -70,7 +70,7 @@ export default function ForexPage() {
               </p>
               {lastUpdated && (
                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }) + ' IST'}
                 </div>
               )}
             </div>

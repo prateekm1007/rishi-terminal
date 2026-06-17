@@ -11,6 +11,8 @@ import { useLivePrices } from "@/hooks/useLivePrices";
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import { STOCKS } from "@/data/stocks";
 import { buildConsensus } from "@/lib/consensus";
+import { calculateRishiScore } from "@/lib/scorers/rishiScoreV2";
+import type { StockMetrics } from "@/lib/scorers/types";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
@@ -183,7 +185,31 @@ export default function DashboardPage() {
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms);
   const { fundamentals: sodFund, loading: sodFundLoading } = useFundamentals(STOCK_OF_DAY.symbol);
-  const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));const [timeAgo, setTimeAgo] = useState("—");
+  const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
+
+  // Dynamic Stock of the Day commentary
+  const sodCommentary = useMemo(() => {
+    const sodStock = STOCKS[STOCK_OF_DAY.symbol];
+    if (!sodStock) return STOCK_OF_DAY.why || "Loading...";
+    const metrics: StockMetrics = {
+      symbol: sodStock.symbol,
+      name: sodStock.name,
+      sector: sodStock.sector,
+      pe: sodFund?.pe ?? sodStock.pe,
+      pb: sodStock.price / (sodFund?.bookValue ?? sodStock.bvps ?? 1),
+      roe: sodFund?.roe ?? sodStock.roe,
+      roce: sodFund?.roce ?? sodStock.roce,
+      opm: sodFund?.opm ?? sodStock.opm,
+      fcfMargin: sodStock.rev > 0 ? (sodStock.fcf / sodStock.rev) * 100 : 0,
+      revenueCAGR3Y: sodFund?.revCagr3y ?? sodStock.revcagr,
+      epsCAGR3Y: sodFund?.epsCagr ?? sodStock.epscagr,
+      debtToEquity: sodFund?.debtToEquity ?? sodStock.de,
+      promoterHolding: sodFund?.promoterHolding ?? sodStock.promo,
+      marketCap: sodFund?.marketCap ? sodFund.marketCap / 10000000 : sodStock.mktcap,
+    };
+    const result = calculateRishiScore(metrics, "LONG", false);
+    return result.commentary;
+  }, [sodFund]);const [timeAgo, setTimeAgo] = useState("—");
 
   useEffect(() => {
     if (!lastUpdated) return;
@@ -437,7 +463,7 @@ export default function DashboardPage() {
                   fontStyle:"italic", lineHeight:1.7,
                   fontFamily:'"Playfair Display",Georgia,serif',
                 }}>
-                  "{STOCK_OF_DAY.why}"
+                  "{sodCommentary}"
                 </div>
                 <div style={{ marginTop:"10px", fontSize:"12px", color:C.textMuted }}>
                   — <span style={{ color:C.gold }}>Rishi {STOCK_OF_DAY.rishi}</span>

@@ -9,13 +9,30 @@ import { useLivePrices } from '../../hooks/useLivePrices';
 
 function InfoTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number; below: boolean } | null>(null);
+
+  const place = (el: HTMLElement) => {
+    if (typeof window === 'undefined') return;
+    const r = el.getBoundingClientRect();
+    const pad = 10;
+    const w = 280;
+
+    let left = r.left + r.width / 2 - w / 2;
+    left = Math.max(pad, Math.min(left, window.innerWidth - w - pad));
+
+    const aboveTop = r.top - 12;
+    const below = aboveTop < 70;
+    const top = below ? (r.bottom + 10) : aboveTop;
+
+    setPos({ top, left, below });
+  };
 
   return (
     <span
-      style={{ position: 'relative', display: 'inline-block', marginLeft: 6, cursor: 'help' }}
-      onMouseEnter={() => setShow(true)}
+      style={{ display: 'inline-block', marginLeft: 6, cursor: 'help' }}
+      onMouseEnter={(e) => { place(e.currentTarget as HTMLElement); setShow(true); }}
       onMouseLeave={() => setShow(false)}
-      onFocus={() => setShow(true)}
+      onFocus={(e) => { place(e.currentTarget as HTMLElement); setShow(true); }}
       onBlur={() => setShow(false)}
       tabIndex={0}
       aria-label={text}
@@ -35,35 +52,26 @@ function InfoTooltip({ text }: { text: string }) {
         verticalAlign: 'middle'
       }}>ⓘ</span>
 
-      {show && (
+      {show && pos && (
         <div style={{
-          position: 'absolute',
-          bottom: 'calc(100% + 6px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '7px 11px',
+          position: 'fixed',
+          top: pos.top,
+          left: pos.left,
+          transform: pos.below ? 'none' : 'translateY(-100%)',
+          width: 280,
+          maxWidth: 'calc(100vw - 20px)',
+          padding: '8px 12px',
           background: 'var(--bg-card)',
           border: '1px solid var(--accent-gold)',
-          borderRadius: 6,
+          borderRadius: 8,
           fontSize: 11,
           color: 'var(--text-primary)',
-          whiteSpace: 'nowrap',
-          zIndex: 9999,
-          boxShadow: '0 6px 20px rgba(0,0,0,0.55)',
+          whiteSpace: 'normal',
+          zIndex: 99999,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
           pointerEvents: 'none'
         }}>
           {text}
-          <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 0,
-            height: 0,
-            borderLeft: '5px solid transparent',
-            borderRight: '5px solid transparent',
-            borderTop: '5px solid var(--accent-gold)'
-          }} />
         </div>
       )}
     </span>
@@ -241,8 +249,8 @@ export default function ForexPage() {
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
                   {[
   { label: t('forex.pair') },
-  { label: t('forex.spot'), tip: 'Live exchange rate' },
-  { label: '24H CHANGE', tip: 'Change vs previous close (Yahoo)' },
+  { label: t('forex.spot') },
+  { label: '24H CHANGE' },
   { label: t('forex.bid'), tip: 'Approx sell price' },
   { label: t('forex.ask'), tip: 'Approx buy price' },
   { label: t('forex.spread'), tip: 'Bid–Ask difference (transaction cost)' },

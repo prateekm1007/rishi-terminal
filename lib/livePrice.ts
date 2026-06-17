@@ -7,7 +7,7 @@ import { STOCKS } from '../data/stocks';
 // Bonds: Static yields
 
 // =============================================================================
-// NSE INDIA API — Stocks + MCX Commodities
+// NSE INDIA API â€” Stocks + MCX Commodities
 // =============================================================================
 
 const NSE_HEADERS = {
@@ -19,7 +19,7 @@ const NSE_HEADERS = {
 
 // NSE equity quote
 // =============================================================================
-// YAHOO FINANCE v8 — Indian stock price (NSE suffix)
+// YAHOO FINANCE v8 â€” Indian stock price (NSE suffix)
 // =============================================================================
 const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number; ts: number }> = {};
 
@@ -51,7 +51,7 @@ async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change
 }
 
 // =============================================================================
-// YAHOO FINANCE v7 — alternate endpoint (different rate limit pool)
+// YAHOO FINANCE v7 â€” alternate endpoint (different rate limit pool)
 // =============================================================================
 async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; change: number } | null> {
   try {
@@ -74,7 +74,7 @@ async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; chan
 }
 
 // =============================================================================
-// SCREENER.IN — HTML scrape fallback (Indian stocks)
+// SCREENER.IN â€” HTML scrape fallback (Indian stocks)
 // =============================================================================
 const SCREENER_PRICE_CACHE: Record<string, { price: number; change: number; ts: number }> = {};
 const SCREENER_COOLDOWN: Record<string, number> = {};
@@ -132,7 +132,7 @@ async function getScreenerPrice(symbol: string): Promise<{ price: number; change
 }
 
 // =============================================================================
-// BSE INDIA API — additional free source for Indian stocks
+// BSE INDIA API â€” additional free source for Indian stocks
 // =============================================================================
 const BSE_SCRIP_MAP: Record<string, string> = {
   RELIANCE: '500325', TCS: '532540', INFY: '500209', WIPRO: '507685',
@@ -282,7 +282,7 @@ async function fetchYahooQuote(
   }
 }
 // =============================================================================
-// COMMODITY MAPPING — MCX symbol to NSE/Global
+// COMMODITY MAPPING â€” MCX symbol to NSE/Global
 // =============================================================================
 
 // MCX commodities trade on NSE derivatives segment
@@ -311,7 +311,7 @@ const COMMODITY_STATIC_USD: Record<string, number> = {
 };
 
 // =============================================================================
-// COINGECKO — Crypto ONLY
+// COINGECKO â€” Crypto ONLY
 // =============================================================================
 
 const COINGECKO_IDS: Record<string, string> = {
@@ -379,7 +379,7 @@ async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; chang
 }
 
 // =============================================================================
-// FOREX — ExchangeRate-API (free, no auth)
+// FOREX â€” ExchangeRate-API (free, no auth)
 // =============================================================================
 
 const forexCache: { rates: Record<string, number>; fetchedAt: number } | null = null;
@@ -410,7 +410,27 @@ async function fetchForexRates(): Promise<void> {
 }
 
 // Forex pairs stored as "BASE/QUOTE" e.g. "EUR/USD"
+const YAHOO_FOREX_SYMBOLS: Record<string, string> = {
+  'EUR/USD': 'EURUSD=X',
+  'GBP/USD': 'GBPUSD=X',
+  'JPY/USD': 'JPY=X',
+  'AUD/USD': 'AUDUSD=X',
+  'NZD/USD': 'NZDUSD=X',
+  'CHF/USD': 'CHF=X',
+  'USD/INR': 'INR=X',
+  'EUR/INR': 'EURINR=X',
+  'GBP/INR': 'GBPINR=X',
+  'JPY/INR': 'JPYINR=X',
+};
+
 async function getForexRate(pair: string): Promise<{ price: number; change: number } | null> {
+  // Try Yahoo Finance first (has 24h change data)
+  if (YAHOO_FOREX_SYMBOLS[pair]) {
+    const yahooData = await fetchYahooQuote(YAHOO_FOREX_SYMBOLS[pair]);
+    if (yahooData) return yahooData;
+  }
+
+  // Fallback to ExchangeRate-API (no 24h change)
   await fetchForexRates();
   if (!forexCacheData) return null;
 
@@ -440,10 +460,10 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
 }
 
 // =============================================================================
-// BOND YIELDS — Live via Yahoo Finance ETF implied yield + FRED fallback
+// BOND YIELDS â€” Live via Yahoo Finance ETF implied yield + FRED fallback
 // =============================================================================
 
-// US Treasury ETF proxies → derive implied yield from price
+// US Treasury ETF proxies â†’ derive implied yield from price
 const US_TREASURY_ETF: Record<string, { ticker: string; duration: number; coupon: number }> = {
   US2Y:   { ticker: 'SHY',  duration: 1.9,  coupon: 4.35 },
   US5Y:   { ticker: 'IEF',  duration: 4.5,  coupon: 4.10 },
@@ -676,7 +696,7 @@ export async function fetchLivePrice(
   }
   // 6. Indian stocks (NSE equity API)
   else {
-    // Multi-source fallback chain — stops at first success
+    // Multi-source fallback chain â€” stops at first success
     priceData = await getNSEStockPrice(symbol)
       ?? await getYahooNSEPrice(symbol)
       ?? await getYahooNSEPriceV7(symbol)

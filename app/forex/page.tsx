@@ -1,6 +1,25 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <span
+      title={text}
+      style={{
+        display: 'inline-block',
+        marginLeft: 6,
+        cursor: 'help',
+        color: 'var(--accent-gold)',
+        fontWeight: 700,
+        fontSize: 11,
+        lineHeight: 1
+      }}
+    >
+      i
+    </span>
+  );
+}
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FOREX_PAIRS } from '../../data/forex';
@@ -28,7 +47,10 @@ export default function ForexPage() {
           spotRate: liveSpot,
           bid: liveSpot - spread / 2,
           ask: liveSpot + spread / 2,
-          change24h: liveData.changePercent24h || 0,
+                    change24h:
+            typeof liveData.changePercent24h === 'number'
+              ? liveData.changePercent24h
+              : (typeof (liveData as any).change === 'number' ? (liveData as any).change : 0),
           volume24h: liveData.volume24h || pair.volume24h,
         };
       }
@@ -175,26 +197,28 @@ export default function ForexPage() {
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
                   {[
-                    t('forex.pair'), 
-                    t('forex.spot'), 
-                    '24H CHANGE',
-                    t('forex.bid'), 
-                    t('forex.ask'), 
-                    t('forex.spread'), 
-                    t('forex.forward1m'), 
-                    t('forex.volatility'), 
-                    t('forex.ppp')
-                  ].map((h, i) => (
-                    <th key={h} style={{
-                      textAlign: i === 0 ? 'left' : 'right',
-                      padding: '14px 24px',
-                      fontSize: 9,
-                      fontFamily: 'monospace',
-                      color: 'var(--text-muted)',
-                      letterSpacing: 1,
-                      fontWeight: 600,
-                    }}>{h.toUpperCase()}</th>
-                  ))}
+  { label: t('forex.pair') },
+  { label: t('forex.spot'), tip: 'Live exchange rate' },
+  { label: '24H CHANGE', tip: 'Change vs previous close (Yahoo)' },
+  { label: t('forex.bid'), tip: 'Approx sell price' },
+  { label: t('forex.ask'), tip: 'Approx buy price' },
+  { label: t('forex.spread'), tip: 'Bid–Ask difference (transaction cost)' },
+  { label: t('forex.forward1m'), tip: '1M forward (interest-diff estimate)' },
+  { label: t('forex.volatility'), tip: 'Typical movement (risk proxy)' },
+  { label: t('forex.ppp'), tip: 'PPP: fair value based on cost of goods' }
+].map((h: any, i) => (
+  <th key={h.label} style={{
+    textAlign: i === 0 ? 'left' : 'right',
+    padding: '14px 24px',
+    fontSize: 9,
+    fontFamily: 'monospace',
+    color: 'var(--text-muted)',
+    letterSpacing: 1,
+    fontWeight: 600,
+  }}>
+    {h.label.toUpperCase()}{h.tip ? <InfoTooltip text={h.tip} /> : null}
+  </th>
+))}
                 </tr>
               </thead>
               <tbody>

@@ -34,7 +34,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Repository hygiene (Constitution: no .bak/backup/corrupted files in git)
+      - name: "Repository hygiene (no .bak/backup/corrupted files in git)"
         run: |
           if git ls-files | grep -Ei '\.(bak|backup|tmp)$|corrupted'; then
             echo "::error::Backup/corrupted files tracked in git - delete them (Constitution forbids committed backups)."

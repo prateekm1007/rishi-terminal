@@ -28,7 +28,6 @@ export function safeNextPath(raw: string | null | undefined, fallback = '/'): st
   }
 
   // Control characters are never legitimate in a redirect path.
-  // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u001f\u007f]/.test(value)) return fallback;
 
   // Must be a relative path with exactly one leading slash.

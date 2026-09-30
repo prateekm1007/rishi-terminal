@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { safeNextPath } from '@/lib/auth/safeRedirect';
 
@@ -15,13 +15,13 @@ import { safeNextPath } from '@/lib/auth/safeRedirect';
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  // R7: `?next=` is validated server-side-quality here; only a safe
-  // same-origin relative path is threaded into the auth redirect.
-  const [callbackUrl, setCallbackUrl] = useState(`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`);
-  useEffect(() => {
+  // R7: `?next=` is validated here; only a safe same-origin relative path
+  // is threaded into the auth redirect. Computed at call time (window is
+  // always available inside the handlers) — no state, no effect.
+  function callbackUrl(): string {
     const next = safeNextPath(new URLSearchParams(window.location.search).get('next'));
-    setCallbackUrl(`${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`);
-  }, []);
+    return `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  }
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ export default function SignInPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: callbackUrl,
+          emailRedirectTo: callbackUrl(),
         },
       });
       if (error) setError(error.message);
@@ -54,7 +54,7 @@ export default function SignInPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: callbackUrl,
+          redirectTo: callbackUrl(),
         },
       });
       if (error) setError(error.message);

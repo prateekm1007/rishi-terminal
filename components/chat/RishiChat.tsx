@@ -302,7 +302,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
           <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
             {debateMode
               ? `⚔️ ${debateRishis.map(r => RISHI_PERSONALITIES[r]?.name).join(' vs ')}`
-              : `${rishi?.emoji} ${rishi?.name} · ${apiStatus === 'ok' ? '🟢 AI' : apiStatus === 'fallback' ? '🟡 Static' : '⚡ Gemini'}`}
+              : `${rishi?.emoji} ${rishi?.name} · ${apiStatus === 'ok' ? '🟢 AI' : apiStatus === 'fallback' ? '🟡 Static' : '⚡ AI'}`}
           </div>
         </div>
         <button

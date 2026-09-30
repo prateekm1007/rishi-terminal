@@ -329,7 +329,7 @@ export default function ChatWithRishisPage() {
             </button>
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, fontFamily: 'monospace' }}>
-            Powered by Gemini 2.5 Flash · {currentMessages.length} messages · Chat history preserved per Rishi
+            Powered by Agnes 2.5 Flash · {currentMessages.length} messages · Chat history preserved per Rishi
           </div>
         </div>
       </div>

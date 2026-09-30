@@ -1,4 +1,12 @@
 // FMP_SERVICE_V1
+//
+// Phase 5.1 (T55): the registry marks FMP RESEARCH_ONLY — display rights
+// unresolved ("free API ≠ display rights", T36). Fail-closed gate INSIDE the
+// client primitive: even a future caller that skips the ingestion-service
+// gate cannot reach the upstream from production code until the registry
+// status becomes APPROVED on documented rights evidence.
+import { PROVIDER_IDS, isProviderApproved } from "../registry/providerRegistry";
+
 const FMP_BASE = "https://financialmodelingprep.com/api/v3";
 const FMP_KEY  = process.env.FMP_API_KEY || "";
 
@@ -8,6 +16,11 @@ function fmpUrl(path: string, params: Record<string,string> = {}): string {
 }
 
 async function fmpFetch<T>(path: string, params: Record<string,string> = {}): Promise<T | null> {
+  // Phase 5.1: registry gate inside the primitive (fail-closed, T55).
+  if (!isProviderApproved(PROVIDER_IDS.FMP)) {
+    console.warn(`[FMP] blocked: provider is RESEARCH_ONLY, not APPROVED (${path})`);
+    return null;
+  }
   if (!FMP_KEY) return null;
   try {
     const res = await fetch(fmpUrl(path, params), {

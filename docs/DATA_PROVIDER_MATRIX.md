@@ -30,9 +30,18 @@ Vantage, Twelve Data, FMP, Finnhub, Gemini, Hugging Face, open-source TA libs
 - **`yahoo-finance2` adoption**: MIT client but client ≠ data rights (T54); own client exists
 
 ## RESEARCH_ONLY — must NOT enter production routing
-- **Screener.in scrape**: legacy ingest frozen (no new consumers/fields); display
-  licensing unresolved → founder decision FD-1
-- **FMP**: free API ≠ display rights (T36 example); client stays inert
+- **Screener.in scrape**: legacy fundamentals ingest frozen (no new
+  consumers/fields); display licensing unresolved → founder decision FD-1.
+  Phase 5.1: REMOVED from the production price router, and `attempt()`
+  enforces APPROVED-only gating inside the routing primitive — a
+  RESEARCH_ONLY provider cannot be reached through the routing layer even
+  accidentally (regression-tested).
+- **FMP**: free API ≠ display rights (T36 example). Phase 5.1 correction:
+  the client is NOT "inert by neglect" — it is **registry-gated**: both
+  `lib/services/ingestion.ts` and the FMP client primitive fail closed
+  unless the registry status becomes APPROVED (requires a licensing
+  agreement = rights evidence, never an env toggle). Production financial
+  ingestion currently records skips, not FMP data.
 - **Alpha Vantage** (25/day), **Twelve Data** (8 credits/min, 800/day): quotas
   marginal for terminal traffic; display/commercial terms unverified this pass
 - **FRED official API**: adopt only if fredgraph.csv insufficient; then

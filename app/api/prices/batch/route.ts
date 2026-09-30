@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
-import { fetchLivePrice } from '@/lib/livePrice';
+import { fetchLivePrice, unavailablePriceEntry } from '@/lib/livePrice';
 import { parseSymbolsBody } from '@/lib/registry/validateInput';
 import { checkRateLimit } from '@/lib/rateLimit';
 
@@ -84,10 +84,22 @@ export async function POST(req: NextRequest) {
         if (r.status === 'fulfilled' && r.value) {
           prices[otherSymbols[i]] = r.value as unknown as Record<string, unknown>;
         } else {
-          // T57: explicit honest unavailability per symbol.
-          prices[otherSymbols[i]] = { status: 'UNAVAILABLE', lastUpdated: new Date().toISOString() };
+          // T57: explicit honest unavailability per symbol. Phase 5.1: the
+          // entry carries NO observation timestamp — lastUpdated is null
+          // (there is no observation) and checkedAt is the decision time.
+          prices[otherSymbols[i]] = unavailablePriceEntry();
         }
       });
+    }
+
+    // Phase 5.1 (T57): EXACTLY ONE normalized entry per requested symbol.
+    // The fallback loop above only records successes, so a symbol whose
+    // Yahoo bulk lookup missed AND whose per-symbol fetch returned null /
+    // rejected was previously silently absent — clients saw 49 entries for
+    // 50 requested. Now the total-failure case is explicit: UNAVAILABLE
+    // with no fabricated observation time.
+    for (const s of symbols) {
+      if (!prices[s]) prices[s] = unavailablePriceEntry();
     }
 
     const ms = Date.now() - t0;

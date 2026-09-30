@@ -1,6 +1,7 @@
 // INGESTION_V1
 import { getAdminSupabase } from "./supabaseAdmin";
 import { fetchQuarterlyStatements, fetchAnnualStatements, type FMPIncomeStatement } from "./fmp";
+import { PROVIDER_IDS, isProviderApproved } from "../registry/providerRegistry";
 
 function toNum(v: any): number | null {
   const n = Number(v);
@@ -14,9 +15,27 @@ function parsePeriod(stmt: FMPIncomeStatement): { fy: number; fq: number } {
   return { fy: year, fq };
 }
 
+/**
+ * Phase 5.1 (T55 reconciliation): the registry marks FMP RESEARCH_ONLY —
+ * "free API ≠ display rights" (T36). The matrix previously described the
+ * client as "inert" while this module still wired FMP into the production
+ * financial-ingestion path; that contradiction is resolved structurally:
+ * ingestion is registry-gated and fail-closed. FMP becomes reachable ONLY
+ * when the registry status changes to APPROVED, which requires rights
+ * evidence (licensing agreement) — never an env toggle.
+ */
+function fmpApproved(): boolean {
+  if (isProviderApproved(PROVIDER_IDS.FMP)) return true;
+  console.warn("[ingestion] FMP is RESEARCH_ONLY (not APPROVED) — production ingestion skipped (T55)");
+  return false;
+}
+
 export async function ingestQuarterly(symbol: string): Promise<{
-  inserted: number; errors: number; source: string;
+  inserted: number; errors: number; source: string; skipped?: "not-approved";
 }> {
+  if (!fmpApproved()) {
+    return { inserted: 0, errors: 0, source: "FMP", skipped: "not-approved" };
+  }
   const db = getAdminSupabase();
   const stmts = await fetchQuarterlyStatements(symbol, 12);
 
@@ -64,8 +83,11 @@ export async function ingestQuarterly(symbol: string): Promise<{
 }
 
 export async function ingestAnnual(symbol: string): Promise<{
-  inserted: number; errors: number; source: string;
+  inserted: number; errors: number; source: string; skipped?: "not-approved";
 }> {
+  if (!fmpApproved()) {
+    return { inserted: 0, errors: 0, source: "FMP", skipped: "not-approved" };
+  }
   const db = getAdminSupabase();
   const stmts = await fetchAnnualStatements(symbol, 5);
 

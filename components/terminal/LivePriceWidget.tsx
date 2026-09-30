@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { presentationState, statusLabel, statusColor, type PresentationState } from '@/lib/pricePresentation';
 
 interface Props {
   symbol: string;
@@ -18,19 +19,23 @@ interface LiveEntry {
 }
 
 /**
- * Live price tile — Phase 5 T44/T47/T48/T57 compliant.
+ * Live price tile — Phase 5 T44/T47/T48/T57 compliant (Phase 5.1 corrected).
  *
  * - T44: ALL data flows through the canonical API route (/api/prices/batch),
- *   never a provider URL from the browser. (The old direct NSE fallback
- *   violated this: unvalidated payload, no provenance, and browsers cannot
- *   even set the User-Agent header it tried to spoof.)
+ *   never a provider URL from the browser.
  * - T48: the response's `source` is shown, not a hard-coded exchange name.
  * - T57: when no live observation exists the tile renders "—" and
  *   UNAVAILABLE. It never renders a seed/placeholder number as a price.
+ * - Phase 5.1 (T47): the presentation state derives from the SERVER's
+ *   status field — LIVE / CACHED / DERIVED / STATIC / UNAVAILABLE each
+ *   render with their own label. A numeric value with status STATIC is
+ *   shown as a static reference value, never as "LIVE". Yahoo-transported
+ *   observations render "DELAYED" (matrix: Yahoo is a delayed snapshot,
+ *   never labelled realtime).
  */
 export function LivePriceWidget({ symbol }: Props) {
   const [entry, setEntry] = useState<LiveEntry | null>(null);
-  const [status, setStatus] = useState<'loading' | 'live' | 'unavailable'>('loading');
+  const [state, setState] = useState<PresentationState>('loading');
 
   useEffect(() => {
     if (!symbol) return;
@@ -50,19 +55,21 @@ export function LivePriceWidget({ symbol }: Props) {
         if (apiRes.ok) {
           const data = (await apiRes.json()) as Record<string, LiveEntry>;
           const e = data?.[symbol];
-          if (e && typeof e.price === 'number' && e.price > 0) {
+          // Phase 5.1: store the entry and derive the presentation state from
+          // the server's status — never "live" just because a number exists.
+          if (e) {
             setEntry(e);
-            setStatus('live');
+            setState(presentationState(e));
             return;
           }
         }
-        // No live observation: honest unavailability (T57).
+        // No observation: honest unavailability (T57).
         setEntry(null);
-        setStatus('unavailable');
+        setState('unavailable');
       } catch {
         if (!cancelled) {
           setEntry(null);
-          setStatus('unavailable');
+          setState('unavailable');
         }
       }
     }
@@ -76,10 +83,12 @@ export function LivePriceWidget({ symbol }: Props) {
   const change = entry?.change ?? 0;
   const positive = change >= 0;
   const arrow = positive ? '+' : '-';
-  const formatted =
-    status === 'live'
-      ? new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(price)
-      : '—';
+  // Numeric display: any state with a usable value shows the number; the
+  // LABEL carries the honest freshness semantics. Unavailable/loading show "—".
+  const showNumber = state === 'live' || state === 'cached' || state === 'derived' || state === 'static';
+  const formatted = showNumber
+    ? new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(price)
+    : '—';
 
   return (
     <div style={{
@@ -101,22 +110,18 @@ export function LivePriceWidget({ symbol }: Props) {
       <div style={{
         marginTop: 6,
         fontSize: 13,
-        color: status !== 'live' ? '#64748B' : positive ? '#22C55E' : '#EF4444',
+        color: !showNumber ? '#64748B' : positive ? '#22C55E' : '#EF4444',
         fontWeight: 600,
       }}>
-        {status === 'live' ? `${arrow} ${Math.abs(change).toFixed(2)}%` : '—'}
+        {showNumber ? `${arrow} ${Math.abs(change).toFixed(2)}%` : '—'}
       </div>
       <div style={{
         marginTop: 4,
         fontSize: 10,
         fontFamily: 'monospace',
-        color: status === 'live' ? '#22C55E' : '#64748B',
+        color: statusColor(state),
       }}>
-        {status === 'live'
-          ? `LIVE · ${(entry?.source ?? 'canonical').toUpperCase()}`
-          : status === 'unavailable'
-            ? 'UNAVAILABLE'
-            : 'LOADING…'}
+        {statusLabel(state, entry?.source)}
       </div>
     </div>
   );

@@ -38,10 +38,17 @@ async function run(req: NextRequest) {
     await logIngestion({
       job_name: "ingest_financials",
       symbol: sym,
-      status: (q.errors + a.errors) === 0 ? "success" : "partial",
+      // Phase 5.1: a registry-blocked (RESEARCH_ONLY) run is recorded as a
+      // skip, not a silent "success" — the log must not imply data flowed.
+      status: (q as { skipped?: string }).skipped
+        ? "partial"
+        : ((q.errors + a.errors) === 0 ? "success" : "partial"),
       records_in: q.inserted + a.inserted,
       records_out: q.inserted + a.inserted,
-      source: "FMP",
+      source: q.source,
+      error_msg: (q as { skipped?: string }).skipped
+        ? "skipped: FMP is not APPROVED (RESEARCH_ONLY, T55)"
+        : undefined,
       started_at,
     });
   }

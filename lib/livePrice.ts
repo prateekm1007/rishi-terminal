@@ -9,7 +9,7 @@
 // Phase 6 T60/T62: result-snapshot reuse + DB persistent cache (storage-
 // entitled sources only) + honest observation timestamps.
 import { withProviderHealth, coalesce, getCachedResult, putCachedResult } from './registry/providerHealth';
-import { PROVIDER_IDS } from './registry/providerRegistry';
+import { PROVIDER_IDS, isProviderApproved } from './registry/providerRegistry';
 import { persistentCacheGet, persistentCacheSet } from './cache/persistentCache';
 
 // =============================================================================
@@ -100,64 +100,20 @@ async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; chan
 }
 
 // =============================================================================
-// SCREENER.IN — HTML scrape fallback (Indian stocks)
+// SCREENER.IN — REMOVED from the price routing layer (Phase 5.1).
+//
+// The registry marks Screener RESEARCH_ONLY (display/redistribution rights
+// unresolved, founder-flagged FD-1). Production price routing may therefore
+// never reach it — not even as a last-resort fallback. The explicitly frozen
+// legacy fundamentals path (lib/liveFundamentals.ts → lib/scrapers/screener.ts)
+// is a separate surface and is unchanged.
+//
+// Enforcement is structural, not conventional: attempt() refuses to call any
+// provider whose registry status is not APPROVED (T55), so a RESEARCH_ONLY
+// provider cannot be introduced into a fallback chain again without failing
+// the gating test.
 // =============================================================================
-const SCREENER_PRICE_CACHE: Record<string, { price: number; change: number; ts: number }> = {};
-const SCREENER_COOLDOWN: Record<string, number> = {};
 
-async function getScreenerPrice(symbol: string): Promise<{ price: number; change: number } | null> {
-  const now = Date.now();
-  if (SCREENER_COOLDOWN[symbol] && now < SCREENER_COOLDOWN[symbol]) return null;
-  const cached = SCREENER_PRICE_CACHE[symbol];
-  if (cached && now - cached.ts < 120000) return cached;
-
-  try {
-    const url = `https://www.screener.in/company/${encodeURIComponent(symbol)}/consolidated/`;
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-      signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 10000); return ac.signal; })(),
-    });
-    if (res.status === 429 || res.status === 403) {
-      SCREENER_COOLDOWN[symbol] = now + 300000; return null;
-    }
-    if (!res.ok) return null;
-    const html = await res.text();
-
-    // Extract Current Price from top-ratios ul
-    const section = html.match(/<ul id="top-ratios"[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? "";
-    const items = section.match(/<li[^>]*>([\s\S]*?)<\/li>/g) ?? [];
-    let price = 0;
-    let change = 0;
-
-    for (const item of items) {
-      const text = item.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      if (text.includes('Current Price')) {
-        const m = item.match(/<span class="number"[^>]*>([\d,]+(?:\.\d+)?)<\/span>/);
-        if (m) price = parseFloat(m[1].replace(/,/g, ''));
-      }
-    }
-
-    // Extract change from price area span
-    const upMatch = html.match(/icon-circle-up[\s\S]{0,80}?([\d.]+)%/);
-    const dnMatch = html.match(/icon-circle-down[\s\S]{0,80}?([\d.]+)%/);
-    if (upMatch) change = parseFloat(upMatch[1]);
-    else if (dnMatch) change = -parseFloat(dnMatch[1]);
-
-    if (price <= 0) return null;
-    const result = { price, change };
-    SCREENER_PRICE_CACHE[symbol] = { ...result, ts: now };
-    delete SCREENER_COOLDOWN[symbol];
-    return result;
-  } catch {
-    SCREENER_COOLDOWN[symbol] = Date.now() + 120000;
-    return null;
-  }
-}
-
-// =============================================================================
 // BSE INDIA API — additional free source for Indian stocks
 // =============================================================================
 const BSE_SCRIP_MAP: Record<string, string> = {
@@ -806,6 +762,15 @@ async function attempt(
   id: string,
   fn: () => Promise<{ price: number; change: number; source?: string; status?: PriceStatus; observedAt?: string } | null>,
 ): Promise<PricePoint | null> {
+  // Phase 5.1 (T55 enforced at the primitive): ONLY APPROVED providers may
+  // serve production routing. Fail-closed inside the routing primitive itself
+  // — a RESEARCH_ONLY/REJECTED/unregistered id can never be invoked, even if
+  // a future edit adds it to a chain. Without an upstream call there is no
+  // observation, so the result is null (honest unavailability downstream).
+  if (!isProviderApproved(id)) {
+    console.warn(`[livePrice] blocked non-APPROVED provider in routing chain: ${id}`);
+    return null;
+  }
   try {
     const r = await withProviderHealth(id, fn);
     if (!r) return null;
@@ -865,13 +830,15 @@ async function fetchLivePriceInner(
       status: "STATIC",
     };
   }
-  // 6. Indian stocks — multi-source fallback chain, health-gated per provider
+  // 6. Indian stocks — multi-source fallback chain, health-gated per provider.
+  //    Phase 5.1: chain terminates at the last APPROVED provider (BSE).
+  //    Screener (RESEARCH_ONLY) was removed — it is unreachable by design;
+  //    total failure of every APPROVED source yields honest UNAVAILABLE.
   return (
     (await attempt(PROVIDER_IDS.NSE, () => getNSEStockPrice(symbol))) ??
     (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPrice(symbol))) ??
     (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPriceV7(symbol))) ??
-    (await attempt(PROVIDER_IDS.BSE, () => getBSEPrice(symbol))) ??
-    (await attempt(PROVIDER_IDS.SCREENER, () => getScreenerPrice(symbol)))
+    (await attempt(PROVIDER_IDS.BSE, () => getBSEPrice(symbol)))
   );
 }
 
@@ -884,6 +851,23 @@ const PERSIST_MAX_AGE_QUOTE_MS = PERSIST_TTL_MS;
 const PERSIST_MAX_AGE_BOND_MS = PERSIST_TTL_BOND_MS;
 
 const lastPersistAt: Record<string, number> = {};
+
+/**
+ * Phase 5.1 (T57): the honest unavailable entry. Two different timestamps
+ * exist and must never be conflated:
+ * - `lastUpdated: null` — there is NO observation, so there is NO observation
+ *   time. Stamp "now" here would dress the absence of data up as a recent
+ *   data point.
+ * - `checkedAt: <now>` — the time the system DECIDED it had no observation
+ *   (decision time, operationally useful, semantically distinct).
+ */
+export function unavailablePriceEntry(): {
+  status: "UNAVAILABLE";
+  lastUpdated: null;
+  checkedAt: string;
+} {
+  return { status: "UNAVAILABLE", lastUpdated: null, checkedAt: new Date().toISOString() };
+}
 
 /** Write-through, storage-entitled only, throttled, never throws. */
 async function persistIfEntitled(key: string, symbol: string, point: PricePoint): Promise<void> {

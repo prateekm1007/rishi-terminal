@@ -111,3 +111,29 @@ describe("yahooChangeFromMeta (regression: 0.00% tickers)", () => {
     ).toEqual({ price: 1187, change: 0.423 });
   });
 });
+
+describe("Phase 5.1 — APPROVED-only routing enforcement (T55)", () => {
+  it("RESEARCH_ONLY Screener is NEVER called, even when every APPROVED stock provider fails", async () => {
+    // Every APPROVED Indian-stock source (NSE, Yahoo ×2, BSE) is degraded.
+    // HDFCBANK: not warmed by earlier tests (module-level Yahoo cache has a
+    // 120 s TTL keyed by symbol — RELIANCE/TCS/INFY/WIPRO/SBIN are).
+    const spy = mockFetchOnce(() => new Response("rate limited", { status: 429 }));
+    const r = await fetchLivePrice("HDFCBANK");
+    // The honest result is null (→ UNAVAILABLE downstream), NOT a last-resort
+    // scrape of a RESEARCH_ONLY provider. Screener must be unreachable
+    // through the routing layer — structurally, not by convention.
+    expect(r).toBeNull();
+    const urls = spy.mock.calls.map(c => String((c as unknown[])[0]));
+    expect(urls.length).toBeGreaterThan(0); // APPROVED providers WERE attempted
+    expect(urls.some(u => u.includes("screener.in"))).toBe(false);
+  });
+
+  it("a degraded chain still proves the gate: 403 everywhere → no screener.in request", async () => {
+    const spy = mockFetchOnce(() => new Response("denied", { status: 403 }));
+    const r = await fetchLivePrice("TCS");
+    expect(r).toBeNull();
+    expect(
+      spy.mock.calls.map(c => String((c as unknown[])[0])).some(u => u.includes("screener.in")),
+    ).toBe(false);
+  });
+});

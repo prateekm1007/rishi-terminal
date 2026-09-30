@@ -72,7 +72,13 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
       const normalized: Record<string, PriceData> = {};
       for (const sym of currentSymbols) {
         const raw = merged[sym];
-        if (raw) {
+        // Phase 5.1 (T57): the batch contract now guarantees exactly one
+        // entry per requested symbol — total provider failure is an explicit
+        // UNAVAILABLE entry (no observation, lastUpdated null). Such an
+        // entry carries NO price; treating it as data would coerce the
+        // missing number to 0 and resurface the "+0.00%" ticker bug. Skip
+        // it so consumers keep their own no-data fallbacks.
+        if (raw && raw.status !== 'UNAVAILABLE') {
           normalized[sym] = {
             price: typeof raw.price === 'number' ? raw.price : 0,
             change: typeof raw.change === 'number' ? raw.change : (typeof raw.changePercent24h === 'number' ? raw.changePercent24h : 0),

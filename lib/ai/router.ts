@@ -3,15 +3,21 @@
  *
  * Application code calls `generateEvidenceGroundedAnswer(...)` — never
  * Gemini/OpenAI/HF directly. Provider selection is fail-closed, env-driven,
- * and registry-checked (T43): the chosen provider must be APPROVED, else 503.
+ * and registry-checked (T43): a candidate must be APPROVED, else it is not
+ * a candidate at all.
  *
- * Fallback chain (T50):
+ * Fallback chain (T50 — RUNTIME failover, Phase 5.1 correction):
  *   1. OpenAI-compatible endpoint  (CHAT_API_BASE_URL + CHAT_API_KEY)
+ *      ↓ timeout / 5xx / throw / open circuit
  *   2. Gemini fallback             (GEMINI_API_KEY)
- *   3. explicit unavailable state  (null) — never a silent downgrade
+ *      ↓ failure
+ *   3. upstream failure propagates → caller surfaces 502.
+ *      With ZERO candidates: null → caller surfaces 503 (unconfigured).
  *
  * Health: upstream calls are recorded per provider (T45) so a failing
- * provider opens a circuit and the fallback is used without waiting.
+ * provider opens a circuit and the next candidate is used without waiting.
+ * An open circuit on the primary therefore causes Gemini to be attempted —
+ * Gemini is a runtime failure fallback, not merely a configuration fallback.
  */
 
 import { withProviderHealth } from "@/lib/registry/providerHealth";
@@ -43,31 +49,39 @@ export interface GenerateArgs {
 }
 
 /**
- * Resolve the upstream provider from env at request time. Returns null when
- * nothing is configured — the caller surfaces an explicit unavailable state.
- * Registry check (T43/T55): a configured provider that is not APPROVED is
- * treated as unconfigured.
+ * Resolve the ORDERED candidate chain from env at request time. A provider
+ * is a candidate only when it is configured AND registry-APPROVED (T43/T55).
+ * Order: OpenAI-compatible first, Gemini second.
  */
-export function resolveAiProvider(): AiProvider | null {
+export function resolveAiProviderCandidates(): AiProvider[] {
+  const candidates: AiProvider[] = [];
   const baseUrl = (process.env.CHAT_API_BASE_URL || "")
     .trim()
     .replace(/\/+$/, "")
     .replace(/\/chat\/completions$/, "");
   const chatKey = (process.env.CHAT_API_KEY || "").trim();
   if (baseUrl && chatKey && isProviderApproved(PROVIDER_IDS.CHAT_API)) {
-    return {
+    candidates.push({
       kind: "openai",
       id: PROVIDER_IDS.CHAT_API,
       baseUrl,
       apiKey: chatKey,
       model: (process.env.CHAT_MODEL || "").trim() || DEFAULT_OPENAI_MODEL,
-    };
+    });
   }
   const geminiKey = (process.env.GEMINI_API_KEY || "").trim();
   if (geminiKey && isProviderApproved(PROVIDER_IDS.GEMINI)) {
-    return { kind: "gemini", id: PROVIDER_IDS.GEMINI, apiKey: geminiKey, model: GEMINI_MODEL };
+    candidates.push({ kind: "gemini", id: PROVIDER_IDS.GEMINI, apiKey: geminiKey, model: GEMINI_MODEL });
   }
-  return null;
+  return candidates;
+}
+
+/**
+ * Primary provider (kept for backwards compatibility with earlier callers
+ * and tests): the first candidate, or null when nothing is configured.
+ */
+export function resolveAiProvider(): AiProvider | null {
+  return resolveAiProviderCandidates()[0] ?? null;
 }
 
 /** T51: evidence renders into the system prompt with stable ids the model can cite. */
@@ -82,34 +96,66 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
 }
 
 export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promise<AiAnswer | null> {
-  const provider = resolveAiProvider();
-  if (!provider) return null; // unconfigured → caller surfaces 503 (T50)
+  const candidates = resolveAiProviderCandidates();
+  // Zero candidates → explicit unconfigured state; caller surfaces 503 (T50).
+  if (candidates.length === 0) return null;
 
   const evidence = args.evidence ?? [];
   const fullSystem = args.systemPrompt + evidenceBlock(evidence);
 
   const generatedAt = new Date().toISOString();
-  // Upstream failures PROPAGATE (recorded in provider health by
-  // withProviderHealth) so the caller can distinguish "unconfigured" (503)
-  // from "upstream broke" (502) — never a silently degraded pseudo-answer.
-  const text =
-    provider.kind === "openai"
-      ? await withProviderHealth(provider.id, () =>
-          callOpenAiCompatible(provider.baseUrl, provider.apiKey, provider.model, fullSystem, args.history, args.message, TIMEOUT_MS),
-        )
-      : await withProviderHealth(provider.id, () =>
-          callGemini(provider.apiKey, provider.model, fullSystem, args.history, args.message, TIMEOUT_MS),
-        );
+  // Phase 5.1: RUNTIME failover. Each candidate is attempted in order; a
+  // timeout, 5xx, throw, empty completion, or open circuit (ProviderCooldown-
+  // Error thrown by withProviderHealth) moves execution to the next candidate
+  // — it never aborts the chain. Only when EVERY candidate fails does the
+  // last upstream error propagate, so the caller can distinguish
+  // "unconfigured" (503) from "upstream broke" (502) — never a silently
+  // degraded pseudo-answer.
+  let text: string | null = null;
+  let used: AiProvider | null = null;
+  let lastError: unknown = null;
+  for (const provider of candidates) {
+    try {
+      const t =
+        provider.kind === "openai"
+          ? await withProviderHealth(provider.id, () =>
+              callOpenAiCompatible(provider.baseUrl, provider.apiKey, provider.model, fullSystem, args.history, args.message, TIMEOUT_MS),
+            )
+          : await withProviderHealth(provider.id, () =>
+              callGemini(provider.apiKey, provider.model, fullSystem, args.history, args.message, TIMEOUT_MS),
+            );
+      text = t;
+      used = provider;
+      break;
+    } catch (err) {
+      // Recorded in provider health by withProviderHealth; try the next
+      // candidate (if any) instead of failing the request.
+      lastError = err;
+    }
+  }
+  if (text === null || !used) {
+    throw lastError instanceof Error
+      ? lastError
+      : new Error(`ai upstream failure across ${candidates.length} provider(s)`);
+  }
+  const provider = used;
 
-  // T52: claims are only produced by a grounded pipeline; keep honest when
-  // unstructured (claims empty + explicit uncertainty note).
-  const grounded = evidence.length > 0;
+  // T52 — HONEST grounding state (Phase 5.1 wording): this implementation is
+  // evidence-CONTEXT injection. The provider output is unstructured, claims
+  // are NOT extracted, and citations are not machine-verified — so claims
+  // stays empty and `grounded` is false even when evidence context was
+  // supplied. The uncertainty note always discloses this instead of wiping
+  // it when evidence exists (the previous shape implied verified grounding
+  // that does not exist yet). Structured claims with stable evidence ids and
+  // fabricated-id rejection is the T51/T52 destination, not the current state.
   return {
     answer: text,
     claims: [],
-    uncertainties: grounded
-      ? []
-      : ["unstructured provider output — claims not extracted (no evidence pipeline context supplied)"],
+    uncertainties: [
+      evidence.length > 0
+        ? "evidence-context injection only — provider output was not parsed into claims; cited ids are not machine-verified (T51/T52 structured claims pending)"
+        : "unstructured provider output — claims not extracted (no evidence pipeline context supplied)",
+    ],
     provider: provider.id,
     model: provider.model,
     generatedAt,
@@ -124,7 +170,12 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       provider: answer.provider,
       model: answer.model,
       generatedAt: answer.generatedAt,
+      // Honest by construction: claims is empty in this implementation, so
+      // grounded is false. It becomes true only when the structured claims
+      // pipeline (T51/T52) actually ships — never derived from evidence
+      // presence.
       grounded: answer.claims.length > 0,
+      groundingMode: "evidence-context",
     },
   };
 }

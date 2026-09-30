@@ -1,6 +1,11 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { resolveAiProvider, generateEvidenceGroundedAnswer, toChatWire } from "@/lib/ai/router";
-import { resetProviderHealth } from "@/lib/registry/providerHealth";
+import {
+  resolveAiProvider,
+  resolveAiProviderCandidates,
+  generateEvidenceGroundedAnswer,
+  toChatWire,
+} from "@/lib/ai/router";
+import { resetProviderHealth, recordProviderResult } from "@/lib/registry/providerHealth";
 
 // T49–T52: provider abstraction, fail-closed resolution, provenance.
 
@@ -103,5 +108,137 @@ describe("generateEvidenceGroundedAnswer (T50–T52)", () => {
     const { providerHealthSnapshot } = await import("@/lib/registry/providerHealth");
     const snap = providerHealthSnapshot().find(p => p.id === "chat-api");
     expect(snap?.errors).toBe(1);
+  });
+});
+
+// ── Phase 5.1: RUNTIME failover chain (T50) ──────────────────────────────
+// Gemini must be a runtime failure fallback, not merely a configuration
+// fallback. These tests prove the three wire states + circuit behavior.
+describe("Phase 5.1 — runtime failover chain (T50)", () => {
+  beforeEach(() => {
+    process.env.CHAT_API_BASE_URL = "https://chat.example/v1";
+    process.env.CHAT_API_KEY = "k-chat";
+    process.env.GEMINI_API_KEY = "k-gemini";
+  });
+
+  it("chat-api succeeds → Gemini is never attempted", async () => {
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "primary" } }] }), { status: 200 }),
+    );
+    const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
+    expect(a?.provider).toBe("chat-api");
+    expect(a?.answer).toBe("primary");
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(String(spy.mock.calls[0]?.[0])).toContain("chat.example");
+    expect(String(spy.mock.calls[0]?.[0])).not.toContain("generativelanguage");
+  });
+
+  it("chat-api fails → Gemini ANSWERS (runtime failover, not config fallback)", async () => {
+    const spy = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response("primary exploded", { status: 500 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ candidates: [{ content: { parts: [{ text: "gemini rescued" }] } }] }),
+          { status: 200 },
+        ),
+      );
+    const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
+    expect(a?.provider).toBe("gemini");
+    expect(a?.answer).toBe("gemini rescued");
+    expect(spy).toHaveBeenCalledTimes(2);
+    expect(String(spy.mock.calls[1]?.[0])).toContain("generativelanguage.googleapis.com");
+    // both providers' outcomes are recorded in health
+    const { providerHealthSnapshot } = await import("@/lib/registry/providerHealth");
+    const snap = providerHealthSnapshot();
+    expect(snap.find(p => p.id === "chat-api")?.errors).toBe(1);
+    expect(snap.find(p => p.id === "gemini")?.lastSuccessAt).toBeTruthy();
+  });
+
+  it("chat-api times out and Gemini succeeds → failover still happens", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockImplementationOnce(() => new Promise((_resolve, reject) =>
+        setTimeout(() => reject(new Error("TimeoutError")), 5)))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ candidates: [{ content: { parts: [{ text: "late rescue" }] } }] }),
+          { status: 200 },
+        ),
+      );
+    const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
+    expect(a?.provider).toBe("gemini");
+    expect(a?.answer).toBe("late rescue");
+  });
+
+  it("both providers fail → the upstream error propagates (caller surfaces 502)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("everything is down", { status: 503 }));
+    await expect(
+      generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" }),
+    ).rejects.toThrow();
+  });
+
+  it("neither provider configured → null (caller surfaces 503, unconfigured)", async () => {
+    delete process.env.CHAT_API_BASE_URL;
+    delete process.env.CHAT_API_KEY;
+    delete process.env.GEMINI_API_KEY;
+    expect(resolveAiProviderCandidates()).toHaveLength(0);
+    expect(resolveAiProvider()).toBeNull();
+    await expect(
+      generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" }),
+    ).resolves.toBeNull();
+  });
+
+  it("chat-api circuit OPEN → Gemini is attempted and chat-api is never fetched", async () => {
+    // 3 consecutive failures open the chat-api circuit (60 s cooldown).
+    for (let i = 0; i < 3; i++) recordProviderResult("chat-api", false, 5, "forced failure");
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ candidates: [{ content: { parts: [{ text: "via gemini" }] } }] }),
+        { status: 200 },
+      ),
+    );
+    const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
+    expect(a?.provider).toBe("gemini");
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(String(spy.mock.calls[0]?.[0])).toContain("generativelanguage.googleapis.com");
+  });
+});
+
+// ── Phase 5.1: HONEST AI provenance (T52) ────────────────────────────────
+// Evidence context ≠ grounding. claims stays empty; grounded stays false;
+// uncertainties ALWAYS disclose that citations are not machine-verified.
+describe("Phase 5.1 — honest AI provenance (T52)", () => {
+  beforeEach(() => {
+    process.env.CHAT_API_BASE_URL = "https://chat.example/v1";
+    process.env.CHAT_API_KEY = "k-chat";
+    delete process.env.GEMINI_API_KEY;
+  });
+
+  it("with evidence context: grounded is false and uncertainties disclose the mode", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "answer" } }] }), { status: 200 }),
+    );
+    const a = await generateEvidenceGroundedAnswer({
+      systemPrompt: "p",
+      history: [],
+      message: "m",
+      evidence: [{ id: "seed:TCS:pe", text: "TCS PE 25.1" }],
+    });
+    expect(a?.claims).toEqual([]);
+    expect(a?.uncertainties.length).toBeGreaterThan(0);
+    expect(a?.uncertainties[0]).toContain("evidence-context");
+    expect(a?.uncertainties[0]).toContain("not machine-verified");
+
+    const wire = toChatWire(a!);
+    expect(wire.provenance.grounded).toBe(false);
+    expect(wire.provenance.groundingMode).toBe("evidence-context");
+  });
+
+  it("without evidence: the uncertainty note names the missing pipeline", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "answer" } }] }), { status: 200 }),
+    );
+    const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
+    expect(a?.uncertainties[0]).toContain("no evidence pipeline context supplied");
+    expect(toChatWire(a!).provenance.grounded).toBe(false);
   });
 });

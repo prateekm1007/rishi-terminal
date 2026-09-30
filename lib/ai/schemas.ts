@@ -38,6 +38,12 @@ export interface AiEvidenceItem {
  * Wire format returned by /api/chat — backwards compatible: the UI reads
  * `text`; `provenance` is additive (T50: never pretend the same model was
  * used — the actual provider/model ride along).
+ *
+ * Phase 5.1 (T52 honesty): `grounded` is true ONLY when the response carries
+ * structured, machine-verified claims — which the current implementation
+ * never produces (evidence-CONTEXT injection only). `groundingMode` names
+ * the actual mode so clients/audits never mistake context injection for
+ * verified grounding.
  */
 export const ChatWireSchema = z.object({
   text: z.string(),
@@ -45,7 +51,8 @@ export const ChatWireSchema = z.object({
     provider: z.string(),
     model: z.string(),
     generatedAt: z.string(),
-    grounded: z.boolean(), // true when evidence context was supplied
+    grounded: z.boolean(), // true only with structured, verified claims (T51/T52 destination)
+    groundingMode: z.enum(["evidence-context", "structured-claims"]).default("evidence-context"),
   }),
 });
 

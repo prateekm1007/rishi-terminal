@@ -2,20 +2,40 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Stock } from '../../lib/types';
+import { presentationState, statusLabel, statusColor, type PresentationState } from '../../lib/pricePresentation';
+
+interface LiveEntry {
+  price?: number;
+  change?: number;
+  changePercent24h?: number;
+  source?: string;
+  status?: string;
+}
 
 interface LivePriceWidgetProps {
   stock: Stock;
 }
 
+/**
+ * Phase 5.1 (T47/T57 correction): the seed price is NEVER rendered as a
+ * live quote. Until the canonical API supplies an observation the tile
+ * shows "—"; the status label derives from the server's provenance status
+ * (LIVE/CACHED/DERIVED/STATIC/UNAVAILABLE, with Yahoo-transported quotes
+ * labelled DELAYED). The previous behavior — seed price on screen with a
+ * pulsing "LIVE" badge even when the API returned UNAVAILABLE — was a
+ * provenance violation and is removed.
+ */
 export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
-  const [displayPrice, setDisplayPrice]     = useState<number>(stock.price);
-  const [changePercent, setChangePercent]   = useState<number>((stock as any).metadata?.change || 0);
-  const [changeAbs, setChangeAbs]           = useState<number>(0);
-  const [loading, setLoading]               = useState(true);
-  const [lastUpdated, setLastUpdated]       = useState<Date | null>(null);
-  const [flashGreen, setFlashGreen]         = useState(false);
-  const [flashRed, setFlashRed]             = useState(false);
-  const prevPriceRef                        = useRef<number>(stock.price);
+  const [displayPrice, setDisplayPrice]       = useState<number | null>(null);
+  const [changePercent, setChangePercent]     = useState<number | null>(null);
+  const [changeAbs, setChangeAbs]             = useState<number | null>(null);
+  const [state, setState]                     = useState<PresentationState>('loading');
+  const [source, setSource]                   = useState<string | undefined>(undefined);
+  const [loading, setLoading]                 = useState(true);
+  const [lastUpdated, setLastUpdated]         = useState<Date | null>(null);
+  const [flashGreen, setFlashGreen]           = useState(false);
+  const [flashRed, setFlashRed]               = useState(false);
+  const prevPriceRef                          = useRef<number | null>(null);
 
   const fetchPrice = async () => {
     try {
@@ -26,31 +46,44 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
       });
       if (!res.ok) throw new Error('API error');
       const data = await res.json();
-      const entry = data[stock.symbol];
-      if (!entry || typeof entry.price !== 'number') return;
-
-      const newPrice  = entry.price;
-      const prevPrice = prevPriceRef.current;
-
-      // Flash animation on price change
-      if (newPrice > prevPrice) {
-        setFlashGreen(true);
-        setTimeout(() => setFlashGreen(false), 600);
-      } else if (newPrice < prevPrice) {
-        setFlashRed(true);
-        setTimeout(() => setFlashRed(false), 600);
+      const entry = data?.[stock.symbol] as LiveEntry | undefined;
+      if (!entry) {
+        setState('unavailable');
+        return;
       }
 
-      prevPriceRef.current = newPrice;
-      setDisplayPrice(newPrice);
-      setChangePercent(
-        typeof entry.changePercent24h === 'number' ? entry.changePercent24h :
-        typeof entry.change           === 'number' ? entry.change           : 0
-      );
-      setChangeAbs(newPrice - stock.price);
-      setLastUpdated(new Date());
+      const next = presentationState(entry);
+      setSource(entry.source);
+      setState(next);
+
+      // Only a usable observation updates the displayed number. UNAVAILABLE
+      // responses leave the previous observation on screen but relabel it —
+      // they never fabricate a price and never show the seed value.
+      if (typeof entry.price === 'number' && Number.isFinite(entry.price) && entry.price > 0) {
+        const newPrice  = entry.price;
+        const prevPrice = prevPriceRef.current;
+
+        // Flash animation on price change
+        if (prevPrice !== null && newPrice > prevPrice) {
+          setFlashGreen(true);
+          setTimeout(() => setFlashGreen(false), 600);
+        } else if (prevPrice !== null && newPrice < prevPrice) {
+          setFlashRed(true);
+          setTimeout(() => setFlashRed(false), 600);
+        }
+
+        prevPriceRef.current = newPrice;
+        setDisplayPrice(newPrice);
+        setChangePercent(
+          typeof entry.changePercent24h === 'number' ? entry.changePercent24h :
+          typeof entry.change           === 'number' ? entry.change           : 0
+        );
+        setChangeAbs(newPrice - stock.price);
+        setLastUpdated(new Date());
+      }
     } catch (err) {
       console.error('[LivePriceWidget] fetch error:', err);
+      setState('unavailable');
     } finally {
       setLoading(false);
     }
@@ -62,7 +95,8 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
     return () => clearInterval(interval);
   }, [stock.symbol]);
 
-  const isPositive = changePercent >= 0;
+  const isPositive = (changePercent ?? 0) >= 0;
+  const hasPrice = displayPrice !== null;
 
   const flashBg = flashGreen
     ? 'rgba(0,186,124,0.15)'
@@ -82,7 +116,7 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
       {/* Label row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <span style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2 }}>
-          LIVE PRICE
+          PRICE
         </span>
         {loading ? (
           <span style={{ fontSize: 9, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
@@ -92,25 +126,27 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
           <span style={{
             fontSize:   9,
             fontFamily: 'monospace',
-            color:      'var(--accent-green)',
+            color:      statusColor(state) === '#64748B' ? 'var(--text-muted)' : statusColor(state),
             display:    'flex',
             alignItems: 'center',
             gap:        4,
           }}>
-            <span style={{
-              width:        6,
-              height:       6,
-              borderRadius: '50%',
-              background:   'var(--accent-green)',
-              display:      'inline-block',
-              animation:    'pulse 2s infinite',
-            }} />
-            LIVE
+            {state === 'live' && (
+              <span style={{
+                width:        6,
+                height:       6,
+                borderRadius: '50%',
+                background:   statusColor(state),
+                display:      'inline-block',
+                animation:    'pulse 2s infinite',
+              }} />
+            )}
+            {statusLabel(state, source)}
           </span>
         )}
       </div>
 
-      {/* Main price */}
+      {/* Main price — "—" until a real server observation exists (T57) */}
       <div style={{
         fontSize:    36,
         fontFamily:  'monospace',
@@ -120,10 +156,12 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
         marginBottom: 8,
         letterSpacing: -1,
       }}>
-        {displayPrice.toLocaleString('en-IN', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
+        {hasPrice
+          ? displayPrice.toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          : '—'}
       </div>
 
       {/* Change row */}
@@ -132,16 +170,16 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
           fontSize:   13,
           fontFamily: 'monospace',
           fontWeight: 700,
-          color:      isPositive ? 'var(--accent-green)' : 'var(--accent-red)',
+          color:      hasPrice ? (isPositive ? 'var(--accent-green)' : 'var(--accent-red)') : 'var(--text-muted)',
         }}>
-          {isPositive ? '▲' : '▼'} {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
+          {hasPrice ? `${isPositive ? '▲' : '▼'} ${isPositive ? '+' : ''}${(changePercent ?? 0).toFixed(2)}%` : '—'}
         </span>
         <span style={{
           fontSize:   11,
           fontFamily: 'monospace',
           color:      'var(--text-muted)',
         }}>
-          ({isPositive ? '+' : ''}{changeAbs.toFixed(2)})
+          {hasPrice ? `(${isPositive ? '+' : ''}${(changeAbs ?? 0).toFixed(2)})` : '—'}
         </span>
       </div>
 
@@ -152,8 +190,8 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
         </div>
       )}
 
-      {/* 52W range bar */}
-      {(stock as any).metadata?.high52w && (stock as any).metadata?.low52w && (
+      {/* 52W range bar — only meaningful once a server observation exists */}
+      {displayPrice !== null && (stock as any).metadata?.high52w && (stock as any).metadata?.low52w && (
         <div style={{ marginTop: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4 }}>
             <span>52W LOW {(stock as any).metadata?.low52w.toLocaleString('en-IN')}</span>

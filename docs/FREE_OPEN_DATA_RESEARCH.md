@@ -168,3 +168,20 @@ must not enter production routing (T55).
 - **Requires project-owned credential before any adoption:** FRED_API_KEY,
   TWELVEDATA_API_KEY, ALPHAVANTAGE_API_KEY, HF token — all deployment secrets,
   server-side, never committed, never NEXT_PUBLIC_ (T42)
+
+## 4. Phase 6 addendum (2026-10-01) — storage rights decided
+The research above is retained verbatim as the evidence base. Phase 6 added
+an explicit **storage-rights layer** on top of the access decisions (full
+policy: `docs/DATA_PROVIDER_MATRIX.md` "Phase 6 storage policy"):
+
+- **Storage entitled (may persist observed values with attribution):**
+  fred-csv, exchangerate-api, ecb-fx.
+- **Storage NOT entitled (may display an observation, never persist it):**
+  NSE, BSE, Yahoo, CoinGecko (terms unverified beyond attribution), screener
+  (frozen), yahoo-etf-proxy (derived).
+- Enforcement is code, not convention: `PERSISTABLE_SOURCES` in
+  `lib/livePrice.ts` gates the T62 persistent cache and the T61 nightly
+  observation capture (migration 009). Anything outside the allow-list
+  resolves to honest UNAVAILABLE during outages.
+- No claim of "100% free" is made anywhere; every restriction recorded in
+  the sections above remains binding.

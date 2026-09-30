@@ -4,6 +4,9 @@ import {
   coalesce,
   recordProviderResult,
   providerHealthSnapshot,
+  providerReuseStats,
+  putCachedResult,
+  getCachedResult,
   resetProviderHealth,
   ProviderCooldownError,
 } from "@/lib/registry/providerHealth";
@@ -107,5 +110,51 @@ describe("providerHealthSnapshot (T58 shape)", () => {
     expect(snap?.lastError).toBe("boom");
     expect(snap?.currentStatus).toBe("HEALTHY");
     expect(snap?.avgLatencyMs).toBeGreaterThan(0);
+  });
+});
+
+describe("T59 windowed request volume", () => {
+  it("counts upstream attempts per provider (total/today/currentMinute)", async () => {
+    await withProviderHealth("vol-1", async () => 1);
+    await withProviderHealth("vol-1", async () => 2);
+    try {
+      await withProviderHealth("vol-1", async () => { throw new Error("x"); });
+    } catch { /* accounted */ }
+    const snap = providerHealthSnapshot().find(p => p.id === "vol-1");
+    expect(snap?.volume).toBeDefined();
+    expect(snap?.volume?.total).toBe(3);
+    expect(snap?.volume?.today).toBe(3);
+    expect(snap?.volume?.currentMinute).toBe(3);
+  });
+
+  it("keeps per-provider buckets separate", async () => {
+    await withProviderHealth("vol-a", async () => 1);
+    await withProviderHealth("vol-b", async () => 1);
+    const a = providerHealthSnapshot().find(p => p.id === "vol-a");
+    const b = providerHealthSnapshot().find(p => p.id === "vol-b");
+    expect(a?.volume?.total).toBe(1);
+    expect(b?.volume?.total).toBe(1);
+  });
+});
+
+describe("T60 coalesce-hit + reuse accounting", () => {
+  it("counts a coalesce hit when a concurrent identical request joins", async () => {
+    const before = providerReuseStats().coalesceHits;
+    const fn = async () => {
+      await new Promise(r => setTimeout(r, 10));
+      return "x";
+    };
+    await Promise.all([coalesce("volkey:1", fn), coalesce("volkey:1", fn)]);
+    expect(providerReuseStats().coalesceHits).toBe(before + 1);
+  });
+
+  it("result-reuse store: hit within TTL, miss after expiry", async () => {
+    putCachedResult("k:1", { price: 42 });
+    expect(getCachedResult<{ price: number }>("k:1", 60_000)?.price).toBe(42);
+    expect(providerReuseStats().cacheHits).toBe(1);
+    // Expired entry is dropped and returns null.
+    putCachedResult("k:2", { price: 7 });
+    expect(getCachedResult<{ price: number }>("k:2", -1)).toBeNull();
+    expect(getCachedResult<{ price: number }>("k:2", 60_000)).toBeNull();
   });
 });

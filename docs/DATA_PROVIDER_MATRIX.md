@@ -1,6 +1,6 @@
-# Data Provider Matrix — T64 Final Report (Phase 5)
+# Data Provider Matrix — T64 Final Report (Phases 5 + 6)
 
-**Date:** 2026-09-30 · Companion detail: `docs/FREE_OPEN_DATA_RESEARCH.md`
+**Date:** 2026-09-30 (Phase 5) · 2026-10-01 (Phase 6 addendum) · Companion detail: `docs/FREE_OPEN_DATA_RESEARCH.md`
 
 ## What was researched
 Existing stack (T37): NSE, BSE, Yahoo, Screener.in, CoinGecko, ExchangeRate-API,
@@ -67,3 +67,78 @@ two surfaces (Screener-derived fundamentals; bulk redistribution generally)
 explicitly gated on founder/vendor decisions. Synthetic numbers remain
 prohibited: unavailable data renders as unavailable (T57), and the seed
 placeholder can no longer leak through the live-price API.
+
+---
+
+# Phase 6 addendum (T59–T64)
+
+## T59 — Measure first (request-volume accounting)
+`providerHealth` now keeps windowed per-provider volume counters
+(total / UTC-day / current minute) beside the health stats, plus two
+dedup counters exposed at `/api/admin/providers` (CRON_SECRET only):
+`reuse.coalesceHits` (concurrent requests that shared one upstream call)
+and `reuse.cacheHits` (sequential replays served from the 30 s snapshot
+store). Live probes recorded in Phase 5 stand: Yahoo ~95 ms, er-api
+30–43 ms, screener ~970 ms, CoinGecko 429-prone shared pool, FRED/NSE/BSE
+sandbox-blocked but production-verified. Caveat recorded honestly: counters
+are per-serverless-instance; platform-wide totals need Vercel analytics
+(founder decision, out of code scope).
+
+**Verdict unchanged: no provider replacement is warranted.** Both Phase 5
+incidents were parsing defects (NSE schema drift, Yahoo meta drift), fixed
+in place with regression tests — swapping sources would not have prevented
+either.
+
+## T60 — Snapshot reuse (one observation serves many widgets)
+`fetchLivePrice` now consults a 30 s result-snapshot store (aligned with the
+route's `s-maxage=30` CDN layer) BEFORE the provider chain: a hit replays
+the stored point as **CACHED** with the ORIGINAL `observedAt` as
+`lastUpdated` — the serve time is never presented as the observation time.
+STATIC/DERIVED semantics survive the replay (a static reference replayed is
+still STATIC, never relabelled). Coalescing (T46) covers concurrent callers;
+the snapshot store covers sequential ones. Every replay is counted
+(`cacheHits`), so the admin endpoint shows real upstream savings, not
+estimates.
+
+## T62 — Cache hierarchy + persistent layer (storage rights enforced)
+Full chain now: **Provider → DB (`provider_cache`) → server (snapshot store
++ coalescing) → CDN (`s-maxage=30`) → client (display only — the client is
+never a source of truth)**.
+
+DB persistence is gated by an explicit allow-list (`PERSISTABLE_SOURCES` in
+`lib/livePrice.ts`) — only providers whose terms permit storing observed
+values:
+
+| Source | Storage basis (evidence) | TTL | Served as |
+|---|---|---|---|
+| `fred-csv` | FRED data terms — attribution "FRED, Federal Reserve Bank of St. Louis" | 7 d (daily series) | CACHED + original observedAt |
+| `exchangerate-api` | Free tier permits app use with attribution (research §2.6) | 24 h | CACHED + original observedAt |
+| `ecb-fx` | ECB reuse policy — attribution "European Central Bank" (research §2.9) | 24 h | CACHED + original observedAt |
+
+NSE, BSE, Yahoo, CoinGecko, screener, `yahoo-etf-proxy` are **never**
+persisted (scraped / terms-unverified). The layer is used two ways: a
+throttled write-through on successful observations (≤1 write/key/minute),
+and a last-known fallback consulted ONLY after the entire live chain fails —
+an outage on a non-entitled source still resolves to honest UNAVAILABLE.
+The cache layer cannot take a quote path down: every operation swallows
+errors and the read path is bounded at 1.5 s.
+
+## T61 — Historical persistence (our own observations)
+Migration `009_phase6_provider_cache.sql` adds `observed_prices`
+(symbol + observed_date PK, source-attributed). The nightly snapshot cron
+now also captures the reference set (FRED yield curve + FX pairs =
+`REFERENCE_SYMBOLS`) into it — but only rows whose winning source passes the
+storage-rights gate; everything else is skipped, never fabricated. Equity
+closes from scraped sources are deliberately NOT persisted; the existing
+consensus snapshot (`rishi_snapshots`) keeps its prior scope pending founder
+licensing decisions (FD-1).
+
+## Honest gaps (updated)
+- Volume counters are per-instance; platform totals need founder-enabled
+  Vercel analytics or a shared store.
+- No persistable entitlement for crypto or IN-equity quotes: an outage on
+  those surfaces shows UNAVAILABLE (by design, not a defect).
+- Realtime tradable IN ticks, point-in-time fundamentals, and commercial
+  display licensing remain gated on founder/vendor decisions (FD-1).
+- CoinGecko/Alpha Vantage/Twelve Data commercial terms remain unverified
+  (JS-shell terms pages) — RESEARCH_ONLY stands.

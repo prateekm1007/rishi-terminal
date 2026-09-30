@@ -6,8 +6,11 @@
 // Bonds: Static yields
 
 // Phase 5 T45/T46: provider health accounting + request coalescing.
-import { withProviderHealth, coalesce } from './registry/providerHealth';
+// Phase 6 T60/T62: result-snapshot reuse + DB persistent cache (storage-
+// entitled sources only) + honest observation timestamps.
+import { withProviderHealth, coalesce, getCachedResult, putCachedResult } from './registry/providerHealth';
 import { PROVIDER_IDS } from './registry/providerRegistry';
+import { persistentCacheGet, persistentCacheSet } from './cache/persistentCache';
 
 // =============================================================================
 // NSE INDIA API — Stocks + MCX Commodities
@@ -644,11 +647,11 @@ async function fetchFREDYield(fredSeries: string): Promise<number | null> {
   }
 }
 
-async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE" } | null> {
+async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
-    return { price: cached.yield, change: cached.change, source: "fred-csv", status: "CACHED" };
+    return { price: cached.yield, change: cached.change, source: "fred-csv", status: "CACHED", observedAt: new Date(cached.fetchedAt).toISOString() };
   }
 
   const fredSeries = FRED_SERIES[symbol];
@@ -689,11 +692,11 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
   return null;
 }
 
-async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE" } | null> {
+async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
-    return { price: cached.yield, change: cached.change, source: "yahoo-etf-proxy", status: "CACHED" };
+    return { price: cached.yield, change: cached.change, source: "yahoo-etf-proxy", status: "CACHED", observedAt: new Date(cached.fetchedAt).toISOString() };
   }
 
   // Try Yahoo Finance ETF proxy to detect directional change
@@ -756,7 +759,37 @@ export interface PricePoint {
   change: number;
   source: string;
   status?: PriceStatus;
+  /** Phase 6: ISO time of the ORIGINAL upstream observation (never the
+   *  serve time — a CACHED replay keeps the observation timestamp). */
+  observedAt?: string;
 }
+
+// Phase 6 T62: storage-entitled sources + reference symbol set.
+// Persist ONLY providers whose terms permit storing observed values
+// (evidence: docs/FREE_OPEN_DATA_RESEARCH.md §2.6/§2.7/§2.9 and
+// docs/DATA_PROVIDER_MATRIX.md "Phase 6 storage policy"). Scraped or
+// terms-unverified sources (NSE, BSE, Yahoo, CoinGecko, screener,
+// yahoo-etf-proxy) stay out — an outage on those yields honest
+// UNAVAILABLE, never a stored copy.
+const PERSISTABLE_SOURCES: ReadonlySet<string> = new Set([
+  "fred-csv",         // FRED data terms: attribution "FRED, Federal Reserve Bank of St. Louis"
+  "exchangerate-api", // free tier permits app use with attribution
+  "ecb-fx",           // ECB reuse policy: attribution "European Central Bank"
+]);
+
+export function isPersistableSource(source: string | undefined): boolean {
+  return !!source && PERSISTABLE_SOURCES.has(source);
+}
+
+/**
+ * T61: symbols whose observations are eligible for nightly persistence
+ * under the storage-rights gate — FRED yield curve + FX reference pairs.
+ * India G-Sec (yahoo-etf-proxy, DERIVED) and equity quotes are
+ * deliberately excluded: no storage rights.
+ */
+export const REFERENCE_SYMBOLS: string[] = [
+  ...new Set([...Object.keys(FRED_SERIES), ...Object.keys(YAHOO_FOREX_SYMBOLS)]),
+];
 
 /**
  * Run one provider in a fallback chain with health accounting (T45).
@@ -768,12 +801,13 @@ export interface PricePoint {
  */
 async function attempt(
   id: string,
-  fn: () => Promise<{ price: number; change: number; source?: string; status?: PriceStatus } | null>,
+  fn: () => Promise<{ price: number; change: number; source?: string; status?: PriceStatus; observedAt?: string } | null>,
 ): Promise<PricePoint | null> {
   try {
     const r = await withProviderHealth(id, fn);
     if (!r) return null;
-    return { status: "LIVE", ...r, source: r.source ?? id } as PricePoint;
+    const observedAt = r.observedAt ?? new Date().toISOString();
+    return { status: "LIVE", ...r, source: r.source ?? id, observedAt } as PricePoint;
   } catch {
     // Cooldown, timeout, network, parse — recorded in health; fall through.
     return null;
@@ -838,18 +872,86 @@ async function fetchLivePriceInner(
   );
 }
 
+// ── Phase 6 T62: persistent-cache write-through + last-known fallback ───
+const SNAPSHOT_REUSE_MS = 30_000;   // T60 result-reuse window (matches CDN s-maxage)
+const PERSIST_WRITE_THROTTLE_MS = 60_000; // max one DB write per key per minute
+const PERSIST_TTL_MS = 24 * 60 * 60 * 1000;        // quote-class storage TTL
+const PERSIST_TTL_BOND_MS = 7 * 24 * 60 * 60 * 1000; // daily-series class
+const PERSIST_MAX_AGE_QUOTE_MS = PERSIST_TTL_MS;
+const PERSIST_MAX_AGE_BOND_MS = PERSIST_TTL_BOND_MS;
+
+const lastPersistAt: Record<string, number> = {};
+
+/** Write-through, storage-entitled only, throttled, never throws. */
+async function persistIfEntitled(key: string, symbol: string, point: PricePoint): Promise<void> {
+  if (!isPersistableSource(point.source)) return;
+  const now = Date.now();
+  if (now - (lastPersistAt[key] ?? 0) < PERSIST_WRITE_THROTTLE_MS) return;
+  lastPersistAt[key] = now;
+  const ttl = isBondSymbol(symbol) ? PERSIST_TTL_BOND_MS : PERSIST_TTL_MS;
+  await persistentCacheSet(
+    key,
+    point.source,
+    { price: point.price, change: point.change },
+    ttl,
+    point.observedAt ?? new Date().toISOString(),
+  );
+}
+
+/**
+ * T62 fallback: total upstream failure -> serve the last legitimately
+ * persisted observation (storage-entitled sources only) as CACHED with its
+ * original observedAt; else null so callers report honest UNAVAILABLE.
+ */
+async function lastKnownObservation(symbol: string): Promise<(PricePoint & { lastUpdated: string }) | null> {
+  const persisted = await persistentCacheGet<{ price: number; change: number }>(`quote:${symbol}`);
+  if (!persisted) return null;
+  const maxAge = isBondSymbol(symbol) ? PERSIST_MAX_AGE_BOND_MS : PERSIST_MAX_AGE_QUOTE_MS;
+  const observedMs = Date.parse(persisted.observedAt);
+  if (!Number.isFinite(observedMs) || Date.now() - observedMs > maxAge) return null;
+  const payload = persisted.payload;
+  if (!payload || !Number.isFinite(payload.price) || payload.price <= 0) return null;
+  return {
+    price: payload.price,
+    change: Number.isFinite(payload.change) ? payload.change : 0,
+    source: persisted.providerId,
+    status: "CACHED",
+    observedAt: persisted.observedAt,
+    lastUpdated: persisted.observedAt,
+  };
+}
+
 export async function fetchLivePrice(
   symbol: string
 ): Promise<(PricePoint & { lastUpdated: string }) | null> {
   symbol = STOCK_ALIASES[symbol] ?? symbol;
 
+  // T60: reuse a recent snapshot — one observation serves sequential widget
+  // polls within the reuse window. The replay is honestly labelled CACHED
+  // and keeps the ORIGINAL observation timestamp as lastUpdated.
+  const reused = getCachedResult<PricePoint>(`quote:${symbol}`, SNAPSHOT_REUSE_MS);
+  if (reused && Number.isFinite(reused.price) && reused.price > 0) {
+    // A LIVE observation replayed from the reuse store becomes CACHED;
+    // STATIC/DERIVED semantics are intrinsic and must survive the replay.
+    const replayStatus: PriceStatus =
+      reused.status && reused.status !== "LIVE" ? reused.status : "CACHED";
+    return { ...reused, status: replayStatus, lastUpdated: reused.observedAt ?? new Date().toISOString() };
+  }
+
   // T46: concurrent identical requests share one upstream pass.
   const result = await coalesce(`liveprice:${symbol}`, () => fetchLivePriceInner(symbol));
 
   // T57: the fallback is UNAVAILABLE — never a seed placeholder, never
-  // zeros dressed up as a quote. Callers (API routes) report honest
-  // unavailability to the UI.
-  if (!result || !Number.isFinite(result.price) || result.price <= 0) return null;
+  // zeros dressed up as a quote. T62 refines it: before reporting
+  // unavailability, try the last legitimately persisted observation.
+  if (!result || !Number.isFinite(result.price) || result.price <= 0) {
+    return await lastKnownObservation(symbol);
+  }
 
-  return { ...result, lastUpdated: new Date().toISOString() };
+  putCachedResult(`quote:${symbol}`, result);
+  // T62 write-through (throttled; awaited so a serverless freeze cannot
+  // silently drop the write; bounded by the cache layer's 1.5 s budget).
+  await persistIfEntitled(`quote:${symbol}`, symbol, result);
+
+  return { ...result, lastUpdated: result.observedAt ?? new Date().toISOString() };
 }

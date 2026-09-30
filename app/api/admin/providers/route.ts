@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCronAuth } from '@/lib/auth/cron';
-import { providerHealthSnapshot } from '@/lib/registry/providerHealth';
+import {
+  providerHealthSnapshot,
+  providerReuseStats,
+} from '@/lib/registry/providerHealth';
 import { PROVIDER_REGISTRY, isProviderApproved } from '@/lib/registry/providerRegistry';
 
 export const runtime = 'nodejs';
@@ -10,8 +13,11 @@ export const dynamic = 'force-dynamic';
  * T58 — source health report (internal/admin only; CRON_SECRET-protected).
  *
  * Shows, per provider: registry status, observed success rate, latency,
- * last success/failure, and current circuit state. Provider internals stay
- * out of regular user surfaces by design.
+ * last success/failure, current circuit state, and Phase 6 T59 windowed
+ * request volume. Also reports T60 dedup/reuse counters (coalesce hits =
+ * concurrent requests that shared one upstream call; cache hits = snapshot
+ * replays served without an upstream call). Provider internals stay out of
+ * regular user surfaces by design.
  */
 export async function GET(req: NextRequest) {
   const denied = requireCronAuth(req);
@@ -32,6 +38,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(
     {
       generatedAt: new Date().toISOString(),
+      reuse: providerReuseStats(),
       providers: registry.map(r => {
         const o = byId.get(r.id);
         return {
@@ -46,6 +53,7 @@ export async function GET(req: NextRequest) {
                 lastFailureAt: o.lastFailureAt,
                 lastError: o.lastError,
                 currentStatus: o.currentStatus,
+                volume: o.volume ?? null,
               }
             : null,
         };

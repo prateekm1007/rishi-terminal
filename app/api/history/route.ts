@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { YAHOO_SPECIAL } from "@/lib/livePrice";
+import { normalizeSymbolInput } from "@/lib/registry/validateInput";
 
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
@@ -50,76 +52,6 @@ const COINGECKO_IDS: Record<string, string> = {
   SAND:  "the-sandbox",
   MANA:  "decentraland",
   CRO:   "crypto-com-chain",
-};
-
-const YAHOO_SPECIAL: Record<string, string> = {
-  BGV01: 'BSLIMITED.NS',
-  // Indexes
-  NIFTY50:    "^NSEI",
-  SENSEX:     "^BSESN",
-  BANK_NIFTY: "^NSEBANK",
-  NIFTYBANK:  "^NSEBANK",
-  NIFTYIT:    "^CNXIT",
-  NIFTYFMCG:  "^CNXFMCG",
-  NIFTYMETAL: "^CNXMETAL",
-  NIFTYAUTO:  "^CNXAUTO",
-  SPX:        "^GSPC",
-  DJI:        "^DJI",
-  IXIC:       "^IXIC",
-  FTSE:       "^FTSE",
-  DAX:        "^GDAXI",
-  N225:       "^N225",
-  HSI:        "^HSI",
-  VIX:        "^VIX",
-  INDIAVIX:   "^INDIAVIX",
-
-  // Precious Metals
-  GOLD:       "GC=F",
-  SILVER:     "SI=F",
-  PLATINUM:   "PL=F",
-  PALLADIUM:  "PA=F",
-  COPPER:     "HG=F",
-
-  // Energy
-  WTI:        "CL=F",
-  BRENT:      "BZ=F",
-  NATGAS:     "NG=F",
-  NATURALGAS: "NG=F",
-
-  // Agriculture
-  WHEAT:      "ZW=F",
-  CORN:       "ZC=F",
-  SOYBEANS:   "ZS=F",
-  COFFEE:     "KC=F",
-  SUGAR:      "SB=F",
-  COTTON:     "CT=F",
-  COCOA:      "CC=F",
-  LUMBER:     "LBS=F",
-  CATTLE:     "LE=F",
-
-  // Industrial Metals
-  ALUMINUM:   "ALI=F",
-
-  // US Treasuries (ETF proxies for yield charts)
-  US2Y:       "SHY",
-  US5Y:       "IEF",
-  US10Y:      "IEF",
-  US30Y:      "TLT",
-  US3MTB:     "BIL",
-
-  // India bonds - ETF proxy (closest available)
-  IN6YS:          "0P0001JM69.BO",
-  IN10YS:         "0P0001JM69.BO",
-  IN15YS:         "0P0001JM69.BO",
-  IN2YS:          "0P0001JM69.BO",
-  IN91DTB:        "0P0001JM69.BO",
-  IN182DTB:       "0P0001JM69.BO",
-  MAHARASHTRA_SDL: "0P0001JM69.BO",
-  KARNATAKA_SDL:   "0P0001JM69.BO",
-  TAMIL_NADU_SDL:  "0P0001JM69.BO",
-  RELIANCE_CORP:   "RELIANCE.NS",
-  HDFC_CORP:       "HDFCBANK.NS",
-  INFOSYS_CORP:    "INFY.NS",
 };
 
 function parseTf(input: string | null): Timeframe {
@@ -200,8 +132,15 @@ async function fetchCoinGeckoSeries(symbol: string, tf: Timeframe) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const symbol = (searchParams.get("symbol") || "").trim();
+    const symbolRaw = (searchParams.get("symbol") || "").trim();
     const tf = parseTf(searchParams.get("tf"));
+
+    // R5: registry/allow-list gate — this route forwards the symbol to
+    // Yahoo; arbitrary strings are rejected before any upstream call.
+    const symbol = normalizeSymbolInput(symbolRaw);
+    if (!symbol) {
+      return NextResponse.json({ error: `Unknown symbol: ${symbolRaw.slice(0, 20)}` }, { status: 400 });
+    }
 
     if (!symbol) {
       return NextResponse.json({ error: "Missing symbol" }, { status: 400 });

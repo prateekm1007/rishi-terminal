@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { computeIndicators } from "@/lib/technical";
 import { yahooChartSchema } from "@/lib/validation/schemas";
+import { normalizeSymbolInput } from "@/lib/registry/validateInput";
 
 function cleanNumArray(arr: unknown): number[] {
   if (!Array.isArray(arr)) return [];
@@ -13,6 +14,12 @@ export async function GET(req: NextRequest) {
   const symbolRaw = (searchParams.get("symbol") ?? "").trim();
   if (!symbolRaw) {
     return NextResponse.json({ error: "Missing symbol" }, { status: 400 });
+  }
+
+  // R5: registry/allow-list gate — arbitrary symbols never reach Yahoo.
+  const symbol = normalizeSymbolInput(symbolRaw);
+  if (!symbol) {
+    return NextResponse.json({ error: `Unknown symbol: ${symbolRaw.slice(0, 20)}` }, { status: 400 });
   }
 
   // Default mapping for Indian equities
@@ -61,7 +68,7 @@ export async function GET(req: NextRequest) {
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, max-age=60",
+          "Cache-Control": "public, max-age=60, s-maxage=60",
         },
       }
     );

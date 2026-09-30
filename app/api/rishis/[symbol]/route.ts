@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { STOCKS } from '@/data/stocks';
-import { resolveTickerSymbol } from '@/lib/registry/tickerRegistry';
+import { normalizeSymbolInput } from '@/lib/registry/validateInput'; // R5: unified input gate (registry + aliases)
 import { getStockScore } from '@/lib/scoring';
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { TIER_CONFIG } from '@/lib/premium';
@@ -31,7 +31,10 @@ export async function GET(
     );
   }
 
-  const key = resolveTickerSymbol(symbol.trim().toUpperCase()) ?? symbol.trim().toUpperCase();
+  const key = normalizeSymbolInput(symbol);
+  if (!key) {
+    return NextResponse.json({ error: 'Unknown symbol' }, { status: 404 });
+  }
   const stock = STOCKS[key];
   if (!stock) {
     return NextResponse.json({ error: 'Unknown symbol' }, { status: 404 });

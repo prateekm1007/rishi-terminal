@@ -22,14 +22,14 @@ function setCache(symbol: string, data: unknown) {
   cache.set(symbol, { data, cachedAt: Date.now() });
 }
 
-import { isKnownSymbol } from '@/lib/security';
+import { normalizeSymbolInput } from '@/lib/registry/validateInput'; // R5: unified input gate
 
 export async function GET(req: NextRequest) {
   const symbol = req.nextUrl.searchParams.get("symbol")?.toUpperCase();
   const type = req.nextUrl.searchParams.get("type") || "fundamentals";
 
   if (!symbol) return NextResponse.json({ error: "symbol required" }, { status: 400 });
-  if (!isKnownSymbol(symbol)) return NextResponse.json({ error: "unknown symbol" }, { status: 400 });
+  if (normalizeSymbolInput(symbol) === null) return NextResponse.json({ error: "unknown symbol" }, { status: 400 });
 
   const cacheKey = `${symbol}:${type}`;
   const cached = getCached(cacheKey);

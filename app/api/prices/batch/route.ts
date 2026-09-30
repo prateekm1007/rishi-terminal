@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
 import { fetchLivePrice } from '@/lib/livePrice';
+import { parseSymbolsBody } from '@/lib/registry/validateInput';
 
 export async function POST(req: NextRequest) {
   try {
-    const { symbols } = await req.json();
+    const body: unknown = await req.json();
 
-    if (!Array.isArray(symbols) || symbols.length === 0) {
-      return NextResponse.json({ error: 'Invalid symbols' }, { status: 400 });
+    // R5: registry/allow-list gate + batch cap (spec: 50).
+    const parsed = parseSymbolsBody(body);
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-
-    if (symbols.length > 1000) {
-      return NextResponse.json({ error: 'Max 1000 symbols' }, { status: 400 });
-    }
+    const symbols = parsed.symbols;
 
     const t0 = Date.now();
     const prices: Record<string, Record<string, unknown>> = {};

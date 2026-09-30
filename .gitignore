@@ -24,9 +24,10 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# our backups (created by patch scripts)
-*.bak
-*.bak.*
+# our backups (created by patch scripts) — *.bak* also matches .bak-YYYYMMDD-*
+*.bak*
+*.backup*
+*.corrupted-backup
 
 # OS
 Thumbs.db

@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
   try {
     // R5: rate limit + input cap on the open search proxy.
     const ip = clientIpFromHeaders(req.headers);
-    if (!(await consumeIpBudget(ip, 'search', 60))) {
+    if (!(await consumeIpBudget(ip, 'search', 60)).allowed) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
     const { searchParams } = new URL(req.url);

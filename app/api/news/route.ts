@@ -333,7 +333,7 @@ export async function GET(req: Request) {
   try {
     // R5: rate limit + edge cache on this open aggregator.
     const ip = clientIpFromHeaders(new Headers(req.headers));
-    if (!(await consumeIpBudget(ip, 'news', 30))) {
+    if (!(await consumeIpBudget(ip, 'news', 30)).allowed) {
       return Response.json({ error: 'Too many requests' }, { status: 429 });
     }
 

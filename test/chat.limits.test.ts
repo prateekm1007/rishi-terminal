@@ -7,6 +7,13 @@ vi.mock("@/lib/auth/session", () => ({
   })),
 }));
 
+/** R6: fake the atomic RPCs — enforce the IP budget in the fake itself. */
+const rpcState = vi.hoisted(() => ({
+  ipCounts: new Map<string, number>(),
+  refunds: [] as Array<{ userId: string; dayKey: string }>,
+  quotaAllowed: true,
+}));
+
 vi.mock("@/lib/services/supabaseAdmin", () => ({
   getAdminSupabase: () => ({
     from: () => {
@@ -21,6 +28,25 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
       };
       return b;
     },
+    rpc: (name: string, args: Record<string, any>) => {
+      if (name === 'consume_ip_budget') {
+        const key = `${args.p_ip}:${args.p_bucket}`;
+        const next = (rpcState.ipCounts.get(key) ?? 0) + 1;
+        rpcState.ipCounts.set(key, next);
+        return Promise.resolve({ data: next <= args.p_limit, error: null });
+      }
+      if (name === 'consume_chat_quota') {
+        return Promise.resolve({
+          data: { allowed: rpcState.quotaAllowed, count: 1 },
+          error: null,
+        });
+      }
+      if (name === 'refund_chat_quota') {
+        rpcState.refunds.push({ userId: args.p_user_id, dayKey: args.p_day });
+        return Promise.resolve({ data: null, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
+    },
   }),
 }));
 
@@ -30,6 +56,9 @@ let geminiCalls: Array<{ url: string; body: any }> = [];
 
 beforeEach(() => {
   geminiCalls = [];
+  rpcState.ipCounts.clear();
+  rpcState.refunds.length = 0;
+  rpcState.quotaAllowed = true;
   vi.stubGlobal("fetch", vi.fn(async (url: any, init: any) => {
     geminiCalls.push({ url: String(url), body: JSON.parse(init.body) });
     return new Response(
@@ -60,13 +89,33 @@ describe("T7 — chat route limits", () => {
     expect(res.status).toBe(401);
   });
 
-  it("429s the 21st rapid call from one IP beyond the burst window", async () => {
-    // burst limit is in-memory per instance; hammer from a unique IP
+  it("429s calls beyond the persistent burst budget (12/min/IP, R6)", async () => {
     let last: any;
-    for (let i = 0; i < 21; i++) {
-      last = await POST(makeReq(okBody, `10.0.0.${i % 2 ? 5 : 5}`));
+    for (let i = 0; i < 13; i++) {
+      last = await POST(makeReq(okBody, "10.0.0.5"));
     }
     expect(last!.status).toBe(429);
+  });
+
+  it("R6: refunds the quota when the upstream provider fails", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("boom", { status: 502 })) as any);
+    const res = await POST(makeReq(okBody, "10.7.7.1"));
+    expect(res.status).toBe(502);
+    expect(rpcState.refunds).toHaveLength(1);
+    expect(rpcState.refunds[0].userId).toBe("u1");
+    expect(rpcState.refunds[0].dayKey).toMatch(/^\d{4}-\d{2}-\d{2}$/); // IST day key
+  });
+
+  it("R6: no refund when the provider succeeds", async () => {
+    const res = await POST(makeReq(okBody, "10.7.7.2"));
+    expect(res.status).toBe(200);
+    expect(rpcState.refunds).toHaveLength(0);
+  });
+
+  it("R6: fails CLOSED when the quota store errors", async () => {
+    rpcState.quotaAllowed = false;
+    const res = await POST(makeReq(okBody, "10.7.7.3"));
+    expect(res.status).toBe(429);
   });
 
   it("413s oversized messages", async () => {

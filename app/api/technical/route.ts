@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   // R5: persistent per-IP rate limit (shared Postgres counter).
   const ip = clientIpFromHeaders(req.headers);
-  if (!(await consumeIpBudget(ip, 'technical', 30))) {
+  if (!(await consumeIpBudget(ip, 'technical', 30)).allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
   const checked = validateSymbolInput(searchParams.get("symbol"));

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   try {
     // R5: persistent per-IP rate limit on this open proxy.
     const ip = clientIpFromHeaders(req.headers);
-    if (!(await consumeIpBudget(ip, 'prices-batch', 20))) {
+    if (!(await consumeIpBudget(ip, 'prices-batch', 20)).allowed) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 

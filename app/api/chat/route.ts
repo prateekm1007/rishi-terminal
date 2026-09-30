@@ -4,6 +4,7 @@ import { resolvePersonaId, CHAT_PERSONAS } from '@/lib/chat/personas';
 import { STOCKS } from '@/data/stocks';
 
 import { OpenAIChatResponseSchema, GeminiResponseSchema, parseUpstream } from '@/lib/schemas/upstream';
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 /**
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
  *
@@ -78,64 +79,59 @@ const DAILY_QUOTA: Record<string, number> = {
   disciple: 500,
 };
 
-// ── per-IP burst limiter (in-memory, per server instance) ──────
-const BURST_WINDOW_MS = 60_000;
-const BURST_MAX_REQUESTS = 12;
-const ipHits = new Map<string, number[]>();
+// ── per-IP burst limiter (R6: persistent Postgres counter) ─────
+// The previous in-memory Map had one bucket per serverless instance —
+// effectively no limit. consumeIpBudget() shares one counter across
+// instances via the atomic consume_ip_budget RPC (migration 008).
 
-function ipBurstExceeded(ip: string): boolean {
-  const now = Date.now();
-  const hits = (ipHits.get(ip) ?? []).filter(t => now - t < BURST_WINDOW_MS);
-  hits.push(now);
-  ipHits.set(ip, hits);
-  // Keep the map bounded.
-  if (ipHits.size > 10_000) {
-    for (const [k, v] of ipHits) {
-      if (v.every(t => now - t >= BURST_WINDOW_MS)) ipHits.delete(k);
-    }
-  }
-  return hits.length > BURST_MAX_REQUESTS;
+// ── per-user daily quota (R6: atomic, refundable, IST day key) ─
+/** IST calendar day — the quota resets at midnight India time, not 05:30. */
+function istDayKey(d: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(d);
 }
 
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get('x-real-ip') ??
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'unknown'
-  );
-}
-
-// ── per-user daily quota (Supabase-backed) ─────────────────────
-async function quotaExceeded(userId: string, tier: string): Promise<boolean> {
+/**
+ * Consume ONE unit of the daily quota atomically (consume_chat_quota RPC,
+ * migration 008): the increment is a single conditional SQL statement, so
+ * parallel requests cannot exceed the limit.
+ * Fail CLOSED on infrastructure errors — unbounded spend is worse than a
+ * short outage. Call refundChatQuota() if the upstream call then fails.
+ */
+async function consumeChatQuota(
+  userId: string,
+  tier: string,
+): Promise<{ allowed: boolean; dayKey: string }> {
+  const dayKey = istDayKey();
   try {
     const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
     const admin = getAdminSupabase();
-    const day = new Date().toISOString().slice(0, 10);
-
-    const { data } = await admin
-      .from('chat_usage')
-      .select('count')
-      .eq('user_id', userId)
-      .eq('day', day)
-      .maybeSingle();
-
-    const used = (data as { count: number } | null)?.count ?? 0;
-    if (used >= (DAILY_QUOTA[tier] ?? DAILY_QUOTA.seeker)) {
-      return true;
-    }
-
-    await admin
-      .from('chat_usage')
-      .upsert(
-        { user_id: userId, day, count: used + 1 },
-        { onConflict: 'user_id,day' },
-      );
-    return false;
+    const { data, error } = await admin.rpc('consume_chat_quota', {
+      p_user_id: userId,
+      p_day: dayKey,
+      p_limit: DAILY_QUOTA[tier] ?? DAILY_QUOTA.seeker,
+    });
+    if (error) throw new Error(error.message);
+    const result = (typeof data === 'string' ? JSON.parse(data) : data) as {
+      allowed?: boolean | null;
+    };
+    return { allowed: result.allowed === true, dayKey };
   } catch (e) {
-    // Fail closed on quota infrastructure errors: do not allow unbounded
-    // spend when the counter is unavailable.
-    console.error('[chat] quota check failed:', e instanceof Error ? e.message : e);
-    return true;
+    console.error('[chat] quota consume failed (fail-closed):', e instanceof Error ? e.message : e);
+    return { allowed: false, dayKey };
+  }
+}
+
+/** Refund one unit after an upstream failure (never burns the allowance). */
+async function refundChatQuota(userId: string, dayKey: string): Promise<void> {
+  try {
+    const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
+    const admin = getAdminSupabase();
+    await admin.rpc('refund_chat_quota', { p_user_id: userId, p_day: dayKey });
+  } catch (e) {
+    console.error('[chat] quota refund failed:', e instanceof Error ? e.message : e);
   }
 }
 
@@ -169,20 +165,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // 2. Burst limit per IP.
-  if (ipBurstExceeded(clientIp(req))) {
+  // 2. Burst limit per IP — persistent counter (R6).
+  const ip = clientIpFromHeaders(req.headers);
+  if (!(await consumeIpBudget(ip, 'chat-burst', 12)).allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
-  // 3. Daily quota per user by tier (server-resolved tier, never client).
-  if (await quotaExceeded(user.id, user.tier)) {
-    return NextResponse.json(
-      { error: 'Daily chat quota exhausted', fallback: true },
-      { status: 429 },
-    );
-  }
-
-  // 4. Validate the contract.
+  // 3. Validate the contract FIRST — 400s must not burn quota. The daily
+  //    quota is consumed atomically right before the upstream call (step 5)
+  //    and refunded if the provider fails.
   let body: {
     personaId?: unknown;
     symbol?: unknown;
@@ -252,6 +243,16 @@ export async function POST(req: NextRequest) {
     ? `${systemPrompt}\n\n${contextLine}`
     : systemPrompt;
 
+  // 5.5 Consume the daily quota atomically (after all validation, before
+  //     any provider spend). Refunded below if the provider fails.
+  const quota = await consumeChatQuota(user.id, user.tier);
+  if (!quota.allowed) {
+    return NextResponse.json(
+      { error: 'Daily chat quota exhausted', fallback: true },
+      { status: 429 },
+    );
+  }
+
   // 6. Call the configured upstream provider — key via auth header, hard
   //    20s timeout. Provider selection is fail-closed.
   const provider = resolveChatProvider();
@@ -291,6 +292,7 @@ export async function POST(req: NextRequest) {
       });
     } catch (e) {
       console.error('[chat] upstream request failed:', e instanceof Error ? e.message : e);
+      await refundChatQuota(user.id, quota.dayKey); // R6: provider failure must not burn quota
       return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
     }
 
@@ -298,6 +300,7 @@ export async function POST(req: NextRequest) {
       // Log details server-side; return a generic message only.
       const errText = await res.text();
       console.error('[chat] upstream API error:', res.status, errText.slice(0, 500));
+      await refundChatQuota(user.id, quota.dayKey); // R6: refund on provider error
       return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
     }
 
@@ -306,6 +309,7 @@ export async function POST(req: NextRequest) {
     const text = typeof raw === 'string' ? raw.trim() : '';
     if (!text) {
       console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));
+      await refundChatQuota(user.id, quota.dayKey); // R6: refund on empty completion
       return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
     }
 
@@ -355,6 +359,7 @@ export async function POST(req: NextRequest) {
     // Log details server-side; return a generic message only.
     const errText = await res.text();
     console.error('[chat] Gemini API error:', res.status, errText.slice(0, 500));
+    await refundChatQuota(user.id, quota.dayKey); // R6: refund on provider error
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 
@@ -362,6 +367,7 @@ export async function POST(req: NextRequest) {
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text || typeof text !== 'string') {
     console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));
+    await refundChatQuota(user.id, quota.dayKey); // R6: refund on empty completion
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 

@@ -37,7 +37,7 @@ export async function GET(req: Request) {
   try {
     // R5: persistent per-IP rate limit + edge cache.
     const ip = clientIpFromHeaders(new Headers(req.headers));
-    if (!(await consumeIpBudget(ip, 'pulse-currency', 30))) {
+    if (!(await consumeIpBudget(ip, 'pulse-currency', 30)).allowed) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 

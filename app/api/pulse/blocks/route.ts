@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   try {
     // R5: persistent per-IP rate limit.
     const ip = clientIpFromHeaders(new Headers(req.headers));
-    if (!(await consumeIpBudget(ip, 'pulse-blocks', 30))) {
+    if (!(await consumeIpBudget(ip, 'pulse-blocks', 30)).allowed) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
     const res = await fetch('https://www.nseindia.com/api/block-deal', {

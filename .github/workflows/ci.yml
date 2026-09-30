@@ -1,0 +1,90 @@
+# Remediation T17 — quality gates on every PR and push to main.
+# Gates (all blocking): typecheck, lint, unit tests, encoding validation,
+# registry validation, score parity, production build, gitleaks secret scan.
+# The Playwright smoke job is non-blocking (needs a built app + placeholder
+# Supabase env to boot).
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, typecheck, test, validate
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: ESLint (0 errors, ratchet enforced)
+        run: npx eslint .
+
+      - name: Unit tests (Vitest)
+        run: npx vitest run
+
+      - name: Encoding validation (T15)
+        run: npm run validate:encoding
+
+      - name: Registry validation (T12)
+        run: npx tsx scripts/validateStocks.ts
+
+      - name: Score parity (T10)
+        run: npx tsx scripts/scoreParity.ts
+
+      - name: Production build
+        run: npm run build
+
+      - name: Gitleaks (secret scan)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  smoke:
+    name: Playwright smoke (non-blocking)
+    runs-on: ubuntu-latest
+    needs: quality
+    continue-on-error: true
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Run smoke tests
+        run: npx playwright test

@@ -60,3 +60,6 @@ export function verifyWebhookSignature(
     .digest('hex');
   return timingSafeEqualHex(expected, signature);
 }
+
+// R4 gate-bite probe (temporary — CI must fail on this)
+const __probe: any = 1; void __probe;

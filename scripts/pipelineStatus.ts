@@ -22,10 +22,39 @@ if (!url || !key) {
 
 const db = createClient(url, key, { auth: { persistSession: false } });
 
-async function count(table: string): Promise<number> {
+/**
+ * Row count, or the string "TABLE-MISSING" when Postgres reports the table
+ * does not exist (42P01 / PGRST205). The previous version collapsed that
+ * error into 0 — reporting an unapplied schema as "0 rows", which reads
+ * like an empty-but-ready pipeline. Art. I: an unverified claim is a bug
+ * that looks like documentation.
+ */
+async function count(table: string): Promise<number | "TABLE-MISSING"> {
   const { count, error } = await db.from(table).select("*", { count: "exact", head: true });
-  if (error) throw new Error(`${table}: ${error.message}`);
-  return count ?? 0;
+  if (error) {
+    const missing = isMissingTableError(error);
+    if (missing) return "TABLE-MISSING";
+    const code = String((error as { code?: string }).code ?? "");
+    throw new Error(`${table}: ${error.message} (code=${code})`);
+  }
+  if (count !== null) return count;
+  // supabase-js quirk (verified against live): a head+count request on a
+  // MISSING table returns { count: null, error: null } — the 404 body is
+  // empty. Probe with a real select, whose error carries the truth.
+  const probe = await db.from(table).select("*").limit(1);
+  if (probe.error && isMissingTableError(probe.error)) return "TABLE-MISSING";
+  return 0;
+}
+
+function isMissingTableError(err: unknown): boolean {
+  const e = err as { code?: string; message?: string };
+  const code = String(e.code ?? "");
+  return (
+    code === "42P01" ||
+    code === "PGRST205" ||
+    code === "PGRST202" ||
+    /does not exist|Could not find the table/i.test(e.message ?? "")
+  );
 }
 
 async function latest(table: string, col: string): Promise<string | null> {
@@ -50,12 +79,26 @@ async function main() {
   console.log(`ingestion_logs rows:      ${logs}`);
   console.log(`latest snapshot_date:     ${lastSnapshotDate ?? "none"}`);
   console.log(`latest quarter period:    ${lastQuarter ?? "none"}`);
+
+  const schemaMissing =
+    snapshots === "TABLE-MISSING" || quarters === "TABLE-MISSING" || logs === "TABLE-MISSING";
+  if (schemaMissing) {
+    console.log(
+      "BLOCKED: one or more pipeline tables DO NOT EXIST in this database — " +
+      "migrations have not been applied (see lib/db/migrations 001..008 and " +
+      "the combined SQL in the round-2 PR). Row counts are meaningless until then.",
+    );
+    process.exit(1);
+  }
+
+  const s = snapshots as number;
+  const q = quarters as number;
   console.log(
-    snapshots > 0 && quarters > 0
+    s > 0 && q > 0
       ? "Pipeline HAS produced data. If latest dates are stale, the Vercel Cron schedule is not firing — check CRON_SECRET and vercel.json cron config."
       : "Pipeline has NEVER produced data — snapshotAllStocks / ingestQuarterly are not running in production.",
   );
-  if (snapshots === 0 || quarters === 0) process.exit(1);
+  if (s === 0 || q === 0) process.exit(1);
 }
 
 main().catch(e => {

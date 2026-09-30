@@ -23,6 +23,29 @@ const NSE_HEADERS = {
 // =============================================================================
 const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number; ts: number }> = {};
 
+/**
+ * Pure: price + 24h % change from a Yahoo chart `meta` object.
+ *
+ * 2026-09-30 drift: chart meta no longer carries `previousClose`. It now has
+ * `chartPreviousClose` (close before the chart window) plus a precomputed
+ * `regularMarketChangePercent`. The old `Number(meta.previousClose) || price`
+ * fell back to prev = price, silently zeroing every Indian-stock change —
+ * homepage tickers were stuck at 0.00% while prices still served.
+ * Trust order: regularMarketChangePercent (Yahoo's own, vs true prev close)
+ * → previousClose (legacy shape) → chartPreviousClose → change 0.
+ * Returns null when no usable price exists.
+ */
+export function yahooChangeFromMeta(
+  meta: Record<string, unknown> | null | undefined
+): { price: number; change: number } | null {
+  const price = Number(meta?.regularMarketPrice);
+  if (!Number.isFinite(price) || price <= 0) return null;
+  const direct = Number(meta?.regularMarketChangePercent);
+  if (Number.isFinite(direct)) return { price, change: direct };
+  const prev = Number(meta?.previousClose) || Number(meta?.chartPreviousClose) || 0;
+  return { price, change: prev > 0 ? ((price - prev) / prev) * 100 : 0 };
+}
+
 async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change: number } | null> {
   const now = Date.now();
   const cached = YAHOO_STOCK_CACHE[symbol];
@@ -38,11 +61,8 @@ async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change
     if (!res.ok) return null;
     const json = await res.json();
     const meta = json?.chart?.result?.[0]?.meta;
-    if (!meta?.regularMarketPrice) return null;
-    const price = Number(meta.regularMarketPrice);
-    const prev = Number(meta.previousClose) || price;
-    const change = prev > 0 ? ((price - prev) / prev) * 100 : 0;
-    const result = { price, change };
+    const result = yahooChangeFromMeta(meta);
+    if (!result) return null;
     YAHOO_STOCK_CACHE[symbol] = { ...result, ts: now };
     return result;
   } catch {

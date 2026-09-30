@@ -1,6 +1,6 @@
-// SNAPSHOT_V1
+// REFERENCE_OBSERVATIONS_V1
 import { NextRequest, NextResponse } from "next/server";
-import { snapshotAllStocks } from "../../../../lib/services/rishiMemory";
+import { captureReferenceObservations } from "../../../../lib/services/observations";
 import { logIngestion } from "../../../../lib/services/ingestion";
 import { requireCronAuth } from "../../../../lib/auth/cron";
 
@@ -12,22 +12,23 @@ async function run(req: NextRequest) {
   if (denied) return denied;
 
   const started_at = new Date().toISOString();
-  const result = await snapshotAllStocks();
 
-  // NOTE (Phase 6): T61 reference-observation capture lives in its own cron
-  // route (/api/ingest/observations, 13:45 UTC) — combining both jobs blew
-  // the 60 s maxDuration budget (observed live 2026-10-01). One job, one
-  // budget.
+  // Phase 6 T61: persist OUR OWN daily observations for storage-entitled
+  // sources only (FRED yields, FX reference). Own cron route so this job
+  // gets its own full 60 s budget — the nightly consensus snapshot must
+  // never be starved by upstream timeouts. Skips are honest; failures are
+  // counted, never fabricated.
+  const result = await captureReferenceObservations();
 
   await logIngestion({
-    job_name:    "nightly_snapshot",
+    job_name:    "reference_observations",
     status:      result.errors === 0 ? "success" : "partial",
-    records_out: result.snapshots,
-    source:      "RishiEngine",
+    records_out: result.persisted,
+    source:      "PERSISTABLE_SOURCES",
     started_at,
   });
 
-  return NextResponse.json({ ok: true, ...result });
+  return NextResponse.json({ ok: true, observations: result });
 }
 
 // Vercel Cron issues GET requests; POST is kept for manual triggering.

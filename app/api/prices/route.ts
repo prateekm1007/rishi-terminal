@@ -45,9 +45,14 @@ export async function GET(req: NextRequest) {
     }
 
     const results = await Promise.allSettled(list.map(s => fetchLivePrice(s)));
-    const prices: Record<string, { price: number; change: number; lastUpdated: string }> = {};
+    const prices: Record<string, { price?: number; change?: number; source?: string; status?: string; lastUpdated?: string }> = {};
     results.forEach((r, i) => {
-      if (r.status === "fulfilled" && r.value) prices[list[i]] = r.value;
+      if (r.status === "fulfilled" && r.value) {
+        prices[list[i]] = r.value;
+      } else {
+        // T57: honest unavailability — no zeros, no seed placeholders.
+        prices[list[i]] = { status: "UNAVAILABLE", lastUpdated: new Date().toISOString() };
+      }
     });
 
     // If single symbol requested, return unwrapped object (not Record)

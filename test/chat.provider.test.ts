@@ -80,7 +80,11 @@ describe("T7 — chat provider selection", () => {
     expect(calls[0].url).toBe("https://apihub.agnes-ai.com/v1/chat/completions");
     expect(calls[0].url).not.toContain("generativelanguage");
     const json = await res.json();
-    expect(json).toEqual({ text: "hi" }); // trimmed
+    // Phase 5 T50: provenance (provider/model/generatedAt) now rides on every
+    // response; text is still trimmed exactly as before.
+    expect(json.text).toBe("hi");
+    expect(json.provenance).toMatchObject({ provider: "chat-api" });
+    expect(typeof json.provenance.generatedAt).toBe("string");
   });
 
   it("sends the key via the Authorization header — never in the URL or body", async () => {

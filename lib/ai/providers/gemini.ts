@@ -1,0 +1,58 @@
+/**
+ * Gemini chat provider (T49 fallback). Key travels via the x-goog-api-key
+ * header — never the URL.
+ */
+
+import type { ChatTurn } from "./openaiCompatible";
+
+export async function callGemini(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  history: ChatTurn[],
+  message: string,
+  timeoutMs: number,
+): Promise<string> {
+  const contents = [
+    ...history.map(h => ({
+      role: h.role === "user" ? "user" : "model",
+      parts: [{ text: h.content }],
+    })),
+    { role: "user", parts: [{ text: message }] },
+  ];
+
+  const body = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents,
+    generationConfig: {
+      temperature: 0.9,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 2048,
+    },
+  };
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[ai/gemini] upstream error:", res.status, errText.slice(0, 500));
+    throw new Error(`gemini HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text || typeof text !== "string") {
+    console.error("[ai/gemini] empty completion:", JSON.stringify(data).slice(0, 500));
+    throw new Error("gemini empty completion");
+  }
+  return text;
+}

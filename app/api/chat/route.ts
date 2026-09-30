@@ -3,6 +3,10 @@ import { getSessionUser } from '@/lib/auth/session';
 import { resolvePersonaId, CHAT_PERSONAS } from '@/lib/chat/personas';
 import { STOCKS } from '@/data/stocks';
 import { checkRateLimit } from '@/lib/rateLimit';
+// Phase 5 T49–T52: application code calls the AI abstraction, never a
+// provider SDK/URL directly. Provenance rides on every response (T50).
+import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
+import type { AiEvidenceItem } from '@/lib/ai/schemas';
 
 /**
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
@@ -28,44 +32,7 @@ import { checkRateLimit } from '@/lib/rateLimit';
  * - Prompt-injection hygiene: user text only ever enters `user` turns.
  */
 
-const GEMINI_MODEL = 'models/gemini-2.5-flash';
-const DEFAULT_OPENAI_MODEL = 'agnes-2.5-flash';
-
-type OpenAiCompatibleProvider = {
-  kind: 'openai';
-  baseUrl: string;
-  apiKey: string;
-  model: string;
-};
-
-type GeminiProvider = { kind: 'gemini'; apiKey: string };
-
-type ChatProvider = OpenAiCompatibleProvider | GeminiProvider;
-
-/**
- * Resolve the upstream chat provider from env at request time (so a
- * deployment can switch providers without a code change). The
- * OpenAI-compatible endpoint wins when both are configured; fail closed to
- * `null` when neither is present.
- */
-function resolveChatProvider(): ChatProvider | null {
-  const baseUrl = (process.env.CHAT_API_BASE_URL || '')
-    .trim()
-    .replace(/\/+$/, '')
-    .replace(/\/chat\/completions$/, '');
-  const chatKey = (process.env.CHAT_API_KEY || '').trim();
-  if (baseUrl && chatKey) {
-    return {
-      kind: 'openai',
-      baseUrl,
-      apiKey: chatKey,
-      model: (process.env.CHAT_MODEL || '').trim() || DEFAULT_OPENAI_MODEL,
-    };
-  }
-  const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
-  if (geminiKey) return { kind: 'gemini', apiKey: geminiKey };
-  return null;
-}
+//  ── provider resolution + upstream calls live in lib/ai (T49) ──
 
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_HISTORY_TURNS = 20;
@@ -137,17 +104,18 @@ async function refundQuota(userId: string): Promise<void> {
 }
 
 // ── stock context, built server-side from the seed registry ────
-function stockContext(symbol: string): string | null {
+function stockEvidence(symbol: string): AiEvidenceItem[] {
   const s = STOCKS[symbol.toUpperCase()];
-  if (!s) return null;
+  if (!s) return [];
   const pe = typeof s.pe === 'number' && s.pe > 0 ? s.pe : null;
   const roe = typeof s.roe === 'number' ? s.roe : null;
-  return [
-    `You are analyzing ${s.symbol} (${s.name}), sector: ${s.sector}.`,
+  const text = [
+    `Analyzing ${s.symbol} (${s.name}), sector: ${s.sector}.`,
     pe !== null ? `P/E ratio (seed data): ${pe}.` : '',
     roe !== null ? `ROE (seed data): ${roe}%.` : '',
     'Seed fundamentals may be stale — qualify any data you cite as indicative.',
   ].filter(Boolean).join(' ');
+  return [{ id: `seed:${s.symbol}:profile`, text }];
 }
 
 interface HistoryTurn {
@@ -242,131 +210,39 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
-  // 5. Compose the request. System prompt is server-built; persona + symbol
-  //    context only. User text appears only in `user` turns.
-  const contextLine = symbol ? stockContext(symbol) : null;
-  const fullSystemPrompt = contextLine
-    ? `${systemPrompt}\n\n${contextLine}`
-    : systemPrompt;
+  // 5. Compose the request. System prompt is server-built (persona);
+  //    symbol context is passed as EVIDENCE with stable ids (T51), not
+  //    concatenated into the prompt here.
+  const evidence = symbol ? stockEvidence(symbol) : [];
 
-  // 6. Call the configured upstream provider — key via auth header, hard
-  //    20s timeout. Provider selection is fail-closed.
-  const provider = resolveChatProvider();
-  if (!provider) {
+  // 6. Call the AI abstraction — provider resolution, timeout, health and
+  //    provenance are handled in lib/ai (T49/T50). Fail-closed: explicit
+  //    unavailable state, never a degraded pseudo-answer.
+  let answer;
+  try {
+    answer = await generateEvidenceGroundedAnswer({
+      systemPrompt,
+      history,
+      message,
+      evidence,
+    });
+  } catch (e) {
+    // Upstream broke (timeout/5xx/empty) — 502 with generic body, quota
+    // refunded (R6.2). Details logged server-side only.
+    console.error('[chat] upstream failed:', e instanceof Error ? e.message : e);
+    await refundQuota(user.id);
+    return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
+  }
+  if (!answer) {
+    // Unconfigured (no approved provider) — 503, quota refunded.
     console.error(
-      '[chat] no chat provider configured: set CHAT_API_BASE_URL + CHAT_API_KEY (OpenAI-compatible) or GEMINI_API_KEY',
+      '[chat] no approved chat provider configured: set CHAT_API_BASE_URL + CHAT_API_KEY (OpenAI-compatible) or GEMINI_API_KEY',
     );
+    await refundQuota(user.id); // R6.2: unanswerable request must not burn quota
     return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
   }
 
-  if (provider.kind === 'openai') {
-    // 6a. OpenAI-compatible endpoint. Key via the Authorization header,
-    //     never the URL; user text only ever enters `user`/`system` messages
-    //     built server-side here.
-    const messages = [
-      { role: 'system' as const, content: fullSystemPrompt },
-      ...history.map(h => ({ role: h.role, content: h.content })),
-      { role: 'user' as const, content: message },
-    ];
-
-    let res: Response;
-    try {
-      res = await fetch(`${provider.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${provider.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: provider.model,
-          messages,
-          temperature: 0.9,
-          top_p: 0.95,
-          max_tokens: 2048,
-        }),
-        signal: AbortSignal.timeout(20_000),
-      });
-    } catch (e) {
-      console.error('[chat] upstream request failed:', e instanceof Error ? e.message : e);
-      await refundQuota(user.id); // R6.2: failed completion must not burn quota
-      return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
-    }
-
-    if (!res.ok) {
-      // Log details server-side; return a generic message only.
-      const errText = await res.text();
-      console.error('[chat] upstream API error:', res.status, errText.slice(0, 500));
-      await refundQuota(user.id); // R6.2
-      return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
-    }
-
-    const data = await res.json();
-    const raw = data?.choices?.[0]?.message?.content;
-    const text = typeof raw === 'string' ? raw.trim() : '';
-    if (!text) {
-      console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));
-      await refundQuota(user.id); // R6.2
-      return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
-    }
-
-    return NextResponse.json({ text });
-  }
-
-  // 6b. Gemini fallback (legacy) — key via the x-goog-api-key header.
-  const contents = [
-    ...history.map(h => ({
-      role: h.role === 'user' ? 'user' : 'model',
-      parts: [{ text: h.content }],
-    })),
-    { role: 'user', parts: [{ text: message }] },
-  ];
-
-  const geminiBody = {
-    system_instruction: { parts: [{ text: fullSystemPrompt }] },
-    contents,
-    generationConfig: {
-      temperature: 0.9,
-      topK: 40,
-      topP: 0.95,
-      maxOutputTokens: 2048,
-    },
-  };
-
-  let res: Response;
-  try {
-    res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/${GEMINI_MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': provider.apiKey,
-        },
-        body: JSON.stringify(geminiBody),
-        signal: AbortSignal.timeout(20_000),
-      },
-    );
-  } catch (e) {
-    console.error('[chat] Gemini request failed:', e instanceof Error ? e.message : e);
-    await refundQuota(user.id); // R6.2: failed completion must not burn quota
-    return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
-  }
-
-  if (!res.ok) {
-    // Log details server-side; return a generic message only.
-    const errText = await res.text();
-    console.error('[chat] Gemini API error:', res.status, errText.slice(0, 500));
-    await refundQuota(user.id); // R6.2
-    return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
-  }
-
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text || typeof text !== 'string') {
-    console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));
-    await refundQuota(user.id); // R6.2
-    return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
-  }
-
-  return NextResponse.json({ text });
+  // 7. T52: auditable wire response — {text} preserved for the UI,
+  //    provenance (provider/model/generatedAt) rides along (T50).
+  return NextResponse.json(toChatWire(answer));
 }

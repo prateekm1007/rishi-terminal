@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
         change: data.change,
         changePercent24h: data.change,
         volume24h: data.volume,
+        source: 'yahoo-bulk',
+        status: 'LIVE',
         lastUpdated: new Date().toISOString(),
       };
     }
@@ -65,6 +67,8 @@ export async function POST(req: NextRequest) {
             change: r.value.change,
             changePercent24h: r.value.change,
             volume24h: null,
+            source: r.value.source,
+            status: r.value.status ?? 'LIVE',
             lastUpdated: r.value.lastUpdated,
           };
         }
@@ -78,7 +82,10 @@ export async function POST(req: NextRequest) {
 
       results.forEach((r, i) => {
         if (r.status === 'fulfilled' && r.value) {
-          prices[otherSymbols[i]] = r.value;
+          prices[otherSymbols[i]] = r.value as unknown as Record<string, unknown>;
+        } else {
+          // T57: explicit honest unavailability per symbol.
+          prices[otherSymbols[i]] = { status: 'UNAVAILABLE', lastUpdated: new Date().toISOString() };
         }
       });
     }

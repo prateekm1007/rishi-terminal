@@ -1,0 +1,57 @@
+/**
+ * OpenAI-compatible chat provider (T49). Key travels via the Authorization
+ * header — never the URL. User text only ever enters user/system messages.
+ */
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export async function callOpenAiCompatible(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  history: ChatTurn[],
+  message: string,
+  timeoutMs: number,
+): Promise<string> {
+  const messages = [
+    { role: "system" as const, content: systemPrompt },
+    ...history.map(h => ({ role: h.role, content: h.content })),
+    { role: "user" as const, content: message },
+  ];
+
+  const res = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature: 0.9,
+      top_p: 0.95,
+      max_tokens: 2048,
+    }),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    // Log details server-side only (key never in logs — it is not in the body).
+    console.error("[ai/openai] upstream error:", res.status, errText.slice(0, 500));
+    throw new Error(`openai-compatible HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  const raw = data?.choices?.[0]?.message?.content;
+  const text = typeof raw === "string" ? raw.trim() : "";
+  if (!text) {
+    console.error("[ai/openai] empty completion:", JSON.stringify(data).slice(0, 500));
+    throw new Error("openai-compatible empty completion");
+  }
+  return text;
+}

@@ -1,10 +1,13 @@
-import { STOCKS } from '../data/stocks';
 // lib/livePrice.ts
 // Universal live pricing
 // Stocks/Commodities: NSE India API
 // Crypto: CoinGecko
 // Forex: ExchangeRate-API
 // Bonds: Static yields
+
+// Phase 5 T45/T46: provider health accounting + request coalescing.
+import { withProviderHealth, coalesce } from './registry/providerHealth';
+import { PROVIDER_IDS } from './registry/providerRegistry';
 
 // =============================================================================
 // NSE INDIA API — Stocks + MCX Commodities
@@ -641,11 +644,11 @@ async function fetchFREDYield(fredSeries: string): Promise<number | null> {
   }
 }
 
-async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number } | null> {
+async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE" } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
-    return { price: cached.yield, change: cached.change };
+    return { price: cached.yield, change: cached.change, source: "fred-csv", status: "CACHED" };
   }
 
   const fredSeries = FRED_SERIES[symbol];
@@ -668,7 +671,7 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
             const change = yieldVal - prevVal;
             bondYieldCache[symbol] = { yield: yieldVal, change, fetchedAt: now };
             console.log(`[FRED] ${symbol} -> ${yieldVal}%`);
-            return { price: yieldVal, change };
+            return { price: yieldVal, change, source: "fred-csv", status: "LIVE" };
           }
         }
       }
@@ -677,19 +680,20 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
     }
   }
 
-  // Fallback: static yield
+  // Fallback: static reference yield — served but honestly labelled STATIC
+  // (T47: a static reference must never present itself as a live observation).
   const staticYield = BOND_YIELDS_STATIC[symbol];
   if (staticYield) {
-    return { price: staticYield, change: 0 };
+    return { price: staticYield, change: 0, source: "static-yields-us", status: "STATIC" };
   }
   return null;
 }
 
-async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number } | null> {
+async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE" } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
-    return { price: cached.yield, change: cached.change };
+    return { price: cached.yield, change: cached.change, source: "yahoo-etf-proxy", status: "CACHED" };
   }
 
   // Try Yahoo Finance ETF proxy to detect directional change
@@ -704,7 +708,8 @@ async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; cha
         const liveYield = Number((staticYield + yieldChange).toFixed(3));
         bondYieldCache[symbol] = { yield: liveYield, change: yieldChange, fetchedAt: now };
         console.log(`[India-Bond] ${symbol} -> ${liveYield}% (ETF proxy)`);
-        return { price: liveYield, change: yieldChange };
+        // T47: static base + inverse ETF change = DERIVED, never LIVE.
+        return { price: liveYield, change: yieldChange, source: "yahoo-etf-proxy", status: "DERIVED" };
       }
     } catch (err) {
       console.error(`[India-Bond] ${symbol} error:`, err);
@@ -713,13 +718,13 @@ async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; cha
 
   // Fallback: static
   const staticYield = BOND_YIELDS_STATIC[symbol];
-  if (staticYield) return { price: staticYield, change: 0 };
+  if (staticYield) return { price: staticYield, change: 0, source: "static-yields-in", status: "STATIC" };
   return null;
 }
 
-async function fetchCorporateBondYield(symbol: string): Promise<{ price: number; change: number } | null> {
+async function fetchCorporateBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE" } | null> {
   const staticYield = BOND_YIELDS_STATIC[symbol];
-  if (staticYield) return { price: staticYield, change: 0 };
+  if (staticYield) return { price: staticYield, change: 0, source: "static-yields-corp", status: "STATIC" };
   return null;
 }
 
@@ -744,75 +749,107 @@ export const YAHOO_SYMBOLS: Record<string, string> = {};
 const STOCK_ALIASES: Record<string,string> = {
   BGV01: 'BSLIMITED',
 };
-export async function fetchLivePrice(
+// ── Phase 5 T47/T48: provenance-carrying price points ────────────────
+export type PriceStatus = "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE";
+export interface PricePoint {
+  price: number;
+  change: number;
+  source: string;
+  status?: PriceStatus;
+}
+
+/**
+ * Run one provider in a fallback chain with health accounting (T45).
+ * A provider whose circuit is open (3 consecutive failures → 60 s cooldown)
+ * throws ProviderCooldownError; here that becomes null so the next fallback
+ * is tried. The winning provider's registry id rides on the result (T48).
+ * A result that already carries `source`/`status` (e.g. bond layers with
+ * mixed internals) keeps its own provenance.
+ */
+async function attempt(
+  id: string,
+  fn: () => Promise<{ price: number; change: number; source?: string; status?: PriceStatus } | null>,
+): Promise<PricePoint | null> {
+  try {
+    const r = await withProviderHealth(id, fn);
+    if (!r) return null;
+    return { status: "LIVE", ...r, source: r.source ?? id } as PricePoint;
+  } catch {
+    // Cooldown, timeout, network, parse — recorded in health; fall through.
+    return null;
+  }
+}
+
+async function fetchLivePriceInner(
   symbol: string
-): Promise<{ price: number; change: number; lastUpdated: string }> {
-  let priceData: { price: number; change: number } | null = null;
-
-  symbol = STOCK_ALIASES[symbol] ?? symbol;
-
+): Promise<PricePoint | null> {
   // 0. Market indices (Yahoo Finance)
   if (YAHOO_INDEX_SYMBOLS[symbol]) {
-    priceData = await fetchYahooQuote(YAHOO_INDEX_SYMBOLS[symbol]);
+    return attempt(PROVIDER_IDS.YAHOO, () => fetchYahooQuote(YAHOO_INDEX_SYMBOLS[symbol]));
   }
   // 1. Crypto (CoinGecko)
-  else if (COINGECKO_IDS[symbol]) {
-    priceData = await getCoinGeckoPrice(symbol);
+  if (COINGECKO_IDS[symbol]) {
+    return attempt(PROVIDER_IDS.COINGECKO, () => getCoinGeckoPrice(symbol));
   }
-  // 2. Bonds (live yields via FRED + Yahoo ETF proxy + static fallback)
-  else if (isBondSymbol(symbol)) {
+  // 2. Bonds (FRED CSV primary; Yahoo ETF proxy + static reference fallbacks)
+  if (isBondSymbol(symbol)) {
     if (symbol in FRED_SERIES || US_TREASURY_ETF[symbol]) {
-      priceData = await fetchUSBondYield(symbol);
+      return attempt(PROVIDER_IDS.FRED_CSV, () => fetchUSBondYield(symbol));
     } else if (INDIA_GSEC_ETF[symbol]) {
-      priceData = await fetchIndiaBondYield(symbol);
+      return attempt(PROVIDER_IDS.YAHOO, () => fetchIndiaBondYield(symbol));
     } else {
-      priceData = await fetchCorporateBondYield(symbol);
+      return attempt(PROVIDER_IDS.FRED_CSV, () => fetchCorporateBondYield(symbol));
     }
   }
   // 3. Forex pairs (ExchangeRate-API)
-  else if (symbol.includes('/')) {
-    priceData = await getForexRate(symbol);
+  if (symbol.includes('/')) {
+    return attempt(PROVIDER_IDS.EXCHANGERATE_API, () => getForexRate(symbol));
   }
   // 4. Commodities via Yahoo Finance futures
-  else if (YAHOO_COMMODITY_SYMBOLS[symbol]) {
-    priceData = await fetchYahooQuote(YAHOO_COMMODITY_SYMBOLS[symbol]);
+  if (YAHOO_COMMODITY_SYMBOLS[symbol]) {
+    return attempt(PROVIDER_IDS.YAHOO, () => fetchYahooQuote(YAHOO_COMMODITY_SYMBOLS[symbol]));
   }
   // 4b. MCX Commodities on NSE derivatives (fallback)
-  else if (COMMODITY_NSE_SYMBOLS[symbol]) {
-    priceData = await fetchYahooQuote(`${COMMODITY_NSE_SYMBOLS[symbol]}.NS`) ??
-                await getNSEDerivativePrice(COMMODITY_NSE_SYMBOLS[symbol]);
+  if (COMMODITY_NSE_SYMBOLS[symbol]) {
+    const viaYahoo = await attempt(
+      PROVIDER_IDS.YAHOO,
+      () => fetchYahooQuote(`${COMMODITY_NSE_SYMBOLS[symbol]}.NS`),
+    );
+    if (viaYahoo) return viaYahoo;
+    return attempt(PROVIDER_IDS.NSE, () => getNSEDerivativePrice(COMMODITY_NSE_SYMBOLS[symbol]));
   }
-  // 5. Static commodity fallback
-  else if (COMMODITY_STATIC_USD[symbol]) {
-    priceData = { price: COMMODITY_STATIC_USD[symbol], change: 0 };
+  // 5. Static commodity reference values — served but honestly labelled
+  //    STATIC (T47: never presented as live).
+  if (COMMODITY_STATIC_USD[symbol]) {
+    return {
+      price: COMMODITY_STATIC_USD[symbol],
+      change: 0,
+      source: "static-commodities",
+      status: "STATIC",
+    };
   }
-  // 6. Indian stocks (NSE equity API)
-  else {
-    // Multi-source fallback chain — stops at first success
-    priceData = await getNSEStockPrice(symbol)
-      ?? await getYahooNSEPrice(symbol)
-      ?? await getYahooNSEPriceV7(symbol)
-      ?? await getBSEPrice(symbol)
-      ?? await getScreenerPrice(symbol);
-  }
+  // 6. Indian stocks — multi-source fallback chain, health-gated per provider
+  return (
+    (await attempt(PROVIDER_IDS.NSE, () => getNSEStockPrice(symbol))) ??
+    (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPrice(symbol))) ??
+    (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPriceV7(symbol))) ??
+    (await attempt(PROVIDER_IDS.BSE, () => getBSEPrice(symbol))) ??
+    (await attempt(PROVIDER_IDS.SCREENER, () => getScreenerPrice(symbol)))
+  );
+}
 
-  if (!priceData) {
-    const fallback = (STOCKS as any)?.[symbol];
+export async function fetchLivePrice(
+  symbol: string
+): Promise<(PricePoint & { lastUpdated: string }) | null> {
+  symbol = STOCK_ALIASES[symbol] ?? symbol;
 
-    if (fallback?.price) {
-      return {
-        price: fallback.price,
-        change: 0,
-        lastUpdated: new Date().toISOString()
-      };
-    }
+  // T46: concurrent identical requests share one upstream pass.
+  const result = await coalesce(`liveprice:${symbol}`, () => fetchLivePriceInner(symbol));
 
-    return { price: 0, change: 0, lastUpdated: new Date().toISOString() };
-  }
+  // T57: the fallback is UNAVAILABLE — never a seed placeholder, never
+  // zeros dressed up as a quote. Callers (API routes) report honest
+  // unavailability to the UI.
+  if (!result || !Number.isFinite(result.price) || result.price <= 0) return null;
 
-  return {
-    price: priceData.price,
-    change: priceData.change,
-    lastUpdated: new Date().toISOString(),
-  };
+  return { ...result, lastUpdated: new Date().toISOString() };
 }

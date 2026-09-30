@@ -1,10 +1,18 @@
-import { STOCKS } from '../data/stocks';
 // lib/livePrice.ts
 // Universal live pricing
 // Stocks/Commodities: NSE India API
 // Crypto: CoinGecko
 // Forex: ExchangeRate-API
 // Bonds: Static yields
+
+import { STOCKS } from '../data/stocks';
+import {
+  YahooChartSchema,
+  YahooQuoteSchema,
+  NseQuoteSchema,
+  BseScribHeaderSchema,
+  parseUpstream,
+} from '@/lib/schemas/upstream';
 
 // =============================================================================
 // NSE INDIA API — Stocks + MCX Commodities
@@ -36,8 +44,8 @@ async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change
       signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 6000); return ac.signal; })(),
     });
     if (!res.ok) return null;
-    const json = await res.json();
-    const meta = json?.chart?.result?.[0]?.meta;
+    const parsed = parseUpstream(YahooChartSchema, await res.json(), 'yahoo-chart-v8');
+    const meta = parsed?.chart?.result?.[0]?.meta;
     if (!meta?.regularMarketPrice) return null;
     const price = Number(meta.regularMarketPrice);
     const prev = Number(meta.previousClose) || price;
@@ -62,8 +70,8 @@ async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; chan
       signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 6000); return ac.signal; })(),
     });
     if (!res.ok) return null;
-    const json = await res.json();
-    const q = json?.quoteResponse?.result?.[0];
+    const parsed = parseUpstream(YahooQuoteSchema, await res.json(), 'yahoo-quote-v7');
+    const q = parsed?.quoteResponse?.result?.[0];
     if (!q?.regularMarketPrice) return null;
     const price = Number(q.regularMarketPrice);
     const change = Number(q.regularMarketChangePercent) || 0;
@@ -161,7 +169,8 @@ async function getBSEPrice(symbol: string): Promise<{ price: number; change: num
       signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 6000); return ac.signal; })(),
     });
     if (!res.ok) return null;
-    const json = await res.json();
+    const parsed = parseUpstream(BseScribHeaderSchema, await res.json(), 'bse-scrip-header');
+    const json = parsed ?? {};
     const price = parseFloat(json?.CurrRate ?? json?.Ltp ?? '0');
     const change = parseFloat(json?.PcntChange ?? json?.Change ?? '0');
     if (price <= 0) return null;
@@ -179,7 +188,7 @@ async function getNSEStockPrice(symbol: string): Promise<{ price: number; change
     });
     if (!res.ok) return null;
 
-    const data = await res.json();
+    const data = parseUpstream(NseQuoteSchema, await res.json(), 'nse-quote');
     const price = data?.priceInfo?.lastPrice;
     const changePct = data?.priceInfo?.pChange;
 
@@ -205,7 +214,7 @@ async function getNSEDerivativePrice(symbol: string): Promise<{ price: number; c
     });
     if (!res.ok) return null;
 
-    const data = await res.json();
+    const data = parseUpstream(NseQuoteSchema, await res.json(), 'nse-derivative');
     const price = data?.underlyingValue ?? data?.priceInfo?.lastPrice;
     const changePct = data?.priceInfo?.pChange ?? 0;
 
@@ -270,8 +279,8 @@ async function fetchYahooQuote(
       clearTimeout(t1);
     }
     if (!res.ok) return null;
-    const json = await res.json();
-    const meta = json?.chart?.result?.[0]?.meta;
+    const parsed = parseUpstream(YahooChartSchema, await res.json(), 'yahoo-chart-v8');
+    const meta = parsed?.chart?.result?.[0]?.meta;
     if (!meta?.regularMarketPrice) return null;
     const price = Number(meta.regularMarketPrice) || 0;
     const prevClose = Number(meta.previousClose) || price;

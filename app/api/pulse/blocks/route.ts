@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { NseBulkDealsSchema, parseUpstream } from '@/lib/schemas/upstream';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,17 +19,18 @@ export async function GET() {
 
     if (!res.ok) throw new Error('NSE block-deal HTTP ' + res.status);
 
-    const data = await res.json();
-    const raw: any[] = data?.data || [];
+    const parsed = parseUpstream(NseBulkDealsSchema, await res.json(), 'nse-block-deal');
+    if (!parsed) throw new Error('NSE block-deal payload did not match schema');
+    const raw = parsed.data;
 
-    const deals = raw.slice(0, 20).map((d: any) => {
-      const qty   = d.totalTradedVolume ?? 0;
-      const price = d.lastPrice ?? 0;
+    const deals = raw.slice(0, 20).map((d) => {
+      const qty   = Number(d.totalTradedVolume ?? 0) || 0;
+      const price = Number(d.lastPrice ?? 0) || 0;
       const value = parseFloat(((qty * price) / 1e7).toFixed(2)); // in Cr
 
       const side =
-        d.pchange > 0 ? 'BUY' :
-        d.pchange < 0 ? 'SELL' : 'BUY';
+        (d.pchange ?? 0) > 0 ? 'BUY' :
+        (d.pchange ?? 0) < 0 ? 'SELL' : 'BUY';
 
       const time = d.lastUpdateTime
         ? d.lastUpdateTime.split(' ')[1]?.slice(0, 5) ?? '--:--'
@@ -52,7 +54,7 @@ export async function GET() {
       {
         deals,
         count: deals.length,
-        timestamp: data?.timestamp ?? new Date().toISOString(),
+        timestamp: new Date().toISOString(),
         generatedAt: new Date().toISOString(),
       },
       { headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=240' } }

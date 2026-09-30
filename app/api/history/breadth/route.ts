@@ -22,19 +22,26 @@ async function fetchHistory1M(base: string, symbol: string): Promise<ChartPoint[
       console.error('[breadth] history fetch failed for', symbol, res.status);
       return [];
     }
-    const raw = await res.json();
+    const raw: unknown = await res.json();
 
     // Response shape: { symbol, tf, source, points: [{t, v}, ...] }
     // Also handle fallback shapes just in case
-    let arr: any[] = [];
-    if (Array.isArray(raw?.points))      arr = raw.points;   // PRIMARY
-    else if (Array.isArray(raw?.data))   arr = raw.data;     // fallback
-    else if (Array.isArray(raw))         arr = raw;          // fallback
+    let arr: unknown[] = [];
+    if (Array.isArray(raw) && raw.every((p) => p && typeof p === 'object')) arr = raw as unknown[];
+    else if (raw && typeof raw === 'object') {
+      const obj = raw as { points?: unknown; data?: unknown };
+      if (Array.isArray(obj.points))      arr = obj.points;
+      else if (Array.isArray(obj.data))   arr = obj.data;
+    }
 
     // Filter valid numeric points
     return arr.filter(
-      (p: any) => typeof p?.t === 'number' && typeof p?.v === 'number' && Number.isFinite(p.v)
-    ) as ChartPoint[];
+      (p): p is ChartPoint =>
+        !!p && typeof p === 'object' &&
+        typeof (p as ChartPoint).t === 'number' &&
+        typeof (p as ChartPoint).v === 'number' &&
+        Number.isFinite((p as ChartPoint).v),
+    );
   } catch (err) {
     console.error('[breadth] fetchHistory1M exception for', symbol, String(err));
     return [];
@@ -116,13 +123,13 @@ export async function GET(req: Request) {
         headers: { 'Cache-Control': 'public, s-maxage=43200, stale-while-revalidate=3600' },
       }
     );
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
       {
         breadth30dAvg: 50,
         daysSampled:   0,
         note:          'fallback — history fetch failed',
-        error:         String(err?.message ?? err),
+        error:         String(err instanceof Error ? err.message : err),
         generatedAt:   new Date().toISOString(),
       },
       { status: 200 }

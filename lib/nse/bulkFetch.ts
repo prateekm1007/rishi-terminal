@@ -2,6 +2,7 @@
 // Bulk stock price fetching using Yahoo Finance v8/chart endpoint
 // Strategy: parallel batches of sequential calls + 60s cache
 
+import { YahooChartMetaFullSchema, parseUpstream } from '@/lib/schemas/upstream';
 export interface BulkPriceEntry {
   price: number;
   change: number;
@@ -29,8 +30,8 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
 
       if (!res.ok) continue;
 
-      const data = await res.json();
-      const meta = data?.chart?.result?.[0]?.meta;
+      const parsed = parseUpstream(YahooChartMetaFullSchema, await res.json(), 'yahoo-chart-bulk');
+      const meta = parsed?.chart?.result?.[0]?.meta;
 
       if (!meta?.regularMarketPrice) continue;
 

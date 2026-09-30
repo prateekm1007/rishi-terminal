@@ -38,8 +38,14 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
-      - name: ESLint (0 errors, ratchet enforced)
+      # R4: two gates, honestly labelled. eslint fails on any error
+      # (including no-explicit-any in the R4-cleared directories) and the
+      # ratchet fails when the warning count rises above the committed
+      # baseline in eslint-ratchet.json.
+      - name: ESLint (0 errors; no-explicit-any=error in app/api, lib/auth, lib/payments, lib/scoring, lib/chat)
         run: npx eslint .
+      - name: Warning ratchet (eslintRatchet — fails on new warnings)
+        run: npm run lint:ratchet
 
       - name: Unit tests (Vitest)
         run: npx vitest run

@@ -2,6 +2,7 @@
 // Live fundamentals: NSE API (primary) + Yahoo Finance (fallback)
 // NSE works server-side, no CORS issues in Next.js API routes
 
+import { YahooQuoteSummarySchema, parseUpstream } from '@/lib/schemas/upstream';
 export interface LiveFundamentals {
   symbol: string;
   pe: number;
@@ -117,7 +118,7 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
       return null;
     }
 
-    const data = await res.json();
+    const data = parseUpstream(YahooQuoteSummarySchema, await res.json(), 'yahoo-quoteSummary');
     const result = data?.quoteSummary?.result?.[0];
     if (!result) return null;
 
@@ -125,12 +126,14 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
     const fin     = result.financialData || {};
     const summary = result.summaryDetail || {};
 
-    const pe           = parseFloat(stats?.trailingPE?.raw) || parseFloat(summary?.trailingPE?.raw) || 0;
-    const eps          = parseFloat(stats?.trailingEps?.raw) || 0;
-    const marketCap    = parseFloat(stats?.marketCap?.raw) || 0;
-    const bookValue    = parseFloat(stats?.bookValue?.raw) || 0;
-    const roe          = fin?.returnOnEquity?.raw ? fin.returnOnEquity.raw * 100 : 0;
-    const dividendYield = summary?.dividendYield?.raw ? summary.dividendYield.raw * 100 : 0;
+    const rawNum = (v: number | null | undefined): number =>
+      typeof v === 'number' && Number.isFinite(v) ? v : 0;
+    const pe           = rawNum(stats?.trailingPE?.raw) || rawNum(summary?.trailingPE?.raw);
+    const eps          = rawNum(stats?.trailingEps?.raw);
+    const marketCap    = rawNum(stats?.marketCap?.raw);
+    const bookValue    = rawNum(stats?.bookValue?.raw);
+    const roe          = rawNum(fin?.returnOnEquity?.raw) * 100;
+    const dividendYield = rawNum(summary?.dividendYield?.raw) * 100;
 
     return {
       symbol,

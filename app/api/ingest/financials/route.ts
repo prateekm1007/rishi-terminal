@@ -17,7 +17,7 @@ async function run(req: NextRequest) {
     return NextResponse.json({ error: "Provide symbols array" }, { status: 400 });
   }
 
-  const results: Record<string, any> = {};
+  const results: Record<string, Record<string, unknown>> = {};
 
   for (const sym of symbols.slice(0, 20)) {
     // Registry-based validation (remediation T8): reject anything the seed

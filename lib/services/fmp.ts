@@ -1,4 +1,6 @@
 // FMP_SERVICE_V1
+import { z } from 'zod';
+
 const FMP_BASE = "https://financialmodelingprep.com/api/v3";
 const FMP_KEY  = process.env.FMP_API_KEY || "";
 
@@ -16,7 +18,24 @@ async function fmpFetch<T>(path: string, params: Record<string,string> = {}): Pr
       next: { revalidate: 3600 },
     });
     if (!res.ok) throw new Error(`FMP HTTP ${res.status}`);
-    return await res.json() as T;
+    const json: unknown = await res.json();
+    // Trust boundary: validate the statement rows instead of blind-casting.
+    const rows = z.array(z.looseObject({
+      symbol: z.string().catch(''),
+      date: z.string().catch(''),
+      period: z.string().catch(''),
+      calendarYear: z.string().catch(''),
+      revenue: z.coerce.number().catch(0),
+      grossProfit: z.coerce.number().catch(0),
+      operatingIncome: z.coerce.number().catch(0),
+      netIncome: z.coerce.number().catch(0),
+      grossProfitRatio: z.coerce.number().catch(0),
+      operatingIncomeRatio: z.coerce.number().catch(0),
+      netIncomeRatio: z.coerce.number().catch(0),
+      eps: z.coerce.number().catch(0),
+      ebitda: z.coerce.number().catch(0),
+    })).catch([]).parse(json);
+    return rows as T;
   } catch (e) {
     console.error(`[FMP] ${path}:`, e);
     return null;

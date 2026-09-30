@@ -3,6 +3,7 @@ import { getSessionUser } from '@/lib/auth/session';
 import { resolvePersonaId, CHAT_PERSONAS } from '@/lib/chat/personas';
 import { STOCKS } from '@/data/stocks';
 
+import { OpenAIChatResponseSchema, GeminiResponseSchema, parseUpstream } from '@/lib/schemas/upstream';
 /**
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
  *
@@ -300,7 +301,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
     }
 
-    const data = await res.json();
+    const data = parseUpstream(OpenAIChatResponseSchema, await res.json(), 'chat-provider');
     const raw = data?.choices?.[0]?.message?.content;
     const text = typeof raw === 'string' ? raw.trim() : '';
     if (!text) {
@@ -357,7 +358,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 
-  const data = await res.json();
+  const data = parseUpstream(GeminiResponseSchema, await res.json(), 'chat-gemini');
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text || typeof text !== 'string') {
     console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));

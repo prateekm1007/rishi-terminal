@@ -1,3 +1,4 @@
+import { FinnhubQuoteSchema, parseUpstream } from '@/lib/schemas/upstream';
 /**
  * Finnhub API client — SERVER ONLY.
  *
@@ -34,8 +35,19 @@ export async function fetchFinnhubQuote(symbol: string): Promise<FinnhubQuote | 
     
     if (!res.ok) return null;
     
-    const data = await res.json();
-    return data.c ? data : null;
+    const parsed = parseUpstream(FinnhubQuoteSchema, await res.json(), 'finnhub-quote');
+    if (!parsed || typeof parsed.c !== 'number' || !Number.isFinite(parsed.c) || parsed.c <= 0) return null;
+    // Required fields guaranteed by FinnhubQuoteSchema's catch-fallbacks.
+    return {
+      c: parsed.c,
+      d: parsed.d ?? 0,
+      dp: parsed.dp ?? 0,
+      h: parsed.h ?? parsed.c,
+      l: parsed.l ?? parsed.c,
+      o: parsed.o ?? parsed.c,
+      pc: parsed.pc ?? parsed.c,
+      t: parsed.t ?? 0,
+    };
   } catch (error) {
     console.warn('[Finnhub] Fetch failed:', error);
     return null;

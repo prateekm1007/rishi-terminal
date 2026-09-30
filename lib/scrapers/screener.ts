@@ -1,4 +1,5 @@
 // lib/scrapers/screener.ts
+import { z } from 'zod';
 const BASE = "https://www.screener.in/company";
 const HEADERS: Record<string, string> = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -290,7 +291,9 @@ export async function fetchScreenerFundamentals(symbol: string): Promise<Screene
   const { revCagr3y, epsCagr3y } = extractCAGR(html);
   const promoter = extractPromoterFromMeta(html);
 
-  return {
+  // R4: the extracted record is a trust boundary (regex over third-party
+  // HTML) — validate the final shape before it leaves the module.
+  const parsed = ScreenerFundamentalsSchema.safeParse({
     pe: r["Stock P/E"] ?? 0,
     roe: r["ROE"] ?? 0,
     roce: r["ROCE"] ?? 0,
@@ -303,8 +306,25 @@ export async function fetchScreenerFundamentals(symbol: string): Promise<Screene
     epsCagr: epsCagr3y,
     promoterHolding: promoter,
     marketCap: extractMarketCap(html),
-  };
+  });
+  return parsed.success ? parsed.data : null;
 }
+
+const numOr0 = z.coerce.number().transform((v) => (Number.isFinite(v) ? v : 0));
+const ScreenerFundamentalsSchema = z.object({
+  pe: numOr0,
+  roe: numOr0,
+  roce: numOr0,
+  bookValue: numOr0,
+  fcf: numOr0,
+  roa: numOr0,
+  debtToEquity: numOr0,
+  opm: numOr0,
+  revCagr3y: numOr0,
+  epsCagr: numOr0,
+  promoterHolding: numOr0,
+  marketCap: numOr0,
+});
 
 export async function fetchScreenerQuarterly(symbol: string): Promise<{
   quarters: { period: string; revenue: number; netProfit: number; opm: number }[];

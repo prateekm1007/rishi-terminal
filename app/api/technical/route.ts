@@ -1,10 +1,11 @@
 // app/api/technical/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { computeIndicators } from "@/lib/technical";
+import { YahooChartSchema, parseUpstream } from "@/lib/schemas/upstream";
 
-function cleanNumArray(arr: any): number[] {
+function cleanNumArray(arr: ReadonlyArray<number | null> | null | undefined): number[] {
   if (!Array.isArray(arr)) return [];
-  return arr.filter((v) => typeof v === "number" && Number.isFinite(v));
+  return arr.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
 }
 
 export async function GET(req: NextRequest) {
@@ -32,8 +33,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: `Yahoo HTTP ${res.status}` }, { status: 502 });
     }
 
-    const json: any = await res.json();
-    const result = json?.chart?.result?.[0];
+    const parsed = parseUpstream(YahooChartSchema, await res.json(), "yahoo-chart");
+    const result = parsed?.chart?.result?.[0];
     const quote = result?.indicators?.quote?.[0];
 
     const closes = cleanNumArray(quote?.close);
@@ -63,9 +64,9 @@ export async function GET(req: NextRequest) {
         },
       }
     );
-  } catch (e: any) {
+  } catch (e) {
     return NextResponse.json(
-      { error: e?.message ?? "Failed to compute technicals" },
+      { error: e instanceof Error ? e.message : "Failed to compute technicals" },
       { status: 500 }
     );
   }

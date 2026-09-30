@@ -26,7 +26,8 @@ export interface ChatSession {
   messages: ChatMessage[];
   createdAt: Date;
   updatedAt: Date;
-  context?: Record<string, any>;
+  /** JSON-cloneable chat context (symbol, portfolio rows, lens params). */
+  context?: Record<string, string | number | boolean | null | string[] | number[]>;
 }
 
 export interface DebateSession {

@@ -15,7 +15,18 @@ export async function POST(req: NextRequest) {
     }
 
     const t0 = Date.now();
-    const prices: Record<string, any> = {};
+    // Shape written below: every entry carries price + change + changePercent24h
+    // (+ optional volume/lastUpdated). fetchLivePrice returns a superset.
+    type PriceEntry = {
+      price: number;
+      change: number | null;
+      changePercent24h?: number | null;
+      changePercent?: number | null;
+      volume24h?: number | null;
+      lastUpdated?: string;
+      source?: string;
+    };
+    const prices: Record<string, PriceEntry> = {};
 
     // Strategy: Yahoo bulk for NSE stocks, fallback for others
     const INDEX_SYMBOLS = ['NIFTY50','SENSEX','BANK_NIFTY','SPX','DJI','IXIC','DAX','FTSE','HSI','N225','VIX'];
@@ -85,15 +96,17 @@ export async function POST(req: NextRequest) {
     // - Provide { prices: ... } wrapper (expected by hooks/useLivePrices in UI)
     // - Keep legacy top-level symbol keys for backward compatibility
     // - Ensure changePercent24h exists by aliasing from change/changePercent
-    const normalized: Record<string, any> = {};
+    const normalized: Record<string, PriceEntry> = {};
     Object.keys(prices || {}).forEach((k) => {
-      const v: any = (prices as any)[k];
+      const v = prices[k];
       if (!v) return;
 
-      const ch =
-        v.changePercent24h !== undefined
+      const ch: number | null =
+        v.changePercent24h !== undefined && v.changePercent24h !== null
           ? v.changePercent24h
-          : (v.changePercent !== undefined ? v.changePercent : v.change);
+          : v.changePercent !== undefined && v.changePercent !== null
+            ? v.changePercent
+            : v.change;
 
       normalized[k] = {
         ...v,

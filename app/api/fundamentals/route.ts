@@ -3,10 +3,16 @@
 // Cache: 24 hours
 
 import { NextRequest, NextResponse } from "next/server";
-import { fetchFullFundamentals, fetchLiveQuarterly, fetchLiveShareholding } from "@/lib/liveFundamentals";
+import { fetchFullFundamentals, fetchLiveQuarterly, fetchLiveShareholding, type FullFundamentals } from "@/lib/liveFundamentals";
 import { STOCKS } from "@/data/stocks/index";
 
-const cache = new Map<string, { data: any; cachedAt: number }>();
+interface FundamentalsCacheEntry {
+  // unknown (not any): the cache is write-once/read-serialize only — no
+  // property is ever read without the upstream fetch having validated it.
+  data: unknown;
+  cachedAt: number;
+}
+const cache = new Map<string, FundamentalsCacheEntry>();
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
 function getCached(symbol: string) {
@@ -16,7 +22,7 @@ function getCached(symbol: string) {
   return entry.data;
 }
 
-function setCache(symbol: string, data: any) {
+function setCache(symbol: string, data: unknown) {
   cache.set(symbol, { data, cachedAt: Date.now() });
 }
 
@@ -45,7 +51,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fallback: synthetic
-    const stock = (STOCKS as any)[symbol];
+    const stock = STOCKS[symbol];
     if (!stock) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const revPerQ = Math.round((stock.rev || 0) * 0.25);
@@ -72,7 +78,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Fallback: synthetic
-    const stock = (STOCKS as any)[symbol];
+    const stock = STOCKS[symbol];
     if (!stock) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     const promo = stock.promo || 0;
@@ -98,7 +104,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Fallback: static
-  const stock = (STOCKS as any)[symbol];
+  const stock = STOCKS[symbol];
   if (!stock) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const staticData = {
@@ -132,13 +138,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid symbols' }, { status: 400 });
     }
 
-    const result: Record<string, any> = {};
+    type FundamentalsEntry = FullFundamentals | { symbol: string; pe: number; roe: number; [k: string]: number | string | boolean | null };
+    const result: Record<string, FundamentalsEntry> = {};
     const toFetch: string[] = [];
 
     for (const sym of symbols) {
       const upper = sym.toUpperCase();
       const cached = getCached(`fund:${upper}`);
-      if (cached) result[upper] = { ...cached, fromCache: true };
+      // The cache only ever stores values this module itself produced.
+      if (cached) result[upper] = { ...(cached as FullFundamentals), fromCache: true };
       else toFetch.push(upper);
     }
 
@@ -149,7 +157,7 @@ export async function POST(req: NextRequest) {
           setCache(`fund:${sym}`, live);
           result[sym] = live;
         } else {
-          const stock = (STOCKS as any)[sym];
+          const stock = STOCKS[sym];
           if (stock) {
             result[sym] = {
               symbol: sym,

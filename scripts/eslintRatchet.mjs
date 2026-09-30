@@ -59,9 +59,21 @@ if (total > baseline.total) {
   process.exit(1);
 }
 
+// R4 (round-2 reconciliation): the baseline is NEVER auto-written. Local
+// eslint can count a few warnings differently from CI (node/typescript
+// minor deltas in type-aware rules), so an auto-lowered local baseline
+// makes CI fail spuriously — observed on run 36697292722 (375 > 370 after
+// a local run lowered the committed baseline). Improvements are locked in
+// explicitly, in a CI-identical setup:
+//   npm run lint:ratchet -- --update-baseline
 if (total < baseline.total) {
-  writeFileSync(baselinePath, JSON.stringify({ total, errors: counts.errors, warnings: counts.warnings }, null, 2) + "\n");
-  console.log(`Ratchet improved: baseline lowered to ${total} (committed).`);
+  console.log(`Count (${total}) is below the baseline (${baseline.total}).`);
+  if (process.argv.includes("--update-baseline")) {
+    writeFileSync(baselinePath, JSON.stringify({ total, errors: counts.errors, warnings: counts.warnings }, null, 2) + "\n");
+    console.log(`Baseline lowered to ${total} (committed).`);
+  } else {
+    console.log(`Lock it in explicitly with: npm run lint:ratchet -- --update-baseline`);
+  }
 } else {
   console.log(`Ratchet holds. Reduce the count to lower the bar.`);
 }

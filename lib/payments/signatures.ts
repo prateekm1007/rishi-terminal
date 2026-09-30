@@ -1,3 +1,4 @@
+const x: any = 1; // R4 gate probe: this line must FAIL CI (no-explicit-any=error in lib/payments)
 // lib/payments/signatures.ts
 // Razorpay signature verification primitives (remediation T6).
 //

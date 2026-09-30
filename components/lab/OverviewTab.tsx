@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
@@ -171,7 +171,7 @@ export default function OverviewTab() {
       const pl = current - invested;
       const plPct = invested > 0 ? (pl / invested) * 100 : 0;
 
-      const consensus = stock ? buildConsensus(stock) : null;
+      const consensus = stock ? getStockScore(stock) : null;
       const score = consensus?.consensus ?? 0;
       const sector = stock?.sector ?? 'Unknown';
 
@@ -527,7 +527,7 @@ const [beta, setBeta] = useState<number | null>(null);
   const whatIfStock = (STOCKS as any)[whatIfSymbol.trim().toUpperCase()];
   const whatIfLtp = whatIfSymbol ? (prices[whatIfSymbol.trim().toUpperCase()]?.price ?? whatIfStock?.price ?? 0) : 0;
   const whatIfShares = (whatIfLtp > 0) ? (whatIfAmount / whatIfLtp) : 0;
-  const whatIfConsensus = whatIfStock ? buildConsensus(whatIfStock) : null;
+  const whatIfConsensus = whatIfStock ? getStockScore(whatIfStock) : null;
   const whatIfScore = whatIfConsensus?.consensus ?? 0;
 
   const whatIfNewValue = totals.totalCurrent + whatIfAmount;

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
@@ -54,7 +54,7 @@ export default function IntelligenceTab() {
       const stock = STOCKS[h.symbol];
       const livePrice = prices[h.symbol]?.price ?? stock?.price ?? h.avgPrice;
       const current = h.shares * livePrice;
-      const consensus = stock ? buildConsensus(stock) : null;
+      const consensus = stock ? getStockScore(stock) : null;
       return {
         ...h,
         stock,

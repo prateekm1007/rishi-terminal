@@ -3,6 +3,7 @@
 
 import { STOCKS } from "../data/stocks";
 import { buildConsensus } from "../lib/consensus";
+import { SCORE_ENGINE_VERSION } from "../lib/consensus/version";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -96,6 +97,7 @@ async function snapshotNewStocks() {
           asset_category:     "stock",
           snapshot_date:      today,
           consensus_score:    consensus.consensus,
+          score_engine_version: SCORE_ENGINE_VERSION,
           signal:             consensus.consensus >= 75 ? "BUY"
                             : consensus.consensus >= 45 ? "HOLD" : "SELL",
           disagreement:       0,

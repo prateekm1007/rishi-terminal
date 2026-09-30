@@ -18,7 +18,7 @@ import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
 import RishiScoreDual             from '../score/RishiScoreDual';
-import { calculateDualScore }     from '../../lib/scorers/rishiScoreV2';
+import { resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
 import type { StockMetrics }      from '../../lib/scorers/types';
 import { useFundamentals } from '../../hooks/useFundamentals';
 
@@ -261,15 +261,10 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
 
                 <div className="wisdom-reveal-delay-1">
                   {(() => {
-                    const metrics: StockMetrics = {
-                      symbol: stock.symbol, name: stock.name, sector: stock.sector,
-                      pe: liveFundamentals?.pe ?? stock.pe, pb: stock.price / (liveFundamentals?.bookValue ?? stock.bvps),
-                      roe: liveFundamentals?.roe ?? stock.roe, roce: liveFundamentals?.roce ?? stock.roce, opm: liveFundamentals?.opm ?? stock.opm,
-                      debtToEquity: liveFundamentals?.debtToEquity ?? stock.de, revenueCAGR3Y: liveFundamentals?.revCagr3y ?? stock.revcagr,
-                      epsCAGR3Y: liveFundamentals?.epsCagr ?? stock.epscagr, promoterHolding: liveFundamentals?.promoterHolding ?? stock.promo,
-                      marketCap: liveFundamentals?.marketCap ? liveFundamentals.marketCap / 10000000 : stock.mktcap, fcfMargin: liveFundamentals?.fcf ? (liveFundamentals.fcf / 100) : (stock.fcf / stock.rev) * 100,
-                    };
-                    return <RishiScoreDual metrics={metrics} />;
+                    // T10: one input set — resolve seed+live through lib/scoring
+                    const resolved = resolveStockMetrics(stock.symbol, liveFundamentals);
+                    if (!resolved) return null;
+                    return <RishiScoreDual metrics={resolved.metrics} />;
                   })()}
                 </div>
 

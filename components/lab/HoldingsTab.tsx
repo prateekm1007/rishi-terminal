@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { loadPortfolio, addHolding, removeHolding, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '@/hooks/useLivePrices';
@@ -55,7 +55,7 @@ export default function HoldingsTab() {
       const current = h.shares * livePrice;
       const pl = current - invested;
       const plPct = invested > 0 ? (pl / invested) * 100 : 0;
-      const consensus = stock ? buildConsensus(stock) : null;
+      const consensus = stock ? getStockScore(stock) : null;
       const score = consensus?.consensus ?? 0;
 
       return { ...h, stock, livePrice, invested, current, pl, plPct, score };

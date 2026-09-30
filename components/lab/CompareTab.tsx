@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
@@ -231,7 +231,7 @@ export default function CompareTab() {
       .map(sym => {
         const stock = STOCKS[sym] as any;
         if (!stock) return null;
-        const c = buildConsensus(stock);
+        const c = getStockScore(stock);
         const live = prices[sym]?.price ?? stock.price ?? 0;
         const chg = prices[sym]?.changePercent24h ?? 0;
         const liveMktcap = (bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : stock.mktcap);

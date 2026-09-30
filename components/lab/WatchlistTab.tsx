@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { addHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
@@ -109,7 +109,7 @@ export default function WatchlistTab() {
       const stock = STOCKS[i.symbol];
       const live = prices[i.symbol]?.price ?? (stock?.price ?? 0);
       const changePct = prices[i.symbol]?.changePercent24h ?? 0;
-      const consensus: ConsensusResult | null = stock ? buildConsensus(stock) : null;
+      const consensus: ConsensusResult | null = stock ? getStockScore(stock) : null;
       const score = consensus?.consensus ?? 0;
       const topBull = consensus?.topBull?.full ?? '—';
       const rishiConviction = score >= 75 ? 9 : score >= 65 ? 7 : score >= 55 ? 5 : score >= 45 ? 3 : 1;

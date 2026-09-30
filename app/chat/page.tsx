@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { STOCKS } from '../../data/stocks';
 import RishiChat from '../../components/chat/RishiChat';
 import { useLanguage } from '../../lib/language';
-import { buildConsensus } from '../../lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 export default function ChatPage() {
   const { t } = useLanguage();
@@ -14,7 +14,7 @@ export default function ChatPage() {
   const stock = STOCKS[selectedSymbol];
   const stocks = Object.values(STOCKS);
 
-  const consensus = stock ? buildConsensus(stock) : null;
+  const consensus = stock ? getStockScore(stock) : null;
 
   const filteredStocks = useMemo(() => {
     if (!searchQuery) return stocks.slice(0, 50);

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { STOCKS } from '../../../data/stocks';
-import { buildConsensus } from '../../../lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { generateStockDetail } from '../../../data/stockDetails';
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 
@@ -26,7 +26,7 @@ export default async function StockPage({ params }: StockPageProps) {
 
   if (!stock) notFound();
 
-  const consensus = buildConsensus(stock);
+  const consensus = getStockScore(stock);
   const stockDetail = generateStockDetail(stock);
 
   return (

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { calculateRishiScore } from "@/lib/scorers/rishiScoreV2";
+import { calculateQvps } from "@/lib/scoring"; // T10: QVPS short screen — not the Rishi Score
 import { STOCKS } from "@/data/stocks";
 import type { StockMetrics } from "@/lib/scorers/types";
 import { useFundamentals } from '@/hooks/useFundamentals';
@@ -27,7 +27,7 @@ export default function ShortOfTheDay() {
         epsCAGR3Y: s.epscagr, promoterHolding: s.promo,
         marketCap: s.mktcap, fcfMargin: (s.fcf / s.rev) * 100,
       };
-      const result = calculateRishiScore(metrics, "SHORT", false);
+      const result = calculateQvps(metrics, "SHORT", false);
       return { stock: s, shortScore: result.finalScore, conviction: result.conviction, headline: result.headline };
     });
 
@@ -62,7 +62,7 @@ export default function ShortOfTheDay() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
           <div>
             <div style={{ fontSize: "11px", fontWeight: 700, color: C.red, letterSpacing: "0.12em", marginBottom: "6px" }}>
-              🔴 SHORT OF THE DAY
+              🔴 QVPS SHORT SCREEN — UNVALIDATED MODEL, NOT INVESTMENT ADVICE
             </div>
             <div style={{ fontSize: "22px", fontWeight: 900, color: C.text, fontFamily: "JetBrains Mono, monospace" }}>
               {stock.symbol}
@@ -76,7 +76,7 @@ export default function ShortOfTheDay() {
             borderRadius: "14px", padding: "10px 16px", textAlign: "center",
           }}>
             <div style={{ fontSize: "10px", color: C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-              Short Score
+              QVPS Short
             </div>
             <div style={{ fontSize: "28px", fontWeight: 900, color: scoreColor, fontFamily: "JetBrains Mono, monospace", lineHeight: 1 }}>
               {shortScore.toFixed(0)}

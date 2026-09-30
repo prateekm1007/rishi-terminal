@@ -1,5 +1,10 @@
 import { Stock } from '../../lib/types';
 
+// Remediation T14: ISO date of the seed snapshot below. Every value in STOCKS
+// is a static placeholder captured around this date; the UI must never render
+// seed prices as live prices (see lib/scoring resolveStockMetrics).
+export const SEED_AS_OF = '2026-09-30';
+
 export const STOCKS: Record<string, Stock> = {
   RELIANCE: { symbol: 'RELIANCE', name: 'Reliance Industries', sector: 'Energy', exchange: 'NSE', price: 2500, pe: 28, roe: 14, mktcap: 1700000, ocf: 55000, rev: 850000, revcagr: 12, epscagr: 14, opm: 18, roce: 16, de: 0.45, fcf: 45000, promo: 50.3, ca: 400000, tl: 250000, sh: 6800, np: 60000, dep: 45000, capex: 85000, bvps: 1100 },
   TCS: { symbol: 'TCS', name: 'Tata Consultancy Services', sector: 'IT', exchange: 'NSE', price: 3600, pe: 28, roe: 44, mktcap: 1300000, ocf: 42000, rev: 225000, revcagr: 10, epscagr: 8, opm: 25, roce: 48, de: 0, fcf: 40000, promo: 72.3, ca: 95000, tl: 35000, sh: 3618, np: 42000, dep: 3200, capex: 5500, bvps: 200 },

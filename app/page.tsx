@@ -10,8 +10,7 @@ import { useLivePrices } from "@/hooks/useLivePrices";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import { STOCKS } from "@/data/stocks";
-import { buildConsensus } from "@/lib/consensus";
-import { calculateRishiScore } from "@/lib/scorers/rishiScoreV2";
+import { resolveStockMetrics, getStockScore, getQvps } from "@/lib/scoring"; // T10: single scoring surface
 import type { StockMetrics } from "@/lib/scorers/types";
 
 /* ── Constants ─────────────────────────────────────────────── */
@@ -150,7 +149,7 @@ export default function DashboardPage() {
         symbol:s.symbol,
         name:s.name,
         sector:s.sector,
-        consensus:buildConsensus(s).consensus,
+        consensus:getStockScore(s).consensus,
         pe:s.pe,
         roe:s.roe
       }));
@@ -163,7 +162,7 @@ export default function DashboardPage() {
       .map((s:any) => ({
         symbol:s.symbol,
         name:s.name,
-        shortScore:buildConsensus(s).consensus,
+        shortScore:getStockScore(s).consensus,
         reason:"Risk factors detected"
       }));
   }, []);
@@ -183,25 +182,11 @@ export default function DashboardPage() {
 
   // Dynamic Stock of the Day commentary
   const sodCommentary = useMemo(() => {
-    const sodStock = STOCKS[STOCK_OF_DAY.symbol];
-    if (!sodStock) return STOCK_OF_DAY.why || "Loading...";
-    const metrics: StockMetrics = {
-      symbol: sodStock.symbol,
-      name: sodStock.name,
-      sector: sodStock.sector,
-      pe: sodFund?.pe ?? sodStock.pe,
-      pb: sodStock.price / (sodFund?.bookValue ?? sodStock.bvps ?? 1),
-      roe: sodFund?.roe ?? sodStock.roe,
-      roce: sodFund?.roce ?? sodStock.roce,
-      opm: sodFund?.opm ?? sodStock.opm,
-      fcfMargin: sodStock.rev > 0 ? (sodStock.fcf / sodStock.rev) * 100 : 0,
-      revenueCAGR3Y: sodFund?.revCagr3y ?? sodStock.revcagr,
-      epsCAGR3Y: sodFund?.epsCagr ?? sodStock.epscagr,
-      debtToEquity: sodFund?.debtToEquity ?? sodStock.de,
-      promoterHolding: sodFund?.promoterHolding ?? sodStock.promo,
-      marketCap: sodFund?.marketCap ? sodFund.marketCap / 10000000 : sodStock.mktcap,
-    };
-    const result = calculateRishiScore(metrics, "LONG", false);
+    // T10: one input set — resolve seed+live through lib/scoring, then label
+    // the commentary as the QVPS model (never "the Rishi Score").
+    const resolved = resolveStockMetrics(STOCK_OF_DAY.symbol, sodFund);
+    if (!resolved) return STOCK_OF_DAY.why || "Loading...";
+    const result = getQvps(resolved, "LONG");
     return result.commentary;
   }, [sodFund]);const [timeAgo, setTimeAgo] = useState("—");
 

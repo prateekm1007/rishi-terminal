@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Stock } from "../../lib/types";
-import { buildConsensus } from "../../lib/consensus";
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
@@ -48,7 +48,7 @@ export function StockTable({ stocks }: Props) {
 
   const enrichedStocks = useMemo<StockRow[]>(() => {
     return stocks.map(stock => {
-      const report = buildConsensus(stock);
+      const report = getStockScore(stock);
       const topScore = report.scores[0];
       const livePrice = prices[stock.symbol]?.price ?? stock.price;
       const change24h = prices[stock.symbol]?.change ?? 0;

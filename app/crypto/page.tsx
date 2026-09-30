@@ -7,7 +7,7 @@ import { CRYPTO_ASSETS, FEAR_GREED_INDEX, MARKET_DOMINANCE, getCryptoMetrics } f
 import { scoreSatoshiBodhi } from '../../lib/scorers/crypto/satoshibodhi';
 import { scoreVitalikVeda } from '../../lib/scorers/crypto/vitalikVeda';
 import { scoreMichaelSaylor } from '../../lib/scorers/crypto/michaelsaylor';
-import { isPremium } from '../../lib/premium';
+import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
@@ -55,7 +55,8 @@ export default function CryptoPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const premium = isPremium();
+  const { tier } = useTier();
+  const premium = tier !== 'seeker';
 
   // Extract all crypto symbols
   const cryptoSymbols = useMemo(() => CRYPTO_ASSETS.map(c => c.symbol), []);

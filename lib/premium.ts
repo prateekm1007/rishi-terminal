@@ -24,7 +24,7 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
   },
   student: {
     name:            'Student',
-    label:           'Student',
+    label:            'Student',
     price:           '499/year',
     rishisVisible:   20,
     dailyStockLimit: null,
@@ -59,37 +59,41 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
   },
 };
 
-// ── DEVELOPER MODE ──────────────────────────────────────────────
-const DEVELOPER_MODE = true;
+// ── TIER MODEL (remediation T6) ─────────────────────────────────
+// One tier model: seeker | student | disciple. The authoritative tier is
+// stored in public.users and read server-side (lib/auth/session.ts); the
+// client obtains it from GET /api/auth/me via hooks/useTier.ts. There is
+// deliberately NO localStorage tier and NO developer mode that force-grants
+// a paid tier.
 
-export function getCurrentTier(): WisdomTier {
-  if (DEVELOPER_MODE) return 'disciple';
-  if (typeof window === 'undefined') return 'seeker';
-  try {
-    const stored = localStorage.getItem('rishi_tier_v1');
-    if (stored && ['seeker', 'student', 'disciple'].includes(stored)) {
-      return stored as WisdomTier;
-    }
-  } catch {}
-  return 'seeker';
+export function isPremium(tier: WisdomTier): boolean {
+  return tier === 'student' || tier === 'disciple';
 }
 
-export function setTier(tier: WisdomTier): void {
-  if (typeof window === 'undefined') return;
-  try { localStorage.setItem('rishi_tier_v1', tier); } catch {}
+export function isDisciple(tier: WisdomTier): boolean {
+  return tier === 'disciple';
 }
 
-export function getRishisVisible(tier?: WisdomTier): number {
-  if (DEVELOPER_MODE) return 20;
-  const t = tier ?? getCurrentTier();
-  return TIER_CONFIG[t].rishisVisible;
+export function getRishisVisible(tier: WisdomTier): number {
+  return TIER_CONFIG[tier].rishisVisible;
 }
+
+export function canAccess(feature: string, tier: WisdomTier): boolean {
+  const features = TIER_CONFIG[tier].features;
+  return features.some(f => f.toLowerCase().includes(feature.toLowerCase()));
+}
+
+// ── ANONYMOUS VIEW COUNTER ──────────────────────────────────────
+// Per remediation T6 (6): a client-side daily view counter may remain for
+// ANONYMOUS visitors as a soft gate. It is never the gate for signed-in
+// tiers — the server decides those.
 
 export function canViewStock(tier?: WisdomTier): boolean {
-  if (DEVELOPER_MODE) return true;
+  // Signed-in tiers: unlimited stock views by tier config (server enforces
+  // data-level gates); the soft counter below only applies to anonymous use.
+  if (tier && tier !== 'seeker') return true;
   if (typeof window === 'undefined') return true;
-  const t = tier ?? getCurrentTier();
-  const limit = TIER_CONFIG[t].dailyStockLimit;
+  const limit = TIER_CONFIG[tier ?? 'seeker'].dailyStockLimit;
   if (limit === null) return true;
   try {
     const today = new Date().toDateString();
@@ -101,23 +105,17 @@ export function canViewStock(tier?: WisdomTier): boolean {
   } catch { return true; }
 }
 
-export function canAccess(feature: string, tier?: WisdomTier): boolean {
-  if (DEVELOPER_MODE) return true;
-  const t        = tier ?? getCurrentTier();
-  const features = TIER_CONFIG[t].features;
-  return features.some(f => f.toLowerCase().includes(feature.toLowerCase()));
-}
-
-export function isPremium(tier?: WisdomTier): boolean {
-  if (DEVELOPER_MODE) return true;
-  const t = tier ?? getCurrentTier();
-  return t === 'student' || t === 'disciple';
-}
-
-export function isDisciple(tier?: WisdomTier): boolean {
-  if (DEVELOPER_MODE) return true;
-  const t = tier ?? getCurrentTier();
-  return t === 'disciple';
+export function getViewsRemaining(tier?: WisdomTier): number {
+  if (tier && tier !== 'seeker') return 999;
+  if (typeof window === 'undefined') return 5;
+  const limit = TIER_CONFIG[tier ?? 'seeker'].dailyStockLimit;
+  if (limit === null) return 999;
+  try {
+    const today = new Date().toDateString();
+    const key   = `stock_views_${today}`;
+    const views = parseInt(localStorage.getItem(key) || '0', 10);
+    return Math.max(0, limit - views);
+  } catch { return 5; }
 }
 
 export function resetDailyLimit(): void {
@@ -126,18 +124,4 @@ export function resetDailyLimit(): void {
     const today = new Date().toDateString();
     localStorage.removeItem(`stock_views_${today}`);
   } catch {}
-}
-
-export function getViewsRemaining(): number {
-  if (DEVELOPER_MODE) return 999;
-  if (typeof window === 'undefined') return 5;
-  const tier  = getCurrentTier();
-  const limit = TIER_CONFIG[tier].dailyStockLimit;
-  if (limit === null) return 999;
-  try {
-    const today = new Date().toDateString();
-    const key   = `stock_views_${today}`;
-    const views = parseInt(localStorage.getItem(key) || '0', 10);
-    return Math.max(0, limit - views);
-  } catch { return 5; }
 }

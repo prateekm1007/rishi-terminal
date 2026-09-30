@@ -7,7 +7,7 @@ import { COMMODITIES } from '../../data/markets';
 import { scoreJimRogers } from '../../lib/scorers/commodity/jimrogers';
 import { scoreRickRule } from '../../lib/scorers/commodity/rickrule';
 import { scoreDanielYergin } from '../../lib/scorers/commodity/danielyergin';
-import { isPremium } from '../../lib/premium';
+import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
@@ -60,7 +60,8 @@ export default function CommoditiesPage() {
   const [category, setCategory] = useState('All');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const premium = isPremium();
+  const { tier } = useTier();
+  const premium = tier !== 'seeker';
 
   // Pull symbols for live price fetching
   const commoditySymbols = useMemo(() => COMMODITIES.map(c => c.symbol), []);

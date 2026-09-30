@@ -2,7 +2,8 @@
 
 import { RishiScore } from "../../lib/consensus/types";
 import { RISHI_WEIGHT_CONFIG } from "../../lib/consensus/weights";
-import { getRishisVisible, isPremium, getCurrentTier } from "../../lib/premium";
+import { getRishisVisible, isPremium } from "../../lib/premium";
+import { useTier } from "../../hooks/useTier";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useLanguage } from '../../lib/language';
@@ -48,11 +49,13 @@ export function RishiGrid({ scores }: Props) {
   const [premium, setPremium] = useState(true);
   const [expandedRishi, setExpandedRishi] = useState<string | null>(null);
 
+  const { tier, loading } = useTier();
+
   useEffect(() => {
-    const tier = getCurrentTier();
+    if (loading) return;
     setVisibleCount(getRishisVisible(tier));
     setPremium(isPremium(tier));
-  }, []);
+  }, [tier, loading]);
 
   const visibleScores = scores.slice(0, visibleCount);
   const lockedCount = scores.length - visibleCount;

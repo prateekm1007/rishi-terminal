@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { STOCKS } from "@/data/stocks";
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,8 +63,13 @@ function matchScore(sym: string, name: string, q: string) {
 
 export async function GET(req: NextRequest) {
   try {
+    // R5: rate limit + input cap on the open search proxy.
+    const ip = clientIpFromHeaders(req.headers);
+    if (!(await consumeIpBudget(ip, 'search', 60))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
     const { searchParams } = new URL(req.url);
-    const rawQ = (searchParams.get("q") ?? "").trim();
+    const rawQ = (searchParams.get("q") ?? "").trim().slice(0, 64);
     if (!rawQ) {
       return NextResponse.json(
         { results: [] as SearchResult[] },

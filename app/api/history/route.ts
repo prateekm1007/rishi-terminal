@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { validateSymbolInput } from '@/lib/registry/validateInput';
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
@@ -199,15 +201,20 @@ async function fetchCoinGeckoSeries(symbol: string, tf: Timeframe) {
 
 export async function GET(req: NextRequest) {
   try {
+    // R5: persistent per-IP rate limit (shared Postgres counter).
+    const ip = clientIpFromHeaders(req.headers);
+    if (!(await consumeIpBudget(ip, 'history', 30))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
     const { searchParams } = new URL(req.url);
-    const symbol = (searchParams.get("symbol") || "").trim();
+    const checked = validateSymbolInput(searchParams.get("symbol"));
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.reason }, { status: 400 });
+    }
+    const symbol = checked.symbol;
     const tf = parseTf(searchParams.get("tf"));
 
-    if (!symbol) {
-      return NextResponse.json({ error: "Missing symbol" }, { status: 400 });
-    }
-
-    const upper = symbol.toUpperCase();
+    const upper = symbol;
     let source: "yahoo" | "coingecko" = "yahoo";
     let points: Array<{ t: number; v: number }> = [];
 

@@ -1,18 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
 import { fetchLivePrice } from '@/lib/livePrice';
+import { validateSymbolsInput } from '@/lib/registry/validateInput';
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 
 export async function POST(req: NextRequest) {
   try {
+    // R5: persistent per-IP rate limit on this open proxy.
+    const ip = clientIpFromHeaders(req.headers);
+    if (!(await consumeIpBudget(ip, 'prices-batch', 20))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { symbols } = await req.json();
 
     if (!Array.isArray(symbols) || symbols.length === 0) {
       return NextResponse.json({ error: 'Invalid symbols' }, { status: 400 });
     }
 
-    if (symbols.length > 1000) {
-      return NextResponse.json({ error: 'Max 1000 symbols' }, { status: 400 });
+    // R5: batch cap 50 + registry/allow-list validation (was: 1000, unvalidated).
+    const checked = validateSymbolsInput(symbols.map(String), { max: 50 });
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.reason }, { status: 400 });
     }
+    const list = checked.symbols;
 
     const t0 = Date.now();
     // Shape written below: every entry carries price + change + changePercent24h
@@ -31,7 +42,7 @@ export async function POST(req: NextRequest) {
     // Strategy: Yahoo bulk for NSE stocks, fallback for others
     const INDEX_SYMBOLS = ['NIFTY50','SENSEX','BANK_NIFTY','SPX','DJI','IXIC','DAX','FTSE','HSI','N225','VIX'];
 
-    const nseSymbols = symbols.filter(s =>
+    const nseSymbols = list.filter(s =>
       !INDEX_SYMBOLS.includes(s) && 
       !s.includes('/') && // not forex
       !['IN2YS','IN6YS','IN10YS','IN15YS','IN91DTB','IN182DTB'].includes(s) && // not bonds
@@ -39,7 +50,7 @@ export async function POST(req: NextRequest) {
       !['GOLD','SILVER','PLATINUM','CRUDEOIL','WTI','BRENT','NATURALGAS','COPPER','ALUMINIUM','ZINC','NICKEL','LEAD','BRENTCRUDE','PALLADIUM','COTTON','RUBBER','MENTHAOIL','CARDAMOM'].includes(s) // not commodities
     );
 
-    const otherSymbols = symbols.filter(s => !nseSymbols.includes(s));
+    const otherSymbols = list.filter(s => !nseSymbols.includes(s));
 
     // Fetch NSE stocks via Yahoo bulk
     const bulkResults = await fetchBulkPricesForSymbols(nseSymbols);
@@ -88,7 +99,7 @@ export async function POST(req: NextRequest) {
 
     const ms = Date.now() - t0;
     console.log(
-      `[/api/prices/batch] ${Object.keys(prices).length}/${symbols.length} in ${ms}ms ` +
+      `[/api/prices/batch] ${Object.keys(prices).length}/${list.length} in ${ms}ms ` +
       `(Yahoo bulk: ${Object.keys(bulkResults).length}, fallback: ${otherSymbols.length})`
     );
 

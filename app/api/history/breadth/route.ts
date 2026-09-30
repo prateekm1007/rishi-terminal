@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 
 /**
  * Phase 4B: /api/history/breadth
@@ -50,6 +51,11 @@ async function fetchHistory1M(base: string, symbol: string): Promise<ChartPoint[
 
 export async function GET(req: Request) {
   try {
+    // R5: persistent per-IP rate limit (fixed internal symbol set only).
+    const ip = clientIpFromHeaders(new Headers(req.headers));
+    if (!(await consumeIpBudget(ip, 'history-breadth', 30))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://rishi-terminal.vercel.app';
 
     const [nifty, sensex, bank] = await Promise.all([

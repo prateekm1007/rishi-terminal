@@ -1,6 +1,8 @@
 // app/api/technical/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { computeIndicators } from "@/lib/technical";
+import { validateSymbolInput } from "@/lib/registry/validateInput";
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 import { YahooChartSchema, parseUpstream } from "@/lib/schemas/upstream";
 
 function cleanNumArray(arr: ReadonlyArray<number | null> | null | undefined): number[] {
@@ -10,10 +12,16 @@ function cleanNumArray(arr: ReadonlyArray<number | null> | null | undefined): nu
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const symbolRaw = (searchParams.get("symbol") ?? "").trim();
-  if (!symbolRaw) {
-    return NextResponse.json({ error: "Missing symbol" }, { status: 400 });
+  // R5: persistent per-IP rate limit (shared Postgres counter).
+  const ip = clientIpFromHeaders(req.headers);
+  if (!(await consumeIpBudget(ip, 'technical', 30))) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
+  const checked = validateSymbolInput(searchParams.get("symbol"));
+  if (!checked.ok) {
+    return NextResponse.json({ error: checked.reason }, { status: 400 });
+  }
+  const symbolRaw = checked.symbol;
 
   // Default mapping for Indian equities
   const yahooSymbol =

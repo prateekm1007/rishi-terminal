@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { fetchLivePrice } from "@/lib/livePrice";
+import { validateSymbolInput, validateSymbolsInput } from "@/lib/registry/validateInput";
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 
 const DEFAULT_SYMBOLS = [
   "NIFTY50","SENSEX","BANK_NIFTY",
@@ -15,14 +17,25 @@ const DEFAULT_SYMBOLS = [
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+  // R5: persistent per-IP rate limit (shared Postgres counter).
+  const ip = clientIpFromHeaders(req.headers);
+  if (!(await consumeIpBudget(ip, 'prices', 60))) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
     const sym = (searchParams.get("symbol") ?? "").trim();
     const syms = (searchParams.get("symbols") ?? "").trim();
 
     let list: string[] = DEFAULT_SYMBOLS;
-    if (sym) list = [sym];
-    else if (syms) list = syms.split(",").map(s => s.trim()).filter(Boolean);
-
-    list = Array.from(new Set(list)).slice(0, 200);
+    if (sym) {
+      const one = validateSymbolInput(sym);
+      if (!one.ok) return NextResponse.json({ error: one.reason }, { status: 400 });
+      list = [one.symbol];
+    } else if (syms) {
+      const many = validateSymbolsInput(syms, { max: 50 });
+      if (!many.ok) return NextResponse.json({ error: many.reason }, { status: 400 });
+      list = many.symbols;
+    }
+    list = Array.from(new Set(list));
 
     const results = await Promise.allSettled(list.map(s => fetchLivePrice(s)));
     const prices: Record<string, { price: number; change: number; lastUpdated: string } | null> = {};

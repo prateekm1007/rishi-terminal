@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,8 +33,14 @@ async function fetchPair(symbol: string) {
   return { price, prev, change, changePct };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    // R5: persistent per-IP rate limit + edge cache.
+    const ip = clientIpFromHeaders(new Headers(req.headers));
+    if (!(await consumeIpBudget(ip, 'pulse-currency', 30))) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const results = await Promise.allSettled(
       PAIRS.map(p => fetchPair(p.symbol))
     );

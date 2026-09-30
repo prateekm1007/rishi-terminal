@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { consumeIpBudget, clientIpFromHeaders } from '@/lib/ratelimit/persistent';
 
 export const runtime = 'nodejs';
 export const revalidate = 120;
@@ -330,6 +331,12 @@ async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
 
 export async function GET(req: Request) {
   try {
+    // R5: rate limit + edge cache on this open aggregator.
+    const ip = clientIpFromHeaders(new Headers(req.headers));
+    if (!(await consumeIpBudget(ip, 'news', 30))) {
+      return Response.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(req.url);
     const region = searchParams.get('region');
 

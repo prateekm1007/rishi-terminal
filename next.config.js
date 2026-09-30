@@ -50,7 +50,19 @@ const nextConfig = {
     ];
   },
   async redirects() {
+    // T12: renamed/legacy NSE symbols 308-redirect to the canonical symbol.
+    // Source of truth: lib/registry/tickerAliases.json (require works in
+    // plain-JS next.config; TS modules import the same JSON).
+    const aliasMap = require("./lib/registry/tickerAliases.json");
+    const aliasRedirects = Object.entries(aliasMap)
+      .filter(([oldSym]) => !oldSym.startsWith("$"))
+      .map(([oldSym, canonical]) => ({
+        source: `/stock/${oldSym}`,
+        destination: `/stock/${encodeURIComponent(canonical)}`,
+        permanent: true,
+      }));
     return [
+      ...aliasRedirects,
       {
         source: '/commodity/:symbol',
         destination: '/commodities/:symbol',

@@ -2,6 +2,50 @@
 
 import { STOCKS } from "../../data/stocks";
 import { normalizeSector } from "./sectors";
+import aliasMapRaw from "./tickerAliases.json";
+
+/**
+ * oldSymbol -> canonicalSymbol (remediation T12). Built from per-group
+ * decisions against the currently trading NSE symbols; see the remediation
+ * PR table for the evidence per group.
+ */
+export const TICKER_ALIASES: Record<string, string> = Object.fromEntries(
+  Object.entries(aliasMapRaw).filter(([k]) => !k.startsWith("$")),
+);
+
+/** Normalize a ticker key the way the seed data does for identity checks. */
+export function normalizeTicker(symbol: string): string {
+  return symbol
+    .toUpperCase()
+    .replace(/&/g, "AND")
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+/**
+ * Resolve any ticker (current, renamed or mangled legacy symbol) to the
+ * canonical registry symbol. Returns null for unknown symbols.
+ * Handles chained aliases and is safe for arbitrary user input.
+ */
+export function resolveTickerSymbol(symbol: string): string | null {
+  if (!symbol || typeof symbol !== "string") return null;
+  let sym = symbol.trim().toUpperCase();
+  if (!sym) return null;
+  if (STOCKS[sym]) return sym;
+
+  const seen = new Set<string>([sym]);
+  // Direct alias hops
+  while (TICKER_ALIASES[sym] && !seen.has(TICKER_ALIASES[sym])) {
+    sym = TICKER_ALIASES[sym];
+    seen.add(sym);
+    if (STOCKS[sym]) return sym;
+  }
+  // Mangled-ampersand forms (e.g. MANDM for M&M) via normalized identity
+  const target = normalizeTicker(sym);
+  for (const candidate of Object.keys(STOCKS)) {
+    if (normalizeTicker(candidate) === target) return candidate;
+  }
+  return null;
+}
 
 export interface RegistryIssue {
   symbol: string;

@@ -1,4 +1,13 @@
 import { supabase } from './db/supabase';
+import { resolveTickerSymbol } from './registry/tickerRegistry';
+
+/** T12: renamed/legacy symbols are silently migrated to canonical on read. */
+function migrateSymbols<T extends { symbol: string }>(items: T[]): T[] {
+  return items.map(i => {
+    const canonical = resolveTickerSymbol(i.symbol);
+    return canonical && canonical !== i.symbol ? { ...i, symbol: canonical } : i;
+  });
+}
 
 export interface WatchItem {
   symbol:  string;
@@ -12,7 +21,7 @@ export function loadWatchlistLocal(): WatchItem[] {
   if (typeof window === 'undefined') return [];
   try {
     const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    return raw ? migrateSymbols(JSON.parse(raw)) : [];
   } catch { return []; }
 }
 

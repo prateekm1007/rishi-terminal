@@ -74,7 +74,7 @@ const child = spawn("npx", ["next", "start", "-p", String(port)], {
   stdio: "ignore",
 });
 
-function fetchPage(path: string, tries = 40): string {
+function fetchPage(path: string, tries = 40): Promise<string> {
   return new Promise((resolve, reject) => {
     const attempt = (left: number) => {
       const req = http.get(

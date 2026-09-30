@@ -14,6 +14,7 @@ vi.mock("@/lib/auth/session", () => ({
   })),
 }));
 
+/** R6: the route consumes quota + IP budget through atomic RPCs. */
 vi.mock("@/lib/services/supabaseAdmin", () => ({
   getAdminSupabase: () => ({
     from: () => {
@@ -27,6 +28,15 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
         gte: () => b,
       };
       return b;
+    },
+    rpc: (name: string) => {
+      if (name === 'consume_ip_budget') {
+        return Promise.resolve({ data: true, error: null }); // allowed in these tests
+      }
+      if (name === 'consume_chat_quota') {
+        return Promise.resolve({ data: { allowed: true, count: 1 }, error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
     },
   }),
 }));

@@ -22,9 +22,16 @@ const cspReportOnly = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "upgrade-insecure-requests",
+  // R8: violations land on /api/csp-report (logged server-side, rate-limited).
+  // ENFORCEMENT TARGET: 2026-10-07 — after >= 1 week of clean reports, drop
+  // the -Report-Only suffix (keep frame-ancestors enforced as it is today).
+  "report-uri /api/csp-report",
+  "report-to csp-endpoint",
 ].join('; ');
 
 const securityHeaders = [
+  // R8: named reporting endpoint group for report-to (modern browsers).
+  { key: 'Reporting-Endpoints', value: 'csp-endpoint="/api/csp-report"' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   // Enforced immediately — see comment above.

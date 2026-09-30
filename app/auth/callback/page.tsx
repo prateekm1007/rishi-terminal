@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { safeNextPath } from '@/lib/auth/safeRedirect';
 
 /**
  * OAuth / magic-link exchange handler.
@@ -23,7 +24,10 @@ export default function AuthCallbackPage() {
           setError(error.message);
           return;
         }
-        router.replace('/');
+        // R7: land the user where they were heading — but only if the
+        // value survives safeNextPath (same-origin relative path only).
+        const next = safeNextPath(new URLSearchParams(window.location.search).get('next'));
+        router.replace(next);
         router.refresh();
       })
       .catch(e => setError(String(e)));

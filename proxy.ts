@@ -37,8 +37,13 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Protected routes: signed-out users are sent to sign-in.
+  // R9: match on PATH SEGMENTS — startsWith('/lab') also matched
+  // '/laboratory' and '/alerts-foo', redirecting legitimate public pages.
   const protectedPaths = ['/lab', '/portfolio', '/alerts'];
-  const isProtected = protectedPaths.some(p => request.nextUrl.pathname.startsWith(p));
+  const pathname = request.nextUrl.pathname;
+  const isProtected = protectedPaths.some(
+    p => pathname === p || pathname.startsWith(p + '/'),
+  );
   if (!user && isProtected) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/auth/signin';
@@ -56,7 +61,10 @@ export const config = {
      * - _next/static, _next/image (build assets)
      * - favicon.ico and static files with extensions
      * - api/ingest (cron-authenticated, cookie handling unnecessary)
+     * - api/payment/webhook (R9: Razorpay server-to-server — no session
+     *   cookies; the supabase.auth.getUser() round-trip was wasted latency
+     *   on every webhook delivery)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/ingest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/ingest|api/payment/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

@@ -1,4 +1,6 @@
 // SUPABASE_ADMIN_V1
+import 'server-only';
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 declare global { var __rishiAdminSupabase: SupabaseClient | undefined; }

@@ -1,20 +1,14 @@
 // INGEST_FINANCIALS_V1
 import { NextRequest, NextResponse } from "next/server";
 import { ingestQuarterly, ingestAnnual, logIngestion } from "../../../../lib/services/ingestion";
+import { requireCronAuth } from "../../../../lib/auth/cron";
+import { isKnownSymbol } from "../../../../lib/security";
 
 export const runtime = "nodejs";
 
-function authorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
-  const auth = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret");
-  return auth === secret;
-}
-
-export async function POST(req: NextRequest) {
-  if (!authorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+async function run(req: NextRequest) {
+  const denied = requireCronAuth(req);
+  if (denied) return denied;
 
   const started_at = new Date().toISOString();
   const { symbols } = await req.json().catch(() => ({ symbols: [] }));
@@ -26,6 +20,12 @@ export async function POST(req: NextRequest) {
   const results: Record<string, any> = {};
 
   for (const sym of symbols.slice(0, 20)) {
+    // Registry-based validation (remediation T8): reject anything the seed
+    // registry does not know before it reaches fetchers/scrapers.
+    if (typeof sym !== "string" || !isKnownSymbol(sym)) {
+      results[String(sym)] = { error: "invalid symbol" };
+      continue;
+    }
     const [q, a] = await Promise.all([
       ingestQuarterly(sym),
       ingestAnnual(sym),
@@ -43,4 +43,13 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true, results });
+}
+
+// Vercel Cron issues GET requests; POST is kept for manual triggering.
+export async function GET(req: NextRequest) {
+  return run(req);
+}
+
+export async function POST(req: NextRequest) {
+  return run(req);
 }

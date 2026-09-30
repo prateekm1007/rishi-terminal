@@ -85,15 +85,7 @@ const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
 
 
 
-const RISHI_PROMPTS: Record<string, string> = {
 
-  'Buffett': 'You are Warren Buffett analyzing this asset. Focus on moats, management, and earnings power. Keep response concise (2-3 sentences).',
-
-  'Graham': 'You are Benjamin Graham. Calculate margin of safety. Be analytical and focused on intrinsic value.',
-
-  'Damani': 'You are Radhakishan Damani. Ask: how much debt? Then ROCE? Then cash conversion? Be direct.',
-
-};
 
 
 
@@ -245,15 +237,9 @@ export function AssetWisdomSidebar({ asset, scores }: Props) {
 
     try {
 
-      const stockContext = `You are analyzing ${asset.symbol} (${asset.name}).
+      // personaId + symbol only — the system prompt is built server-side
 
-Asset details: Price ${asset.price}, Category: ${asset.category}.
-
-User question about this asset:`;
-
-
-
-      const systemPrompt = (RISHI_PROMPTS[selectedRishi] || RISHI_PROMPTS['Buffett']) + '\n\n' + stockContext;
+      // from the allow-list (remediation T7).
 
 
 
@@ -265,9 +251,17 @@ User question about this asset:`;
 
         body: JSON.stringify({
 
-          systemPrompt,
+          personaId: selectedRishi,
 
-          history: messages,
+          symbol: asset.symbol,
+
+          history: messages.map(m => ({
+
+            role: m.role === 'user' ? 'user' : 'assistant',
+
+            content: m.text,
+
+          })),
 
           message: text.trim(),
 

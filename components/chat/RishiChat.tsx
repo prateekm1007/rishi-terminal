@@ -141,21 +141,19 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
     prompt: string,
     history: ChatMessage[]
   ): Promise<string> {
-    // Build message history for API
-    const apiMessages = history.map(m => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
-      text: m.text,
-    }));
-    apiMessages.push({ role: 'user', text: prompt });
-
+    // New contract (remediation T7): personaId + symbol — system prompt is
+    // built server-side from the allow-list; client prompt text is never sent.
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        rishiId: selectedRishi,
-        messages: apiMessages,
-        stockContext: buildStockContext(),
-        mode: 'chat',
+        personaId: selectedRishi,
+        symbol: stock.symbol,
+        history: history.map(m => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: m.text,
+        })),
+        message: prompt,
       }),
     });
 

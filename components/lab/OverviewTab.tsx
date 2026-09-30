@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
@@ -110,6 +110,8 @@ export default function OverviewTab() {
   const [histError, setHistError] = useState<string | null>(null);
 
   const symbols = useMemo(() => holdings.map(h => h.symbol), [holdings]);
+  const symbolsKey = symbols.join('|');
+  const historyKey = Object.keys(historyBySymbol).length;
   const { prices, loading: liveLoading } = useLivePrices(symbols);
 
   useEffect(() => {
@@ -159,7 +161,7 @@ export default function OverviewTab() {
 
     run();
     return () => { cancelled = true; };
-  }, [symbols.join('|'), benchmark, holdings]);
+  }, [symbolsKey, benchmark, holdings]);
 
   const enriched = useMemo(() => {
     return holdings.map(h => {
@@ -171,7 +173,7 @@ export default function OverviewTab() {
       const pl = current - invested;
       const plPct = invested > 0 ? (pl / invested) * 100 : 0;
 
-      const consensus = stock ? buildConsensus(stock) : null;
+      const consensus = stock ? getStockScore(stock) : null;
       const score = consensus?.consensus ?? 0;
       const sector = stock?.sector ?? 'Unknown';
 
@@ -408,7 +410,7 @@ const [beta, setBeta] = useState<number | null>(null);
 
     const dd = maxDrawdownPct(pv);
     setMaxDD(dd);
-}, [symbols.join('|'), benchHistory.length, Object.keys(historyBySymbol).length, holdings]);
+}, [symbolsKey, benchHistory.length, historyKey, holdings]);
 
 
   const xirrPct = useMemo(() => {
@@ -427,7 +429,7 @@ const [beta, setBeta] = useState<number | null>(null);
   const twrrTotalPct = useMemo(() => {
     if (holdings.length === 0 || totals.totalCurrent <= 0) return null;
     return calcTWRRTotal(holdings, new Date(), historyBySymbol);
-  }, [holdings, totals.totalCurrent, Object.keys(historyBySymbol).length]);  const overallRiskScore = useMemo(() => {
+  }, [holdings, totals.totalCurrent, historyKey]);  const overallRiskScore = useMemo(() => {
     const betaRisk = beta == null ? 50 : clamp(50 + (beta - 1) * 35, 0, 100);
     const concRisk = clamp((concentration.top5 / 80) * 100, 0, 100);
     const macroRisk = clamp(cyclicalRisk, 0, 100);
@@ -525,9 +527,10 @@ const [beta, setBeta] = useState<number | null>(null);
   }
 
   const whatIfStock = (STOCKS as any)[whatIfSymbol.trim().toUpperCase()];
-  const whatIfLtp = whatIfSymbol ? (prices[whatIfSymbol.trim().toUpperCase()]?.price ?? whatIfStock?.price ?? 0) : 0;
+  // T14: what-if uses the live quote only; seed prices are never presented as current
+  const whatIfLtp = whatIfSymbol ? (prices[whatIfSymbol.trim().toUpperCase()]?.price ?? 0) : 0;
   const whatIfShares = (whatIfLtp > 0) ? (whatIfAmount / whatIfLtp) : 0;
-  const whatIfConsensus = whatIfStock ? buildConsensus(whatIfStock) : null;
+  const whatIfConsensus = whatIfStock ? getStockScore(whatIfStock) : null;
   const whatIfScore = whatIfConsensus?.consensus ?? 0;
 
   const whatIfNewValue = totals.totalCurrent + whatIfAmount;

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useLanguage } from '../../lib/language';
-import { calculateRishiScore } from "@/lib/scorers/rishiScoreV2";
+import { calculateQvps } from "@/lib/scoring"; // T10: single scoring surface
 import { getScoreColors, colors, fonts, shadows } from "@/lib/design";
 import type { StockMetrics, RishiScoreResult, ScoreMode, PillarScore } from "@/lib/scorers/types";
 
@@ -29,7 +29,7 @@ function ScoreGauge({ score, mode }: { score: number; mode: ScoreMode }) {
   const isShortLeg = score >= 85 && mode === "SHORT";
 
   useEffect(() => {
-    let start = 0;
+    const start = 0;
     const duration = 1200;
     const startTime = Date.now();
     const animate = () => {
@@ -139,7 +139,7 @@ export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props)
   const [mode, setMode] = useState<ScoreMode>(defaultMode);
 
   const result: RishiScoreResult = useMemo(
-    () => calculateRishiScore(metrics, mode),
+    () => calculateQvps(metrics, mode),
     [metrics, mode]
   );
 
@@ -168,7 +168,7 @@ export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props)
       <div style={{ position:"relative", zIndex:1 }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"32px" }}>
           <div>
-            <div style={{ fontFamily: fonts.serif, fontSize:"20px", fontWeight:700, color: colors.gold, letterSpacing:"0.05em", marginBottom:"4px" }}>{t("common.rishiScore")}</div>
+            <div style={{ fontFamily: fonts.serif, fontSize:"20px", fontWeight:700, color: colors.gold, letterSpacing:"0.05em", marginBottom:"4px" }}>{t("common.qvpsScore")}</div>
             <div style={{ fontSize:"11px", color: colors.textMuted, fontFamily: fonts.mono, fontWeight:500 }}>v2.0 · {result.dataQuality} Data · {metrics.sector}</div>
           </div>
 

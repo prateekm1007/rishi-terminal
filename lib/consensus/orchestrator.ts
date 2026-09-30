@@ -53,7 +53,12 @@ export function runAllScorers(stock: Stock): RishiScore[] {
   return SCORER_REGISTRY
     .map(fn => {
       const result = fn(stock);
-      return { ...result, score: clamp(result.score) };
+      // T11: score may be null ("insufficient data") — never clamp NaN through.
+      return {
+        ...result,
+        score: result.score === null ? null : clamp(result.score),
+      };
     })
-    .sort((a, b) => b.score - a.score);
+    // Nulls always sort last regardless of direction.
+    .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity));
 }

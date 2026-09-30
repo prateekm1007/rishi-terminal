@@ -7,7 +7,7 @@ import { CRYPTO_ASSETS, FEAR_GREED_INDEX, MARKET_DOMINANCE, getCryptoMetrics } f
 import { scoreSatoshiBodhi } from '../../lib/scorers/crypto/satoshibodhi';
 import { scoreVitalikVeda } from '../../lib/scorers/crypto/vitalikVeda';
 import { scoreMichaelSaylor } from '../../lib/scorers/crypto/michaelsaylor';
-import { isPremium } from '../../lib/premium';
+import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
@@ -55,7 +55,8 @@ export default function CryptoPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const premium = isPremium();
+  const { tier } = useTier();
+  const premium = tier !== 'seeker';
 
   // Extract all crypto symbols
   const cryptoSymbols = useMemo(() => CRYPTO_ASSETS.map(c => c.symbol), []);
@@ -254,7 +255,7 @@ export default function CryptoPage() {
             };
             const result = guru.scorer(liveCrypto);
             const isExpanded = expandedCard === guru.id;
-            const canView = premium || result.score >= 50;
+            const canView = premium || (result.score !== null && result.score >= 50);
 
             if (!canView && !premium) {
               return (
@@ -299,8 +300,8 @@ export default function CryptoPage() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 48, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(result.score), lineHeight: 1 }}>
-                        {result.score}
+                      <div style={{ fontSize: 48, fontWeight: 900, fontFamily: 'monospace', color: result.score === null ? '#64748B' : scoreColor(result.score), lineHeight: 1 }}>
+                        {result.score === null ? '\u2014' : result.score}
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
                         {result.label}

@@ -1,4 +1,4 @@
-﻿Write-Log "Terminal session started | User: $env:USERNAME"
+Write-Log "Terminal session started | User: $env:USERNAME"
 Clear-Host
 Write-Host "============================================" -ForegroundColor DarkCyan
 Write-Host "   RISHI TERMINAL v$env:RISHI_VERSION       " -ForegroundColor Cyan

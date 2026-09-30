@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { RISHI_PERSONALITIES, RishiPersonality, FnOContext } from "@/lib/fno/rishiPrompts";
 import { StrategyResult, getRishiFitScore } from "@/lib/fno/strategyEngine";
-import { getCurrentTier } from "@/lib/premium";
+import { useTier } from "@/hooks/useTier";
 import { colors, fonts } from "@/lib/design";
 
 interface Props {
@@ -71,11 +71,11 @@ const RISHI_STATIC_RESPONSES: Record<string, (ctx: FnOContext, result: StrategyR
 
 export default function RishiStrategyAdvisor({ context, strategy }: Props) {
   const [selectedRishi, setSelectedRishi] = useState("damani");
-  const tier = getCurrentTier();
+  const { tier, loading } = useTier();
 
   const availableRishis = useMemo(() =>
-    RISHI_PERSONALITIES.filter(r => TIER_ORDER[r.tier] <= TIER_ORDER[tier]),
-    [tier]
+    RISHI_PERSONALITIES.filter(r => TIER_ORDER[r.tier] <= TIER_ORDER[loading ? 'seeker' : tier]),
+    [tier, loading]
   );
 
   const rishi = RISHI_PERSONALITIES.find(r => r.id === selectedRishi)!;
@@ -227,7 +227,7 @@ export default function RishiStrategyAdvisor({ context, strategy }: Props) {
           fontStyle: "italic",
           fontFamily: '"Playfair Display", Georgia, serif',
         }}>
-          "{response}"
+          &quot;{response}&quot;
         </div>
 
         {/* Ask options */}

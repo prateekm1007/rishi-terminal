@@ -1,4 +1,4 @@
-﻿function prompt {
+function prompt {
     Write-Host "
 [$(Get-Date -Format 'HH:mm:ss')] " -NoNewline -ForegroundColor DarkGray
     Write-Host "$env:USERNAME " -NoNewline -ForegroundColor Cyan

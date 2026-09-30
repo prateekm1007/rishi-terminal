@@ -15,3 +15,12 @@ export const SIG: Record<string, string> = {
   HOLD: '#F59E0B',
   AVOID: '#EF4444',
 };
+
+// T11: finite-guard helpers. Scorers must never propagate NaN/Infinity.
+/** Returns v when finite, otherwise null ("insufficient data"). */
+export const fin = (v: number): number | null => (Number.isFinite(v) ? v : null);
+
+/** Division that returns null instead of Infinity/NaN when the divisor is 0
+ *  or either operand is non-finite. Callers treat null as "insufficient data". */
+export const safeDiv = (a: number, b: number): number | null =>
+  Number.isFinite(a) && Number.isFinite(b) && b !== 0 ? a / b : null;

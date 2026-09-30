@@ -10,6 +10,7 @@ import WatchlistTabView from '@/components/lab/WatchlistTab';
 import CompareTabView from '@/components/lab/CompareTab';
 import OverviewTabView from '@/components/lab/OverviewTab';
 import IntelligenceTabView from '@/components/lab/IntelligenceTab';
+import Link from 'next/link';
 
 type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'intelligence';
 const TABS: { id: LabTab; label: string; desc: string; icon: string }[] = [
@@ -58,7 +59,7 @@ function LabContent() {
                 One Lab. All Conviction.
               </p>
             </div>
-            <a
+            <Link
               href="/"
               style={{
                 padding: '10px 20px',
@@ -74,7 +75,7 @@ function LabContent() {
               }}
             >
               Back to Dashboard
-            </a>
+            </Link>
           </div>
 
         </div>

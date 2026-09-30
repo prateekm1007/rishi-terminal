@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 export interface PriceData {
   price: number;
@@ -39,8 +39,12 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
   const initialLoadDone = useRef(false);
   const symbolsKey = symbols.slice().sort().join(',');
 
-  // Keep ref current without triggering re-renders
-  symbolsRef.current = symbols;
+  // T18 fix: the ref was mutated during render (react-hooks/refs). Syncing it
+  // in an effect keeps fetchPrices reading a fresh list without breaking
+  // render purity.
+  useEffect(() => {
+    symbolsRef.current = symbols;
+  }, [symbolsKey]);
 
   const fetchPrices = useCallback(async () => {
     const currentSymbols = symbolsRef.current;
@@ -87,7 +91,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     } finally {
       setLoading(false);
     }
-  }, []); // stable â€” reads symbols from ref
+  }, []); // stable — reads symbols from ref
 
   // Reset and re-fetch when symbol set changes
   useEffect(() => {
@@ -101,12 +105,10 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
   return { prices, loading, error, lastUpdated, refetch: fetchPrices };
 }
 
-// Convenience: single symbol â€” stable key prevents re-mount loop
+// Convenience: single symbol — stable key prevents re-mount loop
 export function usePrice(symbol: string) {
-  const symbols = useRef([symbol]);
-  if (symbols.current[0] !== symbol) {
-    symbols.current = [symbol];
-  }
-  const { prices, loading, error, lastUpdated } = useLivePrices(symbols.current);
+  // T18 fix: ref mutation during render replaced with memoized state
+  const symbols = useMemo(() => [symbol], [symbol]);
+  const { prices, loading, error, lastUpdated } = useLivePrices(symbols);
   return { price: prices[symbol] || null, loading, error, lastUpdated };
 }

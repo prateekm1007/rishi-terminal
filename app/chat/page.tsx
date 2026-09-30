@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { STOCKS } from '../../data/stocks';
 import RishiChat from '../../components/chat/RishiChat';
 import { useLanguage } from '../../lib/language';
-import { buildConsensus } from '../../lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 export default function ChatPage() {
   const { t } = useLanguage();
@@ -14,7 +14,7 @@ export default function ChatPage() {
   const stock = STOCKS[selectedSymbol];
   const stocks = Object.values(STOCKS);
 
-  const consensus = stock ? buildConsensus(stock) : null;
+  const consensus = stock ? getStockScore(stock) : null;
 
   const filteredStocks = useMemo(() => {
     if (!searchQuery) return stocks.slice(0, 50);
@@ -99,8 +99,8 @@ export default function ChatPage() {
                   <div style={{ fontSize: 11, color: '#64748B' }}>{stock.name} • {stock.sector}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: consensus.consensus >= 70 ? '#22C55E' : '#F59E0B' }}>
-                    {consensus.consensus}/100
+                  <div style={{ fontSize: 13, fontWeight: 700, color: consensus.consensus !== null && consensus.consensus >= 70 ? '#22C55E' : '#F59E0B' }}>
+                    {consensus.consensus === null ? '\u2014' : `${consensus.consensus}/100`}
                   </div>
                   <div style={{ fontSize: 10, color: '#64748B' }}>
                     PE {stock.pe?.toFixed(1)}x | ROE {stock.roe?.toFixed(1)}%

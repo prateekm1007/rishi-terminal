@@ -75,7 +75,7 @@ export function useBatchPrices(symbols: string[], refreshInterval: number = 1200
     } finally {
       setLoading(false);
     }
-  }, [symbols.join(',')]);
+  }, [symbols]);
 
   useEffect(() => {
     fetchPrices();

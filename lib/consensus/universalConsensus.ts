@@ -35,7 +35,8 @@ import { scoreMarksBond } from '../scorers/bond/marks';
 export interface UniversalConsensusResult {
   asset: UniversalAsset;
   scores: RishiScore[];
-  consensus: number;
+  /** null = insufficient valid scorer results (T11) — display "—", sort last. */
+  consensus: number | null;
   category: string;
   tension: string;
   tensionSpread: number;
@@ -55,8 +56,8 @@ function categorize(score: number): string {
 }
 
 function analyzeTension(scores: RishiScore[]): { label: string; spread: number } {
-  if (scores.length < 2) return { label: "Insufficient Data", spread: 0 };
-  const vals = scores.map(s => s.score);
+  const vals = scores.map(s => s.score).filter((v): v is number => v !== null && Number.isFinite(v));
+  if (vals.length < 2) return { label: "Insufficient Data", spread: 0 };
   const spread = Math.max(...vals) - Math.min(...vals);
   
   let label: string;
@@ -127,7 +128,7 @@ export function buildUniversalConsensus(asset: UniversalAsset): UniversalConsens
     asset,
     scores,
     consensus,
-    category: categorize(consensus),
+    category: consensus === null ? "Insufficient Data" : categorize(consensus),
     tension,
     tensionSpread,
     weightedBy: "Universal Rishi System v1.0",
@@ -156,7 +157,7 @@ function runCryptoScorers(crypto: CryptoAsset): RishiScore[] {
         }
       })
       .filter((s): s is RishiScore => s !== null)
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity));
   } catch (e) {
     console.error('Crypto scorers failed:', e);
     return [];
@@ -184,7 +185,7 @@ function runCommodityScorers(commodity: CommodityData): RishiScore[] {
         }
       })
       .filter((s): s is RishiScore => s !== null)
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity));
   } catch (e) {
     console.error('Commodity scorers failed:', e);
     return [];
@@ -210,7 +211,7 @@ function runForexScorers(forex: CommodityData): RishiScore[] {
         }
       })
       .filter((s): s is RishiScore => s !== null)
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity));
   } catch (e) {
     console.error('Forex scorers failed:', e);
     return [];
@@ -241,7 +242,7 @@ function runBondScorers(bond: any): RishiScore[] {
         }
       })
       .filter((s): s is RishiScore => s !== null)
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity));
   } catch (e) {
     console.error('Bond scorers failed:', e);
     return [];

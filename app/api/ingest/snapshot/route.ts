@@ -2,21 +2,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { snapshotAllStocks } from "../../../../lib/services/rishiMemory";
 import { logIngestion } from "../../../../lib/services/ingestion";
+import { requireCronAuth } from "../../../../lib/auth/cron";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-function authorized(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
-  const auth = req.headers.get("x-cron-secret") ?? req.nextUrl.searchParams.get("secret");
-  return auth === secret;
-}
-
-export async function POST(req: NextRequest) {
-  if (!authorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+async function run(req: NextRequest) {
+  const denied = requireCronAuth(req);
+  if (denied) return denied;
 
   const started_at = new Date().toISOString();
   const result = await snapshotAllStocks();
@@ -30,4 +23,13 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ ok: true, ...result });
+}
+
+// Vercel Cron issues GET requests; POST is kept for manual triggering.
+export async function GET(req: NextRequest) {
+  return run(req);
+}
+
+export async function POST(req: NextRequest) {
+  return run(req);
 }

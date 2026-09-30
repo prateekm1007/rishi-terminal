@@ -5,10 +5,9 @@ node_modules/
 .next/
 out/
 
-# env
-.env
-.env.local
-.env.*.local
+# env — never commit anything except the template
+.env*
+!.env.example
 
 # logs
 npm-debug.log*
@@ -25,9 +24,10 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# our backups (created by patch scripts)
-*.bak
-*.bak.*
+# our backups (created by patch scripts) — *.bak* also matches .bak-YYYYMMDD-*
+*.bak*
+*.backup*
+*.corrupted-backup
 
 # OS
 Thumbs.db
@@ -47,3 +47,5 @@ bond-implementation-dump.txt
 
 # Local backup directories (never commit)
 backup_*/
+test-results/
+playwright-report/

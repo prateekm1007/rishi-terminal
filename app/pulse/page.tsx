@@ -299,7 +299,7 @@ export default function MarketPulsePage() {
 
   // Build live context
   useEffect(() => {
-    let cancelled = false;
+    const cancelled = false;
 
     const run = async () => {
       try {

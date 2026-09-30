@@ -38,7 +38,7 @@ export interface ShareholdingData {
   source: "screener" | "generated";
 }
 
-let cachedFundamentals: Map<string, FullFundamentals> | null = null;
+const cachedFundamentals: Map<string, FullFundamentals> | null = null;
 
 export async function fetchFullFundamentals(symbol: string): Promise<FullFundamentals | null> {
   // Try Screener.in first

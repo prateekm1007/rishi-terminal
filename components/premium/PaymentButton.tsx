@@ -1,70 +1,72 @@
 'use client';
 
-import { useState } from 'react';
+import type { WisdomTier } from '@/lib/premium';
 
-interface Props {
-  tier: 'student' | 'disciple';
-  userId?: string;
-  onSuccess?: () => void;
-}
-
-const TIER_DETAILS = {
-  student: { name: 'Student', price: '499/month', amount: 49900 },
-  disciple: { name: 'Disciple', price: '1,999/month', amount: 199900 },
-};
+/**
+ * Razorpay Checkout integration (remediation T6).
+ *
+ * Flow: POST /api/payment (session required, server-side price) → open
+ * Razorpay Checkout with the returned order → on success, PUT /api/payment
+ * verifies the signature server-side and the tier is refreshed from
+ * /api/auth/me. The webhook remains the source of truth; this is the UX
+ * shortcut.
+ */
 
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: new (options: Record<string, unknown>) => { open: () => void };
   }
 }
 
-export default function PaymentButton({ tier, userId = 'demo', onSuccess }: Props) {
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const details = TIER_DETAILS[tier];
+async function loadRazorpayScript(): Promise<void> {
+  if (typeof window === 'undefined' || window.Razorpay) return;
+  await new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Razorpay checkout'));
+    document.head.appendChild(script);
+  });
+}
 
-  async function handlePayment() {
-    setLoading(true);
-    try {
-      // Create order
-      const res = await fetch('/api/payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier, userId }),
-      });
-      const order = await res.json();
+export async function startRazorpayCheckout(
+  tier: 'student' | 'disciple',
+  onTierRefreshed?: () => Promise<void>,
+): Promise<void> {
+  const createRes = await fetch('/api/payment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tier }),
+  });
 
-      if (order.demo) {
-        // Demo mode — simulate success
-        await new Promise(r => setTimeout(r, 1000));
-        setStatus('success');
-        onSuccess?.();
-        return;
-      }
+  if (createRes.status === 401) {
+    window.location.href = '/auth/signin?next=/pricing';
+    return;
+  }
 
-      // Load Razorpay script if not loaded
-      if (!window.Razorpay) {
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-          script.onload = () => resolve();
-          script.onerror = () => reject(new Error('Failed to load Razorpay'));
-          document.head.appendChild(script);
-        });
-      }
+  const order = await createRes.json();
+  if (!createRes.ok) {
+    throw new Error(order.error ?? 'Could not create payment order');
+  }
 
-      const rzp = new window.Razorpay({
-        key: order.keyId,
-        amount: order.amount,
-        currency: order.currency,
-        name: 'Rishi Terminal',
-        description: `${details.name} Plan — ${details.price}`,
-        order_id: order.orderId,
-        theme: { color: '#D4AF37' },
-        handler: async (response: any) => {
-          // Verify payment
-          const verify = await fetch('/api/payment', {
+  await loadRazorpayScript();
+
+  await new Promise<void>((resolve, reject) => {
+    const rzp = new window.Razorpay({
+      key: order.keyId,
+      amount: order.amount,
+      currency: order.currency,
+      name: 'Rishi Terminal',
+      description: `${tier} tier — 1 year`,
+      order_id: order.orderId,
+      theme: { color: '#D4AF37' },
+      async handler(response: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+      }) {
+        try {
+          const verifyRes = await fetch('/api/payment', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -73,56 +75,21 @@ export default function PaymentButton({ tier, userId = 'demo', onSuccess }: Prop
               signature: response.razorpay_signature,
             }),
           });
-          const result = await verify.json();
-          if (result.verified) {
-            setStatus('success');
-            onSuccess?.();
-          } else {
-            setStatus('error');
+          const verify = await verifyRes.json();
+          if (!verifyRes.ok || !verify.verified) {
+            reject(new Error(verify.error ?? 'Payment verification failed'));
+            return;
           }
-        },
-        modal: { ondismiss: () => setLoading(false) },
-      });
-
-      rzp.open();
-    } catch (err) {
-      console.error('Payment error:', err);
-      setStatus('error');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (status === 'success') {
-    return (
-      <div style={{
-        padding: '14px 24px', borderRadius: 12, textAlign: 'center',
-        background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
-        color: '#22C55E', fontWeight: 700, fontSize: 14,
-      }}>
-        ✅ Upgrade Successful! Welcome to {details.name}.
-      </div>
-    );
-  }
-
-  return (
-    <button
-      onClick={handlePayment}
-      disabled={loading}
-      style={{
-        padding: '14px 28px', borderRadius: 12, fontWeight: 700, fontSize: 14,
-        cursor: loading ? 'not-allowed' : 'pointer',
-        background: loading ? 'rgba(51,65,85,0.5)' : 'linear-gradient(135deg,#A88B20,#D4AF37)',
-        border: 'none', color: loading ? '#64748B' : '#0A0F1C',
-        width: '100%', transition: 'all 0.2s',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-      }}
-    >
-      {loading ? (
-        <>⏳ Processing...</>
-      ) : (
-        <>💳 Upgrade to {details.name} — {details.price}</>
-      )}
-    </button>
-  );
+          await onTierRefreshed?.();
+          resolve();
+        } catch (e) {
+          reject(e instanceof Error ? e : new Error('Verification failed'));
+        }
+      },
+      modal: {
+        ondismiss: () => reject(new Error('Checkout closed before payment completed')),
+      },
+    });
+    rzp.open();
+  });
 }

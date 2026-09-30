@@ -5,6 +5,7 @@ import { STOCKS } from '../../data/stocks';
 import { StockTable } from '../../components/screener/StockTable';
 import { useLanguage } from '../../lib/language';
 import { SCREENER_PRESETS, applyFilters } from '../../lib/screener/presets';
+import Link from 'next/link';
 
 export default function ScreenerPage() {
   const { t, locale } = useLanguage();
@@ -35,7 +36,7 @@ export default function ScreenerPage() {
         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
 
           <p className="page-breadcrumb">
-            <a href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</a>
+            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</Link>
             <span style={{ margin: '0 8px' }}>&rsaquo;</span>
             <span>SCREENER</span>
           </p>

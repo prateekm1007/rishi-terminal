@@ -16,13 +16,15 @@ export interface DialogueExchange {
 }
 
 export function generateDialogueSets(stock: Stock, scores: RishiScore[]): DialogueSet[] {
-  const topBull = scores[0];
-  const topBear = scores[scores.length - 1];
+  // T11: only rishis with sufficient data participate in dialogues.
+  const validScores = scores.filter(s => s.score !== null);
+  const topBull = validScores[0];
+  const topBear = validScores[validScores.length - 1];
   
   const sets: DialogueSet[] = [];
   
   // Bull vs Bear dialogue
-  if (topBull && topBear && topBull.score - topBear.score > 30) {
+  if (topBull && topBear && (topBull.score as number) - (topBear.score as number) > 30) {
     sets.push({
       id: 'bull_bear',
       title: 'The Great Debate',
@@ -54,11 +56,11 @@ export function generateDialogueSets(stock: Stock, scores: RishiScore[]): Dialog
   }
   
   // Consensus agreement (when top 3 agree)
-  if (scores.length >= 3) {
-    const top3 = scores.slice(0, 3);
-    const avgTop3 = Math.round(top3.reduce((sum, s) => sum + s.score, 0) / 3);
+  if (validScores.length >= 3) {
+    const top3 = validScores.slice(0, 3);
+    const avgTop3 = Math.round(top3.reduce((sum, s) => sum + (s.score as number), 0) / 3);
     
-    if (Math.max(...top3.map(s => s.score)) - Math.min(...top3.map(s => s.score)) < 15) {
+    if (Math.max(...top3.map(s => s.score as number)) - Math.min(...top3.map(s => s.score as number)) < 15) {
       sets.push({
         id: 'consensus',
         title: 'The Masters Agree',

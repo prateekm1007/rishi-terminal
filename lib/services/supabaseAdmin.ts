@@ -1,4 +1,6 @@
 // SUPABASE_ADMIN_V1
+import 'server-only';
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 declare global { var __rishiAdminSupabase: SupabaseClient | undefined; }
@@ -10,7 +12,7 @@ export function getAdminSupabase(): SupabaseClient {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    throw new Error("Missing Supabase URL or service-role key environment variables");
   }
 
   globalThis.__rishiAdminSupabase = createClient(url, key, {

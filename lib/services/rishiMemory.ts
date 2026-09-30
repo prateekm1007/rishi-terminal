@@ -2,6 +2,7 @@
 import { getAdminSupabase } from "./supabaseAdmin";
 import { STOCKS } from "../../data/stocks";
 import { buildConsensus } from "../consensus";
+import { SCORE_ENGINE_VERSION } from "../consensus/version";
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -23,8 +24,18 @@ export async function snapshotAllStocks(): Promise<{
       const stock = STOCKS[sym];
       const consensus = buildConsensus(stock);
 
+      // T11: fail closed — records with insufficient data produce consensus
+      // null and are NOT persisted. Writing a null/0 score would corrupt the
+      // historical series the terminal reasons over.
+      if (consensus.consensus === null || !Number.isFinite(consensus.consensus)) {
+        console.warn(`[RishiMemory] ${sym}: consensus is null (insufficient data) — snapshot skipped`);
+        errors++;
+        continue;
+      }
+
       const philosopherScores: Record<string, number> = {};
       for (const s of consensus.scores) {
+        if (s.score === null) continue; // insufficient data — omit, don't fabricate
         philosopherScores[s.label || s.name] = s.score;
       }
 
@@ -33,6 +44,7 @@ export async function snapshotAllStocks(): Promise<{
         asset_category:    "stock",
         snapshot_date:     date,
         consensus_score:   consensus.consensus,
+        score_engine_version: SCORE_ENGINE_VERSION,
         signal:            consensus.consensus >= 75 ? "BUY"
                           : consensus.consensus >= 45 ? "HOLD" : "SELL",
         disagreement:      0,

@@ -17,9 +17,10 @@ export function PhilosophyRadar({ scores }: Props) {
 
   if (!scores || scores.length === 0) return null;
 
-  const data = scores.slice(0, 8).map(s => ({
+  // T11: rishis with null score (insufficient data) are omitted from the radar
+  const data = scores.filter(s => s.score !== null).slice(0, 8).map(s => ({
     name: s.name.length > 9 ? s.name.substring(0, 9) : s.name,
-    value: s.score,
+    value: s.score as number,
     full: s.name,
     insight: s.insight ?? '',
   }));

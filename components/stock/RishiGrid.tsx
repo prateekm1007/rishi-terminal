@@ -2,7 +2,8 @@
 
 import { RishiScore } from "../../lib/consensus/types";
 import { RISHI_WEIGHT_CONFIG } from "../../lib/consensus/weights";
-import { getRishisVisible, isPremium, getCurrentTier } from "../../lib/premium";
+import { getRishisVisible, isPremium } from "../../lib/premium";
+import { useTier } from "../../hooks/useTier";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useLanguage } from '../../lib/language';
@@ -48,11 +49,13 @@ export function RishiGrid({ scores }: Props) {
   const [premium, setPremium] = useState(true);
   const [expandedRishi, setExpandedRishi] = useState<string | null>(null);
 
+  const { tier, loading } = useTier();
+
   useEffect(() => {
-    const tier = getCurrentTier();
+    if (loading) return;
     setVisibleCount(getRishisVisible(tier));
     setPremium(isPremium(tier));
-  }, []);
+  }, [tier, loading]);
 
   const visibleScores = scores.slice(0, visibleCount);
   const lockedCount = scores.length - visibleCount;
@@ -94,8 +97,8 @@ export function RishiGrid({ scores }: Props) {
           const weight = getWeightForRishi(rishi.name);
           const tierLabel = getTierLabel(weight);
           const tierColor = getTierColor(weight);
-          const scoreColor = getScoreColor(rishi.score);
-          const barColor = getScoreBarColor(rishi.score);
+          const scoreColor = rishi.score === null ? '#64748B' : getScoreColor(rishi.score);
+          const barColor = rishi.score === null ? 'rgba(100,116,139,0.3)' : getScoreBarColor(rishi.score);
           const isExpanded = expandedRishi === rishi.name;
 
           return (
@@ -134,7 +137,7 @@ export function RishiGrid({ scores }: Props) {
                   </div>
                 </div>
                 <div className={`text-2xl font-bold ml-3 ${scoreColor}`}>
-                  {rishi.score}
+                  {rishi.score === null ? '—' : rishi.score}
                 </div>
               </div>
 
@@ -142,7 +145,7 @@ export function RishiGrid({ scores }: Props) {
               <div className="h-1.5 bg-zinc-800 rounded-full mb-3 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${barColor}`}
-                  style={{ width: `${rishi.score}%` }}
+                  style={{ width: rishi.score === null ? '0%' : `${rishi.score}%` }}
                 />
               </div>
 

@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { addHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
@@ -107,9 +107,9 @@ export default function WatchlistTab() {
   const enriched = useMemo(() => {
     return items.map(i => {
       const stock = STOCKS[i.symbol];
-      const live = prices[i.symbol]?.price ?? (stock?.price ?? 0);
+      const live = prices[i.symbol]?.price ?? null; // T14: no seed fallback
       const changePct = prices[i.symbol]?.changePercent24h ?? 0;
-      const consensus: ConsensusResult | null = stock ? buildConsensus(stock) : null;
+      const consensus: ConsensusResult | null = stock ? getStockScore(stock) : null;
       const score = consensus?.consensus ?? 0;
       const topBull = consensus?.topBull?.full ?? '—';
       const rishiConviction = score >= 75 ? 9 : score >= 65 ? 7 : score >= 55 ? 5 : score >= 45 ? 3 : 1;
@@ -149,8 +149,9 @@ export default function WatchlistTab() {
   function openPromoteDialog(symbol: string) {
     const stock = STOCKS[symbol];
     if (!stock) return;
-    const live = prices[symbol]?.price ?? stock.price;
-    const avgPrice = live > 0 ? live : stock.price;
+    // T14: seed price never substitutes for a live quote
+    const live = prices[symbol]?.price ?? null;
+    const avgPrice = live !== null && live > 0 ? live : 0;
     const suggestedShares = avgPrice > 0 ? Math.max(1, Math.round(10000 / avgPrice)) : 1;
     setPromoteDialog({ symbol, avgPrice, suggestedShares, shares: suggestedShares, keepInWatchlist: false });
   }
@@ -300,7 +301,7 @@ export default function WatchlistTab() {
                     const q = searchQuery.toLowerCase();
                     return sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.sector.toLowerCase().includes(q);
                   }).length === 0 && (
-                    <div style={{ padding: '20px 12px', textAlign: 'center', color: '#64748B', fontSize: 12 }}>No stocks found matching "{searchQuery}"</div>
+                    <div style={{ padding: '20px 12px', textAlign: 'center', color: '#64748B', fontSize: 12 }}>No stocks found matching &quot;{searchQuery}&quot;</div>
                   )}
                 </div>
               )}
@@ -357,7 +358,7 @@ export default function WatchlistTab() {
                         <Link href={`/stock/${i.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 800, fontFamily: 'monospace', fontSize: 13 }}>{i.symbol}</Link>
                         <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{i.stock?.name ?? '—'}</div>
                       </td>
-                      <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0', fontWeight: 700 }}>{(i.live ?? 0).toLocaleString('en-IN')}</td>
+                      <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0', fontWeight: 700 }}>{i.live != null ? i.live.toLocaleString('en-IN') : '\u2014'}</td>
                       <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: changeColor(i.changePct ?? 0), fontWeight: 700 }}>
                         {(i.changePct ?? 0) >= 0 ? '+' : ''}{(i.changePct ?? 0).toFixed(2)}%
                       </td>

@@ -9,7 +9,7 @@ export interface BulkPriceEntry {
 }
 
 // In-memory cache
-let priceCache: Record<string, BulkPriceEntry> = {};
+const priceCache: Record<string, BulkPriceEntry> = {};
 let cacheTimestamp = 0;
 let inflightPromise: Promise<Record<string, BulkPriceEntry>> | null = null;
 const CACHE_TTL = 60_000; // 60 seconds

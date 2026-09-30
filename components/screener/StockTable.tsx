@@ -3,18 +3,21 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Stock } from "../../lib/types";
-import { buildConsensus } from "../../lib/consensus";
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { SEED_AS_OF } from "../../data/stocks";
 
 interface StockRow extends Stock {
-  consensus: number;
+  /** null = "Insufficient Data" — rendered as em dash and always sorted last (T11). */
+  consensus: number | null;
   topRishi: string;
-  topRishiScore: number;
+  topRishiScore: number | null;
   category: string;
-  livePrice: number;
-  change24h: number;
+  /** null = no live quote — em dash shown; seed price is NEVER displayed (T14). */
+  livePrice: number | null;
+  change24h: number | null;
 }
 
 interface Props {
@@ -32,6 +35,8 @@ function consensusCategory(score: number): string {
 
 export function StockTable({ stocks }: Props) {
   const dark = true;
+  // T14: freshness labels — fundamentals are seed data unless a live fetch
+  // overrode them; prices are live-only (never seed).
 
   const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
@@ -47,16 +52,18 @@ export function StockTable({ stocks }: Props) {
 
   const enrichedStocks = useMemo<StockRow[]>(() => {
     return stocks.map(stock => {
-      const report = buildConsensus(stock);
+      const report = getStockScore(stock);
       const topScore = report.scores[0];
-      const livePrice = prices[stock.symbol]?.price ?? stock.price;
-      const change24h = prices[stock.symbol]?.change ?? 0;
+      // T14: seed price is never rendered as live — null when feed is down
+      const livePrice = prices[stock.symbol]?.price ?? null;
+      const change24h = prices[stock.symbol]?.change ?? null;
       return {
         ...stock,
-        consensus: Number.isFinite(report.consensus) ? report.consensus : 0,
-        topRishi: topScore.name,
-        topRishiScore: topScore.score,
-        category: Number.isFinite(report.consensus) ? consensusCategory(report.consensus) : "N/A",
+        // T11: null consensus stays null — never coerced to 0, displayed as em dash
+        consensus: report.consensus,
+        topRishi: topScore?.name ?? "—",
+        topRishiScore: topScore?.score ?? null,
+        category: report.consensus !== null ? consensusCategory(report.consensus) : "N/A",
         pe: bulkFund[stock.symbol]?.pe ?? stock.pe,
         roe: bulkFund[stock.symbol]?.roe ?? stock.roe,
         livePrice,
@@ -87,9 +94,15 @@ export function StockTable({ stocks }: Props) {
           ? String(b.symbol).localeCompare(String(a.symbol))
           : String(a.symbol).localeCompare(String(b.symbol));
       }
-      return sortDesc
-        ? (b[sortKey] as number) - (a[sortKey] as number)
-        : (a[sortKey] as number) - (b[sortKey] as number);
+      // T11: null (Insufficient Data) values always sort last
+      const av = a[sortKey] as number | null;
+      const bv = b[sortKey] as number | null;
+      const aNull = av === null || !Number.isFinite(av);
+      const bNull = bv === null || !Number.isFinite(bv);
+      if (aNull && bNull) return 0;
+      if (aNull) return 1;   // nulls last
+      if (bNull) return -1;
+      return sortDesc ? (bv as number) - (av as number) : (av as number) - (bv as number);
     });
     return result;
   }, [enrichedStocks, search, sectorFilter, sortKey, sortDesc]);
@@ -103,7 +116,7 @@ export function StockTable({ stocks }: Props) {
   };
 
   const sortIcon = (key: SortKey) =>
-    sortKey !== key ? "â†•" : sortDesc ? "â†“" : "â†‘";
+    sortKey !== key ? "↕" : sortDesc ? "↓" : "↑";
 
   const scoreColor = (score: number) => {
     if (score >= 75) return dark ? "text-emerald-400" : "text-green-700";
@@ -216,23 +229,26 @@ export function StockTable({ stocks }: Props) {
                 <td className={`px-4 py-3 font-mono text-sm ${dark ? "text-gray-300" : "text-gray-700"}`}>
                   {stock.name}
                 </td>
-                <td className="px-4 py-3 text-right font-mono font-semibold text-yellow-500">
-                  {stock.livePrice.toFixed(2)}
+                <td
+                  className="px-4 py-3 text-right font-mono font-semibold text-yellow-500"
+                  title={stock.livePrice !== null ? "Live price" : "Live price unavailable \u2014 seed prices are never shown as current"}
+                >
+                  {stock.livePrice !== null ? stock.livePrice.toFixed(2) : "\u2014"}
                 </td>
-                <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h)}`}>
-                  {stock.change24h > 0 ? "+" : ""}{stock.change24h.toFixed(2)}%
+                <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h ?? 0)}`} title={stock.change24h !== null ? "Live 24h change" : "Live change unavailable"}>
+                  {stock.change24h !== null ? (stock.change24h > 0 ? "+" : "") + stock.change24h.toFixed(2) + "%" : "\u2014"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "â€”"}
+                  {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "—"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? (bulkFund[stock.symbol]?.roe ?? stock.roe).toFixed(1) + "%" : "â€”"}
+                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? (bulkFund[stock.symbol]?.roe ?? stock.roe).toFixed(1) + "%" : "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span
                     className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
                   >
-                    {Number.isFinite(stock.consensus) ? stock.consensus.toFixed(0) : "â€”"}
+                    {stock.consensus !== null && Number.isFinite(stock.consensus) ? stock.consensus.toFixed(0) : "—"}
                   </span>
                 </td>
               </tr>

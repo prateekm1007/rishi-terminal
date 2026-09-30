@@ -31,13 +31,24 @@ export function getWeight(name: string): number {
   return WEIGHT_MAP[name] ?? 1.0;
 }
 
-export function weightedAverage(scores: RishiScore[]): number {
-  if (scores.length === 0) return 0;
+/**
+ * Minimum number of valid (finite, non-null) scorer results required to
+ * produce a consensus (remediation T11). Chosen as 12 of 20: a majority of
+ * the panel spanning every weight tier (3 Legend + 7 Master + 2 Specialist
+ * minimum) so a consensus always reflects broad philosophical agreement, not
+ * a handful of opinions. Below this the consensus is `null` — "Insufficient
+ * Data" — and is displayed as "—" and sorted last, never coerced to 0.
+ */
+export const MIN_VALID_SCORERS = 12;
+
+export function weightedAverage(scores: RishiScore[]): number | null {
+  const valid = scores.filter(s => s.score !== null && Number.isFinite(s.score));
+  if (valid.length < MIN_VALID_SCORERS) return null;
   let totalWeighted = 0;
   let totalWeight   = 0;
-  for (const s of scores) {
+  for (const s of valid) {
     const w = getWeight(s.name);
-    totalWeighted += s.score * w;
+    totalWeighted += (s.score as number) * w;
     totalWeight   += w;
   }
   return Math.round(totalWeighted / totalWeight);

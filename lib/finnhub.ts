@@ -1,12 +1,15 @@
 /**
- * Finnhub API Configuration
- * Free tier: 60 API calls/minute
- * Sign up at: https://finnhub.io/
- * 
- * To enable: Add NEXT_PUBLIC_FINNHUB_KEY to .env.local
+ * Finnhub API client — SERVER ONLY.
+ *
+ * 'server-only' makes any import from a 'use client' module a build error,
+ * so the API key can never leak into the browser bundle.
+ * Free tier: 60 API calls/minute. Sign up at: https://finnhub.io/
+ *
+ * To enable: Add FINNHUB_API_KEY to .env.local (server-side variable).
  */
+import 'server-only';
 
-const FINNHUB_API_KEY = process.env.NEXT_PUBLIC_FINNHUB_KEY || '';
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || '';
 
 export interface FinnhubQuote {
   c: number;  // Current price

@@ -1,5 +1,6 @@
 import { Stock } from '../types';
 import { RishiScore } from '../consensus/types';
+import { resolveTickerSymbol } from '../registry/tickerRegistry';
 
 export interface PortfolioHolding {
   symbol: string;
@@ -35,7 +36,13 @@ export function loadPortfolio(): Portfolio {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return getEmptyPortfolio();
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored) as Portfolio;
+    // T12: silently migrate renamed/legacy tickers to canonical symbols
+    parsed.holdings = (parsed.holdings ?? []).map(h => {
+      const canonical = resolveTickerSymbol(h.symbol);
+      return canonical && canonical !== h.symbol ? { ...h, symbol: canonical } : h;
+    });
+    return parsed;
   } catch {
     return getEmptyPortfolio();
   }

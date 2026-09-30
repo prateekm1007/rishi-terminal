@@ -1,6 +1,5 @@
 "use client";
 
-import ShortOfTheDay from "@/components/dashboard/ShortOfTheDay";
 import DailyRitualWidget from "@/components/gamification/DailyRitual";
 import ProgressBar from "@/components/gamification/ProgressBar";
 
@@ -10,37 +9,13 @@ import { useLivePrices } from "@/hooks/useLivePrices";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import { STOCKS } from "@/data/stocks";
-import { buildConsensus } from "@/lib/consensus";
-import { calculateRishiScore } from "@/lib/scorers/rishiScoreV2";
-import type { StockMetrics } from "@/lib/scorers/types";
+import { resolveStockMetrics, getStockScore, getQvps } from "@/lib/scoring"; // T10: single scoring surface
+import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from "@/lib/scoring/rankings"; // T13: real rankings
+import { SEED_AS_OF } from "@/data/stocks";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
 const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","SOL"];
-
-const STOCK_OF_DAY = {
-  symbol: "TCS", name: "Tata Consultancy Services", sector: "IT",
-  consensus: 88,
-  revenueCAGR: 14.2, eps: 118, marketCap: "14.2L Cr",
-  why: "Consistent ROE above 45%, zero debt, world-class capital allocation, and a management team that has compounded earnings at 15%+ for over a decade. Damani would call this a business worth owning forever.",
-  rishi: "Damani",
-  tag: "Compounding Machine",
-};
-
-const ROTATING_STOCKS = [
-  { symbol:"RELIANCE",  name:"Reliance Industries", sector:"Energy",  consensus:82, pe:28.4, roe:14.2 },
-  { symbol:"TCS",       name:"Tata Consultancy",    sector:"IT",      consensus:88, pe:31.2, roe:48.6 },
-  { symbol:"INFY",      name:"Infosys Ltd",          sector:"IT",      consensus:85, pe:27.8, roe:32.1 },
-  { symbol:"HDFCBANK",  name:"HDFC Bank",            sector:"Banking", consensus:79, pe:18.6, roe:16.8 },
-  { symbol:"ICICIBANK", name:"ICICI Bank",            sector:"Banking", consensus:83, pe:19.2, roe:17.4 },
-  { symbol:"SBIN",      name:"State Bank of India",  sector:"Banking", consensus:74, pe:10.8, roe:14.9 },
-];
-
-const ROTATING_SHORTS = [
-  { symbol:"ADANIENT", name:"Adani Enterprises", shortScore:78, reason:"Elevated valuation + governance concerns" },
-  { symbol:"ZOMATO",   name:"Zomato Ltd",         shortScore:72, reason:"Negative FCF + PE > 300x" },
-  { symbol:"PAYTM",    name:"One97 Comms",        shortScore:81, reason:"Cash burn + regulatory risk" },
-];
 
 const TOP_CRYPTO = [
   { symbol:"BTC", name:"Bitcoin",  icon:"₿", color:"#F7931A" },
@@ -148,31 +123,14 @@ function Divider() {
 export default function DashboardPage() {
   const { t } = useLanguage();
 
-  const rotatingStocks = useMemo(() => {
-    return Object.values(STOCKS)
-      .filter((s:any) => s.pe > 0 && s.symbol !== "HINDUNILVR")
-      .slice(0,6)
-      .map((s:any) => ({
-        symbol:s.symbol,
-        name:s.name,
-        sector:s.sector,
-        consensus:buildConsensus(s).consensus,
-        pe:s.pe,
-        roe:s.roe
-      }));
-  }, []);
-
-  const rotatingShorts = useMemo(() => {
-    return Object.values(STOCKS)
-      .filter((s:any) => s.pe === 0 || s.pe > 70 || s.fcf < 0 || s.de > 2)
-      .slice(0,3)
-      .map((s:any) => ({
-        symbol:s.symbol,
-        name:s.name,
-        shortScore:buildConsensus(s).consensus,
-        reason:"Risk factors detected"
-      }));
-  }, []);
+  // T13: Top Buy = top-N by consensus among dataQuality==='OK' stocks,
+  // deterministic tie-breaks. Shorts = actual trigger flags with reasons
+  // derived from those flags, ranked by the (unvalidated) QVPS short model.
+  // Stock of the Day = deterministic IST-date pick from the ranked pool.
+  const rotatingStocks = useMemo(() => rankTopBuy(6), []);
+  const rotatingShorts = useMemo(() => computeShortRadar(3), []);
+  const stockOfDay = useMemo(() => pickStockOfTheDay(), []);
+  const asOfLabel = SEED_AS_OF;
 
   const allSyms = useMemo(() => [
     ...TICKER_SYMS,
@@ -180,34 +138,20 @@ export default function DashboardPage() {
     ...rotatingShorts.map(s => s.symbol),
     ...WORLD_MARKETS.map(m => m.sym),
     ...TOP_CRYPTO.map(c => c.symbol),
-    STOCK_OF_DAY.symbol,
+    stockOfDay.symbol,
   ], [rotatingStocks, rotatingShorts]);
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms);
-  const { fundamentals: sodFund, loading: sodFundLoading } = useFundamentals(STOCK_OF_DAY.symbol);
+  const { fundamentals: sodFund, loading: sodFundLoading } = useFundamentals(stockOfDay.symbol);
   const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
 
   // Dynamic Stock of the Day commentary
   const sodCommentary = useMemo(() => {
-    const sodStock = STOCKS[STOCK_OF_DAY.symbol];
-    if (!sodStock) return STOCK_OF_DAY.why || "Loading...";
-    const metrics: StockMetrics = {
-      symbol: sodStock.symbol,
-      name: sodStock.name,
-      sector: sodStock.sector,
-      pe: sodFund?.pe ?? sodStock.pe,
-      pb: sodStock.price / (sodFund?.bookValue ?? sodStock.bvps ?? 1),
-      roe: sodFund?.roe ?? sodStock.roe,
-      roce: sodFund?.roce ?? sodStock.roce,
-      opm: sodFund?.opm ?? sodStock.opm,
-      fcfMargin: sodStock.rev > 0 ? (sodStock.fcf / sodStock.rev) * 100 : 0,
-      revenueCAGR3Y: sodFund?.revCagr3y ?? sodStock.revcagr,
-      epsCAGR3Y: sodFund?.epsCagr ?? sodStock.epscagr,
-      debtToEquity: sodFund?.debtToEquity ?? sodStock.de,
-      promoterHolding: sodFund?.promoterHolding ?? sodStock.promo,
-      marketCap: sodFund?.marketCap ? sodFund.marketCap / 10000000 : sodStock.mktcap,
-    };
-    const result = calculateRishiScore(metrics, "LONG", false);
+    // T10: one input set — resolve seed+live through lib/scoring, then label
+    // the commentary as the QVPS model (never "the Rishi Score").
+    const resolved = resolveStockMetrics(stockOfDay.symbol, sodFund);
+    if (!resolved) return stockOfDay.why;
+    const result = getQvps(resolved, "LONG");
     return result.commentary;
   }, [sodFund]);const [timeAgo, setTimeAgo] = useState("—");
 
@@ -416,7 +360,10 @@ export default function DashboardPage() {
 
         {/* ── STOCK OF THE DAY ─────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + STOCK_OF_DAY.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
+          <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + stockOfDay.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
+          <div style={{ fontSize: 11, color: C.textMuted, fontFamily: mono, marginBottom: 10 }}>
+            As of {asOfLabel} (seed fundamentals) · deterministic daily pick, IST calendar day
+          </div>
           <div style={{
             background:"linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 40%,rgba(139,92,246,0.05) 100%)",
             border:"1px solid rgba(212,175,55,0.3)",
@@ -427,19 +374,19 @@ export default function DashboardPage() {
               <div>
                 <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"16px" }}>
                   <div>
-                    <div style={{ fontFamily:mono, fontSize:"28px", fontWeight:900, color:C.text }}>{STOCK_OF_DAY.symbol}</div>
-                    <div style={{ fontSize:"13px", color:C.textMuted, marginTop:"2px" }}>{STOCK_OF_DAY.name}</div>
+                    <div style={{ fontFamily:mono, fontSize:"28px", fontWeight:900, color:C.text }}>{stockOfDay.symbol}</div>
+                    <div style={{ fontSize:"13px", color:C.textMuted, marginTop:"2px" }}>{stockOfDay.name}</div>
                   </div>
                   <div style={{
                     background:"rgba(212,175,55,0.15)", border:"1px solid rgba(212,175,55,0.3)",
                     color:C.gold, padding:"6px 14px", borderRadius:"20px",
                     fontSize:"13px", fontWeight:700, flexShrink:0,
-                  }}>{STOCK_OF_DAY.tag}</div>
+                  }}>{stockOfDay.tag}</div>
                 </div>
 
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"16px" }}>
                   {[
-                    { label:t("dashboard2.rishiScore"), value: STOCK_OF_DAY.consensus + "/100" },
+                    { label:t("dashboard2.rishiScore"), value: stockOfDay.consensus + "/100" },
                     { label:"P/E", value: sodFundLoading ? "—" : (sodFund?.pe ? (sodFund.pe.toFixed(1) + "x") : "—") },
                     { label:"ROE", value: sodFundLoading ? "—" : (sodFund?.roe ? (sodFund.roe.toFixed(1) + "%") : "—") },
                     { label:"OPM", value: sodFundLoading ? "—" : (sodFund?.opm ? (sodFund.opm.toFixed(1) + "%") : "—") },
@@ -463,19 +410,19 @@ export default function DashboardPage() {
                   fontStyle:"italic", lineHeight:1.7,
                   fontFamily:'"Playfair Display",Georgia,serif',
                 }}>
-                  "{sodCommentary}"
+                  &quot;{sodCommentary}&quot;
                 </div>
                 <div style={{ marginTop:"10px", fontSize:"12px", color:C.textMuted }}>
-                  — <span style={{ color:C.gold }}>Rishi {STOCK_OF_DAY.rishi}</span>
+                  — <span style={{ color:C.gold }}>Rishi {stockOfDay.rishi}</span>
                 </div>
               </div>
 
               <div>
                 <div style={{ fontSize:"22px", fontWeight:800, color:C.text, fontFamily:mono, marginBottom:"6px" }}>
-                  {fmtINR(prices[STOCK_OF_DAY.symbol]?.price)}
+                  {fmtINR(prices[stockOfDay.symbol]?.price)}
                 </div>
-                <div style={{ fontSize:"14px", fontWeight:700, fontFamily:mono, marginBottom:"20px", ...upClr(prices[STOCK_OF_DAY.symbol]?.changePercent24h) }}>
-                  {fmtPct(prices[STOCK_OF_DAY.symbol]?.changePercent24h)} {t("dashboard2.todaySuffix")}
+                <div style={{ fontSize:"14px", fontWeight:700, fontFamily:mono, marginBottom:"20px", ...upClr(prices[stockOfDay.symbol]?.changePercent24h) }}>
+                  {fmtPct(prices[stockOfDay.symbol]?.changePercent24h)} {t("dashboard2.todaySuffix")}
                 </div>
 
                 <div style={{
@@ -488,15 +435,15 @@ export default function DashboardPage() {
                   </div>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
                     <span style={{ fontSize:"13px", color:C.green }}>{t("dashboard2.bulls")}</span>
-                    <span style={{ fontSize:"20px", fontWeight:900, color:C.green, fontFamily:mono }}>{STOCK_OF_DAY.consensus}%</span>
-                    <span style={{ fontSize:"13px", color:C.red }}>{t("dashboard2.bears")} {100 - STOCK_OF_DAY.consensus}%</span>
+                    <span style={{ fontSize:"20px", fontWeight:900, color:C.green, fontFamily:mono }}>{stockOfDay.consensus}%</span>
+                    <span style={{ fontSize:"13px", color:C.red }}>{t("dashboard2.bears")} {100 - stockOfDay.consensus}%</span>
                   </div>
                   <div style={{ height:"8px", background:"rgba(239,68,68,0.3)", borderRadius:"4px", overflow:"hidden" }}>
-                    <div style={{ height:"100%", width: STOCK_OF_DAY.consensus + "%", background:"linear-gradient(90deg,#16A34A,#22C55E)", borderRadius:"4px" }} />
+                    <div style={{ height:"100%", width: stockOfDay.consensus + "%", background:"linear-gradient(90deg,#16A34A,#22C55E)", borderRadius:"4px" }} />
                   </div>
                 </div>
 
-                <Link href={"/stock/" + STOCK_OF_DAY.symbol} style={{
+                <Link href={"/stock/" + stockOfDay.symbol} style={{
                   display:"block", textAlign:"center", padding:"12px",
                   background:"linear-gradient(135deg,#A88B20,#D4AF37)",
                   borderRadius:"12px", color:"#0A0F1C", fontWeight:700,
@@ -513,11 +460,14 @@ export default function DashboardPage() {
         {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/screener" linkLabel={t("dashboard2.fullScreener")} />
+          <div style={{ fontSize: 11, color: C.textMuted, fontFamily: mono, marginBottom: 10 }}>
+            Ranked by Rishi consensus among data-quality-OK stocks · as of {asOfLabel}
+          </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
             {rotatingStocks.map((stock) => {
               const d  = prices[stock.symbol];
               const up = (d?.changePercent24h ?? 0) >= 0;
-              const sc = scoreColor(stock.consensus);
+              const sc = stock.consensus === null ? "#64748B" : scoreColor(stock.consensus); // T11: null = insufficient data
               return (
                 <Link href={"/stock/" + stock.symbol} key={stock.symbol} style={{ textDecoration:"none" }}>
                   <div style={{ ...card(), cursor:"pointer" }}
@@ -569,6 +519,9 @@ export default function DashboardPage() {
         {/* ── SHORT OF THE DAY ──────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
+          <div style={{ fontSize: 11, color: C.textMuted, fontFamily: mono, marginBottom: 10 }}>
+            Ranked by QVPS short screen (unvalidated model) from actual trigger flags · as of {asOfLabel}
+          </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
             {rotatingShorts.map(short => (
               <Link href={"/stock/" + short.symbol} key={short.symbol} style={{ textDecoration:"none" }}>

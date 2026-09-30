@@ -6,5 +6,11 @@
     "app/api/prices/route.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/ingest/snapshot",
+      "schedule": "30 13 * * 1-5"
+    }
+  ]
 }

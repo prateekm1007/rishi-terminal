@@ -1,4 +1,34 @@
 # RISHI TERMINAL V4.4 - DATA INTEGRITY AUDIT RESULTS
+
+> ## ⚠️ SUPERSEDED — DO NOT CITE (Remediation T19, 2026-09-30)
+>
+> This document was produced by an earlier, shallower audit and contains
+> **factually false conclusions**. It is kept only for history. Where this
+> document and the current remediation disagree, **the remediation wins**.
+>
+> Verified false statements in this document:
+>
+> 1. **"All 996 stocks have ROE values ≤ 100%" — FALSE.** The seed dataset
+>    contains NESTLEIND with ROE = 110, confirmed as a real value
+>    (Nestlé India's FY ROE is genuinely above 100% because of its
+>    buyback-shrunken equity base). It is explicitly whitelisted in
+>    `scripts/validateStocks.ts` with this rationale.
+> 2. **"3 duplicate pairs found" — FALSE / severe undercount.** A
+>    normalized-name audit in the 2026-09 remediation found **43 groups**
+>    of entries sharing a normalized name. All were adjudicated in T12
+>    (duplicate→alias, renamed/merged→alias, different-companies→name fix,
+>    delisted→remove); the decisions and evidence URLs are recorded in
+>    commit `fbae373` and `lib/registry/tickerAliases.json`.
+> 3. The claim that the Screener.in scraper "worked correctly" on a live
+>    fetch is not reproducible evidence; the scraper hits an unofficial
+>    endpoint and remains a licensing/reliability risk (see the founder
+>    decisions section of the spec).
+>
+> **Current source of truth:**
+> - Remediation spec: `remediation-spec.md` (branch `remediation/audit-2026-09`, commits `d88b48c..T19`)
+> - Data sources & freshness: `docs/DATA_SOURCES.md`
+> - Registry validation gates: `scripts/validateStocks.ts` (fails CI on the exact defect classes this document missed)
+
 **Date:** 2026-06-16 23:34:27
 **Repository:** https://github.com/prateekm1007/rishi-terminal.git
 **Current HEAD:** b5ac8fc
@@ -112,7 +142,7 @@ app/page.tsx           → No 'use client' (server component ✅)
 **Problem:** Premium subscription tiers stored in browser localStorage, not cloud database.
 
 **Evidence:**
-\\\	ypescript
+\\\     ypescript
 // lib/premium.ts
 export function getUserTier(): SubscriptionTier {
   if (typeof window === 'undefined') return 'free';
@@ -194,7 +224,7 @@ Remove 3 duplicate entries from data/stocks/index.ts:
 ### Step 2: Add Global Disclaimer (1 hour)
 
 Add LegalDisclaimer component to app/layout.tsx:
-\\\	sx
+\\\     sx
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 
 export default function RootLayout({ children }) {

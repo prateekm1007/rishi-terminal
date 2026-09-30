@@ -39,6 +39,17 @@ function scoreColor(s: number) {
 function scoreBg(s: number) {
   return s >= 75 ? 'rgba(34,197,94,0.1)' : s >= 55 ? 'rgba(212,175,55,0.1)' : 'rgba(239,68,68,0.1)';
 }
+
+// T11: null-safe variants — null score ("insufficient data") renders muted.
+function scoreColorN(s: number | null) {
+  return s === null ? 'var(--text-muted)' : scoreColor(s);
+}
+function scoreBgN(s: number | null) {
+  return s === null ? 'var(--bg-secondary)' : scoreBg(s);
+}
+function scoreDisp(s: number | null) {
+  return s === null ? '—' : String(s);
+}
 function signalColor(signal: string) {
   if (signal === 'BUY' || signal === 'STRONG BUY') return '#22C55E';
   if (signal === 'SELL') return '#EF4444';
@@ -60,7 +71,10 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     change: livePriceData?.change ?? commodity.change,
   };
   const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(liveCommodity) }));
-  const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
+  const validScores = rishiScores.filter(r => r.result.score !== null); // T11: insufficient data excluded
+  const avgScore = validScores.length > 0
+    ? Math.round(validScores.reduce((s, r) => s + (r.result.score as number), 0) / validScores.length)
+    : 0; // no valid scorer results -> neutral average, per-scorer cards show em dash
 
   const chartAsset: UniversalAsset = {
     symbol: commodity.symbol,
@@ -75,9 +89,9 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
   const pos52w = range52w > 0 ? ((displayPrice - commodity.low52w) / range52w) * 100 : 50;
 
   // Knowledge graph data
-  const bulls = rishiScores.filter(r => r.result.score >= 65);
-  const bears = rishiScores.filter(r => r.result.score < 45);
-  const neutrals = rishiScores.filter(r => r.result.score >= 45 && r.result.score < 65);
+  const bulls = rishiScores.filter(r => r.result.score !== null && r.result.score >= 65);
+  const bears = rishiScores.filter(r => r.result.score !== null && r.result.score < 45);
+  const neutrals = rishiScores.filter(r => r.result.score !== null && r.result.score >= 45 && r.result.score < 65);
   // Technical edge vs commodity benchmarks
   // NOTE: For commodities, stock-style RSI/SMA/MACD are low-utility without a true OHLC history pipeline.
   // We instead show commodity-specific fundamentals that matter most: curve structure, inventories, supercycle, cost, seasonality, USD sensitivity.
@@ -215,7 +229,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   <div key={i} style={{ marginBottom: 12, padding: 12, background: 'rgba(34,197,94,0.05)', borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{r.name}</span>
-                      <span style={{ fontSize: 14, color: '#22C55E', fontWeight: 700 }}>{r.result.score}</span>
+                      <span style={{ fontSize: 14, color: '#22C55E', fontWeight: 700 }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 11, color: '#94A3B8' }}>{r.result.insight}</div>
                     <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
@@ -231,7 +245,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   <div key={i} style={{ marginBottom: 12, padding: 12, background: 'rgba(239,68,68,0.05)', borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{r.name}</span>
-                      <span style={{ fontSize: 14, color: '#EF4444', fontWeight: 700 }}>{r.result.score}</span>
+                      <span style={{ fontSize: 14, color: '#EF4444', fontWeight: 700 }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 11, color: '#94A3B8' }}>{r.result.insight}</div>
                     <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
@@ -343,8 +357,8 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (
                   <div key={r.name} style={{ textAlign: 'center' }}>
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: scoreBg(r.result.score), border: `2px solid ${scoreColor(r.result.score)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: scoreColor(r.result.score), margin: '0 auto 6px' }}>{r.initials}</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: scoreColor(r.result.score) }}>{r.result.score}</div>
+                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: scoreBgN(r.result.score), border: `2px solid ${scoreColorN(r.result.score)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: scoreColorN(r.result.score), margin: '0 auto 6px' }}>{r.initials}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: scoreColorN(r.result.score) }}>{scoreDisp(r.result.score)}</div>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{r.name}</div>
                   </div>
                 ))}
@@ -500,13 +514,13 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>RISHI INSIGHTS</div>
               {rishiScores.map(r => (
-                <div key={r.name} style={{ marginBottom: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${scoreColor(r.result.score)}` }}>
+                <div key={r.name} style={{ marginBottom: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${scoreColorN(r.result.score)}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: scoreColor(r.result.score) }}>{r.result.score}/100</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{scoreDisp(r.result.score)}/100</span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                  <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic' }}>"{r.philosophy}"</div>
+                  <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
                 </div>
               ))}
             </div>
@@ -620,26 +634,26 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
           <div style={{ display: 'grid', gap: 20 }}>
             {rishiScores.map(r => (
               <div key={r.name} className="card-sacred" style={{ padding: 24, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${scoreColor(r.result.score)}, transparent)` }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${scoreColorN(r.result.score)}, transparent)` }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 56, height: 56, borderRadius: '50%', background: scoreBg(r.result.score), border: `2px solid ${scoreColor(r.result.score)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: scoreColor(r.result.score) }}>{r.initials}</div>
+                    <div style={{ width: 56, height: 56, borderRadius: '50%', background: scoreBgN(r.result.score), border: `2px solid ${scoreColorN(r.result.score)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{r.initials}</div>
                     <div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{r.name}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.result.label} • {r.focus}</div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(r.result.score), lineHeight: 1 }}>{r.result.score}</div>
+                    <div style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace', color: scoreColorN(r.result.score), lineHeight: 1 }}>{scoreDisp(r.result.score)}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{r.result.label}</div>
                   </div>
                 </div>
-                <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${scoreColor(r.result.score)}`, marginBottom: 16 }}>
+                <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${scoreColorN(r.result.score)}`, marginBottom: 16 }}>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>ANALYSIS</div>
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{r.result.insight}</p>
                 </div>
                 <div style={{ padding: 14, background: 'rgba(212,175,55,0.05)', borderRadius: 8, borderLeft: '3px solid rgba(212,175,55,0.4)', marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, color: '#D4AF37', fontStyle: 'italic' }}>"{r.philosophy}"</div>
+                  <div style={{ fontSize: 10, color: '#D4AF37', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
                   <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>{r.bio}</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
@@ -672,7 +686,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
-                      <span style={{ fontSize: 16, fontWeight: 700, color: '#22C55E' }}>{r.result.score}</span>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: '#22C55E' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
                     <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
@@ -686,7 +700,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
-                      <span style={{ fontSize: 16, fontWeight: 700, color: '#EF4444' }}>{r.result.score}</span>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: '#EF4444' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
                     <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
@@ -702,7 +716,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                     <div key={i} style={{ padding: 14, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 10 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
-                        <span style={{ fontSize: 16, fontWeight: 700, color: '#D4AF37' }}>{r.result.score}</span>
+                        <span style={{ fontSize: 16, fontWeight: 700, color: '#D4AF37' }}>{scoreDisp(r.result.score)}</span>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{r.result.insight}</div>
                     </div>

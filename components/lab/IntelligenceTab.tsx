@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
@@ -54,7 +54,7 @@ export default function IntelligenceTab() {
       const stock = STOCKS[h.symbol];
       const livePrice = prices[h.symbol]?.price ?? stock?.price ?? h.avgPrice;
       const current = h.shares * livePrice;
-      const consensus = stock ? buildConsensus(stock) : null;
+      const consensus = stock ? getStockScore(stock) : null;
       return {
         ...h,
         stock,
@@ -78,6 +78,7 @@ export default function IntelligenceTab() {
 
     for (const h of enriched) {
       for (const rs of h.scores) {
+        if (rs.score === null) continue; // T11: insufficient data — skip, don't skew averages
         if (!map[rs.name]) map[rs.name] = { total: 0, count: 0, full: rs.full, origin: rs.origin };
         map[rs.name].total += rs.score;
         map[rs.name].count++;
@@ -124,19 +125,20 @@ export default function IntelligenceTab() {
   const topConflicts = useMemo(() => {
     const conflicts: Array<{ symbol: string; name: string; bullRishi: string; bullScore: number; bearRishi: string; bearScore: number; spread: number }> = [];
     for (const h of enriched) {
-      if (h.scores.length < 2) continue;
-      const sorted = [...h.scores].sort((a, b) => b.score - a.score);
+      const validScores = h.scores.filter(sc => sc.score !== null);
+      if (validScores.length < 2) continue;
+      const sorted = [...validScores].sort((a, b) => (b.score as number) - (a.score as number));
       const bull = sorted[0];
       const bear = sorted[sorted.length - 1];
-      const spread = bull.score - bear.score;
+      const spread = (bull.score as number) - (bear.score as number);
       if (spread >= 25) {
         conflicts.push({
           symbol: h.symbol,
           name: h.stock?.name ?? h.symbol,
           bullRishi: bull.full,
-          bullScore: bull.score,
+          bullScore: bull.score as number,
           bearRishi: bear.full,
-          bearScore: bear.score,
+          bearScore: bear.score as number,
           spread,
         });
       }
@@ -320,7 +322,7 @@ export default function IntelligenceTab() {
               <tbody>
                 {enriched.map(h => {
                   const scoreByName: Record<string, number> = {};
-                  for (const rs of h.scores) scoreByName[rs.name] = rs.score;
+                  for (const rs of h.scores) { if (rs.score !== null) scoreByName[rs.name] = rs.score; }
                   return (
                     <tr key={h.symbol} style={{ borderTop: '1px solid rgba(30,41,59,0.4)' }}>
                       <td style={{ padding: '8px 10px' }}>
@@ -504,7 +506,7 @@ export default function IntelligenceTab() {
       {/* Rishi Affinity */}
       {rishiAffinity && (
         <div style={{ ...card, background: 'linear-gradient(135deg, rgba(212,175,55,0.1), rgba(15,23,42,0.6))' }}>
-          <div style={sectionLabel}>◌ Your Portfolio's Rishi Affinity</div>
+          <div style={sectionLabel}>◌ Your Portfolio&apos;s Rishi Affinity</div>
           <div style={{ padding: 16 }}>
             <div style={{ fontSize: 11, color: '#64748B', marginBottom: 6 }}>THIS PORTFOLIO MATCHES:</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: '#D4AF37', marginBottom: 10 }}>

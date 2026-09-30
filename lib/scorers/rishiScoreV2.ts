@@ -1,6 +1,11 @@
 // ============================================================
-// RISHI SCORE v2.0 — MASTER ENGINE
-// Uses config registry — add pillars without touching this file
+// QUALITY-VALUE PILLAR SCORE (QVPS) — pillar-style factor model
+//
+// Remediation T10: this is NOT the "Rishi Score". The one and only Rishi
+// Score is the consensus engine (Rishi Merit System v1, lib/consensus,
+// surfaced via lib/scoring/getStockScore). This module was previously
+// mislabelled "Rishi Score v2" and is now a distinctly named metric.
+// Import it only through lib/scoring (ESLint enforces this).
 // ============================================================
 
 import {
@@ -59,7 +64,7 @@ function getTrendMultiplier(m: StockMetrics, mode: ScoreMode): number {
 
 // ── MAIN CALCULATE FUNCTION ───────────────────────────────────
 
-export function calculateRishiScore(
+export function calculateQvps(
   metrics:     StockMetrics,
   mode:        ScoreMode = "LONG",
   useCache:    boolean   = true,
@@ -156,13 +161,13 @@ export function calculateRishiScore(
 
 // ── Dual Score ────────────────────────────────────────────────
 
-export function calculateDualScore(metrics: StockMetrics): {
+export function calculateQvpsDual(metrics: StockMetrics): {
   long:  RishiScoreResult;
   short: RishiScoreResult;
 } {
   return {
-    long:  calculateRishiScore(metrics, "LONG"),
-    short: calculateRishiScore(metrics, "SHORT"),
+    long:  calculateQvps(metrics, "LONG"),
+    short: calculateQvps(metrics, "SHORT"),
   };
 }
 
@@ -177,7 +182,7 @@ export function quickScore(stock: {
   roe:    number;
   [key: string]: any;
 }): RishiScoreResult {
-  return calculateRishiScore(stock as StockMetrics, "LONG");
+  return calculateQvps(stock as StockMetrics, "LONG");
 }
 
 // ── Clear Cache ───────────────────────────────────────────────

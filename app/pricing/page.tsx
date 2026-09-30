@@ -1,23 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { TIER_CONFIG, getCurrentTier, setTier, type WisdomTier } from '../../lib/premium';
+import { TIER_CONFIG, type WisdomTier } from '../../lib/premium';
 import { useLanguage } from '../../lib/language';
+import { useTier } from '../../hooks/useTier';
+import { startRazorpayCheckout } from '../../components/premium/PaymentButton';
 
 export default function PricingPage() {
   const { t } = useLanguage();
-  const [currentTier, setCurrentTierState] = useState<WisdomTier>('seeker');
+  const { tier: currentTier, refresh: refreshTier } = useTier();
+  const [checkoutBusy, setCheckoutBusy] = useState<WisdomTier | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setCurrentTierState(getCurrentTier());
-  }, []);
-
-  const handleUpgrade = (tier: WisdomTier) => {
+  const handleUpgrade = async (tier: WisdomTier) => {
     if (tier === 'seeker') return;
-    setTier(tier);
-    setCurrentTierState(tier);
-    alert(`Welcome to ${TIER_CONFIG[tier].label}! Your wisdom tier has been upgraded.`);
+    setCheckoutBusy(tier);
+    setCheckoutError(null);
+    try {
+      await startRazorpayCheckout(tier, refreshTier);
+    } catch (e) {
+      setCheckoutError(e instanceof Error ? e.message : 'Payment could not be started');
+    } finally {
+      setCheckoutBusy(null);
+    }
   };
 
   const tiers: WisdomTier[] = ['seeker', 'student', 'disciple'];
@@ -160,7 +166,11 @@ export default function PricingPage() {
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    {isActive ? t('pricing.active') : `${t('pricing.becomeA')} ${config.label}`}
+                    {isActive
+                      ? t('pricing.active')
+                      : checkoutBusy === tier
+                        ? 'Opening checkout…'
+                        : `${t('pricing.becomeA')} ${config.label}`}
                   </button>
                 )}
               </div>
@@ -175,9 +185,15 @@ export default function PricingPage() {
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
             {t('pricing.guaranteeText')}
           </p>
-          <div style={{ marginTop: 24, fontSize: 12, color: 'var(--text-muted)' }}>
-            {t('pricing.localStorage')}
-          </div>
+          {checkoutError && (
+            <div style={{
+              marginTop: 16, padding: '10px 16px', borderRadius: 8, fontSize: 12,
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
+              color: '#FCA5A5', maxWidth: 600, margin: '16px auto 0',
+            }}>
+              {checkoutError}
+            </div>
+          )}
         </div>
 
       </div>

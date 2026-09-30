@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { STOCKS } from '@/data/stocks/index';
-import { buildConsensus } from '@/lib/consensus';
+import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
@@ -231,8 +231,8 @@ export default function CompareTab() {
       .map(sym => {
         const stock = STOCKS[sym] as any;
         if (!stock) return null;
-        const c = buildConsensus(stock);
-        const live = prices[sym]?.price ?? stock.price ?? 0;
+        const c = getStockScore(stock);
+        const live = prices[sym]?.price ?? null; // T14: no seed fallback
         const chg = prices[sym]?.changePercent24h ?? 0;
         const liveMktcap = (bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : stock.mktcap);
         const fcfYield = liveMktcap > 0 && stock.fcf ? (stock.fcf / liveMktcap) * 100 : 0;
@@ -733,7 +733,7 @@ export default function CompareTab() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ ...tdStyle, color: '#E2E8F0' }}>{e.live.toLocaleString('en-IN')}</td>
+                    <td style={{ ...tdStyle, color: '#E2E8F0' }}>{e.live !== null ? e.live.toLocaleString('en-IN') : '\u2014'}</td>
                     <td style={{ ...tdStyle, color: changeColor(e.changePct), fontWeight: 700 }}>
                       {e.changePct >= 0 ? '+' : ''}
                       {e.changePct.toFixed(1)}%

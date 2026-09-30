@@ -18,7 +18,7 @@ import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
 import RishiScoreDual             from '../score/RishiScoreDual';
-import { calculateDualScore }     from '../../lib/scorers/rishiScoreV2';
+import { resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
 import type { StockMetrics }      from '../../lib/scorers/types';
 import { useFundamentals } from '../../hooks/useFundamentals';
 
@@ -196,8 +196,8 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
                 <span>{stock.exchange}</span>
                 <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
-                <span style={{ color: scoreColor(consensus.consensus), fontWeight: 600 }}>
-                  {t('stock.consensus')}: {consensus.consensus}/100
+                <span style={{ color: consensus.consensus === null ? '#64748B' : scoreColor(consensus.consensus), fontWeight: 600 }}>
+                  {t('stock.consensus')}: {consensus.consensus === null ? '\u2014' : consensus.consensus + '/100'}
                 </span>
               </div>
             </div>
@@ -261,15 +261,10 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
 
                 <div className="wisdom-reveal-delay-1">
                   {(() => {
-                    const metrics: StockMetrics = {
-                      symbol: stock.symbol, name: stock.name, sector: stock.sector,
-                      pe: liveFundamentals?.pe ?? stock.pe, pb: stock.price / (liveFundamentals?.bookValue ?? stock.bvps),
-                      roe: liveFundamentals?.roe ?? stock.roe, roce: liveFundamentals?.roce ?? stock.roce, opm: liveFundamentals?.opm ?? stock.opm,
-                      debtToEquity: liveFundamentals?.debtToEquity ?? stock.de, revenueCAGR3Y: liveFundamentals?.revCagr3y ?? stock.revcagr,
-                      epsCAGR3Y: liveFundamentals?.epsCagr ?? stock.epscagr, promoterHolding: liveFundamentals?.promoterHolding ?? stock.promo,
-                      marketCap: liveFundamentals?.marketCap ? liveFundamentals.marketCap / 10000000 : stock.mktcap, fcfMargin: liveFundamentals?.fcf ? (liveFundamentals.fcf / 100) : (stock.fcf / stock.rev) * 100,
-                    };
-                    return <RishiScoreDual metrics={metrics} />;
+                    // T10: one input set — resolve seed+live through lib/scoring
+                    const resolved = resolveStockMetrics(stock.symbol, liveFundamentals);
+                    if (!resolved) return null;
+                    return <RishiScoreDual metrics={resolved.metrics} />;
                   })()}
                 </div>
 
@@ -318,8 +313,8 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                         alignItems: 'center',
                         gap: 14,
                         padding: '14px 16px',
-                        background: scoreBg(r.score),
-                        border: '1px solid ' + scoreColor(r.score) + '22',
+                        background: r.score === null ? 'rgba(100,116,139,0.08)' : scoreBg(r.score),
+                        border: '1px solid ' + (r.score === null ? '#64748B' : scoreColor(r.score)) + '22',
                         borderRadius: 10,
                         transition: 'all 0.2s ease',
                       }}>
@@ -345,9 +340,9 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                         <div style={{ width: 100, flexShrink: 0 }}>
                           <div style={{ height: 4, background: 'rgba(30,41,59,0.8)', borderRadius: 3, overflow: 'hidden' }}>
                             <div style={{
-                              width: r.score + '%',
+                              width: (r.score === null ? 0 : r.score) + '%',
                               height: '100%',
-                              background: scoreColor(r.score),
+                              background: r.score === null ? '#64748B' : scoreColor(r.score),
                               borderRadius: 3,
                               transition: 'width 0.8s ease',
                             }} />
@@ -358,12 +353,12 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                           fontSize: 22,
                           fontWeight: 700,
                           fontFamily: 'monospace',
-                          color: scoreColor(r.score),
+                          color: r.score === null ? '#64748B' : scoreColor(r.score),
                           width: 40,
                           textAlign: 'right',
                           flexShrink: 0,
                         }}>
-                          {r.score}
+                          {r.score === null ? '\u2014' : r.score}
                         </div>
                       </div>
                     ))}

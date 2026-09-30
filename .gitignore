@@ -47,3 +47,5 @@ bond-implementation-dump.txt
 
 # Local backup directories (never commit)
 backup_*/
+test-results/
+playwright-report/

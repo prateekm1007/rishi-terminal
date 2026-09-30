@@ -121,7 +121,7 @@ interface Flag {
   detail: string;
 }
 
-function shortFlags(s: Stock): Flag[] {
+export function shortFlags(s: Stock): Flag[] {
   const flags: Flag[] = [];
   if (s.pe > 40) flags.push({ key: "overvalued", label: "Overvaluation", detail: `P/E ${s.pe.toFixed(1)}x above 40x` });
   if (s.revcagr < 0) flags.push({ key: "decay", label: "Revenue decay", detail: `revenue CAGR ${s.revcagr.toFixed(1)}%` });

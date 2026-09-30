@@ -29,6 +29,7 @@
     "react-force-graph-2d": "^1.29.1",
     "react-is": "^19.2.6",
     "recharts": "^3.8.1",
+    "server-only": "^0.0.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
     "yahoo-finance2": "2.12.0"

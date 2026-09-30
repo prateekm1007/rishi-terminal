@@ -5,10 +5,9 @@ node_modules/
 .next/
 out/
 
-# env
-.env
-.env.local
-.env.*.local
+# env — never commit anything except the template
+.env*
+!.env.example
 
 # logs
 npm-debug.log*

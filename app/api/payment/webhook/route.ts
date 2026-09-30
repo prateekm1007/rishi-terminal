@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { grantTierForPayment } from '@/lib/payments/grantTier';
+import { verifyWebhookSignature } from '@/lib/payments/signatures';
 
 /**
  * Razorpay webhook (remediation T6).
@@ -30,11 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
   }
 
-  const expected = crypto.createHmac('sha256', secret).update(raw).digest('hex');
-
-  const expectedBuf = Buffer.from(expected, 'utf8');
-  const receivedBuf = Buffer.from(signature, 'utf8');
-  if (expectedBuf.length !== receivedBuf.length || !crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
+  if (!verifyWebhookSignature(raw, signature, secret)) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { getSessionUser } from '@/lib/auth/session';
 import { grantTierForPayment, TIER_PRICES } from '@/lib/payments/grantTier';
+import { verifyPaymentSignature } from '@/lib/payments/signatures';
 
 /**
  * Razorpay payment endpoints (remediation T6).
@@ -101,14 +101,6 @@ export async function POST(req: NextRequest) {
   });
 }
 
-/** Timing-safe comparison; guards against length leaks via early return. */
-function timingSafeEqualHex(a: string, b: string): boolean {
-  const ab = Buffer.from(a, 'utf8');
-  const bb = Buffer.from(b, 'utf8');
-  if (ab.length !== bb.length) return false;
-  return crypto.timingSafeEqual(ab, bb);
-}
-
 export async function PUT(req: NextRequest) {
   const user = await getSessionUser();
   if (!user) {
@@ -138,12 +130,8 @@ export async function PUT(req: NextRequest) {
   }
 
   const keySecret = process.env.RAZORPAY_KEY_SECRET!;
-  const expected = crypto
-    .createHmac('sha256', keySecret)
-    .update(`${orderId}|${paymentId}`)
-    .digest('hex');
 
-  if (!timingSafeEqualHex(expected, signature)) {
+  if (!verifyPaymentSignature(orderId, paymentId, signature, keySecret)) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 

@@ -39,7 +39,7 @@
     "@playwright/test": "^1.63.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "20.19.39",
+    "@types/node": "^22.20.4",
     "@types/react": "19.2.14",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9",

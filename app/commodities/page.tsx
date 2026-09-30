@@ -1,46 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { COMMODITIES } from '../../data/markets';
-import { scoreJimRogers } from '../../lib/scorers/commodity/jimrogers';
-import { scoreRickRule } from '../../lib/scorers/commodity/rickrule';
-import { scoreDanielYergin } from '../../lib/scorers/commodity/danielyergin';
 import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 
-const COMMODITY_RISHIS = [
-  {
-    id: 'jimrogers',
-    name: 'Jim Rogers',
-    tag: 'JR',
-    bio: 'Co-founded Quantum Fund with Soros. Predicted the 2000s commodities supercycle. Author of Hot Commodities. Believes in owning physical assets over paper.',
-    quote: 'Buy commodities. Buy them and put them away.',
-    scorer: scoreJimRogers,
-    target: 'GOLD',
-  },
-  {
-    id: 'rickrule',
-    name: 'Rick Rule',
-    tag: 'RR',
-    bio: 'Legendary resource sector investor. CEO of Sprott. Gold as savings, silver as speculation. Most people are speculating in gold when they should be saving in it.',
-    quote: 'Gold is money. Everything else is credit.',
-    scorer: scoreRickRule,
-    target: 'SILVER',
-  },
-  {
-    id: 'yergin',
-    name: 'Daniel Yergin',
-    tag: 'DY',
-    bio: 'Pulitzer Prize-winning energy historian. Author of The Prize. VP at S&P Global. Energy transition and geopolitical oil expert.',
-    quote: 'Oil is the lifeblood of the industrial civilization.',
-    scorer: scoreDanielYergin,
-    target: 'WTI',
-  },
-];
 
 function scoreColor(score: number): string {
   if (score >= 75) return 'var(--accent-green)';
@@ -62,6 +30,24 @@ export default function CommoditiesPage() {
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const { tier } = useTier();
   const premium = tier !== 'seeker';
+
+  // R3 (round 2): the average teaser on each card is computed SERVER-SIDE
+  // (/api/gurus?kind=commodity) — the per-guru verdict content never enters
+  // a free-tier browser; locked cards show only the served average.
+  const [guruTeasers, setGuruTeasers] = useState<Record<string, { avg: number | null; gurus: Array<{ id: string; initials: string; score: number | null }> }>>({});
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/gurus?kind=commodity', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !Array.isArray(d?.commodities)) return;
+        const map: typeof guruTeasers = {};
+        for (const c of d.commodities) map[c.symbol] = { avg: c.avg, gurus: c.gurus ?? [] };
+        setGuruTeasers(map);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Pull symbols for live price fetching
   const commoditySymbols = useMemo(() => COMMODITIES.map(c => c.symbol), []);
@@ -214,11 +200,10 @@ export default function CommoditiesPage() {
               changePct: commodity.change24h ?? commodity.changePct ?? 0,
               change: commodity.change ?? 0,
             };
-            const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(liveCommodity) }));
-            const validResults = rishiScores.filter(r => r.result.score !== null);
-            const avgScore    = validResults.length > 0
-              ? Math.round(validResults.reduce((s, r) => s + (r.result.score as number), 0) / validResults.length)
-              : 0; // T11: null scores are "insufficient data", not zero
+            // R3: server-computed average (null = insufficient data, T11)
+            const teaser = guruTeasers[commodity.symbol];
+            const avgScore = teaser?.avg ?? 0;
+            const rishiScores = (teaser?.gurus ?? []).map(g => ({ id: g.id, tag: g.initials, result: { score: g.score } }));
             const isLive      = !!prices[commodity.symbol];
 
             return (

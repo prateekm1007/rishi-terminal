@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { safeNextPath } from '@/lib/auth/safeRedirect';
 
 /**
  * Sign-in via Supabase Auth (remediation T5).
@@ -14,6 +15,13 @@ import { createClient } from '@/lib/supabase/client';
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  // R7: `?next=` is validated server-side-quality here; only a safe
+  // same-origin relative path is threaded into the auth redirect.
+  const [callbackUrl, setCallbackUrl] = useState(`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`);
+  useEffect(() => {
+    const next = safeNextPath(new URLSearchParams(window.location.search).get('next'));
+    setCallbackUrl(`${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`);
+  }, []);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +34,7 @@ export default function SignInPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: callbackUrl,
         },
       });
       if (error) setError(error.message);
@@ -46,7 +54,7 @@ export default function SignInPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: callbackUrl,
         },
       });
       if (error) setError(error.message);

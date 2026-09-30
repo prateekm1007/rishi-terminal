@@ -4,14 +4,17 @@ import { useEffect, useState, useCallback } from 'react';
 import { useLanguage } from '../../lib/language';
 import { useFundamentals } from '@/hooks/useFundamentals';
 import { Stock } from '../../lib/types';
-import { ConsensusResult } from '../../lib/consensus/types';
+import { RishiScore } from '../../lib/types';
+import { TrimmedVerdict } from '../../lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph, EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
 import { INVESTMENT_GLOSSARY } from '../../data/glossary';
 import { GLOBAL_RISHI_PLAYS, RishiPlay } from '../../data/rishi-portfolios/global-plays';
 
 interface Props {
   stock: Stock;
-  consensus: ConsensusResult;
+  verdicts: RishiScore[];
+  topBull?: TrimmedVerdict;
+  topBear?: TrimmedVerdict;
 }
 
 interface TooltipState {
@@ -415,7 +418,7 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
 }
 
 /* -- Main KnowledgeGraphView ------------------------------------ */
-export function KnowledgeGraphView({ stock, consensus }: Props) {
+export function KnowledgeGraphView({ stock, verdicts, topBull, topBear }: Props) {
   const { fundamentals } = useFundamentals(stock.symbol);
   const liveStock: Stock = { ...stock, pe: fundamentals?.pe ?? stock.pe, roe: fundamentals?.roe ?? stock.roe };
   const { t } = useLanguage();
@@ -424,14 +427,14 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
   const [graphData, setGraphData] = useState<EliteKnowledgeGraph | null>(null);
 
   useEffect(() => {
-    if (!consensus?.scores || !Array.isArray(consensus.scores)) return;
+    if (!verdicts || !Array.isArray(verdicts)) return;
     try {
-      const data = buildEliteKnowledgeGraph(stock, consensus.scores);
+      const data = buildEliteKnowledgeGraph(stock, verdicts);
       setGraphData(data);
     } catch (e) {
       console.error('KnowledgeGraph build error:', e);
     }
-  }, [stock, consensus]);
+  }, [stock, verdicts]);
 
   const handleHover = useCallback((term: string, e: React.MouseEvent) => {
     setTooltip({ term, x: e.clientX, y: e.clientY });
@@ -500,16 +503,16 @@ export function KnowledgeGraphView({ stock, consensus }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <DebateCard
                 side="bull"
-                rishi={(consensus.topBull as any)?.rishi ?? 'Buffett'}
-                argument={(consensus.topBull as any)?.argument ?? 'Strong fundamentals support long-term value.'}
-                score={consensus.topBull?.score ?? 80}
+                rishi={topBull?.full ?? 'Buffett'}
+                argument={'Strong fundamentals support long-term value.'}
+                score={topBull?.score ?? 80}
                 color="#22C55E"
               />
               <DebateCard
                 side="bear"
-                rishi={(consensus.topBear as any)?.rishi ?? 'Chanos'}
-                argument={(consensus.topBear as any)?.argument ?? 'Elevated valuation creates downside risk.'}
-                score={consensus.topBear?.score ?? 35}
+                rishi={topBear?.full ?? 'Chanos'}
+                argument={'Elevated valuation creates downside risk.'}
+                score={topBear?.score ?? 35}
                 color="#EF4444"
               />
             </div>

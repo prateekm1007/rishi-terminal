@@ -1,9 +1,9 @@
 'use client';
 
-import { ConsensusResult } from '../../lib/consensus/types';
+import { SanitizedConsensus } from '../../lib/consensus/sanitize';
 
 interface Props {
-  consensus: ConsensusResult;
+  consensus: SanitizedConsensus;
 }
 
 export function ConsensusHero({ consensus }: Props) {
@@ -55,7 +55,7 @@ export function ConsensusHero({ consensus }: Props) {
       {/* Stats Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
         {[
-          { label: 'Rishis Analyzed', value: consensus.scores.length.toString(), color: '#F8FAFC' },
+          { label: 'Rishis Analyzed', value: consensus.scoresCount.toString(), color: '#F8FAFC' },
           { label: `Top Bull: ${consensus.topBull.name}`, value: consensus.topBull.score === null ? '\u2014' : String(consensus.topBull.score), color: '#00BA7C' },
           { label: `Top Bear: ${consensus.topBear.name}`, value: consensus.topBear.score === null ? '\u2014' : String(consensus.topBear.score), color: '#F4212E' },
         ].map((stat, idx) => (

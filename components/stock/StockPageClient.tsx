@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Stock } from '../../lib/types';
-import { ConsensusResult } from '../../lib/consensus/types';
+import { useEffect, useState } from 'react';
+import { Stock, RishiScore } from '../../lib/types';
+import { SanitizedConsensus } from '../../lib/consensus/sanitize';
+import { useTier } from '../../hooks/useTier';
 import { ConsensusHero }          from './ConsensusHero';
 import { RishiGrid }              from './RishiGrid';
 import { BullBearBar }            from './BullBearBar';
@@ -24,7 +25,8 @@ import { useFundamentals } from '../../hooks/useFundamentals';
 
 interface Props {
   stock: Stock;
-  consensus: ConsensusResult;
+  /** R3: server-sanitized consensus — carries only the caller's verdict set. */
+  consensus: SanitizedConsensus;
   detail: any;
 }
 
@@ -33,6 +35,29 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
   const { fundamentals: liveFundamentals } = useFundamentals(stock.symbol);
+
+  // R3: the server embedded the free (seeker) verdict set. A signed-in
+  // user on a paid tier upgrades it via the server-enforced route — the
+  // verdicts rendered here always match what the server returned.
+  const { tier, authenticated } = useTier();
+  const [verdicts, setVerdicts] = useState<RishiScore[]>(consensus.verdicts);
+  useEffect(() => {
+    if (!authenticated || tier === 'seeker') return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/rishis/${encodeURIComponent(stock.symbol)}`, { cache: 'no-store' });
+        if (!res.ok) return; // keep the server-embedded free set
+        const data = await res.json();
+        if (!cancelled && (data.tier === 'student' || data.tier === 'disciple')) {
+          setVerdicts(data.verdicts ?? []);
+        }
+      } catch {
+        // network failure: keep the free set
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [authenticated, tier, stock.symbol]);
 
   const TABS = [
     { id: 'overview',  label: t('stock.overview'),   desc: t('stock.overviewDesc')   },
@@ -164,7 +189,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
 
             {/* Modal Body */}
             <div style={{ padding: 28, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
-              <KnowledgeGraphView stock={stock} consensus={consensus} />
+              <KnowledgeGraphView stock={stock} verdicts={verdicts} topBull={consensus.topBull} topBear={consensus.topBear} />
             </div>
           </div>
         </div>
@@ -307,7 +332,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {consensus.scores.slice(0, 6).map((r, i) => (
+                    {verdicts.slice(0, 5).map((r, i) => (
                       <div key={r.name} style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -402,11 +427,17 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
-                  <PhilosophyRadar scores={consensus.scores} />
+                  <PhilosophyRadar scores={verdicts} />
                 </div>
 
                 <div className="wisdom-reveal-delay-2">
-                  <RishiGrid scores={consensus.scores} />
+                  <RishiGrid
+                    symbol={stock.symbol}
+                    verdicts={verdicts}
+                    totalRishis={consensus.scoresCount}
+                    tier={tier}
+                    authenticated={authenticated}
+                  />
                 </div>
               </>
             )}
@@ -415,7 +446,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
 
           <div style={{ position: 'sticky', top: 80 }}>
             <div className="wisdom-reveal-delay-2">
-              <WisdomSidebar stock={stock} scores={consensus.scores} />
+              <WisdomSidebar stock={stock} scores={verdicts} />
             </div>
           </div>
 

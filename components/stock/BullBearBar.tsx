@@ -1,12 +1,12 @@
 'use client';
 import { useLanguage } from '@/lib/language';
 
-import { RishiScore } from '../../lib/types';
+import { TrimmedVerdict } from '../../lib/consensus/sanitize';
 import { ProgressBar } from './StyleGuide';
 
 interface Props {
-  topBull: RishiScore;
-  topBear: RishiScore;
+  topBull: TrimmedVerdict;
+  topBear: TrimmedVerdict;
   spread: number;
 }
 
@@ -25,7 +25,7 @@ export function BullBearBar({ topBull, topBear, spread }: Props) {
           <div className="text-3xl font-bold text-green-400 font-mono">{topBull.score}</div>
           <div className="text-sm font-medium text-primary mt-2">{topBull.full}</div>
           <div className="text-xs text-muted mt-1">{topBull.label}</div>
-          <div className="rishi-insight text-xs mt-4">{topBull.insight}</div>
+          
         </div>
 
         {/* Bear */}
@@ -34,7 +34,7 @@ export function BullBearBar({ topBull, topBear, spread }: Props) {
           <div className="text-3xl font-bold text-red-400 font-mono">{topBear.score}</div>
           <div className="text-sm font-medium text-primary mt-2">{topBear.full}</div>
           <div className="text-xs text-muted mt-1">{topBear.label}</div>
-          <div className="rishi-insight text-xs mt-4">{topBear.insight}</div>
+          
         </div>
       </div>
 

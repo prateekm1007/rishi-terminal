@@ -1,15 +1,24 @@
 'use client';
 
-import { RishiScore } from "../../lib/consensus/types";
+import { RishiScore } from "../../lib/types";
 import { RISHI_WEIGHT_CONFIG } from "../../lib/consensus/weights";
-import { getRishisVisible, isPremium } from "../../lib/premium";
-import { useTier } from "../../hooks/useTier";
+import { WisdomTier } from "../../lib/premium";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from '../../lib/language';
 
 interface Props {
-  scores: RishiScore[];
+  symbol: string;
+  /**
+   * R3: verdicts come from the server (embedded free set at build time,
+   * upgraded via GET /api/rishis/[symbol] for paid tiers). The client never
+   * receives verdicts beyond the caller's tier — this component only renders
+   * what the server sent.
+   */
+  verdicts: RishiScore[];
+  totalRishis: number;
+  tier: WisdomTier;
+  authenticated: boolean;
 }
 
 function getTierLabel(weight: number): string {
@@ -43,22 +52,14 @@ function getWeightForRishi(name: string): number {
   return config?.weight ?? 1.0;
 }
 
-export function RishiGrid({ scores }: Props) {
+export function RishiGrid({ verdicts, totalRishis, authenticated, tier }: Props) {
   const { t } = useLanguage();
-  const [visibleCount, setVisibleCount] = useState(20);
-  const [premium, setPremium] = useState(true);
   const [expandedRishi, setExpandedRishi] = useState<string | null>(null);
 
-  const { tier, loading } = useTier();
-
-  useEffect(() => {
-    if (loading) return;
-    setVisibleCount(getRishisVisible(tier));
-    setPremium(isPremium(tier));
-  }, [tier, loading]);
-
-  const visibleScores = scores.slice(0, visibleCount);
-  const lockedCount = scores.length - visibleCount;
+  // The server already limited `verdicts` to the caller's tier.
+  const visibleScores = verdicts;
+  const lockedCount = Math.max(0, totalRishis - verdicts.length);
+  const premium = lockedCount === 0;
 
   return (
     <div className="card-sacred p-6">
@@ -69,7 +70,7 @@ export function RishiGrid({ scores }: Props) {
             All Rishis
           </h2>
           <p className="text-xs text-muted mt-1">
-            {visibleScores.length} of {scores.length} sages • Sorted by conviction
+            {visibleScores.length} of {totalRishis} sages • Sorted by conviction
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -112,14 +113,14 @@ export function RishiGrid({ scores }: Props) {
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span style={{ 
-                      fontSize: "9px", 
-                      padding: "2px 6px", 
-                      background: "rgba(251,191,36,0.1)", 
-                      color: "#FFC107", 
-                      border: "1px solid rgba(251,191,36,0.3)", 
-                      borderRadius: "4px", 
-                      fontWeight: 600, 
+                    <span style={{
+                      fontSize: "9px",
+                      padding: "2px 6px",
+                      background: "rgba(251,191,36,0.1)",
+                      color: "#FFC107",
+                      border: "1px solid rgba(251,191,36,0.3)",
+                      borderRadius: "4px",
+                      fontWeight: 600,
                       letterSpacing: "0.5px",
                       whiteSpace: "nowrap"
                     }}>
@@ -221,14 +222,16 @@ export function RishiGrid({ scores }: Props) {
             <div className="absolute inset-0 backdrop-blur-sm bg-zinc-900/60 flex flex-col items-center justify-center z-10">
               <span className="text-2xl mb-2">🔒</span>
               <span className="text-xs text-muted text-center px-4">
-                Upgrade to Student to unlock all 20 Rishis
+                {authenticated
+                  ? 'Upgrade to Student to unlock all 20 Rishis'
+                  : 'Sign in to see your tier\u2019s full Rishi panel'}
               </span>
               <Link
-                href="/pricing"
+                href={authenticated ? '/pricing' : '/auth/signin'}
                 className="mt-3 px-3 py-1.5 bg-accent-gold text-black text-xs font-bold rounded-lg"
                 onClick={e => e.stopPropagation()}
               >
-                Upgrade
+                {authenticated ? 'Upgrade' : 'Sign in'}
               </Link>
             </div>
             {/* Blurred placeholder */}
@@ -255,13 +258,15 @@ export function RishiGrid({ scores }: Props) {
             {lockedCount} more Rishis await your wisdom
           </p>
           <p className="text-xs text-muted mb-3">
-            Upgrade to Student tier to unlock all 20 philosophical lenses
+            {tier === 'seeker'
+              ? 'Upgrade to Student tier to unlock all 20 philosophical lenses'
+              : 'Sign in to unlock the full Rishi panel for your tier'}
           </p>
           <Link
-            href="/pricing"
+            href={authenticated ? '/pricing' : '/auth/signin'}
             className="inline-block px-6 py-2 bg-accent-gold text-black font-bold rounded-lg text-sm hover:bg-accent-gold/90 transition-colors"
           >
-            Unlock All Rishis — 499/year
+            {authenticated ? 'Unlock All Rishis — 499/year' : 'Sign in'}
           </Link>
         </div>
       )}

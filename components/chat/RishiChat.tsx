@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Stock } from "@/lib/types";
 import { useFundamentals } from '@/hooks/useFundamentals';
 import { RishiScore } from "@/lib/consensus/types";
-import { RISHI_PERSONALITIES, getRishisByTier, type ChatContext } from "@/lib/chat/rishiEngine";
+import { RISHI_PERSONALITIES, type ChatContext } from "@/lib/chat/rishiEngine";
 import { useLanguage } from '../../lib/language';
 import { getStaticResponseHi } from '../../lib/chat/fallbackResponses.hi';
 import {
@@ -14,8 +14,6 @@ import {
 
 interface Props {
   stock: Stock;
-  scores: RishiScore[];
-  userTier?: 'seeker' | 'student' | 'disciple';
 }
 
 
@@ -75,7 +73,7 @@ function getStaticResponse(rishiId: string, prompt: string, stock: Stock, scores
   return lines.buy;
 }
 
-export default function RishiChat({ stock, scores, userTier = 'disciple' }: Props) {
+export default function RishiChat({ stock }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [selectedRishi, setSelectedRishi] = useState("damani");
@@ -97,7 +95,53 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
   ];
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const availableRishis = useMemo(() => getRishisByTier(userTier), [userTier]);
+  // R3: WHICH personas a caller may use is decided by the server
+  // (GET /api/chat/personas from the session tier; /api/chat re-enforces it
+  // per request). Fallback on fetch failure is the FREE set — fail closed
+  // for UX; the server remains the control.
+  const [allowedPersonaIds, setAllowedPersonaIds] = useState<string[]>(() =>
+    Object.values(RISHI_PERSONALITIES).filter(r => r.tier === 'free').map(r => r.id));
+  const [verdicts, setVerdicts] = useState<RishiScore[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch('/api/chat/personas', { cache: 'no-store' });
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          setAllowedPersonaIds((data.personas ?? []).map((p: { id: string }) => p.id));
+        }
+      } catch {
+        // keep the fail-closed free set
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // R3: per-symbol verdicts come from the server-enforced route (used for
+  // the offline static fallback and the chat context; never the control).
+  useEffect(() => {
+    let cancelled = false;
+    setVerdicts([]);
+    void (async () => {
+      try {
+        const res = await fetch(`/api/rishis/${encodeURIComponent(stock.symbol)}`, { cache: 'no-store' });
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          setVerdicts(data.verdicts ?? []);
+        }
+      } catch {
+        // verdicts stay empty — fallback text uses the documented default
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [stock.symbol]);
+
+  const availableRishis = useMemo(
+    () => Object.values(RISHI_PERSONALITIES).filter(r => allowedPersonaIds.includes(r.id)),
+    [allowedPersonaIds],
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -120,7 +164,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
     symbol: stock.symbol,
     stockName: stock.name,
     sector: stock.sector,
-    rishiScore: scores.find(s => s.name.toLowerCase().includes(selectedRishi.slice(0, 4)))?.score ?? 50,
+    rishiScore: verdicts.find(s => s.name.toLowerCase().includes(selectedRishi.slice(0, 4)))?.score ?? 50,
     pe: (fundamentals?.pe ?? stock.pe),
     roe: (fundamentals?.roe ?? stock.roe),
     de: stock.de,
@@ -128,7 +172,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
     promo: stock.promo,
     mktcap: (fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap),
     fcf: stock.fcf,
-  }), [stock, scores, selectedRishi]);
+  }), [stock, verdicts, selectedRishi]);
 
   const liveStock = useMemo(() => ({
     ...stock,
@@ -195,8 +239,8 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
           callGeminiAPI(`Respond to this from ${r2}'s perspective, potentially disagreeing: ${text}`, messages),
         ]);
 
-        responseText = resp1.status === 'fulfilled' ? resp1.value : (locale === 'hi' ? getStaticResponseHi(r1, text, liveStock, scores) : getStaticResponse(r1, text, liveStock, scores));
-        const resp2Text = resp2.status === 'fulfilled' ? resp2.value : (locale === 'hi' ? getStaticResponseHi(r2, text, liveStock, scores) : getStaticResponse(r2, text, liveStock, scores));
+        responseText = resp1.status === 'fulfilled' ? resp1.value : (locale === 'hi' ? getStaticResponseHi(r1, text, liveStock, verdicts) : getStaticResponse(r1, text, liveStock, verdicts));
+        const resp2Text = resp2.status === 'fulfilled' ? resp2.value : (locale === 'hi' ? getStaticResponseHi(r2, text, liveStock, verdicts) : getStaticResponse(r2, text, liveStock, verdicts));
 
         // Add first Rishi response
         const rishi1 = RISHI_PERSONALITIES[r1];
@@ -237,7 +281,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
         setApiStatus('ok');
       } catch (err) {
         console.warn('[RishiChat] API failed, using static fallback:', err);
-        responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, liveStock, scores) : getStaticResponse(selectedRishi, text, liveStock, scores));
+        responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, liveStock, verdicts) : getStaticResponse(selectedRishi, text, liveStock, verdicts));
         setApiStatus('fallback');
       }
 
@@ -257,7 +301,7 @@ export default function RishiChat({ stock, scores, userTier = 'disciple' }: Prop
 
     } catch (err) {
       // Final fallback
-      const responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, liveStock, scores) : getStaticResponse(selectedRishi, text, liveStock, scores));
+      const responseText = (locale === 'hi' ? getStaticResponseHi(selectedRishi, text, liveStock, verdicts) : getStaticResponse(selectedRishi, text, liveStock, verdicts));
       const rishi = RISHI_PERSONALITIES[selectedRishi];
       const rishiMsg: ChatMessage = {
         id: Date.now().toString() + '_r',

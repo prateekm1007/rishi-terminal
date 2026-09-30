@@ -8,10 +8,12 @@ import { verifyWebhookSignature } from '@/lib/payments/signatures';
  * - Reads the RAW body and verifies X-Razorpay-Signature with
  *   HMAC-SHA256(RAZORPAY_WEBHOOK_SECRET) using crypto.timingSafeEqual
  *   (equal-length buffers first).
- * - On payment.captured / order.paid: finds the transaction by order id,
- *   confirms amount/currency, then grants the tier in ONE idempotent step.
- *   Replays never extend the tier twice.
- * - Fail closed: missing secret in production → 503.
+ * - On payment.captured / order.paid: grants the tier through the atomic
+ *   Postgres RPC `grant_tier_for_payment` (migration 007): lock -> verify ->
+ *   settle -> grant in one transaction; replays never extend the tier twice.
+ * - Transient failures (RPC/DB down) -> 500 so Razorpay retries; permanent
+ *   rejections (unknown order, amount mismatch) -> 200 {ok:false}, logged.
+ * - Fail closed: missing secret in production -> 503.
  */
 export async function POST(req: NextRequest) {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -62,18 +64,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Incomplete event payload' }, { status: 400 });
   }
 
-  const result = await grantTierForPayment({
-    razorpayOrderId: orderId,
-    razorpayPaymentId: paymentId,
-    amount,
-    currency,
-  });
+  let result;
+  try {
+    result = await grantTierForPayment({
+      razorpayOrderId: orderId,
+      razorpayPaymentId: paymentId,
+      amount,
+      currency,
+    });
+  } catch (err) {
+    // TRANSIENT failure (RPC/DB down): return 500 so Razorpay retries the
+    // delivery. Retrying is safe — the grant RPC is idempotent (migration 007).
+    console.error('[webhook] transient grant failure, Razorpay will retry:', err);
+    return NextResponse.json({ error: 'Temporary failure' }, { status: 500 });
+  }
 
   if (!result.ok) {
-    // Never 5xx on bad payloads — Razorpay would retry forever. Acknowledge
-    // with the rejection reason logged server-side.
-    console.error('[webhook] grant refused:', result.reason);
-    return NextResponse.json({ ok: false }, { status: 400 });
+    // PERMANENT rejection (unknown order, amount mismatch, conflict) —
+    // retrying will never succeed. Acknowledge with 200 {ok:false} and log
+    // the reason server-side; never 5xx Razorpay for these.
+    console.error('[webhook] grant refused (permanent):', result.reason);
+    return NextResponse.json({ ok: false }, { status: 200 });
   }
 
   return NextResponse.json({ ok: true, alreadyProcessed: result.alreadyProcessed === true });

@@ -3,14 +3,20 @@ import 'server-only';
 import { getAdminSupabase } from '@/lib/services/supabaseAdmin';
 
 /**
- * Idempotent tier grant shared by the Razorpay webhook and the client
- * verify endpoint (remediation T6).
+ * Idempotent, ATOMIC tier grant shared by the Razorpay webhook and the
+ * client verify endpoint (remediation T6, made atomic in R2).
  *
- * Guarantees:
- * - The transaction must exist and be in 'created' status (or already paid
- *   with the SAME payment id — replays are no-ops, never a second extension).
- * - The amount and currency reported by Razorpay must match the stored row.
- * - users.tier / tier_expires_at are updated in the same winning step.
+ * All settlement logic lives in the Postgres function
+ * `grant_tier_for_payment` (migration 007): lock -> verify -> settle ->
+ * grant in ONE transaction. This module is a thin wrapper that maps the
+ * RPC's structured result onto GrantResult.
+ *
+ * Error contract:
+ * - Structured refusals (unknown order, amount/currency mismatch, conflict,
+ *   unexpected status) come back as `{ ok: false, reason }` — permanent,
+ *   retrying will never succeed.
+ * - RPC/transport failures THROW — callers must treat that as transient
+ *   (HTTP 500) so Razorpay retries.
  */
 export interface GrantResult {
   ok: boolean;
@@ -25,81 +31,56 @@ export interface GrantInput {
   currency: string;         // 'INR'
 }
 
-const TIER_DURATION_DAYS = 365;
+/** RPC statuses that are permanent rejections (never worth retrying). */
+const PERMANENT_STATUSES = new Set([
+  'unknown_order',
+  'amount_mismatch',
+  'conflict',
+  'unexpected_status',
+]);
+
+interface RpcResult {
+  status: string;
+  detail?: string;
+  settled_with?: string | null;
+  tier?: string | null;
+  tier_expires_at?: string | null;
+}
 
 export async function grantTierForPayment(input: GrantInput): Promise<GrantResult> {
   const admin = getAdminSupabase();
 
-  // 1. Find the transaction by order id.
-  const { data: tx, error: txErr } = await admin
-    .from('transactions')
-    .select('id, user_id, tier_purchased, amount, currency, status, razorpay_payment_id')
-    .eq('razorpay_order_id', input.razorpayOrderId)
-    .maybeSingle();
+  const { data, error } = await admin.rpc('grant_tier_for_payment', {
+    p_order_id: input.razorpayOrderId,
+    p_payment_id: input.razorpayPaymentId,
+    p_amount: input.amount,
+    p_currency: input.currency,
+  });
 
-  if (txErr || !tx) {
-    return { ok: false, reason: 'unknown order' };
+  if (error) {
+    // Transport / DB / function error — TRANSIENT by definition. Throw so
+    // the webhook answers 500 and Razorpay retries.
+    throw new Error(`grant_tier_for_payment rpc failed: ${error.message}`);
   }
 
-  const row = tx as {
-    id: string;
-    user_id: string;
-    tier_purchased: string;
-    amount: number;
-    currency: string;
-    status: string;
-    razorpay_payment_id: string | null;
-  };
-
-  // 2. Replay guard: same order + same payment id already settled → no-op.
-  if (row.status === 'paid' && row.razorpay_payment_id === input.razorpayPaymentId) {
-    return { ok: true, alreadyProcessed: true };
+  let result: RpcResult;
+  try {
+    result = (typeof data === 'string' ? JSON.parse(data) : data) as RpcResult;
+  } catch {
+    throw new Error(`grant_tier_for_payment: unparseable rpc result: ${String(data)}`);
   }
 
-  // 3. A paid row settled with a DIFFERENT payment id, or any other
-  //    non-created status: refuse rather than double-grant.
-  if (row.status !== 'created') {
-    return { ok: false, reason: `transaction in unexpected status: ${row.status}` };
+  if (PERMANENT_STATUSES.has(result.status)) {
+    const detail = result.settled_with ? ` (settled with ${result.settled_with})` : '';
+    return { ok: false, reason: `${result.status}${result.detail ? `: ${result.detail}` : detail}` };
   }
 
-  // 4. Amount/currency must match what we asked Razorpay to collect.
-  if (row.amount !== input.amount || row.currency !== input.currency) {
-    return { ok: false, reason: 'amount or currency mismatch' };
+  if (result.status !== 'granted' && result.status !== 'repaired' && result.status !== 'already') {
+    // Unknown status shape — fail closed as transient.
+    throw new Error(`grant_tier_for_payment: unexpected status: ${result.status}`);
   }
 
-  // 5. Winning write: only one caller can flip status created -> paid
-  //    (razorpay_payment_id is UNIQUE in 001, so two different payment ids
-  //    cannot both claim the same order).
-  const { data: updated, error: updErr } = await admin
-    .from('transactions')
-    .update({
-      status: 'paid',
-      razorpay_payment_id: input.razorpayPaymentId,
-      paid_at: new Date().toISOString(),
-    })
-    .eq('id', row.id)
-    .eq('status', 'created')
-    .select('id')
-    .maybeSingle();
-
-  if (updErr || !updated) {
-    // Lost the race (webhook + client verify concurrently) — the winner
-    // granted the tier; this call is a no-op.
-    return { ok: true, alreadyProcessed: true };
-  }
-
-  // 6. Grant the tier for one year from now.
-  const expires = new Date(Date.now() + TIER_DURATION_DAYS * 24 * 60 * 60 * 1000);
-  const { error: userErr } = await admin
-    .from('users')
-    .update({ tier: row.tier_purchased, tier_expires_at: expires.toISOString() })
-    .eq('id', row.user_id);
-
-  if (userErr) {
-    return { ok: false, reason: 'failed to update user tier' };
-  }
-
-  return { ok: true };
+  return { ok: true, alreadyProcessed: result.status === 'already' };
 }
 
 /** Server-side price table — the client never dictates the amount. */

@@ -17,7 +17,7 @@ const rpcState = vi.hoisted(() => ({
 vi.mock("@/lib/services/supabaseAdmin", () => ({
   getAdminSupabase: () => ({
     from: () => {
-      const b: any = {
+      const b: Record<string, unknown> & { [k: string]: (...a: unknown[]) => unknown } = {
         select: () => b,
         upsert: () => b,
         update: () => b,
@@ -28,7 +28,7 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
       };
       return b;
     },
-    rpc: (name: string, args: Record<string, any>) => {
+    rpc: (name: string, args: { p_ip: string; p_bucket: string; p_limit: number; p_user_id: string; p_day: string }) => {
       if (name === 'consume_ip_budget') {
         const key = `${args.p_ip}:${args.p_bucket}`;
         const next = (rpcState.ipCounts.get(key) ?? 0) + 1;
@@ -52,45 +52,45 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
 
 import { POST } from "@/app/api/chat/route";
 
-let geminiCalls: Array<{ url: string; body: any }> = [];
+let geminiCalls: Array<{ url: string; body: Record<string, unknown> }> = [];
 
 beforeEach(() => {
   geminiCalls = [];
   rpcState.ipCounts.clear();
   rpcState.refunds.length = 0;
   rpcState.quotaAllowed = true;
-  vi.stubGlobal("fetch", vi.fn(async (url: any, init: any) => {
-    geminiCalls.push({ url: String(url), body: JSON.parse(init.body) });
+  vi.stubGlobal("fetch", vi.fn(async (url: unknown, init: { body?: string }) => {
+    geminiCalls.push({ url: String(url), body: JSON.parse(String(init.body)) as Record<string, unknown> });
     return new Response(
       JSON.stringify({ candidates: [{ content: { parts: [{ text: "ok" }] } }] }),
       { status: 200 },
     );
-  }) as any);
+  }) as unknown as typeof fetch);
 });
 
-function makeReq(json: any, ip = "1.2.3.4"): any {
+function makeReq(
+  json: unknown,
+  ip = "1.2.3.4",
+): Parameters<typeof POST>[0] {
   return {
-    headers: {
-      get: (k: string) =>
-        k.toLowerCase() === "x-forwarded-for" ? ip : null,
-    },
+    headers: { get: (k: string) => (k.toLowerCase() === "x-forwarded-for" ? ip : null) },
     json: async () => json,
     text: async () => JSON.stringify(json),
-  };
+  } as unknown as Parameters<typeof POST>[0];
 }
 
-const okBody = { personaId: "buffett", message: "What do you think of reliance?" };
+const okBody: { personaId: string; message: string } = { personaId: "buffett", message: "What do you think of reliance?" };
 
 describe("T7 — chat route limits", () => {
   it("401s anonymous callers before anything else", async () => {
     const { getSessionUser } = await import("@/lib/auth/session");
-    vi.mocked(getSessionUser).mockResolvedValueOnce(null as any);
+    vi.mocked(getSessionUser).mockResolvedValueOnce(null);
     const res = await POST(makeReq(okBody));
     expect(res.status).toBe(401);
   });
 
   it("429s calls beyond the persistent burst budget (12/min/IP, R6)", async () => {
-    let last: any;
+    let last: Response | undefined;
     for (let i = 0; i < 13; i++) {
       last = await POST(makeReq(okBody, "10.0.0.5"));
     }
@@ -98,7 +98,7 @@ describe("T7 — chat route limits", () => {
   });
 
   it("R6: refunds the quota when the upstream provider fails", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("boom", { status: 502 })) as any);
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("boom", { status: 502 })) as unknown as typeof fetch);
     const res = await POST(makeReq(okBody, "10.7.7.1"));
     expect(res.status).toBe(502);
     expect(rpcState.refunds).toHaveLength(1);
@@ -128,7 +128,11 @@ describe("T7 — chat route limits", () => {
     expect(badPersona.status).toBe(400);
     const noMsg = await POST(makeReq({ personaId: "buffett", message: "  " }, "10.9.9.3"));
     expect(noMsg.status).toBe(400);
-    const badJson = await POST({ headers: { get: () => null }, json: async () => { throw new Error("x"); }, text: async () => "{" } as any);
+    const badJson = await POST({
+      headers: { get: () => null },
+      json: async () => { throw new Error("x"); },
+      text: async () => "{",
+    } as unknown as Parameters<typeof POST>[0]);
     expect(badJson.status).toBe(400);
   });
 });
@@ -139,7 +143,7 @@ describe("T7 — injected prompts are ignored", () => {
     const res = await POST(makeReq({ ...okBody, systemPrompt: injected }, "10.8.8.1"));
     expect(res.status).toBe(200);
     expect(geminiCalls).toHaveLength(1);
-    const sys = geminiCalls[0].body.system_instruction.parts[0].text;
+    const sys = (geminiCalls[0].body.system_instruction as { parts: Array<{ text: string }> }).parts[0].text;
     expect(sys).not.toContain(injected);
     // server persona text is present
     expect(sys.length).toBeGreaterThan(50);
@@ -151,10 +155,10 @@ describe("T7 — injected prompts are ignored", () => {
       "10.8.8.2",
     ));
     expect(res.status).toBe(200);
-    const sys = geminiCalls[0].body.system_instruction.parts[0].text;
+    const sys = (geminiCalls[0].body.system_instruction as { parts: Array<{ text: string }> }).parts[0].text;
     expect(sys).not.toContain("42-XYZ");
-    const lastTurn = geminiCalls[0].body.contents.at(-1);
-    expect(lastTurn.role).toBe("user");
-    expect(lastTurn.parts[0].text).toContain("42-XYZ");
+    const lastTurn = (geminiCalls[0].body.contents as Array<{ role: string; parts: Array<{ text: string }> }>).at(-1);
+    expect(lastTurn?.role).toBe("user");
+    expect(lastTurn?.parts[0].text).toContain("42-XYZ");
   });
 });

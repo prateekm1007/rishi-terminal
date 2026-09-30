@@ -1,10 +1,13 @@
 // app/api/technical/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { computeIndicators } from "@/lib/technical";
+import { yahooChartSchema } from "@/lib/validation/schemas";
+import { normalizeSymbolInput } from "@/lib/registry/validateInput";
+import { checkRateLimit } from "@/lib/rateLimit";
 
-function cleanNumArray(arr: any): number[] {
+function cleanNumArray(arr: unknown): number[] {
   if (!Array.isArray(arr)) return [];
-  return arr.filter((v) => typeof v === "number" && Number.isFinite(v));
+  return arr.filter((v): v is number => typeof v === "number" && Number.isFinite(v));
 }
 
 export async function GET(req: NextRequest) {
@@ -12,6 +15,18 @@ export async function GET(req: NextRequest) {
   const symbolRaw = (searchParams.get("symbol") ?? "").trim();
   if (!symbolRaw) {
     return NextResponse.json({ error: "Missing symbol" }, { status: 400 });
+  }
+
+  // R6 persistent per-IP rate limit (fails open).
+  const rl = await checkRateLimit(`data:ip:${clientIp(req)}`, 60, 60);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
+  // R5: registry/allow-list gate — arbitrary symbols never reach Yahoo.
+  const symbol = normalizeSymbolInput(symbolRaw);
+  if (!symbol) {
+    return NextResponse.json({ error: `Unknown symbol: ${symbolRaw.slice(0, 20)}` }, { status: 400 });
   }
 
   // Default mapping for Indian equities
@@ -32,8 +47,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: `Yahoo HTTP ${res.status}` }, { status: 502 });
     }
 
-    const json: any = await res.json();
-    const result = json?.chart?.result?.[0];
+    // R4: trust boundary — validate Yahoo's chart payload with zod.
+    const json = yahooChartSchema.parse(await res.json());
+    const result = json.chart.result?.[0];
     const quote = result?.indicators?.quote?.[0];
 
     const closes = cleanNumArray(quote?.close);
@@ -59,14 +75,22 @@ export async function GET(req: NextRequest) {
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, max-age=60",
+          "Cache-Control": "public, max-age=60, s-maxage=60",
         },
       }
     );
-  } catch (e: any) {
+  } catch (e) {
     return NextResponse.json(
-      { error: e?.message ?? "Failed to compute technicals" },
+      { error: e instanceof Error ? e.message : "Failed to compute technicals" },
       { status: 500 }
     );
   }
+}
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }

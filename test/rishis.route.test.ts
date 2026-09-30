@@ -14,6 +14,13 @@ import { GET as gurusGET } from "@/app/api/gurus/route";
 // deterministic and offline (the route falls back to seed prices).
 vi.mock("@/lib/livePrice", () => ({
   fetchLivePrice: async () => { throw new Error("offline in test"); },
+  // validateInput imports the livePrice allow-list maps; the data-file
+  // lists (stocks/commodities/crypto) are NOT mocked, so the gate still
+  // accepts what these tests need.
+  YAHOO_INDEX_SYMBOLS: {},
+  YAHOO_COMMODITY_SYMBOLS: {},
+  COINGECKO_IDS: {},
+  YAHOO_SPECIAL: {},
 }));
 import { GET as personasGET } from "@/app/api/chat/personas/route";
 import { TIER_CONFIG } from "@/lib/premium";

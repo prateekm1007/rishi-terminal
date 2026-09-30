@@ -1,8 +1,10 @@
 # Remediation T17 — quality gates on every PR and push to main.
 # Gates (all blocking): typecheck, lint, unit tests, encoding validation,
 # registry validation, score parity, production build, gitleaks secret scan.
-# The Playwright smoke job is non-blocking (needs a built app + placeholder
-# Supabase env to boot).
+# R4 (round 2): the ESLint step is now honestly labelled and the warning
+# ratchet actually RUNS in CI (lint:ratchet fails when the committed
+# baseline is exceeded). The Playwright smoke job is non-blocking until it
+# has been green for several runs (R10.6 tracks making it blocking).
 
 name: CI
 
@@ -38,8 +40,11 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
-      - name: ESLint (0 errors, ratchet enforced)
+      - name: ESLint (errors must be 0; no-explicit-any is an ERROR in app/api, lib/auth, lib/payments, lib/scoring, lib/chat)
         run: npx eslint .
+
+      - name: ESLint warning ratchet (fails above the committed baseline)
+        run: npm run lint:ratchet
 
       - name: Unit tests (Vitest)
         run: npx vitest run

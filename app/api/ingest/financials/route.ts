@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ingestQuarterly, ingestAnnual, logIngestion } from "../../../../lib/services/ingestion";
 import { requireCronAuth } from "../../../../lib/auth/cron";
-import { isKnownSymbol } from "../../../../lib/security";
+import { normalizeSymbolInput } from '@/lib/registry/validateInput'; // R5: unified input gate
 
 export const runtime = "nodejs";
 
@@ -17,12 +17,16 @@ async function run(req: NextRequest) {
     return NextResponse.json({ error: "Provide symbols array" }, { status: 400 });
   }
 
-  const results: Record<string, any> = {};
+  type IngestResult =
+    | { inserted: number; errors: number; source: string }
+    | { error: string }
+    | { quarterly: { inserted: number; errors: number; source: string }; annual: { inserted: number; errors: number; source: string } };
+  const results: Record<string, IngestResult> = {};
 
   for (const sym of symbols.slice(0, 20)) {
     // Registry-based validation (remediation T8): reject anything the seed
     // registry does not know before it reaches fetchers/scrapers.
-    if (typeof sym !== "string" || !isKnownSymbol(sym)) {
+    if (typeof sym !== "string" || normalizeSymbolInput(sym) === null) {
       results[String(sym)] = { error: "invalid symbol" };
       continue;
     }

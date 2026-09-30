@@ -10,6 +10,7 @@ import { scoreJimRogers } from '@/lib/scorers/commodity/jimrogers';
 import { scoreRickRule } from '@/lib/scorers/commodity/rickrule';
 import { scoreDanielYergin } from '@/lib/scorers/commodity/danielyergin';
 import { isPremium } from '@/lib/premium';
+import { normalizeSymbolInput } from '@/lib/registry/validateInput';
 
 /**
  * GET /api/gurus?kind=crypto[&symbol=BTC] — the SERVER-side surface for
@@ -63,7 +64,12 @@ const COMMODITY_SCORERS = [
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const kind = searchParams.get('kind');
-  const symbol = searchParams.get('symbol')?.toUpperCase() ?? null;
+  const symbolRaw = searchParams.get('symbol');
+  // R5: unified input gate — the symbol must be one the app knows.
+  const symbol = symbolRaw !== null ? normalizeSymbolInput(symbolRaw) : null;
+  if (symbolRaw !== null && symbol === null) {
+    return NextResponse.json({ error: 'Unknown symbol' }, { status: 400 });
+  }
 
   if (kind !== 'crypto' && kind !== 'commodity') {
     return NextResponse.json({ error: 'Unsupported kind' }, { status: 400 });

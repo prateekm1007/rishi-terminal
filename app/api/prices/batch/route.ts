@@ -1,21 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
 import { fetchLivePrice } from '@/lib/livePrice';
+import { parseSymbolsBody } from '@/lib/registry/validateInput';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
-    const { symbols } = await req.json();
-
-    if (!Array.isArray(symbols) || symbols.length === 0) {
-      return NextResponse.json({ error: 'Invalid symbols' }, { status: 400 });
+    // R6 persistent per-IP rate limit (fails open — the validation gate and
+    // upstream quotas remain the hard bounds).
+    const rl = await checkRateLimit(`data:ip:${clientIp(req)}`, 60, 60);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
     }
 
-    if (symbols.length > 1000) {
-      return NextResponse.json({ error: 'Max 1000 symbols' }, { status: 400 });
+    const body: unknown = await req.json();
+
+    // R5: registry/allow-list gate + batch cap (spec: 50).
+    const parsed = parseSymbolsBody(body);
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const symbols = parsed.symbols;
 
     const t0 = Date.now();
-    const prices: Record<string, any> = {};
+    const prices: Record<string, Record<string, unknown>> = {};
 
     // Strategy: Yahoo bulk for NSE stocks, fallback for others
     const INDEX_SYMBOLS = ['NIFTY50','SENSEX','BANK_NIFTY','SPX','DJI','IXIC','DAX','FTSE','HSI','N225','VIX'];
@@ -85,9 +93,12 @@ export async function POST(req: NextRequest) {
     // - Provide { prices: ... } wrapper (expected by hooks/useLivePrices in UI)
     // - Keep legacy top-level symbol keys for backward compatibility
     // - Ensure changePercent24h exists by aliasing from change/changePercent
-    const normalized: Record<string, any> = {};
-    Object.keys(prices || {}).forEach((k) => {
-      const v: any = (prices as any)[k];
+    // R4: the merged quote shape from the fetchers — only the fields the
+    // normalisation below reads are declared.
+    const normalized: Record<string, Record<string, unknown>> = {};
+    const quoteMap = (prices ?? {}) as Record<string, Record<string, unknown>>;
+    Object.keys(quoteMap).forEach((k) => {
+      const v = quoteMap[k];
       if (!v) return;
 
       const ch =
@@ -113,4 +124,12 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }

@@ -14,19 +14,14 @@ vi.mock("@/lib/auth/session", () => ({
   })),
 }));
 
+// R6: the route consumes/refunds quota and rate-limits via RPCs.
 vi.mock("@/lib/services/supabaseAdmin", () => ({
   getAdminSupabase: () => ({
-    from: () => {
-      const b: any = {
-        select: () => b,
-        upsert: () => b,
-        update: () => b,
-        eq: () => b,
-        limit: () => b,
-        maybeSingle: () => Promise.resolve({ data: null, error: null }),
-        gte: () => b,
-      };
-      return b;
+    rpc: async (fn: string) => {
+      if (fn === "consume_chat_quota") return { data: { ok: true, count: 1 }, error: null };
+      if (fn === "refund_chat_quota") return { data: { ok: true, refunded: true }, error: null };
+      if (fn === "hit_rate_limit") return { data: { allowed: true, count: 1 }, error: null };
+      throw new Error(`unexpected rpc: ${fn}`);
     },
   }),
 }));

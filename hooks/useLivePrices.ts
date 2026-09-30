@@ -61,7 +61,8 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     try {
       setError(null);
 
-      const chunks = chunkArray(currentSymbols, 150);
+      // R5: /api/prices/batch caps at 50 symbols — chunk to match.
+      const chunks = chunkArray(currentSymbols, 50);
       const merged: Record<string, any> = {};
       for (const chunk of chunks) {
         const chunkData = await fetchChunk(chunk);

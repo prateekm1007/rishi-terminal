@@ -14,19 +14,32 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
   {
-    // Remediation T18 triage (documented, ratchet-enforced — see
-    // scripts/eslintRatchet.mjs and eslint-ratchet.json):
-    // - no-explicit-any: 235 pre-existing sites across scripts/adapters.
-    //   Downgraded to WARN (not disabled) so the count is still visible and
-    //   ratcheted; new `any` usage must not grow the baseline.
-    // - react-hooks/purity + set-state-in-effect: React Compiler lint (v6).
-    //   The flagged sites call Date.now()/setState inside event handlers and
-    //   mount-sync effects — pre-existing patterns, not render-time bugs.
-    //   Downgraded to WARN until the refactor lands; still ratcheted.
+    // R4 (round 2): the T18 downgrade of no-explicit-any to WARN was a
+    // rule weakening that hid new `any` from CI. Restored per directory:
+    // the security/scoring paths below are cleared to ZERO `any` and the
+    // rule is back to ERROR there — a new `any` in them fails the build.
+    // Directories still at WARN (not yet cleared, ratchet-tracked):
+    //   app/** (non-api), components/**, hooks/**, lib/** (beyond
+    //   auth/payments/scoring/chat), scripts/**, test/**, data/**.
+    // Clearing a directory means fixing its sites and moving its glob
+    // into the ERROR block below — never by editing the ratchet baseline.
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
       "react-hooks/purity": "warn",
       "react-hooks/set-state-in-effect": "warn",
+    },
+  },
+  {
+    // R4: cleared directories — no-explicit-any is an ERROR here.
+    files: [
+      "app/api/**/*.ts",
+      "lib/auth/**/*.ts",
+      "lib/payments/**/*.ts",
+      "lib/scoring/**/*.ts",
+      "lib/chat/**/*.ts",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
   {

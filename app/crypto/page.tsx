@@ -4,43 +4,12 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CRYPTO_ASSETS, FEAR_GREED_INDEX, MARKET_DOMINANCE, getCryptoMetrics } from '../../data/crypto';
-import { scoreSatoshiBodhi } from '../../lib/scorers/crypto/satoshibodhi';
-import { scoreVitalikVeda } from '../../lib/scorers/crypto/vitalikVeda';
-import { scoreMichaelSaylor } from '../../lib/scorers/crypto/michaelsaylor';
+import { CRYPTO_GURUS } from '../../lib/gurus/crypto'; // R3: metadata only — verdicts come from /api/gurus
 import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 
-const CRYPTO_RISHIS = [
-  {
-    id: 'satoshi',
-    name: 'Satoshi Bodhi',
-    tag: 'BTC',
-    bio: 'Sound money maximalist. Bitcoin as the ultimate store of value. Decentralization above all else.',
-    quote: 'The root problem with conventional currency is all the trust required to make it work.',
-    scorer: scoreSatoshiBodhi,
-    target: 'BTC',
-  },
-  {
-    id: 'vitalik',
-    name: 'Vitalik Veda',
-    tag: 'ETH',
-    bio: 'Protocol fundamentalist. Ethereum as world computer. Scalability, security, decentralization trilemma solver.',
-    quote: 'Whereas most technologies tend to automate workers, blockchains automate away trust.',
-    scorer: scoreVitalikVeda,
-    target: 'ETH',
-  },
-  {
-    id: 'saylor',
-    name: 'Michael Saylor',
-    tag: 'MS',
-    bio: 'Corporate Bitcoin maximalist. Digital property thesis. MicroStrategy Bitcoin treasury architect.',
-    quote: 'Bitcoin is a bank in cyberspace, run by incorruptible software.',
-    scorer: scoreMichaelSaylor,
-    target: 'BTC',
-  },
-];
 
 function scoreColor(score: number): string {
   if (score >= 75) return 'var(--accent-green)';
@@ -57,6 +26,23 @@ export default function CryptoPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const { tier } = useTier();
   const premium = tier !== 'seeker';
+
+  // R3 (round 2): guru verdicts are computed SERVER-SIDE (/api/gurus) and
+  // tier-sliced there. This page renders only what it is served: a seeker
+  // (or anonymous visitor) receives the free cards plus locked teasers
+  // without insight/comps; the full verdicts exist only for premium tiers.
+  const [guruVerdicts, setGuruVerdicts] = useState<Array<{
+    id: string; name: string; score: number | null; label: string;
+    locked: boolean; insight?: string; comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
+  }> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/gurus?kind=crypto', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && Array.isArray(d?.gurus)) setGuruVerdicts(d.gurus); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Extract all crypto symbols
   const cryptoSymbols = useMemo(() => CRYPTO_ASSETS.map(c => c.symbol), []);
@@ -245,29 +231,30 @@ export default function CryptoPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {CRYPTO_RISHIS.map(guru => {
-            const crypto = CRYPTO_ASSETS.find(c => c.symbol === guru.target);
-            if (!crypto) return null;
-            const liveCrypto = {
-              ...crypto,
-              price: crypto.price,
-              change24h: crypto.change24h,
-            };
-            const result = guru.scorer(liveCrypto);
+          {(guruVerdicts ?? []).map(verdict => {
+            const guru = CRYPTO_GURUS.find(g => g.id === verdict.id);
+            if (!guru) return null;
             const isExpanded = expandedCard === guru.id;
-            const canView = premium || (result.score !== null && result.score >= 50);
 
-            if (!canView && !premium) {
+            if (verdict.locked) {
+              // R3: locked teaser — only the score is served for locked
+              // gurus; insight/comps never reached the browser.
               return (
                 <div key={guru.id} className="card-sacred" style={{ padding: 24, opacity: 0.6 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      Unlock {guru.name} (Score {result.score}) with Student tier
+                      Unlock {guru.name} (Score {verdict.score ?? '—'}) with Student tier
                     </div>
                   </div>
                 </div>
               );
             }
+            const result = {
+              score: verdict.score,
+              label: verdict.label,
+              insight: verdict.insight ?? '',
+              comps: verdict.comps ?? [],
+            };
 
             return (
               <div

@@ -8,6 +8,13 @@ vi.mock("@/lib/auth/session", () => ({
 }));
 
 import { GET } from "@/app/api/rishis/[symbol]/route";
+import { GET as gurusGET } from "@/app/api/gurus/route";
+
+// The gurus route overlays live prices; stub the fetcher so the tests are
+// deterministic and offline (the route falls back to seed prices).
+vi.mock("@/lib/livePrice", () => ({
+  fetchLivePrice: async () => { throw new Error("offline in test"); },
+}));
 import { GET as personasGET } from "@/app/api/chat/personas/route";
 import { TIER_CONFIG } from "@/lib/premium";
 import { sanitizeConsensus } from "@/lib/consensus/sanitize";
@@ -108,5 +115,51 @@ describe("R3 — GET /api/chat/personas", () => {
     expect(data.personas.length).toBeGreaterThan(
       Object.values(TIER_CONFIG).length && 0,
     );
+  });
+});
+
+describe("R3 — crypto/commodity scorers stay server-side (gurus port)", () => {
+  it("the crypto/commodity scorers are imported only by the server route", async () => {
+    // Filesystem scan (not git grep) so untracked/new files are covered too.
+    const { readdirSync, readFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const offenders: string[] = [];
+    const scan = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) scan(full);
+        else if (/\.(ts|tsx)$/.test(entry.name)) {
+          if (/scorers\/(crypto|commodity)\//.test(readFileSync(full, "utf8"))) {
+            offenders.push(join(dir.replace(process.cwd() + "/", ""), entry.name));
+          }
+        }
+      }
+    };
+    scan(join(process.cwd(), "app"));
+    scan(join(process.cwd(), "components"));
+    expect(offenders).toEqual([join("app", "api", "gurus", "route.ts")]);
+  });
+
+  it("GET /api/gurus?kind=crypto serves locked teasers without verdict text for a free tier", async () => {
+    // anon/seeker: any locked guru must arrive WITHOUT insight/comps
+    const res = await gurusGET(new Request("http://test.local/api/gurus?kind=crypto") as never);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    for (const g of body.gurus) {
+      if (g.locked) {
+        expect(g.insight).toBeUndefined();
+        expect(g.comps).toBeUndefined();
+      }
+    }
+  });
+
+  it("GET /api/gurus?kind=commodity&symbol=GOLD locks non-Energy for a free tier", async () => {
+    const res = await gurusGET(new Request("http://test.local/api/gurus?kind=commodity&symbol=GOLD") as never);
+    const body = await res.json();
+    expect(body.gurus.length).toBeGreaterThan(0);
+    for (const g of body.gurus) {
+      expect(g.locked).toBe(true);
+      expect(g.insight).toBeUndefined();
+    }
   });
 });

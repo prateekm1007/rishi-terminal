@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CryptoAsset } from '../../data/crypto';
@@ -8,9 +8,8 @@ import { usePrice } from '../../hooks/useLivePrices';
 import { CRYPTO_ONCHAIN } from '../../data/crypto';
 import type { UniversalAsset } from '../../lib/types/asset';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
-import { scoreSatoshiBodhi } from '../../lib/scorers/crypto/satoshibodhi';
-import { scoreVitalikVeda } from '../../lib/scorers/crypto/vitalikVeda';
-import { scoreMichaelSaylor } from '../../lib/scorers/crypto/michaelsaylor';
+import { useTier } from '../../hooks/useTier'; // R3: verdicts served by /api/gurus
+import { CRYPTO_GURUS } from '../../lib/gurus/crypto';
 
 const TABS = [
   { id: 'overview',   label: 'Overview',       desc: 'Price & Market Data'          },
@@ -19,32 +18,6 @@ const TABS = [
   { id: 'knowledge',  label: 'Knowledge Graph', desc: 'Bulls vs Bears & Edge'       },
 ];
 
-const CRYPTO_RISHIS = [
-  {
-    name: 'Satoshi Bodhi',
-    initials: 'SB',
-    scorer: scoreSatoshiBodhi,
-    philosophy: 'The root problem with conventional currency is all the trust required to make it work.',
-    bio: 'Sound money maximalist. Bitcoin as the ultimate store of value.',
-    focus: 'Bitcoin, decentralization, sound money',
-  },
-  {
-    name: 'Vitalik Veda',
-    initials: 'VV',
-    scorer: scoreVitalikVeda,
-    philosophy: 'Whereas most technologies tend to automate workers, blockchains automate away trust.',
-    bio: 'Protocol fundamentalist. Ethereum as world computer.',
-    focus: 'Smart contracts, scalability, DeFi',
-  },
-  {
-    name: 'Michael Saylor',
-    initials: 'MS',
-    scorer: scoreMichaelSaylor,
-    philosophy: 'Bitcoin is a bank in cyberspace, run by incorruptible software.',
-    bio: 'Corporate Bitcoin maximalist. MicroStrategy treasury architect.',
-    focus: 'Institutional adoption, digital property',
-  },
-];
 
 function scoreColor(s: number) {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : s >= 35 ? '#f59e0b' : '#EF4444';
@@ -83,7 +56,36 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     price: displayPrice,
     change24h: displayChange,
   };
-  const rishiScores = CRYPTO_RISHIS.map(r => ({ ...r, result: r.scorer(liveAsset) }));
+  // R3 (round 2): guru verdicts come from /api/gurus (server-computed,
+  // tier-sliced). This component renders only what it is served — the paid
+  // verdict content never enters a free-tier browser.
+  const { tier, loading: tierLoading } = useTier();
+  const [verdicts, setVerdicts] = useState<Array<{
+    id: string; name: string; score: number | null; label: string;
+    locked: boolean; insight?: string;
+    comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
+  }> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/gurus?kind=crypto&symbol=${encodeURIComponent(asset.symbol)}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && Array.isArray(d?.gurus)) setVerdicts(d.gurus); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [asset.symbol]);
+
+  const rishiScores = (verdicts ?? []).map(v => {
+    const meta = CRYPTO_GURUS.find(g => g.id === v.id);
+    return {
+      name: v.name,
+      initials: meta?.initials ?? v.name.slice(0, 2).toUpperCase(),
+      philosophy: meta?.quote ?? '',
+      focus: meta?.focus ?? '',
+      bio: meta?.bio ?? '',
+      result: { score: v.score, label: v.label, insight: v.insight ?? '', comps: v.comps ?? [] },
+      locked: v.locked,
+    };
+  });
   const validScores = rishiScores.filter(r => r.result.score !== null); // T11: insufficient data excluded
   const avgScore = validScores.length > 0
     ? Math.round(validScores.reduce((s, r) => s + (r.result.score as number), 0) / validScores.length)

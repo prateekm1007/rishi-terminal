@@ -1,15 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CommodityData as Commodity } from '../../data/markets';
 import { usePrice } from '../../hooks/useLivePrices';
 import type { UniversalAsset } from '../../lib/types/asset';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
-import { scoreJimRogers } from '../../lib/scorers/commodity/jimrogers';
-import { scoreRickRule } from '../../lib/scorers/commodity/rickrule';
-import { scoreDanielYergin } from '../../lib/scorers/commodity/danielyergin';
+import { COMMODITY_GURUS } from '../../lib/gurus/commodity'; // R3: verdicts served by /api/gurus
 
 const TABS = [
   { id: 'overview',   label: 'Overview',       desc: 'Price & Fundamentals'         },
@@ -18,20 +16,6 @@ const TABS = [
   { id: 'knowledge',  label: 'Knowledge Graph', desc: 'Bulls vs Bears & Edge'       },
 ];
 
-const COMMODITY_RISHIS = [
-  { name: 'Jim Rogers',    scorer: scoreJimRogers,    initials: 'JR',
-    bio: 'Co-founded Quantum Fund. Predicted the 2000s commodities supercycle.',
-    philosophy: 'Buy commodities when nobody wants them. Sell when everybody loves them.',
-    focus: 'Supercycles, physical assets, inflation hedge' },
-  { name: 'Rick Rule',     scorer: scoreRickRule,     initials: 'RR',
-    bio: 'CEO of Sprott. Legendary resource sector investor.',
-    philosophy: 'Gold is money. Everything else is credit.',
-    focus: 'Precious metals, resource scarcity, monetary systems' },
-  { name: 'Daniel Yergin', scorer: scoreDanielYergin, initials: 'DY',
-    bio: 'Pulitzer Prize-winning energy historian. VP at S&P Global.',
-    philosophy: 'Oil is the lifeblood of the industrial civilization.',
-    focus: 'Energy transitions, geopolitical risk, supply dynamics' },
-];
 
 function scoreColor(s: number) {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : s >= 35 ? '#f59e0b' : '#EF4444';
@@ -70,7 +54,34 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     changePct: displayChange,
     change: livePriceData?.change ?? commodity.change,
   };
-  const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(liveCommodity) }));
+  // R3 (round 2): guru verdicts come from /api/gurus (server-computed,
+  // tier-sliced). Locked verdicts arrive as teasers without insight/comps.
+  const [verdicts, setVerdicts] = useState<Array<{
+    id: string; name: string; score: number | null; label: string;
+    locked: boolean; insight?: string;
+    comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
+  }> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/gurus?kind=commodity&symbol=${encodeURIComponent(commodity.symbol)}`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && Array.isArray(d?.gurus)) setVerdicts(d.gurus); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [commodity.symbol]);
+
+  const rishiScores = (verdicts ?? []).map(v => {
+    const meta = COMMODITY_GURUS.find(g => g.id === v.id);
+    return {
+      name: v.name,
+      initials: meta?.initials ?? v.name.slice(0, 2).toUpperCase(),
+      philosophy: meta?.philosophy ?? '',
+      focus: meta?.focus ?? '',
+      bio: meta?.bio ?? '',
+      result: { score: v.score, label: v.label, insight: v.insight ?? '', comps: v.comps ?? [] },
+      locked: v.locked,
+    };
+  });
   const validScores = rishiScores.filter(r => r.result.score !== null); // T11: insufficient data excluded
   const avgScore = validScores.length > 0
     ? Math.round(validScores.reduce((s, r) => s + (r.result.score as number), 0) / validScores.length)

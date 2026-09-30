@@ -17,7 +17,7 @@
  * must label it as such.
  */
 
-import { STOCKS, SEED_AS_OF } from "@/data/stocks";
+import { STOCKS, SEED_STATUS, SEED_CAPTURED_AT, type SeedStatus } from "@/data/stocks";
 import type { Stock, ConsensusResult } from "@/lib/consensus/types";
 import { buildConsensus } from "@/lib/consensus/engine";
 import {
@@ -37,8 +37,12 @@ export type FieldSource = "seed" | "live" | "derived";
 export interface ResolvedField<T = number> {
   value: T;
   source: FieldSource;
-  /** ISO date (seed snapshot) or ISO timestamp (live fetch). */
-  asOf?: string;
+  /**
+   * Provenance timestamp. Live fields carry their real capture timestamp;
+   * seed fields are ALWAYS null (R1: the seed dataset has no provable capture
+   * date, so no timestamp may be claimed for it).
+   */
+  asOf: string | null;
 }
 
 export interface ResolvedStockMetrics {
@@ -51,8 +55,10 @@ export interface ResolvedStockMetrics {
   metrics: StockMetrics;
   /** Provenance for every meaningful field (T10/T14). */
   fields: Record<string, ResolvedField>;
-  /** When the seed snapshot was captured; live fields carry their own asOf. */
-  seedAsOf: string;
+  /** Provenance of the merged stock: the seed dataset status (R1). */
+  seedStatus: SeedStatus;
+  /** Always null while seedStatus === 'placeholder' (no provable capture date). */
+  seedCapturedAt: string | null;
 }
 
 function isResolved(x: unknown): x is ResolvedStockMetrics {
@@ -90,7 +96,7 @@ export function resolveStockMetrics(
     fields[key] = {
       value: r.value,
       source: r.source,
-      asOf: r.source === "live" ? now : SEED_AS_OF,
+      asOf: r.source === "live" ? now : null,
     };
   };
 
@@ -119,17 +125,19 @@ export function resolveStockMetrics(
   set("mktcap", mktcap);
   set("bvps", bvps);
 
-  // Derived from other resolved fields — never invented.
+  // Derived from other resolved fields — never invented. The derived
+  // timestamp is only meaningful when its inputs are live; a derivation from
+  // seed values claims no freshness (R1).
   const pb: ResolvedField = {
     value: bvps.value > 0 ? Number((seed.price / bvps.value).toFixed(4)) : 0,
     source: "derived",
-    asOf: now,
+    asOf: bvps.source === "live" ? now : null,
   };
   fields.pb = pb;
   const fcfMargin: ResolvedField = {
     value: seed.rev > 0 ? Number(((seed.fcf / seed.rev) * 100).toFixed(4)) : 0,
     source: "seed",
-    asOf: SEED_AS_OF,
+    asOf: null,
   };
   fields.fcfMargin = fcfMargin;
 
@@ -171,7 +179,8 @@ export function resolveStockMetrics(
     stock: mergedStock,
     metrics,
     fields,
-    seedAsOf: SEED_AS_OF,
+    seedStatus: SEED_STATUS,
+    seedCapturedAt: SEED_CAPTURED_AT,
   };
 }
 

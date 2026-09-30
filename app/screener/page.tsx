@@ -5,6 +5,7 @@ import { STOCKS } from '../../data/stocks';
 import { StockTable } from '../../components/screener/StockTable';
 import { useLanguage } from '../../lib/language';
 import { SCREENER_PRESETS, applyFilters } from '../../lib/screener/presets';
+import SeedDataBanner from '@/components/shared/SeedDataBanner'; // R1: honest placeholder-data label
 import Link from 'next/link';
 
 export default function ScreenerPage() {
@@ -121,6 +122,7 @@ export default function ScreenerPage() {
       </div>
 
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
+        <SeedDataBanner suffix="all fundamentals on this page are illustrative placeholders" />
         <StockTable stocks={filteredStocks} />
       </div>
 

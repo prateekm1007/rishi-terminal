@@ -34,7 +34,7 @@ const REMOVE_ROWS = new Set(["LAKSHVILAS", "LENTECHNOO", "XPRESSBEES"]);
  * trendlyne/univest searches, Sep 2026) + company filings; documented in the
  * PR table. Balance-sheet detail not in the sources is derived conservatively
  * (sh = mktcap/price; ocf = np + dep; ca/tl from sector-typical turns) and is
- * flagged for founder review. Data stays labelled seed (SEED_AS_OF).
+ * flagged for founder review. Data stays labelled seed (SEED_STATUS='placeholder').
  */
 const RECONSTRUCTED: Record<string, Partial<Stock>> = {
   PVRINOX: {
@@ -131,10 +131,13 @@ function fmtNum(n: number): string {
 const lines: string[] = [
   "import { Stock } from '../../lib/types';",
   "",
-  "// Remediation T14: ISO date of the seed snapshot below. Every value in STOCKS",
-  "// is a static placeholder captured around this date; the UI must never render",
-  "// seed prices as live prices (see lib/scoring resolveStockMetrics).",
-  "export const SEED_AS_OF = '2026-09-30';",
+  "// Remediation R1: seed data honesty. Every value in STOCKS is a static",
+  "// placeholder with NO provable capture date; UI renders SeedDataBanner",
+  "// wherever seed-derived numbers appear and never claims an as-of date.",
+  "export type SeedStatus = 'placeholder' | 'sourced';",
+  "export const SEED_STATUS: SeedStatus = 'placeholder';",
+  "export const SEED_CAPTURED_AT: string | null = null;",
+  "export const SEED_DISCLAIMER = 'Illustrative sample data \\u2014 not current, not investment advice.';",
   "",
   "// Consolidated seed registry (remediation T12): duplicate/renamed rows were",
   "// merged; old symbols resolve via lib/registry/tickerAliases.json.",

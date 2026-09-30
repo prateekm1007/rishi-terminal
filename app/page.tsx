@@ -11,7 +11,7 @@ import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";i
 import { STOCKS } from "@/data/stocks";
 import { resolveStockMetrics, getStockScore, getQvps } from "@/lib/scoring"; // T10: single scoring surface
 import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from "@/lib/scoring/rankings"; // T13: real rankings
-import { SEED_AS_OF } from "@/data/stocks";
+import SeedDataBanner from "@/components/shared/SeedDataBanner"; // R1: honest placeholder-data label
 
 /* ── Constants ─────────────────────────────────────────────── */
 
@@ -130,7 +130,6 @@ export default function DashboardPage() {
   const rotatingStocks = useMemo(() => rankTopBuy(6), []);
   const rotatingShorts = useMemo(() => computeShortRadar(3), []);
   const stockOfDay = useMemo(() => pickStockOfTheDay(), []);
-  const asOfLabel = SEED_AS_OF;
 
   const allSyms = useMemo(() => [
     ...TICKER_SYMS,
@@ -361,9 +360,7 @@ export default function DashboardPage() {
         {/* ── STOCK OF THE DAY ─────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + stockOfDay.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
-          <div style={{ fontSize: 11, color: C.textMuted, fontFamily: mono, marginBottom: 10 }}>
-            As of {asOfLabel} (seed fundamentals) · deterministic daily pick, IST calendar day
-          </div>
+          <SeedDataBanner suffix="deterministic daily pick, IST calendar day" />
           <div style={{
             background:"linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 40%,rgba(139,92,246,0.05) 100%)",
             border:"1px solid rgba(212,175,55,0.3)",
@@ -460,9 +457,7 @@ export default function DashboardPage() {
         {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/screener" linkLabel={t("dashboard2.fullScreener")} />
-          <div style={{ fontSize: 11, color: C.textMuted, fontFamily: mono, marginBottom: 10 }}>
-            Ranked by Rishi consensus among data-quality-OK stocks · as of {asOfLabel}
-          </div>
+          <SeedDataBanner suffix="ranked by Rishi consensus among data-quality-OK stocks" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
             {rotatingStocks.map((stock) => {
               const d  = prices[stock.symbol];
@@ -519,9 +514,7 @@ export default function DashboardPage() {
         {/* ── SHORT OF THE DAY ──────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
-          <div style={{ fontSize: 11, color: C.textMuted, fontFamily: mono, marginBottom: 10 }}>
-            Ranked by QVPS short screen (unvalidated model) from actual trigger flags · as of {asOfLabel}
-          </div>
+          <SeedDataBanner suffix="ranked by QVPS short screen (unvalidated model) from actual trigger flags" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
             {rotatingShorts.map(short => (
               <Link href={"/stock/" + short.symbol} key={short.symbol} style={{ textDecoration:"none" }}>

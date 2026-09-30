@@ -1,6 +1,6 @@
 # Data Sources — Rishi Terminal
 
-**Status:** 2026-09-30 (Remediation T19). This is the authoritative description of
+**Status:** 2026-09-30 (Remediation round 2, R1). This is the authoritative description of
 where every number shown in the product comes from, how often it refreshes, and
 what is known to be stale or risky. `AUDIT_FINDINGS_COMPREHENSIVE.md` is
 superseded; this document and `scripts/validateStocks.ts` are the sources of
@@ -13,10 +13,18 @@ truth on data quality.
 - Every fundamentals value served to the UI flows through
   `lib/scoring/index.ts → resolveStockMetrics(symbol)`, which merges the static
   seed record with any live-fetched fundamentals. **Each field carries a
-  `source` and an `asOf`** (`'seed'` / `'live'` / `'missing'`, plus ISO date).
-- The seed dataset header exports `SEED_AS_OF` (`data/stocks/index.ts`,
-  currently `2026-09-30`). All seed-sourced values are labelled
-  `as of SEED_AS_OF (seed)`.
+  `source` and an `asOf`** (`'seed'` / `'live'` / `'derived'`).
+- **Seed data claims no date (R1).** The seed dataset header exports
+  `SEED_STATUS = 'placeholder'` and `SEED_CAPTURED_AT = null`
+  (`data/stocks/index.ts`). No capture date is provable from git history or
+  any source (values pre-date the repo and many are deliberately round), so
+  seed-sourced fields carry `source: 'seed', asOf: null` — never a date.
+- **UI rule (R1): wherever seed-derived numbers, scores or rankings are
+  shown, the UI renders the non-dismissable label**
+  **“Illustrative sample data — not current, not investment advice.”**
+  (`components/shared/SeedDataBanner.tsx`). No “as of <date>” text may appear
+  anywhere for seed data; `scripts/validateStocks.ts` and
+  `test/freshness.placeholder.test.ts` enforce this.
 - **UI rule (enforced in T14): a seed `price` is never rendered as a live
   price.** When no live quote is available the UI shows `—` with a
   "price unavailable" tooltip (`lib/freshness.ts` helpers). Live prices show
@@ -29,7 +37,7 @@ truth on data quality.
 
 | # | Source | What it provides | Module | Auth | Cadence / cache |
 |---|--------|------------------|--------|------|-----------------|
-| 1 | **Seed dataset** (in-repo) | Fundamentals for ~940 NSE symbols: PE, ROE, OPM, ROCE, growth, mktcap, etc. Static snapshot values, many deliberately round placeholders (e.g. RELIANCE 2500, TCS 3600). | `data/stocks/index.ts` (`SEED_AS_OF = 2026-09-30`) | none | Static; changes only in code. **Known staleness: entire seed is a point-in-time snapshot; prices are placeholders, never displayed as live.** |
+| 1 | **Seed dataset** (in-repo) | Fundamentals for ~940 NSE symbols: PE, ROE, OPM, ROCE, growth, mktcap, etc. Static placeholder values, many deliberately round (e.g. RELIANCE 2500, TCS 3600). **Status: `placeholder` — illustrative sample data, not current.** | `data/stocks/index.ts` (`SEED_STATUS = 'placeholder'`, `SEED_CAPTURED_AT = null`) | none | Static; changes only in code. Prices are placeholders, never displayed as live; every surface showing seed-derived output carries the illustrative-data label. |
 | 2 | **NSE India (unofficial JSON API)** | Live equity quotes, indices (`/api/allIndices`), MCX commodity quotes. | `lib/livePrice.ts`, `lib/nse*.ts` | none (browser-like headers) | On request, short in-memory cache per server instance. Unofficial; can rate-limit or break without notice. |
 | 3 | **BSE India API** | Scrip header data for symbols missing on NSE. | `api.bseindia.com getScripHeaderData` (server routes) | none | On request. Unofficial. |
 | 4 | **Yahoo Finance (unofficial v7/v8 endpoints)** | Stock quote fallback (`query1/query2.finance.yahoo.com`), chart data, previous-close for 24h change, forex pair changes. | `lib/livePrice.ts`, `hooks/useLivePrices` via `/api/prices*` | none | On request; in-memory per-instance cache. Unofficial. |
@@ -60,20 +68,46 @@ truth on data quality.
   `SUPABASE_SERVICE_ROLE_KEY`) to print row counts and newest dates for
   `rishi_snapshots`, `financial_quarters`, `ingestion_log`.
   **Known status as of 2026-09-30: the cron existed in code but was inert in
-  production until `CRON_SECRET` is set on the Vercel project (T8/T14 finding);
-  founder action pending.** No row counts could be verified from the
-  remediation environment (no production DB credentials) — this is reported as
-  BLOCKED rather than guessed.
+  production until `CRON_SECRET` was set on the Vercel project (round 1
+  finding; set 2026-09-30, verified with three-state auth test).** Live row
+  counts are reported by `pipelineStatus.ts` — see §4.
 
-## 4. Known staleness & risk register
+## 4. Path to sourced data (R1)
 
-1. **Seed snapshot drift.** All seed fundamentals are from `SEED_AS_OF`
-   (2026-09-30) or earlier and many values are round placeholders. The UI
-   never presents them as live; rankings exclude `dataQuality: 'INCOMPLETE'`
-   records (T11/T13).
-2. **Nightly pipeline unverified in production.** Until the founder runs
-   `pipelineStatus.ts` against production, the true fill state of
-   `financial_quarters` is unknown. Score history may therefore be seed-based.
+The seed dataset stops being “illustrative” only when real fundamentals exist
+and their provenance is recorded. The pipeline that produces them:
+
+- **`ingestQuarterly` / `ingestAnnual`** (`app/api/ingest/financials/route.ts`)
+  write per-symbol fundamentals into the `financial_quarters` and
+  `financial_annual` tables (sourced from the Screener.in scrape or manual
+  JSON payloads; each row records `source` and quarter-end dates).
+- **`/api/ingest/snapshot`** (cron, Mon–Fri 19:00 IST) persists daily
+  consensus scores into `rishi_snapshots`, and every run appends to
+  `ingestion_log`.
+- **Row counts are measured by `scripts/pipelineStatus.ts`** (service-role
+  key against the production Supabase project). It prints the exact row
+  count and newest timestamp for `rishi_snapshots`, `financial_quarters`,
+  `financial_annual` and `ingestion_log`.
+
+**Current measured state (2026-09-30, remediation round 2): the production
+Supabase schema (migrations 001–008) is being applied during this round; all
+sourced tables start at 0 rows until the first ingestion runs.** Until the
+counts are non-zero and `SEED_STATUS` flips to `'sourced'`, every
+seed-derived surface remains labelled as illustrative sample data.
+
+## 5. Known staleness & risk register
+
+1. **Seed data is illustrative, not sourced.** All seed fundamentals are
+   placeholders with no provable capture date (`SEED_CAPTURED_AT = null`).
+   The UI never presents them as live or current; every seed-derived surface
+   carries the “Illustrative sample data” label (R1), and rankings exclude
+   `dataQuality: 'INCOMPLETE'` records (T11/T13). Founder note (R1): until
+   the ingest pipeline has populated real fundamentals for the stocks being
+   ranked, rankings must not be presented as signals at all — the label is
+   the minimum.
+2. **Nightly pipeline state is measured, not assumed.** Run
+   `npx tsx scripts/pipelineStatus.ts` against production to get live row
+   counts; see §4 for the current measured state.
 3. **Unofficial endpoints (NSE, BSE, Yahoo, Screener.in).** No contract, no
    SLA; may throttle, change shape, or object under their ToS. Responses at
    trust boundaries are parsed defensively (numeric coercion + finiteness

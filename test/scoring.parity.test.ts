@@ -35,7 +35,10 @@ describe("T10 — score parity across entry paths", () => {
   it("resolveStockMetrics records per-field source and asOf", () => {
     const r = resolveStockMetrics("RELIANCE")!;
     expect(r.fields.pe.source).toBe("seed");
-    expect(r.fields.pe.asOf).toBe("2026-09-30");
+    // R1: seed fields never claim a timestamp — no provable capture date.
+    expect(r.fields.pe.asOf).toBeNull();
+    expect(r.seedStatus).toBe("placeholder");
+    expect(r.seedCapturedAt).toBeNull();
     const withLive = resolveStockMetrics("RELIANCE", {
       pe: 21.5, roe: 14.2, roce: 16.1, opm: 18.3, debtToEquity: 0.4,
       promoterHolding: 50.3, revCagr3y: 12, epsCagr: 14, marketCap: 1700e7,

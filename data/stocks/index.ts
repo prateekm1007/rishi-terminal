@@ -1,9 +1,23 @@
 import { Stock } from '../../lib/types';
 
-// Remediation T14: ISO date of the seed snapshot below. Every value in STOCKS
-// is a static placeholder captured around this date; the UI must never render
-// seed prices as live prices (see lib/scoring resolveStockMetrics).
-export const SEED_AS_OF = '2026-09-30';
+// Remediation R1: honesty about the seed dataset. Every value in STOCKS is a
+// static placeholder. No capture date is provable: the numbers pre-date this
+// repo's history and many are deliberately round (RELIANCE 2500, 3MINDIA
+// 28000, 360ONE 985), so claiming any "as of <date>" would be a fabricated
+// freshness claim (see remediation round 2, R1). Therefore:
+//   - SEED_STATUS = 'placeholder': the dataset is illustrative sample data.
+//     Flip to 'sourced' ONLY when every field is populated by the ingest
+//     pipeline (financial_quarters/financial_annual) and provenance is real.
+//   - SEED_CAPTURED_AT = null: we do not claim any capture date.
+// UI contract (enforced by scripts/validateStocks.ts and
+// test/freshness.placeholder.test.ts): wherever seed-derived numbers, scores
+// or rankings are shown, render <SeedDataBanner /> and never an "as of" date
+// for seed data. Seed prices are never rendered as live prices (lib/freshness).
+export type SeedStatus = 'placeholder' | 'sourced';
+export const SEED_STATUS: SeedStatus = 'placeholder';
+export const SEED_CAPTURED_AT: string | null = null;
+export const SEED_DISCLAIMER =
+  'Illustrative sample data \u2014 not current, not investment advice.';
 
 // Consolidated seed registry (remediation T12): duplicate/renamed rows were
 // merged; old symbols resolve via lib/registry/tickerAliases.json.

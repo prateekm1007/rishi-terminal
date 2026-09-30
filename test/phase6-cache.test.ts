@@ -128,6 +128,17 @@ describe("T62 storage-rights gate", () => {
     expect(REFERENCE_SYMBOLS).toContain("EUR/INR");
     expect(REFERENCE_SYMBOLS.some(s => s === "RELIANCE" || s === "BTC")).toBe(false);
   });
+
+  it("forex served by Yahoo is labelled yahoo — never the chain id (provenance regression)", async () => {
+    // Yahoo quote shape satisfies fetchYahooQuote; without the explicit
+    // source label, attempt() stamped 'exchangerate-api' on Yahoo data,
+    // which would also (wrongly) qualify it for DB persistence.
+    mockFetchAlways(yahooQuoteOk(83.9, -0.156));
+    const r = await fetchLivePrice("USD/INR");
+    expect(r).not.toBeNull();
+    expect(r?.source).toBe("yahoo");
+    expect(isPersistableSource(r?.source)).toBe(false);
+  });
 });
 
 describe("T61 captureReferenceObservations", () => {

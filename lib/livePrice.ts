@@ -521,11 +521,14 @@ const YAHOO_FOREX_SYMBOLS: Record<string, string> = {
   'JPY/INR': 'JPYINR=X',
 };
 
-async function getForexRate(pair: string): Promise<{ price: number; change: number } | null> {
-  // Try Yahoo Finance first (has 24h change data)
+async function getForexRate(pair: string): Promise<{ price: number; change: number; source?: string } | null> {
+  // Try Yahoo Finance first (has 24h change data). Attribution matters
+  // (Phase 6): the data source is yahoo here — without the explicit label
+  // attempt() would stamp the chain id (exchangerate-api), mislabelling a
+  // Yahoo observation AND accidentally qualifying it for persistence.
   if (YAHOO_FOREX_SYMBOLS[pair]) {
     const yahooData = await fetchYahooQuote(YAHOO_FOREX_SYMBOLS[pair]);
-    if (yahooData) return yahooData;
+    if (yahooData) return { ...yahooData, source: "yahoo" };
   }
 
   // Fallback to ExchangeRate-API (no 24h change)

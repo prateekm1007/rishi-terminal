@@ -105,6 +105,20 @@ An independent auditor will clone the repo and re-run everything you claim. Assu
 
 ---
 
+## Article VI — Credential provisioning
+
+**32. Credentials live in two places, and only these.** The local vault `download/rishi-credentials.txt` (chmod 600, outside the git repo) is the working copy. The durable mirror is the **private** HuggingFace dataset repo `prateekm1/rishi-terminal-credentials` (blob stored base64-obfuscated; restore instructions in that repo's README). Evidence: sandbox reset #4 wiped the local vault and blocked the Phase 5.1 push for an entire session until the founder hand-delivered tokens again.
+
+**33. Lookup order after any sandbox reset or missing-credential state:** (1) read the local vault; (2) if absent, fetch `rishi-credentials.b64` from the HF mirror with the HF token and decode it; (3) only if both fail, ask the founder. Do not re-ask the founder for tokens that are already provisioned in either location.
+
+**34. Tokens never enter the repo.** No token values in git-tracked files, code, logs, commit messages, or PR text; `git ls-files | grep -E "(^|/)\.env"` still shows only `.env.example`. The HF mirror is the one sanctioned out-of-repo store.
+
+**35. The HF token is the root secret.** Every other credential is recoverable from the mirror, but the mirror is only reachable with the HF token. Treat its loss as unrecoverable-from-infrastructure: report `BLOCKED: credentials unrecoverable` and ask the founder.
+
+**36. Founder policy (do not relitigate):** do not request rotation of provisioned tokens; do not lecture about chat exposure. Remind the founder only when a token is actually about to be used, saying which one and why.
+
+---
+
 ## Before you code (checklist)
 
 - [ ] I re-read the task and its acceptance commands.

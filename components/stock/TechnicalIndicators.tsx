@@ -133,127 +133,6 @@ function BollingerRange({ upper, middle, lower, price }: {
   );
 }
 
-function MacdHistogram({ histValue, macdLine, signalLine }: {
-  histValue: number; macdLine: number; signalLine: number;
-}) {
-  const bars = Array.from({ length: 14 }, (_, i) => {
-    const age = 13 - i;
-    const decay = Math.max(0.1, 1 - age * 0.06);
-    return histValue * decay;
-  });
-  const maxAbs = Math.max(0.01, ...bars.map(v => Math.abs(v)));
-
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 64 }}>
-        {bars.map((v, i) => {
-          const isPos = v >= 0;
-          const heightPct = Math.max(6, (Math.abs(v) / maxAbs) * 100);
-          const opacity = 0.4 + (i / 14) * 0.6;
-          return (
-            <div key={i} style={{
-              flex: 1,
-              height: `${heightPct}%`,
-              background: isPos
-                ? `rgba(34,197,94,${opacity})`
-                : `rgba(239,68,68,${opacity})`,
-              borderRadius: "3px 3px 0 0"
-            }} />
-          );
-        })}
-      </div>
-      <div style={{ height: 1, background: "rgba(148,163,184,0.25)", margin: "4px 0 8px" }} />
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b" }}>
-        <span>Line: <span style={{ color: macdLine >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdLine.toFixed(2)}</span></span>
-        <span>Signal: <span style={{ color: signalLine >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{signalLine.toFixed(2)}</span></span>
-      </div>
-    </div>
-  );
-}
-
-function PriceSparkline({ change5d, change1d }: { change5d: number; change1d: number }) {
-  const [hovered, setHovered] = useState<number | null>(null);
-  const n = 12;
-  const isUp = change5d >= 0;
-  const color = isUp ? "#22c55e" : "#ef4444";
-
-  const pts = Array.from({ length: n }, (_, i) => {
-    const t = i / (n - 1);
-    const trend = t * change5d;
-    const noise = Math.sin((i + 1) * 1.9) * Math.abs(change5d) * 0.15;
-    return trend + noise;
-  });
-
-  const mn = Math.min(...pts);
-  const mx = Math.max(...pts);
-  const rng = mx - mn || 1;
-  const W = 200;
-  const H = 80;
-  const toY = (v: number) => H - 10 - ((v - mn) / rng) * (H - 20);
-  const toX = (i: number) => (i / (n - 1)) * W;
-
-  const linePath = pts.map((v, i) => `${i === 0 ? "M" : "L"} ${toX(i).toFixed(1)} ${toY(v).toFixed(1)}`).join(" ");
-  const areaPath = `${linePath} L ${W} ${H} L 0 ${H} Z`;
-
-  return (
-    <div style={{ flex: 1, position: "relative" }}>
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        style={{ width: "100%", height: 56, display: "block" }}
-        preserveAspectRatio="none"
-        onMouseLeave={() => setHovered(null)}
-      >
-        <defs>
-          <linearGradient id="sparkGradNew" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
-          </linearGradient>
-        </defs>
-
-        <path d={areaPath} fill="url(#sparkGradNew)" />
-        <path d={linePath} fill="none" stroke={color} strokeWidth="2.5"
-          strokeLinecap="round" strokeLinejoin="round" />
-
-        {/* Interactive hover points */}
-        {pts.map((v, i) => (
-          <circle
-            key={i}
-            cx={toX(i)}
-            cy={toY(v)}
-            r={hovered === i ? 5 : 3}
-            fill={hovered === i ? color : "transparent"}
-            stroke={hovered === i ? "white" : "transparent"}
-            strokeWidth="1.5"
-            style={{ cursor: "crosshair" }}
-            onMouseEnter={() => setHovered(i)}
-          />
-        ))}
-
-        {/* Tooltip */}
-        {hovered !== null && (() => {
-          const x = toX(hovered);
-          const y = toY(pts[hovered]);
-          const val = pts[hovered];
-          const label = `${val >= 0 ? "+" : ""}${val.toFixed(2)}%`;
-          const boxW = 70;
-          const boxX = Math.min(W - boxW - 4, Math.max(4, x - boxW / 2));
-          const boxY = y > 40 ? y - 38 : y + 12;
-          return (
-            <g>
-              <rect x={boxX} y={boxY} width={boxW} height={24}
-                rx={5} fill="#1e293b" stroke="#334155" strokeWidth="1" />
-              <text x={boxX + boxW / 2} y={boxY + 15}
-                textAnchor="middle" fontSize={10} fontWeight="700"
-                fill={val >= 0 ? "#22c55e" : "#ef4444"}
-              >{label}</text>
-            </g>
-          );
-        })()}
-      </svg>
-    </div>
-  );
-}
-
 export function TechnicalIndicators({ symbol }: Props) {
   const { indicators, loading, error } = useTechnicalData(symbol);
 
@@ -379,11 +258,15 @@ export function TechnicalIndicators({ symbol }: Props) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <span style={label}>MACD (12,26,9)</span>
-            <InfoTip text="Histogram bars above zero = bullish momentum building. Below zero = bearish. The current bar is rightmost — taller means stronger momentum." />
+            <InfoTip text="MACD line above the signal line = bullish momentum building (histogram positive). Below = bearish. Values are computed from live daily candles." />
           </div>
           <span style={{ fontSize: 24, fontWeight: 800, color: macdColor }}>{macdHist.toFixed(2)}</span>
         </div>
-        <MacdHistogram histValue={macdHist} macdLine={macdLine} signalLine={macdSig} />
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b" }}>
+          <span>Line: <span style={{ color: macdLine >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdLine.toFixed(2)}</span></span>
+          <span>Signal: <span style={{ color: macdSig >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdSig.toFixed(2)}</span></span>
+          <span>Histogram: <span style={{ color: macdHist >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdHist.toFixed(2)}</span></span>
+        </div>
         <p style={{ fontSize: 12, fontWeight: 600, color: macdColor, marginTop: 8 }}>{macdLabel}</p>
       </div>
 
@@ -401,7 +284,7 @@ export function TechnicalIndicators({ symbol }: Props) {
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
           <span style={label}>Price Change</span>
-          <InfoTip text="1-day and 5-day price change. Hover over the sparkline points to see momentum at each stage of the 5-day move." />
+          <InfoTip text="1-day and 5-day price change, computed from live daily candles." />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <div>
@@ -416,7 +299,6 @@ export function TechnicalIndicators({ symbol }: Props) {
               {p5d >= 0 ? "+" : ""}{p5d.toFixed(2)}%
             </p>
           </div>
-          <PriceSparkline change5d={p5d} change1d={p1d} />
         </div>
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #1e293b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 11, color: "#64748b" }}>Avg Volume (20d)</span>

@@ -16,7 +16,7 @@ export function BullBearBar({ topBull, topBear, spread }: Props) {
 
   return (
     <div className="card-sacred p-6">
-      <div className="philosophy-heading text-lg mb-6">Rishis' Consensus</div>
+      <div className="philosophy-heading text-lg mb-6">Rishis&apos; Consensus</div>
 
       <div className="grid grid-cols-2 gap-6">
         {/* Bull */}

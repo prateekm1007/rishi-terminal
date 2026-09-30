@@ -603,7 +603,7 @@ export function AssetWisdomSidebar({ asset, scores }: Props) {
 
                 <blockquote style={{ fontSize: "12px", fontStyle: "italic", color: "#94A3B8", lineHeight: 1.7, marginBottom: "8px" }}>
 
-                  "{parallel.quote}"
+                  &quot;{parallel.quote}&quot;
 
                 </blockquote>
 

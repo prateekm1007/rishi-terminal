@@ -137,7 +137,7 @@ export default function ForexRishisPage() {
                 color: 'var(--text-secondary)',
                 lineHeight: 1.6,
               }}>
-                "{rishi.quote}"
+                &quot;{rishi.quote}&quot;
               </div>
 
               <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>

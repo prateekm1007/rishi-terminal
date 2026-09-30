@@ -111,7 +111,7 @@ function DebateCard({
         }}>{score}</div>
       </div>
       <div style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.7, fontStyle: 'italic' }}>
-        "{argument}"
+        &quot;{argument}&quot;
       </div>
     </div>
   );

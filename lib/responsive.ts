@@ -1,3 +1,5 @@
+import * as React from 'react';
+
 // Responsive breakpoint utilities
 export const BREAKPOINTS = {
   mobile: 768,
@@ -20,20 +22,19 @@ export function isDesktop(): boolean {
   return window.innerWidth > BREAKPOINTS.tablet;
 }
 
-// Hook for responsive behavior
+// Hook for responsive behavior.
+// T18 fix: the old version returned early during SSR and called hooks after
+// that branch — a real rules-of-hooks bug (hook order differed between server
+// and client render). Defaults are now lazy and measured in an effect.
 export function useResponsive() {
-  if (typeof window === 'undefined') {
-    return { isMobile: false, isTablet: false, isDesktop: true };
-  }
-
-  const [dimensions, setDimensions] = React.useState({
-    isMobile: window.innerWidth <= BREAKPOINTS.mobile,
-    isTablet: window.innerWidth > BREAKPOINTS.mobile && window.innerWidth <= BREAKPOINTS.tablet,
-    isDesktop: window.innerWidth > BREAKPOINTS.tablet,
-  });
+  const [dimensions, setDimensions] = React.useState(() => ({
+    isMobile: false,
+    isTablet: false,
+    isDesktop: true,
+  }));
 
   React.useEffect(() => {
-    function handleResize() {
+    function measure() {
       setDimensions({
         isMobile: window.innerWidth <= BREAKPOINTS.mobile,
         isTablet: window.innerWidth > BREAKPOINTS.mobile && window.innerWidth <= BREAKPOINTS.tablet,
@@ -41,11 +42,10 @@ export function useResponsive() {
       });
     }
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
   }, []);
 
   return dimensions;
 }
-
-import * as React from 'react';

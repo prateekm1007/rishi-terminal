@@ -141,7 +141,7 @@ function buildTechnicalEdge(stock: Stock, scores: RishiScore[]): TechnicalEdgeEn
 
   const getPercentile = (val: number, avgVal: number, higherIsBetter: boolean): number => {
     const ratio = val / Math.max(avgVal, 0.01);
-    let p = higherIsBetter ? (ratio * 50) : ((2 - ratio) * 50);
+    const p = higherIsBetter ? (ratio * 50) : ((2 - ratio) * 50);
     return Math.min(99, Math.max(1, Math.round(p)));
   };
 

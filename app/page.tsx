@@ -410,7 +410,7 @@ export default function DashboardPage() {
                   fontStyle:"italic", lineHeight:1.7,
                   fontFamily:'"Playfair Display",Georgia,serif',
                 }}>
-                  "{sodCommentary}"
+                  &quot;{sodCommentary}&quot;
                 </div>
                 <div style={{ marginTop:"10px", fontSize:"12px", color:C.textMuted }}>
                   — <span style={{ color:C.gold }}>Rishi {stockOfDay.rishi}</span>

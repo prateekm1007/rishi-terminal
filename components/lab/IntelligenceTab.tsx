@@ -506,7 +506,7 @@ export default function IntelligenceTab() {
       {/* Rishi Affinity */}
       {rishiAffinity && (
         <div style={{ ...card, background: 'linear-gradient(135deg, rgba(212,175,55,0.1), rgba(15,23,42,0.6))' }}>
-          <div style={sectionLabel}>◌ Your Portfolio's Rishi Affinity</div>
+          <div style={sectionLabel}>◌ Your Portfolio&apos;s Rishi Affinity</div>
           <div style={{ padding: 16 }}>
             <div style={{ fontSize: 11, color: '#64748B', marginBottom: 6 }}>THIS PORTFOLIO MATCHES:</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: '#D4AF37', marginBottom: 10 }}>

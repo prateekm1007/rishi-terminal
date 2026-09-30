@@ -110,6 +110,8 @@ export default function OverviewTab() {
   const [histError, setHistError] = useState<string | null>(null);
 
   const symbols = useMemo(() => holdings.map(h => h.symbol), [holdings]);
+  const symbolsKey = symbols.join('|');
+  const historyKey = Object.keys(historyBySymbol).length;
   const { prices, loading: liveLoading } = useLivePrices(symbols);
 
   useEffect(() => {
@@ -159,7 +161,7 @@ export default function OverviewTab() {
 
     run();
     return () => { cancelled = true; };
-  }, [symbols.join('|'), benchmark, holdings]);
+  }, [symbolsKey, benchmark, holdings]);
 
   const enriched = useMemo(() => {
     return holdings.map(h => {
@@ -408,7 +410,7 @@ const [beta, setBeta] = useState<number | null>(null);
 
     const dd = maxDrawdownPct(pv);
     setMaxDD(dd);
-}, [symbols.join('|'), benchHistory.length, Object.keys(historyBySymbol).length, holdings]);
+}, [symbolsKey, benchHistory.length, historyKey, holdings]);
 
 
   const xirrPct = useMemo(() => {
@@ -427,7 +429,7 @@ const [beta, setBeta] = useState<number | null>(null);
   const twrrTotalPct = useMemo(() => {
     if (holdings.length === 0 || totals.totalCurrent <= 0) return null;
     return calcTWRRTotal(holdings, new Date(), historyBySymbol);
-  }, [holdings, totals.totalCurrent, Object.keys(historyBySymbol).length]);  const overallRiskScore = useMemo(() => {
+  }, [holdings, totals.totalCurrent, historyKey]);  const overallRiskScore = useMemo(() => {
     const betaRisk = beta == null ? 50 : clamp(50 + (beta - 1) * 35, 0, 100);
     const concRisk = clamp((concentration.top5 / 80) * 100, 0, 100);
     const macroRisk = clamp(cyclicalRisk, 0, 100);

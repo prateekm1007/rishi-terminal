@@ -125,10 +125,10 @@ export default function DailyRitualWidget() {
         padding: "14px 16px",
       }}>
         <div style={{ fontSize: "10px", fontWeight: 700, color: "#D4AF37", letterSpacing: "0.1em", marginBottom: "8px" }}>
-          🧘 TODAY'S WISDOM
+          🧘 TODAY&rsquo;S WISDOM
         </div>
         <div style={{ fontSize: "13px", color: "#E2E8F0", fontStyle: "italic", lineHeight: 1.8, marginBottom: "8px", fontFamily: "Playfair Display, Georgia, serif" }}>
-          "{ritual.wisdom.quote}"
+          &quot;{ritual.wisdom.quote}&quot;
         </div>
         <div style={{ fontSize: "11px", color: "#64748B", textAlign: "right" }}>
           — {ritual.wisdom.author}

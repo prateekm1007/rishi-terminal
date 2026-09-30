@@ -44,7 +44,7 @@ function makeFakeAdmin() {
         }
       };
 
-      let claimed: any[] = [];
+      const claimed: any[] = [];
 
       const b: any = {
         select: () => {

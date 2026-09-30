@@ -227,7 +227,7 @@ export default function RishiStrategyAdvisor({ context, strategy }: Props) {
           fontStyle: "italic",
           fontFamily: '"Playfair Display", Georgia, serif',
         }}>
-          "{response}"
+          &quot;{response}&quot;
         </div>
 
         {/* Ask options */}

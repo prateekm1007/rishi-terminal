@@ -53,6 +53,7 @@ const nextConfig = {
     // T12: renamed/legacy NSE symbols 308-redirect to the canonical symbol.
     // Source of truth: lib/registry/tickerAliases.json (require works in
     // plain-JS next.config; TS modules import the same JSON).
+    // eslint-disable-next-line @typescript-eslint/no-require-imports -- next.config is CommonJS by design
     const aliasMap = require("./lib/registry/tickerAliases.json");
     const aliasRedirects = Object.entries(aliasMap)
       .filter(([oldSym]) => !oldSym.startsWith("$"))

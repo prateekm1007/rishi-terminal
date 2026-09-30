@@ -29,7 +29,7 @@ function ScoreGauge({ score, mode }: { score: number; mode: ScoreMode }) {
   const isShortLeg = score >= 85 && mode === "SHORT";
 
   useEffect(() => {
-    let start = 0;
+    const start = 0;
     const duration = 1200;
     const startTime = Date.now();
     const animate = () => {

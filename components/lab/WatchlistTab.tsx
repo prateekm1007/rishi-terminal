@@ -301,7 +301,7 @@ export default function WatchlistTab() {
                     const q = searchQuery.toLowerCase();
                     return sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.sector.toLowerCase().includes(q);
                   }).length === 0 && (
-                    <div style={{ padding: '20px 12px', textAlign: 'center', color: '#64748B', fontSize: 12 }}>No stocks found matching "{searchQuery}"</div>
+                    <div style={{ padding: '20px 12px', textAlign: 'center', color: '#64748B', fontSize: 12 }}>No stocks found matching &quot;{searchQuery}&quot;</div>
                   )}
                 </div>
               )}

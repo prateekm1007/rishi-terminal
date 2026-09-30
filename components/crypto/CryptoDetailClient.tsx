@@ -350,7 +350,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                     <span style={{ fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{scoreDisp(r.result.score)}/100</span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                  <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic' }}>"{r.philosophy}"</div>
+                  <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
                 </div>
               ))}
             </div>
@@ -437,7 +437,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{r.result.insight}</p>
                 </div>
                 <div style={{ padding: 14, background: 'rgba(212,175,55,0.05)', borderRadius: 8, borderLeft: '3px solid rgba(212,175,55,0.4)', marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, color: '#D4AF37', fontStyle: 'italic' }}>"{r.philosophy}"</div>
+                  <div style={{ fontSize: 10, color: '#D4AF37', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
                   <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>{r.bio}</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>

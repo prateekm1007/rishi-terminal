@@ -21,15 +21,18 @@ interface Props {
 }
 
 export function PeerComparison({ stock, peers }: Props) {
-  if (!stock || !peers) return null;
-
+  // T18 fix: hooks were called after an early return — a real rules-of-hooks
+  // bug. Compute with guarded defaults instead; the null render decision
+  // happens at the end.
   const symbols = useMemo(
-    () => [stock.symbol, ...peers.map(p => p.symbol)],
-    [stock.symbol, peers]
+    () => [stock?.symbol, ...(peers ?? []).map(p => p.symbol)].filter(Boolean) as string[],
+    [stock?.symbol, peers]
   );
 
   const { prices } = useLivePrices(symbols);
   const { fundamentals: bulkFund } = useBulkFundamentals(symbols);
+
+  if (!stock || !peers) return null;
 
   const allStocks = [
     {

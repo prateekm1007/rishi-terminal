@@ -78,70 +78,54 @@ function parseMinutesAgo(pubDate: string): number {
   }
 }
 
-function fixMojibake(s: string): string {
-  // UTF-8 sequences misread as Latin-1 (common in RSS feeds)
-  // Curly apostrophe / right single quote U+2019 (0xE2 0x80 0x99)
-  s = s.replace(/\u00e2\u0080\u0099/g, '\u2019');  // Ã¢â‚¬â„¢ → '
-  s = s.replace(/â\u0080\u0099/g, '\u2019');
-  s = s.replace(/Ã¢â‚¬â„¢/g, '\u2019');
-s = s.replace(/“/g, '"');
-s = s.replace(/â€/g, '"');
-s = s.replace(/​/g, '');
-s = s.replace(/‌/g, '');
-s = s.replace(/â/g, '');
-s = s.replace(/“/g, '"');
-s = s.replace(/â€/g, '"');
-s = s.replace(/​/g, '');
-s = s.replace(/‌/g, '');
-s = s.replace(/â/g, '');
-  // Left single quote U+2018 (0xE2 0x80 0x98)
-  s = s.replace(/\u00e2\u0080\u0098/g, '\u2018');
-  s = s.replace(/â€˜/g, '\u2018');
-  // Left double quote U+201C (0xE2 0x80 0x9C)
-  s = s.replace(/\u00e2\u0080\u009c/g, '\u201c');
-  s = s.replace(/“/g, '\u201c');
-  // Right double quote U+201D (0xE2 0x80 0x9D)
-  s = s.replace(/\u00e2\u0080\u009d/g, '\u201d');
-  s = s.replace(/â€/g, '\u201d');
-  // En dash U+2013 (0xE2 0x80 0x93)
-  s = s.replace(/\u00e2\u0080\u0093/g, '\u2013');
-  s = s.replace(/â€"/g, '\u2013');
-  // Em dash U+2014 (0xE2 0x80 0x94)
-  s = s.replace(/\u00e2\u0080\u0094/g, '\u2014');
-  s = s.replace(/â€"/g, '\u2014');
-  // Ellipsis U+2026 (0xE2 0x80 0xA6)
-  s = s.replace(/\u00e2\u0080\u00a6/g, '\u2026');
-  s = s.replace(/…/g, '\u2026');
-  // Indian Rupee U+20B9 (0xE2 0x82 0xB9)
-  s = s.replace(/\u00e2\u0082\u00b9/g, '\u20b9');
-  s = s.replace(/â¹/g, '\u20b9');
-  // Euro U+20AC (0xE2 0x82 0xAC)
-  s = s.replace(/\u00e2\u0082\u00ac/g, '\u20ac');
-  s = s.replace(/â¬/g, '\u20ac');
-  // Bullet U+2022 (0xE2 0x80 0xA2)
-  s = s.replace(/\u00e2\u0080\u00a2/g, '\u2022');
-  // Trademark U+2122 (0xE2 0x84 0xA2)
-  s = s.replace(/\u00e2\u0084\u00a2/g, '\u2122');
-  // Registered U+00AE (0xC2 0xAE)
-  s = s.replace(/\u00c2\u00ae/g, '\u00ae');
-  // Copyright U+00A9 (0xC2 0xA9)
-  s = s.replace(/\u00c2\u00a9/g, '\u00a9');
-  // Non-breaking space (0xC2 0xA0)
-  s = s.replace(/\u00c2\u00a0/g, ' ');
-  // Degree U+00B0 (0xC2 0xB0)
-  s = s.replace(/\u00c2\u00b0/g, '\u00b0');
-  // Pound U+00A3 (0xC2 0xA3)
-  s = s.replace(/\u00c2\u00a3/g, '\u00a3');
-  // Yen U+00A5 (0xC2 0xA5)
-  s = s.replace(/\u00c2\u00a5/g, '\u00a5');
+// Mojibake repair (remediation T15).
+//
+// RSS/HTML sources are sometimes decoded as cp1252/latin-1 when they are
+// actually UTF-8, producing sequences like "\u00e2\u20ac\u201d" for an em dash.
+// Generic repair: any run of characters that all map to cp1252 bytes is
+// re-decoded as UTF-8 when that yields a strictly better (replacement-free,
+// different) string. This covers curly quotes, dashes, ellipsis, the rupee
+// sign, bullets, trademark/copyright/degree signs and every C2/C3-prefixed
+// accented letter, without enumerating each case.
+// Patterns are written with unicode escapes so this file itself stays free
+// of mojibake (validate:encoding and the CI grep scan every .ts file).
+const CP1252_MAP: Record<number, number> = {
+  0x80: 0x20ac, 0x82: 0x201a, 0x83: 0x0192, 0x84: 0x201e, 0x85: 0x2026,
+  0x86: 0x2020, 0x87: 0x2021, 0x88: 0x02c6, 0x89: 0x2030, 0x8a: 0x0160,
+  0x8b: 0x2039, 0x8c: 0x0152, 0x8e: 0x017d, 0x91: 0x2018, 0x92: 0x2019,
+  0x93: 0x201c, 0x94: 0x201d, 0x95: 0x2022, 0x96: 0x2013, 0x97: 0x2014,
+  0x98: 0x02dc, 0x99: 0x2122, 0x9a: 0x0161, 0x9b: 0x203a, 0x9c: 0x0153,
+  0x9e: 0x017e, 0x9f: 0x0178,
+};
 
-  // Fallback: strip remaining lone â, Â, Ãƒ sequences that are unrecognised mojibake
-  s = s.replace(/â[^\w\s]/g, '\'');
-  s = s.replace(/Â\s*/g, '');
-  s = s.replace(/Ãƒ\S*/g, '');
+const MOJIBAKE_RUN_RE = /[\u0080-\u00ff\u0152\u0153\u0160\u0161\u0178\u017d\u017e\u0192\u02c6\u02dc\u2013\u2014\u2018-\u201d\u2020-\u2022\u2026\u2030\u2039\u203a\u20ac\u2122]{2,}/g;
 
-  return s;
+function charToCp1252Byte(ch: string): number {
+  const code = ch.charCodeAt(0);
+  if (code >= 0x00 && code <= 0xff) return code;
+  for (const [byte, unicode] of Object.entries(CP1252_MAP)) {
+    if (unicode === code) return Number(byte);
+  }
+  return -1;
 }
+
+function decodeMojibakeRun(run: string): string | null {
+  const bytes: number[] = [];
+  for (const ch of run) {
+    const b = charToCp1252Byte(ch);
+    if (b < 0) return null;
+    bytes.push(b);
+  }
+  const decoded = Buffer.from(bytes).toString("utf8");
+  if (decoded.includes("\ufffd")) return null;  // not valid UTF-8 after re-encode
+  if (decoded === run) return null;             // no improvement
+  return decoded;
+}
+
+function fixMojibake(s: string): string {
+  return s.replace(MOJIBAKE_RUN_RE, (run) => decodeMojibakeRun(run) ?? run);
+}
+
 
 function decodeHtml(input: string): string {
   // Step 1: fix UTF-8 mojibake first

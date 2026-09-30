@@ -1,4 +1,4 @@
-﻿function goto($path) { Set-Location $path }
+function goto($path) { Set-Location $path }
 function ll { Get-ChildItem -Force | Format-Table Mode, LastWriteTime, Length, Name -AutoSize }
 function Reload-Terminal { . "C:\Users\Administrator\Desktop\rishi-terminal\autoload.ps1" }
 function Write-Log($message, $level = "INFO") {

@@ -15,7 +15,7 @@ const EXTENSIONS = [".tsx", ".ts", ".css"];
 const EXCLUDE_DIRS = ["node_modules", ".next", ".git", "scripts"];
 
 // Files that intentionally contain mojibake patterns
-const EXCLUDE_FILES = ["app/api/news/route.ts"];
+const EXCLUDE_FILES: string[] = []; // news route rewritten escape-only in T15
 
 const BOM = "\uFEFF";
 
@@ -23,7 +23,7 @@ const BOM = "\uFEFF";
 const MARKER_RE = /[\u00c2\u00c3\u00e2\u00f0\u00ef]/;
 
 // Suspicious runs (length >= 3 to reduce false positives)
-const RUN_RE = /[\u0080-\u00ff\u0152\u0153\u0160\u0161\u0178\u017d\u017e\u2018-\u201d\u2020\u2021\u2030\u2039\u203a\u20ac]{3,}/g;
+const RUN_RE = /[\u0080-\u00ff\u0152\u0153\u0160\u0161\u0178\u017d\u017e\u0192\u02c6\u02dc\u2013\u2014\u2018-\u201d\u2020-\u2022\u2026\u2030\u2039\u203a\u20ac\u2122]{2,}/g;
 
 function walk(dir: string): string[] {
   const results: string[] = [];

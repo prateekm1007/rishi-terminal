@@ -87,7 +87,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     } finally {
       setLoading(false);
     }
-  }, []); // stable â€” reads symbols from ref
+  }, []); // stable — reads symbols from ref
 
   // Reset and re-fetch when symbol set changes
   useEffect(() => {
@@ -101,7 +101,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
   return { prices, loading, error, lastUpdated, refetch: fetchPrices };
 }
 
-// Convenience: single symbol â€” stable key prevents re-mount loop
+// Convenience: single symbol — stable key prevents re-mount loop
 export function usePrice(symbol: string) {
   const symbols = useRef([symbol]);
   if (symbols.current[0] !== symbol) {

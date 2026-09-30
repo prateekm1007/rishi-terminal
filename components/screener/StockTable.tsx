@@ -103,7 +103,7 @@ export function StockTable({ stocks }: Props) {
   };
 
   const sortIcon = (key: SortKey) =>
-    sortKey !== key ? "â†•" : sortDesc ? "â†“" : "â†‘";
+    sortKey !== key ? "↕" : sortDesc ? "↓" : "↑";
 
   const scoreColor = (score: number) => {
     if (score >= 75) return dark ? "text-emerald-400" : "text-green-700";
@@ -223,16 +223,16 @@ export function StockTable({ stocks }: Props) {
                   {stock.change24h > 0 ? "+" : ""}{stock.change24h.toFixed(2)}%
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "â€”"}
+                  {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "—"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? (bulkFund[stock.symbol]?.roe ?? stock.roe).toFixed(1) + "%" : "â€”"}
+                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? (bulkFund[stock.symbol]?.roe ?? stock.roe).toFixed(1) + "%" : "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span
                     className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
                   >
-                    {Number.isFinite(stock.consensus) ? stock.consensus.toFixed(0) : "â€”"}
+                    {Number.isFinite(stock.consensus) ? stock.consensus.toFixed(0) : "—"}
                   </span>
                 </td>
               </tr>

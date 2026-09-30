@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { nseAllIndicesSchema, type NseIndex } from '@/lib/validation/schemas';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,28 +19,36 @@ export async function GET() {
 
     if (!res.ok) throw new Error('NSE allIndices HTTP ' + res.status);
 
-    const data = await res.json();
-    const indices = data?.data || [];
+    // R4: NSE is a trust boundary — validate the payload shape (zod) before
+    // reading a single field; a schema mismatch fails closed (500) instead
+    // of poisoning the breadth numbers with undefined/NaN.
+    const parsed = nseAllIndicesSchema.safeParse(await res.json());
+    if (!parsed.success) {
+      throw new Error('NSE allIndices schema mismatch: ' + parsed.error.issues[0]?.message);
+    }
+    const indices: NseIndex[] = parsed.data.data ?? [];
 
     // Extract NIFTY 50, SENSEX equivalent, BANK NIFTY
-    const nifty     = indices.find((i: any) => i.indexSymbol === 'NIFTY 50');
-    const bankNifty = indices.find((i: any) => i.indexSymbol === 'NIFTY BANK');
-    const midcap    = indices.find((i: any) => i.indexSymbol === 'NIFTY MIDCAP 100');
-    const smallcap  = indices.find((i: any) => i.indexSymbol === 'NIFTY SMALLCAP 100');
-    const it        = indices.find((i: any) => i.indexSymbol === 'NIFTY IT');
-    const pharma    = indices.find((i: any) => i.indexSymbol === 'NIFTY PHARMA');
-    const auto      = indices.find((i: any) => i.indexSymbol === 'NIFTY AUTO');
-    const fmcg      = indices.find((i: any) => i.indexSymbol === 'NIFTY FMCG');
-    const metal     = indices.find((i: any) => i.indexSymbol === 'NIFTY METAL');
-    const realty    = indices.find((i: any) => i.indexSymbol === 'NIFTY REALTY');
-    const energy    = indices.find((i: any) => i.indexSymbol === 'NIFTY ENERGY');
-    const infra     = indices.find((i: any) => i.indexSymbol === 'NIFTY INFRA');
+    const bySymbol = (s: string): NseIndex | undefined =>
+      indices.find(i => i.indexSymbol === s);
+    const nifty     = bySymbol('NIFTY 50');
+    const bankNifty = bySymbol('NIFTY BANK');
+    const midcap    = bySymbol('NIFTY MIDCAP 100');
+    const smallcap  = bySymbol('NIFTY SMALLCAP 100');
+    const it        = bySymbol('NIFTY IT');
+    const pharma    = bySymbol('NIFTY PHARMA');
+    const auto      = bySymbol('NIFTY AUTO');
+    const fmcg      = bySymbol('NIFTY FMCG');
+    const metal     = bySymbol('NIFTY METAL');
+    const realty    = bySymbol('NIFTY REALTY');
+    const energy    = bySymbol('NIFTY ENERGY');
+    const infra     = bySymbol('NIFTY INFRA');
 
     // Breadth: count advancing vs declining indices
-    const allSectors = [nifty, bankNifty, midcap, smallcap, it, pharma, auto, fmcg, metal, realty, energy, infra].filter(Boolean);
-    const advances  = allSectors.filter((i: any) => i.percentChange > 0).length;
-    const declines  = allSectors.filter((i: any) => i.percentChange < 0).length;
-    const unchanged = allSectors.filter((i: any) => i.percentChange === 0).length;
+    const allSectors = [nifty, bankNifty, midcap, smallcap, it, pharma, auto, fmcg, metal, realty, energy, infra].filter((i): i is NseIndex => Boolean(i));
+    const advances  = allSectors.filter(i => (i.percentChange ?? 0) > 0).length;
+    const declines  = allSectors.filter(i => (i.percentChange ?? 0) < 0).length;
+    const unchanged = allSectors.filter(i => (i.percentChange ?? 0) === 0).length;
 
     const sectorData = [
       { sector: 'IT',       index: it,       symbol: 'NIFTY IT' },
@@ -53,7 +62,7 @@ export async function GET() {
       { sector: 'Realty',   index: realty,   symbol: 'NIFTY REALTY' },
       { sector: 'Midcap',   index: midcap,   symbol: 'NIFTY MIDCAP 100' },
       { sector: 'Smallcap', index: smallcap, symbol: 'NIFTY SMALLCAP 100' },
-    ].filter(s => s.index).map(s => ({
+    ].filter((s): s is typeof s & { index: NseIndex } => Boolean(s.index)).map(s => ({
       sector:     s.sector,
       last:       s.index.last,
       change:     s.index.variation,

@@ -26,7 +26,7 @@ export interface ChatSession {
   messages: ChatMessage[];
   createdAt: Date;
   updatedAt: Date;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 export interface DebateSession {

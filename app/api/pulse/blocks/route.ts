@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { nseBlockDealsSchema, type NseBlockDeal } from '@/lib/validation/schemas';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,17 +19,23 @@ export async function GET() {
 
     if (!res.ok) throw new Error('NSE block-deal HTTP ' + res.status);
 
-    const data = await res.json();
-    const raw: any[] = data?.data || [];
+    // R4: trust boundary — validate NSE's payload shape before use.
+    const parsed = nseBlockDealsSchema.safeParse(await res.json());
+    if (!parsed.success) {
+      throw new Error('NSE block-deal schema mismatch: ' + parsed.error.issues[0]?.message);
+    }
+    const raw: NseBlockDeal[] = parsed.data.data ?? [];
+    const timestamp: string = parsed.data.timestamp ?? new Date().toISOString();
 
-    const deals = raw.slice(0, 20).map((d: any) => {
+    const deals = raw.slice(0, 20).map((d) => {
       const qty   = d.totalTradedVolume ?? 0;
       const price = d.lastPrice ?? 0;
       const value = parseFloat(((qty * price) / 1e7).toFixed(2)); // in Cr
 
+      const pchange = d.pchange ?? 0;
       const side =
-        d.pchange > 0 ? 'BUY' :
-        d.pchange < 0 ? 'SELL' : 'BUY';
+        pchange > 0 ? 'BUY' :
+        pchange < 0 ? 'SELL' : 'BUY';
 
       const time = d.lastUpdateTime
         ? d.lastUpdateTime.split(' ')[1]?.slice(0, 5) ?? '--:--'
@@ -42,7 +49,7 @@ export async function GET() {
         price,
         value,
         change:   d.change ?? 0,
-        changePct: d.pchange ?? 0,
+        changePct: pchange,
         side,
         series:   d.series ?? '',
       };
@@ -52,7 +59,7 @@ export async function GET() {
       {
         deals,
         count: deals.length,
-        timestamp: data?.timestamp ?? new Date().toISOString(),
+        timestamp,
         generatedAt: new Date().toISOString(),
       },
       { headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=240' } }

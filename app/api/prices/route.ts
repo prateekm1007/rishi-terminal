@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     list = Array.from(new Set(list)).slice(0, 200);
 
     const results = await Promise.allSettled(list.map(s => fetchLivePrice(s)));
-    const prices: Record<string, any> = {};
+    const prices: Record<string, { price: number; change: number; lastUpdated: string }> = {};
     results.forEach((r, i) => {
       if (r.status === "fulfilled" && r.value) prices[list[i]] = r.value;
     });

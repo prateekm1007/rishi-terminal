@@ -26,15 +26,15 @@ async function fetchHistory1M(base: string, symbol: string): Promise<ChartPoint[
 
     // Response shape: { symbol, tf, source, points: [{t, v}, ...] }
     // Also handle fallback shapes just in case
-    let arr: any[] = [];
+    let arr: Array<{ t?: unknown; v?: unknown }> = [];
     if (Array.isArray(raw?.points))      arr = raw.points;   // PRIMARY
     else if (Array.isArray(raw?.data))   arr = raw.data;     // fallback
     else if (Array.isArray(raw))         arr = raw;          // fallback
 
     // Filter valid numeric points
     return arr.filter(
-      (p: any) => typeof p?.t === 'number' && typeof p?.v === 'number' && Number.isFinite(p.v)
-    ) as ChartPoint[];
+      (p): p is ChartPoint => typeof p?.t === 'number' && typeof p?.v === 'number' && Number.isFinite(p.v)
+    );
   } catch (err) {
     console.error('[breadth] fetchHistory1M exception for', symbol, String(err));
     return [];
@@ -116,13 +116,13 @@ export async function GET(req: Request) {
         headers: { 'Cache-Control': 'public, s-maxage=43200, stale-while-revalidate=3600' },
       }
     );
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json(
       {
         breadth30dAvg: 50,
         daysSampled:   0,
         note:          'fallback — history fetch failed',
-        error:         String(err?.message ?? err),
+        error:         err instanceof Error ? err.message : String(err),
         generatedAt:   new Date().toISOString(),
       },
       { status: 200 }

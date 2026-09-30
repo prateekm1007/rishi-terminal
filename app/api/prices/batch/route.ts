@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     const t0 = Date.now();
-    const prices: Record<string, any> = {};
+    const prices: Record<string, Record<string, unknown>> = {};
 
     // Strategy: Yahoo bulk for NSE stocks, fallback for others
     const INDEX_SYMBOLS = ['NIFTY50','SENSEX','BANK_NIFTY','SPX','DJI','IXIC','DAX','FTSE','HSI','N225','VIX'];
@@ -85,9 +85,12 @@ export async function POST(req: NextRequest) {
     // - Provide { prices: ... } wrapper (expected by hooks/useLivePrices in UI)
     // - Keep legacy top-level symbol keys for backward compatibility
     // - Ensure changePercent24h exists by aliasing from change/changePercent
-    const normalized: Record<string, any> = {};
-    Object.keys(prices || {}).forEach((k) => {
-      const v: any = (prices as any)[k];
+    // R4: the merged quote shape from the fetchers — only the fields the
+    // normalisation below reads are declared.
+    const normalized: Record<string, Record<string, unknown>> = {};
+    const quoteMap = (prices ?? {}) as Record<string, Record<string, unknown>>;
+    Object.keys(quoteMap).forEach((k) => {
+      const v = quoteMap[k];
       if (!v) return;
 
       const ch =

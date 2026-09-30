@@ -99,8 +99,8 @@ export default function ChatPage() {
                   <div style={{ fontSize: 11, color: '#64748B' }}>{stock.name} • {stock.sector}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: consensus.consensus >= 70 ? '#22C55E' : '#F59E0B' }}>
-                    {consensus.consensus}/100
+                  <div style={{ fontSize: 13, fontWeight: 700, color: consensus.consensus !== null && consensus.consensus >= 70 ? '#22C55E' : '#F59E0B' }}>
+                    {consensus.consensus === null ? '\u2014' : `${consensus.consensus}/100`}
                   </div>
                   <div style={{ fontSize: 10, color: '#64748B' }}>
                     PE {stock.pe?.toFixed(1)}x | ROE {stock.roe?.toFixed(1)}%

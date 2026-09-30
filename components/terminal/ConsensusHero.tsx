@@ -8,9 +8,12 @@ interface Props {
 
 export function ConsensusHero({ consensus }: Props) {
   const score = consensus.consensus;
+  // T11: null consensus ("Insufficient Data") renders an em dash, muted colors,
+  // and an empty bar — never 0, never NaN.
+  const hasScore = score !== null;
 
-  const scoreColor = score >= 75 ? '#00BA7C' : score >= 55 ? '#FFD700' : score >= 35 ? '#f59e0b' : '#F4212E';
-  const barColor   = score >= 75 ? '#00BA7C' : score >= 55 ? '#FFD700' : score >= 35 ? '#f59e0b' : '#F4212E';
+  const scoreColor = !hasScore ? '#64748B' : score >= 75 ? '#00BA7C' : score >= 55 ? '#FFD700' : score >= 35 ? '#f59e0b' : '#F4212E';
+  const barColor   = scoreColor;
 
   return (
     <div className="card-sacred" style={{ padding: '28px' }}>
@@ -25,7 +28,7 @@ export function ConsensusHero({ consensus }: Props) {
           </div>
           <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
             <span style={{ color: '#64748B' }}>
-              Tension: <span style={{ color: score >= 55 ? '#00BA7C' : '#f59e0b' }}>{consensus.tension}</span>
+              Tension: <span style={{ color: hasScore && score >= 55 ? '#00BA7C' : '#f59e0b' }}>{consensus.tension}</span>
             </span>
             <span style={{ color: 'rgba(51,65,85,0.5)' }}></span>
             <span style={{ color: '#64748B' }}>
@@ -37,7 +40,7 @@ export function ConsensusHero({ consensus }: Props) {
         {/* Big Score */}
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontSize: '64px', fontWeight: 900, fontFamily: 'JetBrains Mono, monospace', color: scoreColor, lineHeight: 1 }}>
-            {score}
+            {hasScore ? score : '\u2014'}
           </div>
           <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>/ 100</div>
         </div>
@@ -46,7 +49,7 @@ export function ConsensusHero({ consensus }: Props) {
 
       {/* Score Bar */}
       <div style={{ height: '6px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden', marginBottom: '20px' }}>
-        <div style={{ width: `${score}%`, height: '100%', background: barColor, borderRadius: '3px', transition: 'width 1s ease' }} />
+        <div style={{ width: hasScore ? `${score}%` : '0%', height: '100%', background: barColor, borderRadius: '3px', transition: 'width 1s ease' }} />
       </div>
 
       {/* Stats Row */}

@@ -131,8 +131,8 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                 <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
                 <span>{asset.exchange ?? asset.metadata?.exchange ?? ''}</span>
                 <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
-                <span style={{ color: scoreColor(consensus.consensus), fontWeight: 600 }}>
-                  {t('asset.consensus')}: {consensus.consensus}/100
+                <span style={{ color: consensus.consensus === null ? '#64748B' : scoreColor(consensus.consensus), fontWeight: 600 }}>
+                  {t('asset.consensus')}: {consensus.consensus === null ? '\u2014' : consensus.consensus + '/100'}
                 </span>
               </div>
             </div>
@@ -269,8 +269,8 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                         alignItems: 'center',
                         gap: 14,
                         padding: '14px 16px',
-                        background: scoreBg(r.score),
-                        border: '1px solid ' + scoreColor(r.score) + '22',
+                        background: r.score === null ? 'rgba(100,116,139,0.08)' : scoreBg(r.score),
+                        border: '1px solid ' + (r.score === null ? '#64748B' : scoreColor(r.score)) + '22',
                         borderRadius: 10,
                         transition: 'all 0.2s ease',
                       }}>
@@ -296,9 +296,9 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                         <div style={{ width: 100, flexShrink: 0 }}>
                           <div style={{ height: 4, background: 'rgba(30,41,59,0.8)', borderRadius: 3, overflow: 'hidden' }}>
                             <div style={{
-                              width: r.score + '%',
+                              width: (r.score === null ? 0 : r.score) + '%',
                               height: '100%',
-                              background: scoreColor(r.score),
+                              background: r.score === null ? '#64748B' : scoreColor(r.score),
                               borderRadius: 3,
                               transition: 'width 0.8s ease',
                             }} />
@@ -309,12 +309,12 @@ export function AssetTerminal({ asset, consensus, detail }: Props) {
                           fontSize: 22,
                           fontWeight: 700,
                           fontFamily: 'monospace',
-                          color: scoreColor(r.score),
+                          color: r.score === null ? '#64748B' : scoreColor(r.score),
                           width: 40,
                           textAlign: 'right',
                           flexShrink: 0,
                         }}>
-                          {r.score}
+                          {r.score === null ? '\u2014' : r.score}
                         </div>
                       </div>
                     ))}

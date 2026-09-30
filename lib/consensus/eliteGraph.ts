@@ -147,12 +147,15 @@ function buildTechnicalEdge(stock: Stock, scores: RishiScore[]): TechnicalEdgeEn
 
   const getRishiLens = (metric: string, val: number, avgVal: number, higherIsBetter: boolean) => {
     const outperforming = higherIsBetter ? val > avgVal : val < avgVal;
-    const topRishis = [...scores].sort((a,b) => b.score - a.score).slice(0, 2);
+    const topRishis = [...scores]
+      .filter(r => r.score !== null)
+      .sort((a,b) => (b.score as number) - (a.score as number)).slice(0, 2);
     return topRishis.map(r => {
        const p = RISHI_PHILOSOPHY[r.name] || { lens: 'fundamental' };
+       const sc = r.score as number;
        return {
          rishi: r.full,
-         signal: outperforming ? (r.score > 75 ? 'STRONG BUY' : 'BUY') : (r.score < 45 ? 'SELL' : 'HOLD'),
+         signal: outperforming ? (sc > 75 ? 'STRONG BUY' : 'BUY') : (sc < 45 ? 'SELL' : 'HOLD'),
          reason: `Based on ${p.lens}, this ${metric} profile ${outperforming ? 'supports' : 'challenges'} the thesis.`
        };
     });
@@ -208,17 +211,20 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
   const today = new Date();
   const events: TimelineEntry[] = [];
 
-  // Show ALL 19 rishis in timeline (sorted by score descending)
-  const selected = [...scores].sort((a, b) => b.score - a.score);
+  // Show ALL rishis with sufficient data (null scores = insufficient data, T11)
+  const selected = [...scores]
+    .filter(r => r.score !== null)
+    .sort((a, b) => (b.score as number) - (a.score as number));
 
   selected.forEach((rishi, idx) => {
     const daysAgo = (idx + 1) * 25;
     const eventDate = new Date(today.getTime() - daysAgo * 24 * 60 * 60 * 1000);
     const dateStr = eventDate.toISOString().split('T')[0];
+    const sc = rishi.score as number;
     const eventType: TimelineEntry['event'] =
-      rishi.score >= 80 ? 'buy_signal' :
-      rishi.score >= 60 ? 'hold' :
-      rishi.score >= 45 ? 'warning' :
+      sc >= 80 ? 'buy_signal' :
+      sc >= 60 ? 'hold' :
+      sc >= 45 ? 'warning' :
       'sell_signal';
 
     const p = RISHI_PHILOSOPHY[rishi.name] || { lens: 'fundamental', keyFocus: 'metrics', signature: '' };
@@ -234,7 +240,7 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
     events.push({
       rishi: rishi.full,
       date: dateStr,
-      score: rishi.score,
+      score: sc,
       trigger: topComp?.label || p.keyFocus,
       context: contextMap[eventType],
       event: eventType,
@@ -251,17 +257,19 @@ export function buildEliteKnowledgeGraph(
   scores: RishiScore[]
 ): EliteKnowledgeGraph {
 
-  // Sort scores high to low
-  const sorted = [...scores].sort((a, b) => b.score - a.score);
+  // Sort scores high to low, ignoring null (insufficient data) results — T11
+  const sorted = [...scores]
+    .filter(s => s.score !== null)
+    .sort((a, b) => (b.score as number) - (a.score as number));
 
-  const bullScores   = sorted.filter(s => s.score >= 70);
-  const bearScores   = sorted.filter(s => s.score < 50).reverse();
-  const neutralScores = sorted.filter(s => s.score >= 50 && s.score < 70);
+  const bullScores   = sorted.filter(s => (s.score as number) >= 70);
+  const bearScores   = sorted.filter(s => (s.score as number) < 50).reverse();
+  const neutralScores = sorted.filter(s => (s.score as number) >= 50 && (s.score as number) < 70);
 
   // Build debate entries
   const bulls: DebateEntry[] = bullScores.map(s => ({
     rishi: s.full,
-    score: s.score,
+    score: s.score as number,
     reasoning: generateReasoning(s, stock, 'bull'),
     philosophy: generatePhilosophy(s, stock, 'bull'),
     keyMetric: generateKeyMetric(s, 'bull'),
@@ -269,7 +277,7 @@ export function buildEliteKnowledgeGraph(
 
   const bears: DebateEntry[] = bearScores.map(s => ({
     rishi: s.full,
-    score: s.score,
+    score: s.score as number,
     reasoning: generateReasoning(s, stock, 'bear'),
     philosophy: generatePhilosophy(s, stock, 'bear'),
     keyMetric: generateKeyMetric(s, 'bear'),
@@ -277,7 +285,7 @@ export function buildEliteKnowledgeGraph(
 
   const neutrals: DebateEntry[] = neutralScores.map(s => ({
     rishi: s.full,
-    score: s.score,
+    score: s.score as number,
     reasoning: generateReasoning(s, stock, 'neutral'),
     philosophy: generatePhilosophy(s, stock, 'neutral'),
     keyMetric: s.comps[0]?.label || 'Watching',
@@ -293,7 +301,9 @@ export function buildEliteKnowledgeGraph(
   const bullCount    = bullScores.length;
   const bearCount    = bearScores.length;
   const neutralCount = neutralScores.length;
-  const overall      = Math.round(scores.reduce((sum, s) => sum + s.score, 0) / Math.max(scores.length, 1));
+  const overall = bullCount + bearCount + neutralCount > 0
+    ? Math.round(sorted.reduce((sum, s) => sum + (s.score as number), 0) / Math.max(sorted.length, 1))
+    : 0;
 
   return {
     debate: { bulls, bears, neutrals },

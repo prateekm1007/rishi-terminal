@@ -64,6 +64,7 @@ async function snapshotNewStocks() {
 
   let done   = 0;
   let errors = 0;
+  let skipped = 0; // T11: stocks with null consensus (insufficient data)
 
   // Batch upserts: 25 at a time
   const BATCH = 25;
@@ -77,8 +78,16 @@ async function snapshotNewStocks() {
         const stock     = STOCKS[sym];
         const consensus = buildConsensus(stock);
 
+        // T11: fail closed — null consensus (insufficient data) is skipped,
+        // never persisted as 0, which would corrupt the historical series.
+        if (consensus.consensus === null || !Number.isFinite(consensus.consensus)) {
+          skipped++;
+          continue;
+        }
+
         const philosopherScores: Record<string, number> = {};
         for (const s of consensus.scores) {
+          if (s.score === null) continue; // omit insufficient data, don't fabricate
           philosopherScores[s.label || s.name] = s.score;
         }
 
@@ -86,7 +95,7 @@ async function snapshotNewStocks() {
           symbol:             sym,
           asset_category:     "stock",
           snapshot_date:      today,
-          consensus_score: (consensus?.consensus ?? 0) || 0,
+          consensus_score:    consensus.consensus,
           signal:             consensus.consensus >= 75 ? "BUY"
                             : consensus.consensus >= 45 ? "HOLD" : "SELL",
           disagreement:       0,

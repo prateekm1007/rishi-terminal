@@ -215,7 +215,10 @@ export default function CommoditiesPage() {
               change: commodity.change ?? 0,
             };
             const rishiScores = COMMODITY_RISHIS.map(r => ({ ...r, result: r.scorer(liveCommodity) }));
-            const avgScore    = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
+            const validResults = rishiScores.filter(r => r.result.score !== null);
+            const avgScore    = validResults.length > 0
+              ? Math.round(validResults.reduce((s, r) => s + (r.result.score as number), 0) / validResults.length)
+              : 0; // T11: null scores are "insufficient data", not zero
             const isLive      = !!prices[commodity.symbol];
 
             return (
@@ -296,11 +299,11 @@ export default function CommoditiesPage() {
                   {rishiScores.map(r => (
                     <div key={r.id} style={{ flex: 1, textAlign: 'center' }}>
                       <div style={{ fontSize: 8, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 3 }}>{r.tag}</div>
-                      <div style={{ height: 3, borderRadius: 2, background: scoreColor(r.result.score) + '40' }}>
-                        <div style={{ height: '100%', borderRadius: 2, width: r.result.score + '%', background: scoreColor(r.result.score) }} />
+                      <div style={{ height: 3, borderRadius: 2, background: (r.result.score === null ? '#64748B' : scoreColor(r.result.score)) + '40' }}>
+                        <div style={{ height: '100%', borderRadius: 2, width: (r.result.score === null ? 0 : r.result.score) + '%', background: r.result.score === null ? '#64748B' : scoreColor(r.result.score) }} />
                       </div>
-                      <div style={{ fontSize: 9, fontFamily: 'monospace', color: scoreColor(r.result.score), marginTop: 2 }}>
-                        {r.result.score}
+                      <div style={{ fontSize: 9, fontFamily: 'monospace', color: r.result.score === null ? '#64748B' : scoreColor(r.result.score), marginTop: 2 }}>
+                        {r.result.score === null ? '\u2014' : r.result.score}
                       </div>
                     </div>
                   ))}

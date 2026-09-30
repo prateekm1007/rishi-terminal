@@ -511,7 +511,7 @@ export default function DashboardPage() {
             {rotatingStocks.map((stock) => {
               const d  = prices[stock.symbol];
               const up = (d?.changePercent24h ?? 0) >= 0;
-              const sc = scoreColor(stock.consensus);
+              const sc = stock.consensus === null ? "#64748B" : scoreColor(stock.consensus); // T11: null = insufficient data
               return (
                 <Link href={"/stock/" + stock.symbol} key={stock.symbol} style={{ textDecoration:"none" }}>
                   <div style={{ ...card(), cursor:"pointer" }}

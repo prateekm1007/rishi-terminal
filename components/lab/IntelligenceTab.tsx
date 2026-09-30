@@ -78,6 +78,7 @@ export default function IntelligenceTab() {
 
     for (const h of enriched) {
       for (const rs of h.scores) {
+        if (rs.score === null) continue; // T11: insufficient data — skip, don't skew averages
         if (!map[rs.name]) map[rs.name] = { total: 0, count: 0, full: rs.full, origin: rs.origin };
         map[rs.name].total += rs.score;
         map[rs.name].count++;
@@ -124,19 +125,20 @@ export default function IntelligenceTab() {
   const topConflicts = useMemo(() => {
     const conflicts: Array<{ symbol: string; name: string; bullRishi: string; bullScore: number; bearRishi: string; bearScore: number; spread: number }> = [];
     for (const h of enriched) {
-      if (h.scores.length < 2) continue;
-      const sorted = [...h.scores].sort((a, b) => b.score - a.score);
+      const validScores = h.scores.filter(sc => sc.score !== null);
+      if (validScores.length < 2) continue;
+      const sorted = [...validScores].sort((a, b) => (b.score as number) - (a.score as number));
       const bull = sorted[0];
       const bear = sorted[sorted.length - 1];
-      const spread = bull.score - bear.score;
+      const spread = (bull.score as number) - (bear.score as number);
       if (spread >= 25) {
         conflicts.push({
           symbol: h.symbol,
           name: h.stock?.name ?? h.symbol,
           bullRishi: bull.full,
-          bullScore: bull.score,
+          bullScore: bull.score as number,
           bearRishi: bear.full,
-          bearScore: bear.score,
+          bearScore: bear.score as number,
           spread,
         });
       }
@@ -320,7 +322,7 @@ export default function IntelligenceTab() {
               <tbody>
                 {enriched.map(h => {
                   const scoreByName: Record<string, number> = {};
-                  for (const rs of h.scores) scoreByName[rs.name] = rs.score;
+                  for (const rs of h.scores) { if (rs.score !== null) scoreByName[rs.name] = rs.score; }
                   return (
                     <tr key={h.symbol} style={{ borderTop: '1px solid rgba(30,41,59,0.4)' }}>
                       <td style={{ padding: '8px 10px' }}>

@@ -23,8 +23,18 @@ export async function snapshotAllStocks(): Promise<{
       const stock = STOCKS[sym];
       const consensus = buildConsensus(stock);
 
+      // T11: fail closed — records with insufficient data produce consensus
+      // null and are NOT persisted. Writing a null/0 score would corrupt the
+      // historical series the terminal reasons over.
+      if (consensus.consensus === null || !Number.isFinite(consensus.consensus)) {
+        console.warn(`[RishiMemory] ${sym}: consensus is null (insufficient data) — snapshot skipped`);
+        errors++;
+        continue;
+      }
+
       const philosopherScores: Record<string, number> = {};
       for (const s of consensus.scores) {
+        if (s.score === null) continue; // insufficient data — omit, don't fabricate
         philosopherScores[s.label || s.name] = s.score;
       }
 

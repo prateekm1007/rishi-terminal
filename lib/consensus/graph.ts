@@ -64,30 +64,31 @@ export function buildKnowledgeGraph(
     color: '#60A5FA66',
   });
 
-  // Add top 6 Rishi nodes
-  scores.slice(0, 6).forEach((rishi, idx) => {
+  // Add top 6 Rishi nodes with sufficient data (nulls skipped, T11)
+  scores.filter(r => r.score !== null).slice(0, 6).forEach((rishi, idx) => {
     const rishiNodeId = `rishi_${rishi.name}`;
-    const scoreColor = rishi.score >= 75 ? '#00BA7C' : rishi.score >= 55 ? '#FFD700' : '#F4212E';
+    const sc = rishi.score as number;
+    const scoreColor = sc >= 75 ? '#00BA7C' : sc >= 55 ? '#FFD700' : '#F4212E';
     
     nodes.push({
       id: rishiNodeId,
       label: rishi.name,
       type: 'rishi',
-      value: rishi.score,
+      value: sc,
       color: scoreColor,
-      size: 15 + (rishi.score / 10),
+      size: 15 + (sc / 10),
     });
 
     edges.push({
       source: centerNodeId,
       target: rishiNodeId,
-      strength: rishi.score / 20,
-      label: `${rishi.score}/100`,
+      strength: sc / 20,
+      label: `${sc}/100`,
       color: scoreColor + '66',
     });
 
     if (idx === 0) {
-      insights.push(`${rishi.name} is most bullish (${rishi.score}/100)`);
+      insights.push(`${rishi.name} is most bullish (${sc}/100)`);
     }
   });
 

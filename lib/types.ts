@@ -29,7 +29,8 @@ export interface RishiScore {
   name: string;
   full: string;
   label: string;
-  score: number;
+  /** null = the scorer had insufficient data (documented, never NaN) — T11. */
+  score: number | null;
   origin: 'Global' | 'India' | 'Bharat' | 'Crypto' | 'Commodity' | 'Forex/Macro';
   comps: Array<{
     label: string;
@@ -43,8 +44,12 @@ export interface RishiScore {
 export interface ConsensusResult {
   asset: Stock;
   scores: RishiScore[];
-  consensus: number;
+  /** null = fewer than MIN_VALID_SCORERS produced finite scores
+   *  ("Insufficient Data") — display as "—", sort last, never coerce to 0. */
+  consensus: number | null;
   category: string;
+  /** OK | INCOMPLETE — all-zero/non-finite core fundamentals — T11.4. */
+  dataQuality: 'OK' | 'INCOMPLETE';
   tension: string;
   tensionSpread: number;
   weightedBy: string;

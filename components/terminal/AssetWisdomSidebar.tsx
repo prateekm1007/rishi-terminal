@@ -369,8 +369,10 @@ export function AssetWisdomSidebar({ asset, scores }: Props) {
 
 
 
-  const consensusScore = scores.length > 0
-    ? Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length)
+  // T11: only finite (non-null) scores contribute; null results are skipped
+  const validScores = scores.filter(s => s.score !== null);
+  const consensusScore = validScores.length > 0
+    ? Math.round(validScores.reduce((sum, s) => sum + (s.score as number), 0) / validScores.length)
     : 50;
 
   const generatedStockParallel = asset.category === "stock"

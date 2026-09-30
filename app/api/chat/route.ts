@@ -4,7 +4,7 @@ import { resolvePersonaId, CHAT_PERSONAS } from '@/lib/chat/personas';
 import { STOCKS } from '@/data/stocks';
 
 /**
- * POST /api/chat — hardened Gemini proxy (remediation T7).
+ * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
  *
  * Contract: { personaId, symbol?, history, message }
  * - Session required (401 otherwise; UI serves canned fallbacks locally).
@@ -16,14 +16,55 @@ import { STOCKS } from '@/data/stocks';
  *   total; roles restricted to user|assistant.
  * - Quotas: per-user daily quota by tier (Supabase chat_usage) plus a
  *   per-IP burst limit.
- * - The Gemini key is sent via the x-goog-api-key header, never the URL.
+ * - Providers (resolved per request from env):
+ *     1. OpenAI-compatible endpoint — CHAT_API_BASE_URL + CHAT_API_KEY
+ *        (+ optional CHAT_MODEL). The key is sent via the
+ *        `Authorization: Bearer` header, never the URL.
+ *     2. Google Gemini fallback — GEMINI_API_KEY, key via the
+ *        `x-goog-api-key` header, never the URL.
  * - Upstream error details are logged server-side; clients get generic
  *   messages (no `details`, no `raw`).
  * - Prompt-injection hygiene: user text only ever enters `user` turns.
  */
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = 'models/gemini-2.5-flash';
+const DEFAULT_OPENAI_MODEL = 'agnes-2.5-flash';
+
+type OpenAiCompatibleProvider = {
+  kind: 'openai';
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+};
+
+type GeminiProvider = { kind: 'gemini'; apiKey: string };
+
+type ChatProvider = OpenAiCompatibleProvider | GeminiProvider;
+
+/**
+ * Resolve the upstream chat provider from env at request time (so a
+ * deployment can switch providers without a code change). The
+ * OpenAI-compatible endpoint wins when both are configured; fail closed to
+ * `null` when neither is present.
+ */
+function resolveChatProvider(): ChatProvider | null {
+  const baseUrl = (process.env.CHAT_API_BASE_URL || '')
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/\/chat\/completions$/, '');
+  const chatKey = (process.env.CHAT_API_KEY || '').trim();
+  if (baseUrl && chatKey) {
+    return {
+      kind: 'openai',
+      baseUrl,
+      apiKey: chatKey,
+      model: (process.env.CHAT_MODEL || '').trim() || DEFAULT_OPENAI_MODEL,
+    };
+  }
+  const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+  if (geminiKey) return { kind: 'gemini', apiKey: geminiKey };
+  return null;
+}
 
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_HISTORY_TURNS = 20;
@@ -210,6 +251,67 @@ export async function POST(req: NextRequest) {
     ? `${systemPrompt}\n\n${contextLine}`
     : systemPrompt;
 
+  // 6. Call the configured upstream provider — key via auth header, hard
+  //    20s timeout. Provider selection is fail-closed.
+  const provider = resolveChatProvider();
+  if (!provider) {
+    console.error(
+      '[chat] no chat provider configured: set CHAT_API_BASE_URL + CHAT_API_KEY (OpenAI-compatible) or GEMINI_API_KEY',
+    );
+    return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
+  }
+
+  if (provider.kind === 'openai') {
+    // 6a. OpenAI-compatible endpoint. Key via the Authorization header,
+    //     never the URL; user text only ever enters `user`/`system` messages
+    //     built server-side here.
+    const messages = [
+      { role: 'system' as const, content: fullSystemPrompt },
+      ...history.map(h => ({ role: h.role, content: h.content })),
+      { role: 'user' as const, content: message },
+    ];
+
+    let res: Response;
+    try {
+      res = await fetch(`${provider.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${provider.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: provider.model,
+          messages,
+          temperature: 0.9,
+          top_p: 0.95,
+          max_tokens: 2048,
+        }),
+        signal: AbortSignal.timeout(20_000),
+      });
+    } catch (e) {
+      console.error('[chat] upstream request failed:', e instanceof Error ? e.message : e);
+      return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
+    }
+
+    if (!res.ok) {
+      // Log details server-side; return a generic message only.
+      const errText = await res.text();
+      console.error('[chat] upstream API error:', res.status, errText.slice(0, 500));
+      return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
+    }
+
+    const data = await res.json();
+    const raw = data?.choices?.[0]?.message?.content;
+    const text = typeof raw === 'string' ? raw.trim() : '';
+    if (!text) {
+      console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));
+      return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
+    }
+
+    return NextResponse.json({ text });
+  }
+
+  // 6b. Gemini fallback (legacy) — key via the x-goog-api-key header.
   const contents = [
     ...history.map(h => ({
       role: h.role === 'user' ? 'user' : 'model',
@@ -229,12 +331,6 @@ export async function POST(req: NextRequest) {
     },
   };
 
-  // 6. Call Gemini — key via header, hard 20s timeout.
-  if (!GEMINI_API_KEY) {
-    console.error('[chat] GEMINI_API_KEY is not configured');
-    return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
-  }
-
   let res: Response;
   try {
     res = await fetch(
@@ -243,7 +339,7 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-goog-api-key': GEMINI_API_KEY,
+          'x-goog-api-key': provider.apiKey,
         },
         body: JSON.stringify(geminiBody),
         signal: AbortSignal.timeout(20_000),

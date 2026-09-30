@@ -29,7 +29,7 @@ Tech Stack
 Framework: Next.js 16 (App Router) + React 19 + TypeScript
 Styling: Custom sacred CSS (glassmorphism + gold accents)
 Data: Multi-source live pricing engine (Yahoo Finance, CoinGecko, etc.)
-AI: Gemini with structured Rishi personas
+AI: OpenAI-compatible endpoint (Agnes; Gemini fallback) with structured Rishi personas
 Backend: Supabase (Auth + Database)
 Charts: Recharts
 

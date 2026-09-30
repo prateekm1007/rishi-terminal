@@ -28,7 +28,7 @@ const nextConfig = {
       },
       {
         source: '/backtest',
-        destination: '/lab?tab=backtest',
+        destination: '/lab',
         permanent: true,
       },
     ];

@@ -212,22 +212,53 @@ const WISDOM_DATABASE: WisdomInsight[] = [
 ];
 
 /**
- * Get wisdom of the day (deterministic — same day always returns same wisdom)
+ * Get the current IST calendar date as a stable "YYYY-MM-DD" string.
+ *
+ * Uses UTC+05:30 explicitly so the same calendar date is produced on the
+ * server and in the browser regardless of the runtime timezone. This keeps
+ * every pick below deterministic and hydration-safe.
+ */
+function getISTDateKey(): string {
+  const istMs = Date.now() + 330 * 60000; // IST = UTC+05:30
+  const d = new Date(istMs);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Deterministic string hash (FNV-1a style) used to seed daily picks.
+ */
+function hashDateKey(key: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/**
+ * Get wisdom of the day (deterministic — same IST calendar day always
+ * returns the same wisdom on server and client).
  */
 export function getWisdomOfTheDay(): WisdomInsight {
-  const today = new Date();
-  const dayOfYear = Math.floor(
-    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
-  );
+  const dateKey = getISTDateKey();
+  const d = new Date(dateKey + 'T00:00:00Z');
+  const startOfYear = Date.UTC(d.getUTCFullYear(), 0, 1);
+  const dayOfYear = Math.floor((d.getTime() - startOfYear) / 86400000) + 1;
   const index = dayOfYear % WISDOM_DATABASE.length;
   return WISDOM_DATABASE[index];
 }
 
 /**
- * Get a random wisdom insight (for variety)
+ * Get a wisdom insight picked deterministically from the IST calendar date
+ * (same output server and client — no random source, no hydration mismatch).
  */
 export function getRandomWisdom(): WisdomInsight {
-  return WISDOM_DATABASE[Math.floor(Math.random() * WISDOM_DATABASE.length)];
+  const seed = hashDateKey(getISTDateKey());
+  return WISDOM_DATABASE[seed % WISDOM_DATABASE.length];
 }
 
 /**

@@ -36,12 +36,6 @@ const ROTATING_STOCKS = [
   { symbol:"SBIN",      name:"State Bank of India",  sector:"Banking", consensus:74, pe:10.8, roe:14.9 },
 ];
 
-const ROTATING_SHORTS = [
-  { symbol:"ADANIENT", name:"Adani Enterprises", shortScore:78, reason:"Elevated valuation + governance concerns" },
-  { symbol:"ZOMATO",   name:"Zomato Ltd",         shortScore:72, reason:"Negative FCF + PE > 300x" },
-  { symbol:"PAYTM",    name:"One97 Comms",        shortScore:81, reason:"Cash burn + regulatory risk" },
-];
-
 const TOP_CRYPTO = [
   { symbol:"BTC", name:"Bitcoin",  icon:"₿", color:"#F7931A" },
   { symbol:"ETH", name:"Ethereum", icon:"Ξ", color:"#627EEA" },

@@ -126,9 +126,10 @@ END;
 $$;
 
 -- Ownership and execution: service_role only.
-ALTER FUNCTION public.consume_chat_quota(uuid, integer)              OWNER TO service_role;
-ALTER FUNCTION public.refund_chat_quota(uuid)                        OWNER TO service_role;
-ALTER FUNCTION public.hit_rate_limit(text, integer, integer)         OWNER TO service_role;
+-- NOTE: ALTER FUNCTION ... OWNER TO service_role omitted — it fails with 42501
+-- on Supabase (postgres is not a member of service_role). Verified equivalent
+-- end state: owner = postgres · SECURITY DEFINER · EXECUTE revoked from
+-- PUBLIC/anon/authenticated and granted to service_role (below).
 
 REVOKE ALL ON FUNCTION public.consume_chat_quota(uuid, integer)      FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.refund_chat_quota(uuid)                FROM PUBLIC, anon, authenticated;

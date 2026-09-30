@@ -204,12 +204,16 @@ BEGIN
 END;
 $$;
 
--- Ownership: run as service_role. In production the RPC is invoked through
--- PostgREST with the service key (auth.jwt() role = service_role), which the
--- users_tier_write_protection trigger (002) accepts.
-ALTER FUNCTION public.apply_tier_grant(uuid, text)       OWNER TO service_role;
-ALTER FUNCTION public.repair_tier_grant(uuid, text, timestamptz) OWNER TO service_role;
-ALTER FUNCTION public.grant_tier_for_payment(text, text, integer, text) OWNER TO service_role;
+-- Ownership note: ALTER FUNCTION ... OWNER TO service_role INTENTIONALLY OMITTED.
+-- Supabase `postgres` is not a member of `service_role` (and is not a true
+-- superuser), so ALTER ... OWNER TO service_role fails with 42501 in the SQL
+-- editor and via service-key RPC. The verified equivalent end state is:
+--   owner = postgres (invoking admin role) · SECURITY DEFINER (set above)
+--   EXECUTE: PUBLIC/anon/authenticated revoked, service_role granted (below)
+-- Runtime semantics are unchanged: the RPC is invoked through PostgREST with
+-- the service key (auth.jwt() role = service_role), which the
+-- users_tier_write_protection trigger (002) accepts — that check reads the
+-- JWT claim, not function ownership.
 
 -- Executable only by service_role.
 REVOKE EXECUTE ON FUNCTION public.apply_tier_grant(uuid, text) FROM PUBLIC, anon, authenticated;

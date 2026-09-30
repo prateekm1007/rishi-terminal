@@ -45,20 +45,38 @@ export const yahooChartSchema = z.object({
 
 export type YahooChart = z.infer<typeof yahooChartSchema>;
 
+// ── NSE numeric coercion ─────────────────────────────────────────────
+// NSE schema drift (observed 2026-09-30): allIndices numerics arrive as
+// strings (e.g. "24,405.55", sometimes ""), tripping z.number(). Coerce
+// number | numeric-string | null → number | undefined. Indian digit
+// grouping (commas) tolerated; empty/unparseable → undefined so optional
+// fields stay optional and no NaN leaks into arithmetic (R4 per-field).
+const nseNumeric = z
+  .union([z.number(), z.string(), z.null()])
+  .optional()
+  .transform((v): number | undefined => {
+    if (typeof v === "number") return Number.isFinite(v) ? v : undefined;
+    if (typeof v !== "string") return undefined;
+    const s = v.trim().replace(/,/g, "");
+    if (!s) return undefined;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : undefined;
+  });
+
 // ── NSE India: /api/allIndices ───────────────────────────────────────
 export const nseIndexSchema = z.object({
   indexSymbol: z.string(),
-  last: z.number().optional(),
-  variation: z.number().optional(),
-  percentChange: z.number().optional(),
-  high: z.number().optional(),
-  low: z.number().optional(),
-  open: z.number().optional(),
-  previousClose: z.number().optional(),
-  yearHigh: z.number().optional(),
-  yearLow: z.number().optional(),
-  pe: z.number().optional(),
-  pb: z.number().optional(),
+  last: nseNumeric,
+  variation: nseNumeric,
+  percentChange: nseNumeric,
+  high: nseNumeric,
+  low: nseNumeric,
+  open: nseNumeric,
+  previousClose: nseNumeric,
+  yearHigh: nseNumeric,
+  yearLow: nseNumeric,
+  pe: nseNumeric,
+  pb: nseNumeric,
 });
 
 export const nseAllIndicesSchema = z.object({
@@ -71,10 +89,10 @@ export type NseIndex = z.infer<typeof nseIndexSchema>;
 export const nseBlockDealSchema = z.object({
   symbol: z.string().optional(),
   series: z.string().optional(),
-  totalTradedVolume: z.number().optional(),
-  lastPrice: z.number().optional(),
-  pchange: z.number().optional(),
-  change: z.number().optional(),
+  totalTradedVolume: nseNumeric,
+  lastPrice: nseNumeric,
+  pchange: nseNumeric,
+  change: nseNumeric,
   lastUpdateTime: z.string().optional(),
 });
 

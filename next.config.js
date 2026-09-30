@@ -15,7 +15,7 @@ const cspReportOnly = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://checkout.razorpay.com https://api.razorpay.com https://generativelanguage.googleapis.com https://www.nseindia.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://api.coingecko.com https://finnhub.io https://open.er-api.com",
+  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://checkout.razorpay.com https://api.razorpay.com https://generativelanguage.googleapis.com https://www.nseindia.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://api.coingecko.com https://open.er-api.com",
   "frame-src https://api.razorpay.com https://checkout.razorpay.com",
   "object-src 'none'",
   "base-uri 'self'",

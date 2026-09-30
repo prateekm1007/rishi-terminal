@@ -73,7 +73,7 @@ const REQUIRED: Record<EnvName, string[]> = {
 
 const WARN_ONLY: Record<EnvName, string[]> = {
   development: [],
-  staging: ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET", "FMP_API_KEY", "FINNHUB_API_KEY"],
+  staging: ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET", "FMP_API_KEY"],
   production: [],
 };
 

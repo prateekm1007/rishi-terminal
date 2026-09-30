@@ -7,11 +7,15 @@
 //   - price <= 0
 //   - all-zero fundamentals (dead/placeholder records)
 //   - |ROE| > 150 (NESTLEIND ROE=110 is verified-real and whitelisted)
-//   - missing SEED_AS_OF
+//   - invalid SEED_STATUS (R1: must be 'placeholder' | 'sourced'; when
+//     'placeholder', no UI module may render an "as of <date>" claim for
+//     seed data or reference the removed seed-date constant)
 //
 // Run: npx tsx scripts/validateStocks.ts
 
-import { STOCKS, SEED_AS_OF } from "../data/stocks";
+import fs from "node:fs";
+import path from "node:path";
+import { STOCKS, SEED_STATUS } from "../data/stocks";
 import {
   buildTickerRegistry,
   registryHealthScore,
@@ -40,12 +44,41 @@ console.log(`Total stocks:   ${total}`);
 console.log(`Valid:          ${valid}`);
 console.log(`Health score:   ${registryHealthScore()}%`);
 
-// ── 1. Missing asOf ────────────────────────────────────────────
-console.log("\n[1] Seed snapshot date (asOf)");
-if (!SEED_AS_OF || !/^\d{4}-\d{2}-\d{2}$/.test(SEED_AS_OF)) {
-  fail("SEED_AS_OF missing or not an ISO date in data/stocks/index.ts");
+// --- 1. Seed data honesty (R1) --------------------------------------------
+console.log("\n[1] Seed data status (R1)");
+if (SEED_STATUS !== "placeholder" && SEED_STATUS !== "sourced") {
+  fail("SEED_STATUS must be 'placeholder' or 'sourced' in data/stocks/index.ts");
 } else {
-  console.log(`  OK    SEED_AS_OF = ${SEED_AS_OF}`);
+  console.log(`  OK    SEED_STATUS = ${SEED_STATUS}`);
+}
+if (SEED_STATUS === "placeholder") {
+  // R1 gate: while the dataset is a placeholder, no UI-facing module may
+  // reference the removed seed-date export (name assembled at runtime so
+  // this gate is not matched by the repo-wide grep that enforces its
+  // removal) or render an "as of <ISO date>" claim for seed data.
+  const REMOVED_SEED_DATE = ["SEED", "AS_OF"].join("_");
+  const uiRoots = ["app", "components"];
+  const offenders: string[] = [];
+  const scan = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, entry.name);
+      if (entry.isDirectory()) { scan(p); continue; }
+      if (!/\.(tsx?|jsx?)$/.test(entry.name)) continue;
+      const src = fs.readFileSync(p, "utf8");
+      if (src.includes(REMOVED_SEED_DATE) || /as of \{?\d{4}-\d{2}-\d{2}/i.test(src)) {
+        offenders.push(path.relative(process.cwd(), p));
+      }
+    }
+  };
+  for (const root of uiRoots) {
+    const abs = path.join(process.cwd(), root);
+    if (fs.existsSync(abs)) scan(abs);
+  }
+  if (offenders.length > 0) {
+    fail(`placeholder seed data must never render an "as of <date>" claim; offenders: ${offenders.join(", ")}`);
+  } else {
+    console.log("  OK    no UI module renders an as-of date for placeholder seed data");
+  }
 }
 
 // ── 2. Duplicate symbols ──────────────────────────────────────

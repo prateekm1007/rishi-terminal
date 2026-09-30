@@ -173,17 +173,9 @@ export function getRishiPersonality(id: string): RishiPersonality {
   return RISHI_PERSONALITIES[id] || RISHI_PERSONALITIES.damani;
 }
 
-export function getRishisByTier(tier: 'seeker' | 'student' | 'disciple'): RishiPersonality[] {
-  const allRishis = Object.values(RISHI_PERSONALITIES);
-  
-  if (tier === 'seeker') {
-    return allRishis.filter(r => r.tier === 'free');
-  }
-  if (tier === 'student') {
-    return allRishis.filter(r => r.tier === 'free' || r.tier === 'student');
-  }
-  return allRishis;
-}
+// R3: getRishisByTier moved to lib/chat/personaAccess.ts (server-only) —
+// persona tier filtering must only ever run on the server. The roster itself
+// (RISHI_PERSONALITIES) is public marketing content and stays here.
 
 export function formatContextForPrompt(context: ChatContext): string {
   if (!context.symbol) return '';

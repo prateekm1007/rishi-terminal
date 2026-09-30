@@ -7,7 +7,6 @@ import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
-import { SEED_AS_OF } from "../../data/stocks";
 
 interface StockRow extends Stock {
   /** null = "Insufficient Data" — rendered as em dash and always sorted last (T11). */

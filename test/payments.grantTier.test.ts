@@ -1,151 +1,86 @@
-/** T6: payments that actually grant and persist access — idempotent, amount-checked. */
+/** R2: grantTierForPayment is a thin wrapper around the atomic Postgres RPC. */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 /**
- * grantTierForPayment is tested against an in-memory fake of the two Supabase
- * tables it touches (transactions, users), implementing the exact contract the
- * real queries rely on: eq() filters, select(), maybeSingle(), and the
- * optimistic `eq('status','created')` claim on the winning write.
+ * The wrapper's own logic is the result mapping + error contract, so the
+ * fake admin client only needs to implement `.rpc()`. The RPC's SQL-side
+ * behaviour (atomicity, locking, extension rule) is evidenced separately
+ * against real Postgres — see PR description for the psql transcript.
  */
 
-type TxRow = {
-  id: string;
-  razorpay_order_id: string;
-  user_id: string;
-  tier_purchased: string;
-  amount: number;
-  currency: string;
-  status: string;
-  razorpay_payment_id: string | null;
-};
-
-let transactions: TxRow[] = [];
-let users: Array<{ id: string; tier: string; tier_expires_at: string | null }> = [];
-let userUpdateCount = 0;
-
-function makeFakeAdmin() {
-  return {
-    from: (name: string) => {
-      const rows = name === "transactions" ? transactions : users;
-      const filters: Record<string, any> = {};
-      let patch: any = null;
-      let applied = false;
-
-      const apply = () => {
-        if (applied || !patch) return;
-        applied = true;
-        // Evaluate WHERE against the PRE-update state (real SQL semantics).
-        for (const r of rows) {
-          const matches = Object.entries(filters).every(([c, v]) => (r as any)[c] === v);
-          if (!matches) continue;
-          Object.assign(r, patch);
-          claimed.push(r);
-          if (name !== "transactions") userUpdateCount++;
-        }
-      };
-
-      const claimed: any[] = [];
-
-      const b: any = {
-        select: () => {
-          apply();
-          return b;
-        },
-        update: (p: any) => {
-          patch = p;
-          return b;
-        },
-        eq: (col: string, val: any) => {
-          filters[col] = val;
-          return b;
-        },
-        maybeSingle: () => {
-          apply();
-          // UPDATE ... RETURNING: return a claimed row from the update,
-          // otherwise the single row matching the WHERE clause.
-          if (claimed.length > 0) {
-            return Promise.resolve({ data: claimed[0], error: null });
-          }
-          const filtered = rows.filter(r =>
-            Object.entries(filters).every(([c, v]) => (r as any)[c] === v),
-          );
-          const single = filtered.length === 1 ? filtered[0] : null;
-          return Promise.resolve({ data: single, error: null });
-        },
-        then: (resolve: any, reject: any) => {
-          apply();
-          Promise.resolve({ data: null, error: null }).then(resolve, reject);
-        },
-      };
-      return b;
-    },
-  };
-}
+const rpcMock = vi.fn();
 
 vi.mock("@/lib/services/supabaseAdmin", () => ({
-  getAdminSupabase: () => makeFakeAdmin(),
+  getAdminSupabase: () => ({ rpc: rpcMock }),
 }));
 
 import { grantTierForPayment, TIER_PRICES } from "@/lib/payments/grantTier";
 
-const baseTx = (): TxRow => ({
-  id: "tx-1",
-  razorpay_order_id: "tx-1",
-  user_id: "user-1",
-  tier_purchased: "disciple",
+const okInput = {
+  razorpayOrderId: "order_1",
+  razorpayPaymentId: "pay_1",
   amount: 199900,
   currency: "INR",
-  status: "created",
-  razorpay_payment_id: null,
-});
+};
 
 beforeEach(() => {
-  transactions = [baseTx()];
-  users = [{ id: "user-1", tier: "seeker", tier_expires_at: null }];
-  userUpdateCount = 0;
+  rpcMock.mockReset();
 });
 
-describe("T6 — grantTierForPayment", () => {
-  it("grants the tier exactly once for a valid payment", async () => {
-    const res = await grantTierForPayment({
-      razorpayOrderId: "tx-1",
-      razorpayPaymentId: "pay-1",
-      amount: 199900,
-      currency: "INR",
+describe("R2 — grantTierForPayment wrapper maps the RPC contract", () => {
+  it("passes arguments through to grant_tier_for_payment", async () => {
+    rpcMock.mockResolvedValueOnce({
+      data: { status: "granted", tier: "disciple", tier_expires_at: "2027-09-30T00:00:00Z" },
+      error: null,
     });
+    const res = await grantTierForPayment(okInput);
+    expect(res).toEqual({ ok: true, alreadyProcessed: false });
+    expect(rpcMock).toHaveBeenCalledWith("grant_tier_for_payment", {
+      p_order_id: "order_1",
+      p_payment_id: "pay_1",
+      p_amount: 199900,
+      p_currency: "INR",
+    });
+  });
+
+  it("status 'already' maps to ok + alreadyProcessed (true no-op replay)", async () => {
+    rpcMock.mockResolvedValueOnce({ data: { status: "already", tier: "disciple" }, error: null });
+    const res = await grantTierForPayment(okInput);
     expect(res.ok).toBe(true);
-    expect(transactions[0].status).toBe("paid");
-    expect(transactions[0].razorpay_payment_id).toBe("pay-1");
-    expect(users[0].tier).toBe("disciple");
-    expect(users[0].tier_expires_at).toBeTruthy();
+    expect(res.alreadyProcessed).toBe(true);
   });
 
-  it("replays with the same payment id are no-ops (never a second extension)", async () => {
-    await grantTierForPayment({ razorpayOrderId: "tx-1", razorpayPaymentId: "pay-1", amount: 199900, currency: "INR" });
-    const first = { ...users[0] };
-    const replay = await grantTierForPayment({ razorpayOrderId: "tx-1", razorpayPaymentId: "pay-1", amount: 199900, currency: "INR" });
-    expect(replay.ok).toBe(true);
-    expect(replay.alreadyProcessed).toBe(true);
-    expect(users[0].tier_expires_at).toBe(first.tier_expires_at);
+  it("status 'repaired' maps to ok (replay re-asserted a missing grant)", async () => {
+    rpcMock.mockResolvedValueOnce({ data: { status: "repaired", tier: "disciple" }, error: null });
+    const res = await grantTierForPayment(okInput);
+    expect(res.ok).toBe(true);
+    expect(res.alreadyProcessed).toBe(false);
   });
 
-  it("refuses a paid row settled with a DIFFERENT payment id", async () => {
-    await grantTierForPayment({ razorpayOrderId: "tx-1", razorpayPaymentId: "pay-1", amount: 199900, currency: "INR" });
-    const res = await grantTierForPayment({ razorpayOrderId: "tx-1", razorpayPaymentId: "pay-2", amount: 199900, currency: "INR" });
-    expect(res.ok).toBe(false);
+  it.each(["unknown_order", "amount_mismatch", "conflict", "unexpected_status"] as const)(
+    "permanent refusal '%s' maps to ok:false without throwing",
+    async (status) => {
+      rpcMock.mockResolvedValueOnce({ data: { status }, error: null });
+      const res = await grantTierForPayment(okInput);
+      expect(res.ok).toBe(false);
+      expect(res.reason).toContain(status);
+    },
+  );
+
+  it("RPC transport/db errors THROW (transient — webhook must 500 so Razorpay retries)", async () => {
+    rpcMock.mockResolvedValueOnce({ data: null, error: { message: "connection terminated" } });
+    await expect(grantTierForPayment(okInput)).rejects.toThrow(/rpc failed/);
   });
 
-  it("rejects amount mismatch", async () => {
-    const res = await grantTierForPayment({ razorpayOrderId: "tx-1", razorpayPaymentId: "pay-9", amount: 100, currency: "INR" });
-    expect(res.ok).toBe(false);
-    expect(res.reason).toMatch(/mismatch/);
+  it("unknown status shape fails closed as transient (throws)", async () => {
+    rpcMock.mockResolvedValueOnce({ data: { status: "???mystery" }, error: null });
+    await expect(grantTierForPayment(okInput)).rejects.toThrow(/unexpected status/);
   });
 
-  it("rejects currency mismatch and unknown orders", async () => {
-    const cur = await grantTierForPayment({ razorpayOrderId: "tx-1", razorpayPaymentId: "pay-9", amount: 199900, currency: "USD" });
-    expect(cur.ok).toBe(false);
-    const unk = await grantTierForPayment({ razorpayOrderId: "nope", razorpayPaymentId: "pay-9", amount: 199900, currency: "INR" });
-    expect(unk.ok).toBe(false);
+  it("string-encoded jsonb results are parsed", async () => {
+    rpcMock.mockResolvedValueOnce({ data: JSON.stringify({ status: "granted" }), error: null });
+    const res = await grantTierForPayment(okInput);
+    expect(res.ok).toBe(true);
   });
 
   it("server price table is authoritative (client cannot dictate amount)", () => {

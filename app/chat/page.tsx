@@ -109,7 +109,7 @@ export default function ChatPage() {
               </div>
 
               {/* Chat Component */}
-              <RishiChat stock={stock} scores={consensus.scores} userTier="disciple" />
+              <RishiChat stock={stock} />
             </div>
           )}
 

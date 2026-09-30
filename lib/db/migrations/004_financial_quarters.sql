@@ -1,29 +1,22 @@
--- supabase/financial_quarters.sql
--- REAL_FINANCIALS_SCHEMA_V1
-
--- Store real quarterly financials (you maintain these rows).
--- Currency: INR numbers typically in crores (or raw INR) — be consistent.
-
-create table if not exists public.financial_quarters (
-  id            uuid primary key default gen_random_uuid(),
-  symbol        text not null,
-  quarter_end   date not null,
-  fiscal_year   int  not null,
-  fiscal_quarter int not null check (fiscal_quarter between 1 and 4),
-
-  revenue       numeric not null,
-  net_profit    numeric not null,
-  opm           numeric,          -- Operating Profit Margin (%)
-
-  currency      text not null default 'INR',
-  source        text,             -- e.g. 'Annual Report', 'Company PR', 'Exchange Filing'
-  notes         text,
-
-  created_at    timestamptz not null default now(),
-  updated_at    timestamptz not null default now(),
-
-  unique(symbol, fiscal_year, fiscal_quarter)
-);
+-- supabase/financial_quarters.sql — RECONCILED (P0-02, 2026-09-30)
+--
+-- DRIFT NOTE: this file previously re-defined financial_quarters with a
+-- DIFFERENT column set than 003_automation_schema.sql. Both used
+-- "create table if not exists", so on every database where migrations ran
+-- in order, 003's shape won and this file's table DDL was dead. Live
+-- verification (2026-09-30, Management API query against the production
+-- project) confirmed 003's shape: period/gross_profit/operating_income/
+-- net_margin/eps/ebitda/derived/fetched_at, currency default 'USD'.
+-- The only application code touching this table
+-- (lib/services/ingestion.ts ingestQuarterly) writes exactly that shape.
+--
+-- Reconciliation decision: 003 IS the canonical definition of
+-- financial_quarters; this file keeps only its additive, still-valid parts
+-- (index, RLS). The updated_at trigger was REMOVED: it referenced an
+-- updated_at column that exists only in the dead 004 shape, so on real
+-- databases it made every UPDATE (including upsert conflict-take) fail
+-- with 'record "new" has no field "updated_at"'. Freshness on this table
+-- is carried by 003's fetched_at, which ingestQuarterly already sets.
 
 create index if not exists financial_quarters_symbol_end_idx
   on public.financial_quarters(symbol, quarter_end desc);
@@ -35,20 +28,7 @@ alter table public.financial_quarters enable row level security;
 -- Your Next.js API route will use the SERVICE ROLE key (server-only) which bypasses RLS.
 -- This keeps the table private from anon clients.
 
--- Optional helper: updated_at trigger (safe to skip if you prefer manual)
-create or replace function public.set_updated_at()
-returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists trg_financial_quarters_updated_at on public.financial_quarters;
-create trigger trg_financial_quarters_updated_at
-before update on public.financial_quarters
-for each row execute function public.set_updated_at();
-
--- Example insert (edit values to match your unit convention)
--- insert into public.financial_quarters(symbol, quarter_end, fiscal_year, fiscal_quarter, revenue, net_profit, opm, source)
--- values ('TCS', '2024-12-31', 2025, 3, 63500, 11800, 25.2, 'Exchange Filing');
+-- Example insert (edit values to match your unit convention — code writes
+-- currency 'USD' via lib/services/ingestion.ts)
+-- insert into public.financial_quarters(symbol, period, fiscal_year, fiscal_quarter, quarter_end, revenue, net_profit, opm, source)
+-- values ('TCS', 'Q3-2025', 2025, 3, '2024-12-31', 63500, 11800, 25.2, 'Exchange Filing');

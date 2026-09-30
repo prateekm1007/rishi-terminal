@@ -68,7 +68,7 @@ async function latest(table: string, col: string): Promise<string | null> {
 async function main() {
   const snapshots = await count("rishi_snapshots");
   const quarters = await count("financial_quarters");
-  const logs = await count("ingestion_logs").catch(() => -1);
+  const logs = await count("ingestion_log").catch(() => -1); // singular — matches 003 DDL (was wrongly "ingestion_logs")
 
   const lastSnapshotDate = await latest("rishi_snapshots", "snapshot_date");
   const lastQuarter = await latest("financial_quarters", "period").catch(() => null);
@@ -76,7 +76,7 @@ async function main() {
   console.log("── Nightly pipeline status ──");
   console.log(`rishi_snapshots rows:     ${snapshots}`);
   console.log(`financial_quarters rows:  ${quarters}`);
-  console.log(`ingestion_logs rows:      ${logs}`);
+  console.log(`ingestion_log rows:       ${logs}`);
   console.log(`latest snapshot_date:     ${lastSnapshotDate ?? "none"}`);
   console.log(`latest quarter period:    ${lastQuarter ?? "none"}`);
 
@@ -93,10 +93,18 @@ async function main() {
 
   const s = snapshots as number;
   const q = quarters as number;
+  // Report each producer's state separately — a single "never produced"
+  // line misreported a live snapshot pipeline when only fundamentals
+  // (or vice versa) were missing.
   console.log(
-    s > 0 && q > 0
-      ? "Pipeline HAS produced data. If latest dates are stale, the Vercel Cron schedule is not firing — check CRON_SECRET and vercel.json cron config."
-      : "Pipeline has NEVER produced data — snapshotAllStocks / ingestQuarterly are not running in production.",
+    s > 0
+      ? `Snapshots: pipeline HAS produced data (newest ${lastSnapshotDate ?? "unknown"}).`
+      : "Snapshots: NEVER produced — snapshotAllStocks is not running (check CRON_SECRET / vercel.json).",
+  );
+  console.log(
+    q > 0
+      ? "Fundamentals: pipeline HAS produced data."
+      : "Fundamentals: NEVER produced — ingestQuarterly is not running or has nothing to ingest yet.",
   );
   if (s === 0 || q === 0) process.exit(1);
 }

@@ -525,7 +525,8 @@ const [beta, setBeta] = useState<number | null>(null);
   }
 
   const whatIfStock = (STOCKS as any)[whatIfSymbol.trim().toUpperCase()];
-  const whatIfLtp = whatIfSymbol ? (prices[whatIfSymbol.trim().toUpperCase()]?.price ?? whatIfStock?.price ?? 0) : 0;
+  // T14: what-if uses the live quote only; seed prices are never presented as current
+  const whatIfLtp = whatIfSymbol ? (prices[whatIfSymbol.trim().toUpperCase()]?.price ?? 0) : 0;
   const whatIfShares = (whatIfLtp > 0) ? (whatIfAmount / whatIfLtp) : 0;
   const whatIfConsensus = whatIfStock ? getStockScore(whatIfStock) : null;
   const whatIfScore = whatIfConsensus?.consensus ?? 0;

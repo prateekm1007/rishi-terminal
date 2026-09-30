@@ -7,6 +7,7 @@ import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { SEED_AS_OF } from "../../data/stocks";
 
 interface StockRow extends Stock {
   /** null = "Insufficient Data" — rendered as em dash and always sorted last (T11). */
@@ -14,8 +15,9 @@ interface StockRow extends Stock {
   topRishi: string;
   topRishiScore: number | null;
   category: string;
-  livePrice: number;
-  change24h: number;
+  /** null = no live quote — em dash shown; seed price is NEVER displayed (T14). */
+  livePrice: number | null;
+  change24h: number | null;
 }
 
 interface Props {
@@ -33,6 +35,8 @@ function consensusCategory(score: number): string {
 
 export function StockTable({ stocks }: Props) {
   const dark = true;
+  // T14: freshness labels — fundamentals are seed data unless a live fetch
+  // overrode them; prices are live-only (never seed).
 
   const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
@@ -50,8 +54,9 @@ export function StockTable({ stocks }: Props) {
     return stocks.map(stock => {
       const report = getStockScore(stock);
       const topScore = report.scores[0];
-      const livePrice = prices[stock.symbol]?.price ?? stock.price;
-      const change24h = prices[stock.symbol]?.change ?? 0;
+      // T14: seed price is never rendered as live — null when feed is down
+      const livePrice = prices[stock.symbol]?.price ?? null;
+      const change24h = prices[stock.symbol]?.change ?? null;
       return {
         ...stock,
         // T11: null consensus stays null — never coerced to 0, displayed as em dash
@@ -224,11 +229,14 @@ export function StockTable({ stocks }: Props) {
                 <td className={`px-4 py-3 font-mono text-sm ${dark ? "text-gray-300" : "text-gray-700"}`}>
                   {stock.name}
                 </td>
-                <td className="px-4 py-3 text-right font-mono font-semibold text-yellow-500">
-                  {stock.livePrice.toFixed(2)}
+                <td
+                  className="px-4 py-3 text-right font-mono font-semibold text-yellow-500"
+                  title={stock.livePrice !== null ? "Live price" : "Live price unavailable \u2014 seed prices are never shown as current"}
+                >
+                  {stock.livePrice !== null ? stock.livePrice.toFixed(2) : "\u2014"}
                 </td>
-                <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h)}`}>
-                  {stock.change24h > 0 ? "+" : ""}{stock.change24h.toFixed(2)}%
+                <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h ?? 0)}`} title={stock.change24h !== null ? "Live 24h change" : "Live change unavailable"}>
+                  {stock.change24h !== null ? (stock.change24h > 0 ? "+" : "") + stock.change24h.toFixed(2) + "%" : "\u2014"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
                   {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "—"}

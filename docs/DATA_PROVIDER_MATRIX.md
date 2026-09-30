@@ -125,13 +125,18 @@ errors and the read path is bounded at 1.5 s.
 
 ## T61 — Historical persistence (our own observations)
 Migration `009_phase6_provider_cache.sql` adds `observed_prices`
-(symbol + observed_date PK, source-attributed). The nightly snapshot cron
-now also captures the reference set (FRED yield curve + FX pairs =
-`REFERENCE_SYMBOLS`) into it — but only rows whose winning source passes the
-storage-rights gate; everything else is skipped, never fabricated. Equity
-closes from scraped sources are deliberately NOT persisted; the existing
-consensus snapshot (`rishi_snapshots`) keeps its prior scope pending founder
-licensing decisions (FD-1).
+(symbol + observed_date PK, source-attributed). A dedicated cron
+(`/api/ingest/observations`, 13:45 UTC Mon–Fri, CRON_SECRET-gated) captures
+the reference set (FRED yield curve + FX pairs = `REFERENCE_SYMBOLS`) — but
+only rows whose winning source passes the storage-rights gate; everything
+else is skipped, never fabricated. First production run (2026-10-01):
+15 eligible → 5 persisted (US Treasury curve via fred-csv), 10 honestly
+skipped (FX resolved via yahoo — no storage entitlement), 0 errors.
+The capture deliberately does NOT share the consensus snapshot's cron:
+stacking both jobs blew the 60 s maxDuration budget (observed live) — one
+job, one budget. Equity closes from scraped sources are deliberately NOT
+persisted; the existing consensus snapshot (`rishi_snapshots`) keeps its
+prior scope pending founder licensing decisions (FD-1).
 
 ## Honest gaps (updated)
 - Volume counters are per-instance; platform totals need founder-enabled

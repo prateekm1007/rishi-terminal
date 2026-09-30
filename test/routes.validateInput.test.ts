@@ -9,7 +9,7 @@
  * - Source-scan: every route that reads `symbol`/`symbols` (query, body or
  *   dynamic segment) imports the gate — a new route cannot omit it.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
@@ -21,6 +21,11 @@ import {
   MAX_SYMBOLS_BATCH,
 } from "@/lib/registry/validateInput";
 import { STOCKS } from "@/data/stocks";
+
+// R6: the persistent limiter is not under test here (and needs no env).
+vi.mock("@/lib/rateLimit", () => ({
+  checkRateLimit: async () => ({ allowed: true, count: 0 }),
+}));
 
 describe("R5 — validateInput: the allow-list", () => {
   it("accepts registry stock symbols and T12 aliases", () => {
@@ -77,7 +82,8 @@ describe("R5 — validateInput: the allow-list", () => {
 });
 
 describe("R5 — routes reject invalid symbols with 400 before any upstream call", () => {
-  const req = (url: string) => ({ url }) as never; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const req = (url: string) =>
+    ({ url, headers: { get: () => null } }) as never; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   it("GET /api/prices?symbol=../../etc/passwd -> 400", async () => {
     const { GET } = await import("@/app/api/prices/route");
@@ -109,6 +115,8 @@ describe("R5 — routes reject invalid symbols with 400 before any upstream call
   it("POST /api/prices/batch with junk body -> 400", async () => {
     const { POST } = await import("@/app/api/prices/batch/route");
     const res = await POST({
+      url: "http://localhost:3000/api/prices/batch",
+      headers: { get: () => null },
       json: async () => ({ symbols: Array.from({ length: 60 }, () => "JUNK") }),
     } as never);
     expect(res.status).toBe(400);

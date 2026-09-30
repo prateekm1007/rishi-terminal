@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { resolvePersonaId, CHAT_PERSONAS } from '@/lib/chat/personas';
 import { STOCKS } from '@/data/stocks';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 /**
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
@@ -77,64 +78,61 @@ const DAILY_QUOTA: Record<string, number> = {
   disciple: 500,
 };
 
-// ── per-IP burst limiter (in-memory, per server instance) ──────
-const BURST_WINDOW_MS = 60_000;
+// ── per-IP burst limiter: PERSISTENT, shared across instances (R6) ──
+const BURST_WINDOW_SECONDS = 60;
 const BURST_MAX_REQUESTS = 12;
-const ipHits = new Map<string, number[]>();
-
-function ipBurstExceeded(ip: string): boolean {
-  const now = Date.now();
-  const hits = (ipHits.get(ip) ?? []).filter(t => now - t < BURST_WINDOW_MS);
-  hits.push(now);
-  ipHits.set(ip, hits);
-  // Keep the map bounded.
-  if (ipHits.size > 10_000) {
-    for (const [k, v] of ipHits) {
-      if (v.every(t => now - t >= BURST_WINDOW_MS)) ipHits.delete(k);
-    }
-  }
-  return hits.length > BURST_MAX_REQUESTS;
-}
 
 function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get('x-real-ip') ??
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'unknown'
-  );
+  // The platform (Vercel) APPENDS the real client IP to x-forwarded-for;
+  // anything a client sends itself appears EARLIER in the list, so the
+  // LAST entry is the trusted one. x-real-ip is only used when no proxy
+  // chain is present (local/dev). The previous first-entry order trusted
+  // spoofable headers (R6 finding).
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }
 
-// ── per-user daily quota (Supabase-backed) ─────────────────────
-async function quotaExceeded(userId: string, tier: string): Promise<boolean> {
+async function ipBurstExceeded(ip: string): Promise<boolean> {
+  const r = await checkRateLimit(`chat:ip:${ip}`, BURST_MAX_REQUESTS, BURST_WINDOW_SECONDS);
+  return !r.allowed;
+}
+
+// ── per-user daily quota: ATOMIC RPC (R6) ──────────────────────
+// consume_chat_quota (migration 008) is one INSERT .. ON CONFLICT ..
+// DO UPDATE .. WHERE count < limit RETURNING count — concurrent requests
+// can no longer read the same count and each increment it. The day key is
+// the IST date, computed inside the RPC (it used to be UTC, resetting the
+// quota at 05:30 IST).
+async function consumeQuota(userId: string, tier: string): Promise<boolean> {
   try {
     const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
-    const admin = getAdminSupabase();
-    const day = new Date().toISOString().slice(0, 10);
-
-    const { data } = await admin
-      .from('chat_usage')
-      .select('count')
-      .eq('user_id', userId)
-      .eq('day', day)
-      .maybeSingle();
-
-    const used = (data as { count: number } | null)?.count ?? 0;
-    if (used >= (DAILY_QUOTA[tier] ?? DAILY_QUOTA.seeker)) {
-      return true;
-    }
-
-    await admin
-      .from('chat_usage')
-      .upsert(
-        { user_id: userId, day, count: used + 1 },
-        { onConflict: 'user_id,day' },
-      );
-    return false;
+    const { data, error } = await getAdminSupabase().rpc('consume_chat_quota', {
+      p_user_id: userId,
+      p_limit: DAILY_QUOTA[tier] ?? DAILY_QUOTA.seeker,
+    });
+    if (error) throw new Error(error.message);
+    return (data as { ok?: boolean } | null)?.ok === true;
   } catch (e) {
     // Fail closed on quota infrastructure errors: do not allow unbounded
     // spend when the counter is unavailable.
-    console.error('[chat] quota check failed:', e instanceof Error ? e.message : e);
-    return true;
+    console.error('[chat] quota consume failed:', e instanceof Error ? e.message : e);
+    return false;
+  }
+}
+
+/** Refund one consumed unit when the upstream call fails (R6.2). */
+async function refundQuota(userId: string): Promise<void> {
+  try {
+    const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
+    await getAdminSupabase().rpc('refund_chat_quota', { p_user_id: userId });
+  } catch (e) {
+    // Best effort: a missed refund costs the user one quota unit; it must
+    // never change the response of the failed request.
+    console.error('[chat] quota refund failed:', e instanceof Error ? e.message : e);
   }
 }
 
@@ -169,12 +167,12 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Burst limit per IP.
-  if (ipBurstExceeded(clientIp(req))) {
+  if (await ipBurstExceeded(clientIp(req))) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
   // 3. Daily quota per user by tier (server-resolved tier, never client).
-  if (await quotaExceeded(user.id, user.tier)) {
+  if (!(await consumeQuota(user.id, user.tier))) {
     return NextResponse.json(
       { error: 'Daily chat quota exhausted', fallback: true },
       { status: 429 },
@@ -290,6 +288,7 @@ export async function POST(req: NextRequest) {
       });
     } catch (e) {
       console.error('[chat] upstream request failed:', e instanceof Error ? e.message : e);
+      await refundQuota(user.id); // R6.2: failed completion must not burn quota
       return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
     }
 
@@ -297,6 +296,7 @@ export async function POST(req: NextRequest) {
       // Log details server-side; return a generic message only.
       const errText = await res.text();
       console.error('[chat] upstream API error:', res.status, errText.slice(0, 500));
+      await refundQuota(user.id); // R6.2
       return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
     }
 
@@ -305,6 +305,7 @@ export async function POST(req: NextRequest) {
     const text = typeof raw === 'string' ? raw.trim() : '';
     if (!text) {
       console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));
+      await refundQuota(user.id); // R6.2
       return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
     }
 
@@ -347,6 +348,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (e) {
     console.error('[chat] Gemini request failed:', e instanceof Error ? e.message : e);
+    await refundQuota(user.id); // R6.2: failed completion must not burn quota
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 
@@ -354,6 +356,7 @@ export async function POST(req: NextRequest) {
     // Log details server-side; return a generic message only.
     const errText = await res.text();
     console.error('[chat] Gemini API error:', res.status, errText.slice(0, 500));
+    await refundQuota(user.id); // R6.2
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 
@@ -361,6 +364,7 @@ export async function POST(req: NextRequest) {
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!text || typeof text !== 'string') {
     console.error('[chat] empty completion:', JSON.stringify(data).slice(0, 500));
+    await refundQuota(user.id); // R6.2
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 

@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
 import { fetchLivePrice } from '@/lib/livePrice';
 import { parseSymbolsBody } from '@/lib/registry/validateInput';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    // R6 persistent per-IP rate limit (fails open — the validation gate and
+    // upstream quotas remain the hard bounds).
+    const rl = await checkRateLimit(`data:ip:${clientIp(req)}`, 60, 60);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const body: unknown = await req.json();
 
     // R5: registry/allow-list gate + batch cap (spec: 50).
@@ -116,4 +124,12 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }

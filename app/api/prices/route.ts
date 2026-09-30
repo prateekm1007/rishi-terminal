@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchLivePrice } from "@/lib/livePrice";
 import { normalizeSymbolInput, parseSymbolsList } from "@/lib/registry/validateInput";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const DEFAULT_SYMBOLS = [
   "NIFTY50","SENSEX","BANK_NIFTY",
@@ -15,6 +16,13 @@ const DEFAULT_SYMBOLS = [
 
 export async function GET(req: NextRequest) {
   try {
+    // R6 persistent per-IP rate limit (fails open — the validation gate and
+    // upstream quotas remain the hard bounds).
+    const rl = await checkRateLimit(`data:ip:${clientIp(req)}`, 120, 60);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(req.url);
     const sym = (searchParams.get("symbol") ?? "").trim();
     const syms = (searchParams.get("symbols") ?? "").trim();
@@ -58,4 +66,12 @@ export async function GET(req: NextRequest) {
     console.error("[/api/prices] error:", error);
     return NextResponse.json({ error: "Failed to fetch prices" }, { status: 500 });
   }
+}
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { YAHOO_SPECIAL } from "@/lib/livePrice";
 import { normalizeSymbolInput } from "@/lib/registry/validateInput";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = 'force-dynamic';
@@ -131,6 +132,12 @@ async function fetchCoinGeckoSeries(symbol: string, tf: Timeframe) {
 
 export async function GET(req: NextRequest) {
   try {
+    // R6 persistent per-IP rate limit (fails open).
+    const rl = await checkRateLimit(`data:ip:${clientIp(req)}`, 60, 60);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
     const { searchParams } = new URL(req.url);
     const symbolRaw = (searchParams.get("symbol") || "").trim();
     const tf = parseTf(searchParams.get("tf"));
@@ -174,4 +181,13 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     return NextResponse.json({ error: "History fetch failed", detail: String(error) }, { status: 500 });
   }
+}
+
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }

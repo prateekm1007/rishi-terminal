@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { computeIndicators } from "@/lib/technical";
 import { yahooChartSchema } from "@/lib/validation/schemas";
 import { normalizeSymbolInput } from "@/lib/registry/validateInput";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 function cleanNumArray(arr: unknown): number[] {
   if (!Array.isArray(arr)) return [];
@@ -14,6 +15,12 @@ export async function GET(req: NextRequest) {
   const symbolRaw = (searchParams.get("symbol") ?? "").trim();
   if (!symbolRaw) {
     return NextResponse.json({ error: "Missing symbol" }, { status: 400 });
+  }
+
+  // R6 persistent per-IP rate limit (fails open).
+  const rl = await checkRateLimit(`data:ip:${clientIp(req)}`, 60, 60);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   // R5: registry/allow-list gate — arbitrary symbols never reach Yahoo.
@@ -78,4 +85,12 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
 }

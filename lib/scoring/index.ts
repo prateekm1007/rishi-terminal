@@ -26,6 +26,7 @@ import {
 } from "@/lib/scorers/rishiScoreV2";
 import type { StockMetrics, RishiScoreResult, ScoreMode } from "@/lib/scorers/types";
 import type { FullFundamentals } from "@/hooks/useFundamentals";
+import { toSourced, type Sourced } from "@/lib/types/sourced";
 
 export { SCORE_ENGINE_VERSION } from "@/lib/consensus/version";
 
@@ -55,6 +56,13 @@ export interface ResolvedStockMetrics {
   metrics: StockMetrics;
   /** Provenance for every meaningful field (T10/T14). */
   fields: Record<string, ResolvedField>;
+  /**
+   * UI-facing provenance contract (P0-06): the same fields lifted into
+   * `Sourced` — `source` uses `vendor:<upstream>` for live data, and this
+   * is what <DataValue> renders. `fields` remains the engine-internal
+   * truth that R1 evidence tests pin.
+   */
+  sourced: Record<string, Sourced<number>>;
   /** Provenance of the merged stock: the seed dataset status (R1). */
   seedStatus: SeedStatus;
   /** Always null while seedStatus === 'placeholder' (no provable capture date). */
@@ -91,6 +99,11 @@ export function resolveStockMetrics(
 
   const now = new Date().toISOString();
   const fields: Record<string, ResolvedField> = {};
+  const sourced: Record<string, Sourced<number>> = {};
+
+  // Name the real upstream so tooltips say "vendor:screener" / "vendor:yahoo+nse"
+  // instead of a generic "live". FullFundamentals.source: screener | yahoo+nse | static.
+  const vendorName = live?.source && live.source !== "static" ? live.source : undefined;
 
   const set = (key: string, r: { value: number; source: FieldSource }) => {
     fields[key] = {
@@ -98,6 +111,7 @@ export function resolveStockMetrics(
       source: r.source,
       asOf: r.source === "live" ? now : null,
     };
+    sourced[key] = toSourced(fields[key], vendorName);
   };
 
   const pe = pick(live?.pe, seed.pe);
@@ -134,12 +148,14 @@ export function resolveStockMetrics(
     asOf: bvps.source === "live" ? now : null,
   };
   fields.pb = pb;
+  sourced.pb = toSourced(pb);
   const fcfMargin: ResolvedField = {
     value: seed.rev > 0 ? Number(((seed.fcf / seed.rev) * 100).toFixed(4)) : 0,
     source: "seed",
     asOf: null,
   };
   fields.fcfMargin = fcfMargin;
+  sourced.fcfMargin = toSourced(fcfMargin);
 
   const mergedStock: Stock = {
     ...seed,
@@ -179,6 +195,7 @@ export function resolveStockMetrics(
     stock: mergedStock,
     metrics,
     fields,
+    sourced,
     seedStatus: SEED_STATUS,
     seedCapturedAt: SEED_CAPTURED_AT,
   };

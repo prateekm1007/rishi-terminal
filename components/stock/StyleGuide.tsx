@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { type ReactNode } from 'react';
 
 // ─── MetricCard ───────────────────────────────────────────────────
 interface MetricCardProps {
   label: string;
-  value: string | number;
+  value: ReactNode;
   unit?: string;
   color?: 'green' | 'yellow' | 'red' | 'blue' | 'gold';
   size?: 'sm' | 'md' | 'lg';
@@ -110,7 +110,7 @@ export function InfoBox({ type, children }: InfoBoxProps) {
 // ─── StatGroup ────────────────────────────────────────────────────
 interface StatGroupProps {
   title: string;
-  stats: Array<{ label: string; value: string | number; unit?: string }>;
+  stats: Array<{ label: string; value: ReactNode; unit?: string }>;
 }
 
 export function StatGroup({ title, stats }: StatGroupProps) {

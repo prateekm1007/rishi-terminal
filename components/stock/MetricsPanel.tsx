@@ -3,49 +3,66 @@ import { useLanguage } from '@/lib/language';
 import { useFundamentals } from '@/hooks/useFundamentals';
 import { Stock } from '../../lib/types';
 import { MetricCard, StatGroup } from './StyleGuide';
+import { DataValue } from '@/components/DataValue';
+import { resolveStockMetrics } from '@/lib/scoring';
+import { derivedSourced, type Sourced } from '@/lib/types/sourced';
 
 interface Props {
   stock: Stock;
 }
 
-function getColor(value: number, threshold: number, inverse = false): 'green' | 'yellow' | 'red' {
+function getColor(
+  value: number | null,
+  threshold: number,
+  inverse = false,
+): 'green' | 'yellow' | 'red' | undefined {
+  if (value === null) return undefined; // DataValue shows "—"; keep neutral card
   const good = inverse ? value < threshold : value > threshold;
   if (good) return 'green';
   if (Math.abs(value - threshold) < threshold * 0.2) return 'yellow';
   return 'red';
 }
 
+/**
+ * Key metrics (P0-06): the ONLY merge path is resolveStockMetrics — the
+ * panel never mixes its own sources, and every number renders through
+ * <DataValue> with source + as-of provenance. Derived ratios are marked
+ * `derived` and claim an as-of only when their live inputs have one (R1).
+ */
 export function MetricsPanel({ stock }: Props) {
   const { t } = useLanguage();
-  const { fundamentals, loading, isLive } = useFundamentals(stock.symbol);
+  const { fundamentals, isLive } = useFundamentals(stock.symbol);
 
-  if (!stock) return null;
+  const resolved = resolveStockMetrics(stock.symbol, fundamentals);
+  if (!stock || !resolved) return null;
 
-  // Merge live fundamentals over static stock data
-  const pe = fundamentals?.pe ?? stock.pe;
-  const roe = fundamentals?.roe ?? stock.roe;
-  const roce = fundamentals?.roce ?? stock.roce;
-  const mktcap = fundamentals?.marketCap && fundamentals.marketCap > 10000000
-    ? fundamentals.marketCap / 10000000   // Yahoo returns absolute value, convert to Crores
-    : stock.mktcap;                        // static data already in Crores
-  const bvps = fundamentals?.bookValue ?? stock.bvps;
-  const eps = fundamentals?.eps ?? (stock.np && stock.sh ? stock.np / stock.sh : 0);
-  const debtToEquity = fundamentals?.debtToEquity ?? stock.de;
-  const opm = fundamentals?.opm ?? stock.opm;
-  const revCagr = fundamentals?.revCagr3y ?? stock.revcagr;
-  const epsCagr = fundamentals?.epsCagr ?? stock.epscagr;
-  const promoter = fundamentals?.promoterHolding ?? stock.promo;
-  const fcf = fundamentals?.fcf ?? stock.fcf;
+  const s = resolved.sourced;
+  const asOfOf = (...parts: Sourced<number>[]) =>
+    parts.every(p => p.asOf) ? (parts.find(p => p.asOf) as Sourced<number>).asOf : null;
+
+  // Derived valuation ratios — computed from the same sourced inputs.
+  const peg: Sourced<number> = derivedSourced(
+    s.pe.value !== null && s.epscagr.value !== null && s.epscagr.value > 0
+      ? s.pe.value / s.epscagr.value
+      : null,
+    asOfOf(s.pe, s.epscagr),
+  );
+  const fcfYield: Sourced<number> = derivedSourced(
+    s.mktcap.value !== null && resolved.stock.fcf > 0 && s.mktcap.value > 0
+      ? (resolved.stock.fcf / s.mktcap.value) * 100
+      : null,
+    s.mktcap.asOf,
+  );
 
   const metrics = [
-    { label: 'P/E Ratio',     value: pe,             unit: 'x',     threshold: 20,  inverse: true  },
-    { label: 'ROE',           value: roe,            unit: '%',     threshold: 15,  inverse: false },
-    { label: 'ROCE',          value: roce,           unit: '%',     threshold: 15,  inverse: false },
-    { label: 'D/E Ratio',     value: debtToEquity,       unit: 'x',     threshold: 1,   inverse: true  },
-    { label: 'OPM',           value: opm,      unit: '%',     threshold: 10,  inverse: false },
-    { label: 'Revenue CAGR',  value: revCagr,  unit: '%',     threshold: 15,  inverse: false },
-    { label: 'EPS CAGR',      value: epsCagr,  unit: '%',     threshold: 15,  inverse: false },
-    { label: 'Mkt Cap',       value: mktcap / 1000,  unit: 'K Cr',  threshold: 100, inverse: false },
+    { label: 'P/E Ratio',    sourced: s.pe,      unit: 'x',    threshold: 20,  inverse: true  },
+    { label: 'ROE',          sourced: s.roe,     unit: '%',    threshold: 15,  inverse: false },
+    { label: 'ROCE',         sourced: s.roce,    unit: '%',    threshold: 15,  inverse: false },
+    { label: 'D/E Ratio',    sourced: s.de,      unit: 'x',    threshold: 1,   inverse: true  },
+    { label: 'OPM',          sourced: s.opm,     unit: '%',    threshold: 10,  inverse: false },
+    { label: 'Revenue CAGR', sourced: s.revcagr, unit: '%',    threshold: 15,  inverse: false },
+    { label: 'EPS CAGR',     sourced: s.epscagr, unit: '%',    threshold: 15,  inverse: false },
+    { label: 'Mkt Cap',      sourced: s.mktcap,  unit: 'K Cr', threshold: 100, inverse: false, scale: 1000 },
   ];
 
   return (
@@ -73,31 +90,36 @@ export function MetricsPanel({ stock }: Props) {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        {metrics.map((m, idx) => (
-          <MetricCard
-            key={idx}
-            label={m.label}
-            value={m.value.toFixed(1)}
-            unit={m.unit}
-            color={getColor(m.value, m.threshold, m.inverse)}
-          />
-        ))}
+        {metrics.map((m, idx) => {
+          const display: Sourced<number> =
+            m.scale && m.sourced.value !== null
+              ? { ...m.sourced, value: m.sourced.value / m.scale }
+              : m.sourced;
+          return (
+            <MetricCard
+              key={idx}
+              label={m.label}
+              value={<DataValue sourced={display} unit={m.unit} />}
+              color={getColor(m.sourced.value, m.threshold, m.inverse)}
+            />
+          );
+        })}
       </div>
 
       <div className="pt-6 border-t border-border-primary">
         <div className="philosophy-subheading text-xs mb-4">{t("common.valuationSnapshot")}</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatGroup title="P/B Ratio" stats={[
-            { label: 'Price / Book', value: bvps > 0 ? (stock.price / bvps).toFixed(2) : 'N/A', unit: 'x' }
+            { label: 'Price / Book', value: <DataValue sourced={s.pb} digits={2} unit="x" /> }
           ]} />
           <StatGroup title="PEG Ratio" stats={[
-            { label: 'P/E / Growth', value: (pe && epsCagr) ? (pe / epsCagr).toFixed(2) : 'N/A' }
+            { label: 'P/E / Growth', value: <DataValue sourced={peg} digits={2} /> }
           ]} />
           <StatGroup title="FCF Yield" stats={[
-            { label: 'FCF / Mkt Cap', value: (fcf && mktcap) ? ((fcf / mktcap) * 100).toFixed(2) : 'N/A', unit: '%' }
+            { label: 'FCF / Mkt Cap', value: <DataValue sourced={fcfYield} digits={2} unit="%" /> }
           ]} />
           <StatGroup title="Promoter" stats={[
-            { label: 'Promoter Hold', value: promoter.toFixed(1), unit: '%' }
+            { label: 'Promoter Hold', value: <DataValue sourced={s.promo} unit="%" /> }
           ]} />
         </div>
       </div>

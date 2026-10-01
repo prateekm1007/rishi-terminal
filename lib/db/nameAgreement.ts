@@ -130,3 +130,53 @@ export function parseNameOverrides(raw: unknown): NameOverridesFile {
   }
   return d;
 }
+
+// ── Override lifecycle (Q3 Commit B — stale-override gate) ──────────────
+// The auditor (round 4): V7 skipped an override whose symbol no longer had
+// a direct listing row (`if (!row) continue`), so such an entry could live
+// forever without being challenged. Every curated entry is now classified
+// into exactly one of three states; only "active-valid" passes silently.
+
+export type OverrideStatus = "active-valid" | "inactive-historical" | "stale-requires-review";
+
+/** What the live database/listing says about an override's symbol right now. */
+export interface OverrideContext {
+  /** The symbol appears in the current official listing as a direct row
+   *  (source nse:equity_l, valid_to IS NULL). */
+  listedDirect: boolean;
+  /** The live listing name for the symbol (null when not listedDirect). */
+  liveName: string | null;
+  /** The seed dataset (STOCKS) still carries this symbol. */
+  seedPresent: boolean;
+  /** symbol_history still has an active (valid_to IS NULL) row binding it. */
+  activeBound: boolean;
+}
+
+export function classifyOverrideStatus(
+  entry: NameOverrideEntry,
+  ctx: OverrideContext,
+): { status: OverrideStatus; reason: string } {
+  if (ctx.listedDirect) {
+    if (ctx.liveName === entry.officialName) {
+      return {
+        status: "active-valid",
+        reason: "binding verified against the current official listing row",
+      };
+    }
+    return {
+      status: "stale-requires-review",
+      reason: `listing row moved: the entry pins "${entry.officialName}" but the live listing says "${ctx.liveName ?? "(no name)"}" — re-review required`,
+    };
+  }
+  if (ctx.seedPresent || ctx.activeBound) {
+    return {
+      status: "stale-requires-review",
+      reason: `the symbol no longer appears in the official listing but the override still does binding work (seed record present: ${ctx.seedPresent}; active symbol_history row: ${ctx.activeBound}) — the pinned officialName "${entry.officialName}" can no longer be re-verified; re-review required`,
+    };
+  }
+  return {
+    status: "inactive-historical",
+    reason:
+      "kept for provenance: the symbol left the official listing and no seed record or active binding references it — reported on every validator run, never silently skipped",
+  };
+}

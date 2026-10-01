@@ -20,7 +20,7 @@ import path from "node:path";
 import { getAdminSupabase } from "../lib/services/supabaseAdmin";
 import { STOCKS } from "../data/stocks";
 import { findDuplicateActiveSymbols, type SymbolHistoryRow } from "../lib/db/securityMaster";
-import { agreesEnough, parseNameOverrides, type NameOverrideEntry } from "../lib/db/nameAgreement";
+import { agreesEnough, parseNameOverrides, classifyOverrideStatus, type NameOverrideEntry } from "../lib/db/nameAgreement";
 
 type AliasMap = Record<string, string>;
 const aliases: AliasMap = Object.fromEntries(
@@ -195,22 +195,45 @@ async function main(): Promise<void> {
     console.log("PASS V6 — 0 NAME_MISMATCH universe rows");
   }
 
-  // ── V7 (Q3): every curated entry still matches the live listing ──
+  // ── V7 (Q3, extended by Commit B): override LIFECYCLE — every curated
+  // entry is classified active-valid / stale-requires-review /
+  // inactive-historical against the CURRENT listing, seed dataset and
+  // symbol_history. The pre-Commit-B `if (!row) continue` silently skipped
+  // an override whose symbol left the direct listing forever — an
+  // unchallenged override is a back door for wrong bindings. Stale entries
+  // FAIL the validator; inactive-historical entries are REPORTED (never
+  // silently skipped) but do not fail the run.
   const staleEntries: string[] = [];
+  const inactiveHistorical: string[] = [];
+  let activeValid = 0;
+  const activeSymbolsSet = new Set(hist.filter(r => r.valid_to === null).map(r => r.symbol));
+  const seedSet = new Set(seedSymbols);
   for (const [sym, entry] of overrides) {
     const row = officialRowBySymbol.get(sym);
-    if (!row) continue; // entry for a symbol no longer directly listed — nothing to contradict
-    const liveName = secNames.get(row.isin) ?? "";
-    if (liveName && liveName !== entry.officialName) {
-      staleEntries.push(`${sym}: entry pins "${entry.officialName}" but the live listing says "${liveName}" — re-review`);
+    const { status, reason } = classifyOverrideStatus(entry, {
+      listedDirect: !!row,
+      liveName: row ? secNames.get(row.isin) ?? null : null,
+      seedPresent: seedSet.has(sym),
+      activeBound: activeSymbolsSet.has(sym),
+    });
+    if (status === "active-valid") {
+      activeValid += 1;
+    } else if (status === "stale-requires-review") {
+      staleEntries.push(`${sym}: ${reason}`);
+    } else {
+      inactiveHistorical.push(`${sym}: ${reason}`);
     }
+  }
+  if (inactiveHistorical.length) {
+    console.log(`NOTE V7 — ${inactiveHistorical.length} inactive-historical name_overrides.json entr(ies) (kept for provenance, NOT a failure):`);
+    for (const s of inactiveHistorical) console.log(`   ${s}`);
   }
   if (staleEntries.length) {
     failures++;
-    console.log(`FAIL V7 — ${staleEntries.length} stale name_overrides.json entr(ies):`);
+    console.log(`FAIL V7 — ${staleEntries.length} stale name_overrides.json entr(ies) requiring review:`);
     for (const s of staleEntries) console.log(`   ${s}`);
   } else {
-    console.log(`PASS V7 — all ${overrides.size} curated name decisions still match the live listing`);
+    console.log(`PASS V7 — ${activeValid} active-valid / ${inactiveHistorical.length} inactive-historical curated name decision(s); 0 stale`);
   }
 
   // ── decisions table (audit trail) ──

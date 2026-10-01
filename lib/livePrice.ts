@@ -8,9 +8,10 @@
 // Phase 5 T45/T46: provider health accounting + request coalescing.
 // Phase 6 T60/T62: result-snapshot reuse + DB persistent cache (storage-
 // entitled sources only) + honest observation timestamps.
-import { withProviderHealth, coalesce, getCachedResult, putCachedResult } from './registry/providerHealth';
+import { withProviderHealth, coalesce, getCachedResult, putCachedResult, ProviderCooldownError } from './registry/providerHealth';
 import { PROVIDER_IDS, isProviderApproved } from './registry/providerRegistry';
 import { persistentCacheGet, persistentCacheSet } from './cache/persistentCache';
+import { recordUpstreamAttempt } from './health/measurement';
 
 // =============================================================================
 // NSE INDIA API — Stocks + MCX Commodities
@@ -771,13 +772,29 @@ async function attempt(
     console.warn(`[livePrice] blocked non-APPROVED provider in routing chain: ${id}`);
     return null;
   }
+  // Phase 6.1 (T59.2): the single path records its REAL upstream attempts in
+  // the measurement ledger (the bulk path records its own). Health counters
+  // and ledger counts are independent measures of the same calls and must
+  // reconcile (T59.4).
+  const t0 = Date.now();
   try {
     const r = await withProviderHealth(id, fn);
+    recordUpstreamAttempt({
+      providerId: id, path: "single", ok: true,
+      latencyMs: Date.now() - t0, httpFailureClass: null,
+      symbolsRequested: 1, symbolsReturned: r ? 1 : 0,
+    });
     if (!r) return null;
     const observedAt = r.observedAt ?? new Date().toISOString();
     return { status: "LIVE", ...r, source: r.source ?? id, observedAt } as PricePoint;
-  } catch {
+  } catch (err) {
     // Cooldown, timeout, network, parse — recorded in health; fall through.
+    recordUpstreamAttempt({
+      providerId: id, path: "single", ok: false,
+      latencyMs: Date.now() - t0,
+      httpFailureClass: err instanceof ProviderCooldownError ? "cooldown" : null,
+      symbolsRequested: 1, symbolsReturned: 0,
+    });
     return null;
   }
 }

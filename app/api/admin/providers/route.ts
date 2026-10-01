@@ -5,6 +5,7 @@ import {
   providerReuseStats,
 } from '@/lib/registry/providerHealth';
 import { PROVIDER_REGISTRY, isProviderApproved } from '@/lib/registry/providerRegistry';
+import { measurementSnapshot } from '@/lib/health/measurement';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,11 @@ export async function GET(req: NextRequest) {
     {
       generatedAt: new Date().toISOString(),
       reuse: providerReuseStats(),
+      // Phase 6.1 T59: full measurement ledger — application requests vs
+      // actual upstream calls vs served-from split, plus a bounded ring of
+      // raw events (app-request / bulk-run / upstream-attempt / serve) for
+      // latency attribution and counter reconciliation (T59.2/T59.4/T59.5).
+      measurement: measurementSnapshot(),
       providers: registry.map(r => {
         const o = byId.get(r.id);
         return {

@@ -3,6 +3,23 @@ import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
 import { fetchLivePrice, unavailablePriceEntry } from '@/lib/livePrice';
 import { parseSymbolsBody } from '@/lib/registry/validateInput';
 import { checkRateLimit } from '@/lib/rateLimit';
+import {
+  recordAppRequest,
+  recordAppRequestDone,
+  recordServe,
+  type ServeEvent,
+} from '@/lib/health/measurement';
+
+/** T59.2: classify a served entry by its provenance status. */
+function serveKind(status: unknown): ServeEvent["servedFrom"] {
+  switch (status) {
+    case "LIVE": return "live";
+    case "CACHED": return "cache-replay";
+    case "STATIC": return "static-reference";
+    case "DERIVED": return "derived";
+    default: return "unavailable";
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +38,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
     const symbols = parsed.symbols;
+
+    // T59.2: this is an application request — counted separately from the
+    // upstream calls it may or may not cause (never inferred).
+    recordAppRequest('/api/prices/batch', { symbols: symbols.length });
 
     const t0 = Date.now();
     const prices: Record<string, Record<string, unknown>> = {};
@@ -49,7 +70,14 @@ export async function POST(req: NextRequest) {
         volume24h: data.volume,
         source: 'yahoo-bulk',
         status: 'LIVE',
-        lastUpdated: new Date().toISOString(),
+        // T60.1 provenance: lastUpdated is the ORIGINAL Yahoo observation
+        // time (meta.regularMarketTime), never the serve time. When Yahoo
+        // disclosed no observation time we report null — we do not dress
+        // the fetch time up as an observation time. checkedAt is the
+        // decision/serve time and is semantically distinct.
+        lastUpdated: data.observedAt ?? null,
+        observedAt: data.observedAt ?? null,
+        checkedAt: new Date().toISOString(),
       };
     }
 
@@ -70,7 +98,11 @@ export async function POST(req: NextRequest) {
             source: r.value.source,
             status: r.value.status ?? 'LIVE',
             lastUpdated: r.value.lastUpdated,
+            observedAt: r.value.observedAt ?? null,
           };
+          recordServe('/api/prices/batch', serveKind(r.value.status ?? 'LIVE'), 1);
+        } else {
+          recordServe('/api/prices/batch', 'unavailable', 1);
         }
       });
     }
@@ -83,11 +115,13 @@ export async function POST(req: NextRequest) {
       results.forEach((r, i) => {
         if (r.status === 'fulfilled' && r.value) {
           prices[otherSymbols[i]] = r.value as unknown as Record<string, unknown>;
+          recordServe('/api/prices/batch', serveKind(r.value.status), 1);
         } else {
           // T57: explicit honest unavailability per symbol. Phase 5.1: the
           // entry carries NO observation timestamp — lastUpdated is null
           // (there is no observation) and checkedAt is the decision time.
           prices[otherSymbols[i]] = unavailablePriceEntry();
+          recordServe('/api/prices/batch', 'unavailable', 1);
         }
       });
     }
@@ -99,10 +133,15 @@ export async function POST(req: NextRequest) {
     // 50 requested. Now the total-failure case is explicit: UNAVAILABLE
     // with no fabricated observation time.
     for (const s of symbols) {
-      if (!prices[s]) prices[s] = unavailablePriceEntry();
+      if (!prices[s]) {
+        prices[s] = unavailablePriceEntry();
+        recordServe('/api/prices/batch', 'unavailable', 1);
+      }
     }
 
     const ms = Date.now() - t0;
+    // T59.5: wall time of this application request, for latency attribution.
+    recordAppRequestDone('/api/prices/batch', ms);
     console.log(
       `[/api/prices/batch] ${Object.keys(prices).length}/${symbols.length} in ${ms}ms ` +
       `(Yahoo bulk: ${Object.keys(bulkResults).length}, fallback: ${otherSymbols.length})`

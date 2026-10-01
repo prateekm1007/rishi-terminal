@@ -6,7 +6,6 @@ import { checkRateLimit } from '@/lib/rateLimit';
 // Phase 5 T49–T52: application code calls the AI abstraction, never a
 // provider SDK/URL directly. Provenance rides on every response (T50).
 import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
-import type { AiEvidenceItem } from '@/lib/ai/schemas';
 
 /**
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
@@ -104,19 +103,9 @@ async function refundQuota(userId: string): Promise<void> {
 }
 
 // ── stock context, built server-side from the seed registry ────
-function stockEvidence(symbol: string): AiEvidenceItem[] {
-  const s = STOCKS[symbol.toUpperCase()];
-  if (!s) return [];
-  const pe = typeof s.pe === 'number' && s.pe > 0 ? s.pe : null;
-  const roe = typeof s.roe === 'number' ? s.roe : null;
-  const text = [
-    `Analyzing ${s.symbol} (${s.name}), sector: ${s.sector}.`,
-    pe !== null ? `P/E ratio (seed data): ${pe}.` : '',
-    roe !== null ? `ROE (seed data): ${roe}%.` : '',
-    'Seed fundamentals may be stale — qualify any data you cite as indicative.',
-  ].filter(Boolean).join(' ');
-  return [{ id: `seed:${s.symbol}:profile`, text }];
-}
+// (moved to lib/chat/stockEvidence.ts in N3 so the seed-labeling
+// contract is testable; re-exported for readability at the call site)
+import { stockEvidence } from '@/lib/chat/stockEvidence';
 
 interface HistoryTurn {
   role: 'user' | 'assistant';

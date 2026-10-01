@@ -7,6 +7,7 @@ import { useState, useMemo, useEffect } from 'react';
 import type { Stock } from '@/lib/types';
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import RishiChat from './RishiChat';
+import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: seed-derived context in chat
 
 interface Props {
   rows: SlimStockRow[];
@@ -114,6 +115,9 @@ export function ChatClient({ rows }: Props) {
           {/* Chat Interface */}
           {selectedRow && selectedRecord && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, overflow: 'hidden' }}>
+              {/* N3 (round 3): the stock context (score, PE/ROE) and the
+                  assistant's seed-grounded replies must carry the label. */}
+              <SeedDataBanner suffix="stock context and seed-grounded replies are illustrative placeholders" />
               {/* Stock Info Bar */}
               <div style={{
                 background: 'var(--bg-card)', border: '1px solid var(--border-primary)',

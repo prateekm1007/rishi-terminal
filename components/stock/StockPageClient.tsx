@@ -21,6 +21,7 @@ import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
 import RishiScoreDual             from '../score/RishiScoreDual';
+import SeedDataBanner             from '../shared/SeedDataBanner'; // N3: seed-derived numbers on this page
 
 interface Props {
   stock: Stock;
@@ -83,6 +84,12 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
 
   return (
     <div className="rishi-page">
+
+      {/* N3 (round 3): every number on this page (consensus, QVPS, metrics,
+          verdicts, graph) is seed-derived while SEED_STATUS === 'placeholder'. */}
+      <div className="content-wrapper" style={{ paddingTop: 16 }}>
+        <SeedDataBanner suffix="consensus, QVPS, metrics and verdicts on this page are illustrative placeholders" />
+      </div>
 
       {/* Knowledge Graph Floating Button */}
       <button

@@ -89,7 +89,10 @@ export function resolveAiProvider(): AiProvider | null {
 /** T51: evidence renders into the system prompt with stable ids the model can cite.
  *  End-to-end loop: when evidence exists the model is ALSO given the
  *  structured-response contract — its claims will be validated against the
- *  evidence ids before anything is marked grounded (fail closed). */
+ *  evidence ids AND, for every number it states, against the typed
+ *  field/value/unit facts carried by the cited items (Q4 Commit A). Items
+ *  carrying facts render a machine-readable `fact: field=value unit (source)`
+ *  annotation; the model must copy value and unit EXACTLY. */
 function evidenceBlock(evidence: AiEvidenceItem[]): string {
   if (evidence.length === 0) return "";
   const lines = evidence.map(e => `[${e.id}] ${e.text}`);
@@ -100,11 +103,20 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "\n\nRESPONSE CONTRACT — reply with ONLY a JSON object (no prose outside " +
     'the JSON): {"answer": <your full reply as one string>, "claims": ' +
     '[{"claim": <one factual statement you are making>, "evidenceIds": ' +
-    '[<ids from VERIFIED CONTEXT that support it>]}], "uncertainties": ' +
-    "[<things you could not verify>]}. Every claim MUST list the evidence " +
-    "ids it rests on; a claim without ids or with an invented id will be " +
-    "rejected wholesale. If you make no verifiable factual claims, return " +
-    'an empty claims array. Example: {"answer": "...", "claims": [], ' +
+    "[<ids from VERIFIED CONTEXT that support it>], " +
+    '"assertions": [{"field": <the fact field you are asserting>, ' +
+    '"value": <the EXACT number from that fact>, "unit": <the EXACT unit ' +
+    "from that fact>}]}], \"uncertainties\": [<things you could not verify>]} " +
+    "RULES: (1) Every claim MUST list the evidence ids it rests on; a claim " +
+    "without ids or with an invented id will be rejected wholesale. " +
+    "(2) Every claim that states a number MUST carry an assertion whose " +
+    "field, value and unit are copied EXACTLY from the cited item's fact " +
+    "annotation (field/value/unit are matched strictly — a wrong unit or a " +
+    "number that belongs to a different field is rejected). " +
+    "(3) Never compute new numbers from the facts (no averages, midpoints, " +
+    "percent changes you derive yourself) — state only numbers the evidence " +
+    "carries. (4) If you make no verifiable factual claims, return an empty " +
+    'claims array. Example: {"answer": "...", "claims": [], ' +
     '"uncertainties": ["..."]}'
   );
 }
@@ -181,7 +193,8 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     const structured = parsed ? StructuredModelOutputSchema.safeParse(parsed) : null;
     if (structured?.success) {
       // R4-02: grounding now validates BOTH the evidence ids and every
-      // number in the claims + answer against the cited evidence items.
+      // numeric assertion (field/value/unit) against the typed facts of the
+      // claim's own cited items.
       const grounding = validateGrounding(evidence, structured.data.claims, structured.data.answer);
       return {
         answer: structured.data.answer,
@@ -197,6 +210,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
         model: provider.model,
         generatedAt,
         claimsVerified: grounding.grounded,
+        groundingRejections: grounding.grounded ? [] : [...grounding.rejections],
       };
     }
     return {
@@ -209,6 +223,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
       model: provider.model,
       generatedAt,
       claimsVerified: false,
+      groundingRejections: [],
     };
   }
 
@@ -225,13 +240,15 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     model: provider.model,
     generatedAt,
     claimsVerified: false,
+    groundingRejections: [],
   };
 }
 
 /** Wire-shape helper for the chat route (backwards compatible `{text}`).
- *  grounded is true ONLY for claims whose every evidenceId was validated
- *  against the evidence package in the same request — never from evidence
- *  presence, and never from the model's own assertions. */
+ *  grounded is true ONLY for claims whose every evidenceId AND every
+ *  numeric assertion was validated against the evidence package in the same
+ *  request — never from evidence presence, and never from the model's own
+ *  assertions. */
 export function toChatWire(answer: AiAnswer): ChatWire {
   const grounded = answer.claimsVerified && answer.claims.length > 0;
   return {
@@ -243,6 +260,7 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       grounded,
       groundingMode: grounded ? "structured-claims" : "evidence-context",
       claims: grounded ? answer.claims : [],
+      groundingRejections: grounded ? [] : answer.groundingRejections ?? [],
     },
   };
 }

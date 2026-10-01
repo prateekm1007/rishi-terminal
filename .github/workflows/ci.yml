@@ -124,6 +124,12 @@ jobs:
       - name: Assert RLS invariants (N2)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/rls_invariants.sql
 
+      - name: Populate security master (D1-02, generated from the official NSE listing)
+        run: psql -v ON_ERROR_STOP=1 -f data/security-master/populate.sql
+
+      - name: Assert security master invariants (D1-02)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/security_master_invariants.sql
+
   smoke:
     name: Playwright smoke (blocking since round 2 — green on 4+ consecutive runs)
     runs-on: ubuntu-latest

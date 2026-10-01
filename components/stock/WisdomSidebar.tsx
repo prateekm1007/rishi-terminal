@@ -106,7 +106,9 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
   const { fundamentals } = useFundamentals(stock.symbol);
   const pe = fundamentals?.pe ?? stock.pe;
   const roe = fundamentals?.roe ?? stock.roe;
-  const mktcap = fundamentals?.marketCap ? fundamentals.marketCap / 10000000 : stock.mktcap;
+  // H3: fundamentals.marketCap is already ₹ Cr — the ÷1e7 here corrupted
+  // every screener-sourced value fed to the rishi prompts below.
+  const mktcap = fundamentals?.marketCap ? fundamentals.marketCap : stock.mktcap;
   const debtToEquity = fundamentals?.debtToEquity ?? stock.de;
   const revCagr = fundamentals?.revCagr3y ?? stock.revcagr;
   const promoter = fundamentals?.promoterHolding ?? stock.promo;

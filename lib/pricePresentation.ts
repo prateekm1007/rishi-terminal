@@ -103,3 +103,27 @@ export function statusColor(state: PresentationState): string {
       return "#64748B";
   }
 }
+
+/**
+ * Absolute price change implied by the same observation's price and PERCENT
+ * change (H2, audit 2026-10-01).
+ *
+ * The prices API transports only a percent change — lib/livePrice.ts reads
+ * `regularMarketChangePercent` / `pChange` (so an entry's `change` and
+ * `changePercent24h` are the same number, in percent). The absolute move is
+ * therefore derived exactly from the observation's own pair:
+ * prev = price / (1 + pct/100), abs = price − prev = price·pct/(100+pct).
+ *
+ * Never mix a live price with a seed baseline price to compute a change —
+ * that rendered "−1.63% (−1332.30)" on /stock/RELIANCE (live 1167.70 minus
+ * the 2500 seed constant) while the true move was ≈ −19.30.
+ *
+ * Fails closed to null on degenerate pairs (pct ≤ −100, non-finite,
+ * non-positive price): the UI renders "—", never a guess.
+ */
+export function absChangeFromPercent(price: number, pct: number): number | null {
+  if (!Number.isFinite(price) || !Number.isFinite(pct) || price <= 0) return null;
+  const denom = 100 + pct;
+  if (denom <= 0) return null;
+  return (price * pct) / denom;
+}

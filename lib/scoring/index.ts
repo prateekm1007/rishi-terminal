@@ -76,11 +76,12 @@ function isResolved(x: unknown): x is ResolvedStockMetrics {
 }
 
 function pick(
-  liveValue: number | undefined,
+  liveValue: number | null | undefined,
   seedValue: number,
 ): { value: number; source: FieldSource } {
   // A failed live fetch must never zero out a real seed value: only a finite,
-  // strictly-positive live number overrides the seed.
+  // strictly-positive live number overrides the seed. Null (H4/T11: upstream
+  // has no data) and undefined (no live fetch) both keep the seed baseline.
   if (typeof liveValue === "number" && Number.isFinite(liveValue) && liveValue > 0) {
     return { value: liveValue, source: "live" };
   }
@@ -133,10 +134,10 @@ export function resolveStockMetrics(
   const promo = pick(live?.promoterHolding, seed.promo);
   const revCagr = pick(live?.revCagr3y, seed.revcagr);
   const epsCagr = pick(live?.epsCagr, seed.epscagr);
-  const mktcap = pick(
-    live?.marketCap !== undefined ? live.marketCap / 10000000 : undefined,
-    seed.mktcap,
-  );
+  // H3: live marketCap arrives in ₹ Cr (the /api/fundamentals contract
+  // unit) and is used as-is — dividing by 1e7 here corrupted the baseline
+  // to 0.16 Cr for a 1.6M Cr live value.
+  const mktcap = pick(live?.marketCap, seed.mktcap);
   const bvps = pick(live?.bookValue, seed.bvps);
 
   set("pe", pe);

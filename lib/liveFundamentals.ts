@@ -9,13 +9,18 @@ export interface FullFundamentals {
   symbol: string;
   pe: number;
   eps: number;
+  /** Market capitalisation in ₹ crore — the /api/fundamentals contract
+   *  unit (H3, audit 2026-10-01). Screener.in reports Cr directly; the
+   *  Yahoo/NSE raw values (₹ absolute) are normalised below. */
   marketCap: number;
   roe: number;
   roce: number;
   bookValue: number;
   dividendYield: number;
   faceValue: number;
-  debtToEquity: number;
+  /** Null when no upstream exposes a D/E (H4/T11: unparseable is null,
+   *  never a constant and never 0 — 0 would claim "debt-free"). */
+  debtToEquity: number | null;
   opm: number;
   revCagr3y: number;
   epsCagr: number;
@@ -78,13 +83,18 @@ export async function fetchFullFundamentals(symbol: string): Promise<FullFundame
         symbol,
         pe: yahooData.pe,
         eps: yahooData.eps,
-        marketCap: yahooData.marketCap,
+        // H3: Yahoo (stats.marketCap.raw) and NSE (price × issued shares)
+        // report ₹ ABSOLUTE; the contract unit is ₹ crore (what Screener.in
+        // and the seed baseline use), so normalise here at the boundary.
+        marketCap: yahooData.marketCap / 10000000,
         roe: yahooData.roe,
         roce: yahooData.roce,
         bookValue: yahooData.bookValue,
         dividendYield: yahooData.dividendYield,
         faceValue: yahooData.faceValue,
-        debtToEquity: 0,
+        // H4: the Yahoo+NSE fallback exposes no D/E — null (unknown), not 0
+        // (which would fabricate a debt-free balance sheet).
+        debtToEquity: null,
         opm: 0,
         revCagr3y: 0,
         epsCagr: 0,

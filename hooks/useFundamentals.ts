@@ -20,7 +20,9 @@ export interface FullFundamentals {
   bookValue: number;
   dividendYield: number;
   faceValue: number;
-  debtToEquity: number;
+  /** Null when no upstream exposes a D/E (H4/T11 — never a fabricated
+   *  constant, never a 0 that claims debt-free). */
+  debtToEquity: number | null;
   opm: number;
   revCagr3y: number;
   epsCagr: number;
@@ -44,7 +46,11 @@ export interface ShareholdingData {
   source?: string;
 }
 
-const CACHE_KEY = 'rishi_fundamentals_cache_v2';
+// v3 (H3/H4, audit 2026-10-01): the fundamentals payload contract changed —
+// marketCap is now uniformly ₹ Cr and debtToEquity may be null. Entries
+// cached under the old key can carry the corrupted ÷1e7 values and the
+// fabricated 0.45 D/E, so the version bump forces one clean refetch.
+const CACHE_KEY = 'rishi_fundamentals_cache_v3';
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
 /** Cache payloads are opaque JSON snapshots (fundamentals / quarterly /

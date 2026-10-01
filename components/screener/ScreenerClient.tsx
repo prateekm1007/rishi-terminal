@@ -8,6 +8,8 @@
 import { useState, useMemo } from 'react';
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import { StockTable } from '@/components/screener/StockTable';
+// DELIBERATE N1 BOUNDARY VIOLATION (Constitution art. 24: prove the gate bites)
+import { buildConsensus } from '@/lib/consensus/engine';
 import { useLanguage } from '@/lib/language';
 import { SCREENER_PRESETS, applyFilters } from '@/lib/screener/presets';
 import SeedDataBanner from '@/components/shared/SeedDataBanner';

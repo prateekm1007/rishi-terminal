@@ -46,6 +46,10 @@ Accept:  commands + expected result (paste raw output in the PR)
 | FD-6 | Which broker CSV formats to support first | X3-07 |
 | FD-7 | Pricing and free-tier limits | G7-03 |
 | FD-8 | Chat/LLM vendor and data-retention terms | R4-02, R4-03 |
+| FD-9 | Constitution/credential-recovery decision (root-secret handling after sandbox resets) | audit 2026-10-02 |
+| FD-10 | `/rishis` general-chat scope: philosophy-only/context-only vs symbol-aware grounded | audit 2026-10-02 |
+| FD-11 | Matured bond policy (IN91DTB class): historical filter vs authoritative replacement source | audit 2026-10-02 |
+| FD-12 | Non-equity heuristic scores (crypto/commodity/forex/bond "RISHI CONSENSUS"): remain REFERENCE heuristics or become an official product score? Current state: labelled `HEURISTIC REFERENCE — not the canonical Rishi consensus engine` on all four detail surfaces | audit 2026-10-02 (G8) |
 
 ---
 

@@ -39,6 +39,9 @@ export async function snapshotAllStocks(): Promise<{
         philosopherScores[s.label || s.name] = s.score;
       }
 
+      // 010 (N2): rishi_snapshots is append-only for every role. The first
+      // write of a (symbol, snapshot_date) wins; a re-run of the nightly job
+      // must be a no-op, never a rewrite of history (S2-07).
       const { error } = await db.from("rishi_snapshots").upsert({
         symbol:            sym,
         asset_category:    "stock",
@@ -58,7 +61,7 @@ export async function snapshotAllStocks(): Promise<{
         price_at_snapshot: stock.price,
         price_change_1d:   0,
         created_at:        new Date().toISOString(),
-      }, { onConflict: "symbol,snapshot_date" });
+      }, { onConflict: "symbol,snapshot_date", ignoreDuplicates: true });
 
       if (error) { errors++; } else { snapshots++; }
 

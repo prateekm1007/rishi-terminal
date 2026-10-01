@@ -184,7 +184,7 @@ export default function RishiChat({ stock }: Props) {
   async function callGeminiAPI(
     prompt: string,
     history: ChatMessage[]
-  ): Promise<string> {
+  ): Promise<{ text: string; provenance?: ChatMessage["provenance"] }> {
     // New contract (remediation T7): personaId + symbol — system prompt is
     // built server-side from the allow-list; client prompt text is never sent.
     const res = await fetch('/api/chat', {
@@ -208,7 +208,9 @@ export default function RishiChat({ stock }: Props) {
     }
 
     const data = await res.json();
-    return data.text;
+    // End-to-end AI loop: provenance (provider/model/grounding/claims) rides
+    // on the wire and is retained with the message — never hidden.
+    return { text: data.text, provenance: data.provenance };
   }
 
   async function sendMessage(text: string) {
@@ -239,8 +241,10 @@ export default function RishiChat({ stock }: Props) {
           callGeminiAPI(`Respond to this from ${r2}'s perspective, potentially disagreeing: ${text}`, messages),
         ]);
 
-        responseText = resp1.status === 'fulfilled' ? resp1.value : (locale === 'hi' ? getStaticResponseHi(r1, text, liveStock, verdicts) : getStaticResponse(r1, text, liveStock, verdicts));
-        const resp2Text = resp2.status === 'fulfilled' ? resp2.value : (locale === 'hi' ? getStaticResponseHi(r2, text, liveStock, verdicts) : getStaticResponse(r2, text, liveStock, verdicts));
+        responseText = resp1.status === 'fulfilled' ? resp1.value.text : (locale === 'hi' ? getStaticResponseHi(r1, text, liveStock, verdicts) : getStaticResponse(r1, text, liveStock, verdicts));
+        const resp2Text = resp2.status === 'fulfilled' ? resp2.value.text : (locale === 'hi' ? getStaticResponseHi(r2, text, liveStock, verdicts) : getStaticResponse(r2, text, liveStock, verdicts));
+        const resp1Prov = resp1.status === 'fulfilled' ? resp1.value.provenance : undefined;
+        const resp2Prov = resp2.status === 'fulfilled' ? resp2.value.provenance : undefined;
 
         // Add first Rishi response
         const rishi1 = RISHI_PERSONALITIES[r1];
@@ -252,6 +256,7 @@ export default function RishiChat({ stock }: Props) {
           rishiEmoji: rishi1?.emoji,
           text: responseText,
           timestamp: new Date(),
+          provenance: resp1Prov,
         };
         setMessages(prev => [...prev, msg1]);
         addMessageToSession(currentSession, msg1);
@@ -267,6 +272,7 @@ export default function RishiChat({ stock }: Props) {
           rishiEmoji: rishi2?.emoji,
           text: resp2Text,
           timestamp: new Date(),
+          provenance: resp2Prov,
         };
         setMessages(prev => [...prev, msg2]);
         addMessageToSession(currentSession, msg2);
@@ -276,8 +282,11 @@ export default function RishiChat({ stock }: Props) {
       }
 
       // Single Rishi
+      let singleProv: ChatMessage["provenance"];
       try {
-        responseText = await callGeminiAPI(text, messages);
+        const resp = await callGeminiAPI(text, messages);
+        responseText = resp.text;
+        singleProv = resp.provenance;
         setApiStatus('ok');
       } catch (err) {
         console.warn('[RishiChat] API failed, using static fallback:', err);
@@ -294,6 +303,7 @@ export default function RishiChat({ stock }: Props) {
         rishiEmoji: rishi?.emoji,
         text: responseText,
         timestamp: new Date(),
+        provenance: singleProv,
       };
 
       setMessages(prev => [...prev, rishiMsg]);
@@ -447,6 +457,21 @@ export default function RishiChat({ stock }: Props) {
             <div style={{ fontSize: "9px", color: "#1E293B", marginTop: "3px", textAlign: msg.role === "user" ? "right" : "left" }}>
               {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
             </div>
+            {msg.role === "rishi" && msg.provenance && (
+              <div style={{ fontSize: "9px", color: "#475569", marginTop: "2px", lineHeight: 1.5 }}>
+                {msg.provenance.provider}/{msg.provenance.model} ·{" "}
+                {msg.provenance.grounded
+                  ? `grounded · ${msg.provenance.claims.length} verified claim${msg.provenance.claims.length === 1 ? "" : "s"}`
+                  : "not grounded · context-only"}
+                {msg.provenance.grounded && msg.provenance.claims.length > 0 && (
+                  <div style={{ color: "#334155" }}>
+                    {msg.provenance.claims.map((c, i) => (
+                      <div key={i}>· {c.claim} [{c.evidenceIds.join(", ")}]</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
 

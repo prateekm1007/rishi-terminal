@@ -213,7 +213,7 @@ describe("Phase 5.1 — honest AI provenance (T52)", () => {
     delete process.env.GEMINI_API_KEY;
   });
 
-  it("with evidence context: grounded is false and uncertainties disclose the mode", async () => {
+  it("with evidence context: an unparseable model reply degrades honestly (grounded false, mode disclosed)", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { content: "answer" } }] }), { status: 200 }),
     );
@@ -225,8 +225,10 @@ describe("Phase 5.1 — honest AI provenance (T52)", () => {
     });
     expect(a?.claims).toEqual([]);
     expect(a?.uncertainties.length).toBeGreaterThan(0);
-    expect(a?.uncertainties[0]).toContain("evidence-context");
-    expect(a?.uncertainties[0]).toContain("not machine-verified");
+    // End-to-end loop: the structured contract is attempted; a reply that
+    // ignores it is presented as UNVERIFIED text — never as grounded claims.
+    expect(a?.uncertainties[0]).toContain("structured response contract not satisfied");
+    expect(a?.claimsVerified).toBe(false);
 
     const wire = toChatWire(a!);
     expect(wire.provenance.grounded).toBe(false);

@@ -16,6 +16,17 @@ export interface ChatMessage {
     tokenCount?: number;
     confidence?: number;
   };
+  /** End-to-end AI loop: provenance retained with the message so the UI can
+   *  show (and an audit can replay) which provider/model produced it and
+   *  whether its claims were validated against the evidence package. */
+  provenance?: {
+    provider: string;
+    model: string;
+    generatedAt: string;
+    grounded: boolean;
+    groundingMode: 'evidence-context' | 'structured-claims';
+    claims: Array<{ claim: string; evidenceIds: string[] }>;
+  };
 }
 
 export interface ChatSession {

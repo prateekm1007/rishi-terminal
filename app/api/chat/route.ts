@@ -109,10 +109,13 @@ async function refundQuota(userId: string): Promise<void> {
   }
 }
 
-// ── stock context, built server-side from the seed registry ────
-// (moved to lib/chat/stockEvidence.ts in N3 so the seed-labeling
-// contract is testable; re-exported for readability at the call site)
-import { stockEvidence } from '@/lib/chat/stockEvidence';
+// ── stock context: the CANONICAL evidence assembler (end-to-end loop) ──
+// Consumes resolveStockMetrics() → getStockScore() with their provenance,
+// the price observation path, and explicit unavailable-field notes — with
+// deterministic evidence ids the structured AI response is validated
+// against. The seed-only stockEvidence() (N3) is superseded here; it
+// remains exported for its own labeling-contract tests.
+import { buildAiEvidencePackage } from '@/lib/ai/evidence';
 
 interface HistoryTurn {
   role: 'user' | 'assistant';
@@ -212,9 +215,11 @@ export async function POST(req: NextRequest) {
   }
 
   // 6. Compose the request. System prompt is server-built (persona);
-  //    symbol context is passed as EVIDENCE with stable ids (T51), not
-  //    concatenated into the prompt here.
-  const evidence = symbol ? stockEvidence(symbol) : [];
+  //    symbol context comes from the canonical evidence assembler with
+  //    stable, validated ids (end-to-end AI loop) — never seed-only
+  //    context, never an AI-side score recomputation.
+  const evidencePackage = symbol ? await buildAiEvidencePackage(symbol) : null;
+  const evidence = evidencePackage?.items ?? [];
 
   // 7. Call the AI abstraction — provider resolution, timeout, health and
   //    provenance are handled in lib/ai (T49/T50). Fail-closed: explicit

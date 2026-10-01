@@ -9,12 +9,23 @@ interface WisdomSidebarProps {
   scores: RishiScore[];
 }
 
+interface MessageProvenance {
+  provider: string;
+  model: string;
+  generatedAt: string;
+  grounded: boolean;
+  groundingMode: 'evidence-context' | 'structured-claims';
+  claims: Array<{ claim: string; evidenceIds: string[] }>;
+}
+
 interface Message {
   id: string;
   role: "user" | "rishi";
   rishiName?: string;
   text: string;
   timestamp: Date;
+  /** End-to-end AI loop: provenance retained + rendered — never hidden. */
+  provenance?: MessageProvenance;
 }
 
 interface HistoricalParallel {
@@ -158,6 +169,7 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
         rishiName: selectedRishi,
         text: data.text,
         timestamp: new Date(),
+        provenance: (data.provenance ?? undefined) as MessageProvenance | undefined,
       };
       setMessages(prev => [...prev, rishiMsg]);
     } catch (err: unknown) {
@@ -329,6 +341,23 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
                 }}>
                   {msg.text}
                 </div>
+                {msg.role === "rishi" && msg.provenance && (
+                  <div style={{
+                    fontSize: "9px", color: "#64748B", marginTop: "3px", lineHeight: 1.5,
+                  }}>
+                    {msg.provenance.provider}/{msg.provenance.model} ·{" "}
+                    {msg.provenance.grounded
+                      ? `grounded · ${msg.provenance.claims.length} verified claim${msg.provenance.claims.length === 1 ? "" : "s"}`
+                      : "not grounded · context-only"}
+                    {msg.provenance.grounded && msg.provenance.claims.length > 0 && (
+                      <div style={{ color: "#475569" }}>
+                        {msg.provenance.claims.map((c, i) => (
+                          <div key={i}>· {c.claim} [{c.evidenceIds.join(", ")}]</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
 

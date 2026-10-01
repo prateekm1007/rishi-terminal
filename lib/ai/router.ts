@@ -22,7 +22,9 @@
 
 import { withProviderHealth } from "@/lib/registry/providerHealth";
 import { PROVIDER_IDS, isProviderApproved } from "@/lib/registry/providerRegistry";
-import type { AiAnswer, AiEvidenceItem, ChatWire } from "./schemas";
+import type { AiAnswer, AiClaim, AiEvidenceItem, ChatWire } from "./schemas";
+import { StructuredModelOutputSchema } from "./schemas";
+import { validateGrounding } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 
@@ -84,15 +86,42 @@ export function resolveAiProvider(): AiProvider | null {
   return resolveAiProviderCandidates()[0] ?? null;
 }
 
-/** T51: evidence renders into the system prompt with stable ids the model can cite. */
+/** T51: evidence renders into the system prompt with stable ids the model can cite.
+ *  End-to-end loop: when evidence exists the model is ALSO given the
+ *  structured-response contract — its claims will be validated against the
+ *  evidence ids before anything is marked grounded (fail closed). */
 function evidenceBlock(evidence: AiEvidenceItem[]): string {
   if (evidence.length === 0) return "";
   const lines = evidence.map(e => `[${e.id}] ${e.text}`);
   return (
     "\n\nVERIFIED CONTEXT (cite ids only from this list; do not invent ids; " +
     "if a datum is absent, say so rather than guessing):\n" +
-    lines.join("\n")
+    lines.join("\n") +
+    "\n\nRESPONSE CONTRACT — reply with ONLY a JSON object (no prose outside " +
+    'the JSON): {"answer": <your full reply as one string>, "claims": ' +
+    '[{"claim": <one factual statement you are making>, "evidenceIds": ' +
+    '[<ids from VERIFIED CONTEXT that support it>]}], "uncertainties": ' +
+    "[<things you could not verify>]}. Every claim MUST list the evidence " +
+    "ids it rests on; a claim without ids or with an invented id will be " +
+    "rejected wholesale. If you make no verifiable factual claims, return " +
+    'an empty claims array. Example: {"answer": "...", "claims": [], ' +
+    '"uncertainties": ["..."]}'
   );
+}
+
+/** Extract the JSON object from a model reply (tolerates code fences and
+ *  surrounding prose, which weaker models add despite instructions). */
+function extractJsonObject(text: string): unknown | null {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const candidate = fenced ? fenced[1] : text;
+  const start = candidate.indexOf("{");
+  const end = candidate.lastIndexOf("}");
+  if (start === -1 || end <= start) return null;
+  try {
+    return JSON.parse(candidate.slice(start, end + 1));
+  } catch {
+    return null;
+  }
 }
 
 export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promise<AiAnswer | null> {
@@ -140,42 +169,79 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
   }
   const provider = used;
 
-  // T52 — HONEST grounding state (Phase 5.1 wording): this implementation is
-  // evidence-CONTEXT injection. The provider output is unstructured, claims
-  // are NOT extracted, and citations are not machine-verified — so claims
-  // stays empty and `grounded` is false even when evidence context was
-  // supplied. The uncertainty note always discloses this instead of wiping
-  // it when evidence exists (the previous shape implied verified grounding
-  // that does not exist yet). Structured claims with stable evidence ids and
-  // fabricated-id rejection is the T51/T52 destination, not the current state.
+  // ── End-to-end AI loop: structured claims + evidence-ID validation ──
+  // With evidence in scope, the model was asked for the structured contract.
+  // Parse → zod-validate → validate every evidenceId against THIS request's
+  // evidence ids. Any unknown id fails CLOSED: no claim is served as
+  // verified, grounded stays false, and the rejection is disclosed. A parse
+  // failure degrades honestly to evidence-context (the answer text is still
+  // the model's — no data is invented to repair the pipeline).
+  if (evidence.length > 0) {
+    const parsed = extractJsonObject(text);
+    const structured = parsed ? StructuredModelOutputSchema.safeParse(parsed) : null;
+    if (structured?.success) {
+      const validIds = new Set(evidence.map(e => e.id));
+      const grounding = validateGrounding(validIds, structured.data.claims);
+      return {
+        answer: structured.data.answer,
+        claims: grounding.validatedClaims as AiClaim[],
+        uncertainties: [
+          ...grounding.rejections.map(r => `grounding validation: ${r}`),
+          ...structured.data.uncertainties,
+          ...(grounding.grounded
+            ? []
+            : ["claims were not grounded in the verified evidence package — treat this reply as context-only"]),
+        ],
+        provider: provider.id,
+        model: provider.model,
+        generatedAt,
+        claimsVerified: grounding.grounded,
+      };
+    }
+    return {
+      answer: text,
+      claims: [],
+      uncertainties: [
+        "structured response contract not satisfied (unparseable or invalid JSON) — presented as unverified text",
+      ],
+      provider: provider.id,
+      model: provider.model,
+      generatedAt,
+      claimsVerified: false,
+    };
+  }
+
+  // T52 — HONEST grounding state (Phase 5.1 wording): no evidence pipeline
+  // context was supplied, so this is unstructured provider output — claims
+  // stay empty and `grounded` is false by construction.
   return {
     answer: text,
     claims: [],
     uncertainties: [
-      evidence.length > 0
-        ? "evidence-context injection only — provider output was not parsed into claims; cited ids are not machine-verified (T51/T52 structured claims pending)"
-        : "unstructured provider output — claims not extracted (no evidence pipeline context supplied)",
+      "unstructured provider output — claims not extracted (no evidence pipeline context supplied)",
     ],
     provider: provider.id,
     model: provider.model,
     generatedAt,
+    claimsVerified: false,
   };
 }
 
-/** Wire-shape helper for the chat route (backwards compatible `{text}`). */
+/** Wire-shape helper for the chat route (backwards compatible `{text}`).
+ *  grounded is true ONLY for claims whose every evidenceId was validated
+ *  against the evidence package in the same request — never from evidence
+ *  presence, and never from the model's own assertions. */
 export function toChatWire(answer: AiAnswer): ChatWire {
+  const grounded = answer.claimsVerified && answer.claims.length > 0;
   return {
     text: answer.answer,
     provenance: {
       provider: answer.provider,
       model: answer.model,
       generatedAt: answer.generatedAt,
-      // Honest by construction: claims is empty in this implementation, so
-      // grounded is false. It becomes true only when the structured claims
-      // pipeline (T51/T52) actually ships — never derived from evidence
-      // presence.
-      grounded: answer.claims.length > 0,
-      groundingMode: "evidence-context",
+      grounded,
+      groundingMode: grounded ? "structured-claims" : "evidence-context",
+      claims: grounded ? answer.claims : [],
     },
   };
 }

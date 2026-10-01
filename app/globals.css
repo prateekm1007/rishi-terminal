@@ -1501,3 +1501,13 @@ body.theme-dark {
     display: block !important;
   }
 }
+
+/* Mobile drawer animation (moved out of HamburgerMenu's styled-jsx so the
+   styled-jsx runtime stays out of the shared layout chunk). */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.mobile-sidebar {
+  animation: slideInLeft 0.2s ease;
+}

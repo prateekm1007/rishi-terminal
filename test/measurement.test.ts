@@ -274,19 +274,135 @@ describe("T59.5 — no manufactured statistics", () => {
     expect(enough.value).toBe(100); // ceil(0.95*10)-1 = index 9 → max
   });
 
-  it("app-request wall time is attributed to the matching request, unknown completion is ignored", () => {
+  it("uncompleted requests keep wallMs null — never invented", () => {
     recordAppRequest("/api/prices", { symbols: 1 });
-    recordAppRequest("/api/prices/batch", { symbols: 5 });
-    recordAppRequestDone("/api/prices", 42);
+    const events = measurementSnapshot().recentEvents.filter(e => e.kind === "app-request") as Array<{ wallMs: number | null }>;
+    expect(events).toHaveLength(1);
+    expect(events[0].wallMs).toBeNull();
+  });
+});
 
-    const events = measurementSnapshot().recentEvents;
-    const single = events.find(e => e.kind === "app-request" && (e as { endpoint: string }).endpoint === "/api/prices") as { wallMs: number | null };
-    const batch = events.find(e => e.kind === "app-request" && (e as { endpoint: string }).endpoint === "/api/prices/batch") as { wallMs: number | null };
-    expect(single.wallMs).toBe(42);
-    expect(batch.wallMs).toBeNull(); // not yet completed — must stay null, not invented
+// ── Deep-audit corrective gate 1: request-ID attribution ────────────────
+// recordAppRequestDone used to scan backwards for the most recent
+// incomplete event on the endpoint — under concurrent requests a
+// completion could attach its wall time to the WRONG request. Completion
+// must target exactly the event ID its caller received.
 
-    recordAppRequestDone("/api/prices/batch", 77);
-    const batch2 = measurementSnapshot().recentEvents.filter(e => e.kind === "app-request").at(-1) as { wallMs: number | null };
-    expect(batch2.wallMs).toBe(77);
+describe("corrective — app-request wall time is attributed by request ID", () => {
+  it("out-of-order completions attach wallMs to their OWN event (not the last incomplete one)", () => {
+    const ids = Array.from({ length: 6 }, (_, i) =>
+      recordAppRequest("/api/prices", { symbols: i + 1 }),
+    );
+    expect(new Set(ids).size).toBe(6); // IDs are unique per request
+    const walls = [50, 10, 40, 20, 60, 30];
+    const completionOrder = [1, 4, 0, 5, 2, 3]; // deliberately ≠ registration order
+    for (const i of completionOrder) recordAppRequestDone(ids[i], walls[i]);
+
+    const events = measurementSnapshot().recentEvents.filter(
+      e => e.kind === "app-request",
+    ) as Array<{ id: string; wallMs: number | null; symbols: number | null }>;
+    ids.forEach((id, i) => {
+      const ev = events.find(e => e.id === id);
+      expect(ev).toBeDefined();
+      expect(ev?.wallMs).toBe(walls[i]); // exact attribution, no cross-attachment
+      expect(ev?.symbols).toBe(i + 1);
+    });
+  });
+
+  it("concurrent same-endpoint requests with different delays each record their own wall time", async () => {
+    const delays = [30, 5, 45, 15, 25];
+    const ids = await Promise.all(
+      delays.map(async d => {
+        const id = recordAppRequest("/api/prices/batch", { symbols: 1 });
+        await new Promise(r => setTimeout(r, d));
+        recordAppRequestDone(id, d);
+        return id;
+      }),
+    );
+
+    const events = measurementSnapshot().recentEvents.filter(
+      e => e.kind === "app-request",
+    ) as Array<{ id: string; wallMs: number | null }>;
+    ids.forEach((id, i) => {
+      const ev = events.find(e => e.id === id);
+      expect(ev?.wallMs).toBe(delays[i]);
+    });
+  });
+
+  it("double completion and unknown IDs cannot hijack another event's wall time", () => {
+    const a = recordAppRequest("/api/prices", { symbols: 1 });
+    const b = recordAppRequest("/api/prices", { symbols: 1 });
+    recordAppRequestDone(a, 11);      // correct completion
+    recordAppRequestDone(a, 99);      // double completion: first wins
+    recordAppRequestDone("req-never-issued", 77); // unknown ID: silent no-op
+    recordAppRequestDone(b, 22);      // b unaffected by all of the above
+
+    const events = measurementSnapshot().recentEvents.filter(
+      e => e.kind === "app-request",
+    ) as Array<{ id: string; wallMs: number | null }>;
+    expect(events.find(e => e.id === a)?.wallMs).toBe(11);
+    expect(events.find(e => e.id === b)?.wallMs).toBe(22);
+  });
+});
+
+// ── Deep-audit corrective gate 2: bulk-run local attribution ─────────────
+// fetchBulkPricesForSymbols used to derive its per-run upstream counts from
+// global ledger deltas (before → concurrent work → after). Overlapping
+// batch requests absorbed each other's attempts. Each run must own its
+// accounting.
+
+describe("corrective — overlapping bulk runs cannot charge each other's attempts", () => {
+  it("two concurrent bulk runs each report exactly their own upstream attempts and failures", async () => {
+    // Run 1: symbols TESTA/TESTB — first suffix succeeds, but slowly (keeps
+    // the run's before→after window open across run 2's entire lifetime).
+    // Run 2: symbols TESTC/TESTD — .NS fails (404), .BO succeeds.
+    const spy = mockFetchAlways((...args: unknown[]) => {
+      const url = String((args[0] as RequestInfo) ?? "");
+      const sym = decodeURIComponent(url.split("/chart/")[1] ?? "").split("?")[0]
+        .replace(/\.NS$/, "").replace(/\.BO$/, "");
+      if (sym === "TESTA" || sym === "TESTB") {
+        return new Promise<Response>(resolve =>
+          setTimeout(() => resolve(yahooChartOk(100, 0.1, 1761900004)), 40),
+        );
+      }
+      if (url.includes(".BO")) {
+        return new Promise<Response>(resolve =>
+          setTimeout(() => resolve(yahooChartOk(200, 0.2, 1761900005)), 60),
+        );
+      }
+      return new Promise<Response>(resolve =>
+        setTimeout(() => resolve(new Response("no", { status: 404 })), 5),
+      );
+    });
+
+    // Start run 1, let it enter its fetch window, then start run 2 inside
+    // that window — the contamination scenario the old delta method got wrong.
+    const run1 = fetchBulkPricesForSymbols(["TESTA", "TESTB"]);
+    await new Promise(r => setTimeout(r, 10));
+    const run2 = fetchBulkPricesForSymbols(["TESTC", "TESTD"]);
+    const [out1, out2] = await Promise.all([run1, run2]);
+
+    expect(Object.keys(out1).sort()).toEqual(["TESTA", "TESTB"]);
+    expect(Object.keys(out2).sort()).toEqual(["TESTC", "TESTD"]);
+    // Real upstream HTTP: 2 (run 1) + 4 (run 2, incl. .NS 404s) = 6.
+    expect(spy.mock.calls.length).toBe(6);
+
+    const runs = measurementSnapshot().recentEvents.filter(
+      e => e.kind === "bulk-run",
+    ) as unknown as Array<Record<string, number | string>>;
+    expect(runs).toHaveLength(2);
+    const run1Event = runs.find(r => r.upstreamAttempts === 2);
+    const run2Event = runs.find(r => r.upstreamAttempts === 4);
+    expect(run1Event, "run 1 must own exactly its 2 attempts").toBeDefined();
+    expect(run2Event, "run 2 must own exactly its 4 attempts").toBeDefined();
+    expect(run1Event).toMatchObject({
+      symbolsRequested: 2, symbolsReturned: 2, bulkCacheHits: 0, upstreamFailures: 0,
+    });
+    expect(run2Event).toMatchObject({
+      symbolsRequested: 2, symbolsReturned: 2, bulkCacheHits: 0, upstreamFailures: 2,
+    });
+    // The global ledger still saw every attempt (reconciliation stream intact).
+    expect(ledgerBulkAttempts()).toBe(6);
+    expect(ledgerBulkFailures()).toBe(2);
   });
 });

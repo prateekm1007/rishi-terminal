@@ -71,9 +71,14 @@ export interface BulkRunEvent {
 
 export interface AppRequestEvent {
   kind: "app-request";
+  /** Corrective gate: completion targets EXACTLY this event by id. The
+   *  previous "most recent incomplete event on this endpoint" scan was
+   *  unsafe under concurrency — a 10-request burst could attach wall
+   *  times to the wrong request. */
+  id: string;
   ts: string;
   endpoint: "/api/prices" | "/api/prices/batch";
-  wallMs: number | null;   // filled on completion by recordAppRequestDone
+  wallMs: number | null;   // filled on completion via recordAppRequestDone(id, …)
   symbols: number | null;
   cacheBuster: boolean | null; // battery cache-busted URL (measurement only)
 }
@@ -136,6 +141,7 @@ interface MeasurementState {
   processStartedAt: number;
   events: MeasurementEvent[];
   dropped: number;
+  appRequestSeq: number;
   appRequests: Record<string, number>;
   upstream: Record<string, { single: number; bulk: number; failures: number }>;
   served: Record<string, number>;
@@ -149,6 +155,7 @@ function state(): MeasurementState {
       processStartedAt: Date.now(),
       events: [],
       dropped: 0,
+      appRequestSeq: 0,
       appRequests: {},
       upstream: {},
       served: {},
@@ -178,31 +185,40 @@ function upstreamEntry(providerId: string): { single: number; bulk: number; fail
 
 // ── T59.2: application requests (API surface), distinct from upstream ──
 
+/** Register an application request; returns the event ID that
+ *  recordAppRequestDone MUST be called with (exact attribution). */
 export function recordAppRequest(
   endpoint: "/api/prices" | "/api/prices/batch",
   meta?: { symbols?: number; cacheBuster?: boolean },
-): void {
+): string {
   const s = state();
+  s.appRequestSeq += 1;
+  const id = `req-${s.processStartedAt.toString(36)}-${s.appRequestSeq}`;
   s.appRequests[endpoint] = (s.appRequests[endpoint] ?? 0) + 1;
   push({
     kind: "app-request",
+    id,
     ts: new Date().toISOString(),
     endpoint,
     wallMs: null,
     symbols: meta?.symbols ?? null,
     cacheBuster: meta?.cacheBuster ?? null,
   });
+  return id;
 }
 
-/** Complete an app-request event with its wall time (T59.5 latency). */
+/** Complete the app-request event with EXACTLY this id (T59.5 latency).
+ *  Never matches by endpoint or recency — a concurrent burst must not
+ *  attach its wall times to the wrong request. Double completion and
+ *  unknown ids are ignored (first completion wins; nothing is invented). */
 export function recordAppRequestDone(
-  endpoint: "/api/prices" | "/api/prices/batch",
+  id: string,
   wallMs: number,
 ): void {
   const s = state();
   for (let i = s.events.length - 1; i >= 0; i -= 1) {
     const ev = s.events[i];
-    if (ev.kind === "app-request" && ev.endpoint === endpoint && ev.wallMs === null) {
+    if (ev.kind === "app-request" && ev.id === id && ev.wallMs === null) {
       ev.wallMs = wallMs;
       return;
     }
@@ -298,6 +314,7 @@ export function resetMeasurement(): void {
     processStartedAt: Date.now(),
     events: [],
     dropped: 0,
+    appRequestSeq: 0,
     appRequests: {},
     upstream: {},
     served: {},

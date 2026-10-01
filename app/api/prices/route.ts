@@ -62,7 +62,9 @@ export async function GET(req: NextRequest) {
     }
 
     // T59.2: application request, counted separately from upstream work.
-    recordAppRequest('/api/prices', { symbols: list.length });
+    // Corrective gate: the returned id attributes THIS request's wall time
+    // to THIS event, even under concurrent same-endpoint requests.
+    const appReqId = recordAppRequest('/api/prices', { symbols: list.length });
 
     const t0 = Date.now();
     const results = await Promise.allSettled(list.map(s => fetchLivePrice(s)));
@@ -82,7 +84,7 @@ export async function GET(req: NextRequest) {
     });
 
     const wallMs = Date.now() - t0;
-    recordAppRequestDone('/api/prices', wallMs);
+    recordAppRequestDone(appReqId, wallMs);
 
     // If single symbol requested, return unwrapped object (not Record)
     if (sym && list.length === 1) {

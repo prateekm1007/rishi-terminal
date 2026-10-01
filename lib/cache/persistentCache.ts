@@ -23,6 +23,7 @@
 import 'server-only';
 
 import { getAdminSupabase } from '../services/supabaseAdmin';
+import { PERSISTABLE_SOURCES, isPersistableSource } from './storageRights';
 
 export interface PersistentCacheEntry<T = unknown> {
   payload: T;
@@ -53,7 +54,13 @@ interface CacheRow {
   provider_id: string;
 }
 
-/** Read an entry. Returns null when unconfigured, missing, expired, or slow. */
+/** Read an entry. Returns null when unconfigured, missing, expired, slow,
+ *  or when the stored provider is NOT storage-entitled.
+ *  Corrective gate (deep-audit finding 4): the read path independently
+ *  re-validates `provider_id ∈ PERSISTABLE_SOURCES` — the write-path
+ *  allow-list alone does not protect against a malformed, historical, or
+ *  manually inserted row becoming an entitlement bypass. Defense in depth:
+ *  the check resolves the SAME allow-list from lib/cache/storageRights.ts. */
 export async function persistentCacheGet<T = unknown>(
   key: string,
 ): Promise<PersistentCacheEntry<T> | null> {
@@ -73,21 +80,29 @@ export async function persistentCacheGet<T = unknown>(
     // Belt-and-braces expiry check: the DB row also carries expires_at and a
     // cleanup may lag; never serve an entry the storage layer considers dead.
     if (Date.parse(row.expires_at) <= Date.now()) return null;
+    // Read-side entitlement guard: a stored provider that is not entitled
+    // (today, historically, or by corruption) is never served.
+    if (!PERSISTABLE_SOURCES.has(row.provider_id)) return null;
     return { payload: row.payload as T, observedAt: row.observed_at, providerId: row.provider_id };
   } catch {
     return null;
   }
 }
 
-/** Upsert an entry. Resolves false on any failure (never throws). */
+/** Upsert an entry. Resolves false on any failure (never throws).
+ *  Corrective gate: rejects a null/empty observation timestamp at the
+ *  storage boundary — the schema (migration 009, observed_at NOT NULL)
+ *  and the provenance rule agree: no genuine observation time, no row. */
 export async function persistentCacheSet(
   key: string,
   providerId: string,
   payload: unknown,
   ttlMs: number,
-  observedAtIso: string,
+  observedAtIso: string | null,
 ): Promise<boolean> {
   if (!configured()) return false;
+  if (!isPersistableSource(providerId)) return false;
+  if (!observedAtIso) return false;
   try {
     const db = getAdminSupabase();
     const res = await raceTimeout(

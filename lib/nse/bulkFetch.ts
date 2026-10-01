@@ -19,16 +19,24 @@
 //     stop presenting serve time as observation time (T60.1). null when
 //     Yahoo does not supply one (never fabricated).
 import {
-  measurementSnapshot,
   recordBulkRun,
   recordUpstreamAttempt,
   type HttpFailureClass,
 } from '../health/measurement';
 
-/** T59.1: ledger totals snapshot for run-delta accounting. */
-function bulkLedgerTotals(): { bulk: number; bulkFailures: number } {
-  const c = measurementSnapshot().counters.upstreamTotals;
-  return { bulk: c.bulk, bulkFailures: c.bulkFailures };
+/**
+ * Corrective gate (deep-audit finding 2): each bulk invocation owns its
+ * attempt accounting. The previous implementation derived per-run counts
+ * from GLOBAL ledger deltas (before snapshot → concurrent work → after
+ * snapshot), so two overlapping batch requests could charge each other's
+ * upstream attempts. The accumulator is created per run, shared by that
+ * run's chunks (they all belong to the run), and the global ledger event
+ * stream (recordUpstreamAttempt) is unchanged — T59.4 reconciliation still
+ * sees every attempt; only per-RUN attribution became exact.
+ */
+interface BulkAttemptAccumulator {
+  attempts: number;
+  failures: number;
 }
 
 export interface BulkPriceEntry {
@@ -60,8 +68,13 @@ function classifyFailure(res: Response | null, err: unknown): HttpFailureClass {
   return 'network';
 }
 
-// Fetch single stock from Yahoo Finance v8/chart (works without auth)
-async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
+// Fetch single stock from Yahoo Finance v8/chart (works without auth).
+// Every attempt increments the CALLER's local accumulator (exact per-run
+// attribution) AND the global ledger (T59.4 reconciliation stream).
+async function fetchYahooPrice(
+  symbol: string,
+  acc: BulkAttemptAccumulator,
+): Promise<BulkPriceEntry | null> {
   const suffixes = ['.NS', '.BO'];
   for (const suffix of suffixes) {
     const t0 = Date.now();
@@ -78,6 +91,8 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
       if (!res.ok) {
         // T59.1: count the real upstream HTTP attempt, then fall through
         // exactly as before (try next suffix).
+        acc.attempts += 1;
+        acc.failures += 1;
         recordUpstreamAttempt({
           providerId: 'yahoo', path: 'bulk', ok: false,
           latencyMs: Date.now() - t0,
@@ -91,6 +106,8 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
       const meta = data?.chart?.result?.[0]?.meta;
 
       if (!meta?.regularMarketPrice) {
+        acc.attempts += 1;
+        acc.failures += 1;
         recordUpstreamAttempt({
           providerId: 'yahoo', path: 'bulk', ok: false,
           latencyMs: Date.now() - t0, httpFailureClass: 'parse',
@@ -102,6 +119,8 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
       const price = Number(meta.regularMarketPrice) || 0;
       if (price < 20) {
         // ADR-price rejection — transport succeeded, observation rejected.
+        acc.attempts += 1;
+        acc.failures += 1;
         recordUpstreamAttempt({
           providerId: 'yahoo', path: 'bulk', ok: false,
           latencyMs: Date.now() - t0, httpFailureClass: null,
@@ -120,6 +139,7 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
         ? new Date(rt * 1000).toISOString()
         : null;
 
+      acc.attempts += 1;
       recordUpstreamAttempt({
         providerId: 'yahoo', path: 'bulk', ok: true,
         latencyMs: Date.now() - t0, httpFailureClass: null,
@@ -130,6 +150,8 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
 
       return { price, change, volume, observedAt };
     } catch (err) {
+      acc.attempts += 1;
+      acc.failures += 1;
       recordUpstreamAttempt({
         providerId: 'yahoo', path: 'bulk', ok: false,
         latencyMs: Date.now() - t0,
@@ -145,11 +167,14 @@ async function fetchYahooPrice(symbol: string): Promise<BulkPriceEntry | null> {
 }
 
 // Process one batch of symbols sequentially
-async function processBatch(symbols: string[]): Promise<Record<string, BulkPriceEntry>> {
+async function processBatch(
+  symbols: string[],
+  acc: BulkAttemptAccumulator,
+): Promise<Record<string, BulkPriceEntry>> {
   const results: Record<string, BulkPriceEntry> = {};
   
   for (const sym of symbols) {
-    const data = await fetchYahooPrice(sym);
+    const data = await fetchYahooPrice(sym, acc);
     if (data) {
       results[sym] = data;
     }
@@ -237,15 +262,16 @@ export async function fetchBulkPricesForSymbols(
     return results;
   }
   
-  // Process in parallel batches (10 batches of ~100 symbols each)
+  // Process in parallel batches (10 batches of ~100 symbols each).
+  // Corrective gate: this run owns a fresh accumulator — attempts made by
+  // any OTHER concurrent bulk run never enter this run's counts.
   const chunks = chunkArray(toFetch, 20);
-  const before = bulkLedgerTotals();
+  const own: BulkAttemptAccumulator = { attempts: 0, failures: 0 };
   const batchResults = await Promise.allSettled(
-    chunks.map(chunk => processBatch(chunk))
+    chunks.map(chunk => processBatch(chunk, own))
   );
-  const after = bulkLedgerTotals();
-  const upstreamAttempts = after.bulk - before.bulk;
-  const upstreamFailures = Math.max(0, after.bulkFailures - before.bulkFailures);
+  const upstreamAttempts = own.attempts;
+  const upstreamFailures = own.failures;
   
   // Merge results
   for (const settled of batchResults) {

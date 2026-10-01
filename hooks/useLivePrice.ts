@@ -12,7 +12,9 @@ interface LivePrice {
   volume: number;
   previousClose: number;
   isMarketOpen: boolean;
-  lastUpdated: string;
+  /** Corrective gate 3: server-reported observation time, or null — never
+   *  fabricated client-side. */
+  lastUpdated: string | null;
 }
 
 export function useLivePrice(symbol: string, refreshInterval: number = 60000) {

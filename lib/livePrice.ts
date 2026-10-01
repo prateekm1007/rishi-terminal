@@ -11,7 +11,13 @@
 import { withProviderHealth, coalesce, getCachedResult, putCachedResult, ProviderCooldownError } from './registry/providerHealth';
 import { PROVIDER_IDS, isProviderApproved } from './registry/providerRegistry';
 import { persistentCacheGet, persistentCacheSet } from './cache/persistentCache';
+import { isPersistableSource } from './cache/storageRights';
 import { recordUpstreamAttempt } from './health/measurement';
+
+// Corrective gate: the storage-rights allow-list moved to
+// lib/cache/storageRights.ts so the persistent-cache READ path can
+// re-validate entitlement against the same single source of truth.
+// Re-exported here for existing consumers (observations.ts, tests).
 
 // =============================================================================
 // NSE INDIA API — Stocks + MCX Commodities
@@ -28,7 +34,7 @@ const NSE_HEADERS = {
 // =============================================================================
 // YAHOO FINANCE v8 — Indian stock price (NSE suffix)
 // =============================================================================
-const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number; ts: number }> = {};
+const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number; observedAt: string | null; ts: number }> = {};
 
 /**
  * Pure: price + 24h % change from a Yahoo chart `meta` object.
@@ -53,10 +59,13 @@ export function yahooChangeFromMeta(
   return { price, change: prev > 0 ? ((price - prev) / prev) * 100 : 0 };
 }
 
-async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change: number } | null> {
+async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change: number; observedAt: string | null } | null> {
   const now = Date.now();
   const cached = YAHOO_STOCK_CACHE[symbol];
-  if (cached && now - cached.ts < 60000) return cached;
+  if (cached && now - cached.ts < 60000) {
+    // Replay preserves the ORIGINAL observation time (corrective gate 3).
+    return { price: cached.price, change: cached.change, observedAt: cached.observedAt };
+  }
 
   try {
     const yahooSym = `${symbol}.NS`;
@@ -70,8 +79,12 @@ async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change
     const meta = json?.chart?.result?.[0]?.meta;
     const result = yahooChangeFromMeta(meta);
     if (!result) return null;
-    YAHOO_STOCK_CACHE[symbol] = { ...result, ts: now };
-    return result;
+    // Corrective gate 3: carry Yahoo's own observation time when disclosed
+    // (same field the bulk path already uses); null when not — never now.
+    const rt = Number(meta?.regularMarketTime);
+    const observedAt = Number.isFinite(rt) && rt > 0 ? new Date(rt * 1000).toISOString() : null;
+    YAHOO_STOCK_CACHE[symbol] = { ...result, observedAt, ts: now };
+    return { ...result, observedAt };
   } catch {
     return null;
   }
@@ -80,7 +93,7 @@ async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change
 // =============================================================================
 // YAHOO FINANCE v7 — alternate endpoint (different rate limit pool)
 // =============================================================================
-async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; change: number } | null> {
+async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; change: number; observedAt: string | null } | null> {
   try {
     const yahooSym = `${symbol}.NS`;
     const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yahooSym)}`;
@@ -94,7 +107,10 @@ async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; chan
     if (!q?.regularMarketPrice) return null;
     const price = Number(q.regularMarketPrice);
     const change = Number(q.regularMarketChangePercent) || 0;
-    return { price, change };
+    // Corrective gate 3: v7 quotes disclose regularMarketTime — carry it.
+    const rt = Number(q.regularMarketTime);
+    const observedAt = Number.isFinite(rt) && rt > 0 ? new Date(rt * 1000).toISOString() : null;
+    return { price, change, observedAt };
   } catch {
     return null;
   }
@@ -310,7 +326,7 @@ export const YAHOO_COMMODITY_SYMBOLS: Record<string, string> = {
 
 async function fetchYahooQuote(
   yahooSymbol: string
-): Promise<{ price: number; change: number } | null> {
+): Promise<{ price: number; change: number; observedAt: string | null } | null> {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}`;
     const ac1 = new AbortController();
@@ -331,7 +347,11 @@ async function fetchYahooQuote(
     const price = Number(meta.regularMarketPrice) || 0;
     const prevClose = Number(meta.previousClose) || price;
     const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
-    return { price, change };
+    // Corrective gate 3: the same meta field the bulk path already trusts;
+    // null when Yahoo discloses no observation time — never the fetch time.
+    const rt = Number(meta.regularMarketTime);
+    const observedAt = Number.isFinite(rt) && rt > 0 ? new Date(rt * 1000).toISOString() : null;
+    return { price, change, observedAt };
   } catch {
     return null;
   }
@@ -438,7 +458,7 @@ async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; chang
 // =============================================================================
 
 const forexCache: { rates: Record<string, number>; fetchedAt: number } | null = null;
-let forexCacheData: { rates: Record<string, number>; fetchedAt: number } | null = null;
+let forexCacheData: { rates: Record<string, number>; observedAt: string | null; fetchedAt: number } | null = null;
 let forexFetchPromise: Promise<void> | null = null;
 
 async function fetchForexRates(): Promise<void> {
@@ -453,7 +473,11 @@ async function fetchForexRates(): Promise<void> {
       });
       if (!res.ok) throw new Error(`ExchangeRate HTTP ${res.status}`);
       const data = await res.json();
-      forexCacheData = { rates: data.rates, fetchedAt: now };
+      // Corrective gate 3: er-api discloses time_last_update_unix — carry it
+      // as the observation time of this rate table; null when absent.
+      const upd = Number(data?.time_last_update_unix);
+      const observedAt = Number.isFinite(upd) && upd > 0 ? new Date(upd * 1000).toISOString() : null;
+      forexCacheData = { rates: data.rates, observedAt, fetchedAt: now };
     } catch (err) {
       console.error('[Forex] fetch error:', err);
     } finally {
@@ -478,7 +502,7 @@ const YAHOO_FOREX_SYMBOLS: Record<string, string> = {
   'JPY/INR': 'JPYINR=X',
 };
 
-async function getForexRate(pair: string): Promise<{ price: number; change: number; source?: string } | null> {
+async function getForexRate(pair: string): Promise<{ price: number; change: number; source?: string; observedAt?: string | null } | null> {
   // Try Yahoo Finance first (has 24h change data). Attribution matters
   // (Phase 6): the data source is yahoo here — without the explicit label
   // attempt() would stamp the chain id (exchangerate-api), mislabelling a
@@ -488,7 +512,8 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
     if (yahooData) return { ...yahooData, source: "yahoo" };
   }
 
-  // Fallback to ExchangeRate-API (no 24h change)
+  // Fallback to ExchangeRate-API (no 24h change). The rate table's own
+  // upstream update time (when disclosed) rides along as observedAt.
   await fetchForexRates();
   if (!forexCacheData) return null;
 
@@ -501,12 +526,12 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
   // rates are all relative to USD
   if (base === 'USD') {
     const price = rates[quote];
-    return price ? { price, change: 0 } : null;
+    return price ? { price, change: 0, observedAt: forexCacheData.observedAt } : null;
   }
 
   if (quote === 'USD') {
     const baseRate = rates[base];
-    return baseRate ? { price: 1 / baseRate, change: 0 } : null;
+    return baseRate ? { price: 1 / baseRate, change: 0, observedAt: forexCacheData.observedAt } : null;
   }
 
   // Cross rate
@@ -514,7 +539,7 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
   const quoteRate = rates[quote];
   if (!baseRate || !quoteRate) return null;
 
-  return { price: quoteRate / baseRate, change: 0 };
+  return { price: quoteRate / baseRate, change: 0, observedAt: forexCacheData.observedAt };
 }
 
 // =============================================================================
@@ -583,8 +608,10 @@ const BOND_YIELDS_STATIC: Record<string, number> = {
   US30Y:   4.68,
 };
 
-// Bond yield cache
-const bondYieldCache: Record<string, { yield: number; change: number; fetchedAt: number }> = {};
+// Bond yield cache — `observedAt` is the ORIGINAL upstream observation
+// time (FRED's own DATE column) so cache replays preserve provenance
+// instead of substituting the cache-fill time (corrective gate 3).
+const bondYieldCache: Record<string, { yield: number; change: number; observedAt: string | null; fetchedAt: number }> = {};
 const BOND_CACHE_TTL = 300_000; // 5 minutes
 
 async function fetchFREDYield(fredSeries: string): Promise<number | null> {
@@ -607,11 +634,13 @@ async function fetchFREDYield(fredSeries: string): Promise<number | null> {
   }
 }
 
-async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string } | null> {
+async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string | null } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
-    return { price: cached.yield, change: cached.change, source: "fred-csv", status: "CACHED", observedAt: new Date(cached.fetchedAt).toISOString() };
+    // Corrective gate 3: replay carries the ORIGINAL FRED observation date,
+    // never the cache-fill time.
+    return { price: cached.yield, change: cached.change, source: "fred-csv", status: "CACHED", observedAt: cached.observedAt };
   }
 
   const fredSeries = FRED_SERIES[symbol];
@@ -632,9 +661,15 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
           const prevVal  = prev ? parseFloat(prev.split(',')[1]) : yieldVal;
           if (!isNaN(yieldVal)) {
             const change = yieldVal - prevVal;
-            bondYieldCache[symbol] = { yield: yieldVal, change, fetchedAt: now };
+            // Corrective gate 3: FRED discloses the observation DATE in the
+            // CSV's first column. Carry it EXACTLY as disclosed (date-only,
+            // no time-of-day invented) — this is what makes persistence
+            // possible without ever fabricating a timestamp.
+            const fredDate = last.split(',')[0]?.trim();
+            const observedAt = fredDate && /^\d{4}-\d{2}-\d{2}$/.test(fredDate) ? fredDate : null;
+            bondYieldCache[symbol] = { yield: yieldVal, change, observedAt, fetchedAt: now };
             console.log(`[FRED] ${symbol} -> ${yieldVal}%`);
-            return { price: yieldVal, change, source: "fred-csv", status: "LIVE" };
+            return { price: yieldVal, change, source: "fred-csv", status: "LIVE", observedAt };
           }
         }
       }
@@ -645,6 +680,10 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
 
   // Fallback: static reference yield — served but honestly labelled STATIC
   // (T47: a static reference must never present itself as a live observation).
+  // Corrective gate 5 (documented precedence): this STATIC reference
+  // resolves BEFORE fetchLivePrice ever reaches lastKnownObservation, so
+  // T62's persisted last-known observation is unreachable for symbols with
+  // a static entry. Measured design gap — recorded, not changed here.
   const staticYield = BOND_YIELDS_STATIC[symbol];
   if (staticYield) {
     return { price: staticYield, change: 0, source: "static-yields-us", status: "STATIC" };
@@ -652,11 +691,14 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
   return null;
 }
 
-async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string } | null> {
+async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string | null } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
-    return { price: cached.yield, change: cached.change, source: "yahoo-etf-proxy", status: "CACHED", observedAt: new Date(cached.fetchedAt).toISOString() };
+    // Corrective gate 3: the cached value is DERIVED (static base + inverse
+    // ETF delta) — it has no single upstream observation time, so null is
+    // the honest replay (the old code substituted the cache-fill time).
+    return { price: cached.yield, change: cached.change, source: "yahoo-etf-proxy", status: "CACHED", observedAt: cached.observedAt };
   }
 
   // Try Yahoo Finance ETF proxy to detect directional change
@@ -669,10 +711,12 @@ async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; cha
         const staticYield = BOND_YIELDS_STATIC[symbol] ?? 7.0;
         const yieldChange = -(etfData.change * 0.05); // rough inverse approximation
         const liveYield = Number((staticYield + yieldChange).toFixed(3));
-        bondYieldCache[symbol] = { yield: liveYield, change: yieldChange, fetchedAt: now };
+        // Corrective gate 3: the ETF's own observation time is NOT the
+        // observation time of this DERIVED yield — store null, never now.
+        bondYieldCache[symbol] = { yield: liveYield, change: yieldChange, observedAt: null, fetchedAt: now };
         console.log(`[India-Bond] ${symbol} -> ${liveYield}% (ETF proxy)`);
         // T47: static base + inverse ETF change = DERIVED, never LIVE.
-        return { price: liveYield, change: yieldChange, source: "yahoo-etf-proxy", status: "DERIVED" };
+        return { price: liveYield, change: yieldChange, source: "yahoo-etf-proxy", status: "DERIVED", observedAt: null };
       }
     } catch (err) {
       console.error(`[India-Bond] ${symbol} error:`, err);
@@ -720,8 +764,10 @@ export interface PricePoint {
   source: string;
   status?: PriceStatus;
   /** Phase 6: ISO time of the ORIGINAL upstream observation (never the
-   *  serve time — a CACHED replay keeps the observation timestamp). */
-  observedAt?: string;
+   *  serve time — a CACHED replay keeps the observation timestamp).
+   *  Corrective gate 3: string|null — null means the upstream disclosed no
+   *  observation time. The current time is NEVER passed off as one. */
+  observedAt: string | null;
 }
 
 // Phase 6 T62: storage-entitled sources + reference symbol set.
@@ -730,16 +776,10 @@ export interface PricePoint {
 // docs/DATA_PROVIDER_MATRIX.md "Phase 6 storage policy"). Scraped or
 // terms-unverified sources (NSE, BSE, Yahoo, CoinGecko, screener,
 // yahoo-etf-proxy) stay out — an outage on those yields honest
-// UNAVAILABLE, never a stored copy.
-const PERSISTABLE_SOURCES: ReadonlySet<string> = new Set([
-  "fred-csv",         // FRED data terms: attribution "FRED, Federal Reserve Bank of St. Louis"
-  "exchangerate-api", // free tier permits app use with attribution
-  "ecb-fx",           // ECB reuse policy: attribution "European Central Bank"
-]);
+// UNAVAILABLE, never a stored copy. The allow-list itself lives in
+// lib/cache/storageRights.ts (single source of truth, read-path enforced).
 
-export function isPersistableSource(source: string | undefined): boolean {
-  return !!source && PERSISTABLE_SOURCES.has(source);
-}
+export { isPersistableSource };
 
 /**
  * T61: symbols whose observations are eligible for nightly persistence
@@ -761,7 +801,7 @@ export const REFERENCE_SYMBOLS: string[] = [
  */
 async function attempt(
   id: string,
-  fn: () => Promise<{ price: number; change: number; source?: string; status?: PriceStatus; observedAt?: string } | null>,
+  fn: () => Promise<{ price: number; change: number; source?: string; status?: PriceStatus; observedAt?: string | null } | null>,
 ): Promise<PricePoint | null> {
   // Phase 5.1 (T55 enforced at the primitive): ONLY APPROVED providers may
   // serve production routing. Fail-closed inside the routing primitive itself
@@ -785,7 +825,10 @@ async function attempt(
       symbolsRequested: 1, symbolsReturned: r ? 1 : 0,
     });
     if (!r) return null;
-    const observedAt = r.observedAt ?? new Date().toISOString();
+    // Corrective gate 3: preserve the upstream's observation time when it
+    // disclosed one; null when it did not. The old code stamped the serve
+    // time here — manufacturing an observation time that never existed.
+    const observedAt = r.observedAt ?? null;
     return { status: "LIVE", ...r, source: r.source ?? id, observedAt } as PricePoint;
   } catch (err) {
     // Cooldown, timeout, network, parse — recorded in health; fall through.
@@ -845,6 +888,7 @@ async function fetchLivePriceInner(
       change: 0,
       source: "static-commodities",
       status: "STATIC",
+      observedAt: null, // a reference table entry has no observation time
     };
   }
   // 6. Indian stocks — multi-source fallback chain, health-gated per provider.
@@ -886,9 +930,13 @@ export function unavailablePriceEntry(): {
   return { status: "UNAVAILABLE", lastUpdated: null, checkedAt: new Date().toISOString() };
 }
 
-/** Write-through, storage-entitled only, throttled, never throws. */
+/** Write-through, storage-entitled only, throttled, never throws.
+ *  Corrective gate 3: an entry whose upstream disclosed no observation
+ *  time is NEVER persisted — migration 009 demands observed_at NOT NULL
+ *  and we do not manufacture a timestamp to satisfy the schema. */
 async function persistIfEntitled(key: string, symbol: string, point: PricePoint): Promise<void> {
   if (!isPersistableSource(point.source)) return;
+  if (!point.observedAt) return;
   const now = Date.now();
   if (now - (lastPersistAt[key] ?? 0) < PERSIST_WRITE_THROTTLE_MS) return;
   lastPersistAt[key] = now;
@@ -898,7 +946,7 @@ async function persistIfEntitled(key: string, symbol: string, point: PricePoint)
     point.source,
     { price: point.price, change: point.change },
     ttl,
-    point.observedAt ?? new Date().toISOString(),
+    point.observedAt,
   );
 }
 
@@ -907,7 +955,7 @@ async function persistIfEntitled(key: string, symbol: string, point: PricePoint)
  * persisted observation (storage-entitled sources only) as CACHED with its
  * original observedAt; else null so callers report honest UNAVAILABLE.
  */
-async function lastKnownObservation(symbol: string): Promise<(PricePoint & { lastUpdated: string }) | null> {
+async function lastKnownObservation(symbol: string): Promise<(PricePoint & { lastUpdated: string | null }) | null> {
   const persisted = await persistentCacheGet<{ price: number; change: number }>(`quote:${symbol}`);
   if (!persisted) return null;
   const maxAge = isBondSymbol(symbol) ? PERSIST_MAX_AGE_BOND_MS : PERSIST_MAX_AGE_QUOTE_MS;
@@ -927,19 +975,20 @@ async function lastKnownObservation(symbol: string): Promise<(PricePoint & { las
 
 export async function fetchLivePrice(
   symbol: string
-): Promise<(PricePoint & { lastUpdated: string }) | null> {
+): Promise<(PricePoint & { lastUpdated: string | null }) | null> {
   symbol = STOCK_ALIASES[symbol] ?? symbol;
 
   // T60: reuse a recent snapshot — one observation serves sequential widget
   // polls within the reuse window. The replay is honestly labelled CACHED
-  // and keeps the ORIGINAL observation timestamp as lastUpdated.
+  // and keeps the ORIGINAL observation timestamp as lastUpdated (null stays
+  // null — the serve time is never substituted; corrective gate 3).
   const reused = getCachedResult<PricePoint>(`quote:${symbol}`, SNAPSHOT_REUSE_MS);
   if (reused && Number.isFinite(reused.price) && reused.price > 0) {
     // A LIVE observation replayed from the reuse store becomes CACHED;
     // STATIC/DERIVED semantics are intrinsic and must survive the replay.
     const replayStatus: PriceStatus =
       reused.status && reused.status !== "LIVE" ? reused.status : "CACHED";
-    return { ...reused, status: replayStatus, lastUpdated: reused.observedAt ?? new Date().toISOString() };
+    return { ...reused, status: replayStatus, lastUpdated: reused.observedAt ?? null };
   }
 
   // T46: concurrent identical requests share one upstream pass.
@@ -957,5 +1006,7 @@ export async function fetchLivePrice(
   // silently drop the write; bounded by the cache layer's 1.5 s budget).
   await persistIfEntitled(`quote:${symbol}`, symbol, result);
 
-  return { ...result, lastUpdated: result.observedAt ?? new Date().toISOString() };
+  // Corrective gate 3: lastUpdated is the ORIGINAL observation time or null —
+  // never the serve time dressed up as one.
+  return { ...result, lastUpdated: result.observedAt ?? null };
 }

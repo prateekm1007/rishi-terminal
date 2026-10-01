@@ -25,7 +25,9 @@ export type ObservationFetcher = (symbol: string) => Promise<{
   change: number;
   source: string;
   status?: string;
-  observedAt?: string;
+  /** Corrective gate 3: string|null — the upstream-disclosed observation
+   *  time, or null when the upstream does not disclose one. */
+  observedAt?: string | null;
 } | null>;
 
 export interface CaptureResult {
@@ -70,13 +72,21 @@ export async function captureReferenceObservations(
           result.skipped += 1; // storage-rights gate — no entitlement, no row
           return;
         }
+        if (!point.observedAt) {
+          // Corrective gate 3: observed_prices.observed_at is NOT NULL
+          // (migration 009) and we never fabricate an observation timestamp
+          // to satisfy it. An observation whose upstream disclosed no time
+          // is skipped honestly.
+          result.skipped += 1;
+          return;
+        }
         const { error } = await db.from('observed_prices').upsert(
           {
             symbol,
             observed_date: date,
             price: point.price,
             source: point.source,
-            observed_at: point.observedAt ?? new Date().toISOString(),
+            observed_at: point.observedAt,
             created_at: new Date().toISOString(),
           },
           { onConflict: 'symbol,observed_date' },

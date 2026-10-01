@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
 
     // T59.2: this is an application request — counted separately from the
     // upstream calls it may or may not cause (never inferred).
-    recordAppRequest('/api/prices/batch', { symbols: symbols.length });
+    // Corrective gate: the returned id attributes THIS request's wall time
+    // to THIS event, even under concurrent same-endpoint requests.
+    const appReqId = recordAppRequest('/api/prices/batch', { symbols: symbols.length });
 
     const t0 = Date.now();
     const prices: Record<string, Record<string, unknown>> = {};
@@ -141,7 +143,7 @@ export async function POST(req: NextRequest) {
 
     const ms = Date.now() - t0;
     // T59.5: wall time of this application request, for latency attribution.
-    recordAppRequestDone('/api/prices/batch', ms);
+    recordAppRequestDone(appReqId, ms);
     console.log(
       `[/api/prices/batch] ${Object.keys(prices).length}/${symbols.length} in ${ms}ms ` +
       `(Yahoo bulk: ${Object.keys(bulkResults).length}, fallback: ${otherSymbols.length})`

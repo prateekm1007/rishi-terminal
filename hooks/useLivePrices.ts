@@ -7,7 +7,10 @@ export interface PriceData {
   change: number;
   changePercent24h: number;
   volume24h: number;
-  lastUpdated: string;
+  /** Corrective gate 3: the server's ORIGINAL observation time, or null when
+   *  the upstream disclosed none. The client never substitutes its own
+   *  fetch time here — that would fabricate an observation timestamp. */
+  lastUpdated: string | null;
 }
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -84,7 +87,9 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
             change: typeof raw.change === 'number' ? raw.change : (typeof raw.changePercent24h === 'number' ? raw.changePercent24h : 0),
             changePercent24h: typeof raw.changePercent24h === 'number' ? raw.changePercent24h : (typeof raw.change === 'number' ? raw.change : 0),
             volume24h: typeof raw.volume24h === 'number' ? raw.volume24h : 0,
-            lastUpdated: raw.lastUpdated || new Date().toISOString(),
+            // Corrective gate 3: preserve the server's null — the client's
+            // fetch time is NOT an observation time (old code fabricated one).
+            lastUpdated: typeof raw.lastUpdated === 'string' && raw.lastUpdated ? raw.lastUpdated : null,
           };
         }
       }

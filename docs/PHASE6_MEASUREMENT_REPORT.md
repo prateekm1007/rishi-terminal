@@ -186,3 +186,125 @@ optimization decision, if any, must cite this artifact.
 4. The two cache implementations (T60 30 s vs bulk 60 s) remain
    semantically separate **by design until measurement justifies a change**
    — that justification attempt now exists and can be evaluated with numbers.
+
+---
+
+## 11. Corrective measurement/provenance gate (deep-audit fixes, this commit)
+
+An independent deep audit of the measurement implementation found four
+correctness defects. All four are fixed in this commit with tests that were
+written first, run against the unfixed code (15 failures, captured), then
+made to pass (31/31 in the two affected suites; 268/268 overall). No provider
+selection, TTL, batch geometry, or cache semantics was changed.
+
+### 11.1 Request-ID attribution (was: last-incomplete-event matching)
+
+`recordAppRequestDone()` matched "the most recent incomplete app-request
+event for this endpoint" — unsafe under concurrency: a 10-request burst
+could attach completions to the wrong request. `recordAppRequest()` now
+returns a unique event id and `recordAppRequestDone(id, wallMs)` updates
+exactly that event. Tests: out-of-order completions, concurrent
+same-endpoint delays, double-completion and unknown-id hijack attempts.
+
+### 11.2 Bulk-run local attribution (was: global before/after deltas)
+
+`fetchBulkPricesForSymbols()` derived per-run upstream counts from global
+ledger deltas around its concurrent work — overlapping batch requests
+absorbed each other's attempts. Each run now owns a local attempt
+accumulator threaded through `fetchYahooPrice()`/`processBatch()`; the
+global ledger event stream is unchanged (T59.4 reconciliation intact).
+Test: two overlapping bulk runs (2 + 4 real HTTP attempts) each report
+exactly their own attempts/failures; under the old method run 1 charged 6.
+
+### 11.3 No fabricated observation timestamps anywhere
+
+The audit found `current time` substituted for `observation time` in four
+places. All are gone — `observedAt` is now `string | null` end to end:
+
+1. `attempt()`: `r.observedAt ?? new Date()` → `r.observedAt ?? null`.
+2. `persistIfEntitled()` / `persistentCacheSet()`: storage entries without a
+   disclosed observation time are NOT written (migration 009 demands
+   `observed_at NOT NULL`; we do not manufacture a value to satisfy it).
+   `persistentCacheSet` additionally rejects a null timestamp at the
+   boundary.
+3. T61 observations cron: a storage-entitled capture without a disclosed
+   observation time is skipped, not fabricated.
+4. In-chain cache replays (bond 5-min cache, Yahoo 60-s stock cache) and the
+   client hook (`useLivePrices`) replay/substitute `null`, never the
+   fill/fetch time. `lastUpdated` is `string | null` — serve time is never
+   dressed up as an observation time; `checkedAt` remains the distinct
+   decision/serve time.
+
+Where upstreams DO disclose observation times, they are now carried (this
+is what keeps T62 persistence alive without fabrication):
+
+| Provider / fn | Disclosed field used | When absent |
+|---|---|---|
+| `fetchYahooQuote` / `getYahooNSEPrice` / v7 | Yahoo `regularMarketTime` (same field the bulk path already trusted) | `null` |
+| `fetchUSBondYield` (fred-csv) | FRED's own CSV `DATE` column, kept date-only exactly as disclosed | `null` |
+| `getForexRate` er-api path | `time_last_update_unix` | `null` |
+| NSE, BSE, CoinGecko, India ETF (DERIVED) | none disclosed (DERIVED has no single observation time) | `null` |
+
+### 11.4 Read-side storage-rights guard (defense in depth)
+
+`persistentCacheGet()` trusted the stored `provider_id`. It now re-validates
+`provider_id ∈ PERSISTABLE_SOURCES` (resolved from the single allow-list in
+`lib/cache/storageRights.ts`) and returns null otherwise. Tests: a
+non-entitled (`yahoo`) row is never served even though it exists and is
+unexpired; an entitled row is served with provenance intact; the guard holds
+end-to-end through `lastKnownObservation`.
+
+### 11.5 T62 last-known fallback precedence — documented (finding 5), not changed
+
+The FRED chain inside `fetchUSBondYield` resolves its STATIC reference
+BEFORE `fetchLivePrice` ever reaches `lastKnownObservation()`. Precedence
+for a US Treasury symbol is therefore:
+
+```
+FRED fresh (LIVE) → 5-min bond cache (CACHED) → FRED refetch →
+STATIC reference (static-yields-us)   ← lastKnownObservation is NEVER
+                                         reached while a static entry exists
+```
+
+Test: with FRED failing AND a valid, entitled, fresh fred-csv row present in
+the persistent store, US10Y still serves STATIC 4.42 — not the stored 4.55.
+Contrast (also tested): a forex pair with no static entry, on total upstream
+failure, DOES serve the persisted observation as CACHED with its original
+`observedAt` — the T62 fallback is reachable and correct where the chain
+cannot otherwise answer.
+
+**T62 reachability matrix (measured, this commit):**
+
+| Storage-entitled source | Writes possible? | Fallback reachable? | Why |
+|---|---|---|---|
+| `fred-csv` (US bonds) | yes — real FRED DATE | **no** — STATIC wins in-chain first | design gap; a future change must cite this evidence |
+| `exchangerate-api` (FX er-api path) | only when the pair loses the Yahoo race AND er-api discloses `time_last_update_unix` | **yes** (proven by test) — the only chain that can reach `lastKnownObservation` | — |
+| `ecb-fx` | no routing chain uses it today | n/a | registered but unwired |
+
+### 11.6 Batch path semantics (finding 10) — measurable, unchanged
+
+The batch path keeps its independent 60 s Yahoo-bulk cache. This commit does
+NOT merge the two cache paths; it makes the batch path's measurement
+trustworthy (11.1/11.2) so the decision can later be made on numbers: batch
+traffic share, bulk cache hit rate, upstream attempts saved, latency per
+bulk symbol, cross-instance duplication. Those quantities now measure only
+the traffic that actually produced them. The batch route still labels fresh
+Yahoo-bulk observations `LIVE` with `source: yahoo-bulk`; the presentation
+layer renders the delayed-source label (T47/T60.1), unchanged.
+
+### 11.7 T59.4 / T59.6 status unchanged
+
+- **T59.4**: `CRON_SECRET` remains absent from the local vault and the HF
+  mirror (checked per Article VI lookup order; the founder has been asked).
+  `BLOCKED: CRON_SECRET required for live T59.4 reconciliation` — not passed.
+- **T59.6**: per-instance endpoint counters remain available; external
+  Vercel traffic attribution remains `BLOCKED`. The two are not conflated.
+- The battery's scenario reports already separate T60 in-process reuse,
+  T62 DB write/read/fallback, and T61 persistence (§2–§6); no
+  fault-injection endpoint was added (the standing FOUNDER DECISION from
+  §10 item 2 still applies to full production proof of failure→cached-serve).
+
+**Not claimed in this commit:** no optimization, no TTL change, no batch
+rewrite, no provider change, no Redis, no score redesign. The production
+battery should be re-run after this commit deploys to re-baseline the
+percentiles against the corrected attribution.

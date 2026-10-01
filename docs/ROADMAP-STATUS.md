@@ -9,15 +9,20 @@ delivered) and `CONSTITUTION.md` (the governing rules).
 **Statuses:** ✅ done (evidence linked) · 🟡 partial (what remains, who blocks it) ·
 ⬜ not started · 🚫 blocked on an FD · ➖ not applicable yet.
 
-Last updated: 2026-10-01 (after D1-02).
+Last updated: 2026-10-01 (audit round 4 — Q1–Q5 remediation).
+
+**Phase-0 status correction (Q5):** the round-3 close-out commit (`301a9d0`)
+said "Phase 0 closed"; that was an overclaim — P0-03 remains 🟡 (no staging
+Supabase project) and P0-02 is 🟡 pending the auditor's independent check of
+the live evidence. Phase 0 is NOT fully closed.
 
 ## Phase 0 — Close trust gaps (weeks 0–2)
 
 | Task | Status | Evidence / notes |
 |---|---|---|
 | P0-01 Merge round-2 remediation | ✅ (superseded by round-3) | Round-2 R1–R10 merged (PRs #1–#10 era). Round-3 N1–N9 + D-4 then merged as PRs #11, 13–24 — the v3 spec superseded v2; final DoD run on `5a6d56b` recorded in the round-3 close-out (worklog `R3-FINAL`). |
-| P0-02 Verify live Supabase state | ✅ | Migrations 001–012 applied and verified live via the Management API (`RLS on all tables`, anon locked out, append-only trigger, RPC grants). The auditor's network allowlist issue was worked around by supplying live evidence from our side. |
-| P0-03 Staging environment | 🟡 | Vercel staging project live (`rishi-terminal-staging`, linked, env vars set; `/api/health` 200 db:true). Remaining: founder pastes `CHAT_API_KEY` (+ `FMP_API_KEY`, `NEXTAUTH_SECRET` if wanted) — encrypted envelopes are not copyable via API; a separate staging **Supabase** project needs the dashboard (PAT gets 403 on create, Hobby plan). |
+| P0-02 Verify live Supabase state | 🟡 | The round-3 "verified live" claim could not be independently checked (the auditor cannot reach the live project). Raw verification output (RLS on all 21 public tables, full privilege dump, append-only UPDATE/DELETE/TRUNCATE rejections as service_role, security-master state, and the honest gaps: no migration ledger on the live project; blanket pre-010 grants still resting on RLS policies) is supplied in **`docs/evidence/p0-02-live-2026-10-01.md`** for the auditor to check. Status stays 🟡 until that check passes. |
+| P0-03 Staging environment | 🟡 | **Round 4 (Q2):** the staging project was publicly reachable AND wired to the production database — fixed live: Deployment Protection re-enabled (`/api/health` → 302), production Supabase variables removed from staging and from the preview target of `rishi-terminal`, production payment/ingest drills STOPPED (`BLOCKED: staging Supabase project`). Staging now runs database-less by design; `/api/health` reports `down` there, which is sanctioned. Remaining: founder creates the staging Supabase project in the dashboard (Management PAT 403 on create), then pastes `CHAT_API_KEY`/`NEXTAUTH_SECRET`. |
 | P0-04 `/api/health` | ✅ | Migration 011 + `lib/health/probe.ts` (12s memo, single RPC). Live: 200 with honest `degraded` reasons while no ingestion has run. |
 | P0-05 Provenance audit | ✅ | `scripts/provenanceAudit.ts` → `docs/PROVENANCE.md` (seed 5 / sourced 12 / editorial 1 / none 12); `--fail-on-unlabelled-seed` exit 0; `test/provenance.test.ts`. Out-of-scope asset classes (crypto/forex/commodities/bonds) are *reported* pending FD-3. |
 | P0-06 `Sourced<T>` + provenance contract | ✅ | `Sourced<T>` + `<DataValue>` shipped (R1); `asOf` = provider observation time (N3); toFixed inventory justified per-group (N7, appendix). |
@@ -27,14 +32,14 @@ Last updated: 2026-10-01 (after D1-02).
 | Task | Status | Evidence / notes |
 |---|---|---|
 | D1-01 Vendor and licence decision | 🚫 FD-1 | Founder task. Blocks D1-04/D1-05 (and D1-08's secondary source). |
-| D1-02 ISIN-keyed security master ★ | ✅ | **PR #25** (merged `01b9f38`). Migration 012 (renumbered from the sketch's 009); official NSE listing snapshot committed with provenance; 2,593 securities / 2,698 symbol_history / 2,695 universe rows live; 842/944 seed symbols mapped, 102 UNRESOLVED with reasons; both new gates bite-proven; acceptance `npx tsx scripts/validateSecurityMaster.ts` exit 0. |
-| D1-03 Corporate actions + adjusted prices | ⬜ | Depends D1-02 (done) — but real action *data* needs the vendor (D1-01). Schema+adjustment math can start. |
+| D1-02 ISIN-keyed security master ★ | 🟡 (was ✅ — round 4 found binding defects) | **Q3:** direct symbol matches trusted symbol equality; the auditor found 5 wrong-company bindings and 12 renames; the implemented gate found 4 more wrong bindings (KALYANI, SUNDARAM, SUVEN, VSTL). Remediation (PR #28, applied live): name-agreement gate (`lib/db/nameAgreement.ts`), migration 014 (`NAME_MISMATCH`), `name_overrides.json` with 55 sourced decisions, 8 seed records removed (944→936), 4 seed names updated, CI `D1-02.7` + validator V5–V7; validator V1–V7 all PASS against live. Stays 🟡 until the auditor re-verifies. |
+| D1-03 Corporate actions + adjusted prices | ⬜ | Depends D1-02 (remediation in review, 🟡) — but real action *data* needs the vendor (D1-01). Schema+adjustment math can start. |
 | D1-04 Price ingestion (EOD) ★ | 🚫 FD-1 | Vendor adapter. |
 | D1-05 Fundamentals ingestion, PIT ★ | 🚫 FD-1 (schema can start) | `fundamentals_pit` schema is vendor-independent. |
 | D1-06 Shareholding ingestion | ⬜ | Depends D1-05. |
 | D1-07 Validation rules + quarantine | ⬜ | Rules engine is vendor-independent; can start against D1-05's schema. |
 | D1-08 Reconciliation vs second source | ⬜ | Needs D1-04+D1-05 data. |
-| D1-09 Universe: Nifty 500 done properly ★ | ⬜ | Depends D1-02 ✓ + D1-04/05/07/08. |
+| D1-09 Universe: Nifty 500 done properly ★ | ⬜ | Depends D1-02 (🟡, remediation in review) + D1-04/05/07/08. |
 | D1-10 Freshness SLOs + alerting | 🟡 | Probe + health `degraded` semantics live (N8); UI stale banners live (N3). Alerting + SLO docs remain (E6-06 overlap). |
 | D1-11 Retire placeholder seed from user paths | ⬜ | Depends D1-09. |
 | D1-12 Thirty-day unattended run ★ (G-A exit) | ⬜ | Wall-clock; starts when D1-04/D1-05 run. First scheduled cron slot since the production project went fresh: 2026-10-01 13:30 UTC. |
@@ -49,7 +54,7 @@ Last updated: 2026-10-01 (after D1-02).
 | S2-04 Prune/reweight with OOS proof | ⬜ | |
 | S2-05 Score explainability | ⬜ | |
 | S2-06 Disagreement metric | ⬜ | |
-| S2-07 Immutable forward track record ★ | 🟡 | DB half done early (N2, migration 010): `rishi_snapshots` append-only for every role incl. service_role, verified live. `/track-record` page not built (needs D1-09). |
+| S2-07 Immutable forward track record ★ | 🟡 | DB half done early (N2, migration 010); round 4 closed its TRUNCATE hole (Q1, migration 013: `REVOKE TRUNCATE` everywhere + statement triggers; CI Q1.1/Q1.2; live-verified — as service_role TRUNCATE → 42501). `/track-record` page not built (needs D1-09). |
 
 ## Phase 3 — Core product depth — gated by G-C
 
@@ -82,7 +87,7 @@ R4-01..R4-07: all ⬜. R4-06 (i18n) and parts of R4-07 have no data dependency.
 | E6-06 SLOs + dashboards | ⬜ | |
 | E6-07 Blocking e2e, contract tests, drills | 🟡 | Playwright smoke is blocking (since round 2); contract tests + upstream-failure drills remain. |
 | E6-08 Accessibility (WCAG 2.2 AA) | ⬜ | |
-| E6-09 Flags, migrations in CI, rollback drill | 🟡 | Migrations run in CI (PG16 job, since N2; now also populates + validates the security master). Feature flags + documented rollback drill remain. |
+| E6-09 Flags, migrations in CI, rollback drill | 🟡 | Migrations 001–014 run in CI (PG16 job, since N2; populates + validates the security master; Q1/Q3 invariants live). Feature flags + documented rollback drill remain. |
 | E6-10 Type safety everywhere | 🟡 | `no-explicit-any` is ERROR in `hooks/**` + `scripts/**` (N9); repo-wide promotion remains (318 warnings baseline). |
 | E6-11 Load + abuse testing | ⬜ | |
 

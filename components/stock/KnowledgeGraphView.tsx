@@ -5,8 +5,11 @@ import { useLanguage } from '../../lib/language';
 import { useFundamentals } from '@/hooks/useFundamentals';
 import { Stock } from '../../lib/types';
 import { RishiScore } from '../../lib/types';
-import { TrimmedVerdict } from '../../lib/consensus/sanitize';
-import { buildEliteKnowledgeGraph, EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
+import type { TrimmedVerdict } from '../../lib/consensus/sanitize';
+// N1 (round 3): the graph arrives precomputed from the server (free-set
+// graph via RSC props; tier-aware graph via /api/rishis/[symbol] for paid
+// tiers). The engine builder is server-only.
+import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
 import { INVESTMENT_GLOSSARY } from '../../data/glossary';
 import { GLOBAL_RISHI_PLAYS, RishiPlay } from '../../data/rishi-portfolios/global-plays';
 
@@ -15,6 +18,8 @@ interface Props {
   verdicts: RishiScore[];
   topBull?: TrimmedVerdict;
   topBear?: TrimmedVerdict;
+  /** N1: server-computed knowledge graph. */
+  graph?: EliteKnowledgeGraph | null;
 }
 
 interface TooltipState {
@@ -418,23 +423,15 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
 }
 
 /* -- Main KnowledgeGraphView ------------------------------------ */
-export function KnowledgeGraphView({ stock, verdicts, topBull, topBear }: Props) {
+export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }: Props) {
   const { fundamentals } = useFundamentals(stock.symbol);
   const liveStock: Stock = { ...stock, pe: fundamentals?.pe ?? stock.pe, roe: fundamentals?.roe ?? stock.roe };
   const { t } = useLanguage();
   const [activeView, setActiveView] = useState<'debate' | 'historical' | 'technical' | 'timeline'>('debate');
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-  const [graphData, setGraphData] = useState<EliteKnowledgeGraph | null>(null);
-
-  useEffect(() => {
-    if (!verdicts || !Array.isArray(verdicts)) return;
-    try {
-      const data = buildEliteKnowledgeGraph(stock, verdicts);
-      setGraphData(data);
-    } catch (e) {
-      console.error('KnowledgeGraph build error:', e);
-    }
-  }, [stock, verdicts]);
+  // N1: server-computed graph (free set by default; paid tiers upgrade it
+  // through /api/rishis/[symbol]).
+  const graphData: EliteKnowledgeGraph | null = graph ?? null;
 
   const handleHover = useCallback((term: string, e: React.MouseEvent) => {
     setTooltip({ term, x: e.clientX, y: e.clientY });

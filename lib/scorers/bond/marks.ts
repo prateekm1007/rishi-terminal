@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { Bond } from '../../../data/bonds';
 import type { RishiScore } from '../../types';
 

@@ -1,0 +1,139 @@
+'use client';
+
+// N1 (round 3): the interactive half of /screener. Receives the
+// server-generated slim index (free fields only) as RSC props — no
+// STOCKS, no engine. Preset filters, stat pills, search and sorting all
+// operate on the slim rows; per-Rishi verdicts stay behind the
+// tier-gated /api/rishis/[symbol] route.
+import { useState, useMemo } from 'react';
+import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import { StockTable } from '@/components/screener/StockTable';
+import { useLanguage } from '@/lib/language';
+import { SCREENER_PRESETS, applyFilters } from '@/lib/screener/presets';
+import SeedDataBanner from '@/components/shared/SeedDataBanner';
+import Link from 'next/link';
+
+interface Props {
+  rows: SlimStockRow[];
+}
+
+export function ScreenerClient({ rows }: Props) {
+  const { t, locale } = useLanguage();
+  const [activePreset, setActivePreset] = useState<string | null>(null);
+
+  const filteredStocks = useMemo(() => {
+    if (!activePreset) return rows;
+    const preset = SCREENER_PRESETS.find(p => p.id === activePreset);
+    if (!preset) return rows;
+    return applyFilters(rows, preset.filters);
+  }, [rows, activePreset]);
+
+  const activePresetData = SCREENER_PRESETS.find(p => p.id === activePreset);
+
+  const STAT_PILLS = useMemo(() => [
+    { label: t('screener.strongBuy'),  count: rows.filter(s => s.pe > 0 && s.roe > 15).length, color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)'  },
+    { label: t('screener.valuePlays'), count: rows.filter(s => s.pe < 20 && s.pe > 0).length,  color: 'var(--accent-gold)',  bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)'  },
+    { label: t('screener.largeCap'),   count: rows.filter(s => s.mktcap > 100000).length,       color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
+    { label: t('screener.highROE'),    count: rows.filter(s => s.roe > 25).length,              color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)'  },
+    { label: t('screener.debtFree'),   count: rows.filter(s => s.de < 0.3).length,             color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
+  ], [t, locale, rows]);
+
+  return (
+    <main className="page-bg">
+
+      <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)', padding: '40px 24px' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+
+          <p className="page-breadcrumb">
+            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</Link>
+            <span style={{ margin: '0 8px' }}>&rsaquo;</span>
+            <span>SCREENER</span>
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 32 }}>
+            <div>
+              <h1 className="page-title" style={{ fontSize: 42, marginBottom: 8 }}>
+                {t('screener.title')}
+              </h1>
+              <p className="page-subtitle" style={{ maxWidth: 520 }}>
+                {activePresetData ? (
+                  <><strong style={{ color: '#D4AF37' }}>{activePresetData.emoji} {activePresetData.name}:</strong> {activePresetData.description}</>
+                ) : (
+                  `Filter ${rows.length} Indian stocks by Rishi wisdom — Buffett Mode, Damani Mode, Graham Mode, Short Mode & more`
+                )}
+              </p>
+            </div>
+
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160, textAlign: 'center' }}>
+              <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
+                {activePreset ? 'FILTERED' : 'TOTAL COVERAGE'}
+              </div>
+              <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
+                {filteredStocks.length}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                {activePreset ? 'stocks matching' : 'NSE / BSE stocks'}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.12em', marginBottom: 10 }}>
+              RISHI SCREENING MODES
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setActivePreset(null)}
+                style={{
+                  padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  background: !activePreset ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
+                  outline: !activePreset ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
+                  color: !activePreset ? '#D4AF37' : '#64748B',
+                  fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
+                }}
+              >
+                All Stocks
+              </button>
+              {SCREENER_PRESETS.map(preset => (
+                <button
+                  key={preset.id}
+                  onClick={() => setActivePreset(preset.id === activePreset ? null : preset.id)}
+                  style={{
+                    padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: activePreset === preset.id ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
+                    outline: activePreset === preset.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
+                    color: activePreset === preset.id ? '#D4AF37' : '#64748B',
+                    fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}
+                >
+                  <span>{preset.emoji}</span>
+                  <span>{preset.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+            {STAT_PILLS.map(stat => (
+              <div key={stat.label} style={{ background: stat.bg, border: '1px solid ' + stat.border, borderRadius: 10, padding: '12px 16px' }}>
+                <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
+                  {stat.label.toUpperCase()}
+                </div>
+                <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
+                  {stat.count}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
+        <SeedDataBanner suffix="all fundamentals on this page are illustrative placeholders" />
+        <StockTable stocks={filteredStocks} />
+      </div>
+
+    </main>
+  );
+}

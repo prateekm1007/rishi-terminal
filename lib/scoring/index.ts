@@ -17,6 +17,8 @@
  * must label it as such.
  */
 
+import 'server-only';
+
 import { STOCKS, SEED_STATUS, SEED_CAPTURED_AT, type SeedStatus } from "@/data/stocks";
 import type { Stock, ConsensusResult } from "@/lib/consensus/types";
 import { buildConsensus } from "@/lib/consensus/engine";

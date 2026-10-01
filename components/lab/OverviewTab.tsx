@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
 
-import { STOCKS } from '@/data/stocks/index';
-import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
+// N1 (round 3): receives the server-generated slim index — no seed
+// dataset, no engine in the bundle.
+import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
@@ -90,7 +91,13 @@ function calcTWRRTotal(holdings: PortfolioHolding[], endDate: Date, historyBySym
 
 
 
-export default function OverviewTab() {
+interface Props {
+  rows: SlimStockRow[];
+}
+
+export default function OverviewTab({ rows }: Props) {
+  const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
+
   const { t } = useLanguage();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [portfolioLoaded, setPortfolioLoaded] = useState(false);
@@ -166,16 +173,17 @@ export default function OverviewTab() {
   const enriched = useMemo(() => {
     return holdings.map(h => {
       const sym = String(h.symbol ?? '').trim().toUpperCase();
-      const stock = (STOCKS as any)[sym];
-      const livePrice = prices[sym]?.price ?? stock?.price ?? h.avgPrice;
+      const row = rowMap.get(sym) ?? null;
+      // T14/N1: live price or cost basis — the seed price is never
+      // rendered as a current value.
+      const livePrice = prices[sym]?.price ?? h.avgPrice;
       const invested = h.shares * h.avgPrice;
       const current = h.shares * livePrice;
       const pl = current - invested;
       const plPct = invested > 0 ? (pl / invested) * 100 : 0;
 
-      const consensus = stock ? getStockScore(stock) : null;
-      const score = consensus?.consensus ?? 0;
-      const sector = stock?.sector ?? 'Unknown';
+      const score = row?.consensus ?? 0; // same display semantics as before (null -> 0 on this surface)
+      const sector = row?.sector ?? 'Unknown';
 
       const change = prices[sym]?.change;
       const changePct = prices[sym]?.changePercent24h;
@@ -188,7 +196,7 @@ export default function OverviewTab() {
       return {
         ...h,
         symbol: sym,
-        stock,
+        row,
         livePrice,
         invested,
         current,
@@ -196,15 +204,14 @@ export default function OverviewTab() {
         plPct,
         score,
         sector,
-        consensus,
-        tensionSpread: consensus?.tensionSpread ?? 0,
-        topBull: consensus?.topBull?.full ?? '—',
-        topBear: consensus?.topBear?.full ?? '—',
+        tensionSpread: row?.tensionSpread ?? 0,
+        topBull: row?.topBull?.full ?? '—',
+        topBear: row?.topBear?.full ?? '—',
         prevValue,
         volume24h: prices[sym]?.volume24h ?? 0,
       };
     });
-  }, [holdings, prices]);
+  }, [holdings, prices, rowMap]);
 
   const totals = useMemo(() => {
     const totalInvested = enriched.reduce((s, h) => s + h.invested, 0);
@@ -319,8 +326,8 @@ const avgHoldingPeriodDays = useMemo(() => {
     let value = 0, growth = 0, blend = 0;
     for (const h of enriched) {
       const w = h.current / total;
-      const pe = h.stock?.pe ?? 0;
-      const g = h.stock?.revcagr ?? 0;
+      const pe = h.row?.pe ?? 0;
+      const g = h.row?.revcagr ?? 0;
 
       if (pe > 0 && g > 0) {
         if (pe <= 20 && g <= 12) value += w;
@@ -340,9 +347,8 @@ const avgHoldingPeriodDays = useMemo(() => {
 
     let y = 0;
     for (const h of enriched) {
-      const stock = h.stock;
-      const fcf = stock?.fcf;
-      const mktcap = stock?.mktcap;
+      const fcf = h.row?.fcf;
+      const mktcap = h.row?.mktcap;
       if (typeof fcf !== 'number' || typeof mktcap !== 'number' || mktcap <= 0) continue;
       const w = h.current / total;
       y += w * (fcf / mktcap) * 100;
@@ -396,7 +402,7 @@ const [beta, setBeta] = useState<number | null>(null);
         if (ad > d) continue;
         const px = symMaps[h.symbol]?.[d];
         const p2 = typeof px === 'number' ? px : null;
-        v += h.shares * (p2 ?? (STOCKS as any)[h.symbol]?.price ?? h.avgPrice);
+        v += h.shares * (p2 ?? h.avgPrice);
       }
       portVals.push(v);
     }
@@ -526,12 +532,11 @@ const [beta, setBeta] = useState<number | null>(null);
     );
   }
 
-  const whatIfStock = (STOCKS as any)[whatIfSymbol.trim().toUpperCase()];
+  const whatIfRow = rowMap.get(whatIfSymbol.trim().toUpperCase()) ?? null;
   // T14: what-if uses the live quote only; seed prices are never presented as current
   const whatIfLtp = whatIfSymbol ? (prices[whatIfSymbol.trim().toUpperCase()]?.price ?? 0) : 0;
   const whatIfShares = (whatIfLtp > 0) ? (whatIfAmount / whatIfLtp) : 0;
-  const whatIfConsensus = whatIfStock ? getStockScore(whatIfStock) : null;
-  const whatIfScore = whatIfConsensus?.consensus ?? 0;
+  const whatIfScore = whatIfRow?.consensus ?? 0;
 
   const whatIfNewValue = totals.totalCurrent + whatIfAmount;
   const whatIfNewScore = (whatIfNewValue > 0)
@@ -690,7 +695,7 @@ const [beta, setBeta] = useState<number | null>(null);
               style={{ width: '100%', padding: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(148,163,184,0.3)', borderRadius: 4, color: '#E2E8F0', fontSize: 12, fontFamily: 'monospace' }}
             />
             <datalist id="stocks-list">
-              {Object.keys(STOCKS).map(s => <option key={s} value={s} />)}
+              {rows.map(r => <option key={r.symbol} value={r.symbol} />)}
             </datalist>
           </div>
           <div>
@@ -703,7 +708,7 @@ const [beta, setBeta] = useState<number | null>(null);
             />
           </div>
         </div>
-        {whatIfStock && (
+        {whatIfRow && (
           <div style={{ marginTop: 16, padding: 12, background: 'rgba(56,189,248,0.1)', borderRadius: 6 }}>
             <div style={{ fontSize: 12, color: '#64748B', marginBottom: 8 }}>Impact if you add {whatIfShares.toFixed(2)} shares of {whatIfSymbol.toUpperCase()} @ {formatCurrency(whatIfLtp)}:</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, fontSize: 11 }}>

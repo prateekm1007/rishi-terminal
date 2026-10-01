@@ -83,3 +83,33 @@ export function derivedSourced(
 ): Sourced<number> {
   return { value, source: "derived", asOf };
 }
+
+/**
+ * Overlay a live upstream value on top of a resolved field (N1).
+ *
+ * lib/scoring is server-only, so the client re-resolution that
+ * MetricsPanel used to do is gone: the server resolves the seed baseline
+ * (RSC props) and this helper applies the live fundamentals the client
+ * fetched from /api/fundamentals. Same policy as the engine's `pick()`:
+ * only a finite, strictly-positive live number overrides the baseline —
+ * a failed/partial live fetch must never zero out a real value.
+ */
+export function overlaySourced(
+  baseline: Sourced<number>,
+  liveValue: number | null | undefined,
+  vendorName: string | null | undefined,
+  liveAsOf: string | null | undefined,
+): Sourced<number> {
+  if (
+    typeof liveValue === "number" &&
+    Number.isFinite(liveValue) &&
+    liveValue > 0
+  ) {
+    return {
+      value: liveValue,
+      source: `vendor:${vendorName && vendorName !== "static" ? vendorName : "live-fundamentals"}`,
+      asOf: liveAsOf ?? null,
+    };
+  }
+  return baseline;
+}

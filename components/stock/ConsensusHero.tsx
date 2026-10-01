@@ -1,6 +1,6 @@
 'use client';
 
-import { SanitizedConsensus } from '../../lib/consensus/sanitize';
+import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
 
 interface Props {
   consensus: SanitizedConsensus;

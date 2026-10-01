@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { CommodityData } from '../../../data/markets';
 import type { RishiScore } from '../../types';
 

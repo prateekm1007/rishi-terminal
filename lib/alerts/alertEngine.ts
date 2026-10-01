@@ -2,7 +2,7 @@
 // ALERT ENGINE — Multi-condition price & Rishi score alerts
 // ============================================================
 
-import { resolveTickerSymbol } from '../registry/tickerRegistry';
+import { resolveTickerAlias } from '../registry/tickerRegistry'; // N1: pure alias-chain migration (client-safe)
 
 export type AlertType = 
   | 'price_above' 
@@ -35,7 +35,7 @@ export function loadAlerts(): Alert[] {
     if (!raw) return [];
     // T12: silently migrate renamed/legacy tickers to canonical symbols
     return (JSON.parse(raw) as Alert[]).map(a => {
-      const canonical = resolveTickerSymbol(a.symbol);
+      const canonical = resolveTickerAlias(a.symbol);
       return canonical && canonical !== a.symbol ? { ...a, symbol: canonical } : a;
     });
   } catch {

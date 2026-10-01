@@ -60,10 +60,13 @@ jobs:
         run: npm run validate:encoding
 
       - name: Registry validation (T12)
-        run: npx tsx scripts/validateStocks.ts
+        # N1: registry/seed modules are server-only; tsx needs the
+        # react-server condition so `import 'server-only'` resolves to its
+        # no-op entry (matches package.json validate:stocks).
+        run: npm run validate:stocks
 
       - name: Score parity (T10)
-        run: npx tsx scripts/scoreParity.ts
+        run: npm run score:parity
 
       - name: Production build
         run: npm run build

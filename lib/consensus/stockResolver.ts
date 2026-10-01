@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { STOCKS } from "../../data/stocks/index";
 import { Stock }  from "./types";
 

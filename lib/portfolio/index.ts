@@ -1,6 +1,6 @@
 import { Stock } from '../types';
 import { RishiScore } from '../consensus/types';
-import { resolveTickerSymbol } from '../registry/tickerRegistry';
+import { resolveTickerAlias } from '../registry/tickerRegistry'; // N1: pure alias-chain migration (client-safe)
 
 export interface PortfolioHolding {
   symbol: string;
@@ -39,7 +39,7 @@ export function loadPortfolio(): Portfolio {
     const parsed = JSON.parse(stored) as Portfolio;
     // T12: silently migrate renamed/legacy tickers to canonical symbols
     parsed.holdings = (parsed.holdings ?? []).map(h => {
-      const canonical = resolveTickerSymbol(h.symbol);
+      const canonical = resolveTickerAlias(h.symbol);
       return canonical && canonical !== h.symbol ? { ...h, symbol: canonical } : h;
     });
     return parsed;

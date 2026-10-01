@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from '../../lib/language';
-import { calculateQvps } from "@/lib/scoring"; // T10: single scoring surface
 import { getScoreColors, colors, fonts, shadows } from "@/lib/design";
-import type { StockMetrics, RishiScoreResult, ScoreMode, PillarScore } from "@/lib/scorers/types";
+import type { RishiScoreResult, ScoreMode, PillarScore } from "@/lib/scorers/types";
 
 function getConvictionLabel(c: string): string {
   const m: Record<string,string> = {
@@ -130,18 +129,22 @@ function RiskChip({ label, level }: { label: string; level?: string }) {
 }
 
 interface Props {
-  metrics:     StockMetrics;
+  /**
+   * N1 (round 3): both QVPS modes arrive precomputed from the server
+   * (calculateQvpsDual) — the engine no longer runs client-side, so the
+   * mode toggle just switches between the two server results.
+   */
+  dual: { long: RishiScoreResult; short: RishiScoreResult };
+  /** Sector label for the header (was metrics.sector). */
+  sector?: string;
   defaultMode?: ScoreMode;
 }
 
-export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props) {
+export default function RishiScoreDual({ dual, sector, defaultMode = "LONG" }: Props) {
   const { t } = useLanguage();
   const [mode, setMode] = useState<ScoreMode>(defaultMode);
 
-  const result: RishiScoreResult = useMemo(
-    () => calculateQvps(metrics, mode),
-    [metrics, mode]
-  );
+  const result: RishiScoreResult = mode === "SHORT" ? dual.short : dual.long;
 
   const { primary, label: convLabel } = getScoreColors(result.finalScore, mode);
   const isShort = mode === "SHORT";
@@ -169,7 +172,7 @@ export default function RishiScoreDual({ metrics, defaultMode = "LONG" }: Props)
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"32px" }}>
           <div>
             <div style={{ fontFamily: fonts.serif, fontSize:"20px", fontWeight:700, color: colors.gold, letterSpacing:"0.05em", marginBottom:"4px" }}>{t("common.qvpsScore")}</div>
-            <div style={{ fontSize:"11px", color: colors.textMuted, fontFamily: fonts.mono, fontWeight:500 }}>v2.0 · {result.dataQuality} Data · {metrics.sector}</div>
+            <div style={{ fontSize:"11px", color: colors.textMuted, fontFamily: fonts.mono, fontWeight:500 }}>v2.0 · {result.dataQuality} Data{sector ? " · " + sector : ""}</div>
           </div>
 
           <div style={{ display:"flex", background:"rgba(5,8,16,0.85)", border:"1px solid " + colors.border, borderRadius:"14px", padding:"4px", gap:"3px", boxShadow:"inset 0 1px 2px rgba(0,0,0,0.2)" }}>

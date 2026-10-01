@@ -2,11 +2,13 @@
 
 // hooks/useFundamentals.ts
 // Fetches full live fundamentals: P/E, EPS, Market Cap, ROE, ROCE, Book Value, D/E, OPM, CAGR, Promoter
-// Falls back to STOCKS static data if API unavailable
+// N1 (round 3): no client-side seed fallback — the seed dataset is
+// server-only. /api/fundamentals serves the labelled static fallback
+// (source: 'static') server-side when live upstreams fail, so the hook
+// stays honest without shipping STOCKS to the browser.
 // Cache: localStorage, 24 hours
 
 import { useState, useEffect, useRef } from 'react';
-import { STOCKS } from '@/data/stocks/index';
 
 export interface FullFundamentals {
   symbol: string;
@@ -77,30 +79,6 @@ function setInCache(key: string, data: any) {
   saveCache(cache);
 }
 
-function buildStaticFundamentals(symbol: string): FullFundamentals {
-  const stock = (STOCKS as any)[symbol];
-  return {
-    symbol,
-    pe: stock?.pe ?? 0,
-    eps: stock?.np && stock?.sh ? Math.round((stock.np / stock.sh) * 100) / 100 : 0,
-    marketCap: stock?.mktcap ?? 0,
-    roe: stock?.roe ?? 0,
-    roce: stock?.roce ?? 0,
-    bookValue: stock?.bvps ?? 0,
-    dividendYield: 0,
-    faceValue: 10,
-    debtToEquity: stock?.de ?? 0,
-    opm: stock?.opm ?? 0,
-    revCagr3y: stock?.revcagr ?? 0,
-    epsCagr: stock?.epscagr ?? 0,
-    promoterHolding: stock?.promo ?? 0,
-    fcf: stock?.fcf ?? 0,
-    roa: 0,
-    lastUpdated: '',
-    isLive: false,
-  };
-}
-
 export function useFundamentals(symbol: string): {
   fundamentals: FullFundamentals | null;
   loading: boolean;
@@ -108,8 +86,7 @@ export function useFundamentals(symbol: string): {
 } {
   const [fundamentals, setFundamentals] = useState<FullFundamentals | null>(() => {
     const cached = getFromCache(`fund:${symbol}`);
-    if (cached) return { ...cached, isLive: cached.source !== 'static' };
-    return buildStaticFundamentals(symbol);
+    return cached ? { ...cached, isLive: cached.source !== 'static' } : null;
   });
   const [loading, setLoading] = useState(false);
   const mounted = useRef(true);
@@ -214,7 +191,7 @@ export function useBulkFundamentals(symbols: string[]): {
     const result: Record<string, FullFundamentals> = {};
     for (const sym of symbols) {
       const cached = getFromCache(`fund:${sym}`);
-      result[sym] = cached ?? buildStaticFundamentals(sym);
+      if (cached) result[sym] = cached;
     }
     return result;
   });

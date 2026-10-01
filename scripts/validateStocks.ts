@@ -19,10 +19,9 @@ import { STOCKS, SEED_STATUS } from "../data/stocks";
 import {
   buildTickerRegistry,
   registryHealthScore,
-  TICKER_ALIASES,
-  normalizeTicker,
   resolveTickerSymbol,
-} from "../lib/registry/tickerRegistry";
+} from '../lib/registry/registryAudit';
+import { TICKER_ALIASES, normalizeTicker } from '../lib/registry/tickerRegistry';
 
 let failures = 0;
 const problems: string[] = [];

@@ -1,10 +1,10 @@
 import { supabase } from './db/supabase';
-import { resolveTickerSymbol } from './registry/tickerRegistry';
+import { resolveTickerAlias } from './registry/tickerRegistry'; // N1: pure alias-chain migration (client-safe)
 
 /** T12: renamed/legacy symbols are silently migrated to canonical on read. */
 function migrateSymbols<T extends { symbol: string }>(items: T[]): T[] {
   return items.map(i => {
-    const canonical = resolveTickerSymbol(i.symbol);
+    const canonical = resolveTickerAlias(i.symbol);
     return canonical && canonical !== i.symbol ? { ...i, symbol: canonical } : i;
   });
 }

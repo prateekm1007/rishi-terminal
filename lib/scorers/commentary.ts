@@ -3,6 +3,8 @@
 // Generates philosophical commentary in the voice of legends
 // ============================================================
 
+import 'server-only';
+
 import { RishiScoreResult, StockMetrics, ScoreMode } from "./types";
 
 // ── Long Commentary Templates ────────────────────────────────

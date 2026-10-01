@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 

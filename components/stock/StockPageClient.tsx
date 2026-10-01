@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Stock, RishiScore } from '../../lib/types';
-import { SanitizedConsensus } from '../../lib/consensus/sanitize';
+import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
+import type { ResolvedStockMetrics } from '@/lib/scoring';
+import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
 import { useTier } from '../../hooks/useTier';
 import { ConsensusHero }          from './ConsensusHero';
 import { RishiGrid }              from './RishiGrid';
@@ -19,28 +21,33 @@ import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
 import RishiScoreDual             from '../score/RishiScoreDual';
-import { resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
-import type { StockMetrics }      from '../../lib/scorers/types';
-import { useFundamentals } from '../../hooks/useFundamentals';
 
 interface Props {
   stock: Stock;
   /** R3: server-sanitized consensus — carries only the caller's verdict set. */
   consensus: SanitizedConsensus;
   detail: any;
+  /** N1: server-computed seed-baseline resolution (live overlay happens in
+   *  MetricsPanel via overlaySourced — the engine itself never ships). */
+  resolved: ResolvedStockMetrics | null;
+  /** N1: both QVPS modes precomputed on the server. */
+  qvpsDual: { long: import('../../lib/scorers/types').RishiScoreResult; short: import('../../lib/scorers/types').RishiScoreResult } | null;
+  /** N1: knowledge graph for the free verdict set; paid tiers receive the
+   *  tier-aware graph from /api/rishis/[symbol]. */
+  eliteGraph: EliteKnowledgeGraph;
 }
 
-export function StockPageClient({ stock, consensus, detail }: Props) {
+export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
-  const { fundamentals: liveFundamentals } = useFundamentals(stock.symbol);
 
   // R3: the server embedded the free (seeker) verdict set. A signed-in
   // user on a paid tier upgrades it via the server-enforced route — the
   // verdicts rendered here always match what the server returned.
   const { tier, authenticated } = useTier();
   const [verdicts, setVerdicts] = useState<RishiScore[]>(consensus.verdicts);
+  const [graph, setGraph] = useState<EliteKnowledgeGraph | null>(null);
   useEffect(() => {
     if (!authenticated || tier === 'seeker') return;
     let cancelled = false;
@@ -51,6 +58,9 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
         const data = await res.json();
         if (!cancelled && (data.tier === 'student' || data.tier === 'disciple')) {
           setVerdicts(data.verdicts ?? []);
+          // N1: the route also serves the knowledge graph rebuilt for the
+          // paid verdict set (the engine no longer runs client-side).
+          setGraph(data.knowledgeGraph ?? null);
         }
       } catch {
         // network failure: keep the free set
@@ -189,7 +199,7 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
 
             {/* Modal Body */}
             <div style={{ padding: 28, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
-              <KnowledgeGraphView stock={stock} verdicts={verdicts} topBull={consensus.topBull} topBear={consensus.topBear} />
+              <KnowledgeGraphView stock={stock} graph={graph ?? eliteGraph} verdicts={verdicts} topBull={consensus.topBull} topBear={consensus.topBear} />
             </div>
           </div>
         </div>
@@ -285,16 +295,11 @@ export function StockPageClient({ stock, consensus, detail }: Props) {
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
-                  {(() => {
-                    // T10: one input set — resolve seed+live through lib/scoring
-                    const resolved = resolveStockMetrics(stock.symbol, liveFundamentals);
-                    if (!resolved) return null;
-                    return <RishiScoreDual metrics={resolved.metrics} />;
-                  })()}
+                  {qvpsDual ? <RishiScoreDual dual={qvpsDual} sector={stock.sector} /> : null}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
-                  <MetricsPanel stock={stock} />
+                  {resolved ? <MetricsPanel resolved={resolved} /> : null}
                 </div>
 
                 <div className="wisdom-reveal-delay-2 card-sacred" style={{ padding: 24, position: 'relative' }}>

@@ -42,16 +42,24 @@ source" is no longer a payment bypass. UI hiding remains only as UX.
    chat UI for persona metadata, never by `/api/chat` (verified: the route
    imports `personas.ts`, and `grep -rln 'chat/rishiEngine'` returns only
    `components/chat/RishiChat.tsx`).
-3. **Screener** computes the consensus number and top-rishi name client-side
-   from the bundled seed registry (free fields only; the per-verdict content
-   is never rendered there). Converting `/screener` to server rendering is
-   explicitly out of scope for this round (spec §"Out of scope").
-4. **The seed registry and the scoring engine code are public** (bundled JS).
-   A technically skilled user can re-run the engine locally on the seed data.
-   What they can no longer do is read the *served* product's paid verdicts
-   without paying. A fully tamper-proof boundary requires not shipping the
-   engine/registry to the client at all — that is the `/screener`/`/lab` SSR
-   conversion, out of scope.
+3. **Screener** is a server component that builds the slim index (free
+   fields: consensus number/category, topBull/topBear summaries, and the
+   pe/roe/mktcap/de display-and-filter fields) and passes it to the client
+   table via RSC props. Sorting and preset filtering run on the slim rows;
+   per-verdict content is never rendered there.
+4. **(N1, round 3) The seed dataset and the scoring engine no longer ship
+   to the client.** `data/stocks/index.ts`, `lib/consensus/**`,
+   `lib/scorers/**` and `lib/scoring/**` are `server-only` (the build fails
+   on any client import); list surfaces receive the slim index via RSC
+   props; the per-stock display record comes via RSC props on
+   /stock/[symbol] or `GET /api/stock/[symbol]`; lab analytics aggregate
+   the seeker-visible free verdict slice and paid tiers upgrade per-symbol
+   verdicts through `GET /api/rishis/[symbol]` (the route also rebuilds the
+   knowledge graph for the caller's tier). A browser can no longer
+   recompute verdicts 6..20 locally — the paid boundary is structural
+   end-to-end. Enforcement: `import 'server-only'` (build),
+   `test/clientBoundary.test.ts` (transitive runtime-import walk), and the
+   ESLint rule `rishi-terminal/no-server-only-imports-in-client`.
 
 ## Changing the matrix
 

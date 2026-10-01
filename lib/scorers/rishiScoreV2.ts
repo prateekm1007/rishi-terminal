@@ -8,6 +8,8 @@
 // Import it only through lib/scoring (ESLint enforces this).
 // ============================================================
 
+import 'server-only';
+
 import {
   StockMetrics, RishiScoreResult, ScoreMode, PillarScore,
   clamp, getConviction, getGrade, getAction,

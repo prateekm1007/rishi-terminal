@@ -3,10 +3,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-import { STOCKS } from '@/data/stocks/index';
-import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
+// N1 (round 3): receives the server-generated slim index. The council
+// analytics aggregate the SEEKER-visible free verdict slice; paid tiers
+// upgrade per-symbol verdicts through the server-enforced
+// GET /api/rishis/[symbol] (same pattern as the stock page) — verdicts
+// 6..20 never ship in the client bundle.
+import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import type { RishiScore } from '@/lib/types';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { useTier } from '@/hooks/useTier';
 import { useLanguage } from '../../lib/language';
 import InfoTip from '@/components/lab/InfoTip';
 
@@ -38,38 +44,70 @@ function spreadColor(spread: number): string {
   return spread < 20 ? '#22C55E' : spread < 40 ? '#A3E635' : spread < 60 ? '#F59E0B' : spread < 80 ? '#F97316' : '#EF4444';
 }
 
-export default function IntelligenceTab() {
+interface Props {
+  rows: SlimStockRow[];
+}
+
+export default function IntelligenceTab({ rows }: Props) {
   const { t } = useLanguage();
+  const { tier, authenticated } = useTier();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
+  const [verdictUpgrades, setVerdictUpgrades] = useState<Record<string, RishiScore[]>>({});
 
   useEffect(() => {
     setHoldings(loadPortfolio().holdings);
   }, []);
+
+  // Paid tiers: upgrade each holding's verdict slice via the
+  // server-enforced route (seeker keeps the embedded free slice).
+  useEffect(() => {
+    if (!authenticated || tier === 'seeker' || holdings.length === 0) return;
+    let cancelled = false;
+    void (async () => {
+      const next: Record<string, RishiScore[]> = {};
+      await Promise.all(holdings.map(async h => {
+        try {
+          const res = await fetch(`/api/rishis/${encodeURIComponent(h.symbol)}`, { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.tier === 'student' || data.tier === 'disciple') {
+            next[h.symbol] = data.verdicts ?? [];
+          }
+        } catch {
+          // network failure: keep the free slice
+        }
+      }));
+      if (!cancelled && Object.keys(next).length > 0) setVerdictUpgrades(next);
+    })();
+    return () => { cancelled = true; };
+  }, [authenticated, tier, holdings]);
+
+  const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
 
   const symbols = useMemo(() => holdings.map(h => h.symbol), [holdings]);
   const { prices, loading } = useLivePrices(symbols);
 
   const enriched = useMemo(() => {
     return holdings.map(h => {
-      const stock = STOCKS[h.symbol];
-      const livePrice = prices[h.symbol]?.price ?? stock?.price ?? h.avgPrice;
+      const row = rowMap.get(h.symbol) ?? null;
+      // T14/N1: live price or cost basis — the seed price is never
+      // rendered as a current value.
+      const livePrice = prices[h.symbol]?.price ?? h.avgPrice;
       const current = h.shares * livePrice;
-      const consensus = stock ? getStockScore(stock) : null;
       return {
         ...h,
-        stock,
+        row,
         current,
-        consensus,
-        score: consensus?.consensus ?? 0,
-        scores: consensus?.scores ?? [],
-        topBull: consensus?.topBull,
-        topBear: consensus?.topBear,
-        tensionSpread: consensus?.tensionSpread ?? 0,
-        tension: consensus?.tension ?? '—',
-        category: consensus?.category ?? '—',
+        score: row?.consensus ?? 0, // same display semantics as before (null -> 0 on this surface)
+        scores: verdictUpgrades[h.symbol] ?? row?.freeScores ?? [],
+        topBull: row?.topBull ?? undefined,
+        topBear: row?.topBear ?? undefined,
+        tensionSpread: row?.tensionSpread ?? 0,
+        tension: row?.tension ?? '—',
+        category: row?.category ?? '—',
       };
     });
-  }, [holdings, prices]);
+  }, [holdings, prices, rowMap, verdictUpgrades]);
 
   // Per-Rishi average score across entire portfolio
   const rishiAverages = useMemo(() => {
@@ -108,7 +146,7 @@ export default function IntelligenceTab() {
   const knowledgeGaps = useMemo(() => {
     return enriched.filter(h => h.score < 55 || h.tensionSpread > 40).map(h => ({
       symbol: h.symbol,
-      name: h.stock?.name ?? h.symbol,
+      name: h.row?.name ?? h.symbol,
       score: h.score,
       spread: h.tensionSpread,
       issue: h.score < 55 && h.tensionSpread > 40
@@ -134,7 +172,7 @@ export default function IntelligenceTab() {
       if (spread >= 25) {
         conflicts.push({
           symbol: h.symbol,
-          name: h.stock?.name ?? h.symbol,
+          name: h.row?.name ?? h.symbol,
           bullRishi: bull.full,
           bullScore: bull.score as number,
           bearRishi: bear.full,
@@ -164,7 +202,7 @@ export default function IntelligenceTab() {
 
     let cyclical = 0, defensive = 0;
     for (const h of enriched) {
-      const sector = h.stock?.sector ?? 'Unknown';
+      const sector = h.row?.sector ?? 'Unknown';
       const w = h.current / total;
       if (cyclicalSectors.has(sector)) cyclical += w;
       else if (defensiveSectors.has(sector)) defensive += w;

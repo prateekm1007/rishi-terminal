@@ -1,7 +1,9 @@
 'use client';
 
 import { RishiScore } from "../../lib/types";
-import { RISHI_WEIGHT_CONFIG } from "../../lib/consensus/weights";
+// N1: weights are public methodology metadata (S2-01) — lib/gurus/weights,
+// not the server-only engine module lib/consensus/weights.
+import { RISHI_WEIGHT_CONFIG } from "../../lib/gurus/weights";
 import { WisdomTier } from "../../lib/premium";
 import Link from "next/link";
 import { useState } from "react";

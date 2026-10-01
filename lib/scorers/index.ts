@@ -1,3 +1,5 @@
+import 'server-only';
+
 export { scoreJhunjhunwala } from './jhunjhunwala';
 export { scoreDamani }       from './damani';
 export { scoreBuffett }      from './buffett';

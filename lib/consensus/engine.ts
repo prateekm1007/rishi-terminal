@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { Stock, ConsensusResult, RishiScore } from "./types";
 import { runAllScorers }   from "./orchestrator";
 import { weightedAverage } from "./weights";

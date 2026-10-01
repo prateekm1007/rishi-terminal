@@ -7,6 +7,8 @@
  * lib/scoring/getStockScore over dataQuality==='OK' records only.
  */
 
+import 'server-only';
+
 import { STOCKS } from "@/data/stocks";
 import type { Stock } from "@/lib/consensus/types";
 import { getStockScore } from "./index";

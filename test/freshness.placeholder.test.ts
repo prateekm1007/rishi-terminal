@@ -79,9 +79,12 @@ describe("R1 — SeedDataBanner renders the mandated label", () => {
 
 describe("R1 — UI surfaces show the banner and no seed as-of claims", () => {
   // Every surface that renders seed-derived numbers/scores/rankings.
+  // N1 (round 3): / and /screener are server components now; the banner
+  // renders in their client children. (N3 replaces this hand-written list
+  // with an auto-discovered surface test.)
   const SURFACES: Array<{ file: string; minBanners: number }> = [
-    { file: "app/page.tsx", minBanners: 3 }, // Stock of the Day, Top Buy, Short radar
-    { file: "app/screener/page.tsx", minBanners: 1 }, // screener table
+    { file: "components/dashboard/DashboardClient.tsx", minBanners: 3 }, // Stock of the Day, Top Buy, Short radar
+    { file: "components/screener/ScreenerClient.tsx", minBanners: 1 }, // screener table
   ];
 
   for (const { file, minBanners } of SURFACES) {

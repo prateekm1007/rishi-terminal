@@ -1,75 +1,56 @@
 "use client";
 
+// N1 (round 3): the table receives the server-generated slim rows —
+// consensus, category, and the free display fields come precomputed;
+// live prices and live fundamentals overlay client-side as before.
+// No scoring engine, no seed dataset in the bundle (the old topRishi /
+// topRishiScore enrichment was computed here and never rendered —
+// dropped as dead code).
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Stock } from "../../lib/types";
-import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
+import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
 
-interface StockRow extends Stock {
-  /** null = "Insufficient Data" — rendered as em dash and always sorted last (T11). */
-  consensus: number | null;
-  topRishi: string;
-  topRishiScore: number | null;
-  category: string;
+interface Props {
+  stocks: SlimStockRow[];
+}
+
+type SortKey = "symbol" | "livePrice" | "pe" | "roe" | "mktcap" | "consensus" | "change24h";
+
+interface Row extends SlimStockRow {
   /** null = no live quote — em dash shown; seed price is NEVER displayed (T14). */
   livePrice: number | null;
   change24h: number | null;
 }
 
-interface Props {
-  stocks: Stock[];
-}
-
-type SortKey = "symbol" | "livePrice" | "pe" | "roe" | "mktcap" | "consensus" | "change24h";
-
-function consensusCategory(score: number): string {
-  if (score >= 75) return "STRONG BUY";
-  if (score >= 60) return "BUY";
-  if (score >= 45) return "HOLD";
-  return "AVOID";
-}
-
 export function StockTable({ stocks }: Props) {
   const dark = true;
-  // T14: freshness labels — fundamentals are seed data unless a live fetch
-  // overrode them; prices are live-only (never seed).
 
   const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
   const [sortKey, setSortKey] = useState<SortKey>("consensus");
   const [sortDesc, setSortDesc] = useState(true);
 
-  // Get live prices for all stocks
   const stockSymbols = useMemo(() => stocks.map(s => s.symbol), [stocks]);
 
   const { prices } = useLivePrices(stockSymbols);
-  
+
   const { fundamentals: bulkFund } = useBulkFundamentals(stockSymbols);
 
-  const enrichedStocks = useMemo<StockRow[]>(() => {
+  const enrichedStocks = useMemo<Row[]>(() => {
     return stocks.map(stock => {
-      const report = getStockScore(stock);
-      const topScore = report.scores[0];
       // T14: seed price is never rendered as live — null when feed is down
       const livePrice = prices[stock.symbol]?.price ?? null;
       const change24h = prices[stock.symbol]?.change ?? null;
       return {
         ...stock,
-        // T11: null consensus stays null — never coerced to 0, displayed as em dash
-        consensus: report.consensus,
-        topRishi: topScore?.name ?? "—",
-        topRishiScore: topScore?.score ?? null,
-        category: report.consensus !== null ? consensusCategory(report.consensus) : "N/A",
-        pe: bulkFund[stock.symbol]?.pe ?? stock.pe,
-        roe: bulkFund[stock.symbol]?.roe ?? stock.roe,
         livePrice,
         change24h,
       };
     });
-  }, [stocks, prices, bulkFund]);
+  }, [stocks, prices]);
 
   const sectors = useMemo(() => {
     const unique = new Set(stocks.map(s => s.sector));

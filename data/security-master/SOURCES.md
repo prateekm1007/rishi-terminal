@@ -47,17 +47,28 @@ and to the live database. Idempotent (upserts + `ON CONFLICT DO NOTHING`).
 Resolution rules, in order (the generator never guesses an ISIN —
 Constitution/roadmap D1-02):
 
-1. **Direct symbol match** — a seed symbol appears verbatim in the official
-   listing → that row's ISIN.
+1. **Direct symbol match + name-agreement gate** (audit round 4, Q3) — a seed
+   symbol appears verbatim in the official listing, **and** the seed name
+   agrees with the official name per `lib/db/nameAgreement.agreesEnough()`:
+   suffix-stripped raw equality (punctuation/space-insensitive), or >= 2
+   shared distinctive tokens. One shared token is never enough (19 official
+   companies contain the token "infra"). A disagreement counts as bound ONLY
+   if `name_overrides.json` has a reviewed entry for that symbol whose
+   `officialName` matches the listing exactly. Otherwise the binding is
+   suspended: `universe.data_quality = 'NAME_MISMATCH'` with both names in
+   `reason`, seed→ISIN binding withheld, and CI (`D1-02.7`) plus
+   `validateSecurityMaster` (V5/V6) FAIL until the row is curated or the
+   seed record is fixed/removed.
 2. **Name resolution** (for seed symbols not in the listing) — normalize the
-   seed company name and every official name (lowercase, strip punctuation and
-   corporate suffixes: *ltd, limited, plc, india, co, corp, corporation,
-   company*). If the seed's name tokens are **fully contained** in exactly ONE
-   official row's tokens → that row's ISIN, with the match recorded in the
-   emitted `universe.reason`. If two or more official rows contain the seed
-   name → **UNRESOLVED**, both candidates recorded in the reason. Zero
-   candidates → **UNRESOLVED** ("delisted, renamed with a name change, or not
-   a real listing").
+   seed company name and every official name as above. If the seed's name
+   tokens are **fully contained** in exactly ONE official row's tokens → that
+   row's ISIN, with the match recorded in the emitted `universe.reason`. If
+   two or more official rows contain the seed name → **UNRESOLVED**, both
+   candidates recorded in the reason. Zero candidates → **UNRESOLVED**
+   ("delisted, renamed with a name change, or not a real listing").
+   (Round-4 note: the stricter token rule moved `HGELEC` ("H.G. Infra") from
+   name-resolved to UNRESOLVED — "infra" alone matches 19 companies;
+   fail-closed, pending curation.)
 3. Everything else → `universe` row with `isin IS NULL`, `data_quality =
    'UNRESOLVED'` and the reason.
 
@@ -78,4 +89,36 @@ will supersede these rows.
 `universe` rows: one per official listing symbol
 (`data_quality='PENDING_DATA'` — prices/fundamentals ingestion and validation
 are D1-04..D1-09, which is what promotes rows to `OK`), plus one per
-UNRESOLVED seed symbol (`isin IS NULL`, symbol + reason recorded).
+UNRESOLVED seed symbol (`isin IS NULL`, symbol + reason recorded), plus one
+`NAME_MISMATCH` row per unreviewed seed-name disagreement (Q3 — must be zero
+for CI to pass).
+
+---
+
+## `name_overrides.json` (curated review decisions, Q3)
+
+Every seed↔listing name disagreement the gate rejects is either fixed
+(renamed seed record), removed (wrong-company binding), or accepted here with
+`sources`. Round 4 outcome: 8 seed records REMOVED (JKIL, MGEL, PENIND,
+POWERINDIA, KALYANI, SUNDARAM, SUVEN, VSTL — the last four were found while
+implementing the gate; the first four are the auditor's), 4 seed names
+UPDATED to official names (SHRIPISTON→SPR Auto Technologies, KAMOPAINTS→
+Kamdhenu Ventures, LTTS→L&T Technology Services, VENKEYS→Venky's (India)),
+and 43 disagreements ACCEPTED as the same company (acronyms, brand names,
+renames) each with sources. Decisions were made by the coder under audit
+instruction; founder ratification is recorded as pending in every entry.
+
+---
+
+## Provenance caveats (Q3, recorded per auditor instruction)
+
+- The CSV above was fetched through a **third-party reader service**
+  (`z-ai` `page_reader`), not by a direct browser download from NSE — the
+  sandbox cannot reach `archives.nseindia.com` directly. The payload was
+  verified structurally (2,593 rows, ISIN check digits, no duplicate ISINs)
+  but a **founder-supplied browser download** of
+  https://archives.nseindia.com/content/equities/EQUITY_L.csv should be
+  SHA-256-compared against `95f0d731…aa8f` as an independent integrity
+  check. **BLOCKED: founder browser download pending** (founder checklist,
+  Q3). When it arrives, record its SHA-256 next to this note; a hash
+  mismatch is a stop-everything finding, not a data fix.

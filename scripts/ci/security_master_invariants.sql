@@ -102,3 +102,25 @@ BEGIN
   END IF;
 END
 $$;
+
+\echo '── D1-02.7 (Q3): no unreviewed seed-name disagreement may exist'
+-- Any NAME_MISMATCH row is, by construction, unreviewed: a reviewed
+-- disagreement is either accepted via a sourced entry in
+-- data/security-master/name_overrides.json (row returns to PENDING_DATA
+-- or is bound) or the seed record is removed/fixed. Rows must not linger.
+DO $$
+DECLARE
+  r record;
+  n int;
+BEGIN
+  SELECT count(*) INTO n FROM public.universe WHERE data_quality = 'NAME_MISMATCH';
+  IF n > 0 THEN
+    FOR r IN SELECT symbol, reason FROM public.universe WHERE data_quality = 'NAME_MISMATCH' ORDER BY symbol LIMIT 20 LOOP
+      RAISE NOTICE 'D1-02.7 unreviewed mismatch: % — %', r.symbol, r.reason;
+    END LOOP;
+    RAISE EXCEPTION 'D1-02.7 FAILED: % unreviewed NAME_MISMATCH universe row(s) — curate data/security-master/name_overrides.json or fix/remove the seed records', n;
+  END IF;
+END
+$$;
+
+\echo '── D1-02 security master invariants: all passed'

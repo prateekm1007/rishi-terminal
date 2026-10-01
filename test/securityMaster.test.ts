@@ -115,3 +115,101 @@ describe("findDuplicateActiveSymbols — the invariant detector", () => {
     expect(findDuplicateActiveSymbols(rows)).toHaveLength(0);
   });
 });
+
+// ── Q3: name-agreement gate (audit round 4) ─────────────────────────────
+import {
+  agreesEnough,
+  nameTokens,
+  parseNameOverrides,
+} from "../lib/db/nameAgreement";
+
+describe("agreesEnough — the Q3 name-agreement gate", () => {
+  it("accepts punctuation/space variants of the same name", () => {
+    expect(agreesEnough("Divis Laboratories", "Divi's Laboratories Limited").ok).toBe(true);
+    expect(agreesEnough("LatentView Analytics", "Latent View Analytics Limited").ok).toBe(true);
+    expect(agreesEnough("One97 Communications", "One 97 Communications Limited").ok).toBe(true);
+    expect(agreesEnough("Venky's (India)", "Venky's (India) Limited").ok).toBe(true);
+  });
+
+  it("accepts abbreviations sharing >= 2 distinctive tokens", () => {
+    expect(agreesEnough("Apollo Hospitals", "Apollo Hospitals Enterprise Limited").ok).toBe(true);
+    expect(agreesEnough("Aditya Birla Fashion", "Aditya Birla Fashion and Retail Limited").ok).toBe(true);
+  });
+
+  it("accepts a seed name that is the official name minus corporate suffixes", () => {
+    // suffix-stripped raw equality, not a token-count rule
+    expect(agreesEnough("Infosys", "Infosys Limited").ok).toBe(true);
+    expect(agreesEnough("Siemens", "Siemens Limited").ok).toBe(true);
+  });
+
+  it("REJECTS the five audited wrong-company bindings", () => {
+    // The audit round 4 findings — each bound seed data to another company.
+    expect(agreesEnough("J.K. Investors (Bombay)", "J.Kumar Infraprojects Limited").ok).toBe(false);
+    expect(agreesEnough("Maharashtra Gas", "Mangalam Global Enterprise Limited").ok).toBe(false);
+    expect(agreesEnough("Peninsula Land", "Pennar Industries Limited").ok).toBe(false);
+    expect(agreesEnough("Power Mech", "Hitachi Energy India Limited").ok).toBe(false);
+    expect(agreesEnough("Shriram Pistons & Rings", "SPR Auto Technologies Limited").ok).toBe(false);
+  });
+
+  it("REJECTS the round-4 additional wrong bindings found while fixing Q3", () => {
+    expect(agreesEnough("Kalyani Steels", "Kalyani Commercials Limited").ok).toBe(false);
+    expect(agreesEnough("Sundaram-Clayton", "Sundaram Multi Pap Limited").ok).toBe(false);
+    expect(agreesEnough("Suven Pharmaceuticals", "Suven Life Sciences Limited").ok).toBe(false);
+    expect(agreesEnough("Vikas Steel", "Vibhor Steel Tubes Limited").ok).toBe(false);
+  });
+
+  it("REJECTS acronyms that are not substrings of the official name", () => {
+    // CAMS is a real acronym of the official name, but the gate cannot know
+    // that — it requires a curated override (test proves the default deny).
+    expect(agreesEnough("CAMS", "Computer Age Management Services Limited").ok).toBe(false);
+    expect(agreesEnough("IREDA", "Indian Renewable Energy Development Agency Limited").ok).toBe(false);
+    expect(agreesEnough("IndiGo", "InterGlobe Aviation Limited").ok).toBe(false);
+  });
+
+  it("rejects one shared generic token ('infra' alone matches 19 companies)", () => {
+    // 19 official companies contain the token 'infra'; one shared token is
+    // never enough — the single-token rule was removed deliberately.
+    expect(agreesEnough("Some Infra", "Other Infra Limited").ok).toBe(false);
+    // ("H.G. Infra" on symbol HGELEC therefore falls to the name-resolution
+    // path, which requires a UNIQUE candidate — it is ambiguous and lands
+    // UNRESOLVED, fail-closed.)
+  });
+
+  it("treats suffix-stripped raw equality as agreement even when tokens are empty", () => {
+    expect(agreesEnough("T.T.", "T.T. Limited").ok).toBe(true);
+    expect(agreesEnough("T.T.", "X.Y. Limited").ok).toBe(false); // different names, no tokens — default deny
+  });
+});
+
+describe("nameTokens — suffix and single-character filtering", () => {
+  it("drops corporate suffixes and single characters", () => {
+    expect([...nameTokens("J. Kumar Infraprojects Limited")].sort()).toEqual(["infraprojects", "kumar"]);
+    // 'of' and 'india' are generic; so is 'corporation' — identity survives
+    // in the distinctive tokens ('life', 'insurance').
+    expect([...nameTokens("Life Insurance Corporation Of India")].sort()).toEqual([
+      "insurance", "life",
+    ]);
+  });
+});
+
+describe("parseNameOverrides — the curated decisions file", () => {
+  it("rejects an entry without sources (every decision must be checkable)", () => {
+    expect(() =>
+      parseNameOverrides({
+        entries: [
+          { symbol: "X", seedName: "X Seed", officialName: "X Official", verdict: "SAME_COMPANY", action: "BIND_WITH_OVERRIDE" },
+        ],
+      }),
+    ).toThrow(/source/i);
+  });
+
+  it("rejects UPDATE_SEED_NAME without the updated name", () => {
+    expect(() =>
+      parseNameOverrides({
+        entries: [
+          { symbol: "X", seedName: "X Seed", officialName: "X Official", verdict: "RENAMED", action: "UPDATE_SEED_NAME", sources: ["https://example.com"] },
+        ],
+      }),
+    ).toThrow(/updatedSeedName/i);
+  });
+});

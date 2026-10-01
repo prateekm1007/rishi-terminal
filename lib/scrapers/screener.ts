@@ -23,7 +23,9 @@ export interface ScreenerFundamentals {
   bookValue: number;
   fcf: number;
   roa: number;
-  debtToEquity: number;
+  /** Null when the page exposes no parseable D/E (T11/H4: never a
+   *  fabricated constant, never 0). */
+  debtToEquity: number | null;
   opm: number;
   revCagr3y: number;
   epsCagr: number;
@@ -76,16 +78,20 @@ function extractOPM(html: string): number {
   return 0;
 }
 
-function extractBalanceSheetDE(html: string): number {
-  const meta = html.match(/Mkt Cap:[\s\S]*?Revenue:[\s\S]*?Profit:[\s\S]*?ROE/i);
-
-  // Screener no longer exposes D/E directly.
-  // Use known value from current ratios page if available.
-  const ratioMatch = html.match(/Debt[^<]{0,30}Equity[^<]{0,30}([\d.]+)/i);
-  if (ratioMatch) return num(ratioMatch[1]);
-
-  // fallback
-  return 0.45;
+function extractBalanceSheetDE(html: string): number | null {
+  // H4 (audit 2026-10-01): this previously ended with `return 0.45;` — a
+  // fabricated constant served to every stock as source:"screener" live
+  // data. The T11 convention applies instead: unparseable data is null.
+  //
+  // The lazy quantifiers are load-bearing: the greedy form consumed the
+  // number itself and backtracked exactly one character, so the capture
+  // kept only the LAST DIGIT ("Debt to Equity 0.83" captured "3").
+  const ratioMatch = html.match(/Debt[^<]{0,30}?Equity[^<]{0,30}?([\d.]+)/i);
+  if (ratioMatch) {
+    const parsed = parseFloat(ratioMatch[1].replace(/,/g, ""));
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+  }
+  return null;
 }
 
 function extractCAGR(html: string): { revCagr3y: number; epsCagr3y: number } {

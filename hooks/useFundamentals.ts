@@ -20,7 +20,9 @@ export interface FullFundamentals {
   bookValue: number;
   dividendYield: number;
   faceValue: number;
-  debtToEquity: number;
+  /** Null when no upstream exposes a D/E (H4/T11 — never a fabricated
+   *  constant, never a 0 that claims debt-free). */
+  debtToEquity: number | null;
   opm: number;
   revCagr3y: number;
   epsCagr: number;

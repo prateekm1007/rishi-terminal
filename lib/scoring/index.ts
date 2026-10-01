@@ -76,11 +76,12 @@ function isResolved(x: unknown): x is ResolvedStockMetrics {
 }
 
 function pick(
-  liveValue: number | undefined,
+  liveValue: number | null | undefined,
   seedValue: number,
 ): { value: number; source: FieldSource } {
   // A failed live fetch must never zero out a real seed value: only a finite,
-  // strictly-positive live number overrides the seed.
+  // strictly-positive live number overrides the seed. Null (H4/T11: upstream
+  // has no data) and undefined (no live fetch) both keep the seed baseline.
   if (typeof liveValue === "number" && Number.isFinite(liveValue) && liveValue > 0) {
     return { value: liveValue, source: "live" };
   }

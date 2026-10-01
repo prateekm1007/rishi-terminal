@@ -18,7 +18,9 @@ export interface FullFundamentals {
   bookValue: number;
   dividendYield: number;
   faceValue: number;
-  debtToEquity: number;
+  /** Null when no upstream exposes a D/E (H4/T11: unparseable is null,
+   *  never a constant and never 0 — 0 would claim "debt-free"). */
+  debtToEquity: number | null;
   opm: number;
   revCagr3y: number;
   epsCagr: number;
@@ -90,7 +92,9 @@ export async function fetchFullFundamentals(symbol: string): Promise<FullFundame
         bookValue: yahooData.bookValue,
         dividendYield: yahooData.dividendYield,
         faceValue: yahooData.faceValue,
-        debtToEquity: 0,
+        // H4: the Yahoo+NSE fallback exposes no D/E — null (unknown), not 0
+        // (which would fabricate a debt-free balance sheet).
+        debtToEquity: null,
         opm: 0,
         revCagr3y: 0,
         epsCagr: 0,

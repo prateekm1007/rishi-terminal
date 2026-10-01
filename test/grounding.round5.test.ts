@@ -147,7 +147,15 @@ describe("round-5 Q4 controls — must still PASS", () => {
     expect(r.grounded).toBe(true);
   });
 
-  it("CONTROL: purely qualitative claim passes", () => {
+  it("CONTROL: purely qualitative claim → context-only, never grounded (G3, expectation FLIPPED)", () => {
+    // Rule 21 flip record (audit 2026-10-02, Coder Directions G3): this
+    // control used to expect grounded=true for a qualitative claim riding on
+    // cited evidenceIds. G3 makes the two states explicit — a claim can be
+    // qualitative WITHOUT being numerically grounded, and evidenceIds alone
+    // are never grounding. The claim is now CLASSIFIED context-only
+    // (disclosed via rejections), which is also the answer-floor-consistent
+    // outcome: the answer repeats the claim verbatim and carries no
+    // assertion-backed number.
     const r = validateGrounding(
       [newsItem],
       [
@@ -159,7 +167,9 @@ describe("round-5 Q4 controls — must still PASS", () => {
       ],
       "The company announced a new plant.",
     );
-    expect(r.grounded).toBe(true);
+    expect(r.grounded).toBe(false);
+    expect(r.mode).toBe("context-only");
+    expect(r.validatedClaims).toHaveLength(0);
   });
 
   it("CONTROL: number word consistent with the fact passes", () => {

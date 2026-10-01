@@ -14,7 +14,8 @@
     "test:smoke": "playwright test",
     "validate:stocks": "tsx --conditions react-server scripts/validateStocks.ts",
     "score:parity": "tsx --conditions react-server scripts/scoreParity.ts",
-    "snapshot:batch": "tsx --conditions react-server scripts/snapshotBatch.ts"
+    "snapshot:batch": "tsx --conditions react-server scripts/snapshotBatch.ts",
+    "bundle:budget": "tsx scripts/bundleBudget.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

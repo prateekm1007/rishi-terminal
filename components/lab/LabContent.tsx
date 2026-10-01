@@ -13,6 +13,7 @@ import WatchlistTabView from './WatchlistTab';
 import CompareTabView from './CompareTab';
 import OverviewTabView from './OverviewTab';
 import IntelligenceTabView from './IntelligenceTab';
+import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: seed-derived analytics in every tab
 
 type LabTab = 'overview' | 'holdings' | 'watchlist' | 'compare' | 'intelligence';
 const TABS: { id: LabTab; label: string; desc: string; icon: string }[] = [
@@ -125,6 +126,10 @@ export function LabContent({ rows }: Props) {
 
       {/* Tab Content */}
       <div className="content-wrapper" style={{ padding: '32px 24px' }}>
+        {/* N3 (round 3): consensus scores, council analytics and portfolio
+            aggregates in every tab are seed-derived while the dataset is
+            a placeholder. */}
+        <SeedDataBanner suffix="scores and analytics in the Lab are illustrative placeholders" />
         {activeTab === 'overview'     && <ErrorBoundary name="OverviewTab"><OverviewTabView rows={rows} /></ErrorBoundary>}
         {activeTab === 'holdings'     && <ErrorBoundary name="HoldingsTab"><HoldingsTabView rows={rows} /></ErrorBoundary>}
         {activeTab === 'watchlist'    && <ErrorBoundary name="WatchlistTab"><WatchlistTabView rows={rows} /></ErrorBoundary>}

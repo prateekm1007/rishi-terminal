@@ -99,7 +99,16 @@ export function resolveStockMetrics(
   const seed = STOCKS[sym];
   if (!seed) return null;
 
-  const now = new Date().toISOString();
+  // N3 (round 3): a live field's asOf is the PROVIDER's observation time
+  // (FullFundamentals.lastUpdated), never "now at resolution time" — a
+  // resolution-time stamp would claim freshness the provider never made.
+  // Fallback (labelled): when the upstream response carries no parseable
+  // timestamp, the fetch time stands in and is the honest lower bound.
+  const fetchTime = new Date().toISOString();
+  const providerAsOf =
+    live && typeof live.lastUpdated === 'string' && !Number.isNaN(Date.parse(live.lastUpdated))
+      ? live.lastUpdated
+      : fetchTime;
   const fields: Record<string, ResolvedField> = {};
   const sourced: Record<string, Sourced<number>> = {};
 
@@ -111,7 +120,7 @@ export function resolveStockMetrics(
     fields[key] = {
       value: r.value,
       source: r.source,
-      asOf: r.source === "live" ? now : null,
+      asOf: r.source === "live" ? providerAsOf : null,
     };
     sourced[key] = toSourced(fields[key], vendorName);
   };
@@ -147,7 +156,7 @@ export function resolveStockMetrics(
   const pb: ResolvedField = {
     value: bvps.value > 0 ? Number((seed.price / bvps.value).toFixed(4)) : 0,
     source: "derived",
-    asOf: bvps.source === "live" ? now : null,
+    asOf: bvps.source === "live" ? providerAsOf : null,
   };
   fields.pb = pb;
   sourced.pb = toSourced(pb);

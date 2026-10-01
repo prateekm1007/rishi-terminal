@@ -105,7 +105,7 @@ describe("R1 — UI surfaces show the banner and no seed as-of claims", () => {
       "data/stocks/index.ts",
       "lib/scoring/index.ts",
       "components/screener/StockTable.tsx",
-      "scripts/validateStocks.ts",
+      "scripts/validateStocksImpl.ts",  // N1 follow-up: the implementation moved; the entry is a re-exec shim
       "scripts/t12consolidate.ts",
     ];
     for (const f of guarded) {

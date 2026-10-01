@@ -49,3 +49,7 @@ bond-implementation-dump.txt
 backup_*/
 test-results/
 playwright-report/
+
+# Bare form: the trailing-slash pattern above only matches directories;
+# a symlink named node_modules is a blob to git and escaped it (Q4 fix).
+node_modules

@@ -57,7 +57,12 @@ X3-01..X3-10: all ⬜ (depend on Phase 1 data). X3-09 (PWA) has no data dependen
 
 ## Phase 4 — Differentiation: the Rishi lens
 
-R4-01..R4-07: all ⬜. R4-06 (i18n) and parts of R4-07 have no data dependency.
+R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 (i18n) and parts of R4-07 have no data dependency.
+
+| Task | Status | Evidence / notes |
+|---|---|---|
+| R4-01 Internal data API for tools | 🟡 (started early) | The canonical evidence assembler (`lib/ai/evidence.ts`) exposes typed, server-side data surfaces (`resolveStockMetrics` → `getStockScore` → `fetchLivePrice`) with provenance-carrying evidence ids consumed by `/api/chat`; contract tests (`test/aiEvidence.test.ts`). **Remaining for ✅:** the full `getStock`/`getFinancials`/`getPrices`/`getScore`/`getPeers` route surface with zod contracts, 401/404 semantics (roadmap acceptance). |
+| R4-02 Grounded chat with numeric verification ★ | 🟡 (started early) | Evidence-ID validation (fail closed) + SEMANTIC per-claim grounding (Q4 Commit A): every numeric claim carries `{field, value, unit}` assertions that must EXACTLY match a typed fact on the claim's OWN cited items (canonicalized field/unit, exact value; numbers pooled per claim, never across claims; derived facts marked `source: derived` and never extended by the model); the answer's numbers trace to the validated claims' own cites; rejections ride to the wire as `provenance.groundingRejections`. Route integration test pins `/api/chat` → `buildAiEvidencePackage` and fails if seed-only evidence (`seed:<SYM>:profile`) ever reappears (`lib/ai/evidence.ts`, `test/chat.grounding.semantic.test.ts`, `test/chat.route.canonicalEvidence.test.ts` — includes the escalated "ROE is 99% while P/E=99 is in the same evidence" rejection). UI labels grounded replies "cites N evidence items · numbers checked" (no "verified" overclaim). **Remaining for ✅:** tool-calling loop, `eval:chat` fixture harness + golden set (≥100 questions), FD-8 chat-vendor terms. |
 
 ## Phase 5 — Legal, money, security ops (parallel)
 

@@ -461,7 +461,7 @@ export default function RishiChat({ stock }: Props) {
               <div style={{ fontSize: "9px", color: "#475569", marginTop: "2px", lineHeight: 1.5 }}>
                 {msg.provenance.provider}/{msg.provenance.model} ·{" "}
                 {msg.provenance.grounded
-                  ? `grounded · ${msg.provenance.claims.length} verified claim${msg.provenance.claims.length === 1 ? "" : "s"}`
+                  ? `cites ${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0)} evidence item${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0) === 1 ? "" : "s"} · numbers checked`
                   : "not grounded · context-only"}
                 {msg.provenance.grounded && msg.provenance.claims.length > 0 && (
                   <div style={{ color: "#334155" }}>

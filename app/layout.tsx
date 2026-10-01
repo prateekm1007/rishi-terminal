@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { LanguageProvider } from "@/lib/language";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { GlobalSearchBar } from "@/components/ui/GlobalSearchBar";
@@ -33,21 +34,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LanguageProvider>
             <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
 
+              {/* Audit 2026-10-02 (F): the shell offsets live in CSS classes
+                  (.shell-main/.shell-topbar/.shell-sidebar) so the 900px
+                  breakpoint can collapse them — inline styles always beat
+                  media queries. The hamburger drawer serves mobile nav. */}
               <Sidebar />
+
+              <HamburgerMenu />
 
               <TopBar />
 
-              <main style={{
-                marginLeft: "220px",
-                marginTop: "52px",
-                flex: 1,
-                minHeight: "calc(100vh - 52px)",
-                overflowX: "hidden",
-                overflowY: "auto",
-                position: "relative",
-                width: "calc(100vw - 220px)",
-                maxWidth: "calc(100vw - 220px)",
-              }}>
+              <main
+                className="shell-main"
+              >
                 <div style={{
                   padding: "16px 24px 0 24px",
                   position: "relative",

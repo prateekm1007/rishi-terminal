@@ -407,7 +407,7 @@ export const COINGECKO_IDS: Record<string, string> = {
   SHIB: 'shiba-inu',
 };
 
-const coinGeckoCache: Record<string, { price: number; change: number; fetchedAt: number }> = {};
+const coinGeckoCache: Record<string, { price: number; change: number; volume24h: number | null; fetchedAt: number }> = {};
 let lastCoinGeckoFetch = 0;
 let coinGeckoFetchPromise: Promise<void> | null = null;
 
@@ -419,7 +419,10 @@ async function fetchAllCoinGecko(): Promise<void> {
   coinGeckoFetchPromise = (async () => {
     try {
       const ids = Object.values(COINGECKO_IDS).join(',');
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`;
+      // Audit 2026-10-02 (P1): include_24hr_vol — the crypto "Volume 24h"
+      // surface needs the actual volume; the page previously summed
+      // PRICES because the transport never carried it.
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`;
       const res = await fetch(url, {
         headers: { Accept: 'application/json' },
         signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 8000); return ac.signal; })(),
@@ -429,9 +432,12 @@ async function fetchAllCoinGecko(): Promise<void> {
       const data = await res.json();
       for (const [symbol, geckoId] of Object.entries(COINGECKO_IDS)) {
         if (data[geckoId]) {
+          const vol = Number(data[geckoId].usd_24h_vol);
           coinGeckoCache[symbol] = {
             price: Number(data[geckoId].usd) || 0,
             change: Number(data[geckoId].usd_24h_change) || 0,
+            // Absent volume is null, never 0 (0 would claim zero trading).
+            volume24h: Number.isFinite(vol) && vol > 0 ? vol : null,
             fetchedAt: now,
           };
         }
@@ -447,10 +453,10 @@ async function fetchAllCoinGecko(): Promise<void> {
   return coinGeckoFetchPromise;
 }
 
-async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number } | null> {
+async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number; volume24h: number | null } | null> {
   await fetchAllCoinGecko();
   const cached = coinGeckoCache[symbol];
-  return cached ? { price: cached.price, change: cached.change } : null;
+  return cached ? { price: cached.price, change: cached.change, volume24h: cached.volume24h } : null;
 }
 
 // =============================================================================
@@ -763,6 +769,11 @@ export interface PricePoint {
   change: number;
   source: string;
   status?: PriceStatus;
+  /** 24h trading volume when the upstream disclosed one, else null.
+   *  Populated for crypto (CoinGecko) and Yahoo bulk NSE quotes; null is
+   *  NOT 0 — absent volume is unavailability, not zero trading
+   *  (audit 2026-10-02 P1). */
+  volume24h?: number | null;
   /** Phase 6: ISO time of the ORIGINAL upstream observation (never the
    *  serve time — a CACHED replay keeps the observation timestamp).
    *  Corrective gate 3: string|null — null means the upstream disclosed no

@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/lib/auth/session", () => ({
   getSessionUser: vi.fn(async () => ({
-    id: "u1", email: "t@e.st", tier: "seeker", tierExpiresAt: null,
+    id: "u1", email: "t@e.st", tier: "disciple", tierExpiresAt: null,
   })),
 }));
 

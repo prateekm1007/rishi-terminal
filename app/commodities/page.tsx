@@ -8,6 +8,7 @@ import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
+import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
 
 
 function scoreColor(score: number): string {
@@ -53,7 +54,10 @@ export default function CommoditiesPage() {
   const commoditySymbols = useMemo(() => COMMODITIES.map(c => c.symbol), []);
   const { prices, loading, error, lastUpdated } = useLivePrices(commoditySymbols);
 
-  // Merge live prices into commodities
+  // Merge live prices into commodities. Audit 2026-10-02 (P1): a
+  // no-live fallback keeps the STATIC reference price but is explicitly
+  // labelled — and the change renders '—' (unavailable), not a fabricated
+  // 0% move on a reference price.
   const enrichedCommodities = useMemo(() => {
     return COMMODITIES.map(c => {
       const live = prices[c.symbol];
@@ -65,7 +69,7 @@ export default function CommoditiesPage() {
           change24h:       live.changePercent24h,
         };
       }
-      return { ...c, changePercent: 0, change24h: 0 };
+      return { ...c, changePercent: null, change24h: null };
     });
   }, [prices]);
 
@@ -116,8 +120,17 @@ export default function CommoditiesPage() {
               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
                 {enrichedCommodities.length}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
-                Live Global Markets
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, display: 'flex', alignItems: 'center' }}>
+                <span>Global Markets</span>
+                <ProvenanceChip
+                  state={Object.keys(prices).length > 0 ? 'live' : 'reference'}
+                  title={Object.keys(prices).length > 0
+                    ? `${Object.keys(prices).length} of ${COMMODITIES.length} quotes live`
+                    : 'No live quotes — reference data shown'}
+                  label={Object.keys(prices).length > 0
+                    ? `LIVE ${Object.keys(prices).length}/${COMMODITIES.length}`
+                    : 'REFERENCE'}
+                />
               </div>
             </div>
           </div>
@@ -144,8 +157,10 @@ export default function CommoditiesPage() {
                     {loading ? '...' : stat.data ? stat.prefix + stat.data.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
                   </div>
                   {!loading && stat.data && (
-                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: changeColor(stat.data.change24h) }}>
-                      {stat.data.change24h > 0 ? '+' : ''}{stat.data.change24h.toFixed(2)}%
+                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: changeColor(stat.data.change24h ?? 0) }}>
+                      {stat.data.change24h === null || stat.data.change24h === undefined
+                        ? '—'
+                        : (stat.data.change24h > 0 ? '+' : '') + stat.data.change24h.toFixed(2) + '%'}
                     </div>
                   )}
                 </div>
@@ -200,9 +215,10 @@ export default function CommoditiesPage() {
               changePct: commodity.change24h ?? commodity.changePct ?? 0,
               change: commodity.change ?? 0,
             };
-            // R3: server-computed average (null = insufficient data, T11)
+            // R3: server-computed average (null = insufficient data, T11;
+            // P1 audit 2026-10-02: null renders '—', never a fabricated 0)
             const teaser = guruTeasers[commodity.symbol];
-            const avgScore = teaser?.avg ?? 0;
+            const avgScore: number | null = teaser?.avg ?? null;
             const rishiScores = (teaser?.gurus ?? []).map(g => ({ id: g.id, tag: g.initials, result: { score: g.score } }));
             const isLive      = !!prices[commodity.symbol];
 
@@ -210,6 +226,15 @@ export default function CommoditiesPage() {
               <div
                 key={commodity.symbol}
                 className="card-sacred"
+                role="link"
+                tabIndex={0}
+                aria-label={`${commodity.name} — open details`}
+                onKeyDown={e => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  e.preventDefault();
+                  if (!premium && commodity.category !== 'Energy') { setShowUpgrade(true); return; }
+                  router.push('/commodities/' + commodity.symbol);
+                }}
                 style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                 onClick={() => {
                   if (!premium && commodity.category !== 'Energy') {
@@ -238,24 +263,25 @@ export default function CommoditiesPage() {
                   <div style={{
                     fontSize: 11, fontWeight: 700,
                     padding: '4px 10px', borderRadius: 6,
-                    background: scoreColor(avgScore) + '20',
-                    color: scoreColor(avgScore),
+                    background: (avgScore === null ? '#64748B' : scoreColor(avgScore)) + '20',
+                    color: avgScore === null ? '#64748B' : scoreColor(avgScore),
                     fontFamily: 'monospace',
                   }}>
-                    {avgScore}
+                    {avgScore === null ? '—' : avgScore}
                   </div>
                 </div>
 
-                {/* Price */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-                  <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'baseline', gap: 6 }}>
                     {loading && !prices[commodity.symbol]
                       ? '...'
-                      : '$' + commodity.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                      : <>{'$' + commodity.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<ProvenanceChip state={isLive ? 'live' : 'reference'} title={isLive ? 'Live quote' : 'Static reference price — live quote unavailable'} /></>
                     }
                   </div>
-                  <div style={{ fontSize: 13, fontFamily: 'monospace', color: changeColor(commodity.change24h), fontWeight: 700 }}>
-                    {commodity.change24h > 0 ? '+' : ''}{commodity.change24h.toFixed(2)}%
+                  <div style={{ fontSize: 13, fontFamily: 'monospace', color: changeColor(commodity.change24h ?? 0), fontWeight: 700 }}>
+                    {commodity.change24h === null || commodity.change24h === undefined
+                      ? '—'
+                      : (commodity.change24h > 0 ? '+' : '') + commodity.change24h.toFixed(2) + '%'}
                   </div>
                 </div>
 

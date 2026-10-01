@@ -39,7 +39,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside style={{
+    <aside className="shell-sidebar" style={{
       width: "220px",
       minHeight: "100vh",
       height: "100vh",

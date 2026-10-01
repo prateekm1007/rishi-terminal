@@ -9,6 +9,7 @@ import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
+import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
 
 
 function scoreColor(score: number): string {
@@ -60,6 +61,15 @@ export default function CryptoPage() {
     }
   }, [prices]);
 
+  // Audit 2026-10-02 (P1): Volume 24h sums the actual per-asset 24h
+  // VOLUMES from the live transport (it previously summed PRICES divided
+  // by 1e9 — the wrong metric). No live volume anywhere -> UNAVAILABLE.
+  const liveVolumes = useMemo(() =>
+    CRYPTO_ASSETS.map(a => prices[a.symbol]?.volume24h).filter(
+      (v): v is number => typeof v === 'number' && v > 0,
+    ), [prices]);
+  const totalVolume24h = liveVolumes.length > 0 ? liveVolumes.reduce((s, v) => s + v, 0) : null;
+
   const fgValue = FEAR_GREED_INDEX.value;
   const fgColor = fgValue >= 60 ? 'var(--accent-green)' : fgValue >= 40 ? 'var(--accent-gold)' : 'var(--accent-red)';
   const fgLabel = fgValue >= 75 ? t('crypto.extremeGreed') : fgValue >= 55 ? t('crypto.greed') : fgValue >= 45 ? t('crypto.neutral') : fgValue >= 25 ? t('crypto.fear') : t('crypto.extremeFear');
@@ -108,28 +118,67 @@ export default function CryptoPage() {
 
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
 
-        {/* Market Overview */}
+        {/* Market Overview — every card carries its data-state chip (P1) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
           {[
-            { label: t('crypto.totalMarketCap'), value: '$' + (totalMarketCap / 1e12).toFixed(2) + 'T', color: 'var(--accent-gold)' },
-            { label: t('crypto.volume24h'),       value: loading ? '...' : '$' + (Object.values(prices).reduce((s, p) => s + (p?.price || 0), 0) / 1e9).toFixed(1) + 'B',     color: 'var(--text-primary)' },
-            { label: t('crypto.avgRsi'),          value: '62',                               color: 'var(--accent-gold)' },
-            { label: t('crypto.sentiment'),        value: 'BULLISH',                          color: 'var(--accent-green)' },
-            { label: t('crypto.btcDominance'),    value: MARKET_DOMINANCE.btc + '%',        color: 'var(--accent-gold)' },
-            { label: t('crypto.fearGreed'),     value: fgValue.toString() + ' – ' + fgLabel,                   color: fgColor },
+            {
+              label: t('crypto.totalMarketCap'),
+              value: '$' + (totalMarketCap / 1e12).toFixed(2) + 'T', color: 'var(--accent-gold)',
+              state: (Object.values(prices).length > 0 ? 'derived' : 'reference') as 'derived' | 'reference',
+              title: Object.values(prices).length > 0
+                ? 'Derived from live prices x reference market caps'
+                : 'Static reference dataset — illustrative',
+            },
+            {
+              label: t('crypto.volume24h'),
+              value: totalVolume24h === null
+                ? (loading ? '...' : '—')
+                : '$' + (totalVolume24h / 1e9).toFixed(1) + 'B',
+              color: 'var(--text-primary)',
+              state: (totalVolume24h === null ? 'unavailable' : 'live') as 'unavailable' | 'live',
+              title: totalVolume24h === null
+                ? 'No live 24h volume disclosed by the upstream'
+                : `Sum of live 24h volumes (${liveVolumes.length} of ${CRYPTO_ASSETS.length} assets)`,
+            },
+            {
+              label: t('crypto.avgRsi'), value: '62', color: 'var(--accent-gold)',
+              state: 'reference' as const,
+              title: 'Static reference value — RSI is not computed from live data',
+            },
+            {
+              label: t('crypto.sentiment'), value: 'BULLISH', color: 'var(--accent-green)',
+              state: 'reference' as const,
+              title: 'Static reference label — not derived from live data',
+            },
+            {
+              label: t('crypto.btcDominance'), value: MARKET_DOMINANCE.btc + '%', color: 'var(--accent-gold)',
+              state: 'reference' as const,
+              title: 'Static reference dataset — illustrative',
+            },
+            {
+              label: t('crypto.fearGreed'), value: fgValue.toString() + ' – ' + fgLabel, color: fgColor,
+              state: 'reference' as const,
+              title: 'Static reference value — the Fear & Greed index is not fetched live',
+            },
           ].map(stat => (
             <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1 }}>{stat.label.toUpperCase()}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1, display: 'flex', alignItems: 'center' }}>
+                <span>{stat.label.toUpperCase()}</span>
+                <ProvenanceChip state={stat.state} title={stat.title} />
+              </div>
               <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: stat.color }}>{stat.value}</div>
             </div>
           ))}
         </div>
 
-        {/* Fear & Greed Gauge */}
+        {/* Fear & Greed Gauge — reference data (P1) */}
         <div className="card-sacred" style={{ padding: 24, marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6 }}>{t('crypto.fearGreedIndex')}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6, display: 'flex', alignItems: 'center' }}>
+                <span>{t('crypto.fearGreedIndex')}</span>
+                <ProvenanceChip state="reference" title="Static reference values — the Fear & Greed index is not fetched live" />
+              </div>
               <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: fgColor }}>
                 {fgValue} – {fgLabel}
               </div>
@@ -192,6 +241,10 @@ export default function CryptoPage() {
                   return (
                     <tr
                       key={asset.symbol}
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`${asset.name} (${asset.symbol}) — open details`}
+                      onKeyDown={e => { if (e.key === 'Enter') router.push(`/crypto/${asset.symbol}`); }}
                       style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer' }}
                       onClick={() => router.push(`/crypto/${asset.symbol}`)}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
@@ -211,9 +264,12 @@ export default function CryptoPage() {
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
                         ${(asset.marketCap / 1e9).toFixed(1)}B
+                        <ProvenanceChip state="reference" title="Static reference market cap" />
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                        ${(asset.volume24h / 1e9).toFixed(1)}B
+                        {liveData && typeof liveData.volume24h === 'number' && liveData.volume24h > 0
+                          ? <>${(liveData.volume24h / 1e9).toFixed(1)}B <ProvenanceChip state="live" /></>
+                          : <>${(asset.volume24h / 1e9).toFixed(1)}B <ProvenanceChip state="reference" title="Static reference volume — no live 24h volume disclosed" /></>}
                       </td>
                     </tr>
                   );

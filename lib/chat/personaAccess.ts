@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { RISHI_PERSONALITIES, type RishiPersonality } from './rishiEngine';
+import { CANONICAL_PERSONAS, PERSONA_BY_ID, type CanonicalPersona } from './registry';
 
 /**
  * R3: chat persona availability is decided ONLY on the server.
@@ -8,18 +8,41 @@ import { RISHI_PERSONALITIES, type RishiPersonality } from './rishiEngine';
  * This module is 'server-only' — the build fails if client code imports it,
  * so the tier filter below can never run client-side. The client receives
  * the resolved list from GET /api/chat/personas; /api/chat re-enforces the
- * same allow-list per request (T7), so the UI list is UX, never the control.
+ * SAME allow-list per request via isPersonaAllowed (audit 2026-10-02: the
+ * route previously resolved prompts from CHAT_PERSONAS with no check at
+ * all — the UI list was the only gate, which is no gate), so the UI list is
+ * UX, never the control.
+ *
+ * The roster and its `access` tiers live in the canonical registry; the
+ * seeker surface remains exactly {damani}, unchanged from the historical
+ * /api/chat/personas contract.
  */
 export type ChatTier = 'seeker' | 'student' | 'disciple';
 
-export function getRishisByTier(tier: ChatTier): RishiPersonality[] {
-  const allRishis = Object.values(RISHI_PERSONALITIES);
+const ACCESS_ORDER: Record<CanonicalPersona['access'], number> = {
+  free: 0,
+  student: 1,
+  disciple: 2,
+};
 
-  if (tier === 'seeker') {
-    return allRishis.filter(r => r.tier === 'free');
-  }
-  if (tier === 'student') {
-    return allRishis.filter(r => r.tier === 'free' || r.tier === 'student');
-  }
-  return allRishis;
+const TIER_ORDER: Record<ChatTier, number> = {
+  seeker: 0,
+  student: 1,
+  disciple: 2,
+};
+
+/** The personas a given session tier may converse with (server decision). */
+export function getRishisByTier(tier: ChatTier): CanonicalPersona[] {
+  return CANONICAL_PERSONAS.filter(p => ACCESS_ORDER[p.access] <= TIER_ORDER[tier]);
+}
+
+/**
+ * Per-request entitlement check for POST /api/chat: does THIS tier allow
+ * THIS persona id? Unknown ids are never allowed (the route rejects them
+ * with 400 before this runs, but fail closed regardless).
+ */
+export function isPersonaAllowed(personaId: string, tier: ChatTier): boolean {
+  const p = PERSONA_BY_ID[personaId];
+  if (!p) return false;
+  return ACCESS_ORDER[p.access] <= TIER_ORDER[tier];
 }

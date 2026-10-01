@@ -1,7 +1,15 @@
 // ============================================================
-// RISHI PERSONALITY ENGINE
-// 7 legendary investors with distinct personalities, mental models
+// RISHI PERSONALITY ENGINE — DERIVED from lib/chat/registry.ts
+// (audit 2026-10-02, P0 persona one-source-of-truth)
+//
+// The engine-parameter view of the canonical registry: the seven personas
+// that carry scoring-engine parameters. This file no longer owns any data —
+// ids, tiers and metadata come from the registry, so the historical drift
+// (RISHI_PERSONALITIES tier vs CHAT_PERSONAS membership disagreeing) is
+// impossible by construction.
 // ============================================================
+
+import { CANONICAL_PERSONAS } from './registry';
 
 export interface RishiPersonality {
   id: string;
@@ -17,141 +25,26 @@ export interface RishiPersonality {
   decisionSpeed: number; // 0 (deliberate) to 100 (intuitive)
 }
 
-export const RISHI_PERSONALITIES: Record<string, RishiPersonality> = {
-  jhunjhunwala: {
-    id: 'jhunjhunwala',
-    name: 'Jhunjhunwala',
-    fullName: 'Rakesh Jhunjhunwala',
-    emoji: '🦁',
-    color: '#F59E0B',
-    tier: 'student',
-    philosophy: 'Bold conviction betting on India growth. Comfortable with volatility for multibagger potential.',
-    keyMentalModels: [
-      'India Growth Story',
-      'Contrarian Conviction',
-      'Market Cycles',
-      'Position Sizing on Conviction',
-      'Sector Rotation',
-    ],
-    shortBias: 20,
-    riskTolerance: 85,
-    decisionSpeed: 90,
-  },
-  damani: {
-    id: 'damani',
-    name: 'Damani',
-    fullName: 'Radhakishan Damani',
-    emoji: '🧘',
-    color: '#D4AF37',
-    tier: 'free',
-    philosophy: 'Conservative compounder. Fortress balance sheets. Margin of safety in every position.',
-    keyMentalModels: [
-      'Margin of Safety',
-      'Quality at Fair Price',
-      'Fortress Balance Sheet',
-      'Predictable Cash Flows',
-      'Long-term Compounding',
-    ],
-    shortBias: -30,
-    riskTolerance: 35,
-    decisionSpeed: 40,
-  },
-  buffett: {
-    id: 'buffett',
-    name: 'Buffett',
-    fullName: 'Warren Buffett',
-    emoji: '🎩',
-    color: '#22C55E',
-    tier: 'student',
-    philosophy: 'Economic moats. Owner earnings. Business quality trumps market timing.',
-    keyMentalModels: [
-      'Economic Moat',
-      'Owner Earnings',
-      'Competitive Advantage',
-      'Management Quality',
-      'Long-term Value',
-    ],
-    shortBias: -40,
-    riskTolerance: 45,
-    decisionSpeed: 60,
-  },
-  munger: {
-    id: 'munger',
-    name: 'Munger',
-    fullName: 'Charlie Munger',
-    emoji: '🦉',
-    color: '#8B5CF6',
-    tier: 'student',
-    philosophy: 'Inversion thinking. Avoid stupidity. Multidisciplinary approach.',
-    keyMentalModels: [
-      'Inversion',
-      'Mental Models',
-      'Avoiding Mistakes',
-      'Opportunity Cost',
-      'Probability Thinking',
-    ],
-    shortBias: 0,
-    riskTolerance: 50,
-    decisionSpeed: 70,
-  },
-  chanos: {
-    id: 'chanos',
-    name: 'Chanos',
-    fullName: 'Jim Chanos',
-    emoji: '🐻',
-    color: '#EF4444',
-    tier: 'disciple',
-    philosophy: 'Forensic accounting. Short overvalued. Narrative vs reality.',
-    keyMentalModels: [
-      'Forensic Accounting',
-      'Narrative Deconstruction',
-      'Overvaluation Detection',
-      'Catalyst Timing',
-      'Risk Management',
-    ],
-    shortBias: -80,
-    riskTolerance: 60,
-    decisionSpeed: 85,
-  },
-  lynch: {
-    id: 'lynch',
-    name: 'Lynch',
-    fullName: 'Peter Lynch',
-    emoji: '🚀',
-    color: '#06B6D4',
-    tier: 'student',
-    philosophy: 'GARP (Growth at Reasonable Price). Accessible investments. Sector specialist knowledge.',
-    keyMentalModels: [
-      'GARP',
-      'Buy What You Know',
-      'Sector Expertise',
-      'PEG Ratio',
-      'Long-term Growth',
-    ],
-    shortBias: 10,
-    riskTolerance: 70,
-    decisionSpeed: 75,
-  },
-  soros: {
-    id: 'soros',
-    name: 'Soros',
-    fullName: 'George Soros',
-    emoji: '🌊',
-    color: '#A78BFA',
-    tier: 'disciple',
-    philosophy: 'Reflexivity. Macro overlay. Trend following with macro conviction.',
-    keyMentalModels: [
-      'Reflexivity',
-      'Macro Cycles',
-      'Currency Dynamics',
-      'Policy Shifts',
-      'Black Swan Events',
-    ],
-    shortBias: 0,
-    riskTolerance: 95,
-    decisionSpeed: 95,
-  },
-};
+export const RISHI_PERSONALITIES: Record<string, RishiPersonality> = Object.fromEntries(
+  CANONICAL_PERSONAS
+    .filter(p => p.engine)
+    .map(p => [
+      p.id,
+      {
+        id: p.id,
+        name: p.name,
+        fullName: p.fullName,
+        emoji: p.emoji,
+        color: p.color,
+        tier: p.access,
+        philosophy: p.philosophy,
+        keyMentalModels: p.engine!.keyMentalModels,
+        shortBias: p.engine!.shortBias,
+        riskTolerance: p.engine!.riskTolerance,
+        decisionSpeed: p.engine!.decisionSpeed,
+      } satisfies RishiPersonality,
+    ]),
+);
 
 export interface ChatContext {
   symbol?: string;
@@ -175,11 +68,11 @@ export function getRishiPersonality(id: string): RishiPersonality {
 
 // R3: getRishisByTier moved to lib/chat/personaAccess.ts (server-only) —
 // persona tier filtering must only ever run on the server. The roster itself
-// (RISHI_PERSONALITIES) is public marketing content and stays here.
+// (the registry) is public marketing content.
 
 export function formatContextForPrompt(context: ChatContext): string {
   if (!context.symbol) return '';
-  
+
   return `
 CONTEXT FOR ANALYSIS:
 Stock: ${context.symbol} (${context.stockName})

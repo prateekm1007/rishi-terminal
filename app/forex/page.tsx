@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FOREX_PAIRS } from '../../data/forex';
+import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 
@@ -86,13 +87,19 @@ export default function ForexPage() {
   const symbols = useMemo(() => pairList.map(p => p.pair), []);
   const { prices, loading, error, lastUpdated } = useLivePrices(symbols);
 
-  // Merge live prices with static data
+  // Merge live prices with static data. Audit 2026-10-02 (P1): a pair
+  // without a live quote keeps its STATIC reference values but is labelled;
+  // the change renders '—' (unavailable), never a fabricated 0% move.
+  // volume24h stays reference-only unless the transport actually carries a
+  // live volume (the forex rate API discloses none today).
   const enrichedPairs = useMemo(() => {
     return pairList.map(pair => {
       const liveData = prices[pair.pair];
       if (liveData) {
         const liveSpot = liveData.price;
-        const spread = (pair as any).spread || (pair.ask - pair.bid);
+        const spread = pair.spread || (pair.ask - pair.bid);
+        const liveVol = typeof liveData.volume24h === 'number' && liveData.volume24h > 0
+          ? liveData.volume24h : null;
         return {
           ...pair,
           spotRate: liveSpot,
@@ -101,16 +108,24 @@ export default function ForexPage() {
                     change24h:
             typeof liveData.changePercent24h === 'number'
               ? liveData.changePercent24h
-              : (typeof (liveData as any).change === 'number' ? (liveData as any).change : 0),
-          volume24h: liveData.volume24h || pair.volume24h,
+              : (typeof liveData.change === 'number' ? liveData.change : null),
+          volume24h: liveVol ?? pair.volume24h,
+          volumeIsLive: liveVol !== null,
+          spotIsLive: true,
         };
       }
-      return { ...pair, change24h: 0 };
+      return { ...pair, change24h: null, spotIsLive: false, volumeIsLive: false };
     });
   }, [prices, pairList]);
 
   const avgVol = (enrichedPairs.reduce((sum, p) => sum + p.volatility, 0) / enrichedPairs.length).toFixed(1);
-  const totalVolume = enrichedPairs.reduce((sum, p) => sum + p.volume24h, 0);
+  // P1: only genuinely live volumes count toward the total — the forex rate
+  // API discloses none, so this renders the static total WITH a reference
+  // chip instead of posing as a live aggregate next to the LIVE badge.
+  const liveVolumes = enrichedPairs.filter(p => p.volumeIsLive).map(p => p.volume24h);
+  const totalVolume = (liveVolumes.length > 0 ? liveVolumes : enrichedPairs.map(p => p.volume24h))
+    .reduce((sum, v) => sum + v, 0);
+  const volumeIsLive = liveVolumes.length > 0;
 
   const usdInrPair = enrichedPairs.find(p => p.symbol === 'USDINR');
   const eurInrPair = enrichedPairs.find(p => p.symbol === 'EURINR');
@@ -164,23 +179,27 @@ export default function ForexPage() {
           {/* Quick Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
             {[
-              { label: t('forex.avgVolatility'), value: avgVol + '%', color: 'var(--accent-gold)', bg: 'rgba(255,215,0,0.08)', border: 'rgba(255,215,0,0.2)' },
-              { label: t('forex.volume24h'), value: '$' + (totalVolume / 1e9).toFixed(1) + 'B', color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)' },
+              { label: t('forex.avgVolatility'), value: avgVol + '%', color: 'var(--accent-gold)', bg: 'rgba(255,215,0,0.08)', border: 'rgba(255,215,0,0.2)', chipState: 'reference' as const, chipTitle: 'Static reference volatilities — illustrative' },
+              { label: t('forex.volume24h'), value: '$' + (totalVolume / 1e9).toFixed(1) + 'B', color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)', chipState: volumeIsLive ? ('live' as const) : ('reference' as const), chipTitle: volumeIsLive ? 'Sum of live volumes' : 'Static reference volumes — the rate API discloses no live volume' },
               { 
                 label: t('forex.usdInrSpot'), 
                 value: usdInrPair ? usdInrPair.spotRate.toFixed(2) : '—',
-                change: usdInrPair?.change24h,
+                change: usdInrPair?.change24h ?? undefined,
                 color: '#60a5fa', 
                 bg: 'rgba(96,165,250,0.08)', 
-                border: 'rgba(96,165,250,0.2)' 
+                border: 'rgba(96,165,250,0.2)',
+                chipState: usdInrPair?.spotIsLive ? ('live' as const) : ('reference' as const),
+                chipTitle: usdInrPair?.spotIsLive ? 'Live spot observation' : 'Static reference rate — live quote unavailable',
               },
               { 
                 label: t('forex.eurInrSpot'), 
                 value: eurInrPair ? eurInrPair.spotRate.toFixed(2) : '—',
-                change: eurInrPair?.change24h,
+                change: eurInrPair?.change24h ?? undefined,
                 color: '#c084fc', 
                 bg: 'rgba(192,132,252,0.08)', 
-                border: 'rgba(192,132,252,0.2)' 
+                border: 'rgba(192,132,252,0.2)',
+                chipState: eurInrPair?.spotIsLive ? ('live' as const) : ('reference' as const),
+                chipTitle: eurInrPair?.spotIsLive ? 'Live spot observation' : 'Static reference rate — live quote unavailable',
               },
             ].map(stat => (
               <div
@@ -192,8 +211,9 @@ export default function ForexPage() {
                   padding: '12px 16px',
                 }}
               >
-                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
-                  {stat.label.toUpperCase()}
+                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1, display: 'flex', alignItems: 'center' }}>
+                  <span>{stat.label.toUpperCase()}</span>
+                  <ProvenanceChip state={stat.chipState} title={stat.chipTitle} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                   <div style={{ fontSize: 22, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
@@ -282,8 +302,9 @@ export default function ForexPage() {
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                   >
                     <td style={{ padding: '16px 24px' }}>
-                      <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, marginBottom: 4 }}>
-                        {pair.baseCurrency}/{pair.quoteCurrency}
+                      <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, marginBottom: 4, display: 'flex', alignItems: 'center' }}>
+                        <span>{pair.baseCurrency}/{pair.quoteCurrency}</span>
+                        <ProvenanceChip state={pair.spotIsLive ? 'live' : 'reference'} title={pair.spotIsLive ? 'Live spot observation (bid/ask derived with the reference spread)' : 'Static reference rate — live quote unavailable'} />
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{pair.name}</div>
                     </td>
@@ -292,11 +313,13 @@ export default function ForexPage() {
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace' }}>
                       <span style={{ 
-                        color: changeColor(pair.change24h), 
+                        color: changeColor(pair.change24h ?? 0), 
                         fontSize: 13, 
                         fontWeight: 600 
                       }}>
-                        {pair.change24h > 0 ? '+' : ''}{pair.change24h.toFixed(2)}%
+                        {pair.change24h === null || pair.change24h === undefined
+                          ? '—'
+                          : (pair.change24h > 0 ? '+' : '') + pair.change24h.toFixed(2) + '%'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--accent-green)', fontFamily: 'monospace' }}>

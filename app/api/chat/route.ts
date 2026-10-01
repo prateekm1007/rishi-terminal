@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
-import { resolvePersonaId, CHAT_PERSONAS } from '@/lib/chat/personas';
+import { resolvePersonaId } from '@/lib/chat/personas';
+import { isPersonaAllowed } from '@/lib/chat/personaAccess';
+import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { STOCKS } from '@/data/stocks';
 import { checkRateLimit } from '@/lib/rateLimit';
 // Phase 5 T49–T52: application code calls the AI abstraction, never a
@@ -11,10 +13,14 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
  *
  * Contract: { personaId, symbol?, history, message }
- * - Session required (401 otherwise; UI serves canned fallbacks locally).
- * - The system prompt is built SERVER-SIDE from a persona allow-list —
- *   a client-supplied systemPrompt is not part of the contract and is
- *   ignored/rejected.
+ * - Session required (401 otherwise; the UI shows an explicit unavailable
+ *   state — never a locally fabricated answer).
+ * - The system prompt is built SERVER-SIDE from the canonical persona
+ *   registry — a client-supplied systemPrompt is not part of the contract
+ *   and is ignored/rejected.
+ * - Persona ENTITLEMENT is enforced per request (audit 2026-10-02 P0): the
+ *   resolved persona must be in the caller's tier roster (the same
+ *   personaAccess authority /api/chat/personas serves), else 403.
  * - symbol is validated against the stock seed registry before use.
  * - Limits: message <= 2000 chars; history <= 20 turns and <= 8000 chars
  *   total; roles restricted to user|assistant.
@@ -123,8 +129,9 @@ interface HistoryTurn {
 }
 
 export async function POST(req: NextRequest) {
-  // 1. Auth (T5 sessions). Anonymous callers get 401 — the UI falls back to
-  //    canned responses from lib/chat/fallbackResponses*.ts.
+  // 1. Auth (T5 sessions). Anonymous callers get 401 — the UI shows an
+  //    explicit sign-in/unavailable state (the pseudo-AI local fallbacks
+  //    were removed by the audit 2026-10-02 P0: no fabricated answers).
   const user = await getSessionUser();
   if (!user) {
     return NextResponse.json(
@@ -158,7 +165,19 @@ export async function POST(req: NextRequest) {
   if (!personaId) {
     return NextResponse.json({ error: 'Unknown persona' }, { status: 400 });
   }
-  const systemPrompt = CHAT_PERSONAS[personaId];
+
+  // P0 (audit 2026-10-02): authorize the resolved persona against the SAME
+  // canonical server-side roster /api/chat/personas serves. Previously this
+  // route only checked persona EXISTENCE — an authenticated seeker could
+  // submit a premium persona id and receive its answer. 403 must land
+  // BEFORE quota consumption (a rejected request burns nothing).
+  if (!isPersonaAllowed(personaId, user.tier as 'seeker' | 'student' | 'disciple')) {
+    return NextResponse.json(
+      { error: 'This persona requires a higher tier' },
+      { status: 403 },
+    );
+  }
+  const persona = resolveCanonicalPersona(personaId)!;
 
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message) {
@@ -182,6 +201,12 @@ export async function POST(req: NextRequest) {
     }
     symbol = candidate;
   }
+
+  // Prompt selection from the canonical registry: the concise stock-page
+  // variant when a symbol is in scope, the full persona prompt otherwise.
+  // (The old code keyed prompts by the RAW input string, so 'Buffett' and
+  // 'buffett' reached two different prompts for the same persona.)
+  const systemPrompt = symbol !== null && persona.stockPrompt ? persona.stockPrompt : persona.systemPrompt;
 
   const rawHistory = Array.isArray(body.history) ? body.history : [];
   if (rawHistory.length > MAX_HISTORY_TURNS) {

@@ -154,9 +154,21 @@ export async function buildAiEvidencePackage(
   for (const [field, rf] of Object.entries(resolved.fields)) {
     const label = FIELD_LABELS[field] ?? field;
     const asOf = rf.source === "live" && rf.asOf ? rf.asOf : null;
+    // Audit 2026-10-02 P0: the id fragment must distinguish the three real
+    // states — live WITH a disclosed observation time, live with NO
+    // disclosed time, and seed. It previously collapsed live+no-time into
+    // ":seed", which mislabelled live data as seed in the audit trail.
+    const idFragment =
+      rf.source === "live"
+        ? (asOf ?? "no-disclosed-observation-time")
+        : rf.source === "derived" && asOf
+        ? asOf
+        : "seed";
     const prov =
       rf.source === "live"
-        ? `live via vendor ${vendorName ?? "unknown"}, observed/as-of ${asOf}`
+        ? asOf
+          ? `live via vendor ${vendorName ?? "unknown"}, observed/as-of ${asOf}`
+          : `live via vendor ${vendorName ?? "unknown"}, no disclosed observation time`
         : rf.source === "derived"
         ? `derived${asOf ? ` from live inputs (as-of ${asOf})` : " from seed inputs (no observation time claimed)"}`
         : "SEED DATA (capture date not provable — indicative only, may be stale)";
@@ -171,7 +183,7 @@ export async function buildAiEvidencePackage(
       source: rf.source,
     };
     items.push({
-      id: `fundamental:${sym}:${field}:${asOf ?? "seed"}`,
+      id: `fundamental:${sym}:${field}:${idFragment}`,
       text: `${label}: ${fmt(rf.value)} | provenance: ${prov}.${factAnnotation([fact])}`,
       facts: [fact],
     });
@@ -377,21 +389,112 @@ export function factAnnotation(facts: readonly AiEvidenceFact[]): string {
   return ` | fact: ${parts.join("; ")}`;
 }
 
+// ── Audit 2026-10-02 (P0): claim-text semantic attribution ────────────────
+// Field mentions a claim may use, mapped to canonical fact fields. Order is
+// SPECIFICITY: composite names (price-to-earnings) must win over their
+// substrings (price). Used ONLY to attribute a stated number to a field —
+// "P/E = 12" must be backed by a pe assertion, not by a roe assertion that
+// happens to carry the same value.
+const FIELD_MENTIONS: Array<{ field: string; re: RegExp }> = [
+  { field: "pe", re: /\bp\/?e\s*(?:ratio)?\b|\bprice[-\s]?to[-\s]?earnings\b|\bprice earnings\b/gi },
+  { field: "pb", re: /\bp\/?b\s*(?:ratio)?\b|\bprice[-\s]?to[-\s]?book\b/gi },
+  { field: "de", re: /\bd\/?e\s*(?:ratio)?\b|\bdebt[-\s]?to[-\s]?equity\b/gi },
+  { field: "roe", re: /\broe\b|\breturn on equity\b/gi },
+  { field: "roce", re: /\broce\b|\breturn on capital(?:\s+employed)?\b/gi },
+  { field: "opm", re: /\bopm\b|\boperating margin\b/gi },
+  { field: "promo", re: /\bpromoter(?:\s+holding)?\b/gi },
+  { field: "revcagr", re: /\brevenue\s+(?:cagr|growth)\b/gi },
+  { field: "epscagr", re: /\beps\s+(?:cagr|growth)\b/gi },
+  { field: "mktcap", re: /\bmarket\s+cap(?:itali[sz]ation)?\b/gi },
+  { field: "bvps", re: /\bbook\s+value(?:\s*(?:per\s+share|\/\s*share))?\b/gi },
+  { field: "fcfmargin", re: /\bfcf\s+margin\b/gi },
+  { field: "score", re: /\b(?:consensus|risi?shi?)\s+score\b|\bscore\b|\bconsensus\b/gi },
+  { field: "price", re: /\bprice\b/gi },
+  { field: "change", re: /\bchange(?:d|s)?\b/gi },
+];
+
+/** Unit tokens that may trail a stated number ("12%", "21x", "3.2 Cr"). */
+const UNIT_TOKENS: Array<{ unit: string; re: RegExp }> = [
+  { unit: "percent", re: /^(?:%|percent|pct)\b/i },
+  { unit: "multiple", re: /^(?:x|times)\b/i },
+  { unit: "inr_crore", re: /^(?:cr|crore)s?\b/i },
+  { unit: "points", re: /^(?:pts?|points)\b/i },
+  { unit: "inr", re: /^(?:rs\.?|rupees?)\b/i },
+];
+
+interface StatedNumber {
+  key: string;
+  /** Canonical field the claim text attributes the number to (if any). */
+  field: string | null;
+  /** Canonical unit token attached to the number (if any). */
+  unit: string | null;
+}
+
+const ATTR_WINDOW_BEFORE = 40;
+const ATTR_WINDOW_AFTER = 15;
+
+/** Parse every stated number with its attribution + attached unit token. */
+function statedNumbers(text: string): StatedNumber[] {
+  const collapsed = text.replace(/(-?\d[\d,]*(?:\.\d+)?)\s*\/\s*100\b/g, "$1");
+  const out: StatedNumber[] = [];
+  for (const m of collapsed.matchAll(/-?\d[\d,]*(?:\.\d+)?/g)) {
+    const n = Number(m[0].replace(/,/g, ""));
+    if (!Number.isFinite(n)) continue;
+    const start = m.index ?? 0;
+    const end = start + m[0].length;
+    // nearest field mention within the window (distance, then specificity)
+    let field: string | null = null;
+    let bestDist = Infinity;
+    let bestPrio = Infinity;
+    for (let prio = 0; prio < FIELD_MENTIONS.length; prio += 1) {
+      const fm = FIELD_MENTIONS[prio];
+      for (const mm of collapsed.matchAll(fm.re)) {
+        const ms = mm.index ?? 0;
+        const me = ms + mm[0].length;
+        if (me <= start && start - me <= ATTR_WINDOW_BEFORE) {
+          const dist = start - me;
+          if (dist < bestDist || (dist === bestDist && prio < bestPrio)) {
+            bestDist = dist; bestPrio = prio; field = fm.field;
+          }
+        } else if (ms >= end && ms - end <= ATTR_WINDOW_AFTER) {
+          const dist = ms - end;
+          if (dist < bestDist || (dist === bestDist && prio < bestPrio)) {
+            bestDist = dist; bestPrio = prio; field = fm.field;
+          }
+        }
+      }
+    }
+    // unit token immediately after the number (one optional space)
+    let unit: string | null = null;
+    const after = collapsed.slice(end, end + 12);
+    for (const ut of UNIT_TOKENS) {
+      if (ut.re.test(after)) { unit = ut.unit; break; }
+    }
+    out.push({ key: canonicalNumber(n), field, unit });
+  }
+  return out;
+}
+
 /**
  * Validate model-produced claims against the evidence items that were
  * actually supplied in THIS request. Fail closed, THREE layers (roadmap
- * R4-02, semantic correction):
+ * R4-02; audit 2026-10-02 P0 removed the text-number escape hatch):
  *   1. unknown evidence id → the claim is unverifiable;
  *   2. PER-CLAIM semantic check: every numeric claim must carry assertions
  *      {field, value, unit}, and each assertion must EXACTLY match a typed
  *      fact (field, value, unit — all canonicalized) on one of THIS claim's
- *      own cited items. Numbers are pooled per claim, never across claims:
- *      a figure real in claim 1's citation cannot support claim 2. Citing a
- *      real id for a figure it does not carry is still fabrication; citing
- *      a real id for a DIFFERENT field's number (ROE=99% citing a text
- *      carrying P/E=99) is fabrication too.
+ *      own cited items. Numbers are pooled per claim, never across claims.
+ *      Every number STATED in the claim text must be a matched assertion
+ *      value — arbitrary prose-number presence (dates, ids, a figure that
+ *      merely occurs in the cited text) is NO LONGER support (the escape
+ *      hatch: "As of 2026-09-30 the ROE is 12%" used to pass because 2026
+ *      existed in the citation). A number the claim text attributes to a
+ *      field ("P/E = 12") requires an assertion FOR THAT FIELD, and a unit
+ *      token attached to the number ("ROE = 12x") must match the
+ *      assertion's unit.
  *   3. the answer's numbers must trace to the union of the validated
- *      claims' own cited facts/text (presence floor for prose).
+ *      claims' MATCHED ASSERTION VALUES — prose cannot mint figures, and
+ *      cited-text numbers (dates) cannot launder them.
  * Any failure → grounded=false, no claim is served as verified, and the
  * rejections explain why.
  */
@@ -421,6 +524,8 @@ export function validateGrounding(
     assertions: Array<{ field: string; value: number; unit: string }>;
     citedItems: AiEvidenceItem[];
     matchedValues: Set<string>;
+    /** Canonical field -> matched assertion (for attribution checks). */
+    matchedByField: Map<string, { value: string; unit: string }>;
   }> = [];
 
   for (let i = 0; i < claims.length; i += 1) {
@@ -438,14 +543,11 @@ export function validateGrounding(
     // ── per-claim semantic pool: ONLY this claim's own citations ──
     const citedItems = c.evidenceIds.map(id => itemById.get(id)!);
     const citedFacts = citedItems.flatMap(it => it.facts ?? []);
-    const citedTextNumbers = new Set<string>();
-    for (const it of citedItems) {
-      for (const n of extractNormalizedNumbers(it.text)) citedTextNumbers.add(n);
-    }
     const assertions = Array.isArray(c.assertions) ? c.assertions : [];
 
     // (a) every assertion must exactly match a fact in THIS claim's pool
     const matchedValues = new Set<string>();
+    const matchedByField = new Map<string, { value: string; unit: string }>();
     let assertionFailure = false;
     for (const a of assertions) {
       const af = canonicalFactField(a.field);
@@ -465,26 +567,52 @@ export function validateGrounding(
         continue;
       }
       matchedValues.add(av);
+      if (!matchedByField.has(af)) matchedByField.set(af, { value: av, unit: au });
     }
     if (assertionFailure) continue;
 
-    // (b) every number the claim STATES must be either a matched assertion
-    //     value or an incidental number of the cited text (dates, ids) —
-    //     never a bare text match for an asserted metric
-    const claimNumbers = extractNormalizedNumbers(c.claim);
-    if (claimNumbers.size > 0 && assertions.length === 0) {
+    // (b) every number the claim STATES must be a matched assertion value —
+    //     attributed numbers additionally need an assertion for THAT field
+    //     with THAT value (and unit token, when attached). The old
+    //     cited-text presence route is GONE (audit 2026-10-02 P0).
+    const stated = statedNumbers(c.claim);
+    if (stated.length > 0 && assertions.length === 0) {
       rejections.push(
         `claim ${i + 1}: contains numbers but asserts no field/value/unit — semantic grounding unavailable, rejected (R4-02; copy the fact annotation into assertions)`,
       );
       continue;
     }
     let numberFailure = false;
-    for (const n of claimNumbers) {
-      if (matchedValues.has(n) || citedTextNumbers.has(n)) continue;
-      rejections.push(
-        `claim ${i + 1}: number ${n} is neither a matched assertion nor an incidental figure of the cited evidence — unsupported figure, rejected (R4-02)`,
-      );
-      numberFailure = true;
+    for (const sn of stated) {
+      if (sn.field !== null) {
+        const m = matchedByField.get(sn.field);
+        if (!m) {
+          rejections.push(
+            `claim ${i + 1}: number ${sn.key} is attributed to ${sn.field} in the claim text but no ${sn.field} assertion was provided — rejected (audit 2026-10-02)`,
+          );
+          numberFailure = true;
+          continue;
+        }
+        if (m.value !== sn.key) {
+          rejections.push(
+            `claim ${i + 1}: claims ${sn.field}=${sn.key} but the matched ${sn.field} assertion is ${m.value} — rejected (audit 2026-10-02)`,
+          );
+          numberFailure = true;
+          continue;
+        }
+        if (sn.unit !== null && sn.unit !== m.unit) {
+          rejections.push(
+            `claim ${i + 1}: states ${sn.field}=${sn.key} ${sn.unit} but the matched assertion's unit is ${m.unit} — rejected (audit 2026-10-02)`,
+          );
+          numberFailure = true;
+          continue;
+        }
+      } else if (!matchedValues.has(sn.key)) {
+        rejections.push(
+          `claim ${i + 1}: number ${sn.key} is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02)`,
+        );
+        numberFailure = true;
+      }
     }
     if (numberFailure) continue;
 
@@ -494,23 +622,21 @@ export function validateGrounding(
       assertions: assertions.map(a => ({ field: a.field, value: a.value, unit: a.unit })),
       citedItems,
       matchedValues,
+      matchedByField,
     });
   }
 
   // (c) answer floor (batch level): numbers in the answer must trace to the
-  // surviving claims' own cited facts/text — prose cannot mint figures.
+  // surviving claims' MATCHED ASSERTION VALUES only — cited-text numbers
+  // (dates, ids) cannot launder a figure into the answer (audit 2026-10-02).
   if (rejections.length === 0) {
     const pool = new Set<string>();
     for (const s of surviving) {
       for (const v of s.matchedValues) pool.add(v);
-      for (const it of s.citedItems) {
-        for (const f of it.facts ?? []) pool.add(canonicalNumber(f.value));
-        for (const n of extractNormalizedNumbers(it.text)) pool.add(n);
-      }
     }
-    for (const n of extractNormalizedNumbers(answer)) {
-      if (!pool.has(n)) {
-        rejections.push(`answer: number ${n} does not appear in the cited evidence — unsupported figure, rejected (R4-02)`);
+    for (const sn of statedNumbers(answer)) {
+      if (!pool.has(sn.key)) {
+        rejections.push(`answer: number ${sn.key} is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02)`);
       }
     }
   }

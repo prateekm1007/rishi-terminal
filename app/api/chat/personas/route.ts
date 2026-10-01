@@ -8,8 +8,10 @@ import { getRishisByTier } from '@/lib/chat/personaAccess';
  * The persona roster itself is public marketing content (bundled + shown on
  * /rishis); what is tier-gated is WHICH personas a caller may converse with.
  * This route returns the caller's allowed subset resolved from their
- * server-side session tier. /api/chat independently re-enforces the same
- * allow-list per request (T7), so the UI list is UX only, never the control.
+ * server-side session tier, using the SAME canonical registry + entitlement
+ * check that POST /api/chat enforces per request (audit 2026-10-02 P0 —
+ * previously the two routes derived their lists from different authorities,
+ * and the POST route enforced nothing).
  */
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +33,8 @@ export async function GET(_req: NextRequest) {
       fullName: p.fullName,
       emoji: p.emoji,
       color: p.color,
-      tier: p.tier,
+      tier: p.access,
+      rank: p.rank ?? null,
       philosophy: p.philosophy,
     })),
   });

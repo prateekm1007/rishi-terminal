@@ -3,14 +3,21 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
 
+// Audit 2026-10-02 (F): wired into the layout as the mobile navigation
+// drawer. All styling lives in globals.css (.hamburger-btn visibility,
+// .mobile-sidebar slide-in keyframes) — this component deliberately uses NO
+// styled-jsx so the styled-jsx runtime stays out of the shared layout
+// chunk (it cost +8.2 kB first-load JS on every page).
 export function HamburgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
-      {/* Hamburger Button - Only visible on mobile */}
+      {/* Hamburger Button - Only visible on mobile (globals.css breakpoint) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
+        aria-expanded={isOpen}
         style={{
           position: 'fixed',
           top: 16,
@@ -51,7 +58,6 @@ export function HamburgerMenu() {
               bottom: 0,
               width: '280px',
               zIndex: 1000,
-              animation: 'slideInLeft 0.2s ease',
             }}
             className="mobile-sidebar"
           >
@@ -59,23 +65,6 @@ export function HamburgerMenu() {
           </div>
         </>
       )}
-
-      <style jsx>{`
-        @media (max-width: 768px) {
-          :global(.hamburger-btn) {
-            display: block !important;
-          }
-        }
-
-        @keyframes slideInLeft {
-          from {
-            transform: translateX(-100%);
-          }
-          to {
-            transform: translateX(0);
-          }
-        }
-      `}</style>
     </>
   );
 }

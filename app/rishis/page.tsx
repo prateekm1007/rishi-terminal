@@ -10,6 +10,16 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  /** Audit 2026-10-02 (P1): provenance retained with the reply so the UI
+   * can say WHICH provider produced it and whether it is grounded — a
+   * context-only reply must not look like numerically verified analysis
+   * (FD-10 records the open product decision). */
+  provenance?: {
+    provider: string;
+    model: string;
+    grounded: boolean;
+    groundingMode: 'evidence-context' | 'structured-claims';
+  };
 }
 
 interface ChatHistory {
@@ -90,6 +100,7 @@ export default function ChatWithRishisPage() {
         role: 'assistant',
         content: data.text,
         timestamp: new Date(),
+        provenance: data.provenance ?? undefined,
       };
       setChatHistories(prev => ({
         ...prev,
@@ -264,6 +275,14 @@ export default function ChatWithRishisPage() {
               }}>
                 {msg.content}
               </div>
+              {msg.role === 'assistant' && msg.provenance && (
+                <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 3, lineHeight: 1.5 }}>
+                  {msg.provenance.provider}/{msg.provenance.model} ·{' '}
+                  <span style={{ color: msg.provenance.grounded ? 'var(--accent-green)' : 'var(--text-muted)' }}>
+                    {msg.provenance.grounded ? 'evidence-grounded · numbers checked' : 'context-only · not numerically verified'}
+                  </span>
+                </div>
+              )}
             </div>
           ))}
 

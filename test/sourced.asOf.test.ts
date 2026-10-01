@@ -66,19 +66,19 @@ describe("N3 — live asOf is the provider's observation time", () => {
     expect(resolved.fields.pe.asOf).not.toBe(new Date().toISOString());
   });
 
-  it("a response with no parseable timestamp falls back to fetch time (the labelled lower bound)", () => {
-    const before = new Date();
+  it("a response with no parseable timestamp carries asOf NULL (audit 2026-10-02 P0 — expectation FLIPPED)", () => {
+    // This test used to pin the fetch-time fallback ("labelled lower
+    // bound"). The audit directive removed it: fetch time is NEVER a
+    // substitute for provider observation time — an unparseable/absent
+    // upstream timestamp means asOf is null, and the UI/evidence layers
+    // render "no disclosed observation time".
     const resolved = resolveStockMetrics("RELIANCE", {
       ...LIVE_FIXTURE,
       lastUpdated: "",
       source: "yahoo+nse",
     })!;
-    const after = new Date();
-    const asOf = resolved.fields.pe.asOf;
-    expect(asOf).not.toBeNull();
-    const t = asOf ? new Date(asOf).getTime() : NaN;
-    expect(t).toBeGreaterThanOrEqual(before.getTime() - 1);
-    expect(t).toBeLessThanOrEqual(after.getTime() + 1);
+    expect(resolved.fields.pe.source).toBe("live");
+    expect(resolved.fields.pe.asOf).toBeNull();
   });
 
   it("seed and seed-derived fields still claim no timestamp (R1)", () => {

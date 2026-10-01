@@ -12,7 +12,10 @@ export interface LiveFundamentals {
   bookValue: number;
   dividendYield: number;
   faceValue: number;
-  lastUpdated: string;
+  /** Provider observation time when disclosed, else null — never the fetch
+   *  time (audit 2026-10-02 P0: `new Date().toISOString()` here fabricated
+   *  provider provenance end-to-end). */
+  lastUpdated: string | null;
 }
 
 // =============================================================================
@@ -79,7 +82,8 @@ export async function fetchNSEFundamentals(symbol: string): Promise<Partial<Live
       roce: 0,
       dividendYield: 0,
       faceValue: parseFloat(securityInfo?.faceValue) || 10,
-      lastUpdated: new Date().toISOString(),
+      // NSE discloses no observation timestamp in this response — null.
+      lastUpdated: null,
     };
   } catch (err) {
     console.error(`[NSE] ${symbol} error:`, (err as Error).message);
@@ -142,7 +146,9 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
       roce: 0,
       dividendYield,
       faceValue: 10,
-      lastUpdated: new Date().toISOString(),
+      // Yahoo's quoteSummary modules carry no fundamentals observation
+      // time — null, never the fetch time (audit 2026-10-02 P0).
+      lastUpdated: null,
     };
   } catch (err) {
     console.error(`[Yahoo] ${symbol} error:`, (err as Error).message);
@@ -176,7 +182,9 @@ export async function fetchLiveFundamentals(symbol: string): Promise<LiveFundame
       bookValue:     yahooData?.bookValue ?? 0,
       dividendYield: yahooData?.dividendYield ?? 0,
       faceValue:     nseData?.faceValue ?? yahooData?.faceValue ?? 10,
-      lastUpdated:   new Date().toISOString(),
+      // Neither upstream in this merge discloses a fundamentals observation
+      // time — null (audit 2026-10-02 P0).
+      lastUpdated:   null,
     };
   }
 

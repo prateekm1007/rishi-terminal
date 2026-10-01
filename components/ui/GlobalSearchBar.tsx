@@ -37,7 +37,7 @@ export function GlobalSearchBar() {
   const [selected, setSelected] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<any>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const navigate = useCallback((r: SearchResult) => {
@@ -101,7 +101,7 @@ export function GlobalSearchBar() {
   // Keyboard shortcut "/" focuses
   useEffect(() => {
     function onSlash(e: KeyboardEvent) {
-      if (e.key === "/" && (document.activeElement as any)?.tagName !== "INPUT") {
+      if (e.key === "/" && !(document.activeElement instanceof HTMLInputElement)) {
         e.preventDefault();
         inputRef.current?.focus();
       }
@@ -131,6 +131,11 @@ export function GlobalSearchBar() {
   };
 
   const showDropdown = focused && results.length > 0;
+  // Audit 2026-10-02 (F): combobox/listbox semantics — the input announces
+  // itself, its expansion, and the active option; options are real options.
+  const listboxId = "global-search-listbox";
+  const activeDescendantId =
+    selected >= 0 && results[selected] ? `${listboxId}-option-${selected}` : undefined;
 
   return (
     <div style={{ position: "relative", width: "100%", maxWidth: 560 }}>
@@ -159,6 +164,12 @@ export function GlobalSearchBar() {
           onFocus={() => setFocused(true)}
           onKeyDown={handleKey}
           placeholder="Search stocks, crypto, commodities, forex..."
+          role="combobox"
+          aria-expanded={showDropdown}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
+          aria-activedescendant={activeDescendantId}
+          aria-label="Search instruments"
           style={{
             flex: 1,
             background: "transparent",
@@ -212,6 +223,9 @@ export function GlobalSearchBar() {
       {showDropdown && (
         <div
           ref={dropdownRef}
+          role="listbox"
+          id={listboxId}
+          aria-label="Search results"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
@@ -228,6 +242,9 @@ export function GlobalSearchBar() {
           {results.map((r, i) => (
             <div
               key={r.category + ":" + r.symbol}
+              role="option"
+              id={`${listboxId}-option-${i}`}
+              aria-selected={i === selected}
               onMouseDown={() => navigate(r)}
               onMouseEnter={() => setSelected(i)}
               style={{

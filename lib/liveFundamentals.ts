@@ -27,7 +27,13 @@ export interface FullFundamentals {
   promoterHolding: number;
   fcf: number;
   roa: number;
-  lastUpdated: string;
+  /** Provider observation time when the upstream DISCLOSED one, else null
+   *  (audit 2026-10-02 P0 — never the fetch time: that fabricated provider
+   *  provenance end-to-end, from this module through resolveStockMetrics'
+   *  asOf and the AI evidence ids). Neither screener.in nor the Yahoo+NSE
+   *  fallback discloses a fundamentals observation timestamp today, so the
+   *  honest value on both paths is null. */
+  lastUpdated: string | null;
   source: "screener" | "yahoo+nse" | "static";
 }
 
@@ -67,7 +73,9 @@ export async function fetchFullFundamentals(symbol: string): Promise<FullFundame
         promoterHolding: screenerData.promoterHolding,
         fcf: screenerData.fcf,
         roa: screenerData.roa,
-        lastUpdated: new Date().toISOString(),
+        // Screener.in discloses no observation timestamp on the pages we
+        // parse — null, never the fetch time (audit 2026-10-02 P0).
+        lastUpdated: null,
         source: "screener",
       };
     }
@@ -101,7 +109,10 @@ export async function fetchFullFundamentals(symbol: string): Promise<FullFundame
         promoterHolding: 0,
         fcf: 0,
         roa: 0,
-        lastUpdated: new Date().toISOString(),
+        // Yahoo quoteSummary / NSE quote-equity expose no fundamentals
+        // observation time in the modules we consume — null, never `now`
+        // (audit 2026-10-02 P0).
+        lastUpdated: null,
         source: "yahoo+nse",
       };
     }

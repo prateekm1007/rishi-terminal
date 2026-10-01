@@ -100,16 +100,17 @@ export function resolveStockMetrics(
   const seed = STOCKS[sym];
   if (!seed) return null;
 
-  // N3 (round 3): a live field's asOf is the PROVIDER's observation time
-  // (FullFundamentals.lastUpdated), never "now at resolution time" — a
-  // resolution-time stamp would claim freshness the provider never made.
-  // Fallback (labelled): when the upstream response carries no parseable
-  // timestamp, the fetch time stands in and is the honest lower bound.
-  const fetchTime = new Date().toISOString();
+  // N3 (round 3) + audit 2026-10-02 P0: a live field's asOf is the
+  // PROVIDER's own observation time (FullFundamentals.lastUpdated), never
+  // "now at resolution time". When the upstream discloses no timestamp the
+  // honest value is null — the previous fetchTime fallback dressed serve
+  // time up as provider provenance, which then flowed into DataValue
+  // tooltips and AI evidence ids. (Mirrors the price pipeline's corrective
+  // gate 3.)
   const providerAsOf =
     live && typeof live.lastUpdated === 'string' && !Number.isNaN(Date.parse(live.lastUpdated))
       ? live.lastUpdated
-      : fetchTime;
+      : null;
   const fields: Record<string, ResolvedField> = {};
   const sourced: Record<string, Sourced<number>> = {};
 
@@ -151,13 +152,17 @@ export function resolveStockMetrics(
   set("mktcap", mktcap);
   set("bvps", bvps);
 
-  // Derived from other resolved fields — never invented. The derived
-  // timestamp is only meaningful when its inputs are live; a derivation from
-  // seed values claims no freshness (R1).
+  // Derived from other resolved fields — never invented. PB's operands are
+  // the SEED registry price and the (possibly live) BVPS: until a live
+  // price operand exists in this resolver, EVERY PB is a mixed-source
+  // derivation, and a mixed derivation claims NO freshness — asOf stays
+  // null and the source says "derived" (audit 2026-10-02 P0: it previously
+  // took the live asOf whenever BVPS was live, presenting seed-price /
+  // live-BVPS as a coherent live figure).
   const pb: ResolvedField = {
     value: bvps.value > 0 ? Number((seed.price / bvps.value).toFixed(4)) : 0,
     source: "derived",
-    asOf: bvps.source === "live" ? providerAsOf : null,
+    asOf: null,
   };
   fields.pb = pb;
   sourced.pb = toSourced(pb);

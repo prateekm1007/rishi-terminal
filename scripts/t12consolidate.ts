@@ -108,7 +108,7 @@ for (const [oldSym, canonical] of Object.entries(aliasMap)) {
     const dv = donor[f] as number;
     const sv = survivor[f] as number;
     if (typeof dv === "number" && dv !== 0 && dv !== sv && !isTemplateField(donor, f)) {
-      (survivor as any)[f] = dv;
+      (survivor as unknown as Record<string, number>)[f] = dv;
     }
   }
 }
@@ -117,7 +117,7 @@ for (const [oldSym, canonical] of Object.entries(aliasMap)) {
 for (const [sym, patch] of Object.entries(RECONSTRUCTED)) {
   const row = stocks[sym];
   if (!row) continue;
-  Object.assign(row as any, patch);
+  Object.assign(row as unknown as Record<string, unknown>, patch);
 }
 
 // 3. Name corrections for rows that are different companies with a wrong

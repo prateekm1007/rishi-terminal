@@ -64,7 +64,7 @@ const INPUT_FILE = process.argv[2] || "scripts/nifty500.json";
 try {
   const input = JSON.parse(readFileSync(INPUT_FILE, "utf-8"));
   addStocksToFile(input.stocks);
-} catch (e) {
+} catch {
   console.error("Usage: tsx scripts/addStocks.ts <input.json>");
   console.error("Input format: { stocks: [{ symbol, name, sector, price, marketCap }] }");
   process.exit(1);

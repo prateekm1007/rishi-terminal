@@ -22,16 +22,22 @@ async function run() {
 
   const rows = await res.json();
 
+/** A rishi_snapshots row as read by the health check (N9: typed — was any). */
+interface SnapshotHealthRow {
+  consensus_score: number | null;
+  signal: string;
+}
+
   console.log("\nSnapshot Health Check");
   console.log("=".repeat(50));
 
   console.log(`Rows today: ${rows.length}`);
 
-  const missingScore = rows.filter((r:any) =>
+  const missingScore = rows.filter((r: SnapshotHealthRow) =>
     r.consensus_score === null || r.consensus_score === undefined
   );
 
-  const badSignal = rows.filter((r:any) =>
+  const badSignal = rows.filter((r: SnapshotHealthRow) =>
     !["BUY","HOLD","SELL"].includes(r.signal)
   );
 
@@ -39,19 +45,19 @@ async function run() {
   console.log(`Invalid signals: ${badSignal.length}`);
 
   const avg =
-    rows.reduce((a:any,b:any) => a + Number(b.consensus_score || 0), 0)
+    rows.reduce((a: number, b: SnapshotHealthRow) => a + Number(b.consensus_score || 0), 0)
     / Math.max(rows.length, 1);
 
   console.log(`Average score: ${avg.toFixed(2)}`);
 
   const buy =
-    rows.filter((r:any) => r.signal === "BUY").length;
+    rows.filter((r: SnapshotHealthRow) => r.signal === "BUY").length;
 
   const hold =
-    rows.filter((r:any) => r.signal === "HOLD").length;
+    rows.filter((r: SnapshotHealthRow) => r.signal === "HOLD").length;
 
   const sell =
-    rows.filter((r:any) => r.signal === "SELL").length;
+    rows.filter((r: SnapshotHealthRow) => r.signal === "SELL").length;
 
   console.log(`BUY:  ${buy}`);
   console.log(`HOLD: ${hold}`);

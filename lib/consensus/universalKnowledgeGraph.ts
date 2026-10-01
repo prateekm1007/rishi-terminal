@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { UniversalAsset } from '../types/asset';
 import type { RishiScore } from '../consensus/types';
 import type { Stock } from '../types';

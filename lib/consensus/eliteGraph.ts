@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { Stock } from '../types';
 import { RishiScore } from './types';
 import { detectArchetype, HISTORICAL_PARALLELS } from '../wisdom/parallels';

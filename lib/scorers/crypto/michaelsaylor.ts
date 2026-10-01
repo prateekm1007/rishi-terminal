@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { CryptoAsset } from '../../../data/crypto';
 import { RishiScore } from '../../types';
 

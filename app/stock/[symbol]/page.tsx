@@ -1,9 +1,10 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import { STOCKS } from '../../../data/stocks';
-import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
+import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
+import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { TIER_CONFIG } from '@/lib/premium';
-import { resolveTickerSymbol } from '@/lib/registry/tickerRegistry'; // T12: ticker aliases
+import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 
@@ -38,11 +39,23 @@ export default async function StockPage({ params }: StockPageProps) {
   const sanitized = sanitizeConsensus(consensus, TIER_CONFIG.seeker.rishisVisible);
   const stockDetail = generateStockDetail(stock);
 
+  // N1 (round 3): every engine call happens here, on the server. The
+  // client components below receive RESULTS — the resolved seed-baseline
+  // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
+  // both QVPS modes, and the knowledge graph for the free verdict set
+  // (paid tiers get the tier-aware graph from /api/rishis/[symbol]).
+  const resolved = resolveStockMetrics(key);
+  const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
+  const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
+
   return (
     <StockPageClient
       stock={stock}
       consensus={sanitized}
       detail={stockDetail}
+      resolved={resolved}
+      qvpsDual={qvpsDual}
+      eliteGraph={eliteGraph}
     />
   );
 }

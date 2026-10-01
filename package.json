@@ -11,7 +11,10 @@
     "lint": "eslint",
     "lint:ratchet": "node scripts/eslintRatchet.mjs",
     "test": "vitest run",
-    "test:smoke": "playwright test"
+    "test:smoke": "playwright test",
+    "validate:stocks": "tsx --conditions react-server scripts/validateStocks.ts",
+    "score:parity": "tsx --conditions react-server scripts/scoreParity.ts",
+    "snapshot:batch": "tsx --conditions react-server scripts/snapshotBatch.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { CommodityData } from '../../../data/markets';
 import { RishiScore } from '../../types';
 

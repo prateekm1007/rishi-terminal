@@ -4,6 +4,7 @@ import { STOCKS } from '@/data/stocks';
 import { normalizeSymbolInput } from '@/lib/registry/validateInput'; // R5: unified input gate (registry + aliases)
 import { getStockScore } from '@/lib/scoring';
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
+import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { TIER_CONFIG } from '@/lib/premium';
 
 /**
@@ -44,10 +45,14 @@ export async function GET(
   const visibleCount = TIER_CONFIG[user.tier].rishisVisible;
   const sanitized = sanitizeConsensus(consensus, visibleCount);
 
+  // N1 (round 3): the knowledge graph is rebuilt here for the caller's
+  // tier — the engine no longer runs client-side, so paid users receive
+  // their richer graph from this response instead of recomputing it.
   return NextResponse.json({
     symbol: key,
     tier: user.tier,
     totalRishis: consensus.scores.length,
     ...sanitized,
+    knowledgeGraph: buildEliteKnowledgeGraph(stock, sanitized.verdicts),
   });
 }

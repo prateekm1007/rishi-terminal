@@ -3,12 +3,13 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-import { STOCKS } from '@/data/stocks/index';
-import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
+// N1 (round 3): receives the server-generated slim index — no seed
+// dataset, no engine. Consensus/category/topBull are free fields
+// (docs/PAID_CONTENT.md) precomputed by the server.
+import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import { addHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
-import type { ConsensusResult } from '@/lib/consensus/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -55,8 +56,13 @@ function convictionColor(c: number): string {
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function WatchlistTab() {
+interface Props {
+  rows: SlimStockRow[];
+}
+
+export default function WatchlistTab({ rows }: Props) {
   const { t } = useLanguage();
+  const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
 
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [addSymbol, setAddSymbol] = useState('');
@@ -106,18 +112,18 @@ export default function WatchlistTab() {
 
   const enriched = useMemo(() => {
     return items.map(i => {
-      const stock = STOCKS[i.symbol];
+      const row = rowMap.get(i.symbol) ?? null;
       const live = prices[i.symbol]?.price ?? null; // T14: no seed fallback
       const changePct = prices[i.symbol]?.changePercent24h ?? 0;
-      const consensus: ConsensusResult | null = stock ? getStockScore(stock) : null;
-      const score = consensus?.consensus ?? 0;
-      const topBull = consensus?.topBull?.full ?? '—';
+      const score = row?.consensus ?? 0; // same display semantics as before (null -> 0 on this surface)
+      const topBull = row?.topBull?.full ?? '—';
+      const category = row?.category ?? '—';
       const rishiConviction = score >= 75 ? 9 : score >= 65 ? 7 : score >= 55 ? 5 : score >= 45 ? 3 : 1;
       const userConviction = i.conviction ?? 5;
       const combinedConviction = Math.round((rishiConviction + userConviction) / 2);
-      return { ...i, stock, live, changePct, score, topBull, rishiConviction, userConviction, combinedConviction, consensus };
+      return { ...i, row, live, changePct, score, topBull, category, rishiConviction, userConviction, combinedConviction };
     });
-  }, [items, prices]);
+  }, [items, prices, rowMap]);
 
   const sorted = useMemo(() => {
     const arr = [...enriched];
@@ -132,7 +138,7 @@ export default function WatchlistTab() {
     setError('');
     const sym = addSymbol.trim().toUpperCase();
     if (!sym) { setError('Enter a symbol'); return; }
-    if (!STOCKS[sym]) { setError('Symbol not in database'); return; }
+    if (!rowMap.has(sym)) { setError('Symbol not in database'); return; }
     if (items.some(x => x.symbol === sym)) { setError('Already in watchlist'); return; }
     persist([{ symbol: sym, addedDate: new Date().toISOString(), conviction: 5, notes: '' }, ...items]);
     setSearchQuery(''); setAddSymbol(''); setShowDropdown(false);
@@ -147,8 +153,8 @@ export default function WatchlistTab() {
   }
 
   function openPromoteDialog(symbol: string) {
-    const stock = STOCKS[symbol];
-    if (!stock) return;
+    const row = rowMap.get(symbol);
+    if (!row) return;
     // T14: seed price never substitutes for a live quote
     const live = prices[symbol]?.price ?? null;
     const avgPrice = live !== null && live > 0 ? live : 0;
@@ -207,7 +213,7 @@ export default function WatchlistTab() {
             <div style={{ fontSize: 16, fontWeight: 900, color: '#D4AF37', marginBottom: 4, fontFamily: 'monospace' }}>
               {t('lab.promoteDialog.promote')} {promoteDialog.symbol} → {t('lab.promoteDialog.holdings')}
             </div>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 20 }}>{STOCKS[promoteDialog.symbol]?.name ?? ''}</div>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 20 }}>{rowMap.get(promoteDialog.symbol)?.name ?? ''}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
               <div style={{ padding: 12, background: 'rgba(30,41,59,0.6)', borderRadius: 8 }}>
                 <div style={{ fontSize: 10, color: '#64748B', marginBottom: 4 }}>LTP</div>
@@ -263,15 +269,14 @@ export default function WatchlistTab() {
               />
               {showDropdown && searchQuery.trim().length > 0 && (
                 <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, maxHeight: 280, overflowY: 'auto', background: 'rgba(15,23,42,0.98)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: 6, zIndex: 1000, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-                  {Object.keys(STOCKS)
-                    .filter(sym => {
-                      const s = STOCKS[sym];
+                  {rows
+                    .filter(stock => {
                       const q = searchQuery.toLowerCase();
-                      return sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.sector.toLowerCase().includes(q);
+                      return stock.symbol.toLowerCase().includes(q) || stock.name.toLowerCase().includes(q) || stock.sector.toLowerCase().includes(q);
                     })
                     .slice(0, 20)
-                    .map(sym => {
-                      const stock = STOCKS[sym];
+                    .map(stock => {
+                      const sym = stock.symbol;
                       const alreadyAdded = items.some(x => x.symbol === sym);
                       return (
                         <div
@@ -296,10 +301,9 @@ export default function WatchlistTab() {
                         </div>
                       );
                     })}
-                  {Object.keys(STOCKS).filter(sym => {
-                    const s = STOCKS[sym];
+                  {rows.filter(stock => {
                     const q = searchQuery.toLowerCase();
-                    return sym.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.sector.toLowerCase().includes(q);
+                    return stock.symbol.toLowerCase().includes(q) || stock.name.toLowerCase().includes(q) || stock.sector.toLowerCase().includes(q);
                   }).length === 0 && (
                     <div style={{ padding: '20px 12px', textAlign: 'center', color: '#64748B', fontSize: 12 }}>No stocks found matching &quot;{searchQuery}&quot;</div>
                   )}
@@ -356,7 +360,7 @@ export default function WatchlistTab() {
                     <tr style={{ borderBottom: isExpanded ? 'none' : '1px solid rgba(30,41,59,0.4)', background: isExpanded ? 'rgba(212,175,55,0.04)' : 'transparent' }}>
                       <td style={{ padding: '12px 12px' }}>
                         <Link href={`/stock/${i.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 800, fontFamily: 'monospace', fontSize: 13 }}>{i.symbol}</Link>
-                        <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{i.stock?.name ?? '—'}</div>
+                        <div style={{ fontSize: 10, color: '#475569', marginTop: 2 }}>{i.row?.name ?? '—'}</div>
                       </td>
                       <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0', fontWeight: 700 }}>{i.live != null ? i.live.toLocaleString('en-IN') : '\u2014'}</td>
                       <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: changeColor(i.changePct ?? 0), fontWeight: 700 }}>
@@ -364,7 +368,7 @@ export default function WatchlistTab() {
                       </td>
                       <td style={{ padding: '12px 12px' }}>
                         <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 16, color: scoreColor(i.score) }}>{i.score}</div>
-                        <div style={{ fontSize: 9, color: '#475569', marginTop: 1 }}>{i.consensus?.category ?? '—'}</div>
+                        <div style={{ fontSize: 9, color: '#475569', marginTop: 1 }}>{i.category}</div>
                       </td>
                       <td style={{ padding: '12px 12px', minWidth: 160 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>

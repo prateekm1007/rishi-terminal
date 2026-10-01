@@ -1,6 +1,6 @@
 'use client';
 
-import { Stock } from '../../lib/consensus/types';
+import type { Stock } from '../../lib/types';
 
 interface Props {
   stock: Stock;

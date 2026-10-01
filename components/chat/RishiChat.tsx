@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Stock } from "@/lib/types";
 import { useFundamentals } from '@/hooks/useFundamentals';
-import { RishiScore } from "@/lib/consensus/types";
+import type { RishiScore } from "@/lib/types";
 import { RISHI_PERSONALITIES, type ChatContext } from "@/lib/chat/rishiEngine";
 import { useLanguage } from '../../lib/language';
 import { getStaticResponseHi } from '../../lib/chat/fallbackResponses.hi';

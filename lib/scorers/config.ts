@@ -3,6 +3,8 @@
 // Change weights here — no other files need touching
 // ============================================================
 
+import 'server-only';
+
 export interface PillarConfig {
   id:          string;
   name:        string;

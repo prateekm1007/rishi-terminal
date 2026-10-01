@@ -2,11 +2,8 @@
 import { describe, it, expect } from "vitest";
 
 import { STOCKS } from "@/data/stocks";
-import {
-  TICKER_ALIASES,
-  resolveTickerSymbol,
-  normalizeTicker,
-} from "@/lib/registry/tickerRegistry";
+import { TICKER_ALIASES, normalizeTicker } from "@/lib/registry/tickerRegistry";
+import { resolveTickerSymbol } from "@/lib/registry/registryAudit"; // N1: seed-validated resolution moved server-side
 
 describe("T12 — ticker alias resolution", () => {
   it("resolves every documented renamed symbol", () => {

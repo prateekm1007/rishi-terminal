@@ -1,6 +1,20 @@
-// TICKER_REGISTRY_V1
+// TICKER_REGISTRY_V2
+//
+// N1 (round 3): this module is PURE — it no longer imports the seed
+// dataset. It sits on the client-reachable path (portfolio/watchlist/
+// alerts localStorage migrations), and the seed must never enter the
+// client bundle.
+//
+// - `resolveTickerAlias` resolves pure alias chains (renames + the known
+//   mangled forms recorded in tickerAliases.json) without any universe
+//   knowledge — safe for client code.
+// - `resolveTickerSymbolAgainst` performs the FULL resolution (validity +
+//   mangled-ampersand identity matching) against a symbol universe the
+//   CALLER provides. Server callers pass Object.keys(STOCKS).
+//
+// The registry audit helpers that need full seed records live in
+// lib/registry/registryAudit.ts (server/scripts only).
 
-import { STOCKS } from "../../data/stocks";
 import { normalizeSector } from "./sectors";
 import aliasMapRaw from "./tickerAliases.json";
 
@@ -22,120 +36,50 @@ export function normalizeTicker(symbol: string): string {
 }
 
 /**
- * Resolve any ticker (current, renamed or mangled legacy symbol) to the
- * canonical registry symbol. Returns null for unknown symbols.
- * Handles chained aliases and is safe for arbitrary user input.
+ * Alias-chain resolution without a symbol universe (client-safe).
+ * Follows recorded renames/mangled forms; returns the input unchanged
+ * when no alias applies. Server paths should prefer
+ * `resolveTickerSymbolAgainst` for full validation.
  */
-export function resolveTickerSymbol(symbol: string): string | null {
-  if (!symbol || typeof symbol !== "string") return null;
+export function resolveTickerAlias(symbol: string): string {
+  if (!symbol || typeof symbol !== "string") return symbol;
   let sym = symbol.trim().toUpperCase();
-  if (!sym) return null;
-  if (STOCKS[sym]) return sym;
-
+  if (!sym) return symbol;
   const seen = new Set<string>([sym]);
-  // Direct alias hops
   while (TICKER_ALIASES[sym] && !seen.has(TICKER_ALIASES[sym])) {
     sym = TICKER_ALIASES[sym];
     seen.add(sym);
-    if (STOCKS[sym]) return sym;
+  }
+  return sym;
+}
+
+/**
+ * Resolve any ticker (current, renamed or mangled legacy symbol) to a
+ * canonical symbol IN the provided universe. Returns null for unknown
+ * symbols. Handles chained aliases and mangled-ampersand identity
+ * (e.g. MANDM for M&M); safe for arbitrary user input.
+ */
+export function resolveTickerSymbolAgainst(
+  universe: readonly string[],
+  symbol: string,
+): string | null {
+  if (!symbol || typeof symbol !== "string") return null;
+  const known = new Set(universe);
+  let sym = symbol.trim().toUpperCase();
+  if (!sym) return null;
+  if (known.has(sym)) return sym;
+
+  // Direct alias hops
+  const seen = new Set<string>([sym]);
+  while (TICKER_ALIASES[sym] && !seen.has(TICKER_ALIASES[sym])) {
+    sym = TICKER_ALIASES[sym];
+    seen.add(sym);
+    if (known.has(sym)) return sym;
   }
   // Mangled-ampersand forms (e.g. MANDM for M&M) via normalized identity
   const target = normalizeTicker(sym);
-  for (const candidate of Object.keys(STOCKS)) {
+  for (const candidate of universe) {
     if (normalizeTicker(candidate) === target) return candidate;
   }
   return null;
-}
-
-export interface RegistryIssue {
-  symbol: string;
-  severity: "warning" | "error";
-  reason: string;
-}
-
-export interface RegistryEntry {
-  symbol: string;
-  name: string;
-  sector: string;
-  exchange: string;
-  valid: boolean;
-  issues: RegistryIssue[];
-}
-
-const VALID_SYMBOL = /^[A-Z0-9&_-]{2,25}$/;
-
-export function buildTickerRegistry(): RegistryEntry[] {
-  const symbols = Object.keys(STOCKS);
-
-  return symbols.map(symbol => {
-    const stock = STOCKS[symbol];
-
-    const issues: RegistryIssue[] = [];
-
-    if (!VALID_SYMBOL.test(symbol)) {
-      issues.push({
-        symbol,
-        severity: "error",
-        reason: "Invalid symbol format",
-      });
-    }
-
-    if (!stock.name || stock.name.length < 2) {
-      issues.push({
-        symbol,
-        severity: "error",
-        reason: "Missing/invalid company name",
-      });
-    }
-
-    if (!stock.price || stock.price <= 0) {
-      issues.push({
-        symbol,
-        severity: "warning",
-        reason: "Invalid price",
-      });
-    }
-
-    if (!stock.sector) {
-      issues.push({
-        symbol,
-        severity: "warning",
-        reason: "Missing sector",
-      });
-    }
-
-    const normalizedSector = normalizeSector(stock.sector);
-
-    if (normalizedSector === "Utilities" && stock.sector !== "Utilities") {
-      issues.push({
-        symbol,
-        severity: "warning",
-        reason: `Unknown sector mapped to Utilities: ${stock.sector}`,
-      });
-    }
-
-    return {
-      symbol,
-      name: stock.name,
-      sector: normalizedSector,
-      exchange: stock.exchange || "NSE",
-      valid: issues.filter(i => i.severity === "error").length === 0,
-      issues,
-    };
-  });
-}
-
-export function detectDuplicateSymbols(): string[] {
-  const symbols = Object.keys(STOCKS);
-
-  return symbols.filter((s, i) => symbols.indexOf(s) !== i);
-}
-
-export function registryHealthScore(): number {
-  const entries = buildTickerRegistry();
-
-  const total = entries.length;
-  const valid = entries.filter(e => e.valid).length;
-
-  return Math.round((valid / total) * 100);
 }

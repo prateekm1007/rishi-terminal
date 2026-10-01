@@ -1,7 +1,7 @@
 'use client';
 import { useLanguage } from '@/lib/language';
 
-import { TrimmedVerdict } from '../../lib/consensus/sanitize';
+import type { TrimmedVerdict } from '../../lib/consensus/sanitize';
 import { ProgressBar } from './StyleGuide';
 
 interface Props {

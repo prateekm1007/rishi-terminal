@@ -16,7 +16,7 @@
 // route reads those params without the gate).
 
 import { STOCKS } from '@/data/stocks';
-import { resolveTickerSymbol } from './tickerRegistry';
+import { resolveTickerSymbol } from './registryAudit'; // N1: seed-validated server path
 import { INDIAN_INDEXES } from '@/data/indexes';
 import { COMMODITIES } from '@/data/markets';
 import { CRYPTO_ASSETS } from '@/data/crypto';

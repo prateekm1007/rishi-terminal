@@ -1,23 +1,34 @@
+// N1 (round 3): the numeric seed dataset is SERVER-ONLY. The 944-record
+// dataset plus the scoring engine let any browser recompute every paid
+// per-Rishi verdict, so `import 'server-only'` below makes the Next.js
+// build fail if any client module imports this file. Client surfaces
+// receive results, not the dataset: the slim index
+// (lib/scoring/slimIndex.ts, RSC props) for list/sort surfaces, the
+// per-stock display record via RSC props or GET /api/stock/[symbol].
+//
+// The PUBLIC constants (SEED_STATUS, SEED_CAPTURED_AT, SEED_DISCLAIMER)
+// live in data/stocks/seedMeta.ts so <SeedDataBanner> and other client
+// code can import them without pulling this file into the bundle; they
+// are re-exported below for the server-side importers.
+import 'server-only';
+
 import { Stock } from '../../lib/types';
+import {
+  SEED_STATUS,
+  SEED_CAPTURED_AT,
+  SEED_DISCLAIMER,
+  type SeedStatus,
+} from './seedMeta';
 
 // Remediation R1: honesty about the seed dataset. Every value in STOCKS is a
-// static placeholder. No capture date is provable: the numbers pre-date this
-// repo's history and many are deliberately round (RELIANCE 2500, 3MINDIA
-// 28000, 360ONE 985), so claiming any "as of <date>" would be a fabricated
-// freshness claim (see remediation round 2, R1). Therefore:
-//   - SEED_STATUS = 'placeholder': the dataset is illustrative sample data.
-//     Flip to 'sourced' ONLY when every field is populated by the ingest
-//     pipeline (financial_quarters/financial_annual) and provenance is real.
-//   - SEED_CAPTURED_AT = null: we do not claim any capture date.
-// UI contract (enforced by scripts/validateStocks.ts and
-// test/freshness.placeholder.test.ts): wherever seed-derived numbers, scores
-// or rankings are shown, render <SeedDataBanner /> and never an "as of" date
-// for seed data. Seed prices are never rendered as live prices (lib/freshness).
-export type SeedStatus = 'placeholder' | 'sourced';
-export const SEED_STATUS: SeedStatus = 'placeholder';
-export const SEED_CAPTURED_AT: string | null = null;
-export const SEED_DISCLAIMER =
-  'Illustrative sample data \u2014 not current, not investment advice.';
+// static placeholder; no capture date is provable (see seedMeta.ts for the
+// reasoning, kept with the constants). UI contract (enforced by
+// scripts/validateStocks.ts and test/freshness.placeholder.test.ts):
+// wherever seed-derived numbers, scores or rankings are shown, render
+// <SeedDataBanner /> and never an "as of" date for seed data. Seed prices
+// are never rendered as live prices (lib/freshness).
+export { SEED_STATUS, SEED_CAPTURED_AT, SEED_DISCLAIMER };
+export type { SeedStatus };
 
 // Consolidated seed registry (remediation T12): duplicate/renamed rows were
 // merged; old symbols resolve via lib/registry/tickerAliases.json.

@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-import { STOCKS } from '@/data/stocks/index';
-import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
+// N1 (round 3): receives the server-generated slim index — no seed
+// dataset, no engine in the bundle.
+import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import { loadPortfolio, addHolding, removeHolding, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '@/hooks/useLivePrices';
@@ -27,7 +28,13 @@ function scoreColor(s: number): string {
   return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444';
 }
 
-export default function HoldingsTab() {
+interface Props {
+  rows: SlimStockRow[];
+}
+
+export default function HoldingsTab({ rows }: Props) {
+  const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
+
   const { t } = useLanguage();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [innerTab, setInnerTab] = useState<InnerTab>('holdings');
@@ -48,19 +55,18 @@ export default function HoldingsTab() {
 
   const enriched = useMemo(() => {
     return holdings.map(h => {
-      const stock = STOCKS[h.symbol];
+      const row = rowMap.get(h.symbol) ?? null;
             const hookPrice = prices[h.symbol]?.price;
       const livePrice = (typeof hookPrice === 'number' && hookPrice > 0) ? hookPrice : h.avgPrice;
       const invested = h.shares * h.avgPrice;
       const current = h.shares * livePrice;
       const pl = current - invested;
       const plPct = invested > 0 ? (pl / invested) * 100 : 0;
-      const consensus = stock ? getStockScore(stock) : null;
-      const score = consensus?.consensus ?? 0;
+      const score = row?.consensus ?? 0; // same display semantics as before (null -> 0 on this surface)
 
-      return { ...h, stock, livePrice, invested, current, pl, plPct, score };
+      return { ...h, row, livePrice, invested, current, pl, plPct, score };
     });
-  }, [holdings, prices]);
+  }, [holdings, prices, rowMap]);
 
   const totals = useMemo(() => {
     const totalInvested = enriched.reduce((s, h) => s + h.invested, 0);
@@ -75,20 +81,20 @@ export default function HoldingsTab() {
     let sym = formSymbol.trim().toUpperCase();
 
     // If user typed a company name, try to resolve to a unique symbol
-    if (!STOCKS[sym]) {
+    if (!rowMap.has(sym)) {
       const q = formSymbol.trim().toLowerCase();
       if (q.length >= 2) {
-        const hits = Object.entries(STOCKS).filter(([s, st]) => {
-          const nm = String((st as any)?.name ?? '').toLowerCase();
+        const hits = rows.filter(st => {
+          const nm = st.name.toLowerCase();
           return nm === q || nm.includes(q);
         });
-        if (hits.length === 1) sym = hits[0][0];
+        if (hits.length === 1) sym = hits[0].symbol;
       }
     }
     const shares = parseFloat(formShares);
     const avgPrice = parseFloat(formAvgPrice);
 
-    if (!STOCKS[sym]) { setFormError('Symbol not found in database'); return; }
+    if (!rowMap.has(sym)) { setFormError('Symbol not found in database'); return; }
     if (!shares || shares <= 0) { setFormError('Enter valid quantity'); return; }
     if (!avgPrice || avgPrice <= 0) { setFormError('Enter valid avg price'); return; }
 
@@ -196,8 +202,8 @@ export default function HoldingsTab() {
                   <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.symbol")}</div>
                   <input value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" list="holdings-stocks-list" autoComplete="off" style={inputStyle} />
                   <datalist id="holdings-stocks-list">
-                    {Object.entries(STOCKS).map(([sym, s]) => (
-                      <option key={sym} value={sym}>{sym} — {String((s as any)?.name ?? '')}</option>
+                    {rows.map(s => (
+                      <option key={s.symbol} value={s.symbol}>{s.symbol} — {s.name}</option>
                     ))}
                   </datalist>
                 </div>
@@ -248,7 +254,7 @@ export default function HoldingsTab() {
                         <Link href={`/stock/${h.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 700, fontFamily: 'monospace' }}>
                           {h.symbol}
                         </Link>
-                        <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{h.stock?.name ?? '—'}</div>
+                        <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{h.row?.name ?? '—'}</div>
                       </td>
                       <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0' }}>{h.shares.toLocaleString()}</td>
                       <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0' }}>{h.avgPrice.toLocaleString('en-IN')}</td>

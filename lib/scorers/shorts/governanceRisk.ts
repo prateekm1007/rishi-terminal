@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { StockMetrics, PillarScore, Signal, RedFlag, clamp, safeNum } from "../types";
 
 export function scoreGovernanceRisk(m: StockMetrics): PillarScore {

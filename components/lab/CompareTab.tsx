@@ -2,11 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { STOCKS } from '@/data/stocks/index';
-import { getStockScore } from '@/lib/scoring'; // T10: single scoring surface
+// N1 (round 3): receives the server-generated slim index. Per-Rishi
+// verdict rows aggregate the SEEKER-visible free slice; paid tiers
+// upgrade each symbol's verdicts through the server-enforced
+// GET /api/rishis/[symbol] — verdicts 6..20 never ship in the bundle.
+import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import type { RishiScore } from '@/lib/types';
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { useTier } from '@/hooks/useTier';
 import { useLanguage } from '../../lib/language';
 import { fetchHistoryPoints } from '@/components/lab/helpers';
 import type { HistoryPoint } from '@/components/lab/helpers';
@@ -87,8 +92,15 @@ function fmtCr(v: number): string {
   return (v / 100).toFixed(0) + ' Cr';
 }
 
-export default function CompareTab() {
+interface Props {
+  rows: SlimStockRow[];
+}
+
+export default function CompareTab({ rows }: Props) {
   const { t } = useLanguage();
+  const { tier, authenticated } = useTier();
+  const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
+  const [verdictUpgrades, setVerdictUpgrades] = useState<Record<string, RishiScore[]>>({});
   const [symbols, setSymbols] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('matrix');
   const [addSymbol, setAddSymbol] = useState('');
@@ -133,7 +145,7 @@ export default function CompareTab() {
       return;
     }
     const q = val.toUpperCase();
-    const matches = Object.values(STOCKS)
+    const matches = rows
       .filter(s => (s.symbol.includes(q) || s.name.toUpperCase().includes(q)) && !symbols.includes(s.symbol))
       .slice(0, 6)
       .map(s => s.symbol);
@@ -148,7 +160,7 @@ export default function CompareTab() {
       setError('Enter a symbol');
       return;
     }
-    if (!STOCKS[s]) {
+    if (!rowMap.has(s)) {
       setError(`"${s}" not found`);
       return;
     }
@@ -217,64 +229,93 @@ export default function CompareTab() {
 
   const peerSuggestions = useMemo(() => {
     if (symbols.length === 0) return [];
-    const sectors = [...new Set(symbols.map(s => STOCKS[s]?.sector).filter(Boolean))];
-    return Object.values(STOCKS)
+    const sectors = [...new Set(symbols.map(s => rowMap.get(s)?.sector).filter(Boolean))];
+    return rows
       .filter(s => sectors.includes(s.sector) && !symbols.includes(s.symbol))
       .slice(0, 5)
       .map(s => s.symbol);
-  }, [symbols]);
+  }, [symbols, rowMap]);
 
   const { prices, loading } = useLivePrices(symbols);
+
+  // Paid tiers: upgrade each symbol's verdict slice via the server-enforced
+  // route (seeker keeps the free slice embedded in the slim row).
+  useEffect(() => {
+    if (!authenticated || tier === 'seeker' || symbols.length === 0) return;
+    let cancelled = false;
+    void (async () => {
+      const next: Record<string, RishiScore[]> = {};
+      await Promise.all(symbols.map(async sym => {
+        try {
+          const res = await fetch(`/api/rishis/${encodeURIComponent(sym)}`, { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.tier === 'student' || data.tier === 'disciple') {
+            next[sym] = data.verdicts ?? [];
+          }
+        } catch {
+          // network failure: keep the free slice
+        }
+      }));
+      if (!cancelled && Object.keys(next).length > 0) setVerdictUpgrades(next);
+    })();
+    return () => { cancelled = true; };
+  }, [authenticated, tier, symbols]);
 
   const enriched = useMemo(() => {
     return symbols
       .map(sym => {
-        const stock = STOCKS[sym] as any;
-        if (!stock) return null;
-        const c = getStockScore(stock);
+        const row = rowMap.get(sym);
+        if (!row) return null;
+        // N1: the verdict slice is the free set, or the paid upgrade
+        const scores: RishiScore[] = verdictUpgrades[sym] ?? row.freeScores;
         const live = prices[sym]?.price ?? null; // T14: no seed fallback
         const chg = prices[sym]?.changePercent24h ?? 0;
-        const liveMktcap = (bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : stock.mktcap);
-        const fcfYield = liveMktcap > 0 && stock.fcf ? (stock.fcf / liveMktcap) * 100 : 0;
+        const liveMktcap = (bulkFund[row.symbol]?.marketCap ? bulkFund[row.symbol].marketCap / 10000000 : row.mktcap);
+        const fcfYield = liveMktcap > 0 && row.fcf ? (row.fcf / liveMktcap) * 100 : 0;
+        // T14/N1: P/B from the live quote and book value only — the seed
+        // price is never presented as current.
+        const bookValue = bulkFund[row.symbol]?.bookValue;
+        const pb = live && bookValue && bookValue > 0 ? live / bookValue : 0;
 
         // Extract pillar scores by matching full names
         const pillarScores: Record<string, number> = {};
         Object.entries(PILLAR_MAP).forEach(([fullName, pillar]) => {
-          const match = c.scores.find(r => r.full === fullName);
+          const match = scores.find(r => r.full === fullName);
           pillarScores[pillar.toLowerCase() + 'Score'] = match?.score ?? 0;
         });
 
         return {
           symbol: sym,
-          name: stock.name,
-          sector: stock.sector ?? '—',
+          name: row.name,
+          sector: row.sector ?? '—',
           live,
           changePct: chg,
-          pe: bulkFund[stock.symbol]?.pe ?? stock.pe ?? 0,
-          pb: (stock.price && (bulkFund[stock.symbol]?.bookValue ?? stock.bvps)) ? stock.price / (bulkFund[stock.symbol]?.bookValue ?? stock.bvps) : 0,
-          roe: bulkFund[stock.symbol]?.roe ?? stock.roe ?? 0,
-          roce: bulkFund[stock.symbol]?.roce ?? stock.roce ?? 0,
-          de: stock.de ?? 0,
+          pe: bulkFund[row.symbol]?.pe ?? row.pe ?? 0,
+          pb,
+          roe: bulkFund[row.symbol]?.roe ?? row.roe ?? 0,
+          roce: bulkFund[row.symbol]?.roce ?? 0,
+          de: row.de ?? 0,
           fcfYield,
-          mktcap: bulkFund[stock.symbol]?.marketCap ? bulkFund[stock.symbol].marketCap / 10000000 : (stock.mktcap ?? 0),
-          consensus: c.consensus,
-          category: c.category,
-          tension: c.tension,
-          tensionSpread: c.tensionSpread,
-          topBull: c.topBull?.full ?? '—',
-          topBear: c.topBear?.full ?? '—',
-          scores: c.scores,
-          moatScore: c.scores.find((r: any) => r.full === 'Warren Buffett')?.score ?? 0,
-          valuationScore: c.scores.find((r: any) => r.full === 'Benjamin Graham')?.score ?? 0,
-          growthScore: c.scores.find((r: any) => r.full === 'Peter Lynch')?.score ?? 0,
-          governanceScore: c.scores.find((r: any) => r.full === 'Charlie Munger')?.score ?? 0,
-          sentimentScore: c.scores.find((r: any) => r.full === 'George Soros')?.score ?? 0,
-          qualityScore: c.scores.find((r: any) => r.full === 'Philip Fisher')?.score ?? 0,
+          mktcap: bulkFund[row.symbol]?.marketCap ? bulkFund[row.symbol].marketCap / 10000000 : (row.mktcap ?? 0),
+          consensus: row.consensus,
+          category: row.category,
+          tension: row.tension,
+          tensionSpread: row.tensionSpread,
+          topBull: row.topBull?.full ?? '—',
+          topBear: row.topBear?.full ?? '—',
+          scores,
+          moatScore: scores.find((r: any) => r.full === 'Warren Buffett')?.score ?? 0,
+          valuationScore: scores.find((r: any) => r.full === 'Benjamin Graham')?.score ?? 0,
+          growthScore: scores.find((r: any) => r.full === 'Peter Lynch')?.score ?? 0,
+          governanceScore: scores.find((r: any) => r.full === 'Charlie Munger')?.score ?? 0,
+          sentimentScore: scores.find((r: any) => r.full === 'George Soros')?.score ?? 0,
+          qualityScore: scores.find((r: any) => r.full === 'Philip Fisher')?.score ?? 0,
           ...pillarScores,
         };
       })
       .filter(Boolean) as any[];
-  }, [symbols, prices]);
+  }, [symbols, prices, rowMap, verdictUpgrades, bulkFund]);
 
   const disagreementIndex = useMemo(() => {
     if (!enriched.length) return 0;
@@ -532,7 +573,7 @@ export default function CompareTab() {
                         }}
                       >
                         <span style={{ color: '#D4AF37', fontWeight: 700 }}>{sym}</span>
-                        <span style={{ color: '#64748B', marginLeft: 8 }}>{STOCKS[sym]?.name}</span>
+                        <span style={{ color: '#64748B', marginLeft: 8 }}>{rowMap.get(sym)?.name}</span>
                       </div>
                     ))}
                   </div>

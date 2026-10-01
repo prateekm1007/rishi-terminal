@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { StockMetrics, PillarScore, Signal, RedFlag, clamp, safeNum } from "../types";
 import { getSectorBenchmark } from "../config";
 

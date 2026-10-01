@@ -1,6 +1,6 @@
 "use client";
 
-import { SEED_DISCLAIMER, SEED_STATUS } from "@/data/stocks";
+import { SEED_DISCLAIMER, SEED_STATUS } from "@/data/stocks/seedMeta";
 
 /**
  * Remediation R1: the mandatory, non-dismissable label shown wherever

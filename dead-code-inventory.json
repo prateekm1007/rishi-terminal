@@ -1,0 +1,164 @@
+{
+  "generatedAt": "2026-10-01T22:50:37.249Z",
+  "scannedModules": 245,
+  "zeroImporterCount": 39,
+  "zeroImporterModules": [
+    {
+      "file": "lib/adapters/assetContext.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/adapters/bondAdapter.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/adapters/commodityAdapter.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/adapters/cryptoAdapter.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/adapters/forexAdapter.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/adapters/stockAdapter.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/consensus/graph.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/consensus/universalKnowledgeGraph.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/freshness.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/portfolio.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/responsive.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/scorers/index.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/security.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/stockApi.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/text/sanitizeEncoding.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/theme.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/types/bonds.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/types/forex.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/types/portfolio.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/useTranslation.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/utils/hydration.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/watchlist.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/wisdom/graph.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/wisdom/lens.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/wisdom/stockParallels.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/wisdom/universalParallels.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "lib/wisdom/wisdom-of-day.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/PageWrapper.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/RishiLogo.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/fno/PayoffChart.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/shared/PriceChartPanel.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/shared/TechnicalIndicatorsPanel.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/stock/LensInsights.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/stock/LensSelector.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/stock/RishiDialogue.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/stock/ShareButton.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/stock/WisdomGraph.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "hooks/useHydration.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "hooks/useLivePrice.ts",
+      "fabricationHint": false
+    }
+  ],
+  "deleteCandidates": []
+}

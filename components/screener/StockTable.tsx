@@ -36,7 +36,7 @@ interface Row extends SlimStockRow {
 function metricSourced(
   seedValue: number,
   liveValue: number | null | undefined,
-  live: { source?: string; lastUpdated?: string } | undefined,
+  live: { source?: string; lastUpdated?: string | null } | undefined,
 ): Sourced<number> {
   return overlaySourced(
     { value: seedValue, source: "seed", asOf: null },

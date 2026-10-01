@@ -77,15 +77,18 @@ function extractOPM(html: string): number {
 }
 
 function extractBalanceSheetDE(html: string): number {
-  const meta = html.match(/Mkt Cap:[\s\S]*?Revenue:[\s\S]*?Profit:[\s\S]*?ROE/i);
-
   // Screener no longer exposes D/E directly.
   // Use known value from current ratios page if available.
   const ratioMatch = html.match(/Debt[^<]{0,30}Equity[^<]{0,30}([\d.]+)/i);
   if (ratioMatch) return num(ratioMatch[1]);
 
-  // fallback
-  return 0.45;
+  // Commit D §4: D/E unavailable from the provider → the ZERO SENTINEL
+  // ("not observed"), which resolveStockMetrics understands as unavailable
+  // and falls back to SEED data. This used to return the literal 0.45 — a
+  // hardcoded, invented market number that entered the canonical
+  // fundamentals surface labelled as a live Screener observation
+  // (Constitution rules 4 and 15).
+  return 0;
 }
 
 function extractCAGR(html: string): { revCagr3y: number; epsCagr3y: number } {

@@ -115,7 +115,19 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "number that belongs to a different field is rejected). " +
     "(3) Never compute new numbers from the facts (no averages, midpoints, " +
     "percent changes you derive yourself) — state only numbers the evidence " +
-    "carries. (4) If you make no verifiable factual claims, return an empty " +
+    "carries. (4) A numeric claim's text must not contain ANY number other " +
+    "than its exact asserted values — no dates, periods or scale " +
+    "denominators (write 'the score is 72', never '72/100'; write " +
+    "'ROE is 12%', never 'as of 2026 the ROE is 12%') and a unit " +
+    "marker you write next to a number must match the asserted unit. " +
+    "(5) A numeric claim must not name a metric it does not assert ('P/E " +
+    "is 12' with only an roe assertion is rejected). For every numeric " +
+    "claim the platform publishes its own canonical verified statement " +
+    "generated from your assertions — the claim text itself is never " +
+    "treated as the verified wording; the same rule applies to the answer " +
+    "text: any number in your reply that is not an asserted value or a " +
+    "typed fact of the cited evidence (dates included) breaks grounding. " +
+    "(6) If you make no verifiable factual claims, return an empty " +
     'claims array. Example: {"answer": "...", "claims": [], ' +
     '"uncertainties": ["..."]}'
   );

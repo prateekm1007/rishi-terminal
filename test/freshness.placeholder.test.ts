@@ -45,14 +45,26 @@ describe("R1 — seed dataset honesty", () => {
     expect(seedOnly.seedStatus).toBe("placeholder");
     expect(seedOnly.seedCapturedAt).toBeNull();
 
+    // Live field WITH a provider-disclosed observation time keeps it (ISO).
     const withLive = resolveStockMetrics("RELIANCE", {
       pe: 21.5, roe: 14.2, roce: 16.1, opm: 18.3, debtToEquity: 0.4,
       promoterHolding: 50.3, revCagr3y: 12, epsCagr: 14, marketCap: 1700e7,
       bookValue: 1150,
+      lastUpdated: "2026-09-30T10:00:00.000Z",
     } as any);
     expect(withLive!.fields.pe.source).toBe("live");
     expect(withLive!.fields.pe.asOf).toBeTruthy();
     expect(ISO_DATE.test(withLive!.fields.pe.asOf as string)).toBe(true);
+
+    // Commit D §3: a live field whose provider disclosed NO observation time
+    // claims NONE — the old fetch-time stand-in was itself a fabrication.
+    const withLiveNoTime = resolveStockMetrics("RELIANCE", {
+      pe: 21.5, roe: 14.2, roce: 16.1, opm: 18.3, debtToEquity: 0.4,
+      promoterHolding: 50.3, revCagr3y: 12, epsCagr: 14, marketCap: 1700e7,
+      bookValue: 1150,
+    } as unknown as Parameters<typeof resolveStockMetrics>[1]);
+    expect(withLiveNoTime!.fields.pe.source).toBe("live");
+    expect(withLiveNoTime!.fields.pe.asOf).toBeNull();
   });
 });
 

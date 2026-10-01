@@ -69,9 +69,12 @@ describe("resolveStockMetrics().sourced — the UI-facing provenance record", ()
     });
     expect(r!.sourced.pe.asOf).toBeTruthy();
     expect(r!.sourced.mktcap.source).toBe("vendor:screener");
-    // derived from a live input claims the live as-of
+    // Commit D §5: PB mixes the SEED price with a live BVPS — a mixed-source
+    // derivation claims NO observation time (the old live-asOf inheritance
+    // presented mixed inputs as wholly live).
     expect(r!.sourced.pb.source).toBe("derived");
-    expect(r!.sourced.pb.asOf).toBe(r!.sourced.pe.asOf);
+    expect(r!.sourced.pb.asOf).toBeNull();
+    expect(r!.fields.pb.note).toContain("mixed-source");
   });
 });
 

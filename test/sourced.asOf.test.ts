@@ -1,13 +1,16 @@
 /**
- * N3 (round 3) — Sourced.asOf for live fields is the PROVIDER's
- * observation time, not resolution time.
+ * N3 (round 3), as corrected by Commit D §3 — Sourced.asOf for live fields
+ * is the PROVIDER's DISCLOSED observation time, or NULL.
  *
- * The defect: lib/scoring stamped `asOf: new Date().toISOString()` on
- * live fields at resolution time, so a value captured by the provider at
+ * The original defect: lib/scoring stamped `asOf: new Date().toISOString()`
+ * on live fields at resolution time, so a value captured by the provider at
  * 09:15 and resolved at 18:42 claimed an 18:42 freshness — a fabricated
- * "as of" (Constitution art. 1/3). The fix: the provider response's
- * `lastUpdated` is the asOf; only when the response carries no parseable
- * timestamp does the fetch time stand in (the honest lower bound).
+ * "as of" (Constitution art. 1/3). The first fix made the provider
+ * response's `lastUpdated` the asOf and let the FETCH TIME stand in when
+ * the response carried no parseable timestamp. Commit D closes the residual
+ * hole: a fetch-time stand-in is STILL a fabricated observation claim (the
+ * provider never said the value was observed at fetch time), so the
+ * contract is now "provider-disclosed time or null".
  */
 import { describe, it, expect } from "vitest";
 import { resolveStockMetrics } from "@/lib/scoring";
@@ -66,19 +69,21 @@ describe("N3 — live asOf is the provider's observation time", () => {
     expect(resolved.fields.pe.asOf).not.toBe(new Date().toISOString());
   });
 
-  it("a response with no parseable timestamp falls back to fetch time (the labelled lower bound)", () => {
-    const before = new Date();
+  it("a response with no parseable timestamp resolves asOf = null (TIGHTENED by Commit D §3: the old fetch-time stand-in was itself a fabrication)", () => {
+    const before = new Date().toISOString();
     const resolved = resolveStockMetrics("RELIANCE", {
       ...LIVE_FIXTURE,
       lastUpdated: "",
       source: "yahoo+nse",
     })!;
-    const after = new Date();
-    const asOf = resolved.fields.pe.asOf;
-    expect(asOf).not.toBeNull();
-    const t = asOf ? new Date(asOf).getTime() : NaN;
-    expect(t).toBeGreaterThanOrEqual(before.getTime() - 1);
-    expect(t).toBeLessThanOrEqual(after.getTime() + 1);
+    const after = new Date().toISOString();
+    // live provenance survives, the timestamp does not — null is the value
+    expect(resolved.fields.pe.source).toBe("live");
+    expect(resolved.fields.pe.asOf).toBeNull();
+    // and it is genuinely null, not a wrapped fetch-time stamp
+    expect(resolved.fields.pe.asOf).not.toBe(before);
+    expect(resolved.fields.pe.asOf).not.toBe(after);
+    expect(resolved.sourced.pe.asOf).toBeNull();
   });
 
   it("seed and seed-derived fields still claim no timestamp (R1)", () => {
@@ -89,8 +94,9 @@ describe("N3 — live asOf is the provider's observation time", () => {
     })!;
     for (const [key, field] of Object.entries(resolved.fields)) {
       if (field.source === "seed" || field.source === "derived") {
-        // pb is derived FROM a live bvps here, so it may inherit the live
-        // timestamp; every other seed/derived field must stay null.
+        // fcfMargin is a pure-seed derivation; pb mixes the seed price with
+        // a live bvps — under Commit D §5 NEITHER claims a timestamp, so
+        // every seed/derived field must stay null here.
         if (key === "pb" || key === "fcfMargin") continue;
         expect(field.asOf, `${key} (${field.source}) must claim no timestamp`).toBeNull();
       }

@@ -120,7 +120,10 @@ export async function GET(req: NextRequest) {
     promoterHolding: stock.promo || 0,
     fcf: 0,
     roa: 0,
-    lastUpdated: new Date().toISOString(),
+    // Commit D §3: SEED data has no provable capture date (R1) — the static
+    // fallback claims no timestamp. It used to stamp serve time, i.e. every
+    // seed fundamental carried a fabricated fresh "as of".
+    lastUpdated: null,
     source: "static",
   };
   setCache(cacheKey, staticData);
@@ -170,7 +173,8 @@ export async function POST(req: NextRequest) {
               promoterHolding: stock.promo ?? 0,
               fcf: stock.fcf ?? 0,
               roa: 0,
-              lastUpdated: new Date().toISOString(),
+              // Commit D §3: seed/static data claims no timestamp (R1).
+              lastUpdated: null,
               source: "static",
             };
           }

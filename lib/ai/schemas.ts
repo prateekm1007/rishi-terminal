@@ -38,6 +38,11 @@ export type AiEvidenceFact = {
 export type AiAssertion = { field: string; value: number; unit: string };
 
 export const AiClaimSchema = z.object({
+  /** For a VALIDATED numeric claim this is NOT the model's prose: the
+   *  server replaces it with a canonical statement generated from the
+   *  validated assertions ("roe = 12 percent — verified against
+   *  fundamental:<sym>:roe:<asOf> (live)"). Commit D §2A: model prose is
+   *  never the semantically verified surface. */
   claim: z.string().min(1),
   evidenceIds: z.array(z.string()).default([]),
   assertions: z

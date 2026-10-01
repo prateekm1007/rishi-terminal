@@ -27,7 +27,9 @@ export interface FullFundamentals {
   promoterHolding: number;
   fcf: number;
   roa: number;
-  lastUpdated: string;
+  /** Provider-disclosed observation time, or null when none was disclosed
+   *  (Commit D §3). Never the fetch/serve time; seed/static data is null. */
+  lastUpdated: string | null;
   source?: string;
   isLive: boolean;
 }

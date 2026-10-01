@@ -115,24 +115,29 @@ describe("R4-02 — normalization", () => {
 
 describe("R4-02 — the answer text is verified too", () => {
   it("a number in the answer absent from cited evidence → grounded=false", () => {
+    // Commit D §2A: the claim text itself must not carry unasserted numbers
+    // ("72/100" mints 100), so the clean claim is used and the answer's
+    // fabricated 21.4 is what trips the floor.
     const r = validateGrounding(
       EVIDENCE,
-      [{ claim: "score is 72/100", evidenceIds: [SCORE_ID], assertions: [{ field: "score", value: 72, unit: "points" }] }],
-      "The score is 72/100 and the P/E is 21.4.",
+      [{ claim: "score is 72", evidenceIds: [SCORE_ID], assertions: [{ field: "score", value: 72, unit: "points" }] }],
+      "The score is 72 and the P/E is 21.4.",
     );
     expect(r.grounded).toBe(false);
     expect(r.rejections.join(" ")).toContain("21.4");
   });
 
-  it("an answer whose every number traces to cited evidence stays grounded", () => {
+  it("an answer whose every number traces to validated assertions or typed facts of the cited items stays grounded", () => {
+    // Commit D §2A: the answer pool no longer includes cited TEXT numbers,
+    // so the answer drops the unasserted "/100" scale denominator.
     const r = validateGrounding(
       EVIDENCE,
       [
-        { claim: "score is 72/100", evidenceIds: [SCORE_ID], assertions: [{ field: "score", value: 72, unit: "points" }] },
+        { claim: "score is 72", evidenceIds: [SCORE_ID], assertions: [{ field: "score", value: 72, unit: "points" }] },
         { claim: "ROE is 12%", evidenceIds: [ROE_ID], assertions: [{ field: "roe", value: 12, unit: "percent" }] },
         { claim: "the stock trades at 1420.5", evidenceIds: [PRICE_ID], assertions: [{ field: "price", value: 1420.5, unit: "inr" }] },
       ],
-      "Score 72/100 with ROE 12%; the stock trades at 1,420.5.",
+      "Score 72 with ROE 12%; the stock trades at 1,420.5.",
     );
     expect(r.grounded).toBe(true);
   });

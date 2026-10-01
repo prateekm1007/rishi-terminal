@@ -22,7 +22,10 @@ export interface FullFundamentals {
   promoterHolding: number;
   fcf: number;
   roa: number;
-  lastUpdated: string;
+  /** The PROVIDER's disclosed observation/capture time, or null when it
+   *  disclosed none (Commit D §3). Never the fetch/serve time — substituting
+   *  that would fabricate a freshness claim the source never made. */
+  lastUpdated: string | null;
   source: "screener" | "yahoo+nse" | "static";
 }
 
@@ -62,7 +65,11 @@ export async function fetchFullFundamentals(symbol: string): Promise<FullFundame
         promoterHolding: screenerData.promoterHolding,
         fcf: screenerData.fcf,
         roa: screenerData.roa,
-        lastUpdated: new Date().toISOString(),
+        // Commit D §3: the Screener page carries no machine-readable
+        // observation time our parser captures — null stays null. It used
+        // to be new Date().toISOString(), i.e. every live fundamental
+        // claimed a fresh, fabricated "as of".
+        lastUpdated: null,
         source: "screener",
       };
     }
@@ -91,7 +98,9 @@ export async function fetchFullFundamentals(symbol: string): Promise<FullFundame
         promoterHolding: 0,
         fcf: 0,
         roa: 0,
-        lastUpdated: new Date().toISOString(),
+        // Commit D §3: the Yahoo/NSE path parses no upstream observation
+        // timestamp — null, never the fetch time.
+        lastUpdated: null,
         source: "yahoo+nse",
       };
     }

@@ -41,11 +41,17 @@ export interface ResolvedField<T = number> {
   value: T;
   source: FieldSource;
   /**
-   * Provenance timestamp. Live fields carry their real capture timestamp;
-   * seed fields are ALWAYS null (R1: the seed dataset has no provable capture
-   * date, so no timestamp may be claimed for it).
+   * Provenance timestamp. Live fields carry the PROVIDER's disclosed
+   * observation time — or null when the provider disclosed none (Commit D
+   * §3: never the fetch/serve time). Seed fields are ALWAYS null (R1: the
+   * seed dataset has no provable capture date). Derived fields carry a
+   * timestamp only when every input shares one coherent source.
    */
   asOf: string | null;
+  /** Optional provenance note for derivations whose inputs do not share one
+   *  source (Commit D §5): a mixed seed/live derivation claims no as-of and
+   *  says so explicitly, so nothing can present it as wholly live. */
+  note?: string;
 }
 
 export interface ResolvedStockMetrics {
@@ -99,16 +105,16 @@ export function resolveStockMetrics(
   const seed = STOCKS[sym];
   if (!seed) return null;
 
-  // N3 (round 3): a live field's asOf is the PROVIDER's observation time
-  // (FullFundamentals.lastUpdated), never "now at resolution time" — a
-  // resolution-time stamp would claim freshness the provider never made.
-  // Fallback (labelled): when the upstream response carries no parseable
-  // timestamp, the fetch time stands in and is the honest lower bound.
-  const fetchTime = new Date().toISOString();
+  // N3, as corrected by Commit D §3: a live field's asOf is the PROVIDER's
+  // DISCLOSED observation time (FullFundamentals.lastUpdated) — and when the
+  // upstream disclosed none, asOf stays NULL. The previous fetch-time stand-in
+  // was itself a fabrication: a resolution-time stamp claims a freshness the
+  // provider never stated. null is a real value (art. 16) and every consumer
+  // renders/handles it as "no observation time disclosed".
   const providerAsOf =
     live && typeof live.lastUpdated === 'string' && !Number.isNaN(Date.parse(live.lastUpdated))
       ? live.lastUpdated
-      : fetchTime;
+      : null;
   const fields: Record<string, ResolvedField> = {};
   const sourced: Record<string, Sourced<number>> = {};
 
@@ -150,13 +156,20 @@ export function resolveStockMetrics(
   set("mktcap", mktcap);
   set("bvps", bvps);
 
-  // Derived from other resolved fields — never invented. The derived
-  // timestamp is only meaningful when its inputs are live; a derivation from
-  // seed values claims no freshness (R1).
+  // Derived from other resolved fields — never invented. Provenance contract
+  // (Commit D §5): a derived value may inherit an observation time only when
+  // ALL of its inputs share one coherent source. PB divides the SEED price by
+  // the resolved BVPS; whenever BVPS is live the inputs are mixed
+  // (seed price + live book value), so the result claims NO observation time
+  // and the note says so explicitly — it must never read as wholly live.
+  const pbInputsMixed = bvps.source === "live";
   const pb: ResolvedField = {
     value: bvps.value > 0 ? Number((seed.price / bvps.value).toFixed(4)) : 0,
     source: "derived",
-    asOf: bvps.source === "live" ? providerAsOf : null,
+    asOf: null, // mixed seed/live inputs → no coherent observation time
+    ...(pbInputsMixed
+      ? { note: "mixed-source derivation: seed price with live book value per share — no coherent observation time" }
+      : {}),
   };
   fields.pb = pb;
   sourced.pb = toSourced(pb);

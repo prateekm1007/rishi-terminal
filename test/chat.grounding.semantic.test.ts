@@ -184,7 +184,11 @@ describe("R4-02 — no assertion for a numeric claim is fail-closed", () => {
     expect(r.grounded).toBe(true);
   });
 
-  it("incidental prose numbers (dates) ride on cited-text presence", () => {
+  it("TIGHTENED by Commit D §2A: incidental prose numbers (dates) no longer ride on cited-text presence — every number in a claim must be a validated assertion value", () => {
+    // The old contract let "2026" pass because the as-of date sat in the
+    // cited evidence text. The founder's bite: a number that merely appears
+    // in evidence prose is NOT a validated assertion — the claim is rejected
+    // (the model must write "ROE is 12%", not "As of 2026-09-30 the ROE is 12%").
     const r = validateGrounding(EVIDENCE, [
       {
         claim: "As of 2026-09-30 the ROE is 12%",
@@ -192,15 +196,18 @@ describe("R4-02 — no assertion for a numeric claim is fail-closed", () => {
         assertions: [{ field: "roe", value: 12, unit: "percent" }],
       },
     ]);
-    expect(r.grounded).toBe(true);
+    expect(r.grounded).toBe(false);
+    expect(r.rejections.join(" ")).toContain("2026");
   });
 });
 
 describe("R4-02 — derived facts are explicit; the model may not derive", () => {
   it("the score fact is marked derived and is assertable as-is (72 points)", () => {
+    // Commit D §2A: the claim text must not carry numbers beyond the asserted
+    // value — "72/100" mints an unasserted 100, so the clean form is used.
     const r = validateGrounding([SCORE_ITEM], [
       {
-        claim: "The consensus score is 72/100",
+        claim: "The consensus score is 72",
         evidenceIds: [SCORE_ITEM.id],
         assertions: [{ field: "consensus", value: 72, unit: "points" }],
       },

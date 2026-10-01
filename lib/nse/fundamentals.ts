@@ -12,7 +12,9 @@ export interface LiveFundamentals {
   bookValue: number;
   dividendYield: number;
   faceValue: number;
-  lastUpdated: string;
+  /** Provider-disclosed observation time, or null when none is captured.
+   *  Never the fetch time (Commit D §3). */
+  lastUpdated: string | null;
 }
 
 // =============================================================================
@@ -79,7 +81,8 @@ export async function fetchNSEFundamentals(symbol: string): Promise<Partial<Live
       roce: 0,
       dividendYield: 0,
       faceValue: parseFloat(securityInfo?.faceValue) || 10,
-      lastUpdated: new Date().toISOString(),
+      // Commit D §3: no upstream observation timestamp is captured here.
+      lastUpdated: null,
     };
   } catch (err) {
     console.error(`[NSE] ${symbol} error:`, (err as Error).message);
@@ -142,7 +145,8 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
       roce: 0,
       dividendYield,
       faceValue: 10,
-      lastUpdated: new Date().toISOString(),
+      // Commit D §3: no upstream observation timestamp is captured here.
+      lastUpdated: null,
     };
   } catch (err) {
     console.error(`[Yahoo] ${symbol} error:`, (err as Error).message);
@@ -176,7 +180,8 @@ export async function fetchLiveFundamentals(symbol: string): Promise<LiveFundame
       bookValue:     yahooData?.bookValue ?? 0,
       dividendYield: yahooData?.dividendYield ?? 0,
       faceValue:     nseData?.faceValue ?? yahooData?.faceValue ?? 10,
-      lastUpdated:   new Date().toISOString(),
+      // Commit D §3: no upstream observation timestamp is captured here.
+      lastUpdated:   null,
     };
   }
 

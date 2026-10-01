@@ -49,11 +49,18 @@ const BURST_WINDOW_SECONDS = 60;
 const BURST_MAX_REQUESTS = 12;
 
 function clientIp(req: NextRequest): string {
-  // The platform (Vercel) APPENDS the real client IP to x-forwarded-for;
-  // anything a client sends itself appears EARLIER in the list, so the
-  // LAST entry is the trusted one. x-real-ip is only used when no proxy
-  // chain is present (local/dev). The previous first-entry order trusted
-  // spoofable headers (R6 finding).
+  // VERIFIED against the Vercel docs (N4, round 3):
+  // https://vercel.com/docs/headers/request-headers#x-forwarded-for —
+  // "we currently overwrite the X-Forwarded-For header and do not forward
+  // external IPs. This restriction is in place to prevent IP spoofing."
+  // On Vercel the header therefore contains exactly the client's public
+  // IP (a single entry). Parsing the LAST entry stays correct under both
+  // models: on Vercel it is the (only) platform-set value, and behind a
+  // conventional appending proxy it is the hop the trusted proxy added —
+  // client-supplied prefixes always sit EARLIER. x-real-ip is only used
+  // when no proxy chain is present (local/dev). The previous first-entry
+  // order trusted spoofable headers (R6 finding). The assumption is
+  // pinned by test/chat.quota.order.test.ts.
   const fwd = req.headers.get('x-forwarded-for');
   if (fwd) {
     const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
@@ -128,15 +135,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
-  // 3. Daily quota per user by tier (server-resolved tier, never client).
-  if (!(await consumeQuota(user.id, user.tier))) {
-    return NextResponse.json(
-      { error: 'Daily chat quota exhausted', fallback: true },
-      { status: 429 },
-    );
-  }
-
-  // 4. Validate the contract.
+  // 3. Validate the contract FIRST (N4, round 3): a malformed request
+  //    (bad JSON, unknown persona, oversized message/history, bad symbol)
+  //    must never consume one of the user's daily units. Consumption moved
+  //    below, after every 400/413 path has returned.
   let body: {
     personaId?: unknown;
     symbol?: unknown;
@@ -199,12 +201,22 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
-  // 5. Compose the request. System prompt is server-built (persona);
+  // 5. Daily quota per user by tier (server-resolved tier, never client).
+  //    N4: consumed only after the request validated — 400/413 paths above
+  //    leave the counter untouched, and upstream failures below refund.
+  if (!(await consumeQuota(user.id, user.tier))) {
+    return NextResponse.json(
+      { error: 'Daily chat quota exhausted', fallback: true },
+      { status: 429 },
+    );
+  }
+
+  // 6. Compose the request. System prompt is server-built (persona);
   //    symbol context is passed as EVIDENCE with stable ids (T51), not
   //    concatenated into the prompt here.
   const evidence = symbol ? stockEvidence(symbol) : [];
 
-  // 6. Call the AI abstraction — provider resolution, timeout, health and
+  // 7. Call the AI abstraction — provider resolution, timeout, health and
   //    provenance are handled in lib/ai (T49/T50). Fail-closed: explicit
   //    unavailable state, never a degraded pseudo-answer.
   let answer;
@@ -231,7 +243,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
   }
 
-  // 7. T52: auditable wire response — {text} preserved for the UI,
+  // 8. T52: auditable wire response — {text} preserved for the UI,
   //    provenance (provider/model/generatedAt) rides along (T50).
   return NextResponse.json(toChatWire(answer));
 }

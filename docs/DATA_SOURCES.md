@@ -1,6 +1,6 @@
 # Data Sources — Rishi Terminal
 
-**Status:** 2026-09-30 (Remediation round 2, R1). This is the authoritative description of
+**Status:** 2026-10-01 (Phase 1, D1-02: NSE official listing added as source #15 — the security master). This is the authoritative description of
 where every number shown in the product comes from, how often it refreshes, and
 what is known to be stale or risky. `AUDIT_FINDINGS_COMPREHENSIVE.md` is
 superseded; this document and `scripts/validateStocks.ts` are the sources of
@@ -49,8 +49,9 @@ truth on data quality.
 | 10 | **FRED** | Macro series CSV (economyPlus module: GDP, CPI, etc.). | `data/economyPlus/macroData*.ts` fetch layer | none | Cached; `asOf` recorded per macro record. |
 | 11 | **News RSS** | Market/company/economy/crypto/sports headlines: Google News, Economic Times, Livemint, Investing.com, Times of India, Coindesk, Cointelegraph, ESPNcricinfo. | `app/api/news/route.ts` and related feeds | none | On request with cache; freshness limited to what each feed publishes. |
 | 12 | **LLM chat provider** | Chat/consensus *generation* — never a market-data source. Primary: any OpenAI-compatible endpoint (`CHAT_API_BASE_URL` + `CHAT_API_KEY`, key via `Authorization: Bearer`, `CHAT_MODEL` selectable). Fallback: Google Gemini (`GEMINI_API_KEY`, key via `x-goog-api-key`) (T7). | `app/api/chat/route.ts` | API key | Per-request. |
-| 13 | **Supabase (Postgres)** | Persistence: `users`, `transactions`, `rishi_snapshots` (nightly consensus history), `financial_quarters`, `financial_annual`, `ingestion_log`. RLS keyed on `auth.uid()`; service-role client is server-only (`lib/services/supabaseAdmin.ts`, `import 'server-only'`). | `lib/db/*`, `lib/services/*` | anon key (client) / service-role (server) | Written by cron/ingest and payment webhooks; read by scoring persistence. |
+| 13 | **Supabase (Postgres)** | Persistence: `users`, `transactions`, `rishi_snapshots` (nightly consensus history), `financial_quarters`, `financial_annual`, `ingestion_log`, `securities`/`symbol_history`/`universe` (D1-02 security master). RLS keyed on `auth.uid()` where user-scoped; deny-all + service-role-only on ingestion tables (N2) and the security master (D1-02); service-role client is server-only (`lib/services/supabaseAdmin.ts`, `import 'server-only'`). | `lib/db/*`, `lib/services/*` | anon key (client) / service-role (server) | Written by cron/ingest and payment webhooks; read by scoring persistence. |
 | 14 | **Razorpay** | Payment orders + webhook events; source of truth for tier grants (`transactions`, webhook HMAC verification, T6). | `app/api/payment/*` | Key ID/secret + webhook secret | Event-driven. |
+| 15 | **NSE official listing (EQUITY_L)** | The security master (D1-02): symbol → ISIN, company name, listing date, series for every NSE-listed equity (2,593 rows, snapshot 2026-10-01). Reference data only — no prices, no fundamentals. | `data/security-master/` (CSV snapshot + generated `populate.sql`), `lib/db/securityMaster.ts` (resolution), DB tables `securities`/`symbol_history`/`universe` | none (public file) | Snapshot committed in-repo with SHA-256 in `data/security-master/SOURCES.md`; applied by the CI migrations job and to the live DB. Refresh = re-fetch + regenerate + review the diff. Current-listings only (no delisted names — those arrive with licensed corporate-actions data, D1-03). |
 
 ## 3. Refresh pipeline (what actually runs)
 

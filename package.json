@@ -15,6 +15,8 @@
     "validate:stocks": "tsx --conditions react-server scripts/validateStocksImpl.ts",
     "score:parity": "tsx --conditions react-server scripts/scoreParityImpl.ts",
     "snapshot:batch": "tsx --conditions react-server scripts/snapshotBatch.ts",
+    "populate:security-master": "tsx --conditions react-server scripts/populateSecurityMasterImpl.ts",
+    "validate:security-master": "tsx --conditions react-server scripts/validateSecurityMasterImpl.ts",
     "bundle:budget": "tsx scripts/bundleBudget.ts"
   },
   "dependencies": {

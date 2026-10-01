@@ -244,3 +244,108 @@ describe("Phase 5.1 — honest AI provenance (T52)", () => {
     expect(toChatWire(a!).provenance.grounded).toBe(false);
   });
 });
+
+describe("audit 2026-10-02 (production probe follow-up): string-typed assertion values", () => {
+  beforeEach(() => {
+    process.env.CHAT_API_BASE_URL = "https://example.invalid/v1";
+    process.env.CHAT_API_KEY = "k-test";
+    process.env.CHAT_MODEL = "test-model";
+  });
+
+  it("MUST FAIL PRE-FIX: a model reply whose assertion value is a NUMBER-STRING still parses, grounds and renders the clean answer (not raw JSON)", async () => {
+    // Exact shape observed LIVE on production 2026-10-02: the provider
+    // returned valid JSON except value: "8.91" (string). zod rejected the
+    // whole reply and the router fell back to the raw-JSON-as-answer dump.
+    // Fix: coercion at the PARSE boundary only — the strict field/value/unit
+    // fact matching afterwards is unchanged.
+    const evidence = [
+      {
+        id: "fundamental:RELIANCE:roe:no-disclosed-observation-time",
+        text: "ROE %: 8.91 | provenance: live via vendor screener, no disclosed observation time | fact: roe=8.91 percent (live)",
+        facts: [{ field: "roe", value: 8.91, unit: "percent", source: "live" as const }],
+      },
+    ];
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  answer: "ROE is 8.91%.",
+                  claims: [
+                    {
+                      claim: "Reliance Industries has an ROE of 8.91%",
+                      evidenceIds: ["fundamental:RELIANCE:roe:no-disclosed-observation-time"],
+                      assertions: [{ field: "roe", value: "8.91", unit: "percent" }],
+                    },
+                  ],
+                  uncertainties: [],
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "What is the ROE?",
+      evidence,
+    });
+    expect(answer).not.toBeNull();
+    // The clean answer string — NOT the raw JSON dump.
+    expect(answer?.answer).toBe("ROE is 8.91%.");
+    expect(answer?.answer.startsWith("{")).toBe(false);
+    // And the claim actually grounds against the typed fact.
+    const wire = toChatWire(answer!);
+    expect(wire.provenance.grounded).toBe(true);
+    expect(wire.provenance.groundingMode).toBe("structured-claims");
+    expect(wire.provenance.claims).toHaveLength(1);
+  });
+
+  it("a NON-numeric string value is still rejected (coercion must not launder garbage)", async () => {
+    const evidence = [
+      {
+        id: "fundamental:RELIANCE:roe:no-disclosed-observation-time",
+        text: "ROE %: 8.91 | fact: roe=8.91 percent (live)",
+        facts: [{ field: "roe", value: 8.91, unit: "percent", source: "live" as const }],
+      },
+    ];
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  answer: "ROE is high.",
+                  claims: [
+                    {
+                      claim: "ROE is high",
+                      evidenceIds: ["fundamental:RELIANCE:roe:no-disclosed-observation-time"],
+                      assertions: [{ field: "roe", value: "eight point nine", unit: "percent" }],
+                    },
+                  ],
+                  uncertainties: [],
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "What is the ROE?",
+      evidence,
+    });
+    // Uncoercible value -> zod fails -> honest unstructured fallback
+    // (fail closed; never grounded).
+    expect(answer?.claimsVerified ?? false).toBe(false);
+  });
+});

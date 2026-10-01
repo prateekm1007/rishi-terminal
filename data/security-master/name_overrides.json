@@ -1,0 +1,799 @@
+{
+  "$comment": [
+    "Curated name-agreement decisions for direct seed↔NSE-listing symbol matches (audit round 4, Q3).",
+    "A direct match counts only if lib/db/nameAgreement.agreesEnough() passes OR a reviewed entry exists here with sources.",
+    "WRONG_BINDING/BIND_WITH_OVERRIDE — binding accepted (seed name kept: recognizable market name).",
+    "RENAMED/UPDATE_SEED_NAME — binding accepted and the seed record now carries the official name.",
+    "WRONG_BINDING/REMOVE_SEED_RECORD — the seed record was removed from data/stocks/index.ts; the official listing row is untouched.",
+    "Official names are pinned to the committed CSV snapshot (primary source, sha256 above). Founders/auditors re-verify via the NSE quote URLs.",
+    "Schema is validated by lib/db/nameAgreement.parseNameOverrides; staleness is checked by validateSecurityMaster V7."
+  ],
+  "entries": [
+    {
+      "symbol": "JKIL",
+      "seedName": "J.K. Investors (Bombay)",
+      "officialName": "J.Kumar Infraprojects Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "J.K. Investors (Bombay) Ltd is not J.Kumar Infraprojects Ltd; seed data attached to the wrong company's symbol. Seed record removed; the official listing row stays untouched.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=JKIL",
+        "https://www.nseindia.com/get-quotes/equity?symbol=JKPAPER (J.K. group namespacing is not evidence; decision rests on the pinned CSV + seed record)"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "MGEL",
+      "seedName": "Maharashtra Gas",
+      "officialName": "Mangalam Global Enterprise Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "Maharashtra Gas is not Mangalam Global Enterprise; Mahanagar Gas Ltd trades as MGL (already a correct seed record). Seed record removed.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=MGEL",
+        "https://www.nseindia.com/get-quotes/equity?symbol=MGL"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "PENIND",
+      "seedName": "Peninsula Land",
+      "officialName": "Pennar Industries Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "Peninsula Land Ltd trades as PENINLAND (INE138A01028), not PENIND = Pennar Industries Ltd. Seed record removed.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=PENIND",
+        "https://www.nseindia.com/get-quotes/equity?symbol=PENINLAND"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "POWERINDIA",
+      "seedName": "Power Mech",
+      "officialName": "Hitachi Energy India Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "Power Mech Projects Ltd trades as POWERMECH (INE211R01019); POWERINDIA is Hitachi Energy India Ltd. Seed record removed (audited finding, round 4).",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=POWERINDIA",
+        "https://www.nseindia.com/get-quotes/equity?symbol=POWERMECH"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "KALYANI",
+      "seedName": "Kalyani Steels",
+      "officialName": "Kalyani Commercials Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "NEW finding (round 4): Kalyani Steels Ltd trades as KSL (INE907A01026); KALYANI is Kalyani Commercials Ltd. Seed record removed.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=KALYANI",
+        "https://www.nseindia.com/get-quotes/equity?symbol=KSL"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SUNDARAM",
+      "seedName": "Sundaram-Clayton",
+      "officialName": "Sundaram Multi Pap Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "NEW finding (round 4): Sundaram-Clayton Ltd trades as SUNCLAY (INE0Q3R01026); SUNDARAM is Sundaram Multi Pap Ltd. Seed record removed.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SUNDARAM",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SUNCLAY"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SUVEN",
+      "seedName": "Suven Pharmaceuticals",
+      "officialName": "Suven Life Sciences Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "NEW finding (round 4): SUVEN is Suven Life Sciences Ltd; the seed's pharma record belongs to Suven Pharmaceuticals (a different entity). Seed record removed.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SUVEN"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "VSTL",
+      "seedName": "Vikas Steel",
+      "officialName": "Vibhor Steel Tubes Limited",
+      "verdict": "WRONG_BINDING",
+      "action": "REMOVE_SEED_RECORD",
+      "basis": "NEW finding (round 4): no 'Vikas Steel' exists anywhere in the official NSE listing; VSTL is Vibhor Steel Tubes Ltd (listed 2024-02-20). Seed record removed.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=VSTL",
+        "https://www.indmoney.com/stocks/vstl-share-price (VSTL = Vibhor Steel Tubes Ltd, listing date 20 Feb 2024)"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SHRIPISTON",
+      "seedName": "Shriram Pistons & Rings",
+      "officialName": "SPR Auto Technologies Limited",
+      "verdict": "RENAMED",
+      "action": "UPDATE_SEED_NAME",
+      "basis": "Company renamed: Shriram Pistons & Rings Ltd -> SPR Auto Technologies Ltd, same scrip id SHRIPISTON and same ISIN INE526E01018 (BSE name-change notice, 24 Jun 2026). Binding correct; seed name updated.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SHRIPISTON",
+        "https://www.bseindia.com (BSE notice 24 Jun 2026: 'Change in Name of the company - Shriram Pistons & Rings Ltd ... SPR Auto Technologies Limited. SHRIPISTON. No change in Scrip Id')",
+        "https://www.shrirampistons.com (filing 13 Mar 2026: ISIN INE526E01018, postal ballot to approve change of name)"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending",
+      "updatedSeedName": "SPR Auto Technologies"
+    },
+    {
+      "symbol": "KAMOPAINTS",
+      "seedName": "Kamdhenu Paints",
+      "officialName": "Kamdhenu Ventures Limited",
+      "verdict": "RENAMED",
+      "action": "UPDATE_SEED_NAME",
+      "basis": "Company renamed: the official listing binds KAMOPAINTS to Kamdhenu Ventures Ltd and the company's own NSE filings refer to 'Kamdhenu Paints' as the former name. Binding correct; seed name updated.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=KAMOPAINTS",
+        "https://nsearchives.nseindia.com (Kamdhenu Ventures Limited filing referring to the company as 'Kamdhenu Paints')"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending",
+      "updatedSeedName": "Kamdhenu Ventures"
+    },
+    {
+      "symbol": "LTTS",
+      "seedName": "LTI Tech",
+      "officialName": "L&T Technology Services Limited",
+      "verdict": "RENAMED",
+      "action": "UPDATE_SEED_NAME",
+      "basis": "Seed name was simply wrong ('LTI Tech' is not this company, nor its affiliate LTIMindtree); symbol LTTS is L&T Technology Services Ltd. Binding correct; seed name updated to the official name.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=LTTS"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending",
+      "updatedSeedName": "L&T Technology Services"
+    },
+    {
+      "symbol": "VENKEYS",
+      "seedName": "Venkys India",
+      "officialName": "Venky's (India) Limited",
+      "verdict": "RENAMED",
+      "action": "UPDATE_SEED_NAME",
+      "basis": "Venky's (India) Limited is the official name of the company the seed called 'Venkys India'. Binding correct; seed name updated.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=VENKEYS"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending",
+      "updatedSeedName": "Venky's (India)"
+    },
+    {
+      "symbol": "APLLTD",
+      "seedName": "Alembic Pharma",
+      "officialName": "Alembic Pharmaceuticals Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=APLLTD"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "CAMS",
+      "seedName": "CAMS",
+      "officialName": "Computer Age Management Services Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Well-known market acronym of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=CAMS"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "EMCURE",
+      "seedName": "Emcure Pharma",
+      "officialName": "Emcure Pharmaceuticals Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=EMCURE"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "ESAFSFB",
+      "seedName": "ESAF SFB",
+      "officialName": "ESAF Small Finance Bank Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "SFB is the standard abbreviation of Small Finance Bank — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=ESAFSFB"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "FACT",
+      "seedName": "FACT",
+      "officialName": "Fertilizers and Chemicals Travancore Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official acronym of the company — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=FACT"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "GLAXO",
+      "seedName": "GlaxoSmithKline Pharma",
+      "officialName": "GlaxoSmithKline Pharmaceuticals Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=GLAXO"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "GNFC",
+      "seedName": "GNFC",
+      "officialName": "Gujarat Narmada Valley Fertilizers and Chemicals Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official acronym of the company — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=GNFC"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "HUDCO",
+      "seedName": "HUDCO",
+      "officialName": "Housing & Urban Development Corporation Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official acronym of the company — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=HUDCO"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "INDIGO",
+      "seedName": "IndiGo",
+      "officialName": "InterGlobe Aviation Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "The airline brand name; InterGlobe Aviation Ltd is the listed entity — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=INDIGO"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "IREDA",
+      "seedName": "IREDA",
+      "officialName": "Indian Renewable Energy Development Agency Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official acronym of the company — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=IREDA"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "ITDC",
+      "seedName": "India Tourism Dev",
+      "officialName": "India Tourism Development Corporation Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=ITDC"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "LICI",
+      "seedName": "LIC",
+      "officialName": "Life Insurance Corporation Of India",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official acronym of the company — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=LICI"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "LODHA",
+      "seedName": "Lodha Group",
+      "officialName": "Lodha Developers Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Brand/group name of the listed entity — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=LODHA"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "MAHABANK",
+      "seedName": "Maha Bank",
+      "officialName": "Bank of Maharashtra",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Reordered brand name of the listed entity — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=MAHABANK"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "MANINFRA",
+      "seedName": "Man Infra",
+      "officialName": "Man Infraconstruction Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=MANINFRA"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "MIDHANI",
+      "seedName": "MIDHANI",
+      "officialName": "Mishra Dhatu Nigam Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official acronym of the company — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=MIDHANI"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "NRBBEARING",
+      "seedName": "NRB Bearings",
+      "officialName": "NRB Bearing Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Singular/plural variant of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=NRBBEARING"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "PCBL",
+      "seedName": "Phillips Carbon Black",
+      "officialName": "PCBL Chemical Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "The company renamed from Phillips Carbon Black to PCBL Chemical Ltd; same entity and ISIN — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=PCBL"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SMSPHARMA",
+      "seedName": "SMS Pharma",
+      "officialName": "SMS Pharmaceuticals Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SMSPHARMA"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SPIC",
+      "seedName": "SPIC",
+      "officialName": "Southern Petrochemicals Industries Corporation  Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official acronym of the company — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SPIC"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "TAINWALCHM",
+      "seedName": "Tainwala Chemicals",
+      "officialName": "Tainwala Chemical and Plastic (I) Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=TAINWALCHM"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "UJJIVANSFB",
+      "seedName": "Ujjivan SFB",
+      "officialName": "Ujjivan Small Finance Bank Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "SFB is the standard abbreviation of Small Finance Bank — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=UJJIVANSFB"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "UTKARSHBNK",
+      "seedName": "Utkarsh SFB",
+      "officialName": "Utkarsh Small Finance Bank Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "SFB is the standard abbreviation of Small Finance Bank — same entity as the official listing; binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=UTKARSHBNK"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "KSB",
+      "seedName": "KSB Pumps",
+      "officialName": "Ksb Limited",
+      "verdict": "RENAMED",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Company renamed: KSB Pumps Ltd -> KSB Limited (2018). Same entity, same symbol KSB. Binding accepted; seed keeps the widely-used legacy brand name.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=KSB",
+        "https://www.moneycontrol.com (KSB Limited: 'Formerly known as KSB Pumps Limited ... renamed KSB Limited in 2018')"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "REDINGTON",
+      "seedName": "Redington India",
+      "officialName": "Redington Limited",
+      "verdict": "RENAMED",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Company renamed: Redington (India) Ltd -> Redington Limited (August 2022). Same entity, same symbol REDINGTON. Binding accepted.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=REDINGTON",
+        "https://www.redingtongroup/investors (name-change circular: 'Existing Name: Redington (India) Limited, New Name: Redington Limited')"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "GREAVESCOT",
+      "seedName": "Greaves",
+      "officialName": "Greaves Cotton Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Seed brand shorthand of Greaves Cotton Ltd — same entity.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=GREAVESCOT"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "INDIACEM",
+      "seedName": "India Cements",
+      "officialName": "The India Cements Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Same company; official name carries the leading 'The'.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=INDIACEM"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "J&KBANK",
+      "seedName": "J&K Bank",
+      "officialName": "The Jammu & Kashmir Bank Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Same company; abbreviation of the official name (leading 'The', Jammu & Kashmir abbreviated J&K).",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=J&KBANK"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "LENSKART",
+      "seedName": "Lenskart",
+      "officialName": "Lenskart Solutions Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Brand name vs legal name: the listed entity is Lenskart Solutions Ltd. Same entity per the pinned official listing.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=LENSKART"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "M&MFIN",
+      "seedName": "M&M Financial",
+      "officialName": "Mahindra & Mahindra Financial Services Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name (M&M = Mahindra & Mahindra).",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=M&MFIN"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "NAVKARCORP",
+      "seedName": "Navkar Corp",
+      "officialName": "Navkar Corporation Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=NAVKARCORP"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "NETWORK18",
+      "seedName": "Network18",
+      "officialName": "Network18 Media & Investments Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Brand shorthand of Network18 Media & Investments Ltd.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=NETWORK18"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "RUPA",
+      "seedName": "Rupa & Co",
+      "officialName": "Rupa & Company Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "'& Co' vs '& Company' — same company.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=RUPA"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SANOFI",
+      "seedName": "Sanofi",
+      "officialName": "Sanofi India Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Brand name of Sanofi India Ltd.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SANOFI"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SCHAND",
+      "seedName": "S Chand & Company",
+      "officialName": "S Chand And Company Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "'&' vs 'And' — same company (token rule drops both, leaving too few tokens to auto-agree).",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SCHAND"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SCI",
+      "seedName": "Shipping Corporation",
+      "officialName": "Shipping Corporation Of India Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Abbreviation of the official name (drops 'of India').",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SCI"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SIEMENS",
+      "seedName": "Siemens India",
+      "officialName": "Siemens Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Seed adds the word 'India' to the legal name; same entity.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SIEMENS"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SIGNATURE",
+      "seedName": "Signatureglobal",
+      "officialName": "Signatureglobal (India) Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Seed brand name without the legal '(India)' suffix; same entity.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SIGNATURE"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "SYNGENE",
+      "seedName": "Syngene",
+      "officialName": "Syngene International Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Brand shorthand of Syngene International Ltd.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=SYNGENE"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "TCI",
+      "seedName": "Transport Corp of India",
+      "officialName": "Transport Corporation of India Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "'Corp' vs 'Corporation' — same company (suffix-word dropping leaves too few tokens to auto-agree).",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=TCI"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "TIMKEN",
+      "seedName": "Timken",
+      "officialName": "Timken India Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Brand shorthand of Timken India Ltd.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=TIMKEN"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "VERTOZ",
+      "seedName": "Vertoz Advertising",
+      "officialName": "Vertoz Limited",
+      "verdict": "RENAMED",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "Official listing binds VERTOZ to Vertoz Limited; the seed's 'Vertoz Advertising' reflects the pre-rename business name. Binding accepted per the pinned listing; rename noted from the listing itself.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=VERTOZ"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    },
+    {
+      "symbol": "AFFLE",
+      "seedName": "Affle India",
+      "officialName": "Affle 3i Limited",
+      "verdict": "SAME_COMPANY",
+      "action": "BIND_WITH_OVERRIDE",
+      "basis": "BINDING rests on the pinned official listing (symbol AFFLE = Affle 3i Limited). The seed name 'Affle India' reflects the company's earlier name (Affle (India) Ltd) — entity continuity is believed but was NOT independently verified in this session (external search unavailable); founder confirmation requested for the rename date/details.",
+      "sources": [
+        "nse_equity_l_2026-10-01.csv (sha256 95f0d731f5858f71e876c45377dcefa79bc7a8db1e8161d0c92320252af4aa8f)",
+        "https://www.nseindia.com/get-quotes/equity?symbol=AFFLE"
+      ],
+      "reviewedOn": "2026-10-01",
+      "reviewedBy": "CODER under audit round 4 Q3; founder ratification pending"
+    }
+  ]
+}

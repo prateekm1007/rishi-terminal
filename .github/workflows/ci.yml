@@ -73,6 +73,43 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  migrations:
+    name: Migrations & RLS invariants (Postgres 16)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: rishi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGUSER: postgres
+      PGDATABASE: rishi_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply Supabase-like harness (roles, auth schema, default grants)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/pg_harness.sql
+
+      - name: Apply migrations 001…N in order
+        run: |
+          for f in $(ls lib/db/migrations/*.sql | sort); do
+            echo "── applying $f"
+            psql -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Assert RLS invariants (N2)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/rls_invariants.sql
+
   smoke:
     name: Playwright smoke (blocking since round 2 — green on 4+ consecutive runs)
     runs-on: ubuntu-latest

@@ -12,7 +12,7 @@ const HEADERS = {
   "apikey":        SERVICE_KEY,
   "Authorization": `Bearer ${SERVICE_KEY}`,
   "Content-Type":  "application/json",
-  "Prefer":        "resolution=merge-duplicates",
+  "Prefer":        "resolution=ignore-duplicates",
 };
 
 async function dbGet(path: string): Promise<any[]> {
@@ -24,13 +24,18 @@ async function dbGet(path: string): Promise<any[]> {
   return res.json();
 }
 
-async function dbUpsert(table: string, rows: any[]): Promise<void> {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+// 010 (N2): rishi_snapshots is append-only — POST with
+// resolution=ignore-duplicates AND an explicit on_conflict target maps
+// to INSERT .. ON CONFLICT (symbol, snapshot_date) DO NOTHING. The first
+// write of a (symbol, snapshot_date) wins (S2-07). Without on_conflict,
+// PostgREST cannot infer the conflict target and a duplicate returns 409.
+async function dbInsertIgnoreDuplicates(table: string, conflictCols: string, rows: any[]): Promise<void> {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${conflictCols}`, {
     method: "POST",
-    headers: { ...HEADERS, "Prefer": "resolution=merge-duplicates,return=minimal" },
+    headers: { ...HEADERS, "Prefer": "resolution=ignore-duplicates,return=minimal" },
     body: JSON.stringify(rows),
   });
-  if (!res.ok) throw new Error(`UPSERT ${table} failed: ${res.status} ${await res.text()}`);
+  if (!res.ok) throw new Error(`INSERT ${table} failed: ${res.status} ${await res.text()}`);
 }
 
 async function snapshotNewStocks() {
@@ -120,7 +125,7 @@ async function snapshotNewStocks() {
 
     if (rows.length > 0) {
       try {
-        await dbUpsert("rishi_snapshots", rows);
+        await dbInsertIgnoreDuplicates("rishi_snapshots", "symbol,snapshot_date", rows);
         done += rows.length;
         console.log(`  Batch ${Math.ceil((i + BATCH) / BATCH)}: inserted ${rows.length} — total ${done}/${missing.length}`);
       } catch (e: any) {

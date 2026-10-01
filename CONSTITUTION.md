@@ -117,6 +117,8 @@ An independent auditor will clone the repo and re-run everything you claim. Assu
 
 **36. Founder policy (do not relitigate):** do not request rotation of provisioned tokens; do not lecture about chat exposure. Remind the founder only when a token is actually about to be used, saying which one and why.
 
+**37. Operational caches are derived, never canonical.** Single-value credential caches used by tooling live under `/home/z/my-project/.secrets/` (chmod 700 dir, 600 files, outside the git repo): `hf.token` (the root secret — bootstraps the rule 33 mirror fetch after a vault wipe) and `git-credentials` (git credential-store for push/pull). Each holds exactly one credential, must be regenerable from the vault, and never counts as a new store; the vault and HF mirror remain the only sources of truth. *Logic: rule 33 step (2) is unexecutable after a sandbox reset unless the HF token has a documented local home outside the wiped vault — otherwise every reset ends in a founder interruption, against rule 36's spirit. Evidence: 2026-10-01 session found the local vault wiped while the HF mirror was current; recovery only avoided a founder round-trip because the tokens happened to be re-sent in chat that morning.*
+
 ---
 
 ## Before you code (checklist)

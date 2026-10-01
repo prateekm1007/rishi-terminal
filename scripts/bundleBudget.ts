@@ -28,7 +28,7 @@
  */
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 import http from "node:http";
@@ -128,6 +128,10 @@ try {
 
   // ── 3. Verdict ──
   const baselinePath = "bundle-budget-baseline.json";
+  // --update-baseline re-locks the ratchet to the CURRENT measurements.
+  // Only honest after a passing run that is not a regression: re-locking
+  // a regression would rubber-stamp growth.
+  const updateBaseline = process.argv.includes("--update-baseline");
   const baseline = existsSync(baselinePath)
     ? (JSON.parse(readFileSync(baselinePath, "utf8")) as {
         measuredKb: Record<string, number>;
@@ -173,6 +177,27 @@ try {
         baseline.toleranceKb +
         " kB (budgets PROPOSED, currently exceeded — shrink bundles, then re-lock).",
     );
+  }
+
+  if (updateBaseline) {
+    if (failed) {
+      console.error(
+        "--update-baseline refused: the current run fails the gate — fix the regression first (re-locking growth defeats the ratchet).",
+      );
+      process.exit(1);
+    }
+    const measured: Record<string, number> = {};
+    for (let i = 0; i < BUDGETS.length; i++) {
+      if (results[i].kb !== null) measured[BUDGETS[i].route] = results[i].kb as number;
+    }
+    const toleranceKb = baseline?.toleranceKb ?? 2;
+    const note =
+      "bundle ratchet baseline (E6-02). Values are gzip kB of first-load JS measured from the HTML script tags of a production build. The PROPOSED 200 kB budgets are NOT yet founder-confirmed; until then the gate fails on any increase beyond +2 kB build jitter. Shrink the numbers, then re-lock with --update-baseline.";
+    writeFileSync(
+      baselinePath,
+      JSON.stringify({ note, toleranceKb, measuredKb: measured }, null, 1) + "\n",
+    );
+    console.log("Baseline re-locked to the current measurements.");
   }
 
   process.exit(failed ? 1 : 0);

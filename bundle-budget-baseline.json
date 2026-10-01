@@ -1,9 +1,9 @@
 {
- "note": "bundle ratchet baseline (E6-02). Values are gzip kB of first-load JS measured 2026-09-30 from the HTML script tags of a production build. The PROPOSED 200 kB budgets are NOT yet founder-confirmed; until then the gate fails on any increase beyond +2 kB build jitter. Shrink the numbers, then re-lock with --update-baseline.",
+ "note": "bundle ratchet baseline (E6-02). Values are gzip kB of first-load JS measured from the HTML script tags of a production build. The PROPOSED 200 kB budgets are NOT yet founder-confirmed; until then the gate fails on any increase beyond +2 kB build jitter. Shrink the numbers, then re-lock with --update-baseline.",
  "toleranceKb": 2,
  "measuredKb": {
-  "/": 331.0,
-  "/screener": 328.7,
-  "/stock/[symbol]": 368.5
+  "/": 273.873046875,
+  "/screener": 272.4599609375,
+  "/stock/[symbol]": 309.3759765625
  }
 }

@@ -562,7 +562,9 @@
       "risks": "What are the biggest risks?",
       "thesis": "Write a full investment thesis",
       "changeMind": "What would change your mind?",
-      "valuation": "Is the valuation justified?"
+      "valuation": "Is the valuation justified?",
+    "aiUnavailable": "AI unavailable — no answer was generated. Please try again.",
+    "personaLocked": "This Rishi requires a higher tier. Upgrade to continue."
     }
   },
   "kg": {

@@ -184,7 +184,11 @@ describe("R4-02 — no assertion for a numeric claim is fail-closed", () => {
     expect(r.grounded).toBe(true);
   });
 
-  it("incidental prose numbers (dates) ride on cited-text presence", () => {
+  it("dates in claims are NOT incidental support any more (audit 2026-10-02 P0 — expectation FLIPPED)", () => {
+    // This very case used to pass via cited-text presence ("2026 exists in
+    // the cited evidence"). The audit directive removed that escape route:
+    // 2026/9/30 are not assertion values, so the claim is rejected. See
+    // test/chat.grounding.strict.test.ts for the full new contract.
     const r = validateGrounding(EVIDENCE, [
       {
         claim: "As of 2026-09-30 the ROE is 12%",
@@ -192,7 +196,7 @@ describe("R4-02 — no assertion for a numeric claim is fail-closed", () => {
         assertions: [{ field: "roe", value: 12, unit: "percent" }],
       },
     ]);
-    expect(r.grounded).toBe(true);
+    expect(r.grounded).toBe(false);
   });
 });
 

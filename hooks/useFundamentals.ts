@@ -29,7 +29,9 @@ export interface FullFundamentals {
   promoterHolding: number;
   fcf: number;
   roa: number;
-  lastUpdated: string;
+  /** Provider observation time when the upstream disclosed one, else null.
+   *  Never the fetch time (audit 2026-10-02 P0). */
+  lastUpdated: string | null;
   source?: string;
   isLive: boolean;
 }
@@ -50,7 +52,11 @@ export interface ShareholdingData {
 // marketCap is now uniformly ₹ Cr and debtToEquity may be null. Entries
 // cached under the old key can carry the corrupted ÷1e7 values and the
 // fabricated 0.45 D/E, so the version bump forces one clean refetch.
-const CACHE_KEY = 'rishi_fundamentals_cache_v3';
+// v4 (audit 2026-10-02 P0): lastUpdated is now the provider's observation
+// time or null — never a fabricated fetch-time stamp. v3 entries can carry
+// the old fabricated timestamps, so the version bump forces one clean
+// refetch. (v3 was the H3/H4 marketCap/D-E contract change.)
+const CACHE_KEY = 'rishi_fundamentals_cache_v4';
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
 /** Cache payloads are opaque JSON snapshots (fundamentals / quarterly /

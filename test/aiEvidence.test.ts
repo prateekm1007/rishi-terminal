@@ -152,10 +152,20 @@ describe("grounding validation — fail closed on any unknown evidence id, unsup
   ];
 
   it("claims whose every id is known AND whose assertions match the cited facts → grounded=true", () => {
+    // Audit 2026-10-02 (P0): the answer floor now requires EVERY stated
+    // number to be a matched assertion value. "up 0.8%" in the answer needs
+    // its own change assertion — asserting only price would fail closed.
     const r = validateGrounding(
       evidence,
       [
-        { claim: "TCS trades at 1420.5", evidenceIds: ["price:TCS:2025-10-31T08:40:00.000Z"], assertions: [{ field: "price", value: 1420.5, unit: "inr" }] },
+        {
+          claim: "TCS trades at 1420.5",
+          evidenceIds: ["price:TCS:2025-10-31T08:40:00.000Z"],
+          assertions: [
+            { field: "price", value: 1420.5, unit: "inr" },
+            { field: "change", value: 0.8, unit: "percent" },
+          ],
+        },
       ],
       "TCS trades at 1420.5, up 0.8%.",
     );

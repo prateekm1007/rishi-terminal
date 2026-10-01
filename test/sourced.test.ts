@@ -74,9 +74,13 @@ describe("resolveStockMetrics().sourced — the UI-facing provenance record", ()
       value: 1_600_000,
       source: "vendor:screener",
     });
-    // derived from a live input claims the live as-of
+    // Audit 2026-10-02 (P0 — expectation FLIPPED): PB's operands are the
+    // SEED registry price and the live BVPS — a mixed-source derivation.
+    // It previously took the live as-of and looked wholly live; a mixed
+    // derivation now claims NO freshness (asOf null) until a live price
+    // operand exists in the resolver.
     expect(r!.sourced.pb.source).toBe("derived");
-    expect(r!.sourced.pb.asOf).toBe(r!.sourced.pe.asOf);
+    expect(r!.sourced.pb.asOf).toBeNull();
   });
 });
 

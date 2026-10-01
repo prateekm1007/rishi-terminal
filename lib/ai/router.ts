@@ -115,7 +115,12 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "number that belongs to a different field is rejected). " +
     "(3) Never compute new numbers from the facts (no averages, midpoints, " +
     "percent changes you derive yourself) — state only numbers the evidence " +
-    "carries. (4) If you make no verifiable factual claims, return an empty " +
+    "carries. " +
+    "(4) Do NOT include any other numbers anywhere — no dates, timestamps, " +
+    "item counts or ids in your claims or answer: every number you write " +
+    "must be one of your own assertion values, or validation will reject " +
+    "the whole response (a date like 2026-09-30 in the answer fails it). " +
+    "(5) If you make no verifiable factual claims, return an empty " +
     'claims array. Example: {"answer": "...", "claims": [], ' +
     '"uncertainties": ["..."]}'
   );

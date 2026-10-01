@@ -48,11 +48,22 @@ describe("R1 — seed dataset honesty", () => {
     const withLive = resolveStockMetrics("RELIANCE", {
       pe: 21.5, roe: 14.2, roce: 16.1, opm: 18.3, debtToEquity: 0.4,
       promoterHolding: 50.3, revCagr3y: 12, epsCagr: 14, marketCap: 1700e7,
-      bookValue: 1150,
+      bookValue: 1150, lastUpdated: "2026-09-30T10:00:00.000Z",
     } as any);
     expect(withLive!.fields.pe.source).toBe("live");
-    expect(withLive!.fields.pe.asOf).toBeTruthy();
+    // A DISCLOSED provider timestamp is preserved verbatim.
+    expect(withLive!.fields.pe.asOf).toBe("2026-09-30T10:00:00.000Z");
     expect(ISO_DATE.test(withLive!.fields.pe.asOf as string)).toBe(true);
+
+    // Audit 2026-10-02 (P0): no disclosed timestamp → asOf null (the old
+    // fetch-time fallback fabricated provider provenance).
+    const noTimestamp = resolveStockMetrics("RELIANCE", {
+      pe: 21.5, roe: 14.2, roce: 16.1, opm: 18.3, debtToEquity: 0.4,
+      promoterHolding: 50.3, revCagr3y: 12, epsCagr: 14, marketCap: 1700e7,
+      bookValue: 1150, lastUpdated: null,
+    } as any);
+    expect(noTimestamp!.fields.pe.source).toBe("live");
+    expect(noTimestamp!.fields.pe.asOf).toBeNull();
   });
 });
 

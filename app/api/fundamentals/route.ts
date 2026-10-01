@@ -120,7 +120,10 @@ export async function GET(req: NextRequest) {
     promoterHolding: stock.promo || 0,
     fcf: 0,
     roa: 0,
-    lastUpdated: new Date().toISOString(),
+    // Static SEED fallback: R1 — the seed dataset has no provable capture
+    // date, so it may never claim one (the old `now` stamp was a double
+    // violation: fabricated observation time ON seed data).
+    lastUpdated: null,
     source: "static",
   };
   setCache(cacheKey, staticData);
@@ -170,7 +173,8 @@ export async function POST(req: NextRequest) {
               promoterHolding: stock.promo ?? 0,
               fcf: stock.fcf ?? 0,
               roa: 0,
-              lastUpdated: new Date().toISOString(),
+              // Seed fallback — no provable capture date (R1), never `now`.
+              lastUpdated: null,
               source: "static",
             };
           }

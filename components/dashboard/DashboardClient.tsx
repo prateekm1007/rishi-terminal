@@ -15,6 +15,7 @@ import { useLivePrices } from "@/hooks/useLivePrices";
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
 import SeedDataBanner from "@/components/shared/SeedDataBanner"; // R1: honest placeholder-data label
+import { FAT_PROBE } from "./fatProbe"; // N6 scratch proof
 
 /* ── Constants ─────────────────────────────────────────────── */
 
@@ -173,7 +174,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     ({ color: (n ?? 0) >= 0 ? C.green : C.red });
 
   return (
-    <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }}>
+    <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }} data-fat-probe={FAT_PROBE.length}>
 
       {/* ── LIVE TICKER ────────────────────────────────────── */}
       <div style={{

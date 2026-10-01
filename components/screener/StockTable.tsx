@@ -12,6 +12,8 @@ import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { DataValue } from '@/components/DataValue';
+import { overlaySourced, type Sourced } from '@/lib/types/sourced';
 
 interface Props {
   stocks: SlimStockRow[];
@@ -23,6 +25,30 @@ interface Row extends SlimStockRow {
   /** null = no live quote — em dash shown; seed price is NEVER displayed (T14). */
   livePrice: number | null;
   change24h: number | null;
+}
+
+/**
+ * P0-06 (N7): seed-baseline metric with live overlay, as a Sourced. The
+ * slim row carries the seed baseline; a finite, strictly-positive live
+ * fundamental from the bulk fetch overlays it (same rule as the engine's
+ * pick()/overlaySourced).
+ */
+function metricSourced(
+  seedValue: number,
+  liveValue: number | null | undefined,
+  live: { source?: string; lastUpdated?: string } | undefined,
+): Sourced<number> {
+  return overlaySourced(
+    { value: seedValue, source: "seed", asOf: null },
+    liveValue,
+    live?.source,
+    live?.lastUpdated ?? null,
+  );
+}
+
+/** The consensus score: seed-derived while the dataset is a placeholder. */
+function scoreSourced(consensus: number | null): Sourced<number> {
+  return { value: consensus, source: "seed", asOf: null };
 }
 
 export function StockTable({ stocks }: Props) {
@@ -97,13 +123,6 @@ export function StockTable({ stocks }: Props) {
 
   const sortIcon = (key: SortKey) =>
     sortKey !== key ? "↕" : sortDesc ? "↓" : "↑";
-
-  const scoreColor = (score: number) => {
-    if (score >= 75) return dark ? "text-emerald-400" : "text-green-700";
-    if (score >= 55) return dark ? "text-yellow-400" : "text-amber-700";
-    if (score >= 35) return dark ? "text-orange-400" : "text-orange-600";
-    return dark ? "text-red-400" : "text-red-700";
-  };
 
   const changeColor = (change: number) => {
     if (change > 0) return dark ? "text-emerald-400" : "text-green-700";
@@ -219,16 +238,16 @@ export function StockTable({ stocks }: Props) {
                   {stock.change24h !== null ? (stock.change24h > 0 ? "+" : "") + stock.change24h.toFixed(2) + "%" : "\u2014"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {(bulkFund[stock.symbol]?.pe ?? stock.pe) > 0 ? (bulkFund[stock.symbol]?.pe ?? stock.pe).toFixed(1) : "—"}
+                  <DataValue sourced={metricSourced(stock.pe, bulkFund[stock.symbol]?.pe, bulkFund[stock.symbol])} digits={1} unit="x" />
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  {(bulkFund[stock.symbol]?.roe ?? stock.roe) > 0 ? (bulkFund[stock.symbol]?.roe ?? stock.roe).toFixed(1) + "%" : "—"}
+                  <DataValue sourced={metricSourced(stock.roe, bulkFund[stock.symbol]?.roe, bulkFund[stock.symbol])} digits={1} unit="%" />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span
                     className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
                   >
-                    {stock.consensus !== null && Number.isFinite(stock.consensus) ? stock.consensus.toFixed(0) : "—"}
+                    <DataValue sourced={scoreSourced(stock.consensus)} digits={0} />
                   </span>
                 </td>
               </tr>

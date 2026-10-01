@@ -8,6 +8,7 @@ import type { Stock } from '@/lib/types';
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import RishiChat from './RishiChat';
 import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: seed-derived context in chat
+import { DataValue } from '@/components/DataValue'; // P0-06: provenance for the displayed metrics
 
 interface Props {
   rows: SlimStockRow[];
@@ -133,7 +134,9 @@ export function ChatClient({ rows }: Props) {
                     {selectedRow.consensus === null ? '\u2014' : `${selectedRow.consensus}/100`}
                   </div>
                   <div style={{ fontSize: 10, color: '#64748B' }}>
-                    PE {selectedRecord.pe?.toFixed(1)}x | ROE {selectedRecord.roe?.toFixed(1)}%
+                    PE <DataValue sourced={{ value: selectedRecord.pe ?? null, source: 'seed', asOf: null }} digits={1} unit="x" />
+                    {' | '}
+                    ROE <DataValue sourced={{ value: selectedRecord.roe ?? null, source: 'seed', asOf: null }} digits={1} unit="%" />
                   </div>
                 </div>
               </div>

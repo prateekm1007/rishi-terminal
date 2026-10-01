@@ -1,6 +1,7 @@
 'use client';
 
 import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
+import { DataValue } from '@/components/DataValue'; // P0-06: provenance for seed-derived spread
 
 interface Props {
   consensus: SanitizedConsensus;
@@ -32,7 +33,7 @@ export function ConsensusHero({ consensus }: Props) {
             </span>
             <span style={{ color: 'rgba(51,65,85,0.5)' }}>•</span>
             <span style={{ color: '#64748B' }}>
-              Spread: <span style={{ color: '#F8FAFC', fontFamily: 'monospace' }}>{consensus.tensionSpread.toFixed(0)} pts</span>
+              Spread: <span style={{ color: '#F8FAFC', fontFamily: 'monospace' }}><DataValue sourced={{ value: consensus.tensionSpread, source: 'seed', asOf: null }} digits={0} /> pts</span>
             </span>
           </div>
         </div>

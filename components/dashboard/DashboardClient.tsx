@@ -174,7 +174,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     ({ color: (n ?? 0) >= 0 ? C.green : C.red });
 
   return (
-    <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }} data-fat-probe={FAT_PROBE.length}>
+    <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }} data-fat-probe={FAT_PROBE}>
 
       {/* ── LIVE TICKER ────────────────────────────────────── */}
       <div style={{

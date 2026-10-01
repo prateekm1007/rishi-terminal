@@ -10,7 +10,7 @@ function normalize(name: string): string {
 
 const groups: Record<string, Array<{ symbol: string; name: string; sector: string; price: number; mktcap: number; rev: number; pe: number; roe: number; promo: number; bvps: number }>> = {};
 
-for (const s of Object.values(STOCKS) as any[]) {
+for (const s of Object.values(STOCKS)) {
   const key = normalize(s.name);
   (groups[key] ??= []).push({
     symbol: s.symbol, name: s.name, sector: s.sector,

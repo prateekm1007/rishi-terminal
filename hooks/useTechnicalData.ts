@@ -40,8 +40,8 @@ export function useTechnicalData(symbol: string) {
       cache.set(sym, { data, ts: Date.now() });
       setIndicators(data);
       setError(null);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed");
     } finally {
       setLoading(false);
     }

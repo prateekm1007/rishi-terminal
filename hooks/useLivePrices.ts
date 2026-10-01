@@ -21,7 +21,19 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return chunks;
 }
 
-async function fetchChunk(symbols: string[]): Promise<Record<string, any>> {
+/** The /api/prices/batch response entry: either an observation or an
+ * explicit UNAVAILABLE marker (T57 — total provider failure is a status,
+ * not a zeroed price). */
+interface BatchPriceEntry {
+  status?: string;
+  price?: number;
+  change?: number;
+  changePercent24h?: number;
+  volume24h?: number;
+  lastUpdated?: string | null;
+}
+
+async function fetchChunk(symbols: string[]): Promise<Record<string, BatchPriceEntry>> {
   const response = await fetch('/api/prices/batch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -66,7 +78,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
 
       // R5: /api/prices/batch caps at 50 symbols — chunk to match.
       const chunks = chunkArray(currentSymbols, 50);
-      const merged: Record<string, any> = {};
+      const merged: Record<string, BatchPriceEntry> = {};
       for (const chunk of chunks) {
         const chunkData = await fetchChunk(chunk);
         Object.assign(merged, chunkData);

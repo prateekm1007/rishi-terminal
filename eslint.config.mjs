@@ -116,11 +116,12 @@ const eslintConfig = defineConfig([
   {
     // R4 (round 2): the T18 downgrade of no-explicit-any to WARN was a
     // rule weakening that hid new `any` from CI. Restored per directory:
-    // the security/scoring paths below are cleared to ZERO `any` and the
-    // rule is back to ERROR there — a new `any` in them fails the build.
+    // cleared paths are at ZERO `any` with the rule back at ERROR — a new
+    // `any` in them fails the build.
     // Directories still at WARN (not yet cleared, ratchet-tracked):
-    //   app/** (non-api), components/**, hooks/**, lib/** (beyond
-    //   auth/payments/scoring/chat), scripts/**, test/**, data/**.
+    //   app/** (non-api), components/**, lib/** (beyond
+    //   auth/payments/scoring/chat), test/**, data/**.
+    // N9 (round 3) cleared: hooks/**, scripts/** (now in the ERROR block).
     // Clearing a directory means fixing its sites and moving its glob
     // into the ERROR block below — never by editing the ratchet baseline.
     rules: {
@@ -130,13 +131,18 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    // R4: cleared directories — no-explicit-any is an ERROR here.
+    // R4 (round 2) + N9 (round 3): cleared directories — no-explicit-any
+    // is an ERROR here. hooks/** and scripts/** were cleared to zero
+    // `any` in N9 (typed caches, typed snapshot rows, unknown-narrowing
+    // guards); a new `any` in them now fails the build.
     files: [
       "app/api/**/*.ts",
       "lib/auth/**/*.ts",
       "lib/payments/**/*.ts",
       "lib/scoring/**/*.ts",
       "lib/chat/**/*.ts",
+      "hooks/**/*.ts",
+      "scripts/**/*.ts",
     ],
     rules: {
       "@typescript-eslint/no-explicit-any": "error",

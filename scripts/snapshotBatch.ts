@@ -15,7 +15,27 @@ const HEADERS = {
   "Prefer":        "resolution=ignore-duplicates",
 };
 
-async function dbGet(path: string): Promise<any[]> {
+/** A rishi_snapshots insert row (N9: typed — was any[]). */
+interface SnapshotRow {
+  symbol: string;
+  asset_category: string;
+  snapshot_date: string;
+  consensus_score: number;
+  score_engine_version: string;
+  signal: string;
+  disagreement: number;
+  philosopher_scores: Record<string, number>;
+  instability: number;
+  top_bull: string | null;
+  top_bear: string | null;
+  tension_spread: number;
+  majority_view: string;
+  price_at_snapshot: number;
+  price_change_1d: number;
+  created_at: string;
+}
+
+async function dbGet(path: string): Promise<Array<Record<string, unknown>>> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method: "GET",
     headers: HEADERS,
@@ -29,7 +49,7 @@ async function dbGet(path: string): Promise<any[]> {
 // to INSERT .. ON CONFLICT (symbol, snapshot_date) DO NOTHING. The first
 // write of a (symbol, snapshot_date) wins (S2-07). Without on_conflict,
 // PostgREST cannot infer the conflict target and a duplicate returns 409.
-async function dbInsertIgnoreDuplicates(table: string, conflictCols: string, rows: any[]): Promise<void> {
+async function dbInsertIgnoreDuplicates(table: string, conflictCols: string, rows: SnapshotRow[]): Promise<void> {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?on_conflict=${conflictCols}`, {
     method: "POST",
     headers: { ...HEADERS, "Prefer": "resolution=ignore-duplicates,return=minimal" },
@@ -52,10 +72,13 @@ async function snapshotNewStocks() {
   const existing = await dbGet(
     `rishi_snapshots?select=symbol&snapshot_date=eq.${today}`
   );
-  const existingSymbols = new Set(existing.map((r: any) => r.symbol));
+  const existingSymbols = new Set(
+    existing.map((r) => String(r.symbol ?? "")).filter(Boolean),
+  );
 
   const allSymbols = Object.keys(STOCKS);
   const missing    = allSymbols.filter(s => !existingSymbols.has(s));
+  let skipped      = 0; // T11: stocks with null consensus (insufficient data)
 
   console.log(`Total stocks:        ${allSymbols.length}`);
   console.log(`Already snapshotted: ${existingSymbols.size}`);
@@ -70,14 +93,14 @@ async function snapshotNewStocks() {
 
   let done   = 0;
   let errors = 0;
-  let skipped = 0; // T11: stocks with null consensus (insufficient data)
+
 
   // Batch upserts: 25 at a time
   const BATCH = 25;
 
   for (let i = 0; i < missing.length; i += BATCH) {
     const chunk = missing.slice(i, i + BATCH);
-    const rows: any[] = [];
+    const rows: SnapshotRow[] = [];
 
     for (const sym of chunk) {
       try {
@@ -117,9 +140,9 @@ async function snapshotNewStocks() {
           price_change_1d:    0,
           created_at:         new Date().toISOString(),
         });
-      } catch (e: any) {
+      } catch (e) {
         errors++;
-        console.error(`  SCORE ERROR ${sym}: ${e.message}`);
+        console.error(`  SCORE ERROR ${sym}: ${e instanceof Error ? e.message : e}`);
       }
     }
 
@@ -128,15 +151,16 @@ async function snapshotNewStocks() {
         await dbInsertIgnoreDuplicates("rishi_snapshots", "symbol,snapshot_date", rows);
         done += rows.length;
         console.log(`  Batch ${Math.ceil((i + BATCH) / BATCH)}: inserted ${rows.length} — total ${done}/${missing.length}`);
-      } catch (e: any) {
+      } catch (e) {
         errors += rows.length;
-        console.error(`  DB ERROR batch ${Math.ceil((i + BATCH) / BATCH)}: ${e.message}`);
+        console.error(`  DB ERROR batch ${Math.ceil((i + BATCH) / BATCH)}: ${e instanceof Error ? e.message : e}`);
       }
     }
   }
 
   console.log("\n" + "=".repeat(50));
   console.log(`Done:              ${done}`);
+  console.log(`Skipped (null consensus): ${skipped}`); // T11: fail-closed stocks
   console.log(`Errors:            ${errors}`);
   console.log(`Total in DB today: ${existingSymbols.size + done}`);
 }

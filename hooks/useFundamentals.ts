@@ -47,20 +47,29 @@ export interface ShareholdingData {
 const CACHE_KEY = 'rishi_fundamentals_cache_v2';
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
-function loadCache(): Record<string, { data: any; cachedAt: number }> {
+/** Cache payloads are opaque JSON snapshots (fundamentals / quarterly /
+ * shareholding) — the consuming hooks own the narrowing, so `unknown` is
+ * the honest element type (mirrors the R4 decision in the API cache). */
+type CacheEntry = { data: unknown; cachedAt: number };
+
+function loadCache(): Record<string, CacheEntry> {
   if (typeof window === 'undefined') return {};
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as Record<string, CacheEntry>;
+    }
+    return {};
   } catch { return {}; }
 }
 
-function saveCache(cache: Record<string, { data: any; cachedAt: number }>) {
+function saveCache(cache: Record<string, CacheEntry>) {
   if (typeof window === 'undefined') return;
   try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch {}
 }
 
-function getFromCache(key: string): any | null {
+function getFromCache(key: string): unknown {
   const cache = loadCache();
   const entry = cache[key];
   if (!entry) return null;
@@ -68,7 +77,31 @@ function getFromCache(key: string): any | null {
   return entry.data;
 }
 
-function setInCache(key: string, data: any) {
+/** Narrow an unknown cache payload back to FullFundamentals (N9). */
+function isFullFundamentals(v: unknown): v is FullFundamentals {
+  if (!v || typeof v !== 'object') return false;
+  const f = v as Partial<FullFundamentals>;
+  return typeof f.symbol === 'string' && typeof f.pe === 'number';
+}
+
+/** Cached fundamentals with the liveness flag recomputed from source. */
+function fromCache(v: unknown): FullFundamentals | null {
+  return isFullFundamentals(v) ? { ...v, isLive: v.source !== 'static' } : null;
+}
+
+function isQuarterlyData(v: unknown): v is QuarterlyData {
+  if (!v || typeof v !== 'object') return false;
+  const q = v as Partial<QuarterlyData>;
+  return typeof q.symbol === 'string' && Array.isArray(q.quarters);
+}
+
+function isShareholdingData(v: unknown): v is ShareholdingData {
+  if (!v || typeof v !== 'object') return false;
+  const sh = v as Partial<ShareholdingData>;
+  return typeof sh.symbol === 'string' && Array.isArray(sh.history);
+}
+
+function setInCache(key: string, data: unknown) {
   const cache = loadCache();
   cache[key] = { data, cachedAt: Date.now() };
   const keys = Object.keys(cache);
@@ -84,17 +117,16 @@ export function useFundamentals(symbol: string): {
   loading: boolean;
   isLive: boolean;
 } {
-  const [fundamentals, setFundamentals] = useState<FullFundamentals | null>(() => {
-    const cached = getFromCache(`fund:${symbol}`);
-    return cached ? { ...cached, isLive: cached.source !== 'static' } : null;
-  });
+  const [fundamentals, setFundamentals] = useState<FullFundamentals | null>(() =>
+    fromCache(getFromCache(`fund:${symbol}`)),
+  );
   const [loading, setLoading] = useState(false);
   const mounted = useRef(true);
 
   useEffect(() => {
     mounted.current = true;
-    const cached = getFromCache(`fund:${symbol}`);
-    if (cached) { setFundamentals({ ...cached, isLive: cached.source !== 'static' }); return; }
+    const cached = fromCache(getFromCache(`fund:${symbol}`));
+    if (cached) { setFundamentals(cached); return; }
 
     setLoading(true);
     fetch(`/api/fundamentals?symbol=${encodeURIComponent(symbol)}`)
@@ -124,14 +156,17 @@ export function useQuarterly(symbol: string): {
   quarterly: QuarterlyData | null;
   loading: boolean;
 } {
-  const [quarterly, setQuarterly] = useState<QuarterlyData | null>(() => getFromCache(`qtr:${symbol}`));
+  const [quarterly, setQuarterly] = useState<QuarterlyData | null>(() => {
+    const cached = getFromCache(`qtr:${symbol}`);
+    return isQuarterlyData(cached) ? cached : null;
+  });
   const [loading, setLoading] = useState(false);
   const mounted = useRef(true);
 
   useEffect(() => {
     mounted.current = true;
     const cached = getFromCache(`qtr:${symbol}`);
-    if (cached) { setQuarterly(cached); return; }
+    if (isQuarterlyData(cached)) { setQuarterly(cached); return; }
 
     setLoading(true);
     fetch(`/api/fundamentals?symbol=${encodeURIComponent(symbol)}&type=quarterly`)
@@ -154,14 +189,17 @@ export function useShareholding(symbol: string): {
   shareholding: ShareholdingData | null;
   loading: boolean;
 } {
-  const [shareholding, setShareholding] = useState<ShareholdingData | null>(() => getFromCache(`sh:${symbol}`));
+  const [shareholding, setShareholding] = useState<ShareholdingData | null>(() => {
+    const cached = getFromCache(`sh:${symbol}`);
+    return isShareholdingData(cached) ? cached : null;
+  });
   const [loading, setLoading] = useState(false);
   const mounted = useRef(true);
 
   useEffect(() => {
     mounted.current = true;
     const cached = getFromCache(`sh:${symbol}`);
-    if (cached) { setShareholding(cached); return; }
+    if (isShareholdingData(cached)) { setShareholding(cached); return; }
 
     setLoading(true);
     fetch(`/api/fundamentals?symbol=${encodeURIComponent(symbol)}&type=shareholding`)
@@ -190,7 +228,7 @@ export function useBulkFundamentals(symbols: string[]): {
   const [fundamentals, setFundamentals] = useState<Record<string, FullFundamentals>>(() => {
     const result: Record<string, FullFundamentals> = {};
     for (const sym of symbols) {
-      const cached = getFromCache(`fund:${sym}`);
+      const cached = fromCache(getFromCache(`fund:${sym}`));
       if (cached) result[sym] = cached;
     }
     return result;

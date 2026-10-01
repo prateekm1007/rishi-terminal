@@ -156,9 +156,12 @@ export default function MarketPulsePage() {
   const MACRO_REGIME = localeData.MACRO_REGIME;
   const MACRO_INDICATORS = localeData.MACRO_INDICATORS;
 
-  // Dynamic asOf dates — always show current month/year
-  const currentMonthYear = new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-  const MACRO_INDICATORS_LIVE = MACRO_INDICATORS.map((ind: any) => ({ ...ind, asOf: currentMonthYear }));
+  // Round-5 audit (finding 4): the header used to stamp the CURRENT
+  // month/year onto a static macro dataset ("Data as of Oct 2026" while
+  // showing figures captured months earlier — an impossible freshness
+  // claim). The real per-indicator asOf dates ship with the data and render
+  // per row; the header now labels the dataset as reference, honestly.
+  const MACRO_INDICATORS_LIVE = MACRO_INDICATORS;
   const PHILOSOPHER_STANCES = localeData.PHILOSOPHER_STANCES;
   const SECTOR_ROTATION = localeData.SECTOR_ROTATION;
   const HISTORICAL_CORRELATIONS = localeData.HISTORICAL_CORRELATIONS;
@@ -427,7 +430,7 @@ export default function MarketPulsePage() {
           <div>
             <h1 className="page-title" style={{ color: 'var(--accent-gold)' }}>
               🌐 {t('pulse.title')}
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 12, fontFamily: 'var(--font-mono)' }}>· Data as of {currentMonthYear}</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 12, fontFamily: 'var(--font-mono)' }}>· Macro indicators: static reference — as-of shown per row</span>
             </h1>
             <p className="page-subtitle">
               {t('pulse.subtitle')}
@@ -601,8 +604,21 @@ export default function MarketPulsePage() {
 
             <div className="card-unified">
               <SectionTitle emoji="💱" title={t('pulse.macro.currencyImpact')} color="var(--accent-gold)" />
+              {/* Round-5 audit (finding 17): this grid used to render as an
+                  EMPTY section when the live currency fetch failed (state
+                  stayed null and the map produced nothing). An explicit
+                  unavailable state beats a silently blank section. */}
+              {(currencies === null) ? (
+                <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  Fetching live currency rates…
+                </div>
+              ) : currencies.length === 0 || currencies.every((c: { error?: boolean }) => c.error) ? (
+                <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  Live currency rates unavailable right now — nothing is shown rather than made-up numbers.
+                </div>
+              ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-                {(currencies || []).map((c: any) => {
+                {currencies.filter((c: { error?: boolean }) => !c.error).map((c: any) => {
                   const pos = (safeNum(c.changePct) ?? 0) >= 0;
                   const col = pos ? 'var(--red)' : 'var(--green)';
                   const rate = safeNum(c.rate);
@@ -625,6 +641,7 @@ export default function MarketPulsePage() {
                   );
                 })}
               </div>
+              )}
             </div>
           </div>
         )}

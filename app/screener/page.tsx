@@ -7,6 +7,12 @@
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
 import { ScreenerClient } from '@/components/screener/ScreenerClient';
 
+// Round-5 audit (finding 18): per-page title/description.
+export const metadata = {
+  title: "Stock Screener — India equities | Rishi Terminal",
+  description: "Screen India equities by consensus score, valuation, quality and leverage. Free tier shows the top-5 Rishi verdicts.",
+};
+
 export default function ScreenerPage() {
   const rows = getSlimIndex();
   return <ScreenerClient rows={rows} />;

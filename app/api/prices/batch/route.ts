@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       !INDEX_SYMBOLS.includes(s) && 
       !s.includes('/') && // not forex
       !['IN2YS','IN6YS','IN10YS','IN15YS','IN91DTB','IN182DTB'].includes(s) && // not bonds
-      !['BTC','ETH','BNB','SOL','ADA','AVAX','DOT','MATIC','LINK','UNI','AAVE','MKR','XRP','DOGE','SHIB'].includes(s) && // not crypto
+      !['BTC','ETH','BNB','SOL','ADA','AVAX','DOT','POL','LINK','UNI','AAVE','SKY','XRP','DOGE','SHIB'].includes(s) && // not crypto
       !['GOLD','SILVER','PLATINUM','CRUDEOIL','WTI','BRENT','NATURALGAS','COPPER','ALUMINIUM','ZINC','NICKEL','LEAD','BRENTCRUDE','PALLADIUM','COTTON','RUBBER','MENTHAOIL','CARDAMOM'].includes(s) // not commodities
     );
 

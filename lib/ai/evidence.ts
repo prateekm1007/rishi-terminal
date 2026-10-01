@@ -428,20 +428,92 @@ interface StatedNumber {
   field: string | null;
   /** Canonical unit token attached to the number (if any). */
   unit: string | null;
+  /** The raw token as written ("fifty", "1.2 lakh crore") — quoted in
+   * rejections so auditors can see WHICH stated number failed. */
+  raw: string;
 }
 
 const ATTR_WINDOW_BEFORE = 40;
 const ATTR_WINDOW_AFTER = 15;
 
+// ── Round-5 audit (Q4 carried over): number WORDS and South-Asian scale ──
+// forms are stated numbers too. "Return on equity is fifty percent" used to
+// carry zero digits and sailed through untouched; "1.2 lakh crore" was read
+// as the literal 1.2.
+const NUMBER_WORDS: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7,
+  eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13,
+  fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18,
+  nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60,
+  seventy: 70, eighty: 80, ninety: 90,
+  hundred: 100, thousand: 1000, million: 1e6, billion: 1e9, trillion: 1e12,
+};
+const NUMBER_WORD_RE = new RegExp(
+  "\\b(" + Object.keys(NUMBER_WORDS).join("|") + ")" +
+  "(?:[\\s-]+(?:and\\s+)?(" + Object.keys(NUMBER_WORDS).join("|") + "))*\\b",
+  "gi",
+);
+
+interface NumberSpan {
+  raw: string;
+  value: number;
+  start: number;
+  end: number;
+  /** True when the span came from words, not digits. */
+  isWord: boolean;
+}
+
+/** Evaluate a sequence of number words ("one hundred and twenty" -> 120). */
+function evalWordSequence(words: string[]): number {
+  let total = 0;
+  let current = 0;
+  for (const w of words) {
+    const v = NUMBER_WORDS[w.toLowerCase()] ?? 0;
+    if (v === 100) {
+      current = (current || 1) * 100;
+    } else if (v >= 1000) {
+      total += (current || 1) * v;
+      current = 0;
+    } else {
+      current += v;
+    }
+  }
+  return total + current;
+}
+
+/** Digit spans AND word spans, position-sorted. Single-token word numbers
+ * count only when a unit token follows ("one must be careful" is prose,
+ * "fifty percent" is a stated number); multi-token sequences always count. */
+function numberSpans(text: string): NumberSpan[] {
+  const spans: NumberSpan[] = [];
+  for (const m of text.matchAll(/-?\d[\d,]*(?:\.\d+)?/g)) {
+    const value = Number(m[0].replace(/,/g, ""));
+    if (Number.isFinite(value)) {
+      spans.push({ raw: m[0], value, start: m.index ?? 0, end: (m.index ?? 0) + m[0].length, isWord: false });
+    }
+  }
+  for (const m of text.matchAll(NUMBER_WORD_RE)) {
+    const start = m.index ?? 0;
+    const end = start + m[0].length;
+    const words = m[0].split(/[\s-]+/).filter(w => w && w.toLowerCase() !== "and");
+    if (words.length === 0) continue;
+    const after = text.slice(end, end + 16).trimStart().toLowerCase();
+    const unitFollows = /^(?:%|percent|pct|x|times|crores?|crs?|lakhs?|lacs?|pts?|points|rs\.?|rupees?)\b/.test(after);
+    if (words.length === 1 && !unitFollows) continue; // prose "one", "a couple"
+    const value = evalWordSequence(words);
+    if (Number.isFinite(value)) {
+      spans.push({ raw: m[0], value, start, end, isWord: true });
+    }
+  }
+  return spans.sort((a, b) => a.start - b.start);
+}
+
 /** Parse every stated number with its attribution + attached unit token. */
 function statedNumbers(text: string): StatedNumber[] {
   const collapsed = text.replace(/(-?\d[\d,]*(?:\.\d+)?)\s*\/\s*100\b/g, "$1");
   const out: StatedNumber[] = [];
-  for (const m of collapsed.matchAll(/-?\d[\d,]*(?:\.\d+)?/g)) {
-    const n = Number(m[0].replace(/,/g, ""));
-    if (!Number.isFinite(n)) continue;
-    const start = m.index ?? 0;
-    const end = start + m[0].length;
+  for (const span of numberSpans(collapsed)) {
+    const { start, end, value } = span;
     // nearest field mention within the window (distance, then specificity)
     let field: string | null = null;
     let bestDist = Infinity;
@@ -464,13 +536,26 @@ function statedNumbers(text: string): StatedNumber[] {
         }
       }
     }
-    // unit token immediately after the number (one optional space)
+    // Scale + unit tokens after the number. Round-5: South-Asian scale
+    // words are part of the number — "1.2 lakh crore" is 120000 crore,
+    // not 1.2; "5 lakh" is 500000 rupees.
+    const after = collapsed.slice(end, end + 16);
+    let scaled = value;
     let unit: string | null = null;
-    const after = collapsed.slice(end, end + 12);
-    for (const ut of UNIT_TOKENS) {
-      if (ut.re.test(after)) { unit = ut.unit; break; }
+    const lakhCr = after.match(/^\s*(?:lakh|lac)\s+(?:crore|cr)s?\b/i);
+    const lakhOnly = after.match(/^\s*(?:lakhs?|lacs?)\b/i);
+    if (lakhCr) {
+      scaled = value * 100000;
+      unit = "inr_crore";
+    } else if (lakhOnly) {
+      scaled = value * 100000;
+      unit = "inr";
+    } else {
+      for (const ut of UNIT_TOKENS) {
+        if (ut.re.test(after)) { unit = ut.unit; break; }
+      }
     }
-    out.push({ key: canonicalNumber(n), field, unit });
+    out.push({ key: canonicalNumber(scaled), field, unit, raw: collapsed.slice(Math.max(0, start), end + (lakhCr ? 16 : (lakhOnly ? 8 : 0))).trim() });
   }
   return out;
 }
@@ -575,10 +660,11 @@ export function validateGrounding(
     //     attributed numbers additionally need an assertion for THAT field
     //     with THAT value (and unit token, when attached). The old
     //     cited-text presence route is GONE (audit 2026-10-02 P0).
+    //     Round-5: number words and lakh/crore forms are stated numbers.
     const stated = statedNumbers(c.claim);
     if (stated.length > 0 && assertions.length === 0) {
       rejections.push(
-        `claim ${i + 1}: contains numbers but asserts no field/value/unit — semantic grounding unavailable, rejected (R4-02; copy the fact annotation into assertions)`,
+        `claim ${i + 1}: states numbers (${stated.map(s => JSON.stringify(s.raw)).join(", ")}) but asserts no field/value/unit — semantic grounding unavailable, rejected (R4-02; copy the fact annotation into assertions)`,
       );
       continue;
     }
@@ -588,33 +674,63 @@ export function validateGrounding(
         const m = matchedByField.get(sn.field);
         if (!m) {
           rejections.push(
-            `claim ${i + 1}: number ${sn.key} is attributed to ${sn.field} in the claim text but no ${sn.field} assertion was provided — rejected (audit 2026-10-02)`,
+            `claim ${i + 1}: number ${JSON.stringify(sn.raw)} is attributed to ${sn.field} in the claim text but no ${sn.field} assertion was provided — rejected (audit 2026-10-02)`,
           );
           numberFailure = true;
           continue;
         }
         if (m.value !== sn.key) {
           rejections.push(
-            `claim ${i + 1}: claims ${sn.field}=${sn.key} but the matched ${sn.field} assertion is ${m.value} — rejected (audit 2026-10-02)`,
+            `claim ${i + 1}: claims ${sn.field}=${JSON.stringify(sn.raw)} but the matched ${sn.field} assertion is ${m.value} — rejected (audit 2026-10-02)`,
           );
           numberFailure = true;
           continue;
         }
         if (sn.unit !== null && sn.unit !== m.unit) {
           rejections.push(
-            `claim ${i + 1}: states ${sn.field}=${sn.key} ${sn.unit} but the matched assertion's unit is ${m.unit} — rejected (audit 2026-10-02)`,
+            `claim ${i + 1}: states ${sn.field}=${JSON.stringify(sn.raw)} ${sn.unit} but the matched assertion's unit is ${m.unit} — rejected (audit 2026-10-02)`,
           );
           numberFailure = true;
           continue;
         }
       } else if (!matchedValues.has(sn.key)) {
         rejections.push(
-          `claim ${i + 1}: number ${sn.key} is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02)`,
+          `claim ${i + 1}: number ${JSON.stringify(sn.raw)} is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02)`,
         );
         numberFailure = true;
       }
     }
     if (numberFailure) continue;
+
+    // (b2) Round-5 audit (Q4 B4): a claim that NAMES a specific metric
+    //     field without stating a number must still cite an item that
+    //     actually carries that field — "debt to equity is alarming"
+    //     citing only a news item is a digitless fabrication free-ride.
+    //     Generic words (price/change/score) are exempt: they appear in
+    //     ordinary prose too often to gate on.
+    const SPECIFIC_FIELDS = new Set([
+      "pe", "pb", "de", "roe", "roce", "opm", "promo", "revcagr",
+      "epscagr", "mktcap", "bvps", "fcfmargin",
+    ]);
+    const mentionedFields = new Set<string>();
+    for (const fm of FIELD_MENTIONS) {
+      if (!SPECIFIC_FIELDS.has(fm.field)) continue;
+      // matchAll is stateless on the source regex (it iterates a clone),
+      // so probing for a mention here cannot disturb the attribution pass.
+      for (const mm of c.claim.matchAll(fm.re)) {
+        if (mm.length > 0) mentionedFields.add(fm.field);
+      }
+    }
+    let fieldCiteFailure = false;
+    for (const f of mentionedFields) {
+      if (!citedFacts.some(fact => canonicalFactField(fact.field) === f)) {
+        rejections.push(
+          `claim ${i + 1}: mentions ${f} but none of the claim's own cited items carry a ${f} fact — cite the item that has it or drop the claim (round-5 B4)`,
+        );
+        fieldCiteFailure = true;
+      }
+    }
+    if (fieldCiteFailure) continue;
 
     surviving.push({
       claim: c.claim,
@@ -629,6 +745,7 @@ export function validateGrounding(
   // (c) answer floor (batch level): numbers in the answer must trace to the
   // surviving claims' MATCHED ASSERTION VALUES only — cited-text numbers
   // (dates, ids) cannot launder a figure into the answer (audit 2026-10-02).
+  // Round-5: word numbers and lakh/crore forms count here too.
   if (rejections.length === 0) {
     const pool = new Set<string>();
     for (const s of surviving) {
@@ -636,7 +753,7 @@ export function validateGrounding(
     }
     for (const sn of statedNumbers(answer)) {
       if (!pool.has(sn.key)) {
-        rejections.push(`answer: number ${sn.key} is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02)`);
+        rejections.push(`answer: number ${JSON.stringify(sn.raw)} is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02)`);
       }
     }
   }

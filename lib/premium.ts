@@ -25,7 +25,7 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
   student: {
     name:            'Student',
     label:            'Student',
-    price:           '499/year',
+    price:           '₹499/year',
     rishisVisible:   20,
     dailyStockLimit: null,
     features: [
@@ -40,7 +40,7 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
   disciple: {
     name:            'Disciple',
     label:           'Disciple',
-    price:           '1,999/year',
+    price:           '₹1,999/year',
     rishisVisible:   20,
     dailyStockLimit: null,
     features: [
@@ -50,11 +50,12 @@ export const TIER_CONFIG: Record<WisdomTier, TierConfig> = {
       'investment journal',
       'wisdom sidebar',
       'philosophy radar',
-      'historical backtesting',
-      'custom rishi blends',
+      // Round-5 audit (finding 6): 'historical backtesting',
+      // 'custom rishi blends' and 'advanced lens insights' REMOVED —
+      // sold features must exist. No such features ship in this product;
+      // selling them is a promise the codebase cannot keep.
       'knowledge graph',
       'rishi dialogue system',
-      'advanced lens insights',
     ],
   },
 };

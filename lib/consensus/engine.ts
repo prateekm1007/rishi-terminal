@@ -23,6 +23,14 @@ export function assessDataQuality(stock: Stock): "OK" | "INCOMPLETE" {
   // ticker) even if a couple of leftover fields hold stub values — T11.4.
   const FUNDAMENTALS: Array<keyof Stock> = ["rev", "ocf", "fcf", "bvps", "roce", "promo"];
   if (FUNDAMENTALS.every(k => stock[k] === 0)) return "INCOMPLETE";
+  // Round-5 audit (finding 1): internally IMPOSSIBLE combinations. P/E is
+  // price/EPS — positive net profit can never yield P/E 0; positive profit
+  // with positive book value can never yield ROE 0. Rows like KWALITY
+  // (np 3000, pe 0, roe 0) are self-contradictory placeholders, and they
+  // were ranking as top buys because a zero P/E reads as "cheap". Such
+  // records are INCOMPLETE: never ranked, never scored "OK".
+  if (stock.np > 0 && stock.pe === 0) return "INCOMPLETE";
+  if (stock.np > 0 && stock.roe === 0 && stock.bvps > 0) return "INCOMPLETE";
   return "OK";
 }
 

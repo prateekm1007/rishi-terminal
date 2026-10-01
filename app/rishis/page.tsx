@@ -46,6 +46,13 @@ export default function ChatWithRishisPage() {
 
   const currentMessages = chatHistories[selectedRishi.id] || [];
 
+  // The most recent assistant reply's actual model (provenance rides on
+  // every reply) — never an invented vendor name.
+  const lastProvenance = [...currentMessages].reverse().find(m => m.role === 'assistant')?.provenance;
+  const lastModelLabel = lastProvenance
+    ? `${lastProvenance.provider} ${lastProvenance.model}`
+    : 'Google Gemini 2.5 Flash';
+
   const filteredRishis = useMemo(() =>
     ALL_RISHIS.filter(r =>
       r.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -147,6 +154,13 @@ export default function ChatWithRishisPage() {
           <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent-gold)', marginBottom: 10, letterSpacing: 1 }}>
             🧘 Chat with Rishis
           </h1>
+          {/* Round-5 audit (finding 7): persona disclosure. These Rishis are
+              AI simulations — fictional interpretations of real investors,
+              not the real persons and not their views. Saying so next to the
+              chat is the minimum honest labelling. */}
+          <div style={{ fontSize: 9.5, color: 'var(--text-muted)', lineHeight: 1.5, padding: '6px 8px', marginBottom: 8, background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 6, fontFamily: 'monospace' }}>
+            AI SIMULATIONS — fictional interpretations for education, not the real persons. Not investment advice.
+          </div>
           <input
             type="text"
             placeholder="Search rishis..."
@@ -348,7 +362,11 @@ export default function ChatWithRishisPage() {
             </button>
           </div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, fontFamily: 'monospace' }}>
-            Powered by Agnes 2.5 Flash · {currentMessages.length} messages · Chat history preserved per Rishi
+            {/* Round-5 audit (finding 7): "Agnes 2.5 Flash" was an invented
+                vendor name. The footer now reports the model that actually
+                produced the latest reply (provenance from /api/chat), with
+                the router's real default as fallback. */}
+            Powered by {lastModelLabel} · {currentMessages.length} messages · Chat history preserved per Rishi
           </div>
         </div>
       </div>

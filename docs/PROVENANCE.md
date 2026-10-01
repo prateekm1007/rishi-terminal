@@ -15,7 +15,7 @@ decision on "India equities only until G-C". Hiding them from nav and
 returning a "not available yet" state is BLOCKED: FD-3 — not the
 coder's call (Constitution art. 31).
 
-Snapshot: 2026-10-01 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 12
+Snapshot: 2026-10-01 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 14
 
 | Route | Classification | Seed label | Notes |
 |---|---|---|---|
@@ -49,6 +49,8 @@ Snapshot: 2026-10-01 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 1
 | /index/* | none | — |  |
 | /news/* | none | — |  |
 | /pricing | none | — |  |
+| /privacy | none | — |  |
+| /terms | none | — |  |
 
 ## toFixed inventory (P0-06) — remaining 245 call sites, by group
 

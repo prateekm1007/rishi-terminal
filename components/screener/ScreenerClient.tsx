@@ -30,13 +30,27 @@ export function ScreenerClient({ rows }: Props) {
 
   const activePresetData = SCREENER_PRESETS.find(p => p.id === activePreset);
 
-  const STAT_PILLS = useMemo(() => [
-    { label: t('screener.strongBuy'),  count: rows.filter(s => s.pe > 0 && s.roe > 15).length, color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)'  },
-    { label: t('screener.valuePlays'), count: rows.filter(s => s.pe < 20 && s.pe > 0).length,  color: 'var(--accent-gold)',  bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)'  },
-    { label: t('screener.largeCap'),   count: rows.filter(s => s.mktcap > 100000).length,       color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
-    { label: t('screener.highROE'),    count: rows.filter(s => s.roe > 25).length,              color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)'  },
-    { label: t('screener.debtFree'),   count: rows.filter(s => s.de < 0.3).length,             color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
-  ], [t, locale, rows]);
+  const STAT_PILLS = useMemo(() => {
+    // Round-5 audit (finding 1): the "STRONG BUY" pill counted a raw
+    // pe>0 && roe>15 proxy — 440 rows (47% of the universe) — which had
+    // nothing to do with the engine's verdicts and made the threshold
+    // meaningless. It now counts the consensus engine's own buy-side
+    // categories (>= 75 = High Conviction / Legendary), and LARGE CAP is
+    // the actual definition (top 100 by market cap), both over
+    // dataQuality-OK rows only.
+    const okRows = rows.filter(s => s.dataQuality === 'OK');
+    const largeCapCount = [...okRows]
+      .sort((a, b) => b.mktcap - a.mktcap)
+      .slice(0, 100)
+      .filter(s => s.mktcap > 0).length;
+    return [
+    { label: t('screener.strongBuy'),  count: okRows.filter(s => s.consensus !== null && s.consensus >= 75).length, color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)',  title: 'Consensus >= 75 (High Conviction / Legendary bands)' },
+    { label: t('screener.valuePlays'), count: okRows.filter(s => s.pe < 20 && s.pe > 0).length,  color: 'var(--accent-gold)',  bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)',  title: 'P/E below 20 with positive earnings' },
+    { label: t('screener.largeCap'),   count: largeCapCount,       color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)', title: 'Top 100 by market cap (AMFI definition)' },
+    { label: t('screener.highROE'),    count: okRows.filter(s => s.roe > 25).length,              color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)',  title: 'ROE above 25%' },
+    { label: t('screener.debtFree'),   count: okRows.filter(s => s.de < 0.3).length,             color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)', title: 'Debt-to-equity below 0.3' },
+    ];
+  }, [t, locale, rows]);
 
   return (
     <main className="page-bg">
@@ -116,7 +130,7 @@ export function ScreenerClient({ rows }: Props) {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
             {STAT_PILLS.map(stat => (
-              <div key={stat.label} style={{ background: stat.bg, border: '1px solid ' + stat.border, borderRadius: 10, padding: '12px 16px' }}>
+              <div key={stat.label} title={stat.title} style={{ background: stat.bg, border: '1px solid ' + stat.border, borderRadius: 10, padding: '12px 16px' }}>
                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
                   {stat.label.toUpperCase()}
                 </div>

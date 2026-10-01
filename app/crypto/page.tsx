@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CRYPTO_ASSETS, FEAR_GREED_INDEX, MARKET_DOMINANCE, getCryptoMetrics } from '../../data/crypto';
+import { formatUsdCompact } from '../../lib/format';
 import { CRYPTO_GURUS } from '../../lib/gurus/crypto'; // R3: metadata only — verdicts come from /api/gurus
 import { useTier } from '../../hooks/useTier';
 import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
@@ -263,13 +264,16 @@ export default function CryptoPage() {
                         {displayChange}
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                        ${(asset.marketCap / 1e9).toFixed(1)}B
+                        {/* Round-5 audit (finding 15): T-tier + separators —
+                            "$1950.0B" for a $1.95T asset hid the magnitude
+                            and glued into the chip text on copy. */}
+                        {formatUsdCompact(asset.marketCap)}{' '}
                         <ProvenanceChip state="reference" title="Static reference market cap" />
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
                         {liveData && typeof liveData.volume24h === 'number' && liveData.volume24h > 0
-                          ? <>${(liveData.volume24h / 1e9).toFixed(1)}B <ProvenanceChip state="live" /></>
-                          : <>${(asset.volume24h / 1e9).toFixed(1)}B <ProvenanceChip state="reference" title="Static reference volume — no live 24h volume disclosed" /></>}
+                          ? <>{formatUsdCompact(liveData.volume24h)} <ProvenanceChip state="live" /></>
+                          : <>{formatUsdCompact(asset.volume24h)} <ProvenanceChip state="reference" title="Static reference volume — no live 24h volume disclosed" /></>}
                       </td>
                     </tr>
                   );

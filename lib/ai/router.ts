@@ -120,7 +120,15 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "item counts or ids in your claims or answer: every number you write " +
     "must be one of your own assertion values, or validation will reject " +
     "the whole response (a date like 2026-09-30 in the answer fails it). " +
-    "(5) If you make no verifiable factual claims, return an empty " +
+    // Round-5 (Q4): the parser now reads number words ("fifty percent"),
+    // South-Asian scale forms ("1.2 lakh crore") and metric-name mentions.
+    "(5) Number WORDS count as numbers: \"fifty percent\" is validated like " +
+    "\"50%\", and \"1.2 lakh crore\" is validated as 120000 crore — use the " +
+    "fact's canonical value and unit when you write them. " +
+    "(6) A claim that NAMES a metric (debt-to-equity, ROE, market cap…) " +
+    "must cite an item whose facts actually carry that field, even when it " +
+    "states no number for it. " +
+    "(7) If you make no verifiable factual claims, return an empty " +
     'claims array. Example: {"answer": "...", "claims": [], ' +
     '"uncertainties": ["..."]}'
   );

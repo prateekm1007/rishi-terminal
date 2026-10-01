@@ -9,8 +9,11 @@ export function scoreGraham(s: Stock): RishiScore {
   const ncavDisc = ((ncav - s.price) / s.price) * 100;
   const ncavS = clamp(ncavDisc >= 30 ? 100 : ncavDisc > 0 ? ncavDisc * 3.33 : 50 + ncavDisc);
 
-  // P/E valuation
-  const peS = clamp(s.pe <= 15 ? 100 : Math.max(0, 100 - (s.pe - 15) * 5));
+  // P/E valuation — round-5 audit (finding 1): P/E 0 means "no meaningful
+  // earnings" (loss-maker or missing data); it is NOT ultra-cheap. A zero
+  // P/E used to score a perfect 100 here, which pushed placeholder records
+  // like KWALITY to the top of Top Buys. No earnings -> no value points.
+  const peS = clamp(s.pe > 0 ? (s.pe <= 15 ? 100 : Math.max(0, 100 - (s.pe - 15) * 5)) : 0);
 
   // Current ratio safety
   const cr = s.ca / Math.max(1, s.tl);

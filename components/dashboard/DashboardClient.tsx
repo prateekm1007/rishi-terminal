@@ -199,8 +199,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                 <span style={{ color:C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
                   {d?.price ? (useUSD ? "$" : "") + d.price.toLocaleString("en-IN",{maximumFractionDigits:2}) : "—"}
                 </span>
+                {/* Round-5 audit (finding 9): a missing quote used to render
+                    "▼ 0.00%" — a fabricated direction and magnitude. No
+                    data -> no arrow, no number. */}
                 <span style={{ fontSize:"12px", fontWeight:600, color: up ? C.green : C.red, fontFamily:mono }}>
-                  {up ? "▲" : "▼"} {Math.abs(d?.changePercent24h ?? 0).toFixed(2)}%
+                  {d?.changePercent24h == null ? "—" : `${up ? "▲" : "▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%`}
                 </span>
               </span>
             );
@@ -216,8 +219,18 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
       }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:C.green,boxShadow:"0 0 8px rgba(34,197,94,0.7)" }} className="animate-pulse" />
-            <span style={{ color:C.green, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.liveMarketData")}</span>
+            {/* Round-5 audit (finding 9): the green LIVE badge used to render
+                unconditionally — even next to em dashes and while quotes were
+                still loading. It now appears only once live quotes have
+                actually arrived; before that the bar says what is true. */}
+            {lastUpdated ? (
+              <>
+                <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:C.green,boxShadow:"0 0 8px rgba(34,197,94,0.7)" }} className="animate-pulse" />
+                <span style={{ color:C.green, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.liveMarketData")}</span>
+              </>
+            ) : (
+              <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.connecting")}</span>
+            )}
           </div>
           <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
             {lastUpdated ? (t("dashboard.updatedPrefix") + timeAgo) : t("dashboard.connecting")}
@@ -498,8 +511,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                         </div>
                       </div>
                       <div style={{ textAlign:"right",color:C.textMuted,fontSize:"11px",lineHeight:1.8,fontFamily:mono }}>
-                        <div>{t("dashboard2.peLabel")} {(buyFund[stock.symbol]?.pe ?? stock.pe)}</div>
-                        <div>{t("dashboard2.roeLabel")} {(buyFund[stock.symbol]?.roe ?? stock.roe)}%</div>
+                        {/* Round-5 audit (finding 22): null handling unified with
+                            the Stock of the Day card — a zero P/E means "not
+                            meaningful" and renders as an em dash, never "PE 0". */}
+                        <div>{t("dashboard2.peLabel")} {(() => { const pe = buyFund[stock.symbol]?.pe ?? stock.pe; return pe > 0 ? pe : "—"; })()}</div>
+                        <div>{t("dashboard2.roeLabel")} {(() => { const roe = buyFund[stock.symbol]?.roe ?? stock.roe; return roe !== 0 ? roe + "%" : "—"; })()}</div>
                       </div>
                     </div>
                   </div>
@@ -542,7 +558,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                       background:"rgba(239,68,68,0.15)", border:"1px solid rgba(239,68,68,0.3)",
                       color:C.red, padding:"3px 10px", borderRadius:"20px",
                       fontSize:"12px", fontWeight:700, fontFamily:mono,
-                    }}>📉 {short.shortScore}%</div>
+                      // Round-5 audit (finding 21): this is the QVPS short-mode
+                      // SCORE (0-100), not a percentage — the raw float rendered
+                      // as "16.05% / 15.759% / 15.75%" with an unexplained unit.
+                    }}>📉 {short.shortScore.toFixed(1)}/100</div>
                   </div>
                   <div style={{ fontSize:"12px", color:"#FCA5A5", lineHeight:1.6 }}>
                     ⚠️ {short.reason}

@@ -164,9 +164,15 @@ export default function SignInPage() {
           </div>
         )}
 
+        {/* Round-5 audit (finding 9): "Terms of Service" was plain text with
+            no policy behind it, and "never sold" was an unverifiable
+            privacy claim with no policy to define it. Both now link real
+            pages that state exactly what the product does today. */}
         <p style={{ textAlign: 'center', fontSize: 11, color: '#475569', marginTop: 24, lineHeight: 1.6 }}>
-          By signing in, you agree to our Terms of Service.
-          Your data is protected and never sold.
+          By signing in, you agree to our{' '}
+          <a href="/terms" style={{ color: 'var(--accent-gold, #D4AF37)', textDecoration: 'underline' }}>Terms of Service</a>{' '}
+          and{' '}
+          <a href="/privacy" style={{ color: 'var(--accent-gold, #D4AF37)', textDecoration: 'underline' }}>Privacy Policy</a>.
         </p>
       </div>
     </main>

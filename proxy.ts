@@ -47,7 +47,11 @@ export async function proxy(request: NextRequest) {
   if (!user && isProtected) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/auth/signin';
-    redirectUrl.searchParams.set('next', request.nextUrl.pathname);
+    // Round-5 audit (finding 20): preserve the QUERY STRING too —
+    // /compare -> /lab?tab=compare used to become next=/lab and the tab
+    // was lost after login. safeNextPath (R7) allows same-origin
+    // relative paths with query strings, so '?tab=compare' survives.
+    redirectUrl.searchParams.set('next', request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(redirectUrl);
   }
 

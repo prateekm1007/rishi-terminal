@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../../lib/language';
 import Link from 'next/link';
 import type { CryptoAsset } from '../../data/crypto';
+import { formatUsdCompact } from '../../lib/format';
 import { usePrice } from '../../hooks/useLivePrices';
 import { CRYPTO_ONCHAIN } from '../../data/crypto';
 import type { UniversalAsset } from '../../lib/types/asset';
@@ -332,8 +333,8 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>KEY METRICS</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
                 {[
-                  { label: 'Market Cap', value: `$${(asset.marketCap / 1e9).toFixed(1)}B`, color: 'var(--text-primary)' },
-                  { label: '24h Volume', value: `$${(asset.volume24h / 1e9).toFixed(1)}B`, color: '#60a5fa' },
+                  { label: 'Market Cap', value: formatUsdCompact(asset.marketCap), color: 'var(--text-primary)' },
+                  { label: '24h Volume', value: formatUsdCompact(asset.volume24h), color: '#60a5fa' },
                   { label: '200D MA', value: `$${asset.moving200d.toLocaleString('en-US', { maximumFractionDigits: 0 })}`, color: aboveMa200 ? '#22C55E' : '#EF4444' },
                   { label: 'From ATH', value: `${asset.fromAth.toFixed(1)}%`, color: asset.fromAth > -20 ? '#22C55E' : '#EF4444' },
                   { label: 'RSI (14)', value: asset.rsi.toString(), color: asset.rsi > 70 ? '#EF4444' : asset.rsi < 30 ? '#22C55E' : '#D4AF37' },

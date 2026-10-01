@@ -22,7 +22,7 @@ const CRYPTOS: Array<{ symbol: string; name: string }> = [
   { symbol: "ADA", name: "Cardano" },
   { symbol: "AVAX", name: "Avalanche" },
   { symbol: "DOT", name: "Polkadot" },
-  { symbol: "MATIC", name: "Polygon" },
+  { symbol: "POL", name: "Polygon" },
   { symbol: "LINK", name: "Chainlink" },
   { symbol: "XRP", name: "XRP" },
   { symbol: "DOGE", name: "Dogecoin" },
@@ -46,7 +46,7 @@ const COMMODITIES: Array<{ symbol: string; name: string }> = [
 const FOREX: Array<{ symbol: string; name: string; urlPair: string }> = [
   { symbol: "EURUSD", name: "EUR / USD", urlPair: "EURUSD" },
   { symbol: "GBPUSD", name: "GBP / USD", urlPair: "GBPUSD" },
-  { symbol: "JPYUSD", name: "JPY / USD", urlPair: "JPYUSD" },
+  { symbol: "USDJPY", name: "USD / JPY", urlPair: "USDJPY" },
   { symbol: "USDINR", name: "USD / INR", urlPair: "USDINR" },
   { symbol: "AUDUSD", name: "AUD / USD", urlPair: "AUDUSD" },
 ];

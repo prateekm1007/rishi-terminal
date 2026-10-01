@@ -78,6 +78,17 @@ function InfoTooltip({ text }: { text: string }) {
     </span>
   );
 }
+/** Round-5 audit (finding 14): decimal places must follow the magnitude —
+ * a 0.55-yen or 0.88-franc rate rendered at 2dp becomes "0.01"/"0.89"
+ * and destroys the value. Small rates get 4dp, sub-10 rates 3dp. */
+export function fxDp(v: number | null | undefined): number {
+  if (v == null || !Number.isFinite(v)) return 2;
+  const a = Math.abs(v);
+  if (a < 1) return 4;
+  if (a < 10) return 3;
+  return 2;
+}
+
 export default function ForexPage() {
   const { t } = useLanguage();
   const router = useRouter();
@@ -180,7 +191,7 @@ export default function ForexPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
             {[
               { label: t('forex.avgVolatility'), value: avgVol + '%', color: 'var(--accent-gold)', bg: 'rgba(255,215,0,0.08)', border: 'rgba(255,215,0,0.2)', chipState: 'reference' as const, chipTitle: 'Static reference volatilities — illustrative' },
-              { label: t('forex.volume24h'), value: '$' + (totalVolume / 1e9).toFixed(1) + 'B', color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)', chipState: volumeIsLive ? ('live' as const) : ('reference' as const), chipTitle: volumeIsLive ? 'Sum of live volumes' : 'Static reference volumes — the rate API discloses no live volume' },
+              { label: t('forex.volume24h'), value: '$' + (totalVolume / 1e9).toFixed(1) + 'B', color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)', chipState: volumeIsLive ? ('live' as const) : ('reference' as const), chipTitle: volumeIsLive ? 'Sum of live volumes' : 'FX is over-the-counter — no consolidated volume exists. Static reference aggregates, illustrative only; the rate API discloses no live volume' },
               { 
                 label: t('forex.usdInrSpot'), 
                 value: usdInrPair ? usdInrPair.spotRate.toFixed(2) : '—',
@@ -309,7 +320,7 @@ export default function ForexPage() {
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{pair.name}</div>
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 700, fontSize: 18, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
-                      {pair.spotRate.toFixed(pair.baseCurrency === 'JPY' ? 4 : 2)}
+                      {pair.spotRate.toFixed(fxDp(pair.spotRate))}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace' }}>
                       <span style={{ 
@@ -323,16 +334,16 @@ export default function ForexPage() {
                       </span>
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--accent-green)', fontFamily: 'monospace' }}>
-                      {pair.bid.toFixed(pair.baseCurrency === 'JPY' ? 4 : 2)}
+                      {pair.bid.toFixed(fxDp(pair.bid))}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--accent-red)', fontFamily: 'monospace' }}>
-                      {pair.ask.toFixed(pair.baseCurrency === 'JPY' ? 4 : 2)}
+                      {pair.ask.toFixed(fxDp(pair.ask))}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: 12 }}>
-                      {((pair as any).spread || (pair.ask - pair.bid)).toFixed(4)}
+                      {((pair as any).spread || (pair.ask - pair.bid)).toFixed(fxDp(pair.spread ?? (pair.ask - pair.bid)))}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                      {((pair as any).forward1M || pair.forward3M).toFixed(2)}
+                      {((pair as any).forward1M || pair.forward3M).toFixed(fxDp((pair as any).forward1M || pair.forward3M))}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px' }}>
                       <span style={{

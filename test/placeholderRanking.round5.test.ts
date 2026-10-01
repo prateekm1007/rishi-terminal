@@ -78,11 +78,11 @@ describe("round-5: Graham no longer reads P/E 0 as ultra-cheap", () => {
 });
 
 describe("round-5: verdict text matches the verdict", () => {
-  const mk = (over: Partial<Stock>): Stock =>
+  const mk = (over: Partial<Stock> & { pb?: number }): any =>
     ({ sector: "FMCG", exchange: "NSE", symbol: "TEST", name: "Test", price: 100,
        pe: 20, roe: 15, mktcap: 10000, ocf: 100, rev: 1000, revcagr: 10, epscagr: 10,
        opm: 15, roce: 15, de: 0.5, fcf: 80, promo: 50, ca: 500, tl: 200, sh: 10,
-       np: 50, dep: 10, capex: 20, bvps: 50, ...over }) as unknown as Stock;
+       np: 50, dep: 10, capex: 20, bvps: 50, pb: 2, ...over }) as unknown as Stock;
 
   it("NEUTRAL conviction no longer renders the AVOID 'cautionary tale'", () => {
     const result = {

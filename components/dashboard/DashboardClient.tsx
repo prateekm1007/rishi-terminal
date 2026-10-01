@@ -511,8 +511,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                         </div>
                       </div>
                       <div style={{ textAlign:"right",color:C.textMuted,fontSize:"11px",lineHeight:1.8,fontFamily:mono }}>
-                        <div>{t("dashboard2.peLabel")} {(buyFund[stock.symbol]?.pe ?? stock.pe)}</div>
-                        <div>{t("dashboard2.roeLabel")} {(buyFund[stock.symbol]?.roe ?? stock.roe)}%</div>
+                        {/* Round-5 audit (finding 22): null handling unified with
+                            the Stock of the Day card — a zero P/E means "not
+                            meaningful" and renders as an em dash, never "PE 0". */}
+                        <div>{t("dashboard2.peLabel")} {(() => { const pe = buyFund[stock.symbol]?.pe ?? stock.pe; return pe > 0 ? pe : "—"; })()}</div>
+                        <div>{t("dashboard2.roeLabel")} {(() => { const roe = buyFund[stock.symbol]?.roe ?? stock.roe; return roe !== 0 ? roe + "%" : "—"; })()}</div>
                       </div>
                     </div>
                   </div>

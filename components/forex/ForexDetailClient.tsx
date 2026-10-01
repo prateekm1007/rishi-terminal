@@ -350,6 +350,12 @@ const { price: livePriceData } = usePrice(forexSymbol);
             {/* PPP Analysis */}
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>PURCHASING POWER PARITY (PPP)</div>
+              {/* Round-5 audit (finding 14): PPP "fair value" here is a
+                  static illustrative model estimate, not a measured parity —
+                  the label must say so before the number invites trust. */}
+              <div style={{ fontSize: 9, color: 'var(--accent-gold)', fontFamily: 'monospace', marginBottom: 12, letterSpacing: 1 }}>
+                ILLUSTRATIVE MODEL ESTIMATE — STATIC REFERENCE, NOT A MEASURED PARITY
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 16 }}>
                 {[
                   { label: 'Spot Rate', value: livePair.spotRate.toFixed(4), color: 'var(--text-primary)' },

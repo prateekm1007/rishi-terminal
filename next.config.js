@@ -72,6 +72,16 @@ const nextConfig = {
     return [
       ...aliasRedirects,
       {
+        source: '/crypto/MATIC',
+        destination: '/crypto/POL',
+        permanent: true,
+      },
+      {
+        source: '/crypto/MKR',
+        destination: '/crypto/SKY',
+        permanent: true,
+      },
+      {
         source: '/commodity/:symbol',
         destination: '/commodities/:symbol',
         permanent: true,

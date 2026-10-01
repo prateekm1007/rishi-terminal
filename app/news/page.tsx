@@ -141,6 +141,7 @@ export default function NewsPage() {
   const [saved, setSaved]         = useState<string[]>([]);
   const [liveNews, setLiveNews]   = useState<LiveNewsItem[]>([]);
   const [loading, setLoading]     = useState(true);
+  const [fetchFailed, setFetchFailed] = useState(false);
 
   const tickerSymbols = useMemo(() => ['BTC', 'ETH', 'GOLD', 'SILVER', 'WTI', 'RELIANCE', 'TCS', 'INFY'], []);
   const { prices } = useLivePrices(tickerSymbols);
@@ -175,8 +176,13 @@ export default function NewsPage() {
         const news = await fetchAllNews();
         if (!cancelled) {
           setLiveNews(news);
+          // Round-5 audit (finding 16): an explicit failure state. A silent
+          // catch left the page blank with no explanation and no retry.
+          setFetchFailed(false);
           try { localStorage.setItem('rishi.news.cache', JSON.stringify({ ts: Date.now(), news })); } catch {}
         }
+      } catch {
+        if (!cancelled) setFetchFailed(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -283,6 +289,26 @@ export default function NewsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
             {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
+        )}
+
+        {/* Round-5 audit (finding 16): explicit fetch-failure state — a blank
+            page with no explanation is indistinguishable from "no news". */}
+        {!loading && liveNews.length === 0 && fetchFailed && (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: 28, marginBottom: 12 }}>📡</div>
+            <div style={{ fontSize: 14, marginBottom: 6 }}>Live news is unavailable right now.</div>
+            <div style={{ fontSize: 12, marginBottom: 16 }}>Nothing is shown rather than made-up headlines.</div>
+            <button
+              onClick={() => { setFetchFailed(false); window.location.reload(); }}
+              style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && liveNews.length === 0 && !fetchFailed && (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', fontSize: 14 }}>No stories available right now.</div>
         )}
 
         {/* News Grid */}

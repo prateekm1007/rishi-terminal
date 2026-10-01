@@ -22,11 +22,14 @@ export const CRYPTO_ASSETS: CryptoAsset[] = [
   { symbol: 'ADA', name: 'Cardano', emoji: '₳', price: 1.15, marketCap: 41000000000, volume24h: 1200000000, change24h: -0.5, change7d: 3.2, rsi: 52, macd: 'NEUTRAL', moving200d: 0.95, fromAth: -62.5, sector: 'Smart Contract Platform' },
   { symbol: 'AVAX', name: 'Avalanche', emoji: '🔺', price: 42, marketCap: 17000000000, volume24h: 850000000, change24h: 2.8, change7d: 12.5, rsi: 68, macd: 'BULLISH', moving200d: 32, fromAth: -48.2, sector: 'Smart Contract Platform' },
   { symbol: 'DOT', name: 'Polkadot', emoji: '⬤', price: 9.8, marketCap: 14500000000, volume24h: 420000000, change24h: 1.2, change7d: 6.5, rsi: 55, macd: 'NEUTRAL', moving200d: 8.5, fromAth: -78.5, sector: 'Interoperability' },
-  { symbol: 'MATIC', name: 'Polygon', emoji: '⬡', price: 0.88, marketCap: 8800000000, volume24h: 580000000, change24h: 3.5, change7d: 18.2, rsi: 70, macd: 'BULLISH', moving200d: 0.72, fromAth: -65.8, sector: 'Layer 2' },
+  // Round-5 audit (finding 15): MATIC rebranded to POL (Sep 2024);
+  // MKR rebranded to SKY (Sky, formerly MakerDAO). Live layer uses the
+  // current CoinGecko ids (polygon-ecosystem-token, sky) — verified.
+  { symbol: 'POL', name: 'Polygon', emoji: '⬡', price: 0.107, marketCap: 8800000000, volume24h: 580000000, change24h: 3.5, change7d: 18.2, rsi: 70, macd: 'BULLISH', moving200d: 0.72, fromAth: -65.8, sector: 'Layer 2' },
   { symbol: 'LINK', name: 'Chainlink', emoji: '🔗', price: 28.5, marketCap: 18000000000, volume24h: 950000000, change24h: 2.1, change7d: 9.8, rsi: 61, macd: 'BULLISH', moving200d: 22, fromAth: -42.5, sector: 'Oracle' },
   { symbol: 'UNI', name: 'Uniswap', emoji: '🦄', price: 15.2, marketCap: 11500000000, volume24h: 380000000, change24h: 1.5, change7d: 7.2, rsi: 59, macd: 'NEUTRAL', moving200d: 12.8, fromAth: -55.2, sector: 'DeFi' },
   { symbol: 'AAVE', name: 'Aave', emoji: '👻', price: 285, marketCap: 4200000000, volume24h: 320000000, change24h: 4.2, change7d: 14.5, rsi: 66, macd: 'BULLISH', moving200d: 220, fromAth: -38.5, sector: 'DeFi' },
-  { symbol: 'MKR', name: 'Maker', emoji: '🏦', price: 2850, marketCap: 2650000000, volume24h: 180000000, change24h: 2.8, change7d: 10.2, rsi: 63, macd: 'BULLISH', moving200d: 2400, fromAth: -45.2, sector: 'DeFi' },
+  { symbol: 'SKY', name: 'Sky (formerly Maker)', emoji: '🏦', price: 0.084, marketCap: 2650000000, volume24h: 180000000, change24h: 2.8, change7d: 10.2, rsi: 63, macd: 'BULLISH', moving200d: 2400, fromAth: -45.2, sector: 'DeFi' },
 ];
 
 export const FEAR_GREED_INDEX = {
@@ -75,9 +78,9 @@ export const CRYPTO_ONCHAIN: Record<string, CryptoOnChain> = {
   ADA:   { dominance: 1.6,  fundingRate: 0.004, openInterest: 0.5,  exchangeNetflow: 45.0,  mvrv: 1.1, tvl: 0.4,  activeAddresses: 65 },
   AVAX:  { dominance: 0.7,  fundingRate: 0.015, openInterest: 0.6,  exchangeNetflow: -22.0, mvrv: 1.3, tvl: 1.3,  activeAddresses: 48 },
   DOT:   { dominance: 0.6,  fundingRate: 0.002, openInterest: 0.3,  exchangeNetflow: 18.0,  mvrv: 0.9, tvl: 0.2,  activeAddresses: 32 },
-  MATIC: { dominance: 0.3,  fundingRate: 0.011, openInterest: 0.4,  exchangeNetflow: -65.0, mvrv: 1.2, tvl: 0.9,  activeAddresses: 410 },
+  POL:   { dominance: 0.3,  fundingRate: 0.011, openInterest: 0.4,  exchangeNetflow: -65.0, mvrv: 1.2, tvl: 0.9,  activeAddresses: 410 },
   LINK:  { dominance: 0.7,  fundingRate: 0.008, openInterest: 0.7,  exchangeNetflow: -15.0, mvrv: 1.5, tvl: 0.6,  activeAddresses: 38 },
   UNI:   { dominance: 0.5,  fundingRate: 0.006, openInterest: 0.3,  exchangeNetflow: 8.0,   mvrv: 1.2, tvl: 4.8,  activeAddresses: 22 },
   AAVE:  { dominance: 0.2,  fundingRate: 0.014, openInterest: 0.25, exchangeNetflow: -4.5,  mvrv: 1.7, tvl: 11.2, activeAddresses: 9 },
-  MKR:   { dominance: 0.1,  fundingRate: 0.007, openInterest: 0.1,  exchangeNetflow: -1.2,  mvrv: 1.4, tvl: 5.4,  activeAddresses: 4 },
+  SKY:   { dominance: 0.1,  fundingRate: 0.007, openInterest: 0.1,  exchangeNetflow: -1.2,  mvrv: 1.4, tvl: 5.4,  activeAddresses: 4 },
 };

@@ -15,6 +15,8 @@ import { useLivePrices } from "@/hooks/useLivePrices";
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
 import SeedDataBanner from "@/components/shared/SeedDataBanner"; // R1: honest placeholder-data label
+import { DataValue } from "@/components/DataValue"; // P0-06: provenance for displayed metrics
+import { overlaySourced } from "@/lib/types/sourced";
 
 /* ── Constants ─────────────────────────────────────────────── */
 
@@ -147,7 +149,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
   ], [rotatingStocks, rotatingShorts]);
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms);
-  const { fundamentals: sodFund, loading: sodFundLoading } = useFundamentals(stockOfDay.symbol);
+  const { fundamentals: sodFund } = useFundamentals(stockOfDay.symbol); // loading state is rendered by <DataValue> (null -> em dash)
   const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
 
   const [timeAgo, setTimeAgo] = useState("—");
@@ -381,10 +383,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
 
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"16px" }}>
                   {[
-                    { label:t("dashboard2.rishiScore"), value: stockOfDay.consensus + "/100" },
-                    { label:"P/E", value: sodFundLoading ? "—" : (sodFund?.pe ? (sodFund.pe.toFixed(1) + "x") : "—") },
-                    { label:"ROE", value: sodFundLoading ? "—" : (sodFund?.roe ? (sodFund.roe.toFixed(1) + "%") : "—") },
-                    { label:"OPM", value: sodFundLoading ? "—" : (sodFund?.opm ? (sodFund.opm.toFixed(1) + "%") : "—") },
+                    { label:t("dashboard2.rishiScore"), value: <DataValue sourced={{ value: stockOfDay.consensus, source: "seed", asOf: null }} format={v => v + "/100"} /> },
+                    { label:"P/E", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.pe, sodFund?.source, sodFund?.lastUpdated ?? null)} digits={1} unit="x" /> },
+                    { label:"ROE", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.roe, sodFund?.source, sodFund?.lastUpdated ?? null)} digits={1} unit="%" /> },
+                    { label:"OPM", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.opm, sodFund?.source, sodFund?.lastUpdated ?? null)} digits={1} unit="%" /> },
                   ].map(m => (
                     <div key={m.label} style={{
                       background:"rgba(31,41,59,0.6)", border:"1px solid rgba(51,65,85,0.5)",

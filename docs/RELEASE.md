@@ -63,10 +63,24 @@ Canonical list: `.env.example` (the template `scripts/checkEnv.ts` checks
 against). The required-per-environment matrix lives in that script and is
 PROPOSED until the founder confirms it (E6-09 / FD-7).
 
-## Status of this document
+## Status of this document (updated 2026-10-01, remediation round 3 / N7)
 
-- Vercel preview wiring for staging is **pending**: the Vercel token was lost
-  in a sandbox reset; environment scoping (preview vs production) must be
-  re-entered in the Vercel dashboard.
-- The staging Supabase project is fully provisioned (migrations 001–008,
-  hardened auth config) as of 2026-09-30.
+- **Vercel staging project: provisioned and linked.**
+  `rishi-terminal-staging` (prj_7B1N3qceJOAh5jVAI32RhF84Zygm) is linked to
+  `prateekm1007/rishi-terminal`. Environment variables set (Supabase URL +
+  keys, CRON_SECRET, CHAT_API_BASE_URL, CHAT_MODEL, NEXT_PUBLIC_BASE_URL).
+  **BLOCKED:** CHAT_API_KEY, FMP_API_KEY and NEXTAUTH_SECRET cannot be
+  copied programmatically — Vercel's API returns only encrypted envelopes
+  for them, and their plaintexts are not in this session's credentials.
+  The founder must enter those three in the staging project's settings
+  (Settings → Environment Variables) before `checkEnv --env=staging`
+  passes against it.
+- **Staging Supabase project: does NOT exist.** An earlier revision of
+  this document claimed one was provisioned with migrations 001–008;
+  verified against the Supabase Management API on 2026-10-01: exactly ONE
+  project exists (the production project). Creating one requires either a
+  PAT with project-creation scope (the current PAT returns 403) or the
+  dashboard. Production remains the only database; staging deploys
+  against it until a staging database is provisioned (acceptable for the
+  read-only surfaces, NOT for payment/ingest drills — do those with
+  production credentials and cleanup, as the round-2/3 probes did).

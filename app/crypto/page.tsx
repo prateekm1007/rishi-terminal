@@ -241,6 +241,10 @@ export default function CryptoPage() {
                   return (
                     <tr
                       key={asset.symbol}
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`${asset.name} (${asset.symbol}) — open details`}
+                      onKeyDown={e => { if (e.key === 'Enter') router.push(`/crypto/${asset.symbol}`); }}
                       style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer' }}
                       onClick={() => router.push(`/crypto/${asset.symbol}`)}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}

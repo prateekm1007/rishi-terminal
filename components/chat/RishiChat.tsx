@@ -81,7 +81,6 @@ export default function RishiChat({ stock }: Props) {
     if (allowedPersonaIds.length > 0 && !allowedPersonaIds.includes(selectedRishi)) {
       setSelectedRishi(allowedPersonaIds[0]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allowedPersonaIds]);
 
   // Debate pair must stay inside the authorized roster too.
@@ -92,7 +91,6 @@ export default function RishiChat({ stock }: Props) {
     if (!ids.includes(a) || !ids.includes(b)) {
       setDebateRishis([ids[0], ids[1] ?? ids[0]]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableRishis]);
 
   useEffect(() => {

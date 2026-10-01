@@ -84,8 +84,26 @@ function NewsCard({ news, saved, toggleSave, t }: {
 
   const impactLabel = news.impact === 'POSITIVE' ? t('news.bullish') : news.impact === 'NEGATIVE' ? t('news.bearish') : t('news.neutral');
 
+  // Audit 2026-10-02 (F): the card is a semantic link (opens the article)
+  // — role + tabIndex + Enter/Space activation, not a mouse-only div.
+  const handleKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
-    <div onClick={handleClick} className="card-sacred" style={{ padding: 16, cursor: 'pointer', transition: 'all 0.15s', borderLeft: '3px solid ' + impactColor(news.impact) }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}>
+    <div
+      onClick={handleClick}
+      onKeyDown={handleKey}
+      role="link"
+      tabIndex={0}
+      aria-label={`${news.headline} — ${news.source}`}
+      className="card-sacred"
+      style={{ padding: 16, cursor: 'pointer', transition: 'all 0.15s', borderLeft: '3px solid ' + impactColor(news.impact) }}
+      onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'}
+      onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, gap: 8 }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flex: 1 }}>
           <span style={{ fontSize: 8, fontFamily: 'monospace', letterSpacing: 1, color: regionColor(news.region), background: regionColor(news.region) + '15', border: '1px solid ' + regionColor(news.region) + '30', borderRadius: 4, padding: '2px 7px', fontWeight: 700 }}>{regionFlag(news.region)} {news.region}</span>
@@ -245,7 +263,12 @@ export default function NewsPage() {
         {/* Filters */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 8, WebkitOverflowScrolling: 'touch' }}>
           {categories.map(c => {
-            const count = c === 'All' ? allNews.length : allNews.filter(n => n.category === c).length;
+            // Audit 2026-10-02 (P2): counts are REGION-AWARE — the pills
+            // previously showed whole-dataset counts while the list below
+            // was region-filtered (categoryCounts was computed but unused).
+            const count = c === 'All'
+              ? allNews.filter(n => region === 'ALL' || n.region === region).length
+              : (categoryCounts[c] ?? 0);
             if (c !== 'All' && count === 0) return null;
             return (
               <button key={c} onClick={() => setCategory(c)} style={{ padding: '8px 16px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: category === c ? 700 : 500, border: category === c ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(30,41,59,0.8)', background: category === c ? 'rgba(212,175,55,0.15)' : 'rgba(17,24,39,0.85)', color: category === c ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'monospace', whiteSpace: 'nowrap', flexShrink: 0 }}>

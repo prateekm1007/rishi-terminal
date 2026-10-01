@@ -226,6 +226,15 @@ export default function CommoditiesPage() {
               <div
                 key={commodity.symbol}
                 className="card-sacred"
+                role="link"
+                tabIndex={0}
+                aria-label={`${commodity.name} — open details`}
+                onKeyDown={e => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  e.preventDefault();
+                  if (!premium && commodity.category !== 'Energy') { setShowUpgrade(true); return; }
+                  router.push('/commodities/' + commodity.symbol);
+                }}
                 style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                 onClick={() => {
                   if (!premium && commodity.category !== 'Energy') {

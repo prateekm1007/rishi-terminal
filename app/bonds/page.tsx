@@ -253,6 +253,10 @@ export default function BondsPage() {
                 {sorted.map(bond => (
                   <tr
                     key={bond.symbol}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={`${bond.name} — open details`}
+                    onKeyDown={e => { if (e.key === 'Enter') router.push(`/bonds/${bond.symbol}`); }}
                     style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s', opacity: bond.maturity === 'matured' ? 0.55 : 1 }}
                     onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}

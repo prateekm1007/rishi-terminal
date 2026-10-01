@@ -61,7 +61,7 @@ export function HamburgerMenu() {
       )}
 
       <style jsx>{`
-        @media (max-width: 768px) {
+        @media (max-width: 900px) { /* matches the shell breakpoint (audit 2026-10-02 F) */
           :global(.hamburger-btn) {
             display: block !important;
           }

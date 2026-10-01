@@ -6,7 +6,10 @@ export interface PriceData {
   price: number;
   change: number;
   changePercent24h: number;
-  volume24h: number;
+  /** 24h volume when the transport carried one, else null — never 0
+   *  (absent volume is unavailability, not zero trading; audit
+   *  2026-10-02 P1). */
+  volume24h: number | null;
   /** Corrective gate 3: the server's ORIGINAL observation time, or null when
    *  the upstream disclosed none. The client never substitutes its own
    *  fetch time here — that would fabricate an observation timestamp. */
@@ -98,7 +101,7 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
             price: typeof raw.price === 'number' ? raw.price : 0,
             change: typeof raw.change === 'number' ? raw.change : (typeof raw.changePercent24h === 'number' ? raw.changePercent24h : 0),
             changePercent24h: typeof raw.changePercent24h === 'number' ? raw.changePercent24h : (typeof raw.change === 'number' ? raw.change : 0),
-            volume24h: typeof raw.volume24h === 'number' ? raw.volume24h : 0,
+            volume24h: typeof raw.volume24h === 'number' ? raw.volume24h : null,
             // Corrective gate 3: preserve the server's null — the client's
             // fetch time is NOT an observation time (old code fabricated one).
             lastUpdated: typeof raw.lastUpdated === 'string' && raw.lastUpdated ? raw.lastUpdated : null,

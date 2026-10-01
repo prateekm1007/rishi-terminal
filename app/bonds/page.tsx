@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { BONDS } from '../../data/bonds';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
+import { bondMaturityState } from '../../lib/bonds/maturity';
+import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
 
 type BondType = 'All' | 'G-Sec' | 'SDL' | 'Corporate' | 'T-Bill';
 
@@ -34,7 +36,10 @@ export default function BondsPage() {
   const bondSymbols = useMemo(() => bondList.map(b => b.symbol), []);
   const { prices, loading, error, lastUpdated } = useLivePrices(bondSymbols);
 
-  // Merge live yields into bonds
+  // Merge live yields into bonds. Audit 2026-10-02 (P1): each row tracks
+  // whether its YTM is live or the static reference value, and a matured
+  // instrument is explicitly labelled (IN91DTB matured 2026-08-15 — the
+  // date is derived, never re-hardcoded and never silently replaced).
   const enrichedBonds = useMemo(() => {
     return bondList.map(bond => {
       const liveData = prices[bond.symbol];
@@ -43,9 +48,11 @@ export default function BondsPage() {
           ...bond,
           ytm: liveData.price,
           change24h: liveData.change || 0,
+          ytmIsLive: true,
+          maturity: bondMaturityState(bond.maturityDate),
         };
       }
-      return { ...bond, change24h: 0 };
+      return { ...bond, change24h: null, ytmIsLive: false, maturity: bondMaturityState(bond.maturityDate) };
     });
   }, [prices, bondList]);
 
@@ -64,10 +71,40 @@ export default function BondsPage() {
   const corporate = enrichedBonds.filter(b => b.type === 'Corporate');
   const tbills    = enrichedBonds.filter(b => b.type === 'T-Bill');
 
-  const avgYTM      = (enrichedBonds.reduce((sum, b) => sum + b.ytm, 0) / enrichedBonds.length).toFixed(2);
+  // Audit 2026-10-02 (P1): the average is computed over LIVE yields only —
+  // an average over mixed live/static rows presented a current-looking
+  // figure derived from stale reference data. No live yields -> em dash.
+  const liveYtms = enrichedBonds.filter(b => b.ytmIsLive).map(b => b.ytm);
+  const avgYTM = liveYtms.length > 0
+    ? (liveYtms.reduce((s, y) => s + y, 0) / liveYtms.length).toFixed(2)
+    : null;
   const avgDuration = (enrichedBonds.reduce((sum, b) => sum + b.duration, 0) / enrichedBonds.length).toFixed(1);
 
   const types: BondType[] = ['All', 'G-Sec', 'SDL', 'Corporate', 'T-Bill'];
+
+  const stats: Array<{
+    label: string; count: string | number; color: string; bg: string; border: string;
+    chip?: string; chipState?: 'live' | 'reference'; title?: string;
+  }> = [
+    { label: t('bonds.gSecs'),        count: gSecs.length,             color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
+    { label: t('bonds.sdls'),          count: sdls.length,              color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)' },
+    { label: t('bonds.corporate'),     count: corporate.length,         color: 'var(--accent-gold)',  bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.2)' },
+    { label: t('bonds.tBills'),       count: tbills.length,            color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
+    {
+      label: t('bonds.avgYtm'),
+      count: loading ? '...' : (avgYTM === null ? '—' : avgYTM + '%'),
+      color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)',
+      chip: liveYtms.length > 0 ? `LIVE ${liveYtms.length}/${enrichedBonds.length}` : 'REFERENCE',
+      chipState: liveYtms.length > 0 ? 'live' : 'reference',
+      title: liveYtms.length > 0 ? 'Average over LIVE yields only' : 'No live yields — reference data shown',
+    },
+    {
+      label: t('bonds.avgDuration'), count: avgDuration + 'y',
+      color: '#f472b6', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)',
+      chip: 'REFERENCE', chipState: 'reference',
+      title: 'Static reference dataset — illustrative',
+    },
+  ];
 
   return (
     <main className="page-bg">
@@ -114,14 +151,7 @@ export default function BondsPage() {
 
           {/* Quick Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
-            {[
-              { label: t('bonds.gSecs'),        count: gSecs.length,             color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
-              { label: t('bonds.sdls'),          count: sdls.length,              color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)' },
-              { label: t('bonds.corporate'),     count: corporate.length,         color: 'var(--accent-gold)',  bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.2)' },
-              { label: t('bonds.tBills'),       count: tbills.length,            color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
-              { label: t('bonds.avgYtm'),       count: loading ? '...' : avgYTM + '%',             color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)' },
-              { label: t('bonds.avgDuration'), count: avgDuration + 'y',        color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)' },
-            ].map(stat => (
+            {stats.map(stat => (
               <div
                 key={stat.label}
                 style={{
@@ -131,8 +161,11 @@ export default function BondsPage() {
                   padding: '12px 16px',
                 }}
               >
-                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
-                  {stat.label.toUpperCase()}
+                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1, display: 'flex', alignItems: 'center' }}>
+                  <span>{stat.label.toUpperCase()}</span>
+                  {stat.chip && stat.chipState && (
+                    <ProvenanceChip state={stat.chipState} label={stat.chip} title={stat.title ?? (stat.chipState === 'live' ? 'Average over live yields only' : 'Static reference dataset — illustrative')} />
+                  )}
                 </div>
                 <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
                   {stat.count}
@@ -220,7 +253,7 @@ export default function BondsPage() {
                 {sorted.map(bond => (
                   <tr
                     key={bond.symbol}
-                    style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s' }}
+                    style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s', opacity: bond.maturity === 'matured' ? 0.55 : 1 }}
                     onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                       onClick={() => router.push(`/bonds/${bond.symbol}`)}
@@ -247,10 +280,14 @@ export default function BondsPage() {
                       </span>
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 700, fontSize: 16, color: ytmColor(bond.ytm), fontFamily: 'monospace' }}>
-                      {bond.ytm.toFixed(2)}%
+                      {bond.ytm.toFixed(2)}%{bond.maturity === 'matured' ? ' (at maturity)' : ''}
+                      <ProvenanceChip state={bond.ytmIsLive ? 'live' : 'reference'} title={bond.ytmIsLive ? 'Live yield observation' : 'Static reference yield — live yield unavailable'} />
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
                       {new Date(bond.maturityDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short' })}
+                      {bond.maturity === 'matured' && (
+                        <span title="This instrument's recorded maturity date has passed — shown as historical reference. Replacement is a founder data decision (FD-9)." style={{ marginLeft: 8, fontSize: 9, fontWeight: 700, color: '#EF4444', background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: 4, padding: '2px 6px', letterSpacing: 1 }}>MATURED</span>
+                      )}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
                       {bond.duration.toFixed(1)}y

@@ -10,6 +10,7 @@ import type { UniversalAsset } from '../../lib/types/asset';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
 import { useTier } from '../../hooks/useTier'; // R3: verdicts served by /api/gurus
 import { CRYPTO_GURUS } from '../../lib/gurus/crypto';
+import { ProvenanceChip } from '../shared/ProvenanceChip';
 
 const TABS = [
   { id: 'overview',   label: 'Overview',       desc: 'Price & Market Data'          },
@@ -87,9 +88,11 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     };
   });
   const validScores = rishiScores.filter(r => r.result.score !== null); // T11: insufficient data excluded
-  const avgScore = validScores.length > 0
+  // Audit 2026-10-02 (P1): no valid scorer results -> NULL (Insufficient
+  // Data), never 0 — "Crypto Consensus: 0/100" claimed a real zero score.
+  const avgScore: number | null = validScores.length > 0
     ? Math.round(validScores.reduce((s, r) => s + (r.result.score as number), 0) / validScores.length)
-    : 0; // no valid scorer results -> neutral average, per-scorer cards show em dash
+    : null;
 
   const aboveMa200 = liveAsset.price > asset.moving200d;
   const maLabel = asset.macd === 'BULLISH' ? 'BUY' : asset.macd === 'BEARISH' ? 'SELL' : 'NEUTRAL';
@@ -264,18 +267,20 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                 <span>|</span>
                 <span>RSI: {asset.rsi}</span>
                 <span>|</span>
-                <span style={{ color: scoreColor(avgScore), fontWeight: 600 }}>Crypto Consensus: {avgScore}/100</span>
+                <span style={{ color: avgScore === null ? '#94A3B8' : scoreColor(avgScore), fontWeight: 600 }}>Crypto Consensus: {avgScore === null ? '— Insufficient Data' : avgScore + '/100'}</span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1 }}>
+              <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', gap: 8 }}>
                 {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                <ProvenanceChip state={livePriceData?.price && livePriceData.price > 0 ? 'live' : 'reference'} title={livePriceData?.price && livePriceData.price > 0 ? 'Live price observation' : 'Static reference price — live price unavailable'} />
               </div>
               <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
                 {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}% (24h)
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                7D: {asset.change7d >= 0 ? '+' : ''}{asset.change7d.toFixed(2)}%
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', gap: 6 }}>
+                <span>7D: {asset.change7d >= 0 ? '+' : ''}{asset.change7d.toFixed(2)}%</span>
+                <ProvenanceChip state="reference" title="Static reference 7-day change — not from live data" />
               </div>
             </div>
           </div>
@@ -307,9 +312,9 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 CRYPTO RISHI CONSENSUS</div>
-              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(avgScore), lineHeight: 1 }}>{avgScore}</div>
+              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? '#64748B' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
-                {avgScore >= 75 ? 'Strong HODL Signal — Sound Money Thesis Intact' : avgScore >= 55 ? 'Accumulation Phase — Selective Entry Points' : 'Weak Momentum — Patience Required'}
+                {avgScore === null ? 'Insufficient Data — fewer than the minimum valid scorers' : avgScore >= 75 ? 'Strong HODL Signal — Sound Money Thesis Intact' : avgScore >= 55 ? 'Accumulation Phase — Selective Entry Points' : 'Weak Momentum — Patience Required'}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (
@@ -365,13 +370,19 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
 
             {/* Live Price Chart */}
             <div className="card-sacred" style={{ padding: 24 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>LIVE PRICE CHART</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center' }}>
+                <span>LIVE PRICE CHART</span>
+                <ProvenanceChip state="live" title="Chart from live price observations" />
+              </div>
               <AssetPriceChart asset={chartAsset} />
             </div>
 
-            {/* Technical Signals */}
+            {/* Technical Signals — static reference analytics (P1) */}
             <div className="card-sacred" style={{ padding: 24 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>TECHNICAL SIGNALS</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center' }}>
+                <span>TECHNICAL SIGNALS</span>
+                <ProvenanceChip state="reference" title="RSI / moving averages / ATH distance are static reference analytics — not computed from live data" />
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                 {[
                   { label: 'RSI (14)', value: asset.rsi.toString(), signal: asset.rsi > 70 ? 'OVERBOUGHT' : asset.rsi < 30 ? 'OVERSOLD' : 'NEUTRAL' },

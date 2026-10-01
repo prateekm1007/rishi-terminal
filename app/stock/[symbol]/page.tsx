@@ -8,6 +8,7 @@ import { TIER_CONFIG } from '@/lib/premium';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
 import { StockPageClient } from '../../../components/stock/StockPageClient';
+import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
 
 
 // Round-5 audit (finding 18): every stock page shared the site-default
@@ -51,6 +52,15 @@ export default async function StockPage({ params }: StockPageProps) {
   if (!stock) notFound();
 
   const consensus = getStockScore(stock);
+
+  // Round-5 audit (findings 1, 8): an internally inconsistent record
+  // (impossible P/E-0-with-profit etc.) renders NO scored surface — no
+  // verdicts, no QVPS, no debate graph, no technical-edge signals.
+  // Rankings were gated in this same round; this gates the page itself.
+  if (consensus.dataQuality === 'INCOMPLETE') {
+    return <InsufficientDataRecord stock={stock} />;
+  }
+
   // R3: the RSC payload carries ONLY the free (seeker) verdict set. Paid
   // tiers upgrade via GET /api/rishis/[symbol], enforced by getSessionUser.
   // This page is statically prerendered, so the embedded set is the public

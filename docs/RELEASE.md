@@ -4,11 +4,11 @@
 
 | | Development | Staging | Production |
 |---|---|---|---|
-| Supabase project | local / any scratch | `opnfelgxklfvurzozhms` (the "candidate" project) | `mwkreqcbgpjqcpctwllf` |
-| Vercel | `vercel dev` | preview deployments (per-PR) | `rishi-terminal.vercel.app` |
+| Supabase project | local / any scratch | **none** — `BLOCKED: staging Supabase project` (founder dashboard task; see status below) | `mwkreqcbgpjqcpctwllf` |
+| Vercel | `vercel dev` | `rishi-terminal-staging` project + per-PR previews, both behind Deployment Protection | `rishi-terminal.vercel.app` |
 | Payments | none | none until Razorpay staging keys exist | live Razorpay keys |
 | Cron | not fired | not fired | `/api/ingest/snapshot` 13:30 UTC Mon–Fri |
-| Purpose | iterate freely, seed data is fine | integration + auth testing, no real users | real users, real data |
+| Purpose | iterate freely, seed data is fine | integration + auth testing, no real users, **no database until the staging Supabase project exists** | real users, real data |
 
 Rules that hold across all environments:
 
@@ -25,15 +25,16 @@ Rules that hold across all environments:
 
 ### 1. dev → staging (PR preview)
 
-- Open a PR; Vercel builds a preview deployment.
-- Vercel project env for previews points `NEXT_PUBLIC_SUPABASE_URL` /
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` at the
-  **candidate** project, plus `CRON_SECRET` + chat keys.
+- Open a PR; Vercel builds a preview deployment (behind Deployment
+  Protection — unreviewed code is never publicly reachable).
+- **Previews and the staging project carry NO Supabase variables** until a
+  staging Supabase project exists (audit round 4, Q2). While staging runs
+  database-less, `/api/health` reports `down`; that is the sanctioned state,
+  not a defect to work around.
 - Gate before promoting the branch:
   ```bash
-  npx tsx scripts/checkEnv.ts --env=staging   # → all required present
+  npx tsx scripts/checkEnv.ts --env=staging --assert-distinct-project   # → exit 0 (never the production DB project)
   npm run lint:ratchet && npx vitest run      # → pass
-  curl -s https://<staging-url>/api/health | jq .status   # → ok | degraded (never "down")
   ```
 
 ### 2. staging → production (merge to main)
@@ -63,24 +64,41 @@ Canonical list: `.env.example` (the template `scripts/checkEnv.ts` checks
 against). The required-per-environment matrix lives in that script and is
 PROPOSED until the founder confirms it (E6-09 / FD-7).
 
-## Status of this document (updated 2026-10-01, remediation round 3 / N7)
+## Status of this document (updated 2026-10-01, audit round 4 / Q2)
 
-- **Vercel staging project: provisioned and linked.**
-  `rishi-terminal-staging` (prj_7B1N3qceJOAh5jVAI32RhF84Zygm) is linked to
-  `prateekm1007/rishi-terminal`. Environment variables set (Supabase URL +
-  keys, CRON_SECRET, CHAT_API_BASE_URL, CHAT_MODEL, NEXT_PUBLIC_BASE_URL).
-  **BLOCKED:** CHAT_API_KEY, FMP_API_KEY and NEXTAUTH_SECRET cannot be
-  copied programmatically — Vercel's API returns only encrypted envelopes
-  for them, and their plaintexts are not in this session's credentials.
-  The founder must enter those three in the staging project's settings
-  (Settings → Environment Variables) before `checkEnv --env=staging`
-  passes against it.
-- **Staging Supabase project: does NOT exist.** An earlier revision of
-  this document claimed one was provisioned with migrations 001–008;
-  verified against the Supabase Management API on 2026-10-01: exactly ONE
-  project exists (the production project). Creating one requires either a
-  PAT with project-creation scope (the current PAT returns 403) or the
-  dashboard. Production remains the only database; staging deploys
-  against it until a staging database is provisioned (acceptable for the
-  read-only surfaces, NOT for payment/ingest drills — do those with
-  production credentials and cleanup, as the round-2/3 probes did).
+- **Deployment Protection re-enabled on staging** (audit round 4, Q2.1).
+  `rishi-terminal-staging` (`prj_7B1N3qceJOAh5jVAI32RhF84Zygm`) now has
+  Vercel Authentication set to **all deployments**. Verified live:
+  `curl -sI https://rishi-terminal-staging.vercel.app/api/health | head -1`
+  → `HTTP/2 302` ("Protected by Vercel Authentication"), was `HTTP/2 200`
+  before the fix. Preview deployments of `rishi-terminal` were verified
+  protected as well (302 on a live preview URL).
+- **Production Supabase variables removed from staging and previews**
+  (Q2.2). `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and
+  `SUPABASE_SERVICE_ROLE_KEY` were deleted from the staging project's
+  environment and from the preview target of `rishi-terminal` (production
+  target untouched). Until the founder creates a staging Supabase project,
+  staging runs database-less: `/api/health` reports `down` there, which is
+  the sanctioned state per this document's promotion gate.
+- **Production drills stopped** (Q2.3). Payment and ingest drills are no
+  longer run against production, with or without cleanup. They stay stopped
+  until a staging Supabase project exists.
+  `BLOCKED: staging Supabase project` — creating one needs the dashboard
+  (the Management PAT returns 403 on project creation, Hobby plan). The
+  founder checklist carries the task.
+- **`scripts/checkEnv.ts --assert-distinct-project`** (Q2.5) exits 1 when
+  the target environment's Supabase host equals production's, and 0 when a
+  distinct host — or no host at all — is wired. It was verified to fail
+  against the pre-fix staging environment (which held the production URL)
+  before the variables were removed.
+- Earlier revision of this status block (round 3) claimed "Vercel staging
+  project: provisioned and linked … `/api/health` 200 db:true" — that
+  `200 db:true` was exactly the defect: staging was publicly reachable AND
+  wired to the production database. Corrected here rather than deleted so
+  the incident is greppable (Constitution art. 1).
+- **Staging Supabase project: does NOT exist.** Verified against the
+  Supabase Management API on 2026-10-01: exactly ONE project exists (the
+  production project, `mwkreqcbgpjqcpctwllf`). The environments table above
+  previously listed `opnfelgxklfvurzozhms` as staging — that project has
+  never existed in this account; the table was wrong and is fixed above
+  (Constitution art. 1).

@@ -13,6 +13,24 @@
  *   npx tsx scripts/checkEnv.ts --env=staging
  *   npx tsx scripts/checkEnv.ts --env=production
  *   npx tsx scripts/checkEnv.ts --env=development [--env-file=.env.local]
+ *   npx tsx scripts/checkEnv.ts --env=staging --assert-distinct-project
+ *                [--production-url=https://<prod-ref>.supabase.co]
+ *
+ * `--assert-distinct-project` (audit round 4, Q2) runs ONLY the project-
+ * separation assertion — it does not run the presence matrix, so its exit
+ * code answers exactly one question: is the environment wired to a
+ * database project distinct from production?
+ *   - The Supabase URL is read from the merged environment (process.env +
+ *     --env-file). Its HOST is a public, non-secret value (it ships in the
+ *     client bundle by design), so comparing hosts leaks nothing.
+ *   - If the environment has NO Supabase URL wired (the sanctioned state
+ *     until a staging Supabase project exists — see docs/RELEASE.md), the
+ *     assertion passes: staging cannot share production's database if it
+ *     has none.
+ *   - If the host equals production's host → exit 1.
+ * Production's host defaults to the production project's public URL
+ * (documented in docs/RELEASE.md and published in the client bundle) and
+ * can be overridden with --production-url= for tests.
  *
  * Values are read from process.env, optionally merged from --env-file (a
  * plain KEY=VALUE file, e.g. a Vercel-pulled env or .env.staging).
@@ -33,6 +51,61 @@ const env = (arg("env") ?? "development") as EnvName;
 if (!["development", "staging", "production"].includes(env)) {
   console.error(`Unknown env "${env}" — use development | staging | production`);
   process.exit(2);
+}
+
+// ── Q2: project-separation assertion (--assert-distinct-project) ──
+// Compares the Supabase URL HOST wired for this environment against the
+// production host. Hosts only — the URL is a public, non-secret value
+// (Constitution art. 1: the check itself must not become a leak).
+// Runs INSTEAD of the presence matrix so the exit code has exactly one
+// meaning (see the header comment).
+const assertDistinct = args.includes("--assert-distinct-project");
+if (assertDistinct) {
+  // Merge the env file: keep the VALUES of the two non-secret URL variables
+  // the host comparison needs; every other key stays presence-only, exactly
+  // like the matrix run below (secret values are never retained in memory).
+  const URL_KEYS = new Set(["NEXT_PUBLIC_SUPABASE_URL", "PROD_SUPABASE_URL"]);
+  const urlValues: Record<string, string> = {};
+  const envFileDistinct = arg("env-file");
+  if (envFileDistinct) {
+    if (!existsSync(envFileDistinct)) {
+      console.error(`BLOCKED: --env-file=${envFileDistinct} does not exist`);
+      process.exit(2);
+    }
+    for (const line of readFileSync(envFileDistinct, "utf8").split("\n")) {
+      const t = line.trim();
+      if (!t || t.startsWith("#") || !t.includes("=")) continue;
+      const key = t.replace(/^export\s+/, "").split("=")[0].trim();
+      const value = t.slice(t.indexOf("=") + 1).trim();
+      if (URL_KEYS.has(key)) {
+        if (!(key in urlValues)) urlValues[key] = value;
+      } else if (!(key in process.env)) {
+        (process.env as Record<string, string>)[key] = "(present)";
+      }
+    }
+  }
+  const PROD_URL_DEFAULT = "https://mwkreqcbgpjqcpctwllf.supabase.co"; // public project URL (docs/RELEASE.md)
+  const prodUrl = arg("production-url") ?? urlValues.PROD_SUPABASE_URL ?? process.env.PROD_SUPABASE_URL ?? PROD_URL_DEFAULT;
+  const envUrlRaw = urlValues.NEXT_PUBLIC_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const envUrl = envUrlRaw.trim() && !envUrlRaw.includes("placeholder") ? envUrlRaw.trim() : "";
+  const hostOf = (u: string) => {
+    try { return new URL(u).host; } catch { return ""; }
+  };
+  const prodHost = hostOf(prodUrl);
+  const envHost = hostOf(envUrl);
+  console.log(`── checkEnv: ${env} — assert-distinct-project`);
+  if (!envHost) {
+    console.log(`PASS — ${env} has no Supabase URL wired (no database configured; cannot share production's project)`);
+    process.exit(0);
+  }
+  console.log(`  ${env} database host : ${envHost}`);
+  console.log(`  production host   : ${prodHost}`);
+  if (prodHost && envHost === prodHost) {
+    console.error(`FAIL — ${env} is wired to the PRODUCTION database project. Remove the production Supabase variables from ${env} (audit round 4, Q2).`);
+    process.exit(1);
+  }
+  console.log(`PASS — ${env} is wired to a distinct database host (or none)`);
+  process.exit(0);
 }
 
 // ── Parse variable names from .env.example (names only, by design) ──

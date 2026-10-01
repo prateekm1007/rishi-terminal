@@ -528,6 +528,14 @@ export const PERSONA_ALIASES: Record<string, string> = Object.fromEntries(
   ]),
 );
 
+/** id -> system prompt (Coder Directions G10: moved OUT of personas.ts,
+ *  which is client-reachable — this map is the server-authority prompt
+ *  surface and must never re-enter the client bundle). */
+export const CHAT_PERSONAS: Record<string, string> = Object.fromEntries(
+  CANONICAL_PERSONAS.map(p => [p.id, p.systemPrompt]),
+);
+export const PERSONA_IDS = Object.keys(CHAT_PERSONAS);
+
 /** Resolve a client-supplied persona reference to the canonical persona,
  *  or null when unknown (route rejects with 400). */
 export function resolveCanonicalPersona(

@@ -251,7 +251,16 @@ export interface GroundingResult {
     assertions: Array<{ field: string; value: number; unit: string }>;
   }>;
   grounded: boolean;
-  mode: "structured-claims" | "evidence-context";
+  /** Coder Directions G3 (audit 2026-10-02) — TWO explicit states plus the
+   *  pre-existing no-claims state:
+   *   "structured-claims" → grounded=true, every number assertion-backed;
+   *   "context-only"      → claims existed but made NO numeric statement
+   *                         (qualitative) — a claim can be qualitative
+   *                         without being numerically grounded, and
+   *                         evidenceIds alone are never grounding;
+   *   "evidence-context"  → nothing validated (fail-closed rejections or
+   *                         no claims at all). */
+  mode: "structured-claims" | "context-only" | "evidence-context";
   /** Machine-readable rejection notes for the audit trail / UI. */
   rejections: string[];
 }
@@ -603,6 +612,11 @@ export function validateGrounding(
     };
   }
   const rejections: string[] = [];
+  /** G3: claims classified context-only (qualitative — no numeric statement). */
+  const qualitative: string[] = [];
+  /** G3: a HARD failure (unknown id, assertion mismatch, unsupported figure)
+   *  fails the whole batch; a qualitative classification does NOT. */
+  let hardFailure = false;
   const surviving: Array<{
     claim: string;
     evidenceIds: string[];
@@ -617,11 +631,30 @@ export function validateGrounding(
     const c = claims[i];
     if (!c.claim || !Array.isArray(c.evidenceIds) || c.evidenceIds.length === 0) {
       rejections.push(`claim ${i + 1}: no evidence ids — unverifiable, rejected`);
+      hardFailure = true;
       continue;
     }
     const unknown = c.evidenceIds.filter(id => !validIds.has(id));
     if (unknown.length > 0) {
       rejections.push(`claim ${i + 1}: unknown evidence id(s) ${unknown.map(u => JSON.stringify(u)).join(", ")} — rejected`);
+      hardFailure = true;
+      continue;
+    }
+
+    // ── G3 (audit 2026-10-02): qualitative claims are context-only ──
+    // A claim that states NO number cannot be numerically grounded — not by
+    // assertions, and never by evidenceIds alone. It is CLASSIFIED as
+    // context-only (disclosed below) and removed from the grounded set; it
+    // does NOT poison the batch the way a failed assertion does (it is not
+    // false — it is unverifiable-numerically). Assertions attached to a
+    // qualitative claim are unused and disclosed as such.
+    const statedAll = statedNumbers(c.claim);
+    if (statedAll.length === 0) {
+      const hasUnusedAssertions = Array.isArray(c.assertions) && c.assertions.length > 0;
+      rejections.push(
+        `claim ${i + 1}: qualitative claim (no numeric statement) — classified context-only, NOT grounded (evidenceIds alone are never grounding${hasUnusedAssertions ? "; its unused assertions are ignored" : ""}) (G3)`,
+      );
+      qualitative.push(c.claim);
       continue;
     }
 
@@ -654,18 +687,23 @@ export function validateGrounding(
       matchedValues.add(av);
       if (!matchedByField.has(af)) matchedByField.set(af, { value: av, unit: au });
     }
-    if (assertionFailure) continue;
+    if (assertionFailure) {
+      hardFailure = true;
+      continue;
+    }
 
     // (b) every number the claim STATES must be a matched assertion value —
     //     attributed numbers additionally need an assertion for THAT field
     //     with THAT value (and unit token, when attached). The old
     //     cited-text presence route is GONE (audit 2026-10-02 P0).
-    //     Round-5: number words and lakh/crore forms are stated numbers.
-    const stated = statedNumbers(c.claim);
+    //     Round-5: number words and lakh/crore forms are stated numbers
+    //     (statedAll was captured at the G3 qualitative gate above).
+    const stated = statedAll;
     if (stated.length > 0 && assertions.length === 0) {
       rejections.push(
         `claim ${i + 1}: states numbers (${stated.map(s => JSON.stringify(s.raw)).join(", ")}) but asserts no field/value/unit — semantic grounding unavailable, rejected (R4-02; copy the fact annotation into assertions)`,
       );
+      hardFailure = true;
       continue;
     }
     let numberFailure = false;
@@ -700,7 +738,10 @@ export function validateGrounding(
         numberFailure = true;
       }
     }
-    if (numberFailure) continue;
+    if (numberFailure) {
+      hardFailure = true;
+      continue;
+    }
 
     // (b2) Round-5 audit (Q4 B4): a claim that NAMES a specific metric
     //     field without stating a number must still cite an item that
@@ -746,7 +787,9 @@ export function validateGrounding(
   // surviving claims' MATCHED ASSERTION VALUES only — cited-text numbers
   // (dates, ids) cannot launder a figure into the answer (audit 2026-10-02).
   // Round-5: word numbers and lakh/crore forms count here too.
-  if (rejections.length === 0) {
+  // G3: a purely-qualitative classification is not a hard failure, so the
+  // floor still runs whenever no HARD failure has occurred.
+  if (!hardFailure) {
     const pool = new Set<string>();
     for (const s of surviving) {
       for (const v of s.matchedValues) pool.add(v);
@@ -754,16 +797,33 @@ export function validateGrounding(
     for (const sn of statedNumbers(answer)) {
       if (!pool.has(sn.key)) {
         rejections.push(`answer: number ${JSON.stringify(sn.raw)} is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02)`);
+        hardFailure = true;
       }
     }
   }
 
-  if (rejections.length > 0) {
+  // ── G3: classification outcome ──
+  // A HARD failure (unknown id, assertion mismatch, answer-floor violation)
+  // fails the whole batch → evidence-context. A batch whose claims are ALL
+  // qualitative (no hard failure) is the explicit "context-only" state:
+  // grounded=false, zero validated claims, disclosed — never silently
+  // presented as verified.
+  if (rejections.length > 0 && hardFailure) {
     return {
       validatedClaims: [],
       grounded: false,
       mode: "evidence-context",
       rejections,
+    };
+  }
+  if (surviving.length === 0) {
+    return {
+      validatedClaims: [],
+      grounded: false,
+      mode: "context-only",
+      rejections: qualitative.length > 0
+        ? rejections
+        : [...rejections, "no numeric claim survived validation — context-only"],
     };
   }
   return {

@@ -1,25 +1,24 @@
 // lib/chat/personas.ts
-// DERIVED persona views for the canonical registry (audit 2026-10-02, P0
-// "persona one-source-of-truth").
+// CLIENT-SAFE derived persona views (Coder Directions G10, audit
+// 2026-10-02): the client import graph may carry ONLY rendering fields.
+// The prompt-bearing authority (model-prompt / stock-prompt / scoring /
+// access fields) lives in lib/chat/registry.ts + lib/chat/rishiEngine.ts and is
+// server-reachable only; app/rishis imports THIS module, so this file must
+// stay free of those fields (pinned by test/persona.clientProjection.test.ts, which
+// also pins the display mirror field-exact against the registry so no
+// second authority can drift).
 //
-// HISTORY (why this file shrank): this module used to BE the authority and
-// grew three of its own (ALL_RISHIS, CHAT_PERSONAS, STOCK_CHAT_PERSONAS)
-// which drifted against rishiEngine.ts RISHI_PERSONALITIES and prompts.ts
-// RISHI_PROMPTS — the audit's P0: /api/chat resolved prompts from
-// CHAT_PERSONAS with no entitlement check while personaAccess gated via a
-// DIFFERENT authority. lib/chat/registry.ts is now the single source; every
-// export below is a mechanical derivation, so a persona can no longer exist
-// in one authority but not the other (pinned by test/persona.registry.test.ts).
+// HISTORY: this module used to BE an authority (ALL_RISHIS / CHAT_PERSONAS /
+// STOCK_CHAT_PERSONAS) and shipped every persona's full system prompt into
+// the client bundle via the /rishis page import. CHAT_PERSONAS moved to
+// registry.ts (server); ALL_RISHIS is now a projection of the prompt-free
+// display data with the same card shape as before (minus the prompt field
+// the UI never read).
 //
 // The client never sends a system prompt — it sends a personaId which the
 // server resolves to the canonical persona from the registry.
 
-import {
-  CANONICAL_PERSONAS,
-  MARKETING_PERSONAS,
-  PERSONA_ALIASES,
-  type CanonicalPersona,
-} from './registry';
+import { PERSONA_DISPLAY, type PersonaDisplay } from './registryDisplay';
 
 /**
  * The /rishis marketing card shape (unchanged from the pre-registry era so
@@ -41,60 +40,53 @@ export interface Persona {
   bestFor: string[];
   quote: string;
   famousPicks: string[];
-  systemPrompt: string;
 }
 
-function toMarketing(p: CanonicalPersona): Persona {
+function toCard(p: PersonaDisplay): Persona {
   return {
     id: p.id,
     name: p.fullName,
     emoji: p.emoji,
-    category: p.category ?? "",
-    origin: p.origin ?? "",
-    tier: p.rank ?? "",
-    label: p.label ?? "",
-    bio: p.bio ?? "",
+    category: p.category ?? '',
+    origin: p.origin ?? '',
+    tier: p.rank ?? '',
+    label: p.label ?? '',
+    bio: p.bio ?? '',
     philosophy: p.philosophy,
-    formula: p.formula ?? "",
+    formula: p.formula ?? '',
     bestFor: p.bestFor ?? [],
-    quote: p.quote ?? "",
+    quote: p.quote ?? '',
     famousPicks: p.famousPicks ?? [],
-    systemPrompt: p.systemPrompt,
   };
 }
 
 /** The /rishis roster — the ranked marketing personas (the same 19 as
  *  before the registry; chanos/soros never had marketing cards). */
-export const ALL_RISHIS: Persona[] = MARKETING_PERSONAS.map(toMarketing);
+export const ALL_RISHIS: Persona[] = PERSONA_DISPLAY
+  .filter(p => p.rank !== undefined)
+  .map(toCard);
 
-/** ── Allow-list: id -> system prompt (DERIVED from the registry). ── */
-export const CHAT_PERSONAS: Record<string, string> = Object.fromEntries(
-  CANONICAL_PERSONAS.map(p => [p.id, p.systemPrompt]),
+/**
+ * Alias map: id / short name / full name -> canonical id, derived from the
+ * display projection (the same map the registry derives; all 21 personas
+ * carry id/name/fullName, so the two are identical by construction).
+ */
+const DISPLAY_ALIASES: Record<string, string> = Object.fromEntries(
+  PERSONA_DISPLAY.flatMap(p => [
+    [p.id.toLowerCase(), p.id],
+    [p.name.toLowerCase(), p.id],
+    [p.fullName.toLowerCase(), p.id],
+  ]),
 );
-
-export const PERSONA_IDS = Object.keys(CHAT_PERSONAS);
 
 /**
  * Resolve a client-supplied persona reference (id, short name or full
  * display name) to a canonical persona id. Returns null when unknown — the
  * route then rejects with 400. Never trust client prompt text.
- *
- * Note: this now resolves through the registry alias map (id / 'Buffett' /
- * 'Warren Buffett' all land on 'buffett'). The old map ALSO admitted
- * display-name keys as first-class CHAT_PERSONAS entries — two different
- * prompts for the same persona depending on spelling; the concise
- * stock-page variant is now `stockPrompt` on the canonical persona, applied
- * by the route when a symbol is in scope.
  */
 export function resolvePersonaId(input: string | undefined | null): string | null {
   if (!input) return null;
   const trimmed = input.trim();
-  const byId = CANONICAL_PERSONAS.find(p => p.id === trimmed);
-  if (byId) return byId.id;
-  return PERSONA_ALIASES[trimmed.toLowerCase()] ?? null;
+  if (PERSONA_DISPLAY.some(p => p.id === trimmed)) return trimmed;
+  return DISPLAY_ALIASES[trimmed.toLowerCase()] ?? null;
 }
-
-// Re-export the canonical type + resolver so route/UI code can use the
-// object form without importing the registry directly.
-export type { CanonicalPersona };
-export { resolveCanonicalPersona } from './registry';

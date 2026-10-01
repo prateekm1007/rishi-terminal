@@ -18,7 +18,9 @@ interface Message {
     provider: string;
     model: string;
     grounded: boolean;
-    groundingMode: 'evidence-context' | 'structured-claims';
+    /** G3 (audit 2026-10-02): "context-only" = only qualitative claims —
+     *  the reply must never read as numerically verified analysis. */
+    groundingMode: 'evidence-context' | 'context-only' | 'structured-claims';
   };
 }
 

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Stock } from "@/lib/types";
-import { CANONICAL_PERSONAS } from "@/lib/chat/registry";
+import { PERSONA_DISPLAY } from "@/lib/chat/registryDisplay";
 import { useLanguage } from '../../lib/language';
 import {
   createSession, addMessageToSession, getSessionsBySymbol,
@@ -21,8 +21,10 @@ interface Props {
 // explicit unavailable state and generates NO answer (constitution rule 5:
 // an honest "unavailable", never stubbed success).
 //
-// The persona roster is the canonical registry — the same authority
-// /api/chat and /api/chat/personas enforce (P0 one-source-of-truth).
+// The persona roster the UI renders comes from the CLIENT-SAFE display
+// projection (lib/chat/registryDisplay — rendering fields only). WHICH
+// personas a session may use is decided by the server (G10: entitlement is
+// never a client field); this component only projects that server answer.
 
 export default function RishiChat({ stock }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -49,10 +51,11 @@ export default function RishiChat({ stock }: Props) {
   // R3: WHICH personas a caller may use is decided by the server
   // (GET /api/chat/personas from the session tier; /api/chat re-enforces it
   // per request — audit 2026-10-02: now it really does). Fallback on fetch
-  // failure is the FREE set — fail closed for UX; the server remains the
-  // control.
-  const [allowedPersonaIds, setAllowedPersonaIds] = useState<string[]>(() =>
-    CANONICAL_PERSONAS.filter(p => p.access === 'free').map(p => p.id));
+  // failure is the historical seeker surface {damani} — fail closed for UX;
+  // the server remains the control. (G10: the access matrix is NOT a client
+  // field, so the fallback is this single hardcoded id, not a client-side
+  // entitlement computation.)
+  const [allowedPersonaIds, setAllowedPersonaIds] = useState<string[]>(() => ["damani"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,7 +74,7 @@ export default function RishiChat({ stock }: Props) {
   }, []);
 
   const availableRishis = useMemo(
-    () => CANONICAL_PERSONAS.filter(p => allowedPersonaIds.includes(p.id)),
+    () => PERSONA_DISPLAY.filter(p => allowedPersonaIds.includes(p.id)),
     [allowedPersonaIds],
   );
 
@@ -181,7 +184,7 @@ export default function RishiChat({ stock }: Props) {
         const [r1, r2] = debateRishis;
         const [resp1, resp2] = await Promise.allSettled([
           callGeminiAPI(r1, text, messages),
-          callGeminiAPI(r2, `Respond to this from ${CANONICAL_PERSONAS.find(p => p.id === r2)?.fullName}'s perspective, potentially disagreeing: ${text}`, messages),
+          callGeminiAPI(r2, `Respond to this from ${PERSONA_DISPLAY.find(p => p.id === r2)?.fullName}'s perspective, potentially disagreeing: ${text}`, messages),
         ]);
 
         if (resp1.status === 'rejected' && resp2.status === 'rejected') {
@@ -197,7 +200,7 @@ export default function RishiChat({ stock }: Props) {
         ];
         for (const [rid, resp, suffix] of pairs) {
           if (resp.status === 'rejected') continue;
-          const persona = CANONICAL_PERSONAS.find(p => p.id === rid);
+          const persona = PERSONA_DISPLAY.find(p => p.id === rid);
           const msg: ChatMessage = {
             id: Date.now().toString() + '_' + suffix,
             role: "rishi",
@@ -216,7 +219,7 @@ export default function RishiChat({ stock }: Props) {
       } else {
         // Single Rishi — on failure: explicit unavailable state, no answer.
         const resp = await callGeminiAPI(selectedRishi, text, messages);
-        const persona = CANONICAL_PERSONAS.find(p => p.id === selectedRishi);
+        const persona = PERSONA_DISPLAY.find(p => p.id === selectedRishi);
         const rishiMsg: ChatMessage = {
           id: Date.now().toString() + '_r',
           role: "rishi",
@@ -241,8 +244,8 @@ export default function RishiChat({ stock }: Props) {
     }
   }
 
-  const rishi = CANONICAL_PERSONAS.find(p => p.id === selectedRishi);
-  const personaById = (id: string) => CANONICAL_PERSONAS.find(p => p.id === id);
+  const rishi = PERSONA_DISPLAY.find(p => p.id === selectedRishi);
+  const personaById = (id: string) => PERSONA_DISPLAY.find(p => p.id === id);
 
   return (
     <div style={{
@@ -288,10 +291,10 @@ export default function RishiChat({ stock }: Props) {
         </button>
       </div>
 
-      {/* Rishi Selector — the canonical registry, authorized subset enabled */}
+      {/* Rishi Selector — the client-safe display projection, authorized subset enabled */}
       {!debateMode ? (
         <div style={{ padding: "10px 14px", borderBottom: "1px solid rgba(51,65,85,0.4)", display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {CANONICAL_PERSONAS.map(p => {
+          {PERSONA_DISPLAY.map(p => {
             const isAvailable = allowedPersonaIds.includes(p.id);
             return (
               <button

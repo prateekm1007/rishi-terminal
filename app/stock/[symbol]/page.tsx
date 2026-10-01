@@ -13,7 +13,9 @@ import { InsufficientDataRecord } from '../../../components/stock/InsufficientDa
 
 // Round-5 audit (finding 18): every stock page shared the site-default
 // <title> — 916 pages of duplicated metadata. Each page now names its
-// stock, sector and headline scores.
+// stock, sector and headline scores. Follow-up: INCOMPLETE records get a
+// title/description that matches the insufficient-data page they render —
+// the metadata must not promise scores the page no longer shows.
 export async function generateMetadata({ params }: StockPageProps): Promise<Metadata> {
   const { symbol } = await params;
   const key = symbol.toUpperCase();
@@ -21,6 +23,12 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   const stock = STOCKS[canonicalSym];
   if (!stock) {
     return { title: `Stock not found | Rishi Terminal` };
+  }
+  if (getStockScore(stock).dataQuality === "INCOMPLETE") {
+    return {
+      title: `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`,
+      description: `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`,
+    };
   }
   return {
     title: `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`,

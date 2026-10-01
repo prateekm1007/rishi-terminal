@@ -558,7 +558,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                       background:"rgba(239,68,68,0.15)", border:"1px solid rgba(239,68,68,0.3)",
                       color:C.red, padding:"3px 10px", borderRadius:"20px",
                       fontSize:"12px", fontWeight:700, fontFamily:mono,
-                    }}>📉 {short.shortScore}%</div>
+                      // Round-5 audit (finding 21): this is the QVPS short-mode
+                      // SCORE (0-100), not a percentage — the raw float rendered
+                      // as "16.05% / 15.759% / 15.75%" with an unexplained unit.
+                    }}>📉 {short.shortScore.toFixed(1)}/100</div>
                   </div>
                   <div style={{ fontSize:"12px", color:"#FCA5A5", lineHeight:1.6 }}>
                     ⚠️ {short.reason}

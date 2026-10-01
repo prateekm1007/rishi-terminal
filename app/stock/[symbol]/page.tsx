@@ -1,4 +1,5 @@
 import { notFound, permanentRedirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import { STOCKS } from '../../../data/stocks';
 import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
@@ -7,6 +8,24 @@ import { TIER_CONFIG } from '@/lib/premium';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
 import { StockPageClient } from '../../../components/stock/StockPageClient';
+
+
+// Round-5 audit (finding 18): every stock page shared the site-default
+// <title> — 916 pages of duplicated metadata. Each page now names its
+// stock, sector and headline scores.
+export async function generateMetadata({ params }: StockPageProps): Promise<Metadata> {
+  const { symbol } = await params;
+  const key = symbol.toUpperCase();
+  const canonicalSym = resolveTickerSymbol(key) ?? key;
+  const stock = STOCKS[canonicalSym];
+  if (!stock) {
+    return { title: `Stock not found | Rishi Terminal` };
+  }
+  return {
+    title: `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`,
+    description: `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`,
+  };
+}
 
 export async function generateStaticParams() {
   return Object.keys(STOCKS).map((symbol) => ({ symbol }));

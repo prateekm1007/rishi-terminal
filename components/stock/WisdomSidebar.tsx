@@ -199,8 +199,10 @@ export function WisdomSidebar({ stock, scores }: WisdomSidebarProps) {
         background: "rgba(5,8,16,0.6)",
       }}>
         {[
-          { id: "wisdom" as const, label: "📜 Wisdom", emoji: "📜" },
-          { id: "chat" as const, label: "💬 Chat", emoji: "💬" },
+          // Round-5 audit (finding 19): labels don't repeat the emoji — the
+          // button renders {emoji} {label}, so "📜 Wisdom" + 📜 doubled it.
+          { id: "wisdom" as const, label: "Wisdom", emoji: "📜" },
+          { id: "chat" as const, label: "Chat", emoji: "💬" },
         ].map(tab => (
           <button
             key={tab.id}

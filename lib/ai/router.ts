@@ -141,6 +141,33 @@ function extractJsonObject(text: string): unknown | null {
   }
 }
 
+/**
+ * Audit 2026-10-02 (production probe follow-up): some providers emit the
+ * assertion `value` as a NUMBER-STRING ("8.91") even when told to copy the
+ * number exactly — zod then rejected the WHOLE structured reply and the
+ * router dumped the raw JSON as the answer text. Coercion happens ONLY at
+ * this parse boundary and ONLY for strings that are exact finite numbers;
+ * everything downstream (field/value/unit fact matching, fail-closed
+ * grounding) is unchanged, so this cannot launder a bad value — it only
+ * lets a well-formed-but-stringly reply reach the REAL validator.
+ */
+function coerceStringlyTypedValues(parsed: unknown): unknown {
+  if (typeof parsed !== "object" || parsed === null) return parsed;
+  const obj = parsed as {
+    claims?: Array<{ assertions?: Array<{ value?: unknown }> }>;
+  };
+  if (!Array.isArray(obj.claims)) return parsed;
+  for (const claim of obj.claims) {
+    if (typeof claim !== "object" || claim === null || !Array.isArray(claim.assertions)) continue;
+    for (const a of claim.assertions) {
+      if (typeof a.value === "string" && a.value.trim() !== "" && Number.isFinite(Number(a.value))) {
+        a.value = Number(a.value);
+      }
+    }
+  }
+  return parsed;
+}
+
 export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promise<AiAnswer | null> {
   const candidates = resolveAiProviderCandidates();
   // Zero candidates → explicit unconfigured state; caller surfaces 503 (T50).
@@ -195,7 +222,9 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
   // the model's — no data is invented to repair the pipeline).
   if (evidence.length > 0) {
     const parsed = extractJsonObject(text);
-    const structured = parsed ? StructuredModelOutputSchema.safeParse(parsed) : null;
+    const structured = parsed
+      ? StructuredModelOutputSchema.safeParse(coerceStringlyTypedValues(parsed))
+      : null;
     if (structured?.success) {
       // R4-02: grounding now validates BOTH the evidence ids and every
       // numeric assertion (field/value/unit) against the typed facts of the

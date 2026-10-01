@@ -1,0 +1,457 @@
+{
+  "schema": "RISHI_PHASE6_T59_MEASUREMENT_V1",
+  "testTimestamp": "2026-10-01T00:43:02.358Z",
+  "deploymentCommit": "bbd5720",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "config": {
+    "burstN": 10,
+    "repeatN": 5,
+    "repeatGapMs": 2000,
+    "adminSnapshots": false,
+    "supabaseEvidence": true
+  },
+  "limitations": [
+    "CRON_SECRET not provided: counter deltas (T59.4) and served-from reconciliation are UNAVAILABLE for this run."
+  ],
+  "scenarioA": {
+    "name": "A-cold-single",
+    "symbol": "TCS",
+    "cacheBusted": true,
+    "httpStatus": 200,
+    "wallMs": 1366,
+    "entry": {
+      "price": 2050.6,
+      "source": "yahoo",
+      "status": "LIVE",
+      "observedAt": "2026-10-01T00:43:03.606Z",
+      "checkedAt": null
+    },
+    "note": "'cold' = no in-process result within the 30 s reuse window and a fresh CDN key (cache-busted URL). Process-level coldness of the serverless instance is not controllable from outside and is NOT claimed."
+  },
+  "scenarioB": {
+    "name": "B-sequential-repeat",
+    "symbol": "TCS",
+    "repeats": 5,
+    "gapMs": 2000,
+    "cacheBusting": "distinct buster per request — each request reaches the origin; T60 (30 s) decides server-side reuse",
+    "results": [
+      {
+        "i": 0,
+        "httpStatus": 200,
+        "wallMs": 475,
+        "entry": {
+          "price": 2050.6,
+          "source": "yahoo",
+          "status": "CACHED",
+          "observedAt": "2026-10-01T00:43:03.606Z",
+          "checkedAt": null
+        }
+      },
+      {
+        "i": 1,
+        "httpStatus": 200,
+        "wallMs": 701,
+        "entry": {
+          "price": 2050.6,
+          "source": "yahoo",
+          "status": "CACHED",
+          "observedAt": "2026-10-01T00:43:03.606Z",
+          "checkedAt": null
+        }
+      },
+      {
+        "i": 2,
+        "httpStatus": 200,
+        "wallMs": 474,
+        "entry": {
+          "price": 2050.6,
+          "source": "yahoo",
+          "status": "CACHED",
+          "observedAt": "2026-10-01T00:43:03.606Z",
+          "checkedAt": null
+        }
+      },
+      {
+        "i": 3,
+        "httpStatus": 200,
+        "wallMs": 510,
+        "entry": {
+          "price": 2050.6,
+          "source": "yahoo",
+          "status": "CACHED",
+          "observedAt": "2026-10-01T00:43:03.606Z",
+          "checkedAt": null
+        }
+      },
+      {
+        "i": 4,
+        "httpStatus": 200,
+        "wallMs": 484,
+        "entry": {
+          "price": 2050.6,
+          "source": "yahoo",
+          "status": "CACHED",
+          "observedAt": "2026-10-01T00:43:03.606Z",
+          "checkedAt": null
+        }
+      }
+    ],
+    "wallP50": {
+      "value": null,
+      "sampleSize": 5
+    },
+    "wallP95": {
+      "value": null,
+      "sampleSize": 5
+    },
+    "wallP99": {
+      "value": null,
+      "sampleSize": 5
+    },
+    "observedAtConstant": true,
+    "statusSequence": [
+      "CACHED",
+      "CACHED",
+      "CACHED",
+      "CACHED",
+      "CACHED"
+    ]
+  },
+  "scenarioC": {
+    "name": "C-concurrent-burst",
+    "symbol": "RELIANCE",
+    "n": 10,
+    "identicalUrl": {
+      "note": "same URL → CDN (s-maxage=30) may satisfy requests before the origin sees them; CDN hits and coalesce wins are combined here BY CONSTRUCTION",
+      "appRequestCount": 10,
+      "httpStatuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "wallMs": [
+        532,
+        811,
+        531,
+        640,
+        1185,
+        642,
+        1302,
+        1372,
+        1152,
+        539
+      ],
+      "wallP50": {
+        "value": 642,
+        "sampleSize": 10
+      },
+      "wallP95": {
+        "value": 1372,
+        "sampleSize": 10
+      },
+      "wallP99": {
+        "value": 1372,
+        "sampleSize": 10
+      }
+    },
+    "distinctUrls": {
+      "note": "distinct busters → every request reaches the origin; upstream count vs coalesceHits delta decides what actually fetched",
+      "appRequestCount": 10,
+      "httpStatuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "wallMs": [
+        387,
+        526,
+        459,
+        495,
+        380,
+        809,
+        392,
+        539,
+        610,
+        479
+      ],
+      "wallP50": {
+        "value": 479,
+        "sampleSize": 10
+      },
+      "wallP95": {
+        "value": 809,
+        "sampleSize": 10
+      },
+      "wallP99": {
+        "value": 809,
+        "sampleSize": 10
+      }
+    }
+  },
+  "scenarioD": {
+    "name": "D-batch-production-path",
+    "populationSource": "app/page.tsx allSyms (TICKER_SYMS + deterministic rotating picks + WORLD_MARKETS + TOP_CRYPTO + stockOfDay) — reconstructed from the same imports",
+    "stocksModuleSize": 944,
+    "population": [
+      "NIFTY50",
+      "SENSEX",
+      "BANK_NIFTY",
+      "SPX",
+      "DJI",
+      "IXIC",
+      "DAX",
+      "FTSE",
+      "HSI",
+      "BTC",
+      "ETH",
+      "GOLD",
+      "SILVER",
+      "WTI",
+      "SOL",
+      "SBIN",
+      "GUFICBIO",
+      "ISEC",
+      "KWALITY",
+      "NESCO",
+      "FCL",
+      "ADANIGREEN",
+      "DELHIVERY",
+      "GMRAIRPORT",
+      "N225",
+      "VIX",
+      "BNB",
+      "ADA",
+      "AVAX",
+      "DOT",
+      "MATIC",
+      "LINK"
+    ],
+    "chunking": [
+      32
+    ],
+    "results": [
+      {
+        "symbolsRequested": 32,
+        "symbolsReturned": 32,
+        "httpStatus": 200,
+        "wallMs": 1646,
+        "unavailableCount": 2,
+        "sourceDistribution": {
+          "yahoo-bulk": 7,
+          "yahoo": 14,
+          "coingecko": 9,
+          "unknown": 2
+        },
+        "statusDistribution": {
+          "LIVE": 30,
+          "UNAVAILABLE": 2
+        },
+        "sampleEntries": [
+          {
+            "symbol": "SBIN",
+            "price": 959.5,
+            "source": "yahoo-bulk",
+            "status": "LIVE",
+            "observedAt": "2026-09-30T09:45:00.000Z",
+            "checkedAt": "2026-10-01T00:43:17.607Z"
+          },
+          {
+            "symbol": "GUFICBIO",
+            "price": 432,
+            "source": "yahoo-bulk",
+            "status": "LIVE",
+            "observedAt": "2026-09-30T10:00:02.000Z",
+            "checkedAt": "2026-10-01T00:43:17.607Z"
+          },
+          {
+            "symbol": "NESCO",
+            "price": 1046.9,
+            "source": "yahoo-bulk",
+            "status": "LIVE",
+            "observedAt": "2026-09-30T09:59:46.000Z",
+            "checkedAt": "2026-10-01T00:43:17.607Z"
+          }
+        ]
+      }
+    ]
+  },
+  "scenarioE": {
+    "name": "E-repeated-batch",
+    "verdict": "counter evidence UNAVAILABLE (CRON_SECRET absent); observedAt equality across batches is consistent with cache replay but the serving layer (bulk cache vs T60 vs CDN) cannot be attributed without counters — NOT claimed",
+    "first": {
+      "httpStatus": 200,
+      "wallMs": 954
+    },
+    "second": {
+      "httpStatus": 200,
+      "wallMs": 1099
+    },
+    "secondMinusFirstWallMs": 145,
+    "observedAtEqualAcrossBatches": true,
+    "counterDelta": null
+  },
+  "reconciliation": {
+    "perScenario": {
+      "singlePhase": null,
+      "full": null
+    },
+    "rule": "health volume counts SINGLE-path attempts only (bulk path deliberately bypasses withProviderHealth — Phase 6.1 forbids semantic changes). Reconciliation holds when: healthDelta(provider) == ledger.single(provider) for all providers, AND ledger.bulk('yahoo') matches the bulk-run events. Any other difference is reported as an unresolved measurement defect.",
+    "unresolvedDefects": []
+  },
+  "observationsCron": {
+    "routeExists": "verified in repo: app/api/ingest/observations/route.ts (code evidence)",
+    "schedule": "vercel.json crons: /api/ingest/observations @ 45 13 * * 1-5 (code evidence)",
+    "unauthenticatedProbe": {
+      "status": 401,
+      "expect": 401,
+      "pass": true
+    },
+    "authenticatedExecution": "not executed (CRON_SECRET absent — provide to run a live capture)"
+  },
+  "persistentCache": {
+    "note": "production fault-injection (provider failure) is not available without a debug surface; steps 1,2,5,7 verified in production below; steps 3,4,6 (failure → cached serve → CACHED status) are covered by integration tests (test/phase6-cache.test.ts) and are flagged as such — not claimed as production-proven",
+    "liveObservations": {
+      "USD/INR": {
+        "httpStatus": 200,
+        "entry": {
+          "price": 95.82,
+          "source": "yahoo",
+          "status": "LIVE",
+          "observedAt": "2026-10-01T00:43:21.286Z",
+          "checkedAt": null
+        }
+      },
+      "US10Y": {
+        "httpStatus": 200,
+        "entry": {
+          "price": 5.26,
+          "source": "fred-csv",
+          "status": "LIVE",
+          "observedAt": "2026-10-01T00:43:21.949Z",
+          "checkedAt": null
+        }
+      }
+    },
+    "dbEvidence": {
+      "entitledRows": {
+        "ok": true,
+        "rows": [
+          {
+            "key": "quote:US10Y",
+            "provider_id": "fred-csv",
+            "payload": {
+              "price": 5.26,
+              "change": 0.019999999999999574
+            },
+            "observed_at": "2026-10-01 00:43:21.949+00",
+            "expires_at": "2026-10-08 00:43:21.95+00"
+          },
+          {
+            "key": "quote:USD/INR",
+            "provider_id": "exchangerate-api",
+            "payload": {
+              "price": 95.82,
+              "change": -0.15629884338856484
+            },
+            "observed_at": "2026-09-30 17:46:07.3+00",
+            "expires_at": "2026-10-01 17:46:07.3+00"
+          }
+        ],
+        "error": null
+      },
+      "distinctProvidersInCache": {
+        "ok": true,
+        "rows": [
+          {
+            "providers": [
+              "exchangerate-api",
+              "fred-csv"
+            ]
+          }
+        ],
+        "error": null
+      },
+      "nonEntitledRowCount": {
+        "ok": true,
+        "rows": [
+          {
+            "n": 0
+          }
+        ],
+        "error": null
+      },
+      "interpretation": "steps 1,2 (write occurs) + 5 (observedAt preserved) + 7 (non-entitled never persisted) proven when rows exist with matching observed_at and nonEntitledRowCount.n = 0"
+    },
+    "observationsCronDbEvidence": {
+      "observedPrices": {
+        "ok": true,
+        "rows": [
+          {
+            "total": 5,
+            "first_date": "2026-09-30",
+            "last_date": "2026-09-30",
+            "last_observed_at": "2026-09-30 18:13:15.338+00",
+            "sources": [
+              "fred-csv"
+            ]
+          }
+        ],
+        "error": null
+      },
+      "ingestionLog": {
+        "ok": true,
+        "rows": [
+          {
+            "job_name": "reference_observations",
+            "status": "success",
+            "records_out": 5,
+            "source": "PERSISTABLE_SOURCES",
+            "started_at": "2026-09-30 18:13:15.104+00"
+          }
+        ],
+        "error": null
+      },
+      "nonEntitledObserved": {
+        "ok": true,
+        "rows": [
+          {
+            "n": 0
+          }
+        ],
+        "error": null
+      },
+      "interpretation": "T61.1: production execution evidenced when ingestion_log shows reference_observations runs and observed_prices rows carry only allow-listed sources; row counts/timestamps are the raw evidence"
+    }
+  },
+  "trafficSplit": {
+    "method": "per-process endpoint counters (this instance) from the admin measurement ledger",
+    "appRequestCounters": null,
+    "batteryTraffic": {
+      "singleRequests": 28,
+      "batchRequests": 3
+    },
+    "externalAttribution": "BLOCKED: production traffic attribution unavailable — no Vercel telemetry API access is configured for request-path analytics; app counters capture per-instance traffic only and are reported as-is."
+  },
+  "adminSnapshots": {
+    "before": null,
+    "mid": null,
+    "beforeD": null,
+    "beforeE": null,
+    "afterE": null,
+    "after": null
+  }
+}

@@ -46,7 +46,7 @@ import { percentile } from "../lib/health/measurement";
 
 const BASE_URL = (process.env.RISHI_BASE_URL ?? "https://rishi-terminal.vercel.app").replace(/\/$/, "");
 const CRON_SECRET = process.env.CRON_SECRET ?? "";
-const SUPABASE_PAT = process.env.SUPABASE_PAT ?? "";
+const SUPABASE_PAT = process.env.SUPABASE_PAT ?? process.env.SUPABASE_MGMT_PAT ?? "";
 const SUPABASE_REF = process.env.SUPABASE_PROJECT_REF ?? "mwkreqcbgpjqcpctwllf";
 const BURST_N = 10; // deterministic (prescription: "such as 10")
 const REPEAT_N = 5;
@@ -354,6 +354,8 @@ async function main(): Promise<void> {
     cacheBusting: "distinct buster per request — each request reaches the origin; T60 (30 s) decides server-side reuse",
     results: b,
     wallP50: percentile(bWalls, 50),
+    wallP95: percentile(bWalls, 95),
+    wallP99: percentile(bWalls, 99),
     observedAtConstant: b.every(x => (x.entry as { observedAt: string | null } | null)?.observedAt === (b[0].entry as { observedAt: string | null })?.observedAt),
     statusSequence: b.map(x => (x.entry as { status: string | null } | null)?.status),
   };
@@ -376,6 +378,8 @@ async function main(): Promise<void> {
       httpStatuses: cSame.map(r => r.status),
       wallMs: cSame.map(r => r.wallMs),
       wallP50: percentile(cSame.map(r => r.wallMs), 50),
+      wallP95: percentile(cSame.map(r => r.wallMs), 95),
+      wallP99: percentile(cSame.map(r => r.wallMs), 99),
     },
     distinctUrls: {
       note: "distinct busters → every request reaches the origin; upstream count vs coalesceHits delta decides what actually fetched",
@@ -383,6 +387,8 @@ async function main(): Promise<void> {
       httpStatuses: cDistinct.map(r => r.status),
       wallMs: cDistinct.map(r => r.wallMs),
       wallP50: percentile(cDistinct.map(r => r.wallMs), 50),
+      wallP95: percentile(cDistinct.map(r => r.wallMs), 95),
+      wallP99: percentile(cDistinct.map(r => r.wallMs), 99),
     },
   };
   console.log(`[C] identical walls: ${scenarioC.identicalUrl.wallMs.join(",")}`);
@@ -439,8 +445,14 @@ async function main(): Promise<void> {
   const scenarioE = {
     name: "E-repeated-batch",
     verdict: (function () {
-      const bulk = (eDelta?.upstream.totalsDelta.bulk ?? 0) === 0;
-      const cacheHits = (eDelta?.bulkRunEventsInWindow as Array<{ bulkCacheHits?: number }>).some(e => (e.bulkCacheHits ?? 0) > 0);
+      if (!eDelta) {
+        return observedAtEqual
+          ? "counter evidence UNAVAILABLE (CRON_SECRET absent); observedAt equality across batches is consistent with cache replay but the serving layer (bulk cache vs T60 vs CDN) cannot be attributed without counters — NOT claimed"
+          : "counter evidence UNAVAILABLE and observedAt changed between batches → at least one fresh upstream pass occurred";
+      }
+      const bulk = (eDelta.upstream.totalsDelta.bulk ?? 0) === 0;
+      const events = (eDelta.bulkRunEventsInWindow ?? []) as Array<{ bulkCacheHits?: number }>;
+      const cacheHits = events.some(e => (e.bulkCacheHits ?? 0) > 0);
       if (bulk && cacheHits) return "served-from-bulk-cache (proven: zero upstream bulk attempts in window + bulk-run event records cache hits)";
       if (bulk) return "served-from-cache (zero upstream attempts) — layer not proven";
       return "upstream calls occurred on the repeat — NOT served from bulk cache";

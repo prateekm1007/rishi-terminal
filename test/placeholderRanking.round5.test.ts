@@ -12,6 +12,7 @@ import { getStockScore } from "@/lib/scoring";
 import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from "@/lib/scoring/rankings";
 import { scoreGraham } from "@/lib/scorers/graham";
 import { generateCommentary, generateHeadline } from "@/lib/scorers/commentary";
+import type { StockMetrics } from "@/lib/scorers/types";
 import type { Stock } from "@/lib/types";
 
 describe("round-5: internally impossible records are INCOMPLETE", () => {
@@ -78,11 +79,11 @@ describe("round-5: Graham no longer reads P/E 0 as ultra-cheap", () => {
 });
 
 describe("round-5: verdict text matches the verdict", () => {
-  const mk = (over: Partial<Stock> & { pb?: number }): any =>
-    ({ sector: "FMCG", exchange: "NSE", symbol: "TEST", name: "Test", price: 100,
-       pe: 20, roe: 15, mktcap: 10000, ocf: 100, rev: 1000, revcagr: 10, epscagr: 10,
-       opm: 15, roce: 15, de: 0.5, fcf: 80, promo: 50, ca: 500, tl: 200, sh: 10,
-       np: 50, dep: 10, capex: 20, bvps: 50, pb: 2, ...over }) as unknown as Stock;
+  // StockMetrics is narrower than Stock (no exchange/bvps/etc.); the
+  // commentary generators only read symbol/sector off it.
+  const mk = (over: Partial<StockMetrics>): StockMetrics =>
+    ({ symbol: "TEST", name: "Test", sector: "FMCG",
+       pe: 20, pb: 2, roe: 15, roce: 15, opm: 15, ...over });
 
   it("NEUTRAL conviction no longer renders the AVOID 'cautionary tale'", () => {
     const result = {

@@ -612,13 +612,13 @@ export default function MarketPulsePage() {
                 <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                   Fetching live currency rates…
                 </div>
-              ) : currencies.length === 0 || currencies.every((c: any) => c.error) ? (
+              ) : currencies.length === 0 || currencies.every((c: { error?: boolean }) => c.error) ? (
                 <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                   Live currency rates unavailable right now — nothing is shown rather than made-up numbers.
                 </div>
               ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
-                {currencies.filter((c: any) => !c.error).map((c: any) => {
+                {currencies.filter((c: { error?: boolean }) => !c.error).map((c: any) => {
                   const pos = (safeNum(c.changePct) ?? 0) >= 0;
                   const col = pos ? 'var(--red)' : 'var(--green)';
                   const rate = safeNum(c.rate);

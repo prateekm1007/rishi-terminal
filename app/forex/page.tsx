@@ -343,7 +343,7 @@ export default function ForexPage() {
                       {((pair as any).spread || (pair.ask - pair.bid)).toFixed(fxDp(pair.spread ?? (pair.ask - pair.bid)))}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                      {((pair as any).forward1M || pair.forward3M).toFixed(fxDp((pair as any).forward1M || pair.forward3M))}
+                      {((pair as any).forward1M || pair.forward3M).toFixed(fxDp(pair.forward1M || pair.forward3M))}
                     </td>
                     <td style={{ textAlign: 'right', padding: '16px 24px' }}>
                       <span style={{

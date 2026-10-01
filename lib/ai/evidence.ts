@@ -717,8 +717,8 @@ export function validateGrounding(
       if (!SPECIFIC_FIELDS.has(fm.field)) continue;
       // matchAll is stateless on the source regex (it iterates a clone),
       // so probing for a mention here cannot disturb the attribution pass.
-      for (const _m of c.claim.matchAll(fm.re)) {
-        mentionedFields.add(fm.field);
+      for (const mm of c.claim.matchAll(fm.re)) {
+        if (mm.length > 0) mentionedFields.add(fm.field);
       }
     }
     let fieldCiteFailure = false;

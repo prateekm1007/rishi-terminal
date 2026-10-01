@@ -4,6 +4,7 @@ import {
   statusLabel,
   statusColor,
   isDelayedSource,
+  absChangeFromPercent,
 } from "@/lib/pricePresentation";
 
 // Phase 5.1 (T47/T48): presentation state derives from the SERVER's provenance
@@ -89,5 +90,42 @@ describe("statusColor — non-realtime states are visually distinct", () => {
     expect(statusColor("cached")).not.toBe(statusColor("live"));
     expect(statusColor("static")).not.toBe(statusColor("live"));
     expect(statusColor("unavailable")).not.toBe(statusColor("live"));
+  });
+});
+
+// H2 (audit 2026-10-01): the prices API transports ONLY a percent change —
+// lib/livePrice.ts reads regularMarketChangePercent / pChange, so `change`
+// and `changePercent24h` are the same number. The absolute move is derived
+// exactly from the same observation's price + percent; a live price is
+// never mixed with the seed baseline price (that rendered
+// "−1.63% (−1332.30)" on /stock/RELIANCE, whose true move was ≈ −19.30).
+describe("absChangeFromPercent — H2 absolute change derivation", () => {
+  it("derives the exact absolute move from the observation's price + percent", () => {
+    const price = 1167.70;
+    const pct = -1.6259477674810408; // live RELIANCE observation (audit evidence)
+    const abs = absChangeFromPercent(price, pct);
+    expect(abs).not.toBeNull();
+    expect(abs!).toBeCloseTo(price - price / (1 + pct / 100), 10);
+    expect(abs!).toBeCloseTo(-19.30, 1);
+  });
+
+  it("round-trips: the percent is recoverable from (price, abs)", () => {
+    const price = 2075; // live TCS observation
+    const pct = 1.1898956403004044;
+    const abs = absChangeFromPercent(price, pct)!;
+    expect((abs / (price - abs)) * 100).toBeCloseTo(pct, 10);
+  });
+
+  it("zero percent is an exact zero move, not a fabricated value", () => {
+    expect(absChangeFromPercent(1234.5, 0)).toBe(0);
+  });
+
+  it("fails closed to null on degenerate inputs (renders —, never a guess)", () => {
+    expect(absChangeFromPercent(1167.70, -100)).toBeNull(); // implied prev close ≤ 0
+    expect(absChangeFromPercent(1167.70, -150)).toBeNull();
+    expect(absChangeFromPercent(Number.NaN, 1)).toBeNull();
+    expect(absChangeFromPercent(1167.70, Number.POSITIVE_INFINITY)).toBeNull();
+    expect(absChangeFromPercent(0, 1)).toBeNull();
+    expect(absChangeFromPercent(-5, 1)).toBeNull();
   });
 });

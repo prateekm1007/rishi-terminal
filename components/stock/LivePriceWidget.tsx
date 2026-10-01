@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Stock } from '../../lib/types';
-import { presentationState, statusLabel, statusColor, type PresentationState } from '../../lib/pricePresentation';
+import { presentationState, statusLabel, statusColor, absChangeFromPercent, type PresentationState } from '../../lib/pricePresentation';
 
 interface LiveEntry {
   price?: number;
@@ -74,11 +74,17 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
 
         prevPriceRef.current = newPrice;
         setDisplayPrice(newPrice);
-        setChangePercent(
+        // The API transports only a PERCENT change (lib/livePrice.ts reads
+        // regularMarketChangePercent / pChange — `change` and
+        // `changePercent24h` are the same number). The absolute move is
+        // derived from this observation's own price + percent (H2): mixing
+        // the live price with the seed `stock.price` produced
+        // "−1.63% (−1332.30)" on /stock/RELIANCE.
+        const pct =
           typeof entry.changePercent24h === 'number' ? entry.changePercent24h :
-          typeof entry.change           === 'number' ? entry.change           : 0
-        );
-        setChangeAbs(newPrice - stock.price);
+          typeof entry.change           === 'number' ? entry.change           : null;
+        setChangePercent(pct ?? 0);
+        setChangeAbs(pct !== null ? absChangeFromPercent(newPrice, pct) : null);
         setLastUpdated(new Date());
       }
     } catch (err) {

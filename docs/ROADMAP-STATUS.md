@@ -57,7 +57,12 @@ X3-01..X3-10: all ⬜ (depend on Phase 1 data). X3-09 (PWA) has no data dependen
 
 ## Phase 4 — Differentiation: the Rishi lens
 
-R4-01..R4-07: all ⬜. R4-06 (i18n) and parts of R4-07 have no data dependency.
+R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 (i18n) and parts of R4-07 have no data dependency.
+
+| Task | Status | Evidence / notes |
+|---|---|---|
+| R4-01 Internal data API for tools | 🟡 (started early) | The canonical evidence assembler (`lib/ai/evidence.ts`) exposes typed, server-side data surfaces (`resolveStockMetrics` → `getStockScore` → `fetchLivePrice`) with provenance-carrying evidence ids consumed by `/api/chat`; contract tests (`test/aiEvidence.test.ts`). **Remaining for ✅:** the full `getStock`/`getFinancials`/`getPrices`/`getScore`/`getPeers` route surface with zod contracts, 401/404 semantics (roadmap acceptance). |
+| R4-02 Grounded chat with numeric verification ★ | 🟡 (started early) | Evidence-ID validation (fail closed) + the R4-02 numeric post-validator: every number in the claims and the answer must appear in the cited evidence (percent/units/thousands normalized), else `grounded=false` (`lib/ai/evidence.ts`, `test/chat.grounding.numeric.test.ts` — includes the auditor's "ROE is 99% vs 12" rejection). UI labels grounded replies "cites N evidence items · numbers checked" (no "verified" overclaim). **Remaining for ✅:** tool-calling loop, `eval:chat` fixture harness + golden set (≥100 questions), FD-8 chat-vendor terms. |
 
 ## Phase 5 — Legal, money, security ops (parallel)
 

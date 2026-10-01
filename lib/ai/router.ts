@@ -180,8 +180,9 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     const parsed = extractJsonObject(text);
     const structured = parsed ? StructuredModelOutputSchema.safeParse(parsed) : null;
     if (structured?.success) {
-      const validIds = new Set(evidence.map(e => e.id));
-      const grounding = validateGrounding(validIds, structured.data.claims);
+      // R4-02: grounding now validates BOTH the evidence ids and every
+      // number in the claims + answer against the cited evidence items.
+      const grounding = validateGrounding(evidence, structured.data.claims, structured.data.answer);
       return {
         answer: structured.data.answer,
         claims: grounding.validatedClaims as AiClaim[],

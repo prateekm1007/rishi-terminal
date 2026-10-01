@@ -104,21 +104,26 @@ describe("evidence assembler — canonical surfaces, deterministic ids", () => {
   });
 });
 
-describe("grounding validation — fail closed on any unknown evidence id", () => {
-  const ids = new Set(["price:TCS:2025-10-31T08:40:00.000Z", "score:TCS:rishi-merit-v1:seed-derived"]);
+describe("grounding validation — fail closed on any unknown evidence id or unsupported number", () => {
+  const evidence = [
+    { id: "price:TCS:2025-10-31T08:40:00.000Z", text: "Latest observed price: 1420.5 (change 0.8%). Source: yahoo." },
+    { id: "score:TCS:rishi-merit-v1:seed-derived", text: "Rishi consensus score (rishi-merit-v1): 72/100 | category: HOLD." },
+  ];
 
-  it("claims whose every id is known → grounded=true, structured-claims", () => {
-    const r = validateGrounding(ids, [
-      { claim: "TCS trades at 4000", evidenceIds: ["price:TCS:2025-10-31T08:40:00.000Z"] },
-    ]);
+  it("claims whose every id is known AND whose numbers are in the cited evidence → grounded=true", () => {
+    const r = validateGrounding(
+      evidence,
+      [{ claim: "TCS trades at 1420.5", evidenceIds: ["price:TCS:2025-10-31T08:40:00.000Z"] }],
+      "TCS trades at 1420.5, up 0.8%.",
+    );
     expect(r.grounded).toBe(true);
     expect(r.mode).toBe("structured-claims");
     expect(r.validatedClaims).toHaveLength(1);
   });
 
   it("one unknown id among many → ALL claims discarded, grounded=false, rejections disclosed", () => {
-    const r = validateGrounding(ids, [
-      { claim: "valid claim", evidenceIds: ["score:TCS:rishi-merit-v1:seed-derived"] },
+    const r = validateGrounding(evidence, [
+      { claim: "score is 72", evidenceIds: ["score:TCS:rishi-merit-v1:seed-derived"] },
       { claim: "poisoned claim", evidenceIds: ["price:TCS:made-up-time", "score:TCS:rishi-merit-v1:seed-derived"] },
     ]);
     expect(r.grounded).toBe(false);
@@ -128,14 +133,32 @@ describe("grounding validation — fail closed on any unknown evidence id", () =
   });
 
   it("claim without evidence ids is unverifiable and fails the batch", () => {
-    const r = validateGrounding(ids, [{ claim: "unsupported", evidenceIds: [] }]);
+    const r = validateGrounding(evidence, [{ claim: "unsupported", evidenceIds: [] }]);
     expect(r.grounded).toBe(false);
     expect(r.rejections.join(" ")).toContain("no evidence ids");
   });
 
   it("no claims at all → evidence-context (context injection is not grounding)", () => {
-    const r = validateGrounding(ids, []);
+    const r = validateGrounding(evidence, []);
     expect(r).toMatchObject({ grounded: false, mode: "evidence-context" });
+  });
+
+  it("a valid id cited for a number the evidence does not contain → grounded=false (R4-02)", () => {
+    const r = validateGrounding(evidence, [
+      { claim: "TCS trades at 9999", evidenceIds: ["price:TCS:2025-10-31T08:40:00.000Z"] },
+    ]);
+    expect(r.grounded).toBe(false);
+    expect(r.rejections.join(" ")).toContain("9999");
+  });
+
+  it("a number in the ANSWER that no cited evidence contains → grounded=false (R4-02)", () => {
+    const r = validateGrounding(
+      evidence,
+      [{ claim: "score is 72", evidenceIds: ["score:TCS:rishi-merit-v1:seed-derived"] }],
+      "The score is 72, driven by momentum of 87.",
+    );
+    expect(r.grounded).toBe(false);
+    expect(r.rejections.join(" ")).toContain("87");
   });
 });
 

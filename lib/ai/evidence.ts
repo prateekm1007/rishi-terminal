@@ -205,8 +205,10 @@ export async function buildAiEvidencePackage(
 
 export interface GroundingResult {
   /** The claims that survived validation — empty unless EVERY claim's every
-   *  evidenceId exists in the package (one fabricated id fails them all:
-   *  a model that invents one citation cannot be trusted partially). */
+   *  evidenceId exists in the package AND every number in the claims and the
+   *  answer traces to the cited evidence (one fabricated id or one
+   *  unsupported figure fails them all: a model that invents a citation or a
+   *  number cannot be trusted partially). */
   validatedClaims: Array<{ claim: string; evidenceIds: string[] }>;
   grounded: boolean;
   mode: "structured-claims" | "evidence-context";
@@ -215,14 +217,39 @@ export interface GroundingResult {
 }
 
 /**
- * Validate model-produced claims against the evidence ids that were actually
- * supplied in THIS request. Unknown id → fail closed (no claim is served as
- * verified; grounded stays false; the rejections explain why).
+ * Extract every number from text, normalized: thousands separators and
+ * currency/percent markers stripped, so "1,200", "12%", "12.0" and "1200"
+ * compare correctly against evidence numbers (roadmap R4-02 numeric
+ * verification). Returns canonical string keys (e.g. "12", "1420.5").
+ */
+export function extractNormalizedNumbers(text: string): Set<string> {
+  const out = new Set<string>();
+  for (const raw of text.match(/-?\d[\d,]*(?:\.\d+)?/g) ?? []) {
+    const n = Number(raw.replace(/,/g, ""));
+    if (!Number.isFinite(n)) continue;
+    out.add(Number.isInteger(n) ? String(n) : String(Number(n.toFixed(6))));
+  }
+  return out;
+}
+
+/**
+ * Validate model-produced claims against the evidence items that were
+ * actually supplied in THIS request. Fail closed, twice (roadmap R4-02):
+ *   1. unknown evidence id → the claim is unverifiable;
+ *   2. every number in the claims and the answer must appear in the CITED
+ *      evidence text (units/percent normalized) — citing a real id for a
+ *      figure it does not contain is still fabrication.
+ * Any failure → grounded=false, no claim is served as verified, and the
+ * rejections explain why. Numbers are checked against CITED items only: a
+ * claim must cite the item that actually carries each number it states.
  */
 export function validateGrounding(
-  validIds: ReadonlySet<string>,
+  evidence: readonly AiEvidenceItem[],
   claims: Array<{ claim: string; evidenceIds: string[] }>,
+  answer = "",
 ): GroundingResult {
+  const validIds = new Set(evidence.map(e => e.id));
+  const textById = new Map(evidence.map(e => [e.id, e.text]));
   if (claims.length === 0) {
     return {
       validatedClaims: [],
@@ -232,6 +259,7 @@ export function validateGrounding(
     };
   }
   const rejections: string[] = [];
+  const citedNumbers = new Set<string>();
   for (let i = 0; i < claims.length; i += 1) {
     const c = claims[i];
     if (!c.claim || !Array.isArray(c.evidenceIds) || c.evidenceIds.length === 0) {
@@ -241,6 +269,26 @@ export function validateGrounding(
     const unknown = c.evidenceIds.filter(id => !validIds.has(id));
     if (unknown.length > 0) {
       rejections.push(`claim ${i + 1}: unknown evidence id(s) ${unknown.map(u => JSON.stringify(u)).join(", ")} — rejected`);
+      continue;
+    }
+    for (const id of c.evidenceIds) {
+      for (const n of extractNormalizedNumbers(textById.get(id) ?? "")) citedNumbers.add(n);
+    }
+  }
+  // Numeric verification only matters when the id checks passed for every
+  // claim — the batch already fails closed otherwise.
+  if (rejections.length === 0) {
+    for (let i = 0; i < claims.length; i += 1) {
+      for (const n of extractNormalizedNumbers(claims[i].claim)) {
+        if (!citedNumbers.has(n)) {
+          rejections.push(`claim ${i + 1}: number ${n} does not appear in the cited evidence — unsupported figure, rejected (R4-02)`);
+        }
+      }
+    }
+    for (const n of extractNormalizedNumbers(answer)) {
+      if (!citedNumbers.has(n)) {
+        rejections.push(`answer: number ${n} does not appear in the cited evidence — unsupported figure, rejected (R4-02)`);
+      }
     }
   }
   if (rejections.length > 0) {

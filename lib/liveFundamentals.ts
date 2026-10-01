@@ -9,6 +9,9 @@ export interface FullFundamentals {
   symbol: string;
   pe: number;
   eps: number;
+  /** Market capitalisation in ₹ crore — the /api/fundamentals contract
+   *  unit (H3, audit 2026-10-01). Screener.in reports Cr directly; the
+   *  Yahoo/NSE raw values (₹ absolute) are normalised below. */
   marketCap: number;
   roe: number;
   roce: number;
@@ -78,7 +81,10 @@ export async function fetchFullFundamentals(symbol: string): Promise<FullFundame
         symbol,
         pe: yahooData.pe,
         eps: yahooData.eps,
-        marketCap: yahooData.marketCap,
+        // H3: Yahoo (stats.marketCap.raw) and NSE (price × issued shares)
+        // report ₹ ABSOLUTE; the contract unit is ₹ crore (what Screener.in
+        // and the seed baseline use), so normalise here at the boundary.
+        marketCap: yahooData.marketCap / 10000000,
         roe: yahooData.roe,
         roce: yahooData.roce,
         bookValue: yahooData.bookValue,

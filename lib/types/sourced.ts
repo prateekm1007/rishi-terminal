@@ -93,7 +93,17 @@ export function derivedSourced(
  * fetched from /api/fundamentals. Same policy as the engine's `pick()`:
  * only a finite, strictly-positive live number overrides the baseline —
  * a failed/partial live fetch must never zero out a real value.
+ *
+ * H3 (audit 2026-10-01) plausibility bound: a live value wildly out of
+ * line with the baseline it would replace (> 50× or < 1/50) is almost
+ * certainly a unit/semantics mismatch (the ₹-vs-₹Cr marketCap class), not
+ * real movement — keep the honestly-labelled baseline instead of letting
+ * a corrupted number through. Only applies when the baseline itself is a
+ * usable positive number; a null/zero baseline has nothing to compare
+ * against, so the live value is accepted as before.
  */
+const MAX_OVERLAY_RATIO = 50;
+
 export function overlaySourced(
   baseline: Sourced<number>,
   liveValue: number | null | undefined,
@@ -105,11 +115,19 @@ export function overlaySourced(
     Number.isFinite(liveValue) &&
     liveValue > 0
   ) {
-    return {
-      value: liveValue,
-      source: `vendor:${vendorName && vendorName !== "static" ? vendorName : "live-fundamentals"}`,
-      asOf: liveAsOf ?? null,
-    };
+    const base = baseline.value;
+    const withinBand =
+      base === null ||
+      base <= 0 ||
+      (liveValue <= base * MAX_OVERLAY_RATIO &&
+        liveValue >= base / MAX_OVERLAY_RATIO);
+    if (withinBand) {
+      return {
+        value: liveValue,
+        source: `vendor:${vendorName && vendorName !== "static" ? vendorName : "live-fundamentals"}`,
+        asOf: liveAsOf ?? null,
+      };
+    }
   }
   return baseline;
 }

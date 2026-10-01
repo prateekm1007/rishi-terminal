@@ -56,7 +56,10 @@ export function MetricsPanel({ resolved }: Props) {
     opm:     o(resolved.sourced.opm,     live?.opm),
     revcagr: o(resolved.sourced.revcagr, live?.revCagr3y),
     epscagr: o(resolved.sourced.epscagr, live?.epsCagr),
-    mktcap:  o(resolved.sourced.mktcap,  live?.marketCap ? live.marketCap / 10000000 : undefined),
+    // H3: live.marketCap is already ₹ Cr (the /api/fundamentals contract
+    // unit) — the ÷1e7 here turned 1,577,229 Cr into 0.16, which then
+    // replaced a valid 1.7M Cr baseline and exploded FCF yield to 28M %.
+    mktcap:  o(resolved.sourced.mktcap,  live?.marketCap),
     bvps:    o(resolved.sourced.bvps,    live?.bookValue),
     promo:   o(resolved.sourced.promo,   live?.promoterHolding),
     pb:      resolved.sourced.pb,

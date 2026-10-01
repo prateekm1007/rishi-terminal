@@ -133,10 +133,10 @@ export function resolveStockMetrics(
   const promo = pick(live?.promoterHolding, seed.promo);
   const revCagr = pick(live?.revCagr3y, seed.revcagr);
   const epsCagr = pick(live?.epsCagr, seed.epscagr);
-  const mktcap = pick(
-    live?.marketCap !== undefined ? live.marketCap / 10000000 : undefined,
-    seed.mktcap,
-  );
+  // H3: live marketCap arrives in ₹ Cr (the /api/fundamentals contract
+  // unit) and is used as-is — dividing by 1e7 here corrupted the baseline
+  // to 0.16 Cr for a 1.6M Cr live value.
+  const mktcap = pick(live?.marketCap, seed.mktcap);
   const bvps = pick(live?.bookValue, seed.bvps);
 
   set("pe", pe);

@@ -149,13 +149,18 @@ export default function NewsPage() {
   const tickerItems = useMemo(() => {
     return tickerSymbols.map(sym => {
       const livePrice = prices[sym];
-      if (!livePrice) return { symbol: sym, price: '--', change: 0 };
-      const priceFormatted = sym.startsWith('BTC') || sym.startsWith('ETH')
-        ? '$' + livePrice.price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+      // G6: no observation keeps the ticker's '—' unavailable visual; an
+      // entry with an unobserved price/change renders '—', never 0/0.00%.
+      if (!livePrice) return { symbol: sym, price: '--', change: null };
+      const p = livePrice.price;
+      const priceFormatted = typeof p !== 'number'
+        ? '—'
+        : sym.startsWith('BTC') || sym.startsWith('ETH')
+        ? '$' + p.toLocaleString('en-US', { maximumFractionDigits: 0 })
         : sym === 'GOLD' || sym === 'SILVER' || sym === 'WTI'
-        ? '$' + livePrice.price.toFixed(2)
-        : '' + livePrice.price.toFixed(2);
-      return { symbol: sym, price: priceFormatted, change: livePrice.change || 0 };
+        ? '$' + p.toFixed(2)
+        : '' + p.toFixed(2);
+      return { symbol: sym, price: priceFormatted, change: typeof livePrice.change === 'number' ? livePrice.change : null };
     });
   }, [prices, tickerSymbols]);
 
@@ -247,7 +252,7 @@ export default function NewsPage() {
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)' }}>{item.symbol}</span>
               <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-primary)' }}>{item.price}</span>
-              <span style={{ fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: item.change >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{item.change >= 0 ? '+' : ''}{item.change.toFixed(2)}%</span>
+              <span style={{ fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: item.change === null ? 'var(--text-muted)' : item.change >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{item.change === null ? '—' : `${item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}%`}</span>
             </div>
           ))}
         </div>

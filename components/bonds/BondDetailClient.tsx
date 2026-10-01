@@ -11,8 +11,15 @@ function scoreColor(v: number) {
 
 export function BondDetailClient({ bond }: { bond: Bond }) {
   const { price: livePriceData } = usePrice(bond.symbol);
-  const displayPrice = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : bond.price;
-  const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : 0;
+  // G7 (audit 2026-10-02, Coder Directions): value + source state + observation
+  // time travel TOGETHER. A live observation renders as LIVE; the static
+  // registry price renders as REFERENCE — never "LIVE PRICE" over a fallback
+  // value. An unobserved change renders as an em dash, never a fabricated
+  // 0.00% (a zero change is a real market observation, not unavailability).
+  const hasLivePrice = typeof livePriceData?.price === 'number' && livePriceData.price > 0;
+  const displayPrice = hasLivePrice ? (livePriceData!.price as number) : bond.price;
+  const priceState: 'live' | 'reference' = hasLivePrice ? 'live' : 'reference';
+  const displayChange: number | null = livePriceData?.changePercent24h ?? null;
 
   const durationScore =
     bond.duration < 3 ? 85 :
@@ -99,8 +106,11 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
     assetClass: 'bond',
     category: 'bond',
     price: displayPrice,
-    change24h: 0,
-    changePercent24h: 0,
+    // Chart-internal shim (the line plot reads `price`): the observed percent
+    // when live; 0 only as the shape's filler for the reference fallback —
+    // the UI never renders this as a "0.00%" claim.
+    change24h: displayChange ?? 0,
+    changePercent24h: displayChange ?? 0,
     marketCap: 0,
     volume24h: 0,
     country: bond.country,
@@ -137,17 +147,21 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
         borderRadius: 12
       }}>
         <div>
-          <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>LIVE PRICE</div>
+          <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>
+            {priceState === 'live' ? 'LIVE PRICE' : 'REFERENCE PRICE (static registry)'}
+          </div>
           <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace' }}>
             {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
           </div>
           <div style={{ fontSize: 13, fontFamily: 'monospace', marginTop: 4,
-            color: displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
-            {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}%
+            color: displayChange === null ? '#64748B' : displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
+            {displayChange === null ? '— 24h change not observed' : `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}%`}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 12, color: '#888' }}>YTM</div>
+          <div style={{ fontSize: 12, color: '#888' }}>
+            YTM <span style={{ color: '#94A3B8' }}>· REFERENCE</span>
+          </div>
           <div style={{ fontSize: 22, fontWeight: 700 }}>{bond.ytm}%</div>
           <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>Duration: {bond.duration}y</div>
         </div>
@@ -222,7 +236,7 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
         </div>
 
         <div style={{ border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:20 }}>
-          <h3>Overall Bond Score</h3>
+          <h3>Overall Bond Score <span style={{ fontSize: 10, fontWeight: 400, color: '#94A3B8' }}>(heuristic reference — not the canonical Rishi consensus)</span></h3>
           <div style={{
             fontSize:32,
             fontWeight:700,
@@ -283,7 +297,8 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
       </div>
 
       <div style={{ marginTop: 24, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: 20 }}>
-        <div style={{ fontSize: 12, color: '#888', marginBottom: 12, letterSpacing: 1 }}>BOND RISHIS</div>
+        <div style={{ fontSize: 12, color: '#888', marginBottom: 12, letterSpacing: 1 }}>BOND RISHIS · HEURISTIC REFERENCE</div>
+        <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 16 }}>
           {bondRishis.map(r => (
             <div key={r.name} style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 16, background: 'rgba(255,255,255,0.02)' }}>

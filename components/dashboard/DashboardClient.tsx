@@ -165,14 +165,15 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     return () => clearInterval(interval);
   }, [lastUpdated]);
 
-  const fmtINR = (n?: number) =>
+  // G6: null (unobserved) renders '—' / neutral — never a fabricated 0 or 0.00%.
+  const fmtINR = (n?: number | null) =>
     n ? "" + n.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "—";
-  const fmtUSD = (n?: number) =>
+  const fmtUSD = (n?: number | null) =>
     n ? "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "—";
-  const fmtPct = (n?: number) =>
+  const fmtPct = (n?: number | null) =>
     n != null ? (n >= 0 ? "+" : "") + n.toFixed(2) + "%" : "—";
-  const upClr = (n?: number): React.CSSProperties =>
-    ({ color: (n ?? 0) >= 0 ? C.green : C.red });
+  const upClr = (n?: number | null): React.CSSProperties =>
+    ({ color: n == null ? C.textMuted : n >= 0 ? C.green : C.red });
 
   return (
     <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }}>
@@ -324,7 +325,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                         {usd ? fmtUSD(d?.price) : fmtINR(d?.price)}
                       </div>
                       <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {up?"▲":"▼"} {Math.abs(d?.changePercent24h??0).toFixed(2)}%
+                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
                       </div>
                     </>
                   )}
@@ -357,7 +358,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                         {d?.price ? d.price.toLocaleString("en-US",{maximumFractionDigits:2}) : "—"}
                       </div>
                       <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {up?"▲":"▼"} {Math.abs(d?.changePercent24h??0).toFixed(2)}%
+                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
                       </div>
                     </>
                   )}
@@ -397,9 +398,9 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                 <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"16px" }}>
                   {[
                     { label:t("dashboard2.rishiScore"), value: <DataValue sourced={{ value: stockOfDay.consensus, source: "seed", asOf: null }} format={v => v + "/100"} /> },
-                    { label:"P/E", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.pe, sodFund?.source, sodFund?.lastUpdated ?? null)} digits={1} unit="x" /> },
-                    { label:"ROE", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.roe, sodFund?.source, sodFund?.lastUpdated ?? null)} digits={1} unit="%" /> },
-                    { label:"OPM", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.opm, sodFund?.source, sodFund?.lastUpdated ?? null)} digits={1} unit="%" /> },
+                    { label:"P/E", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.pe, sodFund?.source, sodFund?.lastUpdated ?? null, "pe")} digits={1} unit="x" /> },
+                    { label:"ROE", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.roe, sodFund?.source, sodFund?.lastUpdated ?? null, "roe")} digits={1} unit="%" /> },
+                    { label:"OPM", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.opm, sodFund?.source, sodFund?.lastUpdated ?? null, "opm")} digits={1} unit="%" /> },
                   ].map(m => (
                     <div key={m.label} style={{
                       background:"rgba(31,41,59,0.6)", border:"1px solid rgba(51,65,85,0.5)",

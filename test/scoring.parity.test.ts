@@ -48,13 +48,22 @@ describe("T10 — score parity across entry paths", () => {
     expect(withLive!.fields.pe.value).toBe(21.5);
   });
 
-  it("a failed live fetch never zeros out a real seed value", () => {
+  it("a failed live fetch never zeros out a real seed value (G5 expectations FLIPPED for zero observations)", () => {
+    // Rule 21 flip record (audit 2026-10-02, Coder Directions G5): this case
+    // used `roe: 0` / `bookValue: 0` as representatives of a "failed fetch"
+    // and expected the seed to win. G5's field-specific admissibility makes
+    // the OPPOSITE the mandated behavior: ROE = 0 is a REAL observation (a
+    // company can genuinely report zero return on equity) and must override
+    // the seed — the old global "> 0" test silently substituted the seed and
+    // the AI saw a different number than the provider reported (rules
+    // 15/16). Only NaN (pe) still means "no live data" → seed.
     const r = resolveStockMetrics("RELIANCE", {
       pe: NaN, roe: 0, bookValue: 0,
     } as any);
-    expect(r!.fields.pe.source).toBe("seed");
-    expect(r!.fields.roe.source).toBe("seed");
-    expect(r!.fields.bvps.source).toBe("seed");
+    expect(r!.fields.pe.source).toBe("seed"); // NaN = failed/absent
+    expect(r!.fields.roe.source).toBe("live"); // G5 mandated: live ROE = 0 stays live
+    expect(r!.fields.roe.value).toBe(0);
+    expect(r!.fields.bvps.source).toBe("live"); // finite observation (provider-defined)
   });
 
   it("SCORE_ENGINE_VERSION is persisted-shaped and stable", () => {

@@ -61,7 +61,9 @@ export default function CommoditiesPage() {
   const enrichedCommodities = useMemo(() => {
     return COMMODITIES.map(c => {
       const live = prices[c.symbol];
-      if (live && live.price > 0) {
+      // G6: a live entry without a price observation is NOT a live quote —
+      // the static reference price stays and is labelled reference below.
+      if (live && typeof live.price === 'number' && live.price > 0) {
         return {
           ...c,
           price:           live.price,
@@ -220,7 +222,10 @@ export default function CommoditiesPage() {
             const teaser = guruTeasers[commodity.symbol];
             const avgScore: number | null = teaser?.avg ?? null;
             const rishiScores = (teaser?.gurus ?? []).map(g => ({ id: g.id, tag: g.initials, result: { score: g.score } }));
-            const isLive      = !!prices[commodity.symbol];
+            // G6: LIVE is only claimed for a genuine price observation —
+            // an entry whose price is null keeps the reference chip.
+            const liveEntry = prices[commodity.symbol];
+            const isLive = typeof liveEntry?.price === 'number' && liveEntry.price > 0;
 
             return (
               <div

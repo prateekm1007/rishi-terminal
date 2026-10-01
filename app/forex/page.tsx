@@ -106,7 +106,10 @@ export default function ForexPage() {
   const enrichedPairs = useMemo(() => {
     return pairList.map(pair => {
       const liveData = prices[pair.pair];
-      if (liveData) {
+      // G6: a live entry without a price observation is NOT a live spot —
+      // the static reference rate/bid/ask stay and are labelled reference;
+      // only a genuine price observation marks the pair spotIsLive.
+      if (liveData && typeof liveData.price === 'number' && liveData.price > 0) {
         const liveSpot = liveData.price;
         const spread = pair.spread || (pair.ask - pair.bid);
         const liveVol = typeof liveData.volume24h === 'number' && liveData.volume24h > 0

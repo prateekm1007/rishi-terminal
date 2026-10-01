@@ -80,7 +80,8 @@ export default function CryptoPage() {
     let sum = 0;
     CRYPTO_ASSETS.forEach(asset => {
       const livePrice = prices[asset.symbol];
-      if (livePrice) {
+      // G6: an unobserved price is skipped in the derivation — never read as 0.
+      if (livePrice && typeof livePrice.price === 'number') {
         sum += livePrice.price * (asset.marketCap / asset.price);
       }
     });
@@ -236,8 +237,18 @@ export default function CryptoPage() {
               <tbody>
                 {filtered.map(asset => {
                   const liveData = prices[asset.symbol];
-                  const displayPrice = liveData ? `$${liveData.price.toLocaleString('en-US', { maximumFractionDigits: 2 })}` : '$...';
-                  const displayChange = liveData ? `${liveData.change > 0 ? '+' : ''}${liveData.change.toFixed(2)}%` : '...';
+                  // G6: an entry whose price/change is null renders '—' —
+                  // never a fabricated $0.00 or 0.00% move.
+                  const displayPrice = liveData
+                    ? (typeof liveData.price === 'number'
+                      ? `$${liveData.price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                      : '—')
+                    : '$...';
+                  const displayChange = liveData
+                    ? (typeof liveData.change === 'number'
+                      ? `${liveData.change > 0 ? '+' : ''}${liveData.change.toFixed(2)}%`
+                      : '—')
+                    : '...';
                   
                   return (
                     <tr
@@ -260,7 +271,7 @@ export default function CryptoPage() {
                       <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 700, fontSize: 16, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
                         {displayPrice}
                       </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: liveData && liveData.change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: !liveData || typeof liveData.change !== 'number' ? 'var(--text-muted)' : liveData.change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
                         {displayChange}
                       </td>
                       <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>

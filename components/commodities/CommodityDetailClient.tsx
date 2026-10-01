@@ -92,7 +92,10 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     name: commodity.name,
     category: 'commodity',
     price: displayPrice,
-    change24h: displayChange,
+    // Chart-internal shim (the line plot reads `price`): the observed percent
+    // when live; 0 only as the shape's filler for the reference fallback —
+    // the UI never renders this as a "0.00%" claim.
+    change24h: displayChange ?? 0,
     metadata: commodity,
   };
 
@@ -207,7 +210,10 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
       sectorAvg: 0,
       unit: '%',
       higherIsBetter: true,
-      insight: displayChange > 2
+      // G6: an unobserved daily change is stated as such — never read as 0.
+      insight: displayChange === null
+        ? '1-day change not observed by the upstream'
+        : displayChange > 2
         ? 'Strong daily momentum'
         : displayChange < -2
           ? 'Sharp decline — watch reversal / mean reversion'
@@ -268,18 +274,20 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             {/* Technical Edge */}
             <div style={{ fontSize: 11, fontWeight: 700, color: '#D4AF37', marginBottom: 16 }}>COMMODITY FUNDAMENTALS</div>
             {technicalEdge.map((te, i) => {
-              const delta = te.stockVal - te.sectorAvg;
-              const outperforming = te.higherIsBetter ? delta > 0 : delta < 0;
+              // G6: null stockVal (unobserved) renders '—' with a neutral
+              // bar — it is never compared or coerced to 0.
+              const delta = te.stockVal === null ? null : te.stockVal - te.sectorAvg;
+              const outperforming = delta === null ? null : (te.higherIsBetter ? delta > 0 : delta < 0);
               return (
-                <div key={i} style={{ background: 'rgba(17,24,39,0.8)', border: `1px solid ${outperforming ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 10, padding: 14, marginBottom: 10 }}>
+                <div key={i} style={{ background: 'rgba(17,24,39,0.8)', border: `1px solid ${outperforming === null ? 'rgba(100,116,139,0.3)' : outperforming ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 10, padding: 14, marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: '#F8FAFC' }}>{te.metric}</span>
-                    <span style={{ fontSize: 12, color: outperforming ? '#22C55E' : '#EF4444', fontWeight: 700 }}>
-                      {te.stockVal.toFixed(1)}{te.unit}
+                    <span style={{ fontSize: 12, color: outperforming === null ? 'var(--text-muted)' : outperforming ? '#22C55E' : '#EF4444', fontWeight: 700 }}>
+                      {te.stockVal === null ? '—' : `${te.stockVal.toFixed(1)}${te.unit}`}
                     </span>
                   </div>
                   <div style={{ height: 6, background: 'rgba(51,65,85,0.5)', borderRadius: 3, marginBottom: 8, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: Math.min(100, Math.max(0, Math.abs(te.stockVal))) + '%', background: outperforming ? '#22C55E' : '#EF4444', borderRadius: 3 }} />
+                    <div style={{ height: '100%', width: te.stockVal === null ? '0%' : Math.min(100, Math.max(0, Math.abs(te.stockVal))) + '%', background: outperforming === null ? '#64748B' : outperforming ? '#22C55E' : '#EF4444', borderRadius: 3 }} />
                   </div>
                   <div style={{ fontSize: 10, color: '#D4AF37' }}>{te.insight}</div>
                 </div>
@@ -328,8 +336,8 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1 }}>
                 {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}<span style={{ fontSize: 16, color: 'var(--text-muted)', marginLeft: 6 }}>{commodity.unit}</span>
               </div>
-              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
-                {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}%
+              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange === null ? 'var(--text-muted)' : displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
+                {displayChange === null ? '— 24h change not observed' : `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}%`}
               </div>
             </div>
           </div>
@@ -360,7 +368,8 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             {/* Consensus Hero */}
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 COMMODITY RISHI CONSENSUS</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 COMMODITY RISHI CONSENSUS · HEURISTIC REFERENCE</div>
+              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(avgScore), lineHeight: 1 }}>{avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore >= 75 ? 'Strong Buy — Supercycle Conditions Present' : avgScore >= 55 ? 'Moderate Opportunity — Selective Accumulation' : 'Caution — Wait for Better Entry'}
@@ -604,7 +613,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>PERFORMANCE</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
                 {[
-                  { label: '1D Change', value: `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}%`, color: displayChange >= 0 ? '#22C55E' : '#EF4444' },
+                  { label: '1D Change', value: displayChange === null ? '—' : `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}%`, color: displayChange === null ? 'var(--text-muted)' : displayChange >= 0 ? '#22C55E' : '#EF4444' },
                   { label: 'From 52W Low', value: `+${((displayPrice - commodity.low52w) / commodity.low52w * 100).toFixed(1)}%`, color: '#22C55E' },
                   { label: 'From 52W High', value: `${((displayPrice - commodity.high52w) / commodity.high52w * 100).toFixed(1)}%`, color: '#EF4444' },
                   { label: '52W Avg', value: `${((commodity.low52w + commodity.high52w) / 2).toFixed(2)} ${commodity.unit}`, color: '#D4AF37' },
@@ -621,16 +630,17 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>COMMODITY FUNDAMENTALS ANALYSIS</div>
               {technicalEdge.map((te, i) => {
-                const outperforming = te.higherIsBetter ? te.stockVal > te.sectorAvg : te.stockVal < te.sectorAvg;
-                const barWidth = Math.min(100, Math.max(0, Math.abs(te.stockVal)));
+                // G6: null stockVal (unobserved) renders '—' — never compared as 0.
+                const outperforming = te.stockVal === null ? null : (te.higherIsBetter ? te.stockVal > te.sectorAvg : te.stockVal < te.sectorAvg);
+                const barWidth = te.stockVal === null ? 0 : Math.min(100, Math.max(0, Math.abs(te.stockVal)));
                 return (
-                  <div key={i} style={{ marginBottom: 16, padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: `1px solid ${outperforming ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
+                  <div key={i} style={{ marginBottom: 16, padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: `1px solid ${outperforming === null ? 'rgba(100,116,139,0.3)' : outperforming ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                       <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{te.metric}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: outperforming ? '#22C55E' : '#EF4444' }}>{te.stockVal.toFixed(1)}{te.unit}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: outperforming === null ? 'var(--text-muted)' : outperforming ? '#22C55E' : '#EF4444' }}>{te.stockVal === null ? '—' : `${te.stockVal.toFixed(1)}${te.unit}`}</span>
                     </div>
                     <div style={{ height: 8, background: 'rgba(51,65,85,0.5)', borderRadius: 4, marginBottom: 8, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${barWidth}%`, background: outperforming ? '#22C55E' : '#EF4444', borderRadius: 4 }} />
+                      <div style={{ height: '100%', width: `${barWidth}%`, background: outperforming === null ? '#64748B' : outperforming ? '#22C55E' : '#EF4444', borderRadius: 4 }} />
                     </div>
                     <div style={{ fontSize: 10, color: '#D4AF37' }}>{te.insight}</div>
                   </div>
@@ -738,21 +748,23 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>COMMODITY FUNDAMENTALS</div>
               {technicalEdge.map((te, i) => {
-                const outperforming = te.higherIsBetter ? te.stockVal > te.sectorAvg : te.stockVal < te.sectorAvg;
+                // G6: null stockVal (unobserved) renders '—' with a neutral
+                // POSITIVE/NEGATIVE chip — never compared as 0.
+                const outperforming = te.stockVal === null ? null : (te.higherIsBetter ? te.stockVal > te.sectorAvg : te.stockVal < te.sectorAvg);
                 return (
-                  <div key={i} style={{ marginBottom: 14, padding: 16, background: 'rgba(17,24,39,0.8)', border: `1px solid ${outperforming ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: 12 }}>
+                  <div key={i} style={{ marginBottom: 14, padding: 16, background: 'rgba(17,24,39,0.8)', border: `1px solid ${outperforming === null ? 'rgba(100,116,139,0.4)' : outperforming ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`, borderRadius: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 700, color: '#F1F5F9' }}>{te.metric}</div>
                       </div>
-                      <div style={{ padding: '4px 12px', background: outperforming ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: outperforming ? '#22C55E' : '#EF4444', borderRadius: 6, fontSize: 11, fontWeight: 700, border: `1px solid ${outperforming ? '#22C55E' : '#EF4444'}` }}>
-                        {outperforming ? 'POSITIVE' : 'NEGATIVE'}
+                      <div style={{ padding: '4px 12px', background: outperforming === null ? 'rgba(148,163,184,0.15)' : outperforming ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: outperforming === null ? '#94A3B8' : outperforming ? '#22C55E' : '#EF4444', borderRadius: 6, fontSize: 11, fontWeight: 700, border: `1px solid ${outperforming === null ? '#94A3B8' : outperforming ? '#22C55E' : '#EF4444'}` }}>
+                        {outperforming === null ? '—' : outperforming ? 'POSITIVE' : 'NEGATIVE'}
                       </div>
                     </div>
                     <div style={{ height: 8, background: 'rgba(51,65,85,0.5)', borderRadius: 4, marginBottom: 10, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: Math.min(100, Math.max(0, Math.abs(te.stockVal))) + '%', background: outperforming ? '#22C55E' : '#EF4444', borderRadius: 4 }} />
+                      <div style={{ height: '100%', width: te.stockVal === null ? '0%' : Math.min(100, Math.max(0, Math.abs(te.stockVal))) + '%', background: outperforming === null ? '#64748B' : outperforming ? '#22C55E' : '#EF4444', borderRadius: 4 }} />
                     </div>
-                    <div style={{ padding: 10, background: outperforming ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', borderRadius: 6, fontSize: 11, color: '#E2E8F0' }}>
+                    <div style={{ padding: 10, background: outperforming === null ? 'rgba(148,163,184,0.08)' : outperforming ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', borderRadius: 6, fontSize: 11, color: '#E2E8F0' }}>
                       {te.insight}
                     </div>
                   </div>

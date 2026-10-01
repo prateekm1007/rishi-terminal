@@ -10,7 +10,10 @@ interface Holding {
 
 interface Props {
   holdings: Holding[];
-  prices: Record<string, { price: number }>;
+  /** G6: a price may be null (provider did not report it) — such a holding
+   *  is valued at its cost basis (the pre-existing no-quote fallback),
+   *  never at a fabricated 0. */
+  prices: Record<string, { price: number | null }>;
 }
 
 const SECTOR_MAP: Record<string, string> = {

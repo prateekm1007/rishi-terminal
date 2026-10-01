@@ -42,19 +42,22 @@ function trendColor(val: number) { return val >= 0 ? '#22C55E' : '#EF4444'; }
 function volColor(vol: number) { return vol < 5 ? '#22C55E' : vol < 7 ? '#D4AF37' : '#EF4444'; }
 function scoreColor(s: number) { return s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444'; }
 
-function scoreMacroRishi(pair: ForexPair, rishiName: string): { score: number; signal: string; reasoning: string; comps: Array<{ label: string; v: number; detail: string }> } {
+// G6: the live overlay makes change24h nullable (unobserved = null). An
+// unobserved trend is scored as not-bullish and labelled 'unobserved' —
+// it is never read as a 0% move.
+function scoreMacroRishi(pair: Omit<ForexPair, 'change24h'> & { change24h: number | null }, rishiName: string): { score: number; signal: string; reasoning: string; comps: Array<{ label: string; v: number; detail: string }> } {
   const pppDev = Math.abs((pair.spotRate - pair.pppValue) / pair.pppValue * 100);
   const carryScore = Math.min(100, Math.max(0, 50 + pair.interestDiff.diff * 10));
   const volScore = pair.volatility < 5 ? 80 : pair.volatility < 7 ? 60 : 40;
   const pppScore = pppDev < 5 ? 80 : pppDev < 10 ? 60 : 40;
-  const trendScore = pair.change24h > 0 ? 65 : 45;
+  const trendScore = pair.change24h != null && pair.change24h > 0 ? 65 : 45;
 
   let totalScore = 0;
   let reasoning = '';
 
   if (rishiName === 'George Soros') {
     totalScore = Math.round(carryScore * 0.35 + trendScore * 0.35 + volScore * 0.30);
-    reasoning = `Reflexivity lens: ${pair.baseCurrency}/${pair.quoteCurrency} shows ${pair.interestDiff.diff > 0 ? 'positive' : 'negative'} carry of ${pair.interestDiff.diff.toFixed(2)}%. Market bias ${pair.change24h > 0 ? 'bullish' : 'bearish'} on 24h trend.`;
+    reasoning = `Reflexivity lens: ${pair.baseCurrency}/${pair.quoteCurrency} shows ${pair.interestDiff.diff > 0 ? 'positive' : 'negative'} carry of ${pair.interestDiff.diff.toFixed(2)}%. Market bias ${pair.change24h == null ? 'unobserved' : pair.change24h > 0 ? 'bullish' : 'bearish'} on 24h trend.`;
   } else if (rishiName === 'Ray Dalio') {
     totalScore = Math.round(pppScore * 0.40 + carryScore * 0.35 + volScore * 0.25);
     reasoning = `Debt cycle lens: PPP deviation of ${pppDev.toFixed(1)}% signals ${pair.spotRate > pair.pppValue ? 'overvaluation' : 'undervaluation'}. Interest differential ${pair.interestDiff.diff > 0 ? 'favors' : 'disfavors'} ${pair.baseCurrency}.`;
@@ -73,7 +76,7 @@ function scoreMacroRishi(pair: ForexPair, rishiName: string): { score: number; s
       { label: 'Carry Trade', v: Math.round(carryScore), detail: `${pair.interestDiff.diff.toFixed(2)}% rate differential` },
       { label: 'PPP Alignment', v: Math.round(pppScore), detail: `${pppDev.toFixed(1)}% from fair value` },
       { label: 'Volatility', v: Math.round(volScore), detail: `${pair.volatility.toFixed(1)}% annualized vol` },
-      { label: 'Momentum', v: Math.round(trendScore), detail: `${pair.change24h >= 0 ? '+' : ''}${pair.change24h.toFixed(2)}% 24h` },
+      { label: 'Momentum', v: Math.round(trendScore), detail: pair.change24h == null ? '24h change not observed' : `${pair.change24h >= 0 ? '+' : ''}${pair.change24h.toFixed(2)}% 24h` },
     ],
   };
 }
@@ -84,8 +87,12 @@ export function ForexDetailClient({ pair }: { pair: ForexPair }) {
   const [showGraph, setShowGraph] = useState(false);
   const forexSymbol = `${pair.baseCurrency}/${pair.quoteCurrency}`;
 const { price: livePriceData } = usePrice(forexSymbol);
+  // G7/G6 pattern (mirrors BondDetailClient): value + source state travel
+  // together; an unobserved 24h change is null and renders '—', never 0.00%.
   const displayRate = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : pair.spotRate;
-  const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : pair.change24h;
+  const displayChange: number | null = livePriceData
+    ? (typeof livePriceData.changePercent24h === 'number' ? livePriceData.changePercent24h : null)
+    : pair.change24h;
   
   const livePair = {
     ...pair,
@@ -93,7 +100,7 @@ const { price: livePriceData } = usePrice(forexSymbol);
     change24h: displayChange,
   };
 
-  const change1D = livePair.change24h || 0;
+  const change1D: number | null = livePair.change24h;
   const pppDeviation = ((livePair.spotRate - livePair.pppValue) / livePair.pppValue * 100);
   const isOvervalued = livePair.spotRate > livePair.pppValue;
 
@@ -202,8 +209,8 @@ const { price: livePriceData } = usePrice(forexSymbol);
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1 }}>{livePair.spotRate.toFixed(4)}</div>
-              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: trendColor(change1D) }}>
-                {change1D >= 0 ? '+' : ''}{change1D.toFixed(2)}%
+              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: change1D === null ? 'var(--text-muted)' : trendColor(change1D) }}>
+                {change1D === null ? '— 24h change not observed' : `${change1D >= 0 ? '+' : ''}${change1D.toFixed(2)}%`}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Spread: {livePair.spread.toFixed(4)}</div>
             </div>
@@ -235,7 +242,8 @@ const { price: livePriceData } = usePrice(forexSymbol);
             {/* Macro Consensus Hero */}
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 MACRO RISHI CONSENSUS</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 MACRO RISHI CONSENSUS · HEURISTIC REFERENCE</div>
+              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(avgScore), lineHeight: 1 }}>{avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore >= 70 ? 'Bullish — Macro conditions favor ' + livePair.baseCurrency : avgScore >= 50 ? 'Neutral — Mixed signals, range-bound likely' : 'Bearish — Macro headwinds for ' + livePair.baseCurrency}
@@ -339,8 +347,9 @@ const { price: livePriceData } = usePrice(forexSymbol);
                 ].map(p => (
                   <div key={p.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 6 }}>{p.label}</div>
-                    <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'monospace', color: p.isVol ? volColor(p.value) : trendColor(p.value) }}>
-                      {p.isVol ? `${p.value.toFixed(1)}%` : `${p.value >= 0 ? '+' : ''}${p.value.toFixed(2)}%`}
+                    {/* G6: null (unobserved) renders '—', never a 0.00% claim */}
+                    <div style={{ fontSize: 20, fontWeight: 700, fontFamily: 'monospace', color: p.value === null ? 'var(--text-muted)' : p.isVol ? volColor(p.value) : trendColor(p.value) }}>
+                      {p.value === null ? '—' : p.isVol ? `${p.value.toFixed(1)}%` : `${p.value >= 0 ? '+' : ''}${p.value.toFixed(2)}%`}
                     </div>
                   </div>
                 ))}

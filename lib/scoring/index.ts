@@ -29,6 +29,7 @@ import {
 import type { StockMetrics, RishiScoreResult, ScoreMode } from "@/lib/scorers/types";
 import type { FullFundamentals } from "@/hooks/useFundamentals";
 import { toSourced, type Sourced } from "@/lib/types/sourced";
+import { isAdmissibleLive } from "@/lib/types/admissibility";
 
 export { SCORE_ENGINE_VERSION } from "@/lib/consensus/version";
 
@@ -75,14 +76,24 @@ function isResolved(x: unknown): x is ResolvedStockMetrics {
   return typeof x === "object" && x !== null && "fields" in x && "stock" in x;
 }
 
+/**
+ * G5 (audit 2026-10-02, Coder Directions): field-specific live admissibility.
+ * A live observation overrides the seed only when it is a LEGITIMATE value
+ * for THAT field — never merely "> 0". Zero and negative values are real
+ * observations for several fundamentals (loss-making ROE, debt-free D/E =
+ * 0, promoter stake 0, negative CAGR in downturns); the old global
+ * strictly-positive test reinterpreted them as missing and silently
+ * substituted the seed, so the AI and the UI saw a different number than
+ * the provider reported (rules 15/16). Null/undefined/NaN still mean "no
+ * live data" and keep the seed baseline — missing is never reinterpreted
+ * as zero and zero/negative is never reinterpreted as missing.
+ */
 function pick(
+  field: string,
   liveValue: number | null | undefined,
   seedValue: number,
 ): { value: number; source: FieldSource } {
-  // A failed live fetch must never zero out a real seed value: only a finite,
-  // strictly-positive live number overrides the seed. Null (H4/T11: upstream
-  // has no data) and undefined (no live fetch) both keep the seed baseline.
-  if (typeof liveValue === "number" && Number.isFinite(liveValue) && liveValue > 0) {
+  if (typeof liveValue === "number" && isAdmissibleLive(field, liveValue)) {
     return { value: liveValue, source: "live" };
   }
   return { value: seedValue, source: "seed" };
@@ -127,19 +138,22 @@ export function resolveStockMetrics(
     sourced[key] = toSourced(fields[key], vendorName);
   };
 
-  const pe = pick(live?.pe, seed.pe);
-  const roe = pick(live?.roe, seed.roe);
-  const roce = pick(live?.roce, seed.roce);
-  const opm = pick(live?.opm, seed.opm);
-  const de = pick(live?.debtToEquity, seed.de);
-  const promo = pick(live?.promoterHolding, seed.promo);
-  const revCagr = pick(live?.revCagr3y, seed.revcagr);
-  const epsCagr = pick(live?.epsCagr, seed.epscagr);
+  const pe = pick("pe", live?.pe, seed.pe);
+  const roe = pick("roe", live?.roe, seed.roe);
+  const roce = pick("roce", live?.roce, seed.roce);
+  const opm = pick("opm", live?.opm, seed.opm);
+  const de = pick("de", live?.debtToEquity, seed.de);
+  const promo = pick("promo", live?.promoterHolding, seed.promo);
+  const revCagr = pick("revcagr", live?.revCagr3y, seed.revcagr);
+  const epsCagr = pick("epscagr", live?.epsCagr, seed.epscagr);
   // H3: live marketCap arrives in ₹ Cr (the /api/fundamentals contract
   // unit) and is used as-is — dividing by 1e7 here corrupted the baseline
-  // to 0.16 Cr for a 1.6M Cr live value.
-  const mktcap = pick(live?.marketCap, seed.mktcap);
-  const bvps = pick(live?.bookValue, seed.bvps);
+  // to 0.16 Cr for a 1.6M Cr live value. G5: only > 0 is admissible.
+  const mktcap = pick("mktcap", live?.marketCap, seed.mktcap);
+  // G5: BVPS is provider-defined; a NEGATIVE book value (negative equity) is
+  // a legitimate observation and stays live — the PB derivation below
+  // handles it explicitly (it only divides on a positive BVPS).
+  const bvps = pick("bvps", live?.bookValue, seed.bvps);
 
   set("pe", pe);
   set("roe", roe);

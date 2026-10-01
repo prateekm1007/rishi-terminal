@@ -39,6 +39,13 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(
     {
       generatedAt: new Date().toISOString(),
+      // N5 (round 3): every counter in this report (health, circuits,
+      // volumes, reuse, measurement ledger) is per-serverless-instance
+      // memory. The report reflects ONE warm instance — never
+      // platform-wide totals (docs/DATA_PROVIDER_MATRIX.md "Honest
+      // gaps"). Consumers must not treat it as a global view.
+
+      scope: 'instance' as const,
       reuse: providerReuseStats(),
       // Phase 6.1 T59: full measurement ledger — application requests vs
       // actual upstream calls vs served-from split, plus a bounded ring of

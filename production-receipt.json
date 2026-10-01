@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-10-01T22:45:55.969Z",
+  "base": "https://rishi-terminal.vercel.app",
+  "deployedCommitSha": "8127607e76756ead14e26653edbf0fa54f8622f0",
+  "versionEndpoint": {
+    "sha": "8127607e76756ead14e26653edbf0fa54f8622f0",
+    "now": "2026-10-01T22:45:55.852Z",
+    "node": "v24.21.0"
+  },
+  "vercel": {
+    "deploymentId": "dpl_367Ju9Nmt7wJEomwu8BZ2BpAKB3Q",
+    "url": "rishi-terminal-8xle0alt7-prateeks-projects-8c5639bd.vercel.app",
+    "createdAt": "2026-10-01T22:40:51.491Z",
+    "target": "production",
+    "githubCommitSha": "8127607e76756ead14e26653edbf0fa54f8622f0",
+    "githubCommitRef": "main",
+    "matchesVersionEndpointSha": true
+  },
+  "gates": {
+    "repositoryGate": "tsc 0 · eslint 0 errors (309 ratcheted warnings) · vitest (see vitest summary below) · validate:encoding · validate:stocks T12 · score:parity 936/0 · build · production smoke 17/17 · git env grep clean",
+    "recordedAt": "see PR description for the raw gate log of the exact HEAD"
+  },
+  "matrices": {
+    "routeViewport": {
+      "scope": "20 routes × 390x844 / 768x1024 / 1440x900",
+      "result": "60/60 HTTP 200 · 0 horizontal overflow · 0 failed requests",
+      "artifact": "download/audit/prod-matrix-{desktop,tablet,mobile}.json (regenerate with scripts/prod-matrix.cjs)"
+    },
+    "apiProbes": {
+      "scope": "/api/auth/me, /api/chat/personas, /api/chat, /api/rishis/:sym, /api/payment, /api/prices/batch, /api/gurus?kind=crypto|commodity",
+      "result": "fail-closed anonymous (401) · method contracts (405) · tier-locked gurus",
+      "artifact": "download/audit/prod-probes.json"
+    },
+    "aiUglyPath": {
+      "scope": "anonymous/seeker/student/disciple × forged persona, forged display-name alias, unknown persona, oversized message/history, malformed JSON",
+      "result": "see rows in production-ugly-path-matrix.json (raw status+body+provenance per row)",
+      "artifact": "production-ugly-path-matrix.json (regenerate with scripts/prodUglyPathMatrix.mjs)"
+    }
+  }
+}

@@ -23,8 +23,10 @@ import {
   MARKETING_PERSONAS,
   PERSONA_ALIASES,
   resolveCanonicalPersona,
+  CHAT_PERSONAS,
+  PERSONA_IDS,
 } from "@/lib/chat/registry";
-import { CHAT_PERSONAS, PERSONA_IDS, ALL_RISHIS, resolvePersonaId } from "@/lib/chat/personas";
+import { ALL_RISHIS, resolvePersonaId } from "@/lib/chat/personas";
 import { RISHI_PERSONALITIES } from "@/lib/chat/rishiEngine";
 import { RISHI_PROMPTS } from "@/lib/chat/prompts";
 import { getRishisByTier, isPersonaAllowed } from "@/lib/chat/personaAccess";

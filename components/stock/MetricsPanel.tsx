@@ -41,27 +41,29 @@ export function MetricsPanel({ resolved }: Props) {
   if (!resolved) return null;
 
   // Live overlay on the server-resolved baseline (N1: the engine stays
-  // server-side; overlaySourced applies the same >0 finite rule).
+  // server-side; overlaySourced applies the field's admissibility rule —
+  // G5: the canonical field key is passed so legitimate zero/negative
+  // observations override the baseline instead of being reinterpreted).
   const live = fundamentals;
   const vendor = live?.source;
   const asOf = live?.lastUpdated || null;
-  const o = (base: Sourced<number>, v: number | null | undefined) =>
-    overlaySourced(base, v, vendor, asOf);
+  const o = (base: Sourced<number>, v: number | null | undefined, field: string) =>
+    overlaySourced(base, v, vendor, asOf, field);
 
   const s = {
-    pe:      o(resolved.sourced.pe,      live?.pe),
-    roe:     o(resolved.sourced.roe,     live?.roe),
-    roce:    o(resolved.sourced.roce,    live?.roce),
-    de:      o(resolved.sourced.de,      live?.debtToEquity),
-    opm:     o(resolved.sourced.opm,     live?.opm),
-    revcagr: o(resolved.sourced.revcagr, live?.revCagr3y),
-    epscagr: o(resolved.sourced.epscagr, live?.epsCagr),
+    pe:      o(resolved.sourced.pe,      live?.pe,          'pe'),
+    roe:     o(resolved.sourced.roe,     live?.roe,         'roe'),
+    roce:    o(resolved.sourced.roce,    live?.roce,        'roce'),
+    de:      o(resolved.sourced.de,      live?.debtToEquity,'de'),
+    opm:     o(resolved.sourced.opm,     live?.opm,         'opm'),
+    revcagr: o(resolved.sourced.revcagr, live?.revCagr3y,   'revcagr'),
+    epscagr: o(resolved.sourced.epscagr, live?.epsCagr,     'epscagr'),
     // H3: live.marketCap is already ₹ Cr (the /api/fundamentals contract
     // unit) — the ÷1e7 here turned 1,577,229 Cr into 0.16, which then
     // replaced a valid 1.7M Cr baseline and exploded FCF yield to 28M %.
-    mktcap:  o(resolved.sourced.mktcap,  live?.marketCap),
-    bvps:    o(resolved.sourced.bvps,    live?.bookValue),
-    promo:   o(resolved.sourced.promo,   live?.promoterHolding),
+    mktcap:  o(resolved.sourced.mktcap,  live?.marketCap,   'mktcap'),
+    bvps:    o(resolved.sourced.bvps,    live?.bookValue,   'bvps'),
+    promo:   o(resolved.sourced.promo,   live?.promoterHolding, 'promo'),
     pb:      resolved.sourced.pb,
     fcfMargin: resolved.sourced.fcfMargin,
   };

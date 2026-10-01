@@ -236,7 +236,8 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     if (structured?.success) {
       // R4-02: grounding now validates BOTH the evidence ids and every
       // numeric assertion (field/value/unit) against the typed facts of the
-      // claim's own cited items.
+      // claim's own cited items. G3: qualitative claims come back classified
+      // "context-only" instead of masquerading as grounded.
       const grounding = validateGrounding(evidence, structured.data.claims, structured.data.answer);
       return {
         answer: structured.data.answer,
@@ -253,25 +254,40 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
         generatedAt,
         claimsVerified: grounding.grounded,
         groundingRejections: grounding.grounded ? [] : [...grounding.rejections],
+        groundingMode: grounding.mode,
+        structuredResponse: "valid",
       };
     }
+    // ── Coder Directions G4 (audit 2026-10-02): the structured contract
+    // failed (unparseable JSON, wrong schema, or a provider error body that
+    // is not JSON at all). The raw reply is NEVER displayed: it could carry
+    // unsupported prices, invented metrics, fake dates, recommendations or
+    // provider debugging text. Serve the bounded honest response with
+    // machine-readable provenance (structuredResponse: "invalid") — no
+    // replacement financial answer is fabricated.
     return {
-      answer: text,
+      answer:
+        "The AI response could not be verified against the supplied financial evidence.",
       claims: [],
       uncertainties: [
         "structured response contract not satisfied (unparseable or invalid JSON) — presented as unverified text",
+        "structured-response-invalid: no part of the failed model reply is displayed or counted as evidence",
       ],
       provider: provider.id,
       model: provider.model,
       generatedAt,
       claimsVerified: false,
       groundingRejections: [],
+      groundingMode: "evidence-context",
+      structuredResponse: "invalid",
     };
   }
 
   // T52 — HONEST grounding state (Phase 5.1 wording): no evidence pipeline
   // context was supplied, so this is unstructured provider output — claims
-  // stay empty and `grounded` is false by construction.
+  // stay empty and `grounded` is false by construction. (General
+  // context-only chat; the symbol-scoped financial path above is the one
+  // bound to the structured contract.)
   return {
     answer: text,
     claims: [],
@@ -283,6 +299,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     generatedAt,
     claimsVerified: false,
     groundingRejections: [],
+    groundingMode: "evidence-context",
   };
 }
 
@@ -290,7 +307,9 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
  *  grounded is true ONLY for claims whose every evidenceId AND every
  *  numeric assertion was validated against the evidence package in the same
  *  request — never from evidence presence, and never from the model's own
- *  assertions. */
+ *  assertions. G3/G4: groundingMode and structuredResponse are threaded
+ *  verbatim from the router's decision (with honest defaults for legacy
+ *  callers). */
 export function toChatWire(answer: AiAnswer): ChatWire {
   const grounded = answer.claimsVerified && answer.claims.length > 0;
   return {
@@ -300,7 +319,8 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       model: answer.model,
       generatedAt: answer.generatedAt,
       grounded,
-      groundingMode: grounded ? "structured-claims" : "evidence-context",
+      groundingMode: answer.groundingMode ?? (grounded ? "structured-claims" : "evidence-context"),
+      structuredResponse: answer.structuredResponse ?? "valid",
       claims: grounded ? answer.claims : [],
       groundingRejections: grounded ? [] : answer.groundingRejections ?? [],
     },

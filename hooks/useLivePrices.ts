@@ -3,9 +3,14 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 export interface PriceData {
-  price: number;
-  change: number;
-  changePercent24h: number;
+  /** G6 (audit 2026-10-02, Coder Directions): every field is nullable — a
+   *  missing provider field is UNAVAILABILITY, never zero. `0%` is a real
+   *  market observation and must never stand in for "the provider did not
+   *  report this". Consumers must handle null explicitly (render an em
+   *  dash / skip); no consumer may infer null → 0. */
+  price: number | null;
+  change: number | null;
+  changePercent24h: number | null;
   /** 24h volume when the transport carried one, else null — never 0
    *  (absent volume is unavailability, not zero trading; audit
    *  2026-10-02 P1). */
@@ -27,13 +32,38 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 /** The /api/prices/batch response entry: either an observation or an
  * explicit UNAVAILABLE marker (T57 — total provider failure is a status,
  * not a zeroed price). */
-interface BatchPriceEntry {
+export interface BatchPriceEntry {
   status?: string;
   price?: number;
   change?: number;
   changePercent24h?: number;
   volume24h?: number;
   lastUpdated?: string | null;
+}
+
+/**
+ * G6: transport-level normalization is a PURE function so the null contract
+ * is directly testable. Rules:
+ *   - UNAVAILABLE (or missing) entry → null (no observation exists);
+ *   - a field the provider did not report → null (never 0, never a
+ *     different metric's value — the old code used `change` as a
+ *     changePercent24h stand-in, mixing an absolute Δ with a percent);
+ *   - a reported field passes through verbatim when finite.
+ */
+export function normalizeBatchEntry(
+  raw: BatchPriceEntry | undefined,
+): PriceData | null {
+  if (!raw || raw.status === 'UNAVAILABLE') return null;
+  const num = (v: unknown): number | null =>
+    typeof v === 'number' && Number.isFinite(v) ? v : null;
+  return {
+    price: num(raw.price),
+    change: num(raw.change),
+    changePercent24h: num(raw.changePercent24h),
+    volume24h: num(raw.volume24h),
+    lastUpdated:
+      typeof raw.lastUpdated === 'string' && raw.lastUpdated ? raw.lastUpdated : null,
+  };
 }
 
 async function fetchChunk(symbols: string[]): Promise<Record<string, BatchPriceEntry>> {
@@ -89,23 +119,14 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
 
       const normalized: Record<string, PriceData> = {};
       for (const sym of currentSymbols) {
-        const raw = merged[sym];
-        // Phase 5.1 (T57): the batch contract now guarantees exactly one
-        // entry per requested symbol — total provider failure is an explicit
-        // UNAVAILABLE entry (no observation, lastUpdated null). Such an
-        // entry carries NO price; treating it as data would coerce the
-        // missing number to 0 and resurface the "+0.00%" ticker bug. Skip
-        // it so consumers keep their own no-data fallbacks.
-        if (raw && raw.status !== 'UNAVAILABLE') {
-          normalized[sym] = {
-            price: typeof raw.price === 'number' ? raw.price : 0,
-            change: typeof raw.change === 'number' ? raw.change : (typeof raw.changePercent24h === 'number' ? raw.changePercent24h : 0),
-            changePercent24h: typeof raw.changePercent24h === 'number' ? raw.changePercent24h : (typeof raw.change === 'number' ? raw.change : 0),
-            volume24h: typeof raw.volume24h === 'number' ? raw.volume24h : null,
-            // Corrective gate 3: preserve the server's null — the client's
-            // fetch time is NOT an observation time (old code fabricated one).
-            lastUpdated: typeof raw.lastUpdated === 'string' && raw.lastUpdated ? raw.lastUpdated : null,
-          };
+        // Phase 5.1 (T57): the batch contract guarantees exactly one entry
+        // per requested symbol — total provider failure is an explicit
+        // UNAVAILABLE entry. G6: normalizeBatchEntry maps it (and partial
+        // provider responses) to nulls, never zeros — consumers keep their
+        // own no-data fallbacks.
+        const normalizedEntry = normalizeBatchEntry(merged[sym]);
+        if (normalizedEntry) {
+          normalized[sym] = normalizedEntry;
         }
       }
 

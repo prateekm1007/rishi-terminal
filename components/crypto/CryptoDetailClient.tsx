@@ -107,7 +107,10 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     name: asset.name,
     category: 'crypto',
     price: displayPrice,
-    change24h: displayChange,
+    // Chart-internal shim (the line plot reads `price`): the observed percent
+    // when live; 0 only as the shape's filler for the reference fallback —
+    // the UI never renders this as a "0.00%" claim.
+    change24h: displayChange ?? 0,
     metadata: asset,
   };
 
@@ -276,8 +279,8 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                 {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
                 <ProvenanceChip state={livePriceData?.price && livePriceData.price > 0 ? 'live' : 'reference'} title={livePriceData?.price && livePriceData.price > 0 ? 'Live price observation' : 'Static reference price — live price unavailable'} />
               </div>
-              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
-                {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}% (24h)
+              <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange === null ? 'var(--text-muted)' : displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
+                {displayChange === null ? '— 24h change not observed' : `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}% (24h)`}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', gap: 6 }}>
                 <span>7D: {asset.change7d >= 0 ? '+' : ''}{asset.change7d.toFixed(2)}%</span>
@@ -312,7 +315,8 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
             {/* Consensus Hero */}
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 CRYPTO RISHI CONSENSUS</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 CRYPTO RISHI CONSENSUS · HEURISTIC REFERENCE</div>
+              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? '#64748B' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore === null ? 'Insufficient Data — fewer than the minimum valid scorers' : avgScore >= 75 ? 'Strong HODL Signal — Sound Money Thesis Intact' : avgScore >= 55 ? 'Accumulation Phase — Selective Entry Points' : 'Weak Momentum — Patience Required'}

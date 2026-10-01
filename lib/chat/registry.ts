@@ -42,6 +42,11 @@ export interface CanonicalPersona {
   color: string;
   /** Entitlement — the only tier that gates chat. */
   access: PersonaAccess;
+  /** F&O entitlement (G9, audit 2026-10-02): the SAME registry carries the
+   *  options-suite tier axis, carried over VERBATIM from the former
+   *  lib/fno/rishiPrompts.ts roster so no second persona DB survives.
+   *  Present only for personas the F&O suite exposes. */
+  fnoAccess?: "seeker" | "student" | "disciple";
   /** Marketing display rank (absent for chanos/soros, which have no
    *  marketing card and never appeared on /rishis). */
   rank?: PersonaRank;
@@ -65,6 +70,7 @@ export interface CanonicalPersona {
 export const CANONICAL_PERSONAS: CanonicalPersona[] = [
   {
     id: "jhunjhunwala",
+    fnoAccess: "seeker",
     name: "Jhunjhunwala",
     fullName: "Rakesh Jhunjhunwala",
     emoji: "🦁",
@@ -91,6 +97,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
   },
   {
     id: "damani",
+    fnoAccess: "seeker",
     name: "Damani",
     fullName: "Radhakishan Damani",
     emoji: "🧘",
@@ -237,6 +244,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
   },
   {
     id: "buffett",
+    fnoAccess: "student",
     name: "Buffett",
     fullName: "Warren Buffett",
     emoji: "🎩",
@@ -283,6 +291,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
   },
   {
     id: "lynch",
+    fnoAccess: "disciple",
     name: "Lynch",
     fullName: "Peter Lynch",
     emoji: "🚀",
@@ -309,6 +318,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
   },
   {
     id: "munger",
+    fnoAccess: "student",
     name: "Munger",
     fullName: "Charlie Munger",
     emoji: "🦉",
@@ -475,6 +485,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
   },
   {
     id: "chanos",
+    fnoAccess: "student",
     name: "Chanos",
     fullName: "Jim Chanos",
     emoji: "🐻",
@@ -491,6 +502,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
   },
   {
     id: "soros",
+    fnoAccess: "disciple",
     name: "Soros",
     fullName: "George Soros",
     emoji: "🌊",
@@ -527,6 +539,14 @@ export const PERSONA_ALIASES: Record<string, string> = Object.fromEntries(
     [p.fullName.toLowerCase(), p.id],
   ]),
 );
+
+/** id -> system prompt (Coder Directions G10: moved OUT of personas.ts,
+ *  which is client-reachable — this map is the server-authority prompt
+ *  surface and must never re-enter the client bundle). */
+export const CHAT_PERSONAS: Record<string, string> = Object.fromEntries(
+  CANONICAL_PERSONAS.map(p => [p.id, p.systemPrompt]),
+);
+export const PERSONA_IDS = Object.keys(CHAT_PERSONAS);
 
 /** Resolve a client-supplied persona reference to the canonical persona,
  *  or null when unknown (route rejects with 400). */

@@ -328,7 +328,14 @@ describe("router — structured output is validated before grounding is claimed"
     );
   });
 
-  it("unparseable model reply → honest evidence-context downgrade, answer preserved (no fabricated claims)", async () => {
+  it("unparseable model reply → bounded honest response, raw reply NEVER displayed (G4, expectation FLIPPED)", async () => {
+    // Rule 21 flip record (audit 2026-10-02, Coder Directions G4): this case
+    // used to expect wire.text to contain the model's raw prose — the router
+    // "preserved" an unparseable financial reply as display text. A live
+    // production probe proved that path dumps raw JSON (and could dump
+    // invented prices, fake dates or provider debug bodies) to the UI. G4:
+    // the bounded honest response is served instead, with machine-readable
+    // provenance (structuredResponse: "invalid").
     await withProvider(
       "Just some plain prose that ignores the JSON contract entirely.",
       async () => {
@@ -338,7 +345,15 @@ describe("router — structured output is validated before grounding is claimed"
         const wire = toChatWire(answer!);
         expect(wire.provenance.grounded).toBe(false);
         expect(wire.provenance.claims).toHaveLength(0);
-        expect(wire.text).toContain("plain prose");
+        // The raw reply is NOT displayed…
+        expect(wire.text).not.toContain("plain prose");
+        // …the bounded honest response is…
+        expect(wire.text).toBe(
+          "The AI response could not be verified against the supplied financial evidence.",
+        );
+        // …and the provenance marks the structured contract invalid.
+        expect(wire.provenance.structuredResponse).toBe("invalid");
+        expect(answer!.uncertainties.join(" ")).toContain("structured-response-invalid");
         expect(answer!.uncertainties.join(" ")).toContain("structured response contract not satisfied");
       },
     );

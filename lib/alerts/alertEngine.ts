@@ -81,9 +81,19 @@ export function toggleAlert(id: string): void {
   saveAlerts(alerts);
 }
 
+/** G6: a price snapshot may carry null for any field the provider did not
+ *  report. An unobserved metric can never satisfy a comparison — the alert
+ *  is skipped, never evaluated against a coerced 0 (a 0% move is a real
+ *  observation; unavailability is not). */
+export interface AlertPriceSnapshot {
+  price: number | null;
+  changePercent24h?: number | null;
+  change?: number | null;
+}
+
 export function checkAlerts(
   alerts: Alert[],
-  prices: Record<string, { price: number; changePercent24h?: number; change?: number }>,
+  prices: Record<string, AlertPriceSnapshot>,
   rishiScores?: Record<string, number>
 ): Alert[] {
   const triggered: Alert[] = [];
@@ -93,21 +103,24 @@ export function checkAlerts(
     const priceData = prices[alert.symbol];
     if (!priceData) return;
 
-    const { price, changePercent24h, change } = priceData;
+    const { price, changePercent24h } = priceData;
     let shouldTrigger = false;
 
     switch (alert.type) {
       case 'price_above':
-        shouldTrigger = price >= alert.targetValue;
+        shouldTrigger = price !== null && price >= alert.targetValue;
         break;
       case 'price_below':
-        shouldTrigger = price <= alert.targetValue;
+        shouldTrigger = price !== null && price <= alert.targetValue;
         break;
+      // G6: only a genuinely reported percent change may trigger a percent
+      // alert (the old `?? change ?? 0` chain coerced an unobserved move to
+      // 0% and could falsely fire). An absolute Δ is never stand-in for a %.
       case 'percent_change_up':
-        shouldTrigger = (changePercent24h ?? change ?? 0) >= alert.targetValue;
+        shouldTrigger = typeof changePercent24h === 'number' && changePercent24h >= alert.targetValue;
         break;
       case 'percent_change_down':
-        shouldTrigger = (changePercent24h ?? change ?? 0) <= -alert.targetValue;
+        shouldTrigger = typeof changePercent24h === 'number' && changePercent24h <= -alert.targetValue;
         break;
       case 'rishi_score_above':
         const scoreAbove = rishiScores?.[alert.symbol] ?? 0;
@@ -124,7 +137,7 @@ export function checkAlerts(
         ...alert,
         triggered: true,
         triggeredAt: new Date().toISOString(),
-        currentValue: price,
+        currentValue: price ?? undefined,
       });
     }
   });

@@ -349,3 +349,133 @@ describe("audit 2026-10-02 (production probe follow-up): string-typed assertion 
     expect(answer?.claimsVerified ?? false).toBe(false);
   });
 });
+
+// ── Coder Directions G4 — NEVER display raw model output after a ─────────
+// structured-parse failure on a symbol-scoped financial request. The router
+// must return the bounded honest response with machine-readable provenance
+// (structuredResponse: "invalid"); no raw JSON, no provider debugging text,
+// no invented replacement answer. String-number coercion stays (transport
+// normalization), and a coerced value must reach the STRICT validator.
+describe("G4 — invalid structured output never becomes displayed financial text", () => {
+  const EVIDENCE = [
+    {
+      id: "fundamental:RELIANCE:roe:2026-09-30",
+      text: "ROE %: 12 | fact: roe=12 percent (live)",
+      facts: [{ field: "roe", value: 12, unit: "percent", source: "live" as const }],
+    },
+  ];
+  const BOUNDED =
+    "The AI response could not be verified against the supplied financial evidence.";
+
+  beforeEach(() => {
+    process.env.CHAT_API_BASE_URL = "https://example.invalid/v1";
+    process.env.CHAT_API_KEY = "k-test";
+    process.env.CHAT_MODEL = "test-model";
+  });
+
+  it("MUST FAIL PRE-FIX: malformed JSON → bounded honest response, never the raw payload", async () => {
+    const RAW = 'Here is my analysis {"answer": "BUY NOW roe 12", claims: [broken';
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: RAW } }] }),
+        { status: 200 },
+      ),
+    );
+    const a = await generateEvidenceGroundedAnswer({
+      systemPrompt: "p", history: [], message: "m", evidence: EVIDENCE,
+    });
+    expect(a?.answer).toBe(BOUNDED);
+    expect(a?.answer).not.toContain("BUY NOW");
+    expect(a?.claimsVerified).toBe(false);
+    expect(a?.claims).toEqual([]);
+    const wire = toChatWire(a!);
+    expect(wire.provenance.structuredResponse).toBe("invalid");
+    expect(wire.provenance.grounded).toBe(false);
+  });
+
+  it("MUST FAIL PRE-FIX: wrong schema (answer is a number) → bounded response, no raw JSON displayed", async () => {
+    const RAW = JSON.stringify({ answer: 42, claims: [], uncertainties: [] });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: RAW } }] }),
+        { status: 200 },
+      ),
+    );
+    const a = await generateEvidenceGroundedAnswer({
+      systemPrompt: "p", history: [], message: "m", evidence: EVIDENCE,
+    });
+    expect(a?.answer).toBe(BOUNDED);
+    expect(a?.answer).not.toContain("42");
+    expect(toChatWire(a!).provenance.structuredResponse).toBe("invalid");
+  });
+
+  it("MUST FAIL PRE-FIX: provider error/debug body → never surfaced as the answer", async () => {
+    const RAW = "InternalError: upstream model overloaded - trace 99f2 - retry later";
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: RAW } }] }),
+        { status: 200 },
+      ),
+    );
+    const a = await generateEvidenceGroundedAnswer({
+      systemPrompt: "p", history: [], message: "m", evidence: EVIDENCE,
+    });
+    expect(a?.answer).toBe(BOUNDED);
+    expect(a?.answer).not.toContain("trace 99f2");
+    expect(toChatWire(a!).provenance.structuredResponse).toBe("invalid");
+  });
+
+  it("a valid structured reply keeps structuredResponse 'valid' end-to-end", async () => {
+    const RAW = JSON.stringify({
+      answer: "ROE is 12%.",
+      claims: [
+        {
+          claim: "ROE is 12%",
+          evidenceIds: ["fundamental:RELIANCE:roe:2026-09-30"],
+          assertions: [{ field: "roe", value: 12, unit: "percent" }],
+        },
+      ],
+      uncertainties: [],
+    });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: RAW } }] }),
+        { status: 200 },
+      ),
+    );
+    const a = await generateEvidenceGroundedAnswer({
+      systemPrompt: "p", history: [], message: "m", evidence: EVIDENCE,
+    });
+    expect(a?.answer).toBe("ROE is 12%.");
+    const wire = toChatWire(a!);
+    expect(wire.provenance.structuredResponse).toBe("valid");
+    expect(wire.provenance.grounded).toBe(true);
+  });
+
+  it("a structured reply whose claims are all qualitative grounds NOTHING (mode context-only)", async () => {
+    const RAW = JSON.stringify({
+      answer: "The business looks strong overall.",
+      claims: [
+        {
+          claim: "The business looks strong overall.",
+          evidenceIds: ["fundamental:RELIANCE:roe:2026-09-30"],
+        },
+      ],
+      uncertainties: [],
+    });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ choices: [{ message: { content: RAW } }] }),
+        { status: 200 },
+      ),
+    );
+    const a = await generateEvidenceGroundedAnswer({
+      systemPrompt: "p", history: [], message: "m", evidence: EVIDENCE,
+    });
+    expect(a?.claimsVerified).toBe(false);
+    expect(a?.claims).toEqual([]);
+    const wire = toChatWire(a!);
+    expect(wire.provenance.grounded).toBe(false);
+    expect(wire.provenance.groundingMode).toBe("context-only");
+  });
+});

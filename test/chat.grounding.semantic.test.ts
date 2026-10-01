@@ -177,11 +177,19 @@ describe("R4-02 — no assertion for a numeric claim is fail-closed", () => {
     expect(r.rejections.join(" ")).toContain("assertion");
   });
 
-  it("a claim with no numbers needs no assertions (qualitative claims survive)", () => {
+  it("a claim with no numbers is CLASSIFIED context-only — never grounded (G3, expectation FLIPPED)", () => {
+    // Rule 21 flip record (audit 2026-10-02, Coder Directions G3): this case
+    // used to expect grounded=true — a qualitative claim riding on cited
+    // evidenceIds was served as a verified claim. G3 makes the two states
+    // explicit: a claim can be qualitative WITHOUT being numerically
+    // grounded; evidenceIds alone are never grounding. See
+    // test/chat.grounding.g3.test.ts for the mandated negative set.
     const r = validateGrounding(EVIDENCE, [
       { claim: "The market capitalization is disclosed in the dataset.", evidenceIds: ["fundamental:RELIANCE:mktcap:seed"] },
     ]);
-    expect(r.grounded).toBe(true);
+    expect(r.grounded).toBe(false);
+    expect(r.mode).toBe("context-only");
+    expect(r.validatedClaims).toHaveLength(0);
   });
 
   it("dates in claims are NOT incidental support any more (audit 2026-10-02 P0 — expectation FLIPPED)", () => {

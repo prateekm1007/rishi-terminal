@@ -1,3 +1,5 @@
+import { isAdmissibleLive } from "@/lib/types/admissibility";
+
 /**
  * Sourced<T> — the provenance contract for every number the UI renders
  * (Roadmap P0-06).
@@ -90,9 +92,13 @@ export function derivedSourced(
  * lib/scoring is server-only, so the client re-resolution that
  * MetricsPanel used to do is gone: the server resolves the seed baseline
  * (RSC props) and this helper applies the live fundamentals the client
- * fetched from /api/fundamentals. Same policy as the engine's `pick()`:
- * only a finite, strictly-positive live number overrides the baseline —
- * a failed/partial live fetch must never zero out a real value.
+ * fetched from /api/fundamentals.
+ *
+ * G5 (audit 2026-10-02): admissibility is FIELD-SPECIFIC — pass the
+ * canonical field key so zero/negative legitimate observations (negative
+ * ROE, D/E = 0, …) override the baseline instead of being silently
+ * reinterpreted as missing. Without a field key the strict legacy rule
+ * (finite, strictly positive) applies — fail-closed for unkeyed callers.
  *
  * H3 (audit 2026-10-01) plausibility bound: a live value wildly out of
  * line with the baseline it would replace (> 50× or < 1/50) is almost
@@ -109,12 +115,12 @@ export function overlaySourced(
   liveValue: number | null | undefined,
   vendorName: string | null | undefined,
   liveAsOf: string | null | undefined,
+  field?: string,
 ): Sourced<number> {
-  if (
+  const admissible =
     typeof liveValue === "number" &&
-    Number.isFinite(liveValue) &&
-    liveValue > 0
-  ) {
+    (field ? isAdmissibleLive(field, liveValue) : Number.isFinite(liveValue) && liveValue > 0);
+  if (admissible) {
     const base = baseline.value;
     const withinBand =
       base === null ||

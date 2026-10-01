@@ -43,11 +43,13 @@ export default function BondsPage() {
   const enrichedBonds = useMemo(() => {
     return bondList.map(bond => {
       const liveData = prices[bond.symbol];
-      if (liveData && liveData.price > 0) {
+      // G6: a live entry without a price observation is NOT a live yield —
+      // the static reference yield stays and is labelled reference below.
+      if (liveData && typeof liveData.price === 'number' && liveData.price > 0) {
         return {
           ...bond,
           ytm: liveData.price,
-          change24h: liveData.change || 0,
+          change24h: liveData.change,
           ytmIsLive: true,
           maturity: bondMaturityState(bond.maturityDate),
         };
@@ -78,7 +80,10 @@ export default function BondsPage() {
   // Audit 2026-10-02 (P1): the average is computed over LIVE yields only —
   // an average over mixed live/static rows presented a current-looking
   // figure derived from stale reference data. No live yields -> em dash.
-  const liveYtms = enrichedBonds.filter(b => b.ytmIsLive).map(b => b.ytm);
+  const liveYtms = enrichedBonds
+    .filter(b => b.ytmIsLive)
+    .map(b => b.ytm)
+    .filter((y): y is number => y !== null); // G6: skip unobserved yields in the aggregate
   const avgYTM = liveYtms.length > 0
     ? (liveYtms.reduce((s, y) => s + y, 0) / liveYtms.length).toFixed(2)
     : null;

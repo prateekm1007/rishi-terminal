@@ -29,20 +29,22 @@ interface Row extends SlimStockRow {
 
 /**
  * P0-06 (N7): seed-baseline metric with live overlay, as a Sourced. The
- * slim row carries the seed baseline; a finite, strictly-positive live
- * fundamental from the bulk fetch overlays it (same rule as the engine's
- * pick()/overlaySourced).
+ * slim row carries the seed baseline; a live fundamental from the bulk
+ * fetch overlays it under the field's admissibility rule (G5: the canonical
+ * field key makes zero/negative legitimate observations admissible).
  */
 function metricSourced(
   seedValue: number,
   liveValue: number | null | undefined,
   live: { source?: string; lastUpdated?: string | null } | undefined,
+  field: string,
 ): Sourced<number> {
   return overlaySourced(
     { value: seedValue, source: "seed", asOf: null },
     liveValue,
     live?.source,
     live?.lastUpdated ?? null,
+    field,
   );
 }
 
@@ -238,10 +240,10 @@ export function StockTable({ stocks }: Props) {
                   {stock.change24h !== null ? (stock.change24h > 0 ? "+" : "") + stock.change24h.toFixed(2) + "%" : "\u2014"}
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  <DataValue sourced={metricSourced(stock.pe, bulkFund[stock.symbol]?.pe, bulkFund[stock.symbol])} digits={1} unit="x" />
+                  <DataValue sourced={metricSourced(stock.pe, bulkFund[stock.symbol]?.pe, bulkFund[stock.symbol], "pe")} digits={1} unit="x" />
                 </td>
                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  <DataValue sourced={metricSourced(stock.roe, bulkFund[stock.symbol]?.roe, bulkFund[stock.symbol])} digits={1} unit="%" />
+                  <DataValue sourced={metricSourced(stock.roe, bulkFund[stock.symbol]?.roe, bulkFund[stock.symbol], "roe")} digits={1} unit="%" />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span

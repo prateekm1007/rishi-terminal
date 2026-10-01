@@ -66,6 +66,17 @@ export const AiAnswerSchema = z.object({
   /** Q4 Commit A: machine-readable grounding rejections (why a reply is NOT
    *  grounded). Empty when grounded. Auditable provenance, not UI noise. */
   groundingRejections: z.array(z.string()).default([]),
+  /** Coder Directions G3 (audit 2026-10-02): the explicit grounding state —
+   *  "structured-claims" | "context-only" | "evidence-context". Threaded
+   *  from validateGrounding; toChatWire surfaces it verbatim. */
+  groundingMode: z
+    .enum(["structured-claims", "context-only", "evidence-context"])
+    .optional(),
+  /** Coder Directions G4 (audit 2026-10-02): machine-readable mark for the
+   *  structured-response contract — "invalid" when the model reply failed
+   *  parse/schema validation and the bounded honest response was served
+   *  instead of the raw payload. */
+  structuredResponse: z.enum(["valid", "invalid"]).optional(),
 });
 
 export type AiAnswer = z.infer<typeof AiAnswerSchema>;
@@ -134,7 +145,14 @@ export const ChatWireSchema = z.object({
     model: z.string(),
     generatedAt: z.string(),
     grounded: z.boolean(),
-    groundingMode: z.enum(["evidence-context", "structured-claims"]).default("evidence-context"),
+    /** G3: "context-only" = the model made only qualitative claims (or none
+     *  survived) — presented as context, never as verified numbers. */
+    groundingMode: z
+      .enum(["evidence-context", "context-only", "structured-claims"])
+      .default("evidence-context"),
+    /** G4: "invalid" when the structured reply failed parse/schema and the
+     *  bounded honest response was served (raw payload never displayed). */
+    structuredResponse: z.enum(["valid", "invalid"]).default("valid"),
     /** Validated claims only — an empty array when grounding failed closed. */
     claims: z.array(AiClaimSchema).default([]),
     /** Q4 Commit A: why the reply is not grounded (empty when grounded).

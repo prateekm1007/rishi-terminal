@@ -244,7 +244,7 @@
     "rishisVisible": "Rishis visible",
     "viewsPerDay": "views/day",
     "unlimitedViews": "Unlimited views",
-    "guarantee": "The Rishi Guarantee",
+    "guarantee": "Before You Pay — Read This",
     "guaranteeText": "This is not investment advice. The Rishis offer philosophical frameworks for thinking about value. The greatest investment you can make is in your own understanding.",
     "localStorage": "All tiers use localStorage - no account required. No data leaves your device."
   },
@@ -540,7 +540,7 @@
     },
     "wisdom": {
       "title": "20 Legendary Investors",
-      "body": "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — all scoring every stock in real-time. Long and Short thesis. Every day.",
+      "body": "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — timeless frameworks applied to every stock in our universe. Long and Short thesis. Every day.",
       "bodyHighlight": "scoring every stock",
       "exploreBtn": "Explore All Rishis"
     }
@@ -551,10 +551,10 @@
     "solo": "Solo",
     "askAbout": "Ask",
     "askTheRishis": "the Rishis",
-    "poweredBy": "Powered by Agnes AI",
+    "poweredBy": "Powered by Google Gemini",
     "personalityDriven": "Personality-driven responses",
     "thinking": "thinking...",
-    "consultingAI": "Consulting Agnes AI...",
+    "consultingAI": "Consulting the AI model...",
     "send": "Send",
     "quickPrompts": {
       "view": "What's your view on this stock?",
@@ -563,8 +563,8 @@
       "thesis": "Write a full investment thesis",
       "changeMind": "What would change your mind?",
       "valuation": "Is the valuation justified?",
-    "aiUnavailable": "AI unavailable — no answer was generated. Please try again.",
-    "personaLocked": "This Rishi requires a higher tier. Upgrade to continue."
+      "aiUnavailable": "AI unavailable — no answer was generated. Please try again.",
+      "personaLocked": "This Rishi requires a higher tier. Upgrade to continue."
     }
   },
   "kg": {
@@ -713,7 +713,7 @@
   "bonds": {
     "breadcrumb": "BONDS",
     "title": "BONDS",
-    "subtitle": "Indian sovereign and corporate debt markets with live yields",
+    "subtitle": "Sovereign and corporate debt — reference yields, labelled live where a live quote exists",
     "totalBonds": "TOTAL BONDS",
     "sovereignCorporate": "Sovereign & Corporate",
     "gSecs": "G-SECS",
@@ -729,7 +729,8 @@
     "duration": "DURATION",
     "price": "PRICE",
     "rating": "RATING",
-    "spread": "SPREAD"
+    "spread": "SPREAD",
+    "usTreasuries": "US Treasuries"
   },
   "fno": {
     "underlying": "UNDERLYING",

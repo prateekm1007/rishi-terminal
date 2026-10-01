@@ -1,9 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+
+/** Round-5 audit (finding 9): the footer used to claim "Data from NSE /
+ * Yahoo Finance / Screener.in" on EVERY page — including crypto, forex,
+ * bonds and commodities, where nothing comes from those sources. The
+ * source line is now route-aware: each surface states where its data
+ * actually comes from. */
+function dataSourceLine(pathname: string): string {
+  if (pathname.startsWith('/crypto'))
+    return 'Crypto: live quotes from CoinGecko where labelled LIVE; analytics are static reference — illustrative.';
+  if (pathname.startsWith('/forex'))
+    return 'Forex: static reference dataset — illustrative, not current. Verify live rates before acting.';
+  if (pathname.startsWith('/bonds'))
+    return 'Bond yields: static reference dataset — live only where a LIVE label is shown.';
+  if (pathname.startsWith('/commodities'))
+    return 'Commodities: static reference dataset — illustrative, not current.';
+  if (pathname.startsWith('/pulse'))
+    return 'Macro indicators: static reference — as-of dates shown per row; live FX where labelled.';
+  return 'Equity data: NSE India / Yahoo Finance / Screener.in (live where labelled); fundamentals seeded illustratively where marked.';
+}
 
 export function LegalDisclaimer() {
   const [showModal, setShowModal] = useState(false);
+  const pathname = usePathname() || '/';
+  const sourceLine = dataSourceLine(pathname);
 
   useEffect(() => {
     try {
@@ -102,7 +124,7 @@ export function LegalDisclaimer() {
               }}>
                 <p style={{ margin: 0, color: '#CBD5E1', fontSize: '13px', lineHeight: 1.6 }}>
                   <strong style={{ color: '#D4AF37' }}>DATA SOURCES.</strong>{' '}
-                  Live data is sourced from NSE India, Yahoo Finance, and Screener.in.
+                  {sourceLine}
                   Data may be delayed or incomplete. Always verify from official exchange sources
                   before making decisions. Consult a SEBI-registered financial advisor.
                 </p>
@@ -154,7 +176,7 @@ export function LegalDisclaimer() {
       }}>
         <span style={{ color: '#D4AF37', fontWeight: 700 }}>⚠️ NOT INVESTMENT ADVICE</span>
         {' · '}
-        Educational research tool only. Data from NSE / Yahoo Finance / Screener.in — may be delayed.
+        Educational research tool only. {sourceLine}
         {' · '}
         Past performance ≠ future results.
         {' · '}

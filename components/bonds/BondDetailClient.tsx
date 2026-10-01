@@ -20,6 +20,9 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
     bond.duration < 12 ? 55 : 40;
 
   const creditScore =
+    // Round-5 audit (finding 5): 'SOV' = sovereign obligation — the highest
+    // credit quality in this taxonomy, not the fallback bucket.
+    bond.rating === 'SOV' ? 95 :
     bond.rating === 'AAA' ? 90 :
     bond.rating === 'AA+' ? 80 :
     bond.rating === 'AA' ? 70 : 50;

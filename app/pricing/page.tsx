@@ -9,7 +9,7 @@ import { startRazorpayCheckout } from '../../components/premium/PaymentButton';
 
 export default function PricingPage() {
   const { t } = useLanguage();
-  const { tier: currentTier, refresh: refreshTier } = useTier();
+  const { tier: currentTier, refresh: refreshTier, authenticated } = useTier();
   const [checkoutBusy, setCheckoutBusy] = useState<WisdomTier | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
@@ -67,7 +67,11 @@ export default function PricingPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24, marginBottom: 48 }}>
           {tiers.map(tier => {
             const config = TIER_CONFIG[tier];
-            const isActive = currentTier === tier;
+            // Round-5 audit (finding 6): an anonymous visitor is not "on"
+            // any tier — the server sees them signed out. Showing "Your
+            // current tier: Seeker" to a logged-out visitor claims an
+            // account state that does not exist.
+            const isActive = authenticated && currentTier === tier;
             const color = tierColors[tier];
             const emoji = tierEmoji[tier];
 
@@ -129,7 +133,12 @@ export default function PricingPage() {
                     ? `All 20 ${t('pricing.rishisVisible')}`
                     : `${config.rishisVisible} ${t('pricing.rishisVisible')}`}
                   {' · '}
-                  {t('pricing.unlimitedViews')}
+                  {/* Round-5 audit (finding 6): "Unlimited views" under the
+                      FREE tier was false — the seeker tier has a daily stock
+                      view limit. Unlimited is a paid perk only. */}
+                  {config.dailyStockLimit === null
+                    ? t('pricing.unlimitedViews')
+                    : `${config.dailyStockLimit} ${t('pricing.viewsPerDay')}`}
 
 
                 </div>

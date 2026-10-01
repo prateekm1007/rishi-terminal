@@ -27,6 +27,14 @@ const WATCHLIST_LONG = [
   "Worthy of a watchlist position. The business quality is reasonable, but valuation or governance concerns warrant patience. A better entry point, or evidence of improving fundamentals, would make this significantly more compelling.",
 ];
 
+// Round-5 audit (findings 2–3): a NEUTRAL / Hold verdict used to fall
+// through to the AVOID template ("The numbers tell a cautionary tale…"),
+// so healthy records like SBIN (ROE 18%, P/E 10) got stressed-balance-sheet
+// prose that contradicted the numbers next to it. Hold gets its own text.
+const NEUTRAL_LONG = [
+  "A mixed picture. Some pillars of the business are sound while others raise fair questions, and at this valuation the risk and reward roughly balance. There is no shame in waiting for the picture to clarify — the market pays for patience, not for forced conviction.",
+];
+
 const AVOID_LONG = [
   "The numbers tell a cautionary tale. Capital efficiency is poor, the balance sheet is stressed, and the valuation offers no margin of safety. As Graham would remind us – the first rule of investing is: do not lose money. This situation makes that principle difficult to uphold.",
 ];
@@ -68,6 +76,7 @@ export function generateCommentary(
     if (conviction === "HIGH_CONVICTION") return pick(HIGH_CONVICTION_LONG, finalScore);
     if (conviction === "STRONG") return pick(STRONG_LONG, finalScore);
     if (conviction === "WATCHLIST") return pick(WATCHLIST_LONG, finalScore);
+    if (conviction === "NEUTRAL") return pick(NEUTRAL_LONG, finalScore);
     return pick(AVOID_LONG, finalScore);
   } else {
     if (conviction === "LEGENDARY_SHORT") return pick(LEGENDARY_SHORT, finalScore);
@@ -85,22 +94,26 @@ export function generateHeadline(
   const s = finalScore.toFixed(0);
 
   if (mode === "LONG") {
+    // Round-5 audit (finding 3): the headline must NAME the model (QVPS),
+    // not just "scores X/100" — the stock page shows the panel consensus
+    // (Rishi Merit System v1) right next to this, and two unlabeled numbers
+    // read as contradictory scores for the same stock.
     if (conviction === "LEGENDARY") 
-      return `${sym} scores ${s}/100 – A rare, legendary long opportunity`;
+      return `${sym} QVPS ${s}/100 – A rare, legendary long opportunity`;
     if (conviction === "HIGH_CONVICTION") 
-      return `${sym} scores ${s}/100 – High conviction buy`;
+      return `${sym} QVPS ${s}/100 – High conviction buy`;
     if (conviction === "STRONG") 
-      return `${sym} scores ${s}/100 – Strong fundamentals`;
+      return `${sym} QVPS ${s}/100 – Strong fundamentals`;
     if (conviction === "WATCHLIST") 
-      return `${sym} scores ${s}/100 – Add to watchlist, await better entry`;
+      return `${sym} QVPS ${s}/100 – Add to watchlist, await better entry`;
     if (conviction === "NEUTRAL") 
-      return `${sym} scores ${s}/100 – Hold, mixed signals`;
-    return `${sym} scores ${s}/100 – Avoid`;
+      return `${sym} QVPS ${s}/100 – Hold, mixed signals`;
+    return `${sym} QVPS ${s}/100 – Avoid`;
   } else {
     if (conviction === "LEGENDARY_SHORT") 
-      return `${sym} short scores ${s}/100 – Legendary short thesis`;
+      return `${sym} QVPS short ${s}/100 – Legendary short thesis`;
     if (conviction === "HIGH_CONVICTION_SHORT") 
-      return `${sym} short scores ${s}/100 – High conviction short`;
-    return `${sym} short scores ${s}/100 – Tactical short opportunity`;
+      return `${sym} QVPS short ${s}/100 – High conviction short`;
+    return `${sym} QVPS short ${s}/100 – Tactical short opportunity`;
   }
 }

@@ -19,7 +19,12 @@ function getConvictionLabel(c: string): string {
 }
 
 function ScoreGauge({ score, mode }: { score: number; mode: ScoreMode }) {
-  const [displayScore, setDisplayScore] = useState(0);
+  // Round-5 audit (finding 3): the initial render state must be the REAL
+  // score so the server-rendered HTML (and any no-JS crawler) shows the
+  // actual value — not "0/100". The count-up animation then runs from 0
+  // in the effect; hydration stays consistent because both server and
+  // client first render the same `score`.
+  const [displayScore, setDisplayScore] = useState(score);
   const { primary, glow } = getScoreColors(score, mode);
   const r      = 62;
   const circ   = 2 * Math.PI * r;
@@ -253,7 +258,12 @@ export default function RishiScoreDual({ dual, sector, defaultMode = "LONG" }: P
 
         <div style={{ marginTop:"18px", display:"flex", justifyContent:"space-between", fontSize:"11px", color: colors.textGhost, fontFamily: fonts.mono, fontWeight:500 }}>
           <span>Confidence: {(result.confidence * 100).toFixed(0)}%</span>
-          <span suppressHydrationWarning>{new Date(result.timestamp).toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" })}</span>
+          {/* Round-5 audit (finding 16): the panel used to show a bare clock
+              time ("07:22 pm") with no date or timezone — and because the
+              page is statically prerendered, that was the BUILD time posing
+              as freshness on every serve. Replaced with what is actually
+              true: a deterministic model over illustrative seed inputs. */}
+          <span>Deterministic model · illustrative seed inputs</span>
         </div>
       </div>
     </div>

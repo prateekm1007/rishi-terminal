@@ -9,7 +9,7 @@ import { useLivePrices } from '../../hooks/useLivePrices';
 import { bondMaturityState } from '../../lib/bonds/maturity';
 import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
 
-type BondType = 'All' | 'G-Sec' | 'SDL' | 'Corporate' | 'T-Bill';
+type BondType = 'All' | 'G-Sec' | 'SDL' | 'Corporate' | 'T-Bill' | 'US-Treasury';
 
 function typeColor(type: string) {
   if (type === 'G-Sec')     return 'var(--accent-green)';
@@ -70,6 +70,10 @@ export default function BondsPage() {
   const sdls      = enrichedBonds.filter(b => b.type === 'SDL');
   const corporate = enrichedBonds.filter(b => b.type === 'Corporate');
   const tbills    = enrichedBonds.filter(b => b.type === 'T-Bill');
+  // Round-5 audit (finding 5): the four US-Treasury rows used to be
+  // invisible in the type tiles (sum 13 vs "17 total"), because no tile
+  // counted them and the filter tabs omitted the type entirely.
+  const ustreas    = enrichedBonds.filter(b => b.type === 'US-Treasury');
 
   // Audit 2026-10-02 (P1): the average is computed over LIVE yields only —
   // an average over mixed live/static rows presented a current-looking
@@ -80,7 +84,7 @@ export default function BondsPage() {
     : null;
   const avgDuration = (enrichedBonds.reduce((sum, b) => sum + b.duration, 0) / enrichedBonds.length).toFixed(1);
 
-  const types: BondType[] = ['All', 'G-Sec', 'SDL', 'Corporate', 'T-Bill'];
+  const types: BondType[] = ['All', 'G-Sec', 'SDL', 'Corporate', 'T-Bill', 'US-Treasury'];
 
   const stats: Array<{
     label: string; count: string | number; color: string; bg: string; border: string;
@@ -90,6 +94,7 @@ export default function BondsPage() {
     { label: t('bonds.sdls'),          count: sdls.length,              color: '#60a5fa',             bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.2)' },
     { label: t('bonds.corporate'),     count: corporate.length,         color: 'var(--accent-gold)',  bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.2)' },
     { label: t('bonds.tBills'),       count: tbills.length,            color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)' },
+    { label: t('bonds.usTreasuries'), count: ustreas.length,            color: '#34d399',             bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.2)' },
     {
       label: t('bonds.avgYtm'),
       count: loading ? '...' : (avgYTM === null ? '—' : avgYTM + '%'),

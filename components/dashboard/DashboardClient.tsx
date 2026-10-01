@@ -199,8 +199,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                 <span style={{ color:C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
                   {d?.price ? (useUSD ? "$" : "") + d.price.toLocaleString("en-IN",{maximumFractionDigits:2}) : "—"}
                 </span>
+                {/* Round-5 audit (finding 9): a missing quote used to render
+                    "▼ 0.00%" — a fabricated direction and magnitude. No
+                    data -> no arrow, no number. */}
                 <span style={{ fontSize:"12px", fontWeight:600, color: up ? C.green : C.red, fontFamily:mono }}>
-                  {up ? "▲" : "▼"} {Math.abs(d?.changePercent24h ?? 0).toFixed(2)}%
+                  {d?.changePercent24h == null ? "—" : `${up ? "▲" : "▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%`}
                 </span>
               </span>
             );
@@ -216,8 +219,18 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
       }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:C.green,boxShadow:"0 0 8px rgba(34,197,94,0.7)" }} className="animate-pulse" />
-            <span style={{ color:C.green, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.liveMarketData")}</span>
+            {/* Round-5 audit (finding 9): the green LIVE badge used to render
+                unconditionally — even next to em dashes and while quotes were
+                still loading. It now appears only once live quotes have
+                actually arrived; before that the bar says what is true. */}
+            {lastUpdated ? (
+              <>
+                <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:C.green,boxShadow:"0 0 8px rgba(34,197,94,0.7)" }} className="animate-pulse" />
+                <span style={{ color:C.green, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.liveMarketData")}</span>
+              </>
+            ) : (
+              <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.connecting")}</span>
+            )}
           </div>
           <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
             {lastUpdated ? (t("dashboard.updatedPrefix") + timeAgo) : t("dashboard.connecting")}

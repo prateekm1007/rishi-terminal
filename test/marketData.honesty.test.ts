@@ -55,10 +55,20 @@ describe("P1 crypto volume — the transport carries the real metric", () => {
 describe("P1 bond maturity — dated, derived, never re-hardcoded", () => {
   const NOW = new Date("2026-10-01T00:00:00.000Z");
 
-  it("MUST FAIL PRE-FIX: IN91DTB (maturityDate 2026-08-15) is MATURED as of 2026-10-01", () => {
-    const tbill = BONDS.find(b => b.symbol === "IN91DTB");
-    expect(tbill).toBeDefined();
-    expect(bondMaturityState(tbill!.maturityDate, NOW)).toBe("matured");
+  // Round-4 asserted the weaker invariant: a matured instrument that was
+  // still listed had to be LABELLED matured. Round-5 audit (finding 5)
+  // strengthens it: a matured instrument must not be listed at all —
+  // IN91DTB and US3MTB (both matured 2026-08-15) were removed from the
+  // dataset, so the test now pins their absence. Test flip documented per
+  // rule 21: the old expectation ("labelled matured while listed") is
+  // superseded by "not listed".
+  it("round-5: matured instruments are absent from the dataset (IN91DTB, US3MTB removed)", () => {
+    expect(BONDS.find(b => b.symbol === "IN91DTB")).toBeUndefined();
+    expect(BONDS.find(b => b.symbol === "US3MTB")).toBeUndefined();
+    // The derived-state function itself still classifies the removed
+    // dates correctly, so any future listing that reintroduces them
+    // cannot silently present them as active.
+    expect(bondMaturityState("2026-08-15", NOW)).toBe("matured");
   });
 
   it("a future-dated instrument is active; the boundary day itself is matured", () => {
@@ -70,6 +80,15 @@ describe("P1 bond maturity — dated, derived, never re-hardcoded", () => {
   it("every bond in the dataset resolves to a known state (no invented states)", () => {
     for (const b of BONDS) {
       expect(["active", "matured"]).toContain(bondMaturityState(b.maturityDate, NOW));
+    }
+  });
+
+  it("round-5: no listed bond is already matured", () => {
+    for (const b of BONDS) {
+      expect(
+        bondMaturityState(b.maturityDate, NOW),
+        `${b.symbol} (${b.maturityDate}) must not be listed as matured`,
+      ).toBe("active");
     }
   });
 });

@@ -99,3 +99,55 @@ END
 $$;
 
 \echo '── N2 invariants: all passed'
+
+\echo '── Q1.1 (N2.5): no Supabase role holds TRUNCATE on any public table'
+-- Row-level triggers do not fire on TRUNCATE, and RLS never applies to it,
+-- so a TRUNCATE grant bypasses every per-row guard (audit round 4, Q1).
+DO $$
+DECLARE
+  t text;
+BEGIN
+  FOR t IN
+    SELECT c.relname
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relkind = 'r'
+  LOOP
+    IF has_table_privilege('anon', format('public.%I', t), 'TRUNCATE') THEN
+      RAISE EXCEPTION 'Q1.1 FAILED: anon can TRUNCATE public.%', t;
+    END IF;
+    IF has_table_privilege('authenticated', format('public.%I', t), 'TRUNCATE') THEN
+      RAISE EXCEPTION 'Q1.1 FAILED: authenticated can TRUNCATE public.%', t;
+    END IF;
+    IF has_table_privilege('service_role', format('public.%I', t), 'TRUNCATE') THEN
+      RAISE EXCEPTION 'Q1.1 FAILED: service_role can TRUNCATE public.%', t;
+    END IF;
+  END LOOP;
+END
+$$;
+
+\echo '── Q1.2 (N2.6): TRUNCATE of rishi_snapshots is rejected for service_role'
+-- Behavioral: even if a future grant re-appears, the statement trigger
+-- (migration 013) must reject the TRUNCATE and the seeded row must survive.
+DO $$
+DECLARE
+  rows_after int;
+BEGIN
+  BEGIN
+    SET LOCAL ROLE service_role;
+    TRUNCATE public.rishi_snapshots;
+    RAISE EXCEPTION 'Q1.2 FAILED: service_role TRUNCATE of rishi_snapshots succeeded';
+  EXCEPTION
+    WHEN insufficient_privilege THEN
+      NULL; -- expected: REVOKE TRUNCATE (013) — permission denied
+    WHEN check_violation THEN
+      NULL; -- expected: statement trigger (013) — for roles that hold the privilege (e.g. owner)
+  END;
+  SELECT count(*) INTO rows_after FROM public.rishi_snapshots WHERE symbol = 'RLSY-INVARIANT-PROBE';
+  IF rows_after <> 1 THEN
+    RAISE EXCEPTION 'Q1.2 FAILED: probe row did not survive (rows_after=%) — the table was emptied', rows_after;
+  END IF;
+END
+$$;
+
+\echo '── Q1 invariants: all passed'

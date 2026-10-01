@@ -20,6 +20,17 @@ Rules that hold across all environments:
    happens on the candidate project.
 3. **Secrets live only in the environment**, never in the repo, chat, or logs.
    `scripts/checkEnv.ts` checks names only, by design.
+4. **No role can TRUNCATE a public table** (audit round 4, Q1 — migration
+   013). Row-level triggers do not fire on TRUNCATE and RLS never applies to
+   it, so append-only tables (`rishi_snapshots`, …) are guarded by
+   `REVOKE TRUNCATE` for anon/authenticated/service_role plus a
+   `BEFORE TRUNCATE` statement trigger that raises for any remaining holder
+   of the privilege (e.g. the table owner). Residual, documented honestly:
+   the table owner and superusers can still disable triggers (e.g.
+   `SET session_replication_role = replica`); PITR backups are the backstop
+   for that path, and the restore drill is part of L5-05. The CI invariants
+   (`scripts/ci/rls_invariants.sql`, checks Q1.1/Q1.2) fail the build if any
+   public table becomes TRUNCATE-able again.
 
 ## Promotion: dev → staging → production
 

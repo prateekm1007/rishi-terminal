@@ -30,7 +30,7 @@ async function probe(name, path, body, expectHint) {
   console.log(`${String(status).padEnd(3)} ${name} (${Date.now() - started}ms)`);
 }
 
-// Founder decision 2026-10-03: chat requires NO authentication. The
+// Founder decision 2026-10-02: chat requires NO authentication. The
 // anonymous surface is now the FULL surface: the rows below pin that the
 // anonymous path is the same bounded pipeline (quota/burst still apply)
 // and that validation still fails closed WITHOUT an auth gate.

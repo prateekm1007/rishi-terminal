@@ -73,7 +73,7 @@ const receipt = {
     },
     apiProbes: {
       scope: "/api/auth/me, /api/chat/personas, /api/chat, /api/rishis/:sym, /api/payment, /api/prices/batch, /api/gurus?kind=crypto|commodity",
-      result: "anonymous chat/personas/verdicts OPEN (founder decision 2026-10-03 + Commit N1) · payments 410 · gurus unlocked for everyone · remaining auth-gated surfaces: none on the probed set",
+      result: "anonymous chat/personas/verdicts OPEN (founder decision 2026-10-02 + Commit N1) · payments 410 · gurus unlocked for everyone · remaining auth-gated surfaces: none on the probed set",
       artifact: "download/audit/prod-probes.json (historical; regenerate with scripts/prodUglyPathAnonymous.mjs / the Commit-N matrix)",
     },
     aiUglyPath: {

@@ -1,0 +1,228 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+stdout | test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a price-only meta yields change null (was: fabricated 0 via previousClose || price)
+[Yahoo-Bulk] RELIANCE -> RELIANCE.NS : 1167.70
+
+stdout | test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a price-only meta yields change null (was: fabricated 0 via previousClose || price)
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+ ❯ test/yahooBulk.nullSemantics.test.ts (3 tests | 3 failed) 31ms
+   ❯ MUST FAIL PRE-O: the bulk path never fabricates change/volume (3)
+     × a price-only meta yields change null (was: fabricated 0 via previousClose || price) 27ms
+     × a missing volume field yields null, never 0 1ms
+     × a genuine disclosed change still flows through 2ms
+ ❯ test/pricesBatch.errorContract.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pricesBatch.errorContract.test.ts [ test/pricesBatch.errorContract.test.ts ]
+Error: [vitest] No "YAHOO_INDEX_SYMBOLS" export is defined on the "@/lib/livePrice" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("@/lib/livePrice"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ lib/registry/validateInput.ts:38:18
+     36| const ALLOWED = new Set<string>([
+     37|   ...Object.keys(STOCKS),
+     38|   ...Object.keys(YAHOO_INDEX_SYMBOLS),
+       |                  ^
+     39|   ...Object.keys(YAHOO_COMMODITY_SYMBOLS),
+     40|   ...Object.keys(COINGECKO_IDS),
+ ❯ app/api/prices/batch/route.ts:4:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a price-only meta yields change null (was: fabricated 0 via previousClose || price)
+AssertionError: expected +0 to be null
+
+- Expected:
+null
+
++ Received:
+0
+
+ ❯ test/yahooBulk.nullSemantics.test.ts:56:33
+     54|     expect(out.RELIANCE).toBeDefined();
+     55|     expect(out.RELIANCE.price).toBe(1167.7);
+     56|     expect(out.RELIANCE.change).toBeNull();
+       |                                 ^
+     57|   });
+     58|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a missing volume field yields null, never 0
+AssertionError: expected +0 to be null
+
+- Expected:
+null
+
++ Received:
+0
+
+ ❯ test/yahooBulk.nullSemantics.test.ts:61:33
+     59|   it("a missing volume field yields null, never 0", async () => {
+     60|     const out = await fetchBulkPricesForSymbols(["RELIANCE"]);
+     61|     expect(out.RELIANCE.volume).toBeNull();
+       |                                 ^
+     62|   });
+     63|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a genuine disclosed change still flows through
+AssertionError: expected +0 to be 0.42 // Object.is equality
+
+- Expected
++ Received
+
+- 0.42
++ 0
+
+ ❯ test/yahooBulk.nullSemantics.test.ts:74:33
+     72|     );
+     73|     const out = await fetchBulkPricesForSymbols(["RELIANCE"]);
+     74|     expect(out.RELIANCE.change).toBe(0.42);
+       |                                 ^
+     75|     expect(out.RELIANCE.volume).toBe(16667234);
+     76|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed (3)
+   Start at  06:55:33
+   Duration  663ms (transform 44%, tests 28%, import 13%, setup 8%, worker 6%)
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+stdout | test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a price-only meta yields change null (was: fabricated 0 via previousClose || price)
+[Yahoo-Bulk] RELIANCE -> RELIANCE.NS : 1167.70
+
+stdout | test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a price-only meta yields change null (was: fabricated 0 via previousClose || price)
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+ ❯ test/yahooBulk.nullSemantics.test.ts (3 tests | 3 failed) 38ms
+   ❯ MUST FAIL PRE-O: the bulk path never fabricates change/volume (3)
+     × a price-only meta yields change null (was: fabricated 0 via previousClose || price) 34ms
+     × a missing volume field yields null, never 0 1ms
+     × a genuine disclosed change still flows through 2ms
+stderr | test/pricesBatch.errorContract.test.ts > MUST FAIL PRE-O5: upstream exception text can never escape the batch route > a throwing bulk fetch yields a generic 500 — no details field, no upstream text
+[/api/prices/batch] error: Error: fetch failed: https://query1.finance.yahoo.com/v8/finance/chart — ECONNRESET
+    at /home/z/my-project/rishi-terminal/test/pricesBatch.errorContract.test.ts:45:7
+    at file:///home/z/my-project/rishi-terminal/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:1628:35
+    at file:///home/z/my-project/rishi-terminal/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:26
+    at file:///home/z/my-project/rishi-terminal/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3319:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///home/z/my-project/rishi-terminal/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3314:10)
+    at file:///home/z/my-project/rishi-terminal/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3299:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/z/my-project/rishi-terminal/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3257:10)
+    at file:///home/z/my-project/rishi-terminal/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3876:64
+
+ ❯ test/pricesBatch.errorContract.test.ts (1 test | 1 failed) 11ms
+   ❯ MUST FAIL PRE-O5: upstream exception text can never escape the batch route (1)
+     × a throwing bulk fetch yields a generic 500 — no details field, no upstream text 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pricesBatch.errorContract.test.ts > MUST FAIL PRE-O5: upstream exception text can never escape the batch route > a throwing bulk fetch yields a generic 500 — no details field, no upstream text
+AssertionError: expected 'fetch failed: https://query1.finance.…' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"fetch failed: https://query1.finance.yahoo.com/v8/finance/chart — ECONNRESET"
+
+ ❯ test/pricesBatch.errorContract.test.ts:52:26
+     50|     expect(body.error).toBe("Batch fetch failed");
+     51|     // Rule 10: the raw exception message must not ride the wire.
+     52|     expect(body.details).toBeUndefined();
+       |                          ^
+     53|     expect(JSON.stringify(body)).not.toContain("query1.finance.yahoo.c…
+     54|     expect(JSON.stringify(body)).not.toContain("ECONNRESET");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a price-only meta yields change null (was: fabricated 0 via previousClose || price)
+AssertionError: expected +0 to be null
+
+- Expected:
+null
+
++ Received:
+0
+
+ ❯ test/yahooBulk.nullSemantics.test.ts:56:33
+     54|     expect(out.RELIANCE).toBeDefined();
+     55|     expect(out.RELIANCE.price).toBe(1167.7);
+     56|     expect(out.RELIANCE.change).toBeNull();
+       |                                 ^
+     57|   });
+     58|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a missing volume field yields null, never 0
+AssertionError: expected +0 to be null
+
+- Expected:
+null
+
++ Received:
+0
+
+ ❯ test/yahooBulk.nullSemantics.test.ts:61:33
+     59|   it("a missing volume field yields null, never 0", async () => {
+     60|     const out = await fetchBulkPricesForSymbols(["RELIANCE"]);
+     61|     expect(out.RELIANCE.volume).toBeNull();
+       |                                 ^
+     62|   });
+     63|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a genuine disclosed change still flows through
+AssertionError: expected +0 to be 0.42 // Object.is equality
+
+- Expected
++ Received
+
+- 0.42
++ 0
+
+ ❯ test/yahooBulk.nullSemantics.test.ts:74:33
+     72|     );
+     73|     const out = await fetchBulkPricesForSymbols(["RELIANCE"]);
+     74|     expect(out.RELIANCE.change).toBe(0.42);
+       |                                 ^
+     75|     expect(out.RELIANCE.volume).toBe(16667234);
+     76|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed (4)
+   Start at  06:55:50
+   Duration  763ms (transform 65%, import 23%, tests 9%, setup 2%, worker 1%)
+

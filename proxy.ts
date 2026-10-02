@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
   // Protected routes: signed-out users are sent to sign-in.
   // R9: match on PATH SEGMENTS — a prefix like '/alerts' must not also
   // match '/alerts-foo', redirecting legitimate public pages.
-  // Founder decision 2026-10-03: /lab is PUBLIC (the Portfolio Lab is
+  // Founder decision 2026-10-02: /lab is PUBLIC (the Portfolio Lab is
   // browser-local data; no sign-in required) — see lib/auth/protectedPaths.
   const pathname = request.nextUrl.pathname;
   const isProtected = isProtectedPath(pathname);

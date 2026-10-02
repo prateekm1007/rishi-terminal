@@ -205,7 +205,7 @@ for (const tier of LEGACY_TIERS) {
 }
 
 // ── 4. AI matrix ──────────────────────────────────────────────────────────
-// Founder decision 2026-10-03 ("chat requires no authentication"), as
+// Founder decision 2026-10-02 ("chat requires no authentication"), as
 // deployed by PR #46: the anonymous probe caller PROCEEDS — 200,
 // quota-keyed to the deterministic per-IP identity (mechanics pinned by
 // test/chat.anonymous.test.ts; one real provider call per matrix run).

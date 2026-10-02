@@ -3,7 +3,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 
 /**
- * Anonymous chat quota identity (founder decision 2026-10-03 — chat
+ * Anonymous chat quota identity (founder decision 2026-10-02 — chat
  * requires no authentication, but R12 still bounds the spend).
  *
  * An anonymous caller is keyed to a DETERMINISTIC uuidv5 of the client IP

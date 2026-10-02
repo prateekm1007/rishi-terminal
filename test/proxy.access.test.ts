@@ -1,5 +1,5 @@
 /**
- * Commit N1 (founder decision 2026-10-03: Portfolio Lab works without
+ * Commit N1 (founder decision 2026-10-02: Portfolio Lab works without
  * sign-in) — the PROXY behavior, verified end to end.
  *
  * The path LIST lives in lib/auth/protectedPaths.ts and is unit-pinned by

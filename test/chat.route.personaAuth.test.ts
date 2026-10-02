@@ -9,7 +9,7 @@
  * caller may converse with every canonical persona, and there is no 403
  * path left on this route.
  *
- * Required contract (founder decision 2026-10-03: chat requires NO
+ * Required contract (founder decision 2026-10-02: chat requires NO
  * authentication — anonymous callers are quota-keyed per IP; every other
  * validation mechanism unchanged):
  *   anonymous session + any canonical persona         -> proceeds (200)
@@ -87,7 +87,7 @@ afterEach(() => {
 });
 
 describe("M3 /api/chat persona validation (existence + canonical registry, no tier)", () => {
-  it("anonymous + canonical persona -> 200 (founder 2026-10-03: no sign-in required)", async () => {
+  it("anonymous + canonical persona -> 200 (founder 2026-10-02: no sign-in required)", async () => {
     asUser(null);
     const res = await POST(makeReq({ personaId: "damani", history: [], message: "hi" }));
     expect(res.status).toBe(200);

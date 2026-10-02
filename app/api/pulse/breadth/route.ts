@@ -44,12 +44,24 @@ export async function GET() {
     const energy    = bySymbol('NIFTY ENERGY');
     const infra     = bySymbol('NIFTY INFRA');
 
-    // Breadth: count advancing vs declining indices
+    // Breadth: count advancing vs declining indices.
+    // Round 9 §17 (Rule 16): an index WITHOUT a disclosed percentChange is
+    // NOT "unchanged" — a missing observation is not a flat one. Such
+    // indices are counted as `unknown` and excluded from the three
+    // classified buckets; the ratio is null when declines = 0 (a count is
+    // not a ratio — the old code returned the advances count as one).
     const allSectors = [nifty, bankNifty, midcap, smallcap, it, pharma, auto, fmcg, metal, realty, energy, infra].filter((i): i is NseIndex => Boolean(i));
-    const advances  = allSectors.filter(i => (i.percentChange ?? 0) > 0).length;
-    const declines  = allSectors.filter(i => (i.percentChange ?? 0) < 0).length;
-    const unchanged = allSectors.filter(i => (i.percentChange ?? 0) === 0).length;
+    const classified = allSectors.filter(
+      (i): i is NseIndex & { percentChange: number } =>
+        typeof i.percentChange === "number" && Number.isFinite(i.percentChange),
+    );
+    const advances  = classified.filter(i => i.percentChange > 0).length;
+    const declines  = classified.filter(i => i.percentChange < 0).length;
+    const unchanged = classified.filter(i => i.percentChange === 0).length;
+    const unknown   = allSectors.length - classified.length;
 
+    // R9 §17: sector rows carry an explicit null for a missing percentChange
+    // (undefined would serialize as an absent key — clients then coerce).
     const sectorData = [
       { sector: 'IT',       index: it,       symbol: 'NIFTY IT' },
       { sector: 'Pharma',   index: pharma,   symbol: 'NIFTY PHARMA' },
@@ -66,7 +78,7 @@ export async function GET() {
       sector:     s.sector,
       last:       s.index.last,
       change:     s.index.variation,
-      changePct:  s.index.percentChange,
+      changePct:  s.index.percentChange ?? null,
       high:       s.index.high,
       low:        s.index.low,
       open:       s.index.open,
@@ -100,8 +112,13 @@ export async function GET() {
         advances,
         declines,
         unchanged,
+        // R9 §17: indices with no disclosed percentChange — counted, not
+        // silently relabelled "unchanged".
+        unknown,
         total: allSectors.length,
-        advanceDeclineRatio: declines > 0 ? parseFloat((advances / declines).toFixed(2)) : advances,
+        // R9 §17: a ratio needs a denominator; declines = 0 → null (the
+        // raw counts above carry the truth).
+        advanceDeclineRatio: declines > 0 ? parseFloat((advances / declines).toFixed(2)) : null,
       },
       sectors: sectorData,
       generatedAt: new Date().toISOString(),

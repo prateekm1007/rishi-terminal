@@ -25,17 +25,31 @@ export async function GET() {
       throw new Error('NSE block-deal schema mismatch: ' + parsed.error.issues[0]?.message);
     }
     const raw: NseBlockDeal[] = parsed.data.data ?? [];
-    const timestamp: string = parsed.data.timestamp ?? new Date().toISOString();
+    // R9 §17: the timestamp is the PROVIDER's own disclosure or null —
+    // never `new Date()` dressed up as the deals' observation time (a
+    // fabricated provider timestamp is a Rule 3/16 violation).
+    const timestamp: string | null = parsed.data.timestamp ?? null;
 
+    // R9 §17 (Rule 16): missing quantity/price/change/pchange are null —
+    // never 0 (absent volume is not zero trading; a missing price is not a
+    // ₹0 print). A deal missing qty or price cannot be VALUED and is
+    // excluded below. A missing pchange manufactures NO BUY/SELL side (and
+    // a genuine zero change carries no directional signal either — the
+    // side is a derived direction claim, rendered only when the observation
+    // discloses a direction).
     const deals = raw.slice(0, 20).map((d) => {
-      const qty   = d.totalTradedVolume ?? 0;
-      const price = d.lastPrice ?? 0;
-      const value = parseFloat(((qty * price) / 1e7).toFixed(2)); // in Cr
+      const qty   = d.totalTradedVolume ?? null;
+      const price = d.lastPrice ?? null;
+      const value =
+        qty !== null && price !== null
+          ? parseFloat(((qty * price) / 1e7).toFixed(2)) // in Cr
+          : null;
 
-      const pchange = d.pchange ?? 0;
+      const pchange = d.pchange ?? null;
       const side =
+        pchange === null ? null :
         pchange > 0 ? 'BUY' :
-        pchange < 0 ? 'SELL' : 'BUY';
+        pchange < 0 ? 'SELL' : null;
 
       const time = d.lastUpdateTime
         ? d.lastUpdateTime.split(' ')[1]?.slice(0, 5) ?? '--:--'
@@ -48,12 +62,12 @@ export async function GET() {
         quantity: qty,
         price,
         value,
-        change:   d.change ?? 0,
+        change:   d.change ?? null,
         changePct: pchange,
         side,
         series:   d.series ?? '',
       };
-    }).filter(d => d.symbol && d.value > 0);
+    }).filter(d => d.symbol && d.value !== null && (d.value as number) > 0);
 
     return NextResponse.json(
       {

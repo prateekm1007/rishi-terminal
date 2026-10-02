@@ -479,6 +479,7 @@
       "advancing": "অগ্রসর",
       "declining": "পশ্চাৎগামী",
       "unchanged": "অপরিবর্তিত",
+      "unknown": "কোনো ডেটা নেই",
       "adRatio": "A/D অনুপাত",
       "sectorMovesTitle": "সেক্টর সূচক চলাচল (লাইভ)",
       "tableHeaders": {

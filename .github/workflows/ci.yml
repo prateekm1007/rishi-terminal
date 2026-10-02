@@ -138,6 +138,9 @@ jobs:
       - name: Assert RLS invariants (N2)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/rls_invariants.sql
 
+      - name: Assert quote-cache claim invariants (U2 — real-Postgres cold-claim proof)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/quote_cache_invariants.sql
+
       - name: Populate security master (D1-02, generated from the official NSE listing)
         run: psql -v ON_ERROR_STOP=1 -f data/security-master/populate.sql
 

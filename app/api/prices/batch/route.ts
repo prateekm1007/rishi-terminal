@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchBulkPricesForSymbols } from '@/lib/nse/bulkFetch';
 import { fetchLivePrice, unavailablePriceEntry } from '@/lib/livePrice';
+import { marketState } from '@/lib/marketHours';
+import { cachedQuoteBatchForEquities, classifyPriceSymbols } from '@/lib/quotePath';
 import { parseSymbolsBody } from '@/lib/registry/validateInput';
 import { checkRateLimit } from '@/lib/rateLimit';
 import {
@@ -48,92 +49,68 @@ export async function POST(req: NextRequest) {
     const t0 = Date.now();
     const prices: Record<string, Record<string, unknown>> = {};
 
-    // Strategy: Yahoo bulk for NSE stocks, fallback for others
-    const INDEX_SYMBOLS = ['NIFTY50','SENSEX','BANK_NIFTY','SPX','DJI','IXIC','DAX','FTSE','HSI','N225','VIX'];
+    // ── U2 (founder round 7): the shared quote cache IS the serving surface
+    // for NSE-equity symbols. Upstream volume becomes O(1) per TTL per
+    // symbol across ALL users and instances (migration 016/017): fresh rows
+    // serve directly; one atomic refresh claim per stale symbol; THIS
+    // request's claimed symbols refresh in ONE Yahoo-bulk sweep
+    // (bulkRefreshQuotes). Classification comes from livePrice's own
+    // routing sets via lib/quotePath (one source of truth, Rule 14).
+    const { equities, others } = classifyPriceSymbols(symbols);
 
-    const nseSymbols = symbols.filter(s =>
-      !INDEX_SYMBOLS.includes(s) && 
-      !s.includes('/') && // not forex
-      !['IN2YS','IN6YS','IN10YS','IN15YS','IN91DTB','IN182DTB'].includes(s) && // not bonds
-      !['BTC','ETH','BNB','SOL','ADA','AVAX','DOT','POL','LINK','UNI','AAVE','SKY','XRP','DOGE','SHIB'].includes(s) && // not crypto
-      !['GOLD','SILVER','PLATINUM','CRUDEOIL','WTI','BRENT','NATURALGAS','COPPER','ALUMINIUM','ZINC','NICKEL','LEAD','BRENTCRUDE','PALLADIUM','COTTON','RUBBER','MENTHAOIL','CARDAMOM'].includes(s) // not commodities
-    );
-
-    const otherSymbols = symbols.filter(s => !nseSymbols.includes(s));
-
-    // Fetch NSE stocks via Yahoo bulk
-    const bulkResults = await fetchBulkPricesForSymbols(nseSymbols);
-    
-    for (const [sym, data] of Object.entries(bulkResults)) {
-      prices[sym] = {
-        price: data.price,
-        change: data.change,
-        changePercent24h: data.change,
-        volume24h: data.volume,
-        source: 'yahoo-bulk',
-        status: 'LIVE',
-        // T60.1 provenance: lastUpdated is the ORIGINAL Yahoo observation
-        // time (meta.regularMarketTime), never the serve time. When Yahoo
-        // disclosed no observation time we report null — we do not dress
-        // the fetch time up as an observation time. checkedAt is the
-        // decision/serve time and is semantically distinct.
-        lastUpdated: data.observedAt ?? null,
-        observedAt: data.observedAt ?? null,
-        checkedAt: new Date().toISOString(),
-      };
+    const batchResult = await cachedQuoteBatchForEquities(equities);
+    for (const sym of equities) {
+      const r = batchResult.quotes[sym];
+      if (r && r.quote) {
+        prices[sym] = {
+          price: r.quote.price,
+          change: r.quote.change,
+          changePercent24h: r.quote.change,
+          volume24h: r.quote.volume24h,
+          source: r.quote.source,
+          // state→status honesty: a fresh upstream observation just landed
+          // (stale-revalidated) is LIVE; serving an existing shared-cache
+          // row (fresh/stale-served) is CACHED with its own provenance.
+          status: r.state === 'stale-revalidated' ? 'LIVE' : 'CACHED',
+          // T60.1 provenance preserved: lastUpdated is the ORIGINAL upstream
+          // observation time — never the serve time; null stays null.
+          lastUpdated: r.quote.observedAt ?? null,
+          observedAt: r.quote.observedAt ?? null,
+        };
+        recordServe('/api/prices/batch', serveKind(prices[sym].status), 1);
+      } else {
+        // T57: honest unavailability per symbol — no zeros, no fabricated
+        // observation timestamps.
+        prices[sym] = unavailablePriceEntry();
+        recordServe('/api/prices/batch', 'unavailable', 1);
+      }
     }
 
-    // Fallback: NSE symbols missing from Yahoo bulk -> fetchLivePrice() (multi-source)
-    const missingNseSymbols = nseSymbols.filter(s => !prices[s]);
-
-    for (let i = 0; i < missingNseSymbols.length; i += 25) {
-      const chunk = missingNseSymbols.slice(i, i + 25);
-      const chunkResults = await Promise.allSettled(chunk.map(s => fetchLivePrice(s)));
-      chunkResults.forEach((r, j) => {
-        if (r.status === "fulfilled" && r.value) {
-          const sym = chunk[j];
-          prices[sym] = {
-            price: r.value.price,
-            change: r.value.change,
-            changePercent24h: r.value.change,
-            volume24h: null,
-            source: r.value.source,
-            status: r.value.status ?? 'LIVE',
-            lastUpdated: r.value.lastUpdated,
-            observedAt: r.value.observedAt ?? null,
-          };
-          recordServe('/api/prices/batch', serveKind(r.value.status ?? 'LIVE'), 1);
-        } else {
-          recordServe('/api/prices/batch', 'unavailable', 1);
-        }
-      });
-    }
-    // Fetch non-NSE symbols (crypto/forex/bonds/commodities) via individual calls
-    if (otherSymbols.length > 0) {
+    // Non-equity classes (crypto/forex/bonds/commodities/indices) keep the
+    // direct multi-source path — the shared cache is NSE-session scoped.
+    if (others.length > 0) {
       const results = await Promise.allSettled(
-        otherSymbols.map(s => fetchLivePrice(s))
+        others.map(s => fetchLivePrice(s))
       );
 
       results.forEach((r, i) => {
         if (r.status === 'fulfilled' && r.value) {
-          prices[otherSymbols[i]] = r.value as unknown as Record<string, unknown>;
+          prices[others[i]] = r.value as unknown as Record<string, unknown>;
           recordServe('/api/prices/batch', serveKind(r.value.status), 1);
         } else {
           // T57: explicit honest unavailability per symbol. Phase 5.1: the
           // entry carries NO observation timestamp — lastUpdated is null
           // (there is no observation) and checkedAt is the decision time.
-          prices[otherSymbols[i]] = unavailablePriceEntry();
+          prices[others[i]] = unavailablePriceEntry();
           recordServe('/api/prices/batch', 'unavailable', 1);
         }
       });
     }
 
     // Phase 5.1 (T57): EXACTLY ONE normalized entry per requested symbol.
-    // The fallback loop above only records successes, so a symbol whose
-    // Yahoo bulk lookup missed AND whose per-symbol fetch returned null /
-    // rejected was previously silently absent — clients saw 49 entries for
-    // 50 requested. Now the total-failure case is explicit: UNAVAILABLE
-    // with no fabricated observation time.
+    // A symbol whose shared-cache lookup AND (for non-equity) per-symbol
+    // fetch returned null / rejected is explicit: UNAVAILABLE with no
+    // fabricated observation time.
     for (const s of symbols) {
       if (!prices[s]) {
         prices[s] = unavailablePriceEntry();
@@ -146,13 +123,15 @@ export async function POST(req: NextRequest) {
     recordAppRequestDone(appReqId, ms);
     console.log(
       `[/api/prices/batch] ${Object.keys(prices).length}/${symbols.length} in ${ms}ms ` +
-      `(Yahoo bulk: ${Object.keys(bulkResults).length}, fallback: ${otherSymbols.length})`
+      `(shared-cache equities: ${equities.length}, direct: ${others.length})`
     );
 
         // Normalize payload shape for clients:
     // - Provide { prices: ... } wrapper (expected by hooks/useLivePrices in UI)
     // - Keep legacy top-level symbol keys for backward compatibility
     // - Ensure changePercent24h exists by aliasing from change/changePercent
+    // - U2: the NSE market state rides top-level so the client hook can
+    //   adapt its polling cadence (server decides, Rule 7).
     // R4: the merged quote shape from the fetchers — only the fields the
     // normalisation below reads are declared.
     const normalized: Record<string, Record<string, unknown>> = {};
@@ -174,7 +153,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      { prices: normalized, ...normalized },
+      { prices: normalized, market: marketState(), ...normalized },
       { headers: { 'Cache-Control': 'public, s-maxage=30' } }
     );
   } catch (error) {

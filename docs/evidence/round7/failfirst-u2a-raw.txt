@@ -1,0 +1,123 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/quotePath.test.ts (0 test)
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > equity entries carry the cache's provenance; status maps state honestly; market rides top-level
+[Yahoo-Bulk] TCS -> TCS.NS : 2075.00
+
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > equity entries carry the cache's provenance; status maps state honestly; market rides top-level
+[Yahoo-Bulk] RELIANCE -> RELIANCE.NS : 1167.70
+
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > equity entries carry the cache's provenance; status maps state honestly; market rides top-level
+[Yahoo-Bulk] WIPRO -> WIPRO.NS : 159.35
+
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > equity entries carry the cache's provenance; status maps state honestly; market rides top-level
+[Yahoo-Bulk] Fetched 3/3 prices (cached: 0, new: 3)
+
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > equity entries carry the cache's provenance; status maps state honestly; market rides top-level
+[/api/prices/batch] 4/4 in 337ms (Yahoo bulk: 3, fallback: 1)
+
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > non-equity symbols keep the direct fetchLivePrice path (crypto etc.)
+[/api/prices/batch] 1/1 in 0ms (Yahoo bulk: 0, fallback: 1)
+
+ ❯ test/pricesRoutes.sharedCache.test.ts (5 tests | 4 failed) 355ms
+   ❯ U2 — /api/prices/batch serves equities from the shared quote cache (2)
+     × equity entries carry the cache's provenance; status maps state honestly; market rides top-level 346ms
+     × non-equity symbols keep the direct fetchLivePrice path (crypto etc.) 2ms
+   ❯ U2 — /api/prices single-symbol route (3)
+     × equity symbol: served via serveQuote, market fields ride additively 3ms
+     ✓ non-equity symbol: unchanged fetchLivePrice shape (no market fields invented) 1ms
+     × equity miss (serveQuote null) → explicit UNAVAILABLE entry 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/quotePath.test.ts [ test/quotePath.test.ts ]
+Error: Cannot find package '@/lib/quotePath' imported from /home/z/my-project/rishi-terminal/test/quotePath.test.ts
+ ❯ test/quotePath.test.ts:106:1
+    104|
+    105| import { cachedQuote, cachedQuoteBatch, type CachedQuote } from "@/lib…
+    106| import { classifyPriceSymbols, serveQuote } from "@/lib/quotePath";
+       | ^
+    107|
+    108| beforeEach(() => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > equity entries carry the cache's provenance; status maps state honestly; market rides top-level
+AssertionError: expected 2075 to be 3120.5 // Object.is equality
+
+- Expected
++ Received
+
+- 3120.5
++ 2075
+
+ ❯ test/pricesRoutes.sharedCache.test.ts:104:33
+    102|     // stale-revalidated → LIVE with full provenance
+    103|     expect(prices["TCS"].status).toBe("LIVE");
+    104|     expect(prices["TCS"].price).toBe(3120.5);
+       |                                 ^
+    105|     expect(prices["TCS"].changePercent24h).toBe(0.62);
+    106|     expect(prices["TCS"].volume24h).toBe(4_210_000);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > non-equity symbols keep the direct fetchLivePrice path (crypto etc.)
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/pricesRoutes.sharedCache.test.ts:136:34
+    134|     const json = await res.json();
+    135|     const prices = json.prices as Record<string, Record<string, unknow…
+    136|     expect(cachedQuoteBatchMock).toHaveBeenCalledTimes(1);
+       |                                  ^
+    137|     expect(cachedQuoteBatchMock.mock.calls[0][0]).toEqual([]); // no e…
+    138|     expect(fetchLivePriceMock).toHaveBeenCalledWith("BTC");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices single-symbol route > equity symbol: served via serveQuote, market fields ride additively
+AssertionError: expected 'UNAVAILABLE' to be 'CACHED' // Object.is equality
+
+Expected: "CACHED"
+Received: "UNAVAILABLE"
+
+ ❯ test/pricesRoutes.sharedCache.test.ts:153:25
+    151|     const res = await singleGET(singleReq("TCS"));
+    152|     const json = await res.json();
+    153|     expect(json.status).toBe("CACHED");
+       |                         ^
+    154|     expect(json.price).toBe(3120.5);
+    155|     expect(json.marketOpen).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices single-symbol route > equity miss (serveQuote null) → explicit UNAVAILABLE entry
+AssertionError: expected undefined to be 'UNAVAILABLE' // Object.is equality
+
+- Expected:
+"UNAVAILABLE"
+
++ Received:
+undefined
+
+ ❯ test/pricesRoutes.sharedCache.test.ts:176:25
+    174|     const res = await singleGET(singleReq("ZZZZEQ"));
+    175|     const json = await res.json();
+    176|     expect(json.status).toBe("UNAVAILABLE");
+       |                         ^
+    177|     expect(json.lastUpdated).toBeNull();
+    178|     expect(Number.isFinite(Date.parse(json.checkedAt))).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 1 passed (5)
+   Start at  08:45:45
+   Duration  1.16s (transform 44%, tests 41%, import 13%, setup 1%, worker 1%)
+

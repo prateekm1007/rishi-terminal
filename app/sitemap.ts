@@ -50,7 +50,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // page carries rel=canonical, so there is exactly one indexable URL
     // per company).
     ...Object.values(STOCKS).map(stock => ({
-      url: `${SITE_URL}/stock/${stock.symbol}`,
+      // Follow-up fix (PR #41 acceptance): NSE symbols can carry & (J&KBANK,
+      // M&M, M&MFIN). A raw & in <loc> makes the whole sitemap fail XML
+      // parsing — percent-encode every symbol; it is identity for the rest
+      // and the encoded URL serves the identical page (verified: both
+      // /stock/J%26KBANK and /stock/J&KBANK return the same 200 HTML).
+      url: `${SITE_URL}/stock/${encodeURIComponent(stock.symbol)}`,
       lastModified: generatedAt,
       changeFrequency: 'daily' as const,
       priority: 0.7,
@@ -58,19 +63,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Market detail pages.
     ...CRYPTO_ASSETS.map(a => ({
-      url: `${SITE_URL}/crypto/${a.symbol}`,
+      url: `${SITE_URL}/crypto/${encodeURIComponent(a.symbol)}`,
       lastModified: generatedAt,
       changeFrequency: 'daily' as const,
       priority: 0.6,
     })),
     ...COMMODITIES_DATA.map(c => ({
-      url: `${SITE_URL}/commodities/${c.symbol}`,
+      url: `${SITE_URL}/commodities/${encodeURIComponent(c.symbol)}`,
       lastModified: generatedAt,
       changeFrequency: 'daily' as const,
       priority: 0.6,
     })),
     ...[...INDIAN_INDEXES, ...GLOBAL_INDEXES].map(i => ({
-      url: `${SITE_URL}/index/${i.symbol}`,
+      url: `${SITE_URL}/index/${encodeURIComponent(i.symbol)}`,
       lastModified: generatedAt,
       changeFrequency: 'daily' as const,
       priority: 0.6,

@@ -10,14 +10,46 @@
  * "Production verified" claims are only valid against the SHA printed in
  * the receipt; regenerate after every new deployment.
  *
+ * Coder Directions 2026-10-02 §1/§27 (stale-evidence remediation): the
+ * matrix result strings are DERIVED from the evidence artifacts on disk —
+ * never hand-maintained — and the CI state is QUERIED from the GitHub API
+ * when GITHUB_PAT is provided (degrades honestly when absent). A receipt
+ * that disagrees with its own evidence files is a defect.
+ *
  * Secrets via env: VERCEL_TOKEN, VERCEL_PROJECT_ID (optional — receipt
- * degrades honestly to "vercel: not queried" when absent).
+ * degrades honestly to "vercel: not queried" when absent), GITHUB_PAT
+ * (optional — CI state degrades to "not queried").
  * Usage: node scripts/prodReceipt.mjs [BASE_URL] [OUT_FILE]
  */
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const BASE = process.argv[2] || "https://rishi-terminal.vercel.app";
 const OUT = process.argv[3] || "production-receipt.json";
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/** Read a JSON evidence artifact; null (recorded honestly) when absent. */
+function readJsonSafe(rel) {
+  try {
+    return JSON.parse(readFileSync(join(ROOT, rel), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+const freeAccess = readJsonSafe("docs/evidence/commit-n/production-free-access-matrix.json");
+const groundedCanary = readJsonSafe("docs/evidence/commit-n/production-grounded-canary.json");
+
+/** Derived — never hand-written: 36/36 PASS against the deployed SHA (X). */
+const freeAccessResult = freeAccess
+  ? `${freeAccess.passed ?? "?"}/${freeAccess.total ?? "?"} ${freeAccess.failed === 0 ? "PASS" : "FAIL"} against deployed SHA ${freeAccess.probe?.expectedSha} (artifact generated ${freeAccess.probe?.at}, expectedShaMatch=${freeAccess.expectedShaMatch})`
+  : "artifact missing — regenerate with scripts/prodFreeAccessMatrix.mjs";
+
+/** Derived — never hand-written: positive/negative canary outcome + SHA. */
+const canaryResult = groundedCanary
+  ? `${groundedCanary.rows?.every(r => r.ok) ? "PASS" : "FAIL"} on ${groundedCanary.versionSha} (positive attempt ${groundedCanary.positive?.passingAttempt ?? "—"}/${groundedCanary.positive?.attempts?.length ?? "—"}, negative ${groundedCanary.negative?.passed ? "PASS" : "FAIL"}; artifact generated ${groundedCanary.generatedAt})`
+  : "artifact missing — regenerate with scripts/prodGroundedCanary.mjs";
 
 const versionResp = await fetch(BASE + "/api/version", { signal: AbortSignal.timeout(30_000) });
 const version = await versionResp.json();
@@ -28,9 +60,10 @@ const receipt = {
   deployedCommitSha: version.sha ?? null,
   versionEndpoint: version,
   vercel: null,
+  ci: null,
   gates: {
-    repositoryGate: "tsc 0 · eslint 0 errors (301 warnings, below the 309 ratchet) · vitest 776/776 · eval:chat 113/113 (102 local + 11 CI, all pass) · freeAccessAudit PASS · aiLoopAudit 8/8 · validate:encoding · validate:stocks T12 (916) · score:parity 916/0 · build · bundle budget within ratchet · git env grep clean · no tokens in repo (verified on PR #49 head 2bf631f, merged as 15d0cab; CI green on PRs #47/#48/#49)",
-    recordedAt: "see PR descriptions for the raw gate logs of the exact HEADs",
+    repositoryGate: "per-PR raw gate logs live in the PR descriptions of the exact HEADs; the CI state for THIS SHA is queried live and recorded in receipt.ci below — never hand-copied",
+    recordedAt: "see receipt.ci.queries for the authoritative live CI record",
   },
   matrices: {
     routeViewport: {
@@ -50,12 +83,12 @@ const receipt = {
     },
     freeAccessMatrix: {
       scope: "Commit M §17 + Commit N1: legacy seeker/student/disciple DB rows × ANONYMOUS rows (chat 200, personas roster, /api/rishis full set, /lab page) × /api/auth/me × payment 410s × /pricing honesty × chat with previously-gated personas × forged client tier × tool-loop execution × deployment identity",
-      result: "36/36 PASS against the deployed SHA (15d0cab)",
+      result: freeAccessResult,
       artifact: "docs/evidence/commit-n/production-free-access-matrix.json (regenerate with scripts/prodFreeAccessMatrix.mjs)",
     },
     groundedCanary: {
       scope: "Commit N §7/§18 — the COMPLETE production AI loop: anonymous caller, no preselected symbol → model requests getPrices → server executes the canonical tool → structured claims validated → grounded=true · server-generated verified surface (never model prose) · separate commentary · every number covered by validated facts · provider/model attested · negative: unknown symbol → explicit failure, no fabrication, no false grounding",
-      result: "PASS on 15d0cab (positive satisfied on attempt 2/3; negative on 1/3) — the end-to-end AI loop is operationally closed",
+      result: canaryResult,
       artifact: "docs/evidence/commit-n/production-grounded-canary.json (regenerate with scripts/prodGroundedCanary.mjs)",
     },
   },
@@ -87,6 +120,50 @@ if (process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) {
   }
 } else {
   receipt.vercel = { note: "vercel: not queried (VERCEL_TOKEN/VERCEL_PROJECT_ID not provided)" };
+}
+
+// ── Coder Directions 2026-10-02 §2: CI completion state is part of the
+// reconciliation. Queried live for the EXACT deployed SHA when GITHUB_PAT
+// is provided; degrades honestly when absent (never assumed green).
+if (process.env.GITHUB_PAT) {
+  const repo = process.env.GITHUB_REPO || "prateekm1007/rishi-terminal";
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${repo}/actions/runs?head_sha=${version.sha}&per_page=10`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_PAT}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": "rishi-receipt",
+        },
+        signal: AbortSignal.timeout(30_000),
+      },
+    );
+    if (r.ok) {
+      const data = await r.json();
+      const runs = (data.workflow_runs ?? []).map(run => ({
+        id: run.id,
+        workflow: run.name,
+        branch: run.head_branch,
+        status: run.status,
+        conclusion: run.conclusion,
+        event: run.event,
+        url: run.html_url,
+      }));
+      receipt.ci = {
+        headSha: version.sha,
+        queriedFor: `runs whose head_sha == deployed SHA`,
+        runs,
+        allCompletedSuccess: runs.length > 0 && runs.every(run => run.status === "completed" && run.conclusion === "success"),
+      };
+    } else {
+      receipt.ci = { error: `github api ${r.status}` };
+    }
+  } catch (e) {
+    receipt.ci = { error: `github api fetch failed: ${e.message}` };
+  }
+} else {
+  receipt.ci = { note: "ci: not queried (GITHUB_PAT not provided)" };
 }
 
 writeFileSync(OUT, JSON.stringify(receipt, null, 2));

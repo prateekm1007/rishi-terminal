@@ -1,9 +1,9 @@
 {
   "probe": {
     "base": "https://rishi-terminal.vercel.app",
-    "at": "2026-10-02T06:05:52.200Z",
-    "expectedSha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
-    "versionSha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
+    "at": "2026-10-02T06:45:49.358Z",
+    "expectedSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+    "versionSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
     "versionStatus": 200
   },
   "expectedShaMatch": true,
@@ -15,8 +15,8 @@
       "id": "identity /api/version",
       "ok": true,
       "detail": {
-        "sha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
-        "expected": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29"
+        "sha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+        "expected": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74"
       }
     },
     {
@@ -255,12 +255,10 @@
       "ok": true,
       "detail": {
         "status": 200,
-        "tools": [
-          "getScore:ok"
-        ],
+        "tools": [],
         "grounded": false,
         "mode": "evidence-context",
-        "structured": "valid"
+        "structured": "invalid"
       }
     },
     {

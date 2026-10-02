@@ -1,13 +1,75 @@
 {
   "probe": "production-grounded-canary",
   "baseUrl": "https://rishi-terminal.vercel.app",
-  "expectedSha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
-  "versionSha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
-  "generatedAt": "2026-10-02T06:04:54.878Z",
+  "expectedSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+  "versionSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+  "generatedAt": "2026-10-02T06:46:54.160Z",
   "positive": {
     "attempts": [
       {
         "attempt": 1,
+        "status": 502,
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "toolCalls": [],
+        "textHead": "",
+        "groundingRejections": [],
+        "checks": [
+          {
+            "id": "http-200-anonymous",
+            "ok": false,
+            "detail": "anonymous chat status=502"
+          },
+          {
+            "id": "tool-expected-ok",
+            "ok": false,
+            "detail": "toolCalls=[]"
+          },
+          {
+            "id": "grounded-true",
+            "ok": false,
+            "detail": "grounded=undefined"
+          },
+          {
+            "id": "mode-structured-claims",
+            "ok": false,
+            "detail": "mode=undefined"
+          },
+          {
+            "id": "structured-valid",
+            "ok": false,
+            "detail": "structuredResponse=undefined"
+          },
+          {
+            "id": "validated-claim-present",
+            "ok": false,
+            "detail": "claims=0"
+          },
+          {
+            "id": "verified-surface-server-generated",
+            "ok": false,
+            "detail": "text head: "
+          },
+          {
+            "id": "commentary-separate",
+            "ok": false,
+            "detail": "no commentary"
+          },
+          {
+            "id": "numbers-covered-by-facts",
+            "ok": true,
+            "detail": "numbers=[] facts=[] uncovered=[]"
+          },
+          {
+            "id": "identity-attested",
+            "ok": false,
+            "detail": "provider=undefined model=undefined"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
         "status": 200,
         "grounded": false,
         "groundingMode": "evidence-context",
@@ -20,6 +82,7 @@
           }
         ],
         "textHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "groundingRejections": [],
         "checks": [
           {
             "id": "http-200-anonymous",
@@ -74,7 +137,143 @@
         ]
       },
       {
-        "attempt": 2,
+        "attempt": 3,
+        "status": 200,
+        "grounded": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "toolCalls": [
+          {
+            "tool": "getPrices",
+            "status": "ok",
+            "symbol": "RELIANCE"
+          }
+        ],
+        "textHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "groundingRejections": [],
+        "checks": [
+          {
+            "id": "http-200-anonymous",
+            "ok": true,
+            "detail": "anonymous chat status=200"
+          },
+          {
+            "id": "tool-expected-ok",
+            "ok": true,
+            "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}]"
+          },
+          {
+            "id": "grounded-true",
+            "ok": false,
+            "detail": "grounded=false"
+          },
+          {
+            "id": "mode-structured-claims",
+            "ok": false,
+            "detail": "mode=evidence-context"
+          },
+          {
+            "id": "structured-valid",
+            "ok": true,
+            "detail": "structuredResponse=valid"
+          },
+          {
+            "id": "validated-claim-present",
+            "ok": false,
+            "detail": "claims=0"
+          },
+          {
+            "id": "verified-surface-server-generated",
+            "ok": false,
+            "detail": "text head: The AI reply could not be verified against platform evidence and was not shown."
+          },
+          {
+            "id": "commentary-separate",
+            "ok": false,
+            "detail": "no commentary"
+          },
+          {
+            "id": "numbers-covered-by-facts",
+            "ok": true,
+            "detail": "numbers=[] facts=[] uncovered=[]"
+          },
+          {
+            "id": "identity-attested",
+            "ok": true,
+            "detail": "provider=chat-api model=agnes-2.5-flash"
+          }
+        ]
+      },
+      {
+        "attempt": 4,
+        "status": 200,
+        "grounded": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "toolCalls": [
+          {
+            "tool": "getPrices",
+            "status": "ok",
+            "symbol": "RELIANCE"
+          }
+        ],
+        "textHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "groundingRejections": [],
+        "checks": [
+          {
+            "id": "http-200-anonymous",
+            "ok": true,
+            "detail": "anonymous chat status=200"
+          },
+          {
+            "id": "tool-expected-ok",
+            "ok": true,
+            "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}]"
+          },
+          {
+            "id": "grounded-true",
+            "ok": false,
+            "detail": "grounded=false"
+          },
+          {
+            "id": "mode-structured-claims",
+            "ok": false,
+            "detail": "mode=evidence-context"
+          },
+          {
+            "id": "structured-valid",
+            "ok": true,
+            "detail": "structuredResponse=valid"
+          },
+          {
+            "id": "validated-claim-present",
+            "ok": false,
+            "detail": "claims=0"
+          },
+          {
+            "id": "verified-surface-server-generated",
+            "ok": false,
+            "detail": "text head: The AI reply could not be verified against platform evidence and was not shown."
+          },
+          {
+            "id": "commentary-separate",
+            "ok": false,
+            "detail": "no commentary"
+          },
+          {
+            "id": "numbers-covered-by-facts",
+            "ok": true,
+            "detail": "numbers=[] facts=[] uncovered=[]"
+          },
+          {
+            "id": "identity-attested",
+            "ok": true,
+            "detail": "provider=chat-api model=agnes-2.5-flash"
+          }
+        ]
+      },
+      {
+        "attempt": 5,
         "status": 200,
         "grounded": true,
         "groundingMode": "structured-claims",
@@ -87,6 +286,7 @@
           }
         ],
         "textHead": "price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)",
+        "groundingRejections": [],
         "checks": [
           {
             "id": "http-200-anonymous",
@@ -126,7 +326,7 @@
           {
             "id": "commentary-separate",
             "ok": true,
-            "detail": "commentary head: In my view, the daily price is merely a reflection — what matters is whether the"
+            "detail": "commentary head: Reliance is trading at 1167.7 rupees. A large conglomerate, sprawling across ene"
           },
           {
             "id": "numbers-covered-by-facts",
@@ -142,7 +342,7 @@
       }
     ],
     "passed": true,
-    "passingAttempt": 2
+    "passingAttempt": 5
   },
   "negative": {
     "attempts": [
@@ -150,7 +350,7 @@
         "attempt": 1,
         "status": 200,
         "grounded": false,
-        "structuredResponse": "invalid",
+        "structuredResponse": "valid",
         "toolCalls": [
           {
             "tool": "getPrices",
@@ -158,7 +358,7 @@
             "symbol": "ZZZZNOPE"
           }
         ],
-        "textHead": "The AI response could not be verified against the supplied financial evidence.",
+        "textHead": "I don't know that one. If it's not in the registry, it's not a business I'd touch. We focus on real companies with real cash flows, not phantoms.",
         "checks": [
           {
             "id": "http-200",
@@ -185,12 +385,12 @@
     {
       "id": "version-binding",
       "ok": true,
-      "detail": "GET /api/version -> 200 sha=15d0cabbef4b705d2f0311fa08d9db7b47d3de29 (expected 15d0cabbef4b705d2f0311fa08d9db7b47d3de29)"
+      "detail": "GET /api/version -> 200 sha=d7a6c0c46e880d9a06cab738bbe523b0f17aff74 (expected d7a6c0c46e880d9a06cab738bbe523b0f17aff74)"
     },
     {
       "id": "positive-canary-grounded-tool-loop",
       "ok": true,
-      "detail": "attempt 2/3 satisfied every row (grounded=true after a real getPrices call)"
+      "detail": "attempt 5/5 satisfied every row (grounded=true after a real getPrices call)"
     },
     {
       "id": "negative-canary-honest-failure",

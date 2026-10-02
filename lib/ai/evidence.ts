@@ -28,9 +28,11 @@
 import 'server-only';
 
 import { resolveStockMetrics, getStockScore, SCORE_ENGINE_VERSION } from '@/lib/scoring';
+import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { FullFundamentals } from '@/lib/liveFundamentals';
 import { fetchFullFundamentals } from '@/lib/liveFundamentals';
 import { fetchLivePrice } from '@/lib/livePrice';
+import type { PricePoint } from '@/lib/livePrice';
 import type { AiEvidenceFact, AiEvidenceItem } from './schemas';
 
 /**
@@ -55,6 +57,29 @@ export interface EvidenceDeps {
   news?: Array<{ id: string; headline: string; summary: string; source: string; pubDate: string }>;
 }
 
+/** Budget for the live fundamentals fetch — the chat path must stay bounded. */
+const FUNDAMENTALS_TIMEOUT_MS = 10_000;
+
+/**
+ * One bounded live-fundamentals fetch, shared by the evidence assembler and
+ * the AI tool layer (Commit L1) so both paths enforce the SAME budget and
+ * the SAME null-on-failure semantics (one source of truth — no second
+ * copy of the fetch contract that can drift).
+ */
+export async function fetchFundamentalsBounded(
+  symbol: string,
+  get: (symbol: string) => Promise<FullFundamentals | null>,
+): Promise<FullFundamentals | null> {
+  try {
+    return await Promise.race([
+      get(symbol),
+      new Promise<null>(r => setTimeout(() => r(null), FUNDAMENTALS_TIMEOUT_MS)),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
 export interface AiEvidencePackage {
   symbol: string;
   items: AiEvidenceItem[];
@@ -63,62 +88,35 @@ export interface AiEvidencePackage {
   engineVersion: string;
 }
 
-/** Budget for the live fundamentals fetch — the chat path must stay bounded. */
-const FUNDAMENTALS_TIMEOUT_MS = 10_000;
-
 function fmt(n: number): string {
   return Number.isFinite(n) ? String(Number(n.toFixed(4))) : String(n);
 }
 
+// ── Evidence item builders (Commit L1) ────────────────────────────────────
+// ONE set of constructors for every evidence item class. The package
+// assembler below AND the AI tool layer (lib/ai/tools.ts) both consume
+// them, so a tool can never mint an item whose id contract, fact
+// annotations or provenance wording drifts from the canonical assembler's
+// (rule 14: one source of truth per concept).
+
+/** Registry profile (name/sector are registry facts, not market data). */
+export function buildProfileItem(resolved: ResolvedStockMetrics): AiEvidenceItem {
+  return {
+    id: `stock:${resolved.symbol}:profile`,
+    text: `${resolved.name} (${resolved.symbol}), sector: ${resolved.sector}. Seed dataset status: ${resolved.seedStatus}.`,
+  };
+}
+
 /**
- * Build the canonical evidence package for one symbol, or null when the
- * symbol is unknown to the registry (callers decide 400 vs empty state).
+ * Price observation with provenance (single canonical path; the observation
+ * time is the upstream's own — null stays null). A null/non-positive price
+ * yields the explicit UNAVAILABLE item — never a fabricated number.
+ * NOTE (provenance, closed in Commit L2): the typed fact's `source` today
+ * mirrors the pre-L1 assembler verbatim ("live" for any finite positive
+ * price); L2 makes the fact honor PricePoint status (STATIC/DERIVED are not
+ * live observations) with fail-first tests.
  */
-export async function buildAiEvidencePackage(
-  symbol: string,
-  deps: EvidenceDeps = {},
-): Promise<AiEvidencePackage | null> {
-  const sym = symbol?.trim().toUpperCase();
-  if (!sym) return null;
-
-  // Live surfaces, in parallel, each individually non-fatal: a failed fetch
-  // degrades to seed-labelled provenance, never to a fabricated value.
-  const [live, pricePoint] = await Promise.all([
-    (async () => {
-      try {
-        const get = deps.getFundamentals ?? fetchFullFundamentals;
-        return await Promise.race([
-          get(sym),
-          new Promise<null>(r => setTimeout(() => r(null), FUNDAMENTALS_TIMEOUT_MS)),
-        ]);
-      } catch {
-        return null;
-      }
-    })(),
-    (async () => {
-      try {
-        const get = deps.getPrice ?? fetchLivePrice;
-        return await get(sym);
-      } catch {
-        return null;
-      }
-    })(),
-  ]);
-
-  const resolved = resolveStockMetrics(sym, live ? toResolverFundamentals(live) : null);
-  if (!resolved) return null;
-
-  const items: AiEvidenceItem[] = [];
-  const vendorName = live?.source && live.source !== "static" ? live.source : undefined;
-
-  // 0. Registry profile (name/sector are registry facts, not market data).
-  items.push({
-    id: `stock:${sym}:profile`,
-    text: `${resolved.name} (${sym}), sector: ${resolved.sector}. Seed dataset status: ${resolved.seedStatus}.`,
-  });
-
-  // 1. Price observation with provenance (single canonical path; the
-  //    observation time is the upstream's own — null stays null).
+export function buildPriceItem(symbol: string, pricePoint: PricePoint | null): AiEvidenceItem {
   if (pricePoint && Number.isFinite(pricePoint.price) && pricePoint.price > 0) {
     const when = pricePoint.observedAt ?? "no-disclosed-observation-time";
     const priceFacts: AiEvidenceFact[] = [
@@ -127,8 +125,8 @@ export async function buildAiEvidencePackage(
     if (Number.isFinite(pricePoint.change)) {
       priceFacts.push({ field: "change", value: pricePoint.change, unit: FACT_UNIT_BY_FIELD.change, source: "live" });
     }
-    items.push({
-      id: `price:${sym}:${when}`,
+    return {
+      id: `price:${symbol}:${when}`,
       text:
         `Latest observed price: ${fmt(pricePoint.price)} ` +
         `(change ${fmt(pricePoint.change)}%). ` +
@@ -136,21 +134,26 @@ export async function buildAiEvidencePackage(
         `observation time: ${pricePoint.observedAt ?? "not disclosed by the upstream"}.` +
         factAnnotation(priceFacts),
       facts: priceFacts,
-    });
-  } else {
-    items.push({
-      id: `price:${sym}:unavailable`,
-      text: "Price: UNAVAILABLE at assembly time. No observation exists — do not state or imply a price.",
-    });
+    };
   }
+  return {
+    id: `price:${symbol}:unavailable`,
+    text: "Price: UNAVAILABLE at assembly time. No observation exists — do not state or imply a price.",
+  };
+}
 
-  // 2. Resolved fundamentals — one item per field, provenance preserved.
+/** Resolved fundamentals — one item per field, provenance preserved. */
+export function buildFundamentalItems(
+  resolved: ResolvedStockMetrics,
+  vendorName?: string,
+): AiEvidenceItem[] {
   const FIELD_LABELS: Record<string, string> = {
     pe: "P/E", roe: "ROE %", roce: "ROCE %", opm: "Operating margin %",
     de: "Debt/Equity", promo: "Promoter holding %", revcagr: "Revenue CAGR 3Y %",
     epscagr: "EPS CAGR 3Y %", mktcap: "Market cap (Cr)", bvps: "Book value/share",
     pb: "P/B", fcfMargin: "FCF margin %",
   };
+  const out: AiEvidenceItem[] = [];
   for (const [field, rf] of Object.entries(resolved.fields)) {
     const label = FIELD_LABELS[field] ?? field;
     const asOf = rf.source === "live" && rf.asOf ? rf.asOf : null;
@@ -182,16 +185,20 @@ export async function buildAiEvidencePackage(
       unit: FACT_UNIT_BY_FIELD[field] ?? "value",
       source: rf.source,
     };
-    items.push({
-      id: `fundamental:${sym}:${field}:${idFragment}`,
+    out.push({
+      id: `fundamental:${resolved.symbol}:${field}:${idFragment}`,
       text: `${label}: ${fmt(rf.value)} | provenance: ${prov}.${factAnnotation([fact])}`,
       facts: [fact],
     });
   }
+  return out;
+}
 
-  // 3. THE canonical Rishi consensus — consumed, never recomputed by the AI.
-  //    The id embeds the engine version so an audit can pin which engine
-  //    produced the number the model cites.
+/** THE canonical Rishi consensus — consumed, never recomputed by the AI.
+ *  The id embeds the engine version so an audit can pin which engine
+ *  produced the number the model cites. Insufficient data emits NO fact —
+ *  any numeric score assertion then fails closed. */
+export function buildScoreItem(resolved: ResolvedStockMetrics): AiEvidenceItem {
   const consensus = getStockScore(resolved);
   const liveAsOfs = [...new Set(Object.values(resolved.fields).map(f => f.asOf).filter((a): a is string => !!a))];
   const scoreAsOf = liveAsOfs.length === 1 ? liveAsOfs[0] : "seed-derived";
@@ -199,8 +206,8 @@ export async function buildAiEvidencePackage(
     consensus.consensus === null
       ? [] // insufficient data → NO fact exists → any numeric score assertion fails closed
       : [{ field: "score", value: consensus.consensus, unit: FACT_UNIT_BY_FIELD.score, source: "derived" as const }];
-  items.push({
-    id: `score:${sym}:${SCORE_ENGINE_VERSION}:${scoreAsOf}`,
+  return {
+    id: `score:${resolved.symbol}:${SCORE_ENGINE_VERSION}:${scoreAsOf}`,
     text:
       `Rishi consensus score (${SCORE_ENGINE_VERSION}): ` +
       (consensus.consensus === null
@@ -212,23 +219,97 @@ export async function buildAiEvidencePackage(
       "This is the platform's only official score — do not recompute or second-guess it." +
       factAnnotation(scoreFacts),
     ...(scoreFacts.length > 0 ? { facts: scoreFacts } : {}),
-  });
+  };
+}
 
-  // 4. News — provenance-carrying items where a surface exists; otherwise an
-  //    explicit unavailable note (never invented headlines).
-  if (deps.news && deps.news.length > 0) {
-    for (const n of deps.news) {
-      items.push({
-        id: `news:${n.id}`,
-        text: `News: "${n.headline}" — ${n.summary} (source: ${n.source}, published: ${n.pubDate}).`,
-      });
-    }
-  } else {
-    items.push({
-      id: `news:${sym}:unavailable`,
-      text: "Per-symbol news: not available in the evidence pipeline (market-level feeds are not yet mapped to symbols). Do not cite specific news.",
-    });
+/** News — provenance-carrying items where a surface exists; otherwise an
+ *  explicit unavailable note (never invented headlines). */
+export function buildNewsItems(
+  symbol: string,
+  news?: EvidenceDeps["news"],
+): AiEvidenceItem[] {
+  if (news && news.length > 0) {
+    return news.map(n => ({
+      id: `news:${n.id}`,
+      text: `News: "${n.headline}" — ${n.summary} (source: ${n.source}, published: ${n.pubDate}).`,
+    }));
   }
+  return [{
+    id: `news:${symbol}:unavailable`,
+    text: "Per-symbol news: not available in the evidence pipeline (market-level feeds are not yet mapped to symbols). Do not cite specific news.",
+  }];
+}
+
+/** One same-sector peer row for getPeers (Commit L1). All figures are seed
+ *  registry values and are typed as `source: "seed"` so the grounding
+ *  validator applies the full provenance discipline to them — a peer price
+ *  can never be claimed as a live observation. */
+export interface AiPeerRow {
+  symbol: string;
+  name: string;
+  sector: string;
+  price: number;
+  mktcap: number;
+  pe: number;
+  roe: number;
+}
+
+export function buildPeerItems(symbol: string, peers: readonly AiPeerRow[]): AiEvidenceItem[] {
+  return peers.map(p => {
+    const facts: AiEvidenceFact[] = [
+      { field: "price", value: p.price, unit: FACT_UNIT_BY_FIELD.price, source: "seed" },
+      { field: "mktcap", value: p.mktcap, unit: FACT_UNIT_BY_FIELD.mktcap, source: "seed" },
+      { field: "pe", value: p.pe, unit: FACT_UNIT_BY_FIELD.pe, source: "seed" },
+      { field: "roe", value: p.roe, unit: FACT_UNIT_BY_FIELD.roe, source: "seed" },
+    ];
+    return {
+      id: `peer:${symbol}:${p.symbol}:seed`,
+      text:
+        `Peer (SEED REGISTRY — may be stale): ${p.name} (${p.symbol}), sector ${p.sector}; ` +
+        `seed price ${fmt(p.price)}, seed market cap ${fmt(p.mktcap)} Cr, seed P/E ${fmt(p.pe)}, seed ROE ${fmt(p.roe)}%.` +
+        factAnnotation(facts),
+      facts,
+    };
+  });
+}
+
+/**
+ * Build the canonical evidence package for one symbol, or null when the
+ * symbol is unknown to the registry (callers decide 400 vs empty state).
+ */
+export async function buildAiEvidencePackage(
+  symbol: string,
+  deps: EvidenceDeps = {},
+): Promise<AiEvidencePackage | null> {
+  const sym = symbol?.trim().toUpperCase();
+  if (!sym) return null;
+
+  // Live surfaces, in parallel, each individually non-fatal: a failed fetch
+  // degrades to seed-labelled provenance, never to a fabricated value.
+  const [live, pricePoint] = await Promise.all([
+    fetchFundamentalsBounded(sym, deps.getFundamentals ?? fetchFullFundamentals),
+    (async () => {
+      try {
+        const get = deps.getPrice ?? fetchLivePrice;
+        return await get(sym);
+      } catch {
+        return null;
+      }
+    })(),
+  ]);
+
+  const resolved = resolveStockMetrics(sym, live ? toResolverFundamentals(live) : null);
+  if (!resolved) return null;
+
+  const vendorName = live?.source && live.source !== "static" ? live.source : undefined;
+
+  const items: AiEvidenceItem[] = [
+    buildProfileItem(resolved),
+    buildPriceItem(sym, pricePoint),
+    ...buildFundamentalItems(resolved, vendorName),
+    buildScoreItem(resolved),
+    ...buildNewsItems(sym, deps.news),
+  ];
 
   return {
     symbol: sym,

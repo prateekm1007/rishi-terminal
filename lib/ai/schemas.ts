@@ -75,8 +75,23 @@ export const AiAnswerSchema = z.object({
   /** Coder Directions G4 (audit 2026-10-02): machine-readable mark for the
    *  structured-response contract — "invalid" when the model reply failed
    *  parse/schema validation and the bounded honest response was served
-   *  instead of the raw payload. */
-  structuredResponse: z.enum(["valid", "invalid"]).optional(),
+   *  instead of the raw payload. Commit L1 adds "blocked": the tool-loop
+   *  budget was exhausted before a verifiable answer was produced — the
+   *  honest BLOCKED termination, never a plausible fallback. */
+  structuredResponse: z.enum(["valid", "invalid", "blocked"]).optional(),
+  /** Commit L1: the bounded tool loop's audit trail — every tool the model
+   *  requested with its explicit outcome status (ok | unknown-tool |
+   *  invalid-args | unknown-symbol | no-data | failed). Machine-readable
+   *  provenance; empty when the loop was not engaged. */
+  toolCalls: z
+    .array(
+      z.object({
+        tool: z.string(),
+        status: z.string(),
+        symbol: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 export type AiAnswer = z.infer<typeof AiAnswerSchema>;
@@ -151,8 +166,21 @@ export const ChatWireSchema = z.object({
       .enum(["evidence-context", "context-only", "structured-claims"])
       .default("evidence-context"),
     /** G4: "invalid" when the structured reply failed parse/schema and the
-     *  bounded honest response was served (raw payload never displayed). */
-    structuredResponse: z.enum(["valid", "invalid"]).default("valid"),
+     *  bounded honest response was served (raw payload never displayed).
+     *  L1 adds "blocked": tool-loop exhaustion terminated the request
+     *  honestly instead of serving a plausible fallback. */
+    structuredResponse: z.enum(["valid", "invalid", "blocked"]).default("valid"),
+    /** L1: the tool loop's audit trail (empty when the loop was not
+     *  engaged or no tool was called). */
+    toolCalls: z
+      .array(
+        z.object({
+          tool: z.string(),
+          status: z.string(),
+          symbol: z.string().optional(),
+        }),
+      )
+      .default([]),
     /** Validated claims only — an empty array when grounding failed closed. */
     claims: z.array(AiClaimSchema).default([]),
     /** Q4 Commit A: why the reply is not grounded (empty when grounded).

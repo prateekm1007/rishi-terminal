@@ -44,14 +44,14 @@ Accept:  commands + expected result (paste raw output in the PR)
 | FD-4 | Analytics tool | G7-01 |
 | FD-5 | Email / push / WhatsApp providers | X3-08, G7-04 |
 | FD-6 | Which broker CSV formats to support first | X3-07 |
-| FD-7 | Pricing and free-tier limits | G7-03 |
+| FD-7 | Pricing and free-tier limits | G7-03 | **RESOLVED 2026-10-02 (founder instruction): all features free — no tiers, no paid gates.** See `docs/ROADMAP-STATUS.md` §Commit M. G7-03 is therefore NOT APPLICABLE. |
 | FD-8 | Chat/LLM vendor and data-retention terms | R4-02, R4-03 |
 | FD-9 | Constitution/credential-recovery decision (root-secret handling after sandbox resets) | audit 2026-10-02 |
 | FD-10 | `/rishis` general-chat scope: philosophy-only/context-only vs symbol-aware grounded | audit 2026-10-02 |
 | FD-11 | Matured bond policy (IN91DTB class): historical filter vs authoritative replacement source | audit 2026-10-02 |
 | FD-12 | Non-equity heuristic scores (crypto/commodity/forex/bond "RISHI CONSENSUS"): remain REFERENCE heuristics or become an official product score? Current state: labelled `HEURISTIC REFERENCE — not the canonical Rishi consensus engine` on all four detail surfaces | audit 2026-10-02 (G8) |
 | FD-13 | Seed-dataset residual placeholders: ~416 of 916 rows are boilerplate clones (identical ocf/rev/sh/np) and ~422 carry `mktcap = price×1000` artifacts (APEX 285K Cr, AIAENG 38.5L Cr). Interim: impossibility gate excludes 55 self-contradictory rows from every scored surface; the rest display under the seed banner. Real fix is the D1 live-fundamentals project, not more placeholder edits | audit round-5 (2 Oct 2026) |
-| FD-14 | `/terms` + `/privacy` are minimal honest drafts written to match what the code actually stores — counsel review required before paid tiers scale; refund wording (7-day) needs founder sign-off | audit round-5 (2 Oct 2026) |
+| FD-14 | `/terms` + `/privacy` are minimal honest drafts written to match what the code actually stores — counsel review required (the "before paid tiers scale" trigger is moot since 2026-10-02: there are no paid tiers); refund wording (7-day) needs founder sign-off | audit round-5 (2 Oct 2026) |
 | FD-15 | Crypto/forex/commodities/bonds remain in the main nav although the roadmap scopes the product to India equities — keep (traffic) or demote (focus)? | audit round-5 (2 Oct 2026) |
 | FD-16 | Banks are scored with non-bank metrics (SBIN: D/E 0.0x, OPM 42%, FCF yield) — NIM/GNPA/CRAR modelling needs a data source decision | audit round-5 (2 Oct 2026) |
 | FD-17 | Soft-404: unknown stock symbols return the not-found UI with HTTP 200 (pre-existing, streaming shell) — SEO/crawler hygiene fix vs leave | audit round-5 (2 Oct 2026) |

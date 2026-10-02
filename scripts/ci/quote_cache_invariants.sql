@@ -34,9 +34,9 @@ begin
     raise exception 'quote_cache: second claim inside the claim window won — thundering-herd guard is broken';
   end if;
 
-  -- 3. An EXPIRED claim (claim window 5 s, claim aged > 5 s) must WIN again.
+  -- 3. An EXPIRED claim (claim window 30 s, claim aged 31 s) must WIN again.
   update quote_cache
-     set refresh_claim = now() - interval '10 seconds'
+     set refresh_claim = now() - interval '31 seconds'
    where symbol = 'TESTCOLD';
   ok := try_quote_cache_refresh('TESTCOLD', 30);
   if not ok then

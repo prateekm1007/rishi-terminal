@@ -1,0 +1,43 @@
+JOB Migrations & RLS invariants (Postgres 16): completed/success
+  Set up job: success
+  Initialize containers: success
+  Run actions/checkout@v4: success
+  Apply Supabase-like harness (roles, auth schema, default grants): success
+  Apply migrations 001…N in order: success
+  Assert RLS invariants (N2): success
+  Populate security master (D1-02, generated from the official NSE listing): success
+  Assert security master invariants (D1-02): success
+  Post Run actions/checkout@v4: success
+  Stop containers: success
+  Complete job: success
+JOB Lint, typecheck, test, validate: completed/success
+  Set up job: success
+  Run actions/checkout@v4: success
+  Run actions/setup-node@v4: success
+  Repository hygiene (no backup/corrupted/orig/rej files in git): success
+  Install dependencies: success
+  Typecheck: success
+  ESLint (errors must be 0; no-explicit-any is an ERROR in app/api, lib/auth, lib/scoring, lib/chat): success
+  ESLint warning ratchet (fails above the committed baseline): success
+  Free-access audit (Commit M — no product dependency on tiers/payments): success
+  Unit tests (Vitest): success
+  Encoding validation (T15): success
+  Registry validation (T12): success
+  Score parity (T10): success
+  Production build: success
+  Bundle budget (E6-02 ratchet; PROPOSED budgets reported): success
+  Gitleaks (secret scan): success
+  Post Run actions/setup-node@v4: success
+  Post Run actions/checkout@v4: success
+  Complete job: success
+JOB Playwright smoke (blocking since round 2 — green on 4+ consecutive runs): completed/success
+  Set up job: success
+  Run actions/checkout@v4: success
+  Run actions/setup-node@v4: success
+  Install dependencies: success
+  Install Chromium: success
+  Build: success
+  Run smoke tests: success
+  Post Run actions/setup-node@v4: success
+  Post Run actions/checkout@v4: success
+  Complete job: success

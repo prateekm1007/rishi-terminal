@@ -12,23 +12,28 @@ import { useState, useEffect, useRef } from 'react';
 
 export interface FullFundamentals {
   symbol: string;
-  pe: number;
-  eps: number;
-  marketCap: number;
-  roe: number;
-  roce: number;
-  bookValue: number;
-  dividendYield: number;
+  /** Rule 16 (Coder Directions §9 sweep): observation fields are
+   *  `number | null` — a field no upstream reported is null, never a
+   *  sentinel 0 (a fabricated 0 ROE/OPM overrode the seed baseline through
+   *  the resolver's finite admissibility rules). The UI renders null as
+   *  "—" via <DataValue>. */
+  pe: number | null;
+  eps: number | null;
+  marketCap: number | null;
+  roe: number | null;
+  roce: number | null;
+  bookValue: number | null;
+  dividendYield: number | null;
   faceValue: number;
   /** Null when no upstream exposes a D/E (H4/T11 — never a fabricated
    *  constant, never a 0 that claims debt-free). */
   debtToEquity: number | null;
-  opm: number;
-  revCagr3y: number;
-  epsCagr: number;
-  promoterHolding: number;
-  fcf: number;
-  roa: number;
+  opm: number | null;
+  revCagr3y: number | null;
+  epsCagr: number | null;
+  promoterHolding: number | null;
+  fcf: number | null;
+  roa: number | null;
   /** Provider observation time when the upstream disclosed one, else null.
    *  Never the fetch time (audit 2026-10-02 P0). */
   lastUpdated: string | null;
@@ -93,7 +98,9 @@ function getFromCache(key: string): unknown {
 function isFullFundamentals(v: unknown): v is FullFundamentals {
   if (!v || typeof v !== 'object') return false;
   const f = v as Partial<FullFundamentals>;
-  return typeof f.symbol === 'string' && typeof f.pe === 'number';
+  // Observation fields are nullable (Rule 16): only the identity keys are
+  // structural. pe may be null (unreported) without invalidating the row.
+  return typeof f.symbol === 'string' && (typeof f.pe === 'number' || f.pe === null);
 }
 
 /** Cached fundamentals with the liveness flag recomputed from source. */

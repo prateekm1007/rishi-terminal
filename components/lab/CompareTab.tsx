@@ -273,7 +273,10 @@ export default function CompareTab({ rows }: Props) {
         const scores: RishiScore[] = verdictUpgrades[sym] ?? row.summaryScores;
         const live = prices[sym]?.price ?? null; // T14: no seed fallback
         const chg = prices[sym]?.changePercent24h ?? 0;
-        const liveMktcap = (bulkFund[row.symbol]?.marketCap ? bulkFund[row.symbol].marketCap / 10000000 : row.mktcap);
+        // Rule 16: live marketCap may be null (unreported) — fall back to
+        // the seed baseline, never divide a coerced 0.
+        const fundMktcapRaw = bulkFund[row.symbol]?.marketCap;
+        const liveMktcap = fundMktcapRaw != null && fundMktcapRaw > 0 ? fundMktcapRaw / 10000000 : row.mktcap;
         const fcfYield = liveMktcap > 0 && row.fcf ? (row.fcf / liveMktcap) * 100 : 0;
         // T14/N1: P/B from the live quote and book value only — the seed
         // price is never presented as current.
@@ -299,7 +302,7 @@ export default function CompareTab({ rows }: Props) {
           roce: bulkFund[row.symbol]?.roce ?? 0,
           de: row.de ?? 0,
           fcfYield,
-          mktcap: bulkFund[row.symbol]?.marketCap ? bulkFund[row.symbol].marketCap / 10000000 : (row.mktcap ?? 0),
+          mktcap: liveMktcap ?? row.mktcap ?? 0,
           consensus: row.consensus,
           category: row.category,
           tension: row.tension,

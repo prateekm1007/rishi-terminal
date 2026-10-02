@@ -1,0 +1,99 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+stderr | test/aiRouter.requestPath.test.ts > server-enforced canonical tool engagement (Coder Directions §5) > seeds the canonical price tool for an unambiguous data ask even when the model never requests a tool, and the repair re-ask grounds the answer
+[ai/router] financial-data request (symbol=RELIANCE, term="latest price") answered context-only with ZERO tool engagement — BLOCKED
+
+stderr | test/aiRouter.requestPath.test.ts > server-enforced canonical tool engagement (Coder Directions §5) > advice asks are NOT seeded — no tool runs for 'buy or sell'
+[ai/router] financial-data request (symbol=RELIANCE, term="buy or sell") answered context-only with ZERO tool engagement — BLOCKED
+
+stderr | test/aiRouter.requestPath.test.ts > bounded final-answer repair (same loop, same contract) > a grounding-rejected final reply gets ONE re-ask and then grounds (seeded path)
+[ai/router] no-evidence reply carried ungroundable content (claims=1, ungroundedNumbers=1) — discarded rejections=["claim 1: unknown evidence id(s) \"price:RELIANCE:WRONG-TIMESTAMP\" — rejected"] answerHead="Reliance is trading at 1167.7 rupees."
+
+stderr | test/aiRouter.requestPath.test.ts > bounded final-answer repair (same loop, same contract) > an exhausted repair stays fail-closed — the bounded honest response, never raw model text
+[ai/router] no-evidence reply carried ungroundable content (claims=1, ungroundedNumbers=1) — discarded rejections=["claim 1: unknown evidence id(s) \"price:RELIANCE:WRONG-TIMESTAMP\" — rejected"] answerHead="Reliance is trading at 1167.7 rupees."
+
+ ❯ test/aiRouter.requestPath.test.ts (6 tests | 4 failed) 46ms
+   ❯ server-enforced canonical tool engagement (Coder Directions §5) (3)
+     × seeds the canonical price tool for an unambiguous data ask even when the model never requests a tool, and the repair re-ask grounds the answer 31ms
+     ✓ advice asks are NOT seeded — no tool runs for 'buy or sell' 2ms
+     ✓ philosophical questions are untouched — context-only reply served, no seed, no repair 1ms
+   ❯ bounded final-answer repair (same loop, same contract) (2)
+     × a grounding-rejected final reply gets ONE re-ask and then grounds (seeded path) 6ms
+     × an exhausted repair stays fail-closed — the bounded honest response, never raw model text 2ms
+   ❯ the words-in-prose hole (claims-free restatement of verified data) (1)
+     × a claims-free reply re-stating the observation in words is repaired and, failing that, BLOCKED — never served as context-only 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/aiRouter.requestPath.test.ts > server-enforced canonical tool engagement (Coder Directions §5) > seeds the canonical price tool for an unambiguous data ask even when the model never requests a tool, and the repair re-ask grounds the answer
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ test/aiRouter.requestPath.test.ts:119:22
+    117|
+    118|     // The SERVER engaged the canonical tool even though the model nev…
+    119|     expect(getPrice).toHaveBeenCalledTimes(1);
+       |                      ^
+    120|     expect(answer?.toolCalls).toEqual([{ tool: "getPrices", status: "o…
+    121|     // The repair re-ask happened on the SAME transcript (server feedb…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/aiRouter.requestPath.test.ts > bounded final-answer repair (same loop, same contract) > a grounding-rejected final reply gets ONE re-ask and then grounds (seeded path)
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ test/aiRouter.requestPath.test.ts:213:26
+    211|     });
+    212|
+    213|     expect(calls.length).toBe(2);
+       |                          ^
+    214|     expect(answer?.claimsVerified).toBe(true);
+    215|     expect(answer?.groundingMode).toBe("structured-claims");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/aiRouter.requestPath.test.ts > bounded final-answer repair (same loop, same contract) > an exhausted repair stays fail-closed — the bounded honest response, never raw model text
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ test/aiRouter.requestPath.test.ts:249:26
+    247|     });
+    248|
+    249|     expect(calls.length).toBe(2); // exactly ONE repair re-ask
+       |                          ^
+    250|     expect(answer?.claimsVerified).toBe(false);
+    251|     expect(answer?.claims).toHaveLength(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/aiRouter.requestPath.test.ts > the words-in-prose hole (claims-free restatement of verified data) > a claims-free reply re-stating the observation in words is repaired and, failing that, BLOCKED — never served as context-only
+AssertionError: expected 'context-only' not to be 'context-only' // Object.is equality
+ ❯ test/aiRouter.requestPath.test.ts:287:39
+    285|
+    286|     // The verified data the loop holds must not leak out as unverifie…
+    287|     expect(answer?.groundingMode).not.toBe("context-only");
+       |                                       ^
+    288|     expect(answer?.claimsVerified).toBe(false);
+    289|     expect(answer?.structuredResponse).toBe("blocked");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  12:27:24
+   Duration  870ms (transform 72%, import 21%, tests 6%, setup 1%)
+

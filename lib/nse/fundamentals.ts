@@ -1,16 +1,22 @@
 // lib/nse/fundamentals.ts
 // Live fundamentals: NSE API (primary) + Yahoo Finance (fallback)
 // NSE works server-side, no CORS issues in Next.js API routes
+//
+// Rule 16 (Coder Directions §9 sweep, 2026-10-02): every observation field
+// is `number | null` — a field the upstream did not report is null, NEVER a
+// sentinel 0. A fabricated 0 here was ADMITTED by the resolver's G5
+// admissibility table (roe/opm/revcagr/bvps accept genuine zero as a real
+// observation) and overrode the seed baseline with an invented value.
 
 export interface LiveFundamentals {
   symbol: string;
-  pe: number;
-  eps: number;
-  marketCap: number;
-  roe: number;
-  roce: number;
-  bookValue: number;
-  dividendYield: number;
+  pe: number | null;
+  eps: number | null;
+  marketCap: number | null;
+  roe: number | null;
+  roce: number | null;
+  bookValue: number | null;
+  dividendYield: number | null;
   faceValue: number;
   /** Provider observation time when disclosed, else null — never the fetch
    *  time (audit 2026-10-02 P0: `new Date().toISOString()` here fabricated
@@ -63,25 +69,27 @@ export async function fetchNSEFundamentals(symbol: string): Promise<Partial<Live
     const info = data?.info || {};
     const securityInfo = data?.securityInfo || {};
 
-    // Calculate market cap: lastPrice * issuedSize
-    const lastPrice = parseFloat(priceInfo?.lastPrice) || 0;
-    const issuedSize = parseFloat(securityInfo?.issuedSize) || 0;
-    const marketCap = lastPrice * issuedSize;
+    // NSE does not disclose P/E, EPS, book value, ROE, ROCE or dividend
+    // yield in this response — null, never a sentinel 0 (Rule 16).
+    // Calculate market cap: lastPrice * issuedSize (null unless both exist)
+    const lastPrice = parseFloat(priceInfo?.lastPrice);
+    const issuedSize = parseFloat(securityInfo?.issuedSize);
+    const marketCap =
+      Number.isFinite(lastPrice) && Number.isFinite(issuedSize) && lastPrice > 0 && issuedSize > 0
+        ? lastPrice * issuedSize
+        : null;
+    const faceValueRaw = parseFloat(securityInfo?.faceValue);
 
-    // P/E not directly available in NSE API
-    // EPS not directly available
-    // Book value not directly available
-    
     return {
       symbol,
-      pe: 0, // Not available from NSE
-      eps: 0,
-      marketCap: marketCap || 0,
-      bookValue: 0,
-      roe: 0,
-      roce: 0,
-      dividendYield: 0,
-      faceValue: parseFloat(securityInfo?.faceValue) || 10,
+      pe: null,
+      eps: null,
+      marketCap,
+      bookValue: null,
+      roe: null,
+      roce: null,
+      dividendYield: null,
+      faceValue: Number.isFinite(faceValueRaw) && faceValueRaw > 0 ? faceValueRaw : 10,
       // NSE discloses no observation timestamp in this response — null.
       lastUpdated: null,
     };
@@ -129,12 +137,23 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
     const fin     = result.financialData || {};
     const summary = result.summaryDetail || {};
 
-    const pe           = parseFloat(stats?.trailingPE?.raw) || parseFloat(summary?.trailingPE?.raw) || 0;
-    const eps          = parseFloat(stats?.trailingEps?.raw) || 0;
-    const marketCap    = parseFloat(stats?.marketCap?.raw) || 0;
-    const bookValue    = parseFloat(stats?.bookValue?.raw) || 0;
-    const roe          = fin?.returnOnEquity?.raw ? fin.returnOnEquity.raw * 100 : 0;
-    const dividendYield = summary?.dividendYield?.raw ? summary.dividendYield.raw * 100 : 0;
+    // Rule 16: parse each field independently; a missing/garbage field is
+    // null ("not reported"), never a fabricated 0. Negative ROE/EPS are
+    // legitimate (loss-making) and survive as real observations.
+    const numOrNull = (raw: unknown): number | null => {
+      const v = typeof raw === "number" ? raw : parseFloat(String(raw ?? ""));
+      return Number.isFinite(v) ? v : null;
+    };
+    const peStats = numOrNull(stats?.trailingPE?.raw);
+    const peSummary = numOrNull(summary?.trailingPE?.raw);
+    const pe = peStats ?? peSummary;
+    const eps = numOrNull(stats?.trailingEps?.raw);
+    const marketCap = numOrNull(stats?.marketCap?.raw);
+    const bookValue = numOrNull(stats?.bookValue?.raw);
+    const roeRaw = numOrNull(fin?.returnOnEquity?.raw);
+    const roe = roeRaw === null ? null : roeRaw * 100;
+    const dyRaw = numOrNull(summary?.dividendYield?.raw);
+    const dividendYield = dyRaw === null ? null : dyRaw * 100;
 
     return {
       symbol,
@@ -143,7 +162,7 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
       marketCap,
       bookValue,
       roe,
-      roce: 0,
+      roce: null, // not disclosed by these Yahoo modules
       dividendYield,
       faceValue: 10,
       // Yahoo's quoteSummary modules carry no fundamentals observation
@@ -174,13 +193,13 @@ export async function fetchLiveFundamentals(symbol: string): Promise<LiveFundame
   if (yahooData || nseData) {
     return {
       symbol,
-      pe:            yahooData?.pe ?? 0,
-      eps:           yahooData?.eps ?? 0,
-      marketCap:     nseData?.marketCap ?? yahooData?.marketCap ?? 0,
-      roe:           yahooData?.roe ?? 0,
-      roce:          0,
-      bookValue:     yahooData?.bookValue ?? 0,
-      dividendYield: yahooData?.dividendYield ?? 0,
+      pe:            yahooData?.pe ?? null,
+      eps:           yahooData?.eps ?? null,
+      marketCap:     nseData?.marketCap ?? yahooData?.marketCap ?? null,
+      roe:           yahooData?.roe ?? null,
+      roce:          null, // not disclosed by either upstream here
+      bookValue:     yahooData?.bookValue ?? null,
+      dividendYield: yahooData?.dividendYield ?? null,
       faceValue:     nseData?.faceValue ?? yahooData?.faceValue ?? 10,
       // Neither upstream in this merge discloses a fundamentals observation
       // time — null (audit 2026-10-02 P0).

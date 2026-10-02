@@ -433,9 +433,40 @@ export const COINGECKO_IDS: Record<string, string> = {
   SHIB: 'shiba-inu',
 };
 
-const coinGeckoCache: Record<string, { price: number; change: number; volume24h: number | null; fetchedAt: number }> = {};
+const coinGeckoCache: Record<string, { price: number | null; change: number | null; volume24h: number | null; fetchedAt: number }> = {};
 let lastCoinGeckoFetch = 0;
 let coinGeckoFetchPromise: Promise<void> | null = null;
+
+export interface CoinGeckoParsedEntry {
+  /** Rule 16: null when the upstream did not disclose a usable price — a
+   *  fabricated 0 would be a fake "live flat at zero" observation. */
+  price: number | null;
+  /** 24h % change when disclosed; null when not. A GENUINE 0 (flat day)
+   *  stays 0 — only absence/garbage becomes null (Coder Directions §8). */
+  change: number | null;
+  /** Disclosed 24h volume; null when absent — 0 would claim zero trading. */
+  volume24h: number | null;
+}
+
+/** Rule-16 classification of ONE CoinGecko simple/price entry (pure — the
+ *  transport-level analogue of yahooChangeFromMeta; directly testable).
+ *  Missing/invalid fields become null, never coerced zeros; genuine numeric
+ *  zeros in the change survive; a non-positive price is not an observation. */
+export function coinGeckoEntryFromPayload(entry: unknown): CoinGeckoParsedEntry {
+  const e = (entry ?? {}) as Record<string, unknown>;
+  // Number(null) === 0 in JS — a JSON null must NOT become a genuine 0
+  // (the flat-day case). Null/undefined/"" classify as absent (NaN).
+  const num = (v: unknown): number =>
+    v === null || v === undefined || v === "" ? NaN : Number(v);
+  const usd = num(e.usd);
+  const chg = num(e.usd_24h_change);
+  const vol = num(e.usd_24h_vol);
+  return {
+    price: Number.isFinite(usd) && usd > 0 ? usd : null,
+    change: Number.isFinite(chg) ? chg : null,
+    volume24h: Number.isFinite(vol) && vol > 0 ? vol : null,
+  };
+}
 
 async function fetchAllCoinGecko(): Promise<void> {
   const now = Date.now();
@@ -458,12 +489,13 @@ async function fetchAllCoinGecko(): Promise<void> {
       const data = await res.json();
       for (const [symbol, geckoId] of Object.entries(COINGECKO_IDS)) {
         if (data[geckoId]) {
-          const vol = Number(data[geckoId].usd_24h_vol);
+          // Rule 16 (Coder Directions §8): classify via the pure parser —
+          // missing change is null, a genuine 0 change stays 0, and a
+          // price-less entry is NOT an observation (the cache keeps null so
+          // getCoinGeckoPrice reports unavailability instead of a fake
+          // "LIVE 0" quote).
           coinGeckoCache[symbol] = {
-            price: Number(data[geckoId].usd) || 0,
-            change: Number(data[geckoId].usd_24h_change) || 0,
-            // Absent volume is null, never 0 (0 would claim zero trading).
-            volume24h: Number.isFinite(vol) && vol > 0 ? vol : null,
+            ...coinGeckoEntryFromPayload(data[geckoId]),
             fetchedAt: now,
           };
         }
@@ -479,10 +511,14 @@ async function fetchAllCoinGecko(): Promise<void> {
   return coinGeckoFetchPromise;
 }
 
-async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number; volume24h: number | null } | null> {
+async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number | null; volume24h: number | null } | null> {
   await fetchAllCoinGecko();
   const cached = coinGeckoCache[symbol];
-  return cached ? { price: cached.price, change: cached.change, volume24h: cached.volume24h } : null;
+  // A cached null price is NOT an observation: the provider answered but
+  // disclosed nothing usable → null (honest unavailability downstream),
+  // never a zero-priced LIVE quote.
+  if (!cached || cached.price === null) return null;
+  return { price: cached.price, change: cached.change, volume24h: cached.volume24h };
 }
 
 // =============================================================================

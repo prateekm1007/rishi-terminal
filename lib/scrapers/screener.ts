@@ -17,20 +17,23 @@ function num(s: string): number {
 // ========== FUNDAMENTALS ==========
 
 export interface ScreenerFundamentals {
-  pe: number;
-  roe: number;
-  roce: number;
-  bookValue: number;
-  fcf: number;
-  roa: number;
+  /** Rule 16 (Coder Directions §9 sweep): null when the page does not
+   *  expose the field — never a sentinel 0 (a fabricated 0 ROE/OPM overrode
+   *  the seed baseline through the resolver's finite admissibility rules). */
+  pe: number | null;
+  roe: number | null;
+  roce: number | null;
+  bookValue: number | null;
+  fcf: number | null;
+  roa: number | null;
   /** Null when the page exposes no parseable D/E (T11/H4: never a
    *  fabricated constant, never 0). */
   debtToEquity: number | null;
-  opm: number;
-  revCagr3y: number;
-  epsCagr: number;
-  promoterHolding: number;
-  marketCap: number;
+  opm: number | null;
+  revCagr3y: number | null;
+  epsCagr: number | null;
+  promoterHolding: number | null;
+  marketCap: number | null;
 }
 
 function extractRatioBlock(html: string): Record<string, number> {
@@ -64,7 +67,7 @@ function extractRatioBlock(html: string): Record<string, number> {
   return result;
 }
 
-function extractOPM(html: string): number {
+function extractOPM(html: string): number | null {
   const plSection = html.match(/<section id="profit-loss"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
   const rows = plSection.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
   for (const row of rows) {
@@ -72,10 +75,13 @@ function extractOPM(html: string): number {
     if (text.toLowerCase().includes("opm")) {
       const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
         .map((c: string) => c.replace(/<[^>]*>/g, "").trim());
-      if (cells.length >= 2) return num(cells[cells.length - 1]);
+      if (cells.length >= 2) {
+        const v = num(cells[cells.length - 1]);
+        return Number.isFinite(v) ? v : null;
+      }
     }
   }
-  return 0;
+  return null;
 }
 
 function extractBalanceSheetDE(html: string): number | null {
@@ -94,30 +100,36 @@ function extractBalanceSheetDE(html: string): number | null {
   return null;
 }
 
-function extractCAGR(html: string): { revCagr3y: number; epsCagr3y: number } {
-  let revCagr3y = 0;
-  let epsCagr3y = 0;
+function extractCAGR(html: string): { revCagr3y: number | null; epsCagr3y: number | null } {
+  let revCagr3y: number | null = null;
+  let epsCagr3y: number | null = null;
 
   const salesBlock = html.match(/Compounded Sales Growth([\s\S]*?)<\/table>/i)?.[1] ?? "";
   const sales3y = salesBlock.match(/3 Years:<\/td>\s*<td>([-\d.]+)%<\/td>/i);
-  if (sales3y) revCagr3y = num(sales3y[1]);
+  if (sales3y) {
+    const v = num(sales3y[1]);
+    revCagr3y = Number.isFinite(v) ? v : null;
+  }
 
   const profitBlock = html.match(/Compounded Profit Growth([\s\S]*?)<\/table>/i)?.[1] ?? "";
   const profit3y = profitBlock.match(/3 Years:<\/td>\s*<td>([-\d.]+)%<\/td>/i);
-  if (profit3y) epsCagr3y = num(profit3y[1]);
+  if (profit3y) {
+    const v = num(profit3y[1]);
+    epsCagr3y = Number.isFinite(v) ? v : null;
+  }
 
   return { revCagr3y, epsCagr3y };
 }
 
-function extractPromoterFromMeta(html: string): number {
+function extractPromoterFromMeta(html: string): number | null {
   const metaMatch = html.match(/<meta name="description" content="([^"]+)"/);
-  if (!metaMatch) return 0;
+  if (!metaMatch) return null;
   const desc = metaMatch[1];
   const match = desc.match(/Promoter.*?(\d+(\.\d+)?)\s*%/i);
-  return match ? parseFloat(match[1]) : 0;
+  return match ? parseFloat(match[1]) : null;
 }
 
-function extractMarketCap(html: string): number {
+function extractMarketCap(html: string): number | null {
   const section = html.match(/<ul id="top-ratios"[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? "";
   const items = section.match(/<li[^>]*>([\s\S]*?)<\/li>/g) ?? [];
 
@@ -126,11 +138,14 @@ function extractMarketCap(html: string): number {
 
     if (text.includes("Market Cap")) {
       const m = item.match(/<span class="number"[^>]*>([\d,]+(?:\.\d+)?)<\/span>/);
-      if (m) return num(m[1]);
+      if (m) {
+        const v = num(m[1]);
+        return Number.isFinite(v) && v > 0 ? v : null;
+      }
     }
   }
 
-  return 0;
+  return null;
 }
 
 // ========== SHAREHOLDING ==========
@@ -297,12 +312,15 @@ export async function fetchScreenerFundamentals(symbol: string): Promise<Screene
   const promoter = extractPromoterFromMeta(html);
 
   return {
-    pe: r["Stock P/E"] ?? 0,
-    roe: r["ROE"] ?? 0,
-    roce: r["ROCE"] ?? 0,
-    bookValue: r["Book Value"] ?? 0,
-    fcf: 0, // TODO: Extract from cash flow statement
-    roa: 0, // TODO: Calculate from ratios
+    pe: r["Stock P/E"] ?? null,
+    roe: r["ROE"] ?? null,
+    roce: r["ROCE"] ?? null,
+    bookValue: r["Book Value"] ?? null,
+    // Not extracted from the cash-flow statement / ratios yet — null
+    // (unknown), never a sentinel 0 (Rule 16; the resolver's strict default
+    // rule rejected the 0, but null states the truth directly).
+    fcf: null,
+    roa: null,
     debtToEquity: de,
     opm,
     revCagr3y,

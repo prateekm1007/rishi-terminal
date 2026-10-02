@@ -34,7 +34,9 @@ async function main() {
     skipped: [],
   };
 
-  const updates: Record<string, { pe: number; roe: number; mktcap: number; bvps: number }> = {};
+  // Rule 16: unreported fields stay null — the patcher only rewrites a seed
+  // value when a REAL observation (> 0) exists.
+  const updates: Record<string, { pe: number | null; roe: number | null; mktcap: number | null; bvps: number | null }> = {};
 
   for (let i = 0; i < symbols.length; i += 5) {
     const batch = symbols.slice(i, i + 5);
@@ -49,12 +51,14 @@ async function main() {
       const result = results[j];
       if (result.status === 'fulfilled' && result.value) {
         const f = result.value;
-        if (f.pe > 0 || f.marketCap > 0) {
+        const hasRealData =
+          (f.pe !== null && f.pe > 0) || (f.marketCap !== null && f.marketCap > 0);
+        if (hasRealData) {
           updates[sym] = {
-            pe: f.pe,
-            roe: f.roe,
-            mktcap: Math.round(f.marketCap / 10000000), // to Crores
-            bvps: f.bookValue,
+            pe: f.pe !== null && f.pe > 0 ? f.pe : null,
+            roe: f.roe !== null && f.roe > 0 ? f.roe : null,
+            mktcap: f.marketCap !== null && f.marketCap > 0 ? Math.round(f.marketCap / 10000000) : null,
+            bvps: f.bookValue !== null && f.bookValue > 0 ? f.bookValue : null,
           };
           log.updated.push(sym);
         } else {
@@ -73,22 +77,22 @@ async function main() {
   let patchedCount = 0;
 
   for (const [sym, vals] of Object.entries(updates)) {
-    if (vals.pe > 0) {
+    if (vals.pe !== null && vals.pe > 0) {
       fileContent = fileContent.replace(
         new RegExp(`(${sym}:.*?pe: )[0-9.]+`, 'g'), `$1${vals.pe}`
       );
     }
-    if (vals.roe > 0) {
+    if (vals.roe !== null && vals.roe > 0) {
       fileContent = fileContent.replace(
         new RegExp(`(${sym}:.*?roe: )[0-9.]+`, 'g'), `$1${vals.roe}`
       );
     }
-    if (vals.mktcap > 0) {
+    if (vals.mktcap !== null && vals.mktcap > 0) {
       fileContent = fileContent.replace(
         new RegExp(`(${sym}:.*?mktcap: )[0-9.]+`, 'g'), `$1${vals.mktcap}`
       );
     }
-    if (vals.bvps > 0) {
+    if (vals.bvps !== null && vals.bvps > 0) {
       fileContent = fileContent.replace(
         new RegExp(`(${sym}:.*?bvps: )[0-9.]+`, 'g'), `$1${vals.bvps}`
       );

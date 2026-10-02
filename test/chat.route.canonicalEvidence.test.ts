@@ -54,12 +54,20 @@ vi.mock("@/lib/liveFundamentals", async () => {
   return { fetchFullFundamentals: ff, fetchLiveQuarterly: async () => null, fetchLiveShareholding: async () => null };
 });
 
-vi.mock("@/lib/livePrice", () => ({
-  fetchLivePrice: async () => ({
-    price: 1420.5, change: 0.8, source: "yahoo", status: "LIVE" as const,
-    observedAt: "2025-10-31T08:40:00.000Z", lastUpdated: "2025-10-31T08:40:00.000Z",
-  }),
-}));
+// R9-9: the AI financial-intent backstop now reads the canonical price
+// registry through lib/registry/validateInput, which needs the registry
+// maps at module load — spread the REAL livePrice exports and override
+// only the network probe the test stubs.
+vi.mock("@/lib/livePrice", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/livePrice")>();
+  return {
+    ...actual,
+    fetchLivePrice: async () => ({
+      price: 1420.5, change: 0.8, source: "yahoo", status: "LIVE" as const,
+      observedAt: "2025-10-31T08:40:00.000Z", lastUpdated: "2025-10-31T08:40:00.000Z",
+    }),
+  };
+});
 
 import { POST } from "@/app/api/chat/route";
 

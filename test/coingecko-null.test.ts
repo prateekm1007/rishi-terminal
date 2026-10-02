@@ -45,7 +45,8 @@ describe("coinGeckoEntryFromPayload — Rule-16 classification (pure)", () => {
 
   it("garbage fields → null (never NaN, never coerced zeros)", () => {
     const e = coinGeckoEntryFromPayload({ usd: "abc", usd_24h_change: null, usd_24h_vol: undefined });
-    expect(e).toEqual({ price: null, change: null, volume24h: null });
+    // R9 §20: no disclosed observation time → observedAt null too.
+    expect(e).toEqual({ price: null, change: null, volume24h: null, observedAt: null });
   });
 
   it("a zero or negative price is not an observation (price null)", () => {
@@ -60,7 +61,9 @@ describe("coinGeckoEntryFromPayload — Rule-16 classification (pure)", () => {
 
   it("a fully present entry keeps every real number", () => {
     const e = coinGeckoEntryFromPayload({ usd: 3000.5, usd_24h_change: -2.75, usd_24h_vol: 8_000_000 });
-    expect(e).toEqual({ price: 3000.5, change: -2.75, volume24h: 8_000_000 });
+    // R9 §20: this payload carries no last_updated_at → null (the
+    // observation-time case is covered in priceObservedAtParity.round9).
+    expect(e).toEqual({ price: 3000.5, change: -2.75, volume24h: 8_000_000, observedAt: null });
   });
 });
 

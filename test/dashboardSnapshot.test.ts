@@ -59,6 +59,8 @@ describe("U2 — toPriceData (SSR→client mapper, pure)", () => {
     });
     expect(mapped).toEqual({
       price: 3120.5, change: null, changePercent24h: null, volume24h: null, lastUpdated: null,
+      // Round 9: provenance fields ride through the SSR snapshot verbatim.
+      status: "CACHED", source: "yahoo-bulk",
     });
   });
 
@@ -78,6 +80,7 @@ describe("U2 — toPriceData (SSR→client mapper, pure)", () => {
     expect(mapped).toEqual({
       price: 66000, change: 1.5, changePercent24h: 1.5, volume24h: 900_000_000,
       lastUpdated: "2026-10-02T04:29:00.000Z",
+      status: "LIVE", source: "coingecko",
     });
   });
 });

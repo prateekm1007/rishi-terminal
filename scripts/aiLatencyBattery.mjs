@@ -20,6 +20,19 @@
  *
  * Usage: node scripts/aiLatencyBattery.mjs [BASE_URL] [OUT_JSON]
  * Exit:  0 always (measurement artifact; it reports, it does not gate).
+ *
+ * R10 (Coder Directions 2026-10-03, directive 5): the 44-row R9 run showed
+ * why its effective sample was only 7/44. The platform's per-IP burst
+ * limiter allows 12 chat requests per 60s (app/api/chat/route.ts), but the
+ * previous 1.5s inter-request pause only holds that rate when requests are
+ * SLOW; a provider-502 streak returns in <1s and the battery's effective
+ * rate crossed 12/min, so the platform answered 429 ("Too many requests")
+ * — 14 rows never reached the provider at all. The default inter-request
+ * pause is therefore 6s (≤10/min even when every request fails fast), and
+ * rows that fail with provider-shaped errors (429 burst / 5xx / fetch
+ * errors) are retried up to two more times with 10s/20s backoff — quota
+ * safe, because the route refunds the daily unit on upstream failure
+ * (R6.2). Every attempt's HTTP status is recorded on the row.
  */
 import { writeFileSync, mkdirSync, appendFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -39,6 +52,18 @@ const OUT =
 // same artifact shape — only the loop gains a checkpoint. The state file
 // is session tooling and is never committed.
 const STATE = process.env.BATTERY_STATE || null;
+// R10: see header. 6s between request STARTS keeps the effective rate at
+// ≤10/min even when every request fails fast (<1s), under the 12/60s
+// per-IP burst limiter. Override only with BATTERY_PACING_MS.
+const PACING_MS = Number(process.env.BATTERY_PACING_MS ?? 6000);
+// R10: bounded retry budget for provider-shaped failures (quota-safe; the
+// route refunds the consumed unit on upstream failure). 429 from the burst
+// limiter and 5xx from the provider are both transient infrastructure
+// states, not measurements — a battery that records them as final rows
+// manufactures sample loss, not evidence.
+const MAX_ATTEMPTS = 3;
+const RETRY_BACKOFF_MS = [10_000, 20_000];
+const RETRYABLE = (status) => status === 429 || (status >= 500 && status <= 599);
 const collected = new Map();
 if (STATE) {
   try {
@@ -180,6 +205,11 @@ function aggregate(results) {
   const completionMs = results.flatMap(r => (r.completionStages.repair ? [] : [])); // per-completion ms lives in stages above
   return {
     n: results.length,
+    // R10: rows whose request actually reached the provider and returned a
+    // measurable chat response. D5 requires the EFFECTIVE sample, not the
+    // dispatched count, to support (or refuse) a latency conclusion.
+    effective: results.filter(r => r.status === 200).length,
+    statusCounts: results.reduce((m, r) => { m[r.status] = (m[r.status] ?? 0) + 1; return m; }, {}),
     firstPassGrounded: results.filter(r => r.firstPassGrounded).length,
     grounded: results.filter(r => r.grounded).length,
     repaired: results.filter(r => r.repairs.length > 0).length,
@@ -208,16 +238,32 @@ async function runClass(label, cls, personaId, questions) {
       console.log(`  [resume] idx=${idx} (previously collected)`);
       continue;
     }
-    const r = await chat(personaId, q);
+    // R10: bounded retry on provider-shaped failures. The row records every
+    // attempt's HTTP status; the summarized attempt is the last one.
+    const attemptStatuses = [];
+    let r = null;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      r = await chat(personaId, q);
+      attemptStatuses.push(r.status);
+      if (!RETRYABLE(r.status) && !r.body?.fetchError) break;
+      if (attempt < MAX_ATTEMPTS) {
+        const backoff = RETRY_BACKOFF_MS[attempt - 1];
+        console.log(`  [retry] idx=${idx} attempt=${attempt} status=${r.status} — backoff ${backoff}ms`);
+        await new Promise(res => setTimeout(res, backoff));
+      }
+    }
     const s = summarizeRun(r);
+    s.attempt = attemptStatuses.length;
+    s.attemptStatuses = attemptStatuses;
     results.push(s);
     if (STATE) appendFileSync(STATE, JSON.stringify({ cls, idx, summary: s }) + "\n");
     console.log(
-      `  [${String(r.wallMs).padStart(6)}ms] grounded=${s.grounded} firstPass=${s.firstPassGrounded} ` +
+      `  [${String(r.wallMs).padStart(6)}ms] status=${r.status} attempts=${attemptStatuses.length} ` +
+      `grounded=${s.grounded} firstPass=${s.firstPassGrounded} ` +
       `repairs=${s.repairs.map(x => x.cause).join(",") || "-"} mode=${s.groundingMode} ` +
       `stages=${Object.entries(s.completionStages).map(([k, v]) => `${k}:${v.count}`).join("/") || "-"}`,
     );
-    await new Promise(res => setTimeout(res, 1500)); // gentle on the free tier
+    await new Promise(res => setTimeout(res, PACING_MS)); // ≤10 req/min start-to-start — under the 12/60s burst limiter
   }
   return results;
 }

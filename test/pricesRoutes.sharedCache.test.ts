@@ -115,8 +115,15 @@ describe("U2 — /api/prices/batch serves equities from the shared quote cache",
     expect(prices["WIPRO"].lastUpdated).toBeNull();
     expect(prices["WIPRO"]).not.toHaveProperty("price");
 
-    // the NSE market state rides top-level for the client hook cadence
-    expect(json.market).toEqual(MARKET_OPEN);
+    // the NSE market state rides top-level for the client hook cadence.
+    // The VALUES come from the real clock (marketState()) — those belong to
+    // the pure marketHours tests; here we pin the CONTRACT: the state
+    // object rides with its full shape, at any time of day.
+    const m = json.market as Record<string, unknown>;
+    expect(Object.keys(m).sort()).toEqual(["freshness", "open", "sessionDate", "ttlSeconds"]);
+    expect(typeof m.open).toBe("boolean");
+    expect(["live-delayed", "close"]).toContain(m.freshness);
+    expect(String(m.sessionDate)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   it("non-equity symbols keep the direct fetchLivePrice path (crypto etc.)", async () => {

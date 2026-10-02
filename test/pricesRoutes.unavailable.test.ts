@@ -122,9 +122,13 @@ describe("Phase 5.1 — /api/prices/batch honest unavailable contract", () => {
     cachedQuoteBatchForEquitiesMock.mockResolvedValue(cacheMiss());
     const res = await batchPOST(batchReq(["TCS"]));
     const json = await res.json();
-    expect(json.market).toEqual({
-      open: true, ttlSeconds: 60, freshness: "live-delayed", sessionDate: "2026-10-02",
-    });
+    // The route reads the REAL clock — the values themselves are the pure
+    // marketHours module's contract. Here: the state rides, fully shaped.
+    const m = json.market as Record<string, unknown>;
+    expect(Object.keys(m).sort()).toEqual(["freshness", "open", "sessionDate", "ttlSeconds"]);
+    expect(typeof m.open).toBe("boolean");
+    expect(["live-delayed", "close"]).toContain(m.freshness);
+    expect(String(m.sessionDate)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   it("non-equity symbols keep the direct path: success keeps its real observation timestamp", async () => {

@@ -8,6 +8,15 @@
 // RISHI F&O SYSTEM PROMPTS
 // Each Rishi has a unique voice, philosophy, and F&O bias
 // ============================================================
+//
+// Coder Directions §12 (Commit L hardening): this module is SERVER-ONLY.
+// `import 'server-only'` makes the Next.js build fail if any client module
+// reaches it, and test/clientBoundary.test.ts walks the runtime import
+// graph from every 'use client' file and fails if lib/fno/rishiPrompts.ts
+// is reachable. The deleted browser-side pseudo-advisor
+// (components/fno/RishiStrategyAdvisor.tsx) must remain deleted.
+
+import 'server-only';
 
 import { CANONICAL_PERSONAS } from "@/lib/chat/registry";
 

@@ -18,14 +18,21 @@ export interface ChatMessage {
   };
   /** End-to-end AI loop: provenance retained with the message so the UI can
    *  show (and an audit can replay) which provider/model produced it and
-   *  whether its claims were validated against the evidence package. */
+   *  whether its claims were validated against the evidence package.
+   *  Commit L2: when grounded, `text` is the SERVER-GENERATED verified
+   *  surface and `commentary` carries the model's prose with NO validation
+   *  state — the UI must label it "not verified" and never merge it into
+   *  the grounded surface. */
   provenance?: {
     provider: string;
     model: string;
     generatedAt: string;
     grounded: boolean;
-    groundingMode: 'evidence-context' | 'structured-claims';
+    groundingMode: 'evidence-context' | 'context-only' | 'structured-claims';
+    structuredResponse?: 'valid' | 'invalid' | 'blocked';
     claims: Array<{ claim: string; evidenceIds: string[] }>;
+    commentary?: string;
+    toolCalls?: Array<{ tool: string; status: string; symbol?: string }>;
   };
 }
 

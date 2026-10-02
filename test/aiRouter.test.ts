@@ -296,8 +296,12 @@ describe("audit 2026-10-02 (production probe follow-up): string-typed assertion 
       evidence,
     });
     expect(answer).not.toBeNull();
-    // The clean answer string — NOT the raw JSON dump.
-    expect(answer?.answer).toBe("ROE is 8.91%.");
+    // The clean verified surface — NOT the raw JSON dump. Commit L2: the
+    // grounded text is SERVER-GENERATED from the matched typed fact; the
+    // model's sentence rides as commentary. The fact carries no observation
+    // time → live-undated statement.
+    expect(answer?.answer).toBe("roe = 8.91 percent — live (no disclosed observation time)");
+    expect(answer?.commentary).toBe("ROE is 8.91%.");
     expect(answer?.answer.startsWith("{")).toBe(false);
     // And the claim actually grounds against the typed fact.
     const wire = toChatWire(answer!);
@@ -446,7 +450,10 @@ describe("G4 — invalid structured output never becomes displayed financial tex
     const a = await generateEvidenceGroundedAnswer({
       systemPrompt: "p", history: [], message: "m", evidence: EVIDENCE,
     });
-    expect(a?.answer).toBe("ROE is 12%.");
+    // Commit L2: the grounded surface is the server-generated verified
+    // statement; the model's sentence is commentary.
+    expect(a?.answer).toBe("roe = 12 percent — live (no disclosed observation time)");
+    expect(a?.commentary).toBe("ROE is 12%.");
     const wire = toChatWire(a!);
     expect(wire.provenance.structuredResponse).toBe("valid");
     expect(wire.provenance.grounded).toBe(true);

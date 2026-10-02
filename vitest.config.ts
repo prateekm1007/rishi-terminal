@@ -11,7 +11,10 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["test/**/*.test.ts"],
+    // N.B. .mjs tests import the probe-contract modules under scripts/lib/
+    // (plain ESM, no TS types) — included explicitly so the canary
+    // contract is unit-gated.
+    include: ["test/**/*.test.ts", "test/**/*.test.mjs"],
     environment: "node",
     setupFiles: ["test/setup.ts"],
     testTimeout: 30_000,

@@ -69,6 +69,25 @@ export interface GenerateArgs {
    *  initial package — one data state per symbol per request. Omitted, a
    *  fresh state is created from toolDeps (isolated callers/tests). */
   stockState?: CanonicalStockState;
+  /** Coder Directions 2026-10-02 §8 — DETERMINISTIC PROBE SEED (server
+   *  only, never client-reachable): when present, the loop's FIRST tool
+   *  request is this fixed call, executed through the SAME budget check,
+   *  executor, transcript injection and evidence merge as a model-made
+   *  request. This removes exactly one coin flip — whether the model
+   *  CHOOSES the tool — while every downstream stage stays the real
+   *  production path: provider completion, prompt rebuild with tool
+   *  evidence, structured claims, grounding validation, server-generated
+   *  verified surface. Set exclusively by the secret-gated
+   *  /api/probe/ai-loop route; the chat route never sets it. */
+  probeSeedToolCall?: { tool: string; args: unknown };
+}
+
+/** §11: mutable timing collector threaded through the loop. */
+interface LoopTimings {
+  providerAttempts: number;
+  completions: Array<{ provider: string; model: string; ms: number; outcome: "tool-request" | "final-response" | "failed" }>;
+  toolExecutions: Array<{ tool: string; symbol?: string; status: string; ms: number }>;
+  validationMs: number;
 }
 
 /**
@@ -317,6 +336,41 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     return null;
   }
 
+  // ── §11 latency attribution: the loop records per-stage durations into a
+  // mutable collector; this wrapper stamps the final answer on the way out
+  // (every return path inside the loop is decorated exactly once, here). ──
+  const timings: LoopTimings = {
+    providerAttempts: 0,
+    completions: [],
+    toolExecutions: [],
+    validationMs: 0,
+  };
+  const t0 = Date.now();
+  const answer = await runGroundedLoop(args, candidates, timings);
+  if (answer) {
+    const stateTimings = args.stockState?.timings();
+    answer.timings = {
+      totalMs: Date.now() - t0,
+      providerAttempts: timings.providerAttempts,
+      completions: timings.completions,
+      toolExecutions: timings.toolExecutions,
+      validationMs: timings.validationMs,
+      priceFetches: stateTimings?.priceFetches ?? [],
+      fundamentalsFetches: stateTimings?.fundamentalsFetches ?? [],
+      memoHits: stateTimings?.memoHits ?? { price: 0, fundamentals: 0 },
+    };
+  }
+  return answer;
+}
+
+/** The unified loop itself (Commit M §22–§24) — see the wrapper above for
+ *  the timing contract. `timings` is measurement-only: no branch below
+ *  reads it to decide anything. */
+async function runGroundedLoop(
+  args: GenerateArgs,
+  candidates: AiProvider[],
+  timings: LoopTimings,
+): Promise<AiAnswer | null> {
   const evidence = args.evidence ?? [];
   const hasInitialEvidence = evidence.length > 0;
   // Commit N (production canary root cause, 2026-10-02): the system prompt
@@ -345,12 +399,22 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
   // "unconfigured" (503) from "upstream broke" (502) — never a silently
   // degraded pseudo-answer. (Commit L1: one completion = one failover chain;
   // the tool loop may issue several completions.)
+  // §11: every attempt (success AND failure) is timed and attributed.
   const callProvider = async (
     loopTurns: ChatTurn[],
     system: string,
   ): Promise<{ text: string; provider: AiProvider }> => {
     let lastError: unknown = null;
     for (const provider of candidates) {
+      timings.providerAttempts += 1;
+      const attemptStart = Date.now();
+      const entry: LoopTimings["completions"][number] = {
+        provider: provider.id,
+        model: provider.model,
+        ms: 0,
+        outcome: "final-response",
+      };
+      timings.completions.push(entry);
       try {
         const t =
           provider.kind === "openai"
@@ -360,8 +424,11 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
             : await withProviderHealth(provider.id, () =>
                 callGemini(provider.apiKey, provider.model, system, args.history, args.message, TIMEOUT_MS, loopTurns),
               );
+        entry.ms = Date.now() - attemptStart;
         return { text: t, provider };
       } catch (err) {
+        entry.ms = Date.now() - attemptStart;
+        entry.outcome = "failed";
         // Recorded in provider health by withProviderHealth; try the next
         // candidate (if any) instead of failing the request.
         lastError = err;
@@ -383,10 +450,56 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
   const transcript: ChatTurn[] = [];
   const toolCalls: AiAnswer["toolCalls"] = [];
 
+  // §8: execute + inject ONE tool request through the canonical executor,
+  // the budget having been checked by the caller. Shared verbatim by the
+  // model-driven path and the deterministic probe seed — one executor, one
+  // injection contract. Returns the executed outcome for audit.
+  const executeAndInject = async (toolReq: { tool: string; args: unknown }) => {
+    const execStart = Date.now();
+    const outcome = await executeAiTool(toolReq, args.toolDeps ?? {}, args.stockState);
+    timings.toolExecutions.push({
+      tool: outcome.tool,
+      ...("symbol" in outcome ? { symbol: outcome.symbol } : {}),
+      status: outcome.status,
+      ms: Date.now() - execStart,
+    });
+    toolCalls.push({
+      tool: outcome.tool,
+      status: outcome.status,
+      ...("symbol" in outcome ? { symbol: outcome.symbol } : {}),
+    });
+    // Server-generated transcript turns: the model's request is normalized
+    // to its canonical JSON; the result is ONLY executeAiTool's payload.
+    transcript.push({ role: "assistant", content: JSON.stringify({ tool: toolReq.tool, args: toolReq.args }) });
+    transcript.push({
+      role: "user",
+      content: (outcome.status === "ok" ? "TOOL RESULT: " : "TOOL ERROR: ") + outcome.modelPayload,
+    });
+    if (outcome.status === "ok") {
+      loopEvidence.push(...outcome.evidence);
+    }
+    return outcome;
+  };
+
+  // §8: the deterministic probe seed consumes the FIRST loop iteration —
+  // the budget cannot fire here (toolCalls is empty by construction), and
+  // the provider call that follows is the REAL production post-tool call
+  // with the rebuilt evidence contract (the exact path the 2026-10-02
+  // production defect lived in).
+  let seedPending = args.probeSeedToolCall !== undefined;
+
   for (;;) {
+    if (seedPending) {
+      seedPending = false;
+      await executeAndInject(args.probeSeedToolCall!);
+      continue;
+    }
     const { text, provider } = await callProvider(transcript, buildSystem(loopEvidence));
 
     const toolReq = extractToolRequest(text);
+    // §11: attribute this successful completion now that its shape is known.
+    const lastCompletion = timings.completions[timings.completions.length - 1];
+    if (lastCompletion && toolReq) lastCompletion.outcome = "tool-request";
     if (!toolReq) {
       // ── final-response candidate: parse → zod → grounding validation ──
       const parsed = extractJsonObject(text);
@@ -398,7 +511,9 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
         // numeric assertion (field/value/unit) against the typed facts of
         // the claim's own cited items. G3: qualitative claims come back
         // classified "context-only" instead of masquerading as grounded.
+        const validationStart = Date.now();
         const grounding = validateGrounding(loopEvidence, structured.data.claims, structured.data.answer);
+        timings.validationMs = Date.now() - validationStart;
         if (grounding.grounded && grounding.validatedClaims.length > 0) {
           // ── Commit L2: TWO SURFACES. The grounded answer surface is the
           // SERVER-GENERATED verified text (built only from validated typed
@@ -473,7 +588,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
                 model: provider.model,
                 generatedAt,
                 claimsVerified: false,
-                groundingRejections: [],
+                groundingRejections: [...grounding.rejections],
                 groundingMode: "evidence-context",
                 structuredResponse: "blocked",
                 toolCalls: [],
@@ -491,7 +606,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
             model: provider.model,
             generatedAt,
             claimsVerified: false,
-            groundingRejections: [],
+            groundingRejections: [...grounding.rejections],
             groundingMode: "context-only",
             structuredResponse: "valid",
             toolCalls: toolCalls.length > 0 ? toolCalls : [],
@@ -517,7 +632,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
             model: provider.model,
             generatedAt,
             claimsVerified: false,
-            groundingRejections: [],
+            groundingRejections: [...grounding.rejections],
             groundingMode: "evidence-context",
             structuredResponse: "valid",
             toolCalls: toolCalls.length > 0 ? toolCalls : [],
@@ -593,22 +708,10 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
       };
     }
 
-    const outcome = await executeAiTool(toolReq, args.toolDeps ?? {}, args.stockState);
-    toolCalls.push({
-      tool: outcome.tool,
-      status: outcome.status,
-      ...("symbol" in outcome ? { symbol: outcome.symbol } : {}),
-    });
-    // Server-generated transcript turns: the model's request is normalized
-    // to its canonical JSON; the result is ONLY executeAiTool's payload.
-    transcript.push({ role: "assistant", content: JSON.stringify({ tool: toolReq.tool, args: toolReq.args }) });
-    transcript.push({
-      role: "user",
-      content: (outcome.status === "ok" ? "TOOL RESULT: " : "TOOL ERROR: ") + outcome.modelPayload,
-    });
-    if (outcome.status === "ok") {
-      loopEvidence.push(...outcome.evidence);
-    }
+    // §8: the model-driven path and the deterministic probe seed share this
+    // EXACT execution + injection code (one executor, one injection
+    // contract — no second tool path).
+    await executeAndInject(toolReq);
   }
 }
 
@@ -628,6 +731,9 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       model: answer.model,
       generatedAt: answer.generatedAt,
       grounded,
+      // §6: the router's own verification flag, threaded verbatim so the
+      // canary/gate asserts the decision itself, not only its derivation.
+      claimsVerified: answer.claimsVerified,
       groundingMode: answer.groundingMode ?? (grounded ? "structured-claims" : "evidence-context"),
       structuredResponse: answer.structuredResponse ?? "valid",
       claims: grounded ? answer.claims : [],
@@ -636,6 +742,8 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       ...(grounded && answer.commentary ? { commentary: answer.commentary } : {}),
       groundingRejections: grounded ? [] : answer.groundingRejections ?? [],
       toolCalls: answer.toolCalls ?? [],
+      // §11: latency attribution rides when present (router-stamped).
+      ...(answer.timings ? { timings: answer.timings } : {}),
     },
   };
 }

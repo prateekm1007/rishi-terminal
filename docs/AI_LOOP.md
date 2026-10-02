@@ -63,7 +63,44 @@ PROVENANCE-AWARE UI           (provider · model · grounding mode · toolCalls 
   model-supplied tool result can enter the evidence set.
 - The loop is bounded (`MAX_TOOL_ITERATIONS = 4`); exhaustion terminates the
   request BLOCKED (`structuredResponse: "blocked"`) with no fabricated answer.
-  Every tool call rides the wire as `provenance.toolCalls` for audit.
+
+## Server-enforced canonical engagement + bounded final-answer repair (2026-10-02 round 3)
+
+Coder Directions §5: for a detected financial-data ask, the pipeline must not
+fall back to `grounded=false / evidence-context` merely because the model
+declined to choose a tool. Two server-side contracts close that gap — both in
+the ONE canonical loop (`lib/ai/router.ts`), with no second witness path and
+no weakening of validation:
+
+- **Reactive canonical engagement** (`lib/ai/financialIntent.ts`
+  `intentSeedTool`): when a no-initial-evidence request matches a registry
+  symbol AND a closed OBSERVABLE-data term (prices, fundamentals, scores,
+  peers) and the model's first completion answers with ZERO tool calls, the
+  server executes the canonical tool for the detected ask through the REAL
+  executor and re-asks once with the TOOL RESULT in the transcript. A
+  well-behaved model that requests tools itself pays zero overhead.
+  Advice-shaped asks (buy or sell, target price, ratings, recommendations)
+  are never seeded — a tool result must not auto-answer advice; they keep
+  the existing intent backstop (BLOCKED on zero engagement).
+- **One bounded final-answer repair**: when a final structured reply fails
+  the contract (schema/parse, grounding rejection, or a claims-free
+  restatement of data the loop already received), the loop re-asks ONCE on
+  the SAME transcript, appending the server's rejection reason as a user
+  turn (`SERVER VALIDATION FEEDBACK`). The retry runs the same
+  parse → zod → grounding validation and the same server-generated
+  surfaces. Exhausted repairs fall through to the unchanged fail-closed
+  states (`invalid` / blocked / discarded — raw model text is never
+  displayed).
+- **Words-in-prose hole closed**: a claims-free reply restating a received
+  observation in WORDS ("one thousand one hundred …") rode past the numeric
+  gate as context-only. For a detected data ask whose tool returned ok, an
+  uncited reply is now repaired and, failing that, BLOCKED — the received
+  data is never re-served as unverified context.
+
+Contract tests: `test/aiRouter.requestPath.test.ts` (server-enforced
+engagement, repair grounds, exhausted repair stays fail-closed, advice and
+philosophy untouched, words-hole pinned).
+Every tool call rides the wire as `provenance.toolCalls` for audit.
 
 ## Server-generated verified surface (Commit L2)
 

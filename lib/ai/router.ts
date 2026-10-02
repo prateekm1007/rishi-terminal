@@ -34,7 +34,8 @@ import type { CanonicalStockState } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, type AiToolDeps } from "./tools";
-import { detectFinancialDataIntent } from "./financialIntent";
+import { detectFinancialDataIntent, intentSeedTool } from "./financialIntent";
+import type { FinancialDataIntent } from "./financialIntent";
 
 const TIMEOUT_MS = 20_000;
 
@@ -497,12 +498,53 @@ async function runGroundedLoop(
   // the provider call that follows is the REAL production post-tool call
   // with the rebuilt evidence contract (the exact path the 2026-10-02
   // production defect lived in).
-  let seedPending = args.probeSeedToolCall !== undefined;
+  // Coder Directions §5 (round 3, 2026-10-02): the financial-data intent is
+  // detected ONCE, deterministically, for every no-initial-evidence request.
+  // Canonical tool engagement is SERVER-ENFORCED, reactively: if the model's
+  // first completion tries to answer a detected OBSERVABLE-data ask without
+  // any tool call, the server seeds the canonical tool through the real
+  // executor (exactly like the deterministic probe) and re-asks once. A
+  // well-behaved model that requests tools itself pays zero overhead. The
+  // model stays responsible for the final structured answer; advice-shaped
+  // asks are never seeded (a tool result must not auto-answer advice).
+  const intent: FinancialDataIntent = hasInitialEvidence
+    ? { financial: false }
+    : detectFinancialDataIntent(args.message);
+  const intentSeed = !hasInitialEvidence ? intentSeedTool(args.message) : null;
+  let pendingSeed: { tool: string; args: unknown } | null = args.probeSeedToolCall ?? null;
+
+  // §5/§7 (round 3): ONE bounded final-answer repair. When the model's
+  // final structured reply fails the contract (schema, grounding, or a
+  // claims-free restatement of data it received), the loop re-asks ONCE on
+  // the SAME transcript with the server's rejection reason appended as a
+  // user turn. The retry runs through the same parse → zod → grounding
+  // validation and the same server-generated surfaces — no second witness
+  // path, no weakening. Exhausted repairs fall through to the unchanged
+  // fail-closed returns.
+  const MAX_FINAL_REPAIRS = 1;
+  let repairsUsed = 0;
+  let lastFinalCandidate = "";
+  const CITE_FEEDBACK =
+    "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it";
+  const repairFeedback = (feedback: string): boolean => {
+    if (repairsUsed >= MAX_FINAL_REPAIRS || !lastFinalCandidate) return false;
+    repairsUsed += 1;
+    transcript.push({ role: "assistant", content: lastFinalCandidate });
+    transcript.push({
+      role: "user",
+      content:
+        "SERVER VALIDATION FEEDBACK: your previous reply violated the final-response contract and was discarded. " +
+        feedback +
+        " Reply again with ONLY the final JSON object ({answer, claims, uncertainties}).",
+    });
+    return true;
+  };
 
   for (;;) {
-    if (seedPending) {
-      seedPending = false;
-      await executeAndInject(args.probeSeedToolCall!);
+    if (pendingSeed) {
+      const seed = pendingSeed;
+      pendingSeed = null;
+      await executeAndInject(seed);
       continue;
     }
     const { text, provider } = await callProvider(transcript, buildSystem(loopEvidence));
@@ -513,6 +555,7 @@ async function runGroundedLoop(
     if (lastCompletion && toolReq) lastCompletion.outcome = "tool-request";
     if (!toolReq) {
       // ── final-response candidate: parse → zod → grounding validation ──
+      lastFinalCandidate = text;
       const parsed = extractJsonObject(text);
       const structured = parsed
         ? StructuredModelOutputSchema.safeParse(coerceStringlyTypedValues(parsed))
@@ -581,8 +624,18 @@ async function runGroundedLoop(
           // loop (a tool ran and failed honestly — unknown symbol, no data),
           // the disclosed unavailability stands: that IS the honest outcome.
           if (!hasInitialEvidence && toolCalls.length === 0) {
-            const intent = detectFinancialDataIntent(args.message);
+            // `intent` is the loop-start capture (deterministic, same input).
             if (intent.financial) {
+              // Round 3 §5: REACTIVE server-enforced engagement. The model
+              // tried to answer a data question with zero tool calls — the
+              // server executes the canonical tool for its detected ask
+              // (one bounded enforcement) and re-asks with the result. The
+              // next pass can no longer dodge the data: it is in the
+              // transcript as a server-generated TOOL RESULT.
+              if (intentSeed && repairFeedback("this request clearly asks for specific market data; the server has now executed the canonical tool for it — " + CITE_FEEDBACK)) {
+                await executeAndInject(intentSeed);
+                continue;
+              }
               console.error(
                 "[ai/router] financial-data request ("
                   + `symbol=${intent.symbol}, term="${intent.matchedTerm}"`
@@ -606,6 +659,40 @@ async function runGroundedLoop(
               };
             }
           }
+          // Round 3 (Coder Directions §5): the words-in-prose hole. A data
+          // ask whose tool returned ok must not be answered with a
+          // claims-free restatement of the received data — spelled out in
+          // words, it rides past the numeric gate as "context" while still
+          // presenting the observation. One repair re-ask teaches citing;
+          // an exhausted repair BLOCKS (fail closed, never serve it).
+          if (!hasInitialEvidence && intent.financial && toolCalls.some((t) => t.status === "ok")) {
+            if (
+              repairFeedback(
+                "you received TOOL RESULT data for this data question but replied with zero claims — " + CITE_FEEDBACK,
+              )
+            ) {
+              continue;
+            }
+            console.error(
+              "[ai/router] financial-data request answered claims-free after ok tool data — BLOCKED (received data is never restated as unverified context)",
+            );
+            return {
+              answer:
+                "BLOCKED: verified platform data was retrieved for this question, but the reply did not cite it. No uncited restatement of the data is served. Ask again, or rephrase as a philosophical or educational question.",
+              claims: [],
+              uncertainties: [
+                "financial-data intent with ok tool data but zero cited claims — the uncited reply (digit or spelled-out figures) is never served as unverified context",
+              ],
+              provider: provider.id,
+              model: provider.model,
+              generatedAt,
+              claimsVerified: false,
+              groundingRejections: [...grounding.rejections],
+              groundingMode: "evidence-context",
+              structuredResponse: "blocked",
+              toolCalls: toolCalls.length > 0 ? toolCalls : [],
+            };
+          }
           return {
             answer: structured.data.answer,
             claims: [],
@@ -626,8 +713,10 @@ async function runGroundedLoop(
         if (!hasInitialEvidence) {
           // No verified evidence exists in this request at all, so there is
           // nothing this reply could be honest ABOUT: unsupported numbers
-          // and/or ungroundable claims → bounded honest response, nothing
-          // from the model reply is displayed.
+          // and/or ungroundable claims → ONE repair re-ask with the server's
+          // rejection reasons (round 3, §5/§7), then the unchanged bounded
+          // honest response — nothing from the model reply is displayed.
+          if (repairFeedback(CITE_FEEDBACK)) continue;
           console.error(
             "[ai/router] no-evidence reply carried ungroundable content "
             + `(claims=${structured.data.claims.length}, ungroundedNumbers=${ungroundedNumbers.length}) — discarded`,
@@ -651,6 +740,10 @@ async function runGroundedLoop(
             toolCalls: toolCalls.length > 0 ? toolCalls : [],
           };
         }
+        // Evidence path (stock pages): some claims failed grounding — ONE
+        // repair re-ask before the reply is served as unverified context
+        // (round 3, §7; the fallback below is unchanged).
+        if (repairFeedback(CITE_FEEDBACK)) continue;
         return {
           answer: structured.data.answer,
           claims: grounding.validatedClaims as AiClaim[],
@@ -676,6 +769,18 @@ async function runGroundedLoop(
       // provider debugging text. Serve the bounded honest response with
       // machine-readable provenance (structuredResponse: "invalid") — no
       // replacement financial answer is fabricated.
+      // Round 3 §7: ONE repair re-ask when the final candidate fails
+      // parse/schema. The raw reply is still never displayed; the failure
+      // reason rides to the model as server feedback and stays server-side.
+      if (
+        repairFeedback(
+          parsed
+            ? `your reply was not a structurally valid final response (schema: ${JSON.stringify(structured?.error?.issues?.slice(0, 2) ?? [])})`
+            : "your reply was not parseable as a single JSON object",
+        )
+      ) {
+        continue;
+      }
       // Commit O (Rule 10): the failure is diagnosable SERVER-SIDE — the
       // parse/schema reason and a bounded raw head go to the server log only;
       // the client still receives the generic bounded response.

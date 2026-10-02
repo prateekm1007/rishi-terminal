@@ -83,3 +83,41 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   }
   return { financial: false };
 }
+
+/**
+ * Coder Directions §5 (2026-10-02 round 3) — the closed OBSERVABLE-data
+ * term→tool seed map. When a request matches BOTH a registry symbol and
+ * one of these terms, the router may seed the canonical tool exactly like
+ * the deterministic probe does (server-enforced engagement; the model
+ * stays responsible for the final structured answer).
+ *
+ * Deliberately NARROW: only data the canonical tools can observe and
+ * serve. Advice-shaped asks (buy or sell, target price, bullish or
+ * bearish, recommendations, ratings) and general valuation wording are
+ * NOT seeded — a tool result must never auto-materialize to answer an
+ * advice question (Rule 4: nothing fabricated; advice stays a discussion).
+ */
+const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinancials" | "getScore" | "getPeers" }> = [
+  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote)\b/i, tool: "getPrices" },
+  {
+    re: /\b(fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|revenues?|profits?|earnings|eps|dividends?|book value|margins?|growth rates?)\b/i,
+    tool: "getFinancials",
+  },
+  { re: /\b(scores?|rishi scores?|consensus|verdicts?)\b/i, tool: "getScore" },
+  { re: /\b(peers?|competitors?)\b/i, tool: "getPeers" },
+];
+
+/**
+ * The canonical tool the server should seed for this message, or null.
+ * Pure like the detector; null means "no server-side engagement" (the
+ * model keeps full tool choice and the existing intent backstop still
+ * applies).
+ */
+export function intentSeedTool(message: string): { tool: string; args: { symbol: string } } | null {
+  const intent = detectFinancialDataIntent(message);
+  if (!intent.financial || !intent.symbol) return null;
+  for (const { re, tool } of SEED_TERM_RES) {
+    if (re.test(message)) return { tool, args: { symbol: intent.symbol } };
+  }
+  return null;
+}

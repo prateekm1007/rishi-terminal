@@ -183,8 +183,15 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
     assetClasses: ["ai"],
     auth: "api-key",
     status: "APPROVED",
-    termsUrl: "https://openai.com/terms/",
-    docsUrl: "https://platform.openai.com/docs",
+    // Commit M7 (model-identity audit): the production endpoint is
+    // apihub.agnes-ai.com (an OpenAI-COMPATIBLE aggregator), NOT OpenAI
+    // itself — the previous openai.com URLs misdescribed the provider.
+    // Verified live 2026-10-02: /models lists agnes-* models and
+    // completions echo the configured model (evidence:
+    // docs/evidence/commit-m/model-identity-audit.json). FD-8 (vendor
+    // terms review) remains OPEN.
+    termsUrl: "https://agnes-ai.com/",
+    docsUrl: "https://apihub.agnes-ai.com/",
   },
   [PROVIDER_IDS.GEMINI]: {
     id: PROVIDER_IDS.GEMINI,

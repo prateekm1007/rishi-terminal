@@ -122,7 +122,11 @@ async function refundQuota(userId: string): Promise<void> {
 // deterministic evidence ids the structured AI response is validated
 // against. The seed-only stockEvidence() (N3) is superseded here; it
 // remains exported for its own labeling-contract tests.
-import { buildAiEvidencePackage } from '@/lib/ai/evidence';
+// Commit M7: the package and the tool loop share ONE CanonicalStockState —
+// a single memoized live-fundamentals fetch + price observation per
+// symbol per request — so getScore/getStock/getFinancials answer from the
+// SAME data state as the initial evidence (byte-identical items/ids).
+import { buildAiEvidencePackage, createCanonicalStockState } from '@/lib/ai/evidence';
 
 interface HistoryTurn {
   role: 'user' | 'assistant';
@@ -245,8 +249,12 @@ export async function POST(req: NextRequest) {
   //    without reaching the provider (the provider-call block below has
   //    always refunded; assembly was outside it).
   let evidence;
+  let stockState = null;
   try {
-    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol) : null;
+    // One canonical observation state per request: the package below and
+    // every tool call inside generateEvidenceGroundedAnswer reuse it.
+    stockState = createCanonicalStockState();
+    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol, {}, stockState) : null;
     evidence = evidencePackage?.items ?? [];
   } catch (e) {
     console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
@@ -264,6 +272,7 @@ export async function POST(req: NextRequest) {
       history,
       message,
       evidence,
+      stockState: stockState ?? undefined,
     });
   } catch (e) {
     // Upstream broke (timeout/5xx/empty) — 502 with generic body, quota

@@ -1,4 +1,5 @@
-// lib/ai/tools.ts — the canonical server-side AI tool layer (Commit L1).
+// lib/ai/tools.ts — the canonical server-side AI tool layer (Commit L1;
+// state consistency closed by Commit M7).
 //
 // R4-01: the internal tool API the model may call during the bounded
 // tool-calling loop. Every tool resolves through the platform's CANONICAL
@@ -8,7 +9,8 @@
 //
 // Hard boundaries (Coder Directions §4):
 //   - strict tool allowlist (AI_TOOL_NAMES);
-//   - Zod argument validation at the boundary (rule 9);
+//   - Zod argument validation at the boundary (rule 9) — STRICT: unknown
+//     arguments are REJECTED, never silently stripped (Commit M7, §3);
 //   - ticker/security-master validation against the one stock registry;
 //   - server-only: a tool executes exclusively inside an authenticated,
 //     persona-authorized request on the server — there is NO HTTP surface
@@ -22,15 +24,19 @@
 // Evidence contract: every successful tool result is a set of evidence
 // items built by the SAME builders as the canonical evidence package
 // (lib/ai/evidence.ts) — deterministic ids, typed facts, provenance wording.
-// The final answer's numbers are therefore traceable to typed tool/evidence
-// facts by construction, and the grounding validator (validateGrounding)
-// treats tool-derived items identically to package items.
+//
+// Commit M7 (canonical tool-state consistency): every tool resolves through
+// a shared CanonicalStockState — ONE bounded live-fundamentals fetch and ONE
+// price observation per symbol, memoized for the request's lifetime and
+// identical to the state the initial evidence package was built from. The
+// tools therefore answer from the SAME data state as the package: the
+// initial evidence score and getScore's score fact are byte-identical for
+// the same symbol in the same request.
 
 import 'server-only';
 
 import { z } from "zod";
 import { STOCKS } from "@/data/stocks";
-import { resolveStockMetrics } from "@/lib/scoring";
 import type { ResolvedStockMetrics } from "@/lib/scoring";
 import { fetchLivePrice } from "@/lib/livePrice";
 import { fetchFullFundamentals } from "@/lib/liveFundamentals";
@@ -41,8 +47,9 @@ import {
   buildFundamentalItems,
   buildScoreItem,
   buildPeerItems,
-  fetchFundamentalsBounded,
+  createCanonicalStockState,
   type AiPeerRow,
+  type CanonicalStockState,
 } from "./evidence";
 import type { AiEvidenceItem } from "./schemas";
 
@@ -63,12 +70,20 @@ export function isAiToolName(tool: string): tool is AiToolName {
 }
 
 // ── argument schemas (zod at every boundary — rule 9) ────────────────────
-const SymbolArgsSchema = z.object({
-  symbol: z.string().min(1).max(25),
-});
-const PeersArgsSchema = SymbolArgsSchema.extend({
-  limit: z.number().int().min(1).max(10).optional(),
-});
+// Commit M7 (§3): STRICT — an unexpected argument is a validation FAILURE,
+// not a silently stripped key. A model (or anything upstream) cannot
+// smuggle extra instructions or a forged `result` through the args.
+const SymbolArgsSchema = z
+  .object({
+    symbol: z.string().min(1).max(25),
+  })
+  .strict();
+const PeersArgsSchema = z
+  .object({
+    symbol: z.string().min(1).max(25),
+    limit: z.number().int().min(1).max(10).optional(),
+  })
+  .strict();
 
 /** Explicit tool outcome states. `ok` carries evidence items (the ONLY way
  *  tool data enters the grounding set); every other status is a disclosed
@@ -97,44 +112,21 @@ export interface AiToolDeps {
   getPeers?: (symbol: string) => AiPeerRow[];
 }
 
-/** Resolve the canonical security-master row, or null for an unknown
- *  ticker (rule 9: registry-check symbols at the boundary). */
-function registryRow(symbol: string) {
-  return STOCKS[symbol] ?? null;
-}
-
-/** Same-sector peers from the ONE stock registry, deterministically ordered
- *  (market cap desc, then symbol asc) — no second universe, no scoring. */
-function canonicalPeers(symbol: string, sector: string, limit: number): AiPeerRow[] {
-  return Object.values(STOCKS)
-    .filter(s => s.sector === sector && s.symbol !== symbol)
-    .sort((a, b) => b.mktcap - a.mktcap || a.symbol.localeCompare(b.symbol))
-    .slice(0, limit)
-    .map(s => ({ symbol: s.symbol, name: s.name, sector: s.sector, price: s.price, mktcap: s.mktcap, pe: s.pe, roe: s.roe }));
-}
-
-/** The model-facing rendering of an ok outcome: ids + item text only. */
-function okPayload(tool: AiToolName, symbol: string, evidence: AiEvidenceItem[]): string {
-  return JSON.stringify({
-    tool,
-    symbol,
-    status: "ok",
-    items: evidence.map(e => ({ id: e.id, text: e.text })),
-  });
-}
-
-function failPayload(tool: string, status: string, extra: Record<string, unknown> = {}): string {
-  return JSON.stringify({ tool, status, ...extra });
-}
-
 /**
  * Execute one validated AI tool call on the server. This is the ONLY
  * producer of tool evidence: the model can request a tool, never supply or
  * simulate one; a client has no path here at all.
+ *
+ * Commit M7: `state` threads the per-request canonical observation state.
+ * When omitted, a fresh one is created from `deps` (single-call callers
+ * keep their existing behavior); the chat path passes the SAME state that
+ * built the initial evidence package, so every tool answers from the same
+ * data state as the package.
  */
 export async function executeAiTool(
   call: { tool: string; args: unknown },
   deps: AiToolDeps = {},
+  state?: CanonicalStockState,
 ): Promise<AiToolOutcome> {
   // 1. strict allowlist.
   if (typeof call?.tool !== "string" || !isAiToolName(call.tool)) {
@@ -150,7 +142,7 @@ export async function executeAiTool(
   }
   const tool = call.tool;
 
-  // 2. zod argument validation.
+  // 2. zod argument validation (STRICT — unknown keys rejected).
   const schema = tool === "getPeers" ? PeersArgsSchema : SymbolArgsSchema;
   const parsed = schema.safeParse(call.args ?? {});
   if (!parsed.success) {
@@ -165,7 +157,7 @@ export async function executeAiTool(
 
   // 3. security-master validation against the one registry.
   const symbol = parsed.data.symbol.trim().toUpperCase();
-  if (!registryRow(symbol)) {
+  if (!STOCKS[symbol]) {
     return {
       status: "unknown-symbol",
       tool,
@@ -177,12 +169,15 @@ export async function executeAiTool(
     };
   }
 
-  // 4. dispatch through canonical surfaces. Any throw → explicit failed
-  //    state (detail logged server-side only, rule 10).
+  // 4. dispatch through the SHARED canonical state (Commit M7): every
+  //    resolution reuses the memoized observation the evidence package (or
+  //    a previous tool in this loop) already fetched. Any throw → explicit
+  //    failed state (detail logged server-side only, rule 10).
+  const shared = state ?? createCanonicalStockState(deps);
   try {
     switch (tool) {
       case "getStock": {
-        const resolved = resolveStockMetrics(symbol);
+        const resolved = await shared.resolve(symbol);
         if (!resolved) {
           return { status: "no-data", tool, symbol, modelPayload: failPayload(tool, "no-data", { symbol, message: `No resolved stock data for ${symbol}.` }) };
         }
@@ -191,8 +186,8 @@ export async function executeAiTool(
       }
 
       case "getFinancials": {
-        const live = await fetchFundamentalsBounded(symbol, deps.getFundamentals ?? fetchFullFundamentals);
-        const resolved = resolveStockMetrics(symbol, live ? { ...live, isLive: live.source !== "static" } : null);
+        const live = await shared.fundamentals(symbol);
+        const resolved = await shared.resolve(symbol);
         if (!resolved) {
           return { status: "no-data", tool, symbol, modelPayload: failPayload(tool, "no-data", { symbol, message: `No resolved fundamentals for ${symbol}.` }) };
         }
@@ -202,25 +197,28 @@ export async function executeAiTool(
       }
 
       case "getPrices": {
-        const point = await (deps.getPrice ?? fetchLivePrice)(symbol);
+        const point = await shared.price(symbol);
         const evidence = [buildPriceItem(symbol, point ?? null)];
         return { status: "ok", tool, symbol, evidence, modelPayload: okPayload(tool, symbol, evidence) };
       }
 
       case "getScore": {
-        const resolved = resolveStockMetrics(symbol);
+        const resolved = await shared.resolve(symbol);
         if (!resolved) {
           return { status: "no-data", tool, symbol, modelPayload: failPayload(tool, "no-data", { symbol, message: `No resolved stock data for ${symbol}.` }) };
         }
         // The canonical consensus, consumed as-is (engine version embedded in
-        // the item id). Insufficient data → the item says so and carries NO
-        // fact, so any numeric score assertion fails closed downstream.
+        // the item id). Resolved through the SAME state as the initial
+        // package, so the id and facts are byte-identical to the package's
+        // score item for this symbol (Commit M7 contract). Insufficient
+        // data → the item says so and carries NO fact, so any numeric score
+        // assertion fails closed downstream.
         const evidence = [buildScoreItem(resolved)];
         return { status: "ok", tool, symbol, evidence, modelPayload: okPayload(tool, symbol, evidence) };
       }
 
       case "getPeers": {
-        const resolved: ResolvedStockMetrics | null = resolveStockMetrics(symbol);
+        const resolved: ResolvedStockMetrics | null = await shared.resolve(symbol);
         if (!resolved) {
           return { status: "no-data", tool, symbol, modelPayload: failPayload(tool, "no-data", { symbol, message: `No resolved stock data for ${symbol}.` }) };
         }
@@ -245,4 +243,28 @@ export async function executeAiTool(
       modelPayload: failPayload(tool, "failed", { symbol, message: `Tool ${tool} could not be completed. Do not invent its data.` }),
     };
   }
+}
+
+/** Same-sector peers from the ONE stock registry, deterministically ordered
+ *  (market cap desc, then symbol asc) — no second universe, no scoring. */
+function canonicalPeers(symbol: string, sector: string, limit: number): AiPeerRow[] {
+  return Object.values(STOCKS)
+    .filter(s => s.sector === sector && s.symbol !== symbol)
+    .sort((a, b) => b.mktcap - a.mktcap || a.symbol.localeCompare(b.symbol))
+    .slice(0, limit)
+    .map(s => ({ symbol: s.symbol, name: s.name, sector: s.sector, price: s.price, mktcap: s.mktcap, pe: s.pe, roe: s.roe }));
+}
+
+/** The model-facing rendering of an ok outcome: ids + item text only. */
+function okPayload(tool: AiToolName, symbol: string, evidence: AiEvidenceItem[]): string {
+  return JSON.stringify({
+    tool,
+    symbol,
+    status: "ok",
+    items: evidence.map(e => ({ id: e.id, text: e.text })),
+  });
+}
+
+function failPayload(tool: string, status: string, extra: Record<string, unknown> = {}): string {
+  return JSON.stringify({ tool, status, ...extra });
 }

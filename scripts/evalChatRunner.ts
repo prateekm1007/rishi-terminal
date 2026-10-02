@@ -22,6 +22,7 @@ import {
 } from "../lib/ai/evidence";
 import { generateEvidenceGroundedAnswer } from "../lib/ai/router";
 import { executeAiTool, type AiToolDeps } from "../lib/ai/tools";
+import { createCanonicalStockState } from "../lib/ai/evidence";
 import type { AiEvidenceItem } from "../lib/ai/schemas";
 
 // ── fixture case types ───────────────────────────────────────────────────
@@ -297,6 +298,21 @@ export function toToolDeps(fx?: ToolDepsFixture): AiToolDeps {
   return deps;
 }
 
+/** Commit M7: an OFFLINE-DETERMINISTIC canonical stock state for router
+ *  cases. The scripted fetch replaces globalThis.fetch, so the state's
+ *  default live surfaces (fetchFullFundamentals / fetchLivePrice) MUST NOT
+ *  run — a case that does not specify a fundamentals fixture gets null
+ *  (seed-baseline resolution), exactly like the pre-M7 getStock/getScore
+ *  behavior, while cases that DO specify fixtures keep them. Production
+ *  never runs this path: the chat route threads its own state. */
+export function offlineStockState(fx?: ToolDepsFixture) {
+  const deps = toToolDeps(fx);
+  return createCanonicalStockState({
+    getFundamentals: deps.getFundamentals ?? (async () => null),
+    getPrice: deps.getPrice ?? (async () => null),
+  });
+}
+
 // ── executors ────────────────────────────────────────────────────────────
 
 export async function runGroundingCase(c: GroundingCase): Promise<CaseFailure[]> {
@@ -329,6 +345,7 @@ export async function runRouterCase(c: RouterCase): Promise<CaseFailure[]> {
       message: c.id,
       evidence: c.evidence ?? [],
       toolDeps: toToolDeps(c.toolDeps),
+      stockState: offlineStockState(c.toolDeps),
     });
   } catch {
     threw = true;

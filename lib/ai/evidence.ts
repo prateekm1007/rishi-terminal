@@ -61,6 +61,76 @@ export interface EvidenceDeps {
 const FUNDAMENTALS_TIMEOUT_MS = 10_000;
 
 /**
+ * Commit M7 — THE per-request canonical observation state.
+ *
+ * One symbol → ONE bounded live-fundamentals fetch + ONE price observation,
+ * memoized and shared by the initial evidence package AND every tool call
+ * in the same AI loop. This is the structural fix for the L1 defect: the
+ * package and getFinancials resolved through the live overlay while
+ * getStock/getScore re-resolved from the seed baseline, so two tools in
+ * one loop could answer from different data states for the same symbol.
+ *
+ * The state REUSES the canonical resolver and the evidence builders —
+ * no duplicated scoring logic, no second source of truth. It exists for
+ * exactly one request's lifetime (a fresh one is created per chat
+ * request); within that lifetime, the same symbol always yields the same
+ * observation, so the initial evidence score and getScore's score fact
+ * are byte-identical by construction.
+ */
+export interface CanonicalStockState {
+  /** Bounded live-fundamentals fetch, memoized per symbol. */
+  fundamentals(symbol: string): Promise<FullFundamentals | null>;
+  /** Live price observation, memoized per symbol. */
+  price(symbol: string): Promise<PricePoint | null>;
+  /** The canonical resolver applied to the memoized overlay (null for an
+   *  unknown symbol). Same inputs → same ResolvedStockMetrics, always. */
+  resolve(symbol: string): Promise<ResolvedStockMetrics | null>;
+}
+
+export function createCanonicalStockState(deps: EvidenceDeps = {}): CanonicalStockState {
+  const getFundamentals = deps.getFundamentals ?? fetchFullFundamentals;
+  const getPrice = deps.getPrice ?? fetchLivePrice;
+  const fundamentalsCache = new Map<string, Promise<FullFundamentals | null>>();
+  const priceCache = new Map<string, Promise<PricePoint | null>>();
+  const resolveCache = new Map<string, ResolvedStockMetrics | null>();
+
+  const fundamentals = (symbol: string): Promise<FullFundamentals | null> => {
+    const key = symbol.trim().toUpperCase();
+    let p = fundamentalsCache.get(key);
+    if (!p) {
+      p = fetchFundamentalsBounded(key, getFundamentals);
+      fundamentalsCache.set(key, p);
+    }
+    return p;
+  };
+
+  const price = (symbol: string): Promise<PricePoint | null> => {
+    const key = symbol.trim().toUpperCase();
+    let p = priceCache.get(key);
+    if (!p) {
+      // The RAW promise is memoized: a throw propagates to consumers that
+      // await without catching (getPrices → explicit `failed` state), while
+      // the evidence package catches it and renders the honest unavailable
+      // price item. One observation, two consumption contracts.
+      p = Promise.resolve(getPrice(key));
+      priceCache.set(key, p);
+    }
+    return p;
+  };
+
+  const resolve = async (symbol: string): Promise<ResolvedStockMetrics | null> => {
+    const key = symbol.trim().toUpperCase();
+    if (resolveCache.has(key)) return resolveCache.get(key)!;
+    const live = await fundamentals(key);
+    const resolved = resolveStockMetrics(key, live ? toResolverFundamentals(live) : null);
+    resolveCache.set(key, resolved);
+    return resolved;
+  };
+
+  return { fundamentals, price, resolve };
+}
+
+/**
  * One bounded live-fundamentals fetch, shared by the evidence assembler and
  * the AI tool layer (Commit L1) so both paths enforce the SAME budget and
  * the SAME null-on-failure semantics (one source of truth — no second
@@ -286,29 +356,35 @@ export function buildPeerItems(symbol: string, peers: readonly AiPeerRow[]): AiE
 /**
  * Build the canonical evidence package for one symbol, or null when the
  * symbol is unknown to the registry (callers decide 400 vs empty state).
+ *
+ * Commit M7: an optional shared CanonicalStockState threads ONE
+ * observation per symbol through the package AND the tool loop (the chat
+ * route passes the same state to generateEvidenceGroundedAnswer). Without
+ * one, a fresh state is created — identical behavior for every other
+ * caller, and the package itself remains internally consistent.
  */
 export async function buildAiEvidencePackage(
   symbol: string,
   deps: EvidenceDeps = {},
+  state?: CanonicalStockState,
 ): Promise<AiEvidencePackage | null> {
   const sym = symbol?.trim().toUpperCase();
   if (!sym) return null;
 
+  const shared = state ?? createCanonicalStockState(deps);
+
   // Live surfaces, in parallel, each individually non-fatal: a failed fetch
   // degrades to seed-labelled provenance, never to a fabricated value.
+  // Through the shared state both fetches are memoized per symbol, so the
+  // tool loop reuses the SAME observations. The price observation's raw
+  // promise may reject (a throwing surface) — caught HERE for the package
+  // (unavailable item), propagated for the getPrices tool (failed state).
   const [live, pricePoint] = await Promise.all([
-    fetchFundamentalsBounded(sym, deps.getFundamentals ?? fetchFullFundamentals),
-    (async () => {
-      try {
-        const get = deps.getPrice ?? fetchLivePrice;
-        return await get(sym);
-      } catch {
-        return null;
-      }
-    })(),
+    shared.fundamentals(sym),
+    shared.price(sym).catch(() => null),
   ]);
 
-  const resolved = resolveStockMetrics(sym, live ? toResolverFundamentals(live) : null);
+  const resolved = await shared.resolve(sym);
   if (!resolved) return null;
 
   const vendorName = live?.source && live.source !== "static" ? live.source : undefined;

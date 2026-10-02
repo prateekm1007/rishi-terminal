@@ -104,3 +104,46 @@ similarity.
   architecture.
 - The general (non-symbol) chat path is context-only by design pending
   FD-10; the tool loop engages only on the evidence-bound path.
+
+## Canonical tool-state consistency (Commit M7)
+
+The L1 defect this closed: `getFinancials` fetched live fundamentals
+before resolving metrics, but `getStock`/`getScore`/`getPeers` called
+`resolveStockMetrics(symbol)` with no live overlay — two tools in one AI
+loop could answer from different data states for the same symbol (the
+package and `getFinancials` live-capable; `getScore`/`getStock` seed
+baseline).
+
+The fix is structural, not duplicated logic: `lib/ai/evidence.ts` now
+exports `createCanonicalStockState()` — a per-request,
+per-symbol-memoized observation state (ONE bounded live-fundamentals
+fetch, ONE price observation, ONE resolver application). The chat route
+creates exactly one state per request and threads it through BOTH
+`buildAiEvidencePackage()` and `generateEvidenceGroundedAnswer()` →
+`executeAiTool()`. Within a request, the same symbol always yields the
+same observation, so the initial evidence score and `getScore`'s score
+fact are byte-identical (id + typed facts + text) by construction.
+The price observation's raw promise is memoized: the package catches a
+throwing surface and renders the honest unavailable item, while the
+`getPrices` tool propagates it to the explicit `failed` state — one
+observation, two consumption contracts.
+
+Tool arguments are now STRICT (zod `.strict()`): an unexpected argument
+is an `invalid-args` failure, never a silently stripped key — a forged
+`result` member or smuggled instruction cannot ride the args through.
+Fail-first evidence: `test/aiToolState.test.ts` (7 failing on the pre-M7
+tree: state-consistency ×4, strict-args ×2, forged-result ×1).
+
+## Model identity (Commit M7)
+
+`DEFAULT_OPENAI_MODEL = "agnes-2.5-flash"` is INDEPENDENTLY ESTABLISHED
+from configuration and provider evidence (Rule 1):
+`docs/evidence/commit-m/model-identity-audit.json` — production env sets
+`CHAT_MODEL=agnes-2.5-flash` on `https://apihub.agnes-ai.com/v1`
+(registry-APPROVED as chat-api); the provider's own `/models` list
+contains the id and completions echo `model: "agnes-2.5-flash"`.
+Re-run: `tsx scripts/auditModelIdentity.ts` with the production chat env.
+The registry entry now names the ACTUAL provider (agnes-ai.com), not
+OpenAI; FD-8 (vendor terms review) remains OPEN. The /rishis model label
+no longer hardcodes a vendor fallback — it says "model: not yet
+reported" until a reply's provenance supplies one.

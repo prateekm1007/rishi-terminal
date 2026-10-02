@@ -534,7 +534,9 @@
       "body": "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — timeless frameworks applied to every stock in our universe. Long and Short thesis. Every day.",
       "bodyHighlight": "scoring every stock",
       "exploreBtn": "Explore All Rishis"
-    }
+    },
+    "rankingsDisabled": "Ranked picks are disabled",
+    "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Seed-derived rankings stay off until RANKINGS_ENABLED is turned on. Everything else — live prices, screeners, chat — keeps working."
   },
   "chat": {
     "header": "Chat with Rishis",

@@ -105,21 +105,43 @@ function Divider() {
 /* ── Main Dashboard ────────────────────────────────────────── */
 
 interface DashboardProps {
-  /** T13 rankings, computed on the server (single engine, one pass). */
+  /** T13 rankings, computed on the server (single engine, one pass).
+   *  U4: empty when the RANKINGS_ENABLED flag is off. */
   rotatingStocks: RankedStock[];
   rotatingShorts: ShortCandidate[];
-  /** Deterministic IST-date pick (T13). */
-  stockOfDay: StockOfTheDay;
+  /** Deterministic IST-date pick (T13). U4: null when the flag is off. */
+  stockOfDay: StockOfTheDay | null;
   /** N1: server-computed QVPS commentary for the daily pick (seed
-   *  baseline — the QVPS engine no longer runs client-side). */
-  sodCommentary: string;
+   *  baseline — the QVPS engine no longer runs client-side). U4: null when
+   *  the flag is off. */
+  sodCommentary: string | null;
+  /** U4 (founder round 7): whether the ranked widgets run at all
+   *  (RANKINGS_ENABLED via lib/featureFlags, fail-closed). */
+  rankingsEnabled: boolean;
   /** U2 (founder round 7): SSR initial-price snapshot from the server page
    *  (hourly ISR, every value labelled with its own observation time).
    *  The hook hydrates from it and revalidates on mount. */
   initialPrices?: Record<string, PriceData> | null;
 }
 
-export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, initialPrices }: DashboardProps) {
+/** U4 (founder round 7): the honest state shown when RANKINGS_ENABLED is
+ *  off. No fake picks, no empty shells — the sections are gone and this
+ *  panel says why. */
+function RankingsDisabledPanel({ title, note }: { title: string; note: string }) {
+  return (
+    <div style={{
+      marginBottom:"48px",
+      background:"rgba(17,24,39,0.6)",
+      border:"1px solid rgba(51,65,85,0.5)",
+      borderRadius:"14px", padding:"22px 26px",
+    }}>
+      <div style={{ fontSize:"15px", fontWeight:800, color:C.text, fontFamily:mono, marginBottom:"8px" }}>🚦 {title}</div>
+      <div style={{ fontSize:"13px", color:C.textSec, lineHeight:1.7 }}>{note}</div>
+    </div>
+  );
+}
+
+export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, rankingsEnabled, initialPrices }: DashboardProps) {
   const { t } = useLanguage();
 
   const allSyms = useMemo(() => [
@@ -128,11 +150,12 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     ...rotatingShorts.map(s => s.symbol),
     ...WORLD_MARKETS.map(m => m.sym),
     ...TOP_CRYPTO.map(c => c.symbol),
-    stockOfDay.symbol,
-  ], [rotatingStocks, rotatingShorts]);
+    ...(stockOfDay ? [stockOfDay.symbol] : []),
+  ], [rotatingStocks, rotatingShorts, stockOfDay]);
 
   const { prices, loading, lastUpdated } = useLivePrices(allSyms, 60000, initialPrices);
-  const { fundamentals: sodFund } = useFundamentals(stockOfDay.symbol); // loading state is rendered by <DataValue> (null -> em dash)
+  // U4: no pick when rankings are off — the empty symbol skips the fetch.
+  const { fundamentals: sodFund } = useFundamentals(stockOfDay?.symbol ?? "");
   const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
 
   const [timeAgo, setTimeAgo] = useState("—");
@@ -357,6 +380,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
 
         <Divider />
 
+        {/* U4: the ranked trio (Stock of the Day / Top Buy Signals / Short
+            Radar) exists only when the RANKINGS_ENABLED flag is on. Off →
+            one honest disabled panel; the ranking engine never ran. */}
+        {rankingsEnabled && stockOfDay ? (<>
         {/* ── STOCK OF THE DAY ─────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + stockOfDay.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
@@ -558,6 +585,12 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
             ))}
           </div>
         </div>
+        </>) : (
+          <RankingsDisabledPanel
+            title={t("dashboard2.rankingsDisabled")}
+            note={t("dashboard2.rankingsDisabledNote")}
+          />
+        )}
 
         {/* ── CRYPTO ────────────────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>

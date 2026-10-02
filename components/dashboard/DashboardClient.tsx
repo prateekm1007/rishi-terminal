@@ -10,7 +10,7 @@ import ProgressBar from "@/components/gamification/ProgressBar";
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useLivePrices } from "@/hooks/useLivePrices";
+import { useLivePrices, type PriceData } from "@/hooks/useLivePrices";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
@@ -19,15 +19,10 @@ import { DataValue } from "@/components/DataValue"; // P0-06: provenance for dis
 import { overlaySourced } from "@/lib/types/sourced";
 
 /* ── Constants ─────────────────────────────────────────────── */
-
-const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","SOL"];
-
-const TOP_CRYPTO = [
-  { symbol:"BTC", name:"Bitcoin",  icon:"₿", color:"#F7931A" },
-  { symbol:"ETH", name:"Ethereum", icon:"Ξ", color:"#627EEA" },
-  { symbol:"SOL", name:"Solana",   icon:"◎", color:"#9945FF" },
-  { symbol:"BNB", name:"BNB",      icon:"B", color:"#F0B90B" },
-];
+// U2: the dashboard's symbol surface moved to lib/dashboardSymbols.ts — the
+// server page builds the SSR initial-price snapshot from the SAME list
+// (Rule 14). MARKETS (nav tiles) stays here: it is presentation-only.
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS, STATS } from "@/lib/dashboardSymbols";
 
 const MARKETS = [
   { href:"/forex",       icon:"💱", label:"Forex",        desc:"10 currency pairs" },
@@ -37,23 +32,6 @@ const MARKETS = [
   // Commit O (#18): /compare never existed — the real compare surface is the Lab's Compare tab.
   { href:"/lab",         icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
   
-];
-
-
-const WORLD_MARKETS = [
-  { label:"S&P 500",    sym:"SPX"  },
-  { label:"Dow Jones",  sym:"DJI"  },
-  { label:"Nasdaq",     sym:"IXIC" },
-  { label:"DAX",        sym:"DAX"  },
-  { label:"FTSE 100",   sym:"FTSE" },
-  { label:"Hang Seng",  sym:"HSI"  },
-];
-const STATS = [
-  { label:"NIFTY 50",   sym:"NIFTY50",    usd:false },
-  { label:"SENSEX",     sym:"SENSEX",     usd:false },
-  { label:"BANK NIFTY", sym:"BANK_NIFTY", usd:false },
-  { label:"Bitcoin",    sym:"BTC",        usd:true  },
-  { label:"Gold / oz",  sym:"GOLD",       usd:true  },
 ];
 
 /* ── Style Helpers ─────────────────────────────────────────── */
@@ -135,9 +113,13 @@ interface DashboardProps {
   /** N1: server-computed QVPS commentary for the daily pick (seed
    *  baseline — the QVPS engine no longer runs client-side). */
   sodCommentary: string;
+  /** U2 (founder round 7): SSR initial-price snapshot from the server page
+   *  (hourly ISR, every value labelled with its own observation time).
+   *  The hook hydrates from it and revalidates on mount. */
+  initialPrices?: Record<string, PriceData> | null;
 }
 
-export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary }: DashboardProps) {
+export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, initialPrices }: DashboardProps) {
   const { t } = useLanguage();
 
   const allSyms = useMemo(() => [
@@ -149,7 +131,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     stockOfDay.symbol,
   ], [rotatingStocks, rotatingShorts]);
 
-  const { prices, loading, lastUpdated } = useLivePrices(allSyms);
+  const { prices, loading, lastUpdated } = useLivePrices(allSyms, 60000, initialPrices);
   const { fundamentals: sodFund } = useFundamentals(stockOfDay.symbol); // loading state is rendered by <DataValue> (null -> em dash)
   const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
 

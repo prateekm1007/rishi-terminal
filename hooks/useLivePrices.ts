@@ -21,6 +21,26 @@ export interface PriceData {
   lastUpdated: string | null;
 }
 
+/** The NSE market state the batch payload carries top-level (U2). */
+export interface WireMarketState {
+  open: boolean;
+  ttlSeconds: number | null;
+  freshness: "live-delayed" | "close";
+  sessionDate: string;
+}
+
+/**
+ * U2 (founder round 7): market-aware polling cadence. NSE open (or market
+ * state unknown) → the caller's interval. NSE closed → slowed to at least
+ * 5 minutes: the requested symbols may still include 24/7 classes
+ * (crypto/forex), and the equity rows are the honest close (server-labelled),
+ * so polling them every 60 s buys nothing. PURE — directly testable.
+ */
+export function effectivePollInterval(baseMs: number, marketOpen?: boolean): number {
+  if (marketOpen === false) return Math.max(baseMs, 300_000);
+  return baseMs;
+}
+
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -66,7 +86,7 @@ export function normalizeBatchEntry(
   };
 }
 
-async function fetchChunk(symbols: string[]): Promise<Record<string, BatchPriceEntry>> {
+async function fetchChunk(symbols: string[]): Promise<{ entries: Record<string, BatchPriceEntry>; market: WireMarketState | null }> {
   const response = await fetch('/api/prices/batch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -74,17 +94,31 @@ async function fetchChunk(symbols: string[]): Promise<Record<string, BatchPriceE
   });
   if (!response.ok) throw new Error('Price API returned ' + response.status);
   const data = await response.json();
-  return data?.prices ?? data;
+  return {
+    // U2: the batch payload is { prices: ..., market?: ... , ...legacy } —
+    // read the wrapper when present (legacy spread falls back to data itself).
+    entries: data?.prices ?? data,
+    market: (data?.market ?? null) as WireMarketState | null,
+  };
 }
 
-export function useLivePrices(symbols: string[], refreshInterval = 60000) {
-  const [prices, setPrices] = useState<Record<string, PriceData>>({});
-  const [loading, setLoading] = useState(true);
+export function useLivePrices(
+  symbols: string[],
+  refreshInterval = 60000,
+  /** U2: SSR hydration snapshot (lib/dashboardSnapshot) — first paint
+   *  carries server-fetched prices; the mount revalidation still runs. */
+  initialPrices?: Record<string, PriceData> | null,
+) {
+  const [prices, setPrices] = useState<Record<string, PriceData>>(initialPrices ?? {});
+  const [loading, setLoading] = useState(!initialPrices);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const symbolsRef = useRef<string[]>(symbols);
-  const initialLoadDone = useRef(false);
+  const marketRef = useRef<WireMarketState | null>(null);
+  // With an SSR snapshot there is nothing "loading" about the first paint —
+  // the mount revalidation is a refresh, not the initial load.
+  const initialLoadDone = useRef(Boolean(initialPrices));
   const symbolsKey = symbols.slice().sort().join(',');
 
   // T18 fix: the ref was mutated during render (react-hooks/refs). Syncing it
@@ -113,8 +147,11 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
       const chunks = chunkArray(currentSymbols, 50);
       const merged: Record<string, BatchPriceEntry> = {};
       for (const chunk of chunks) {
-        const chunkData = await fetchChunk(chunk);
-        Object.assign(merged, chunkData);
+        const { entries, market } = await fetchChunk(chunk);
+        Object.assign(merged, entries);
+        // U2: the server decides the NSE session state (Rule 7) — the
+        // cadence decision below reads ONLY this server-provided state.
+        if (market) marketRef.current = market;
       }
 
       const normalized: Record<string, PriceData> = {};
@@ -141,15 +178,28 @@ export function useLivePrices(symbols: string[], refreshInterval = 60000) {
     }
   }, []); // stable — reads symbols from ref
 
-  // Reset and re-fetch when symbol set changes
+  // U2: self-scheduling timer chain — the delay AFTER each completed fetch
+  // adapts to the server-provided market state. (Also fixes the pre-U2
+  // overlap: setInterval could start a new fetch while the previous one was
+  // still in flight.)
   useEffect(() => {
-    initialLoadDone.current = false;
-    fetchPrices();
-    const interval = setInterval(fetchPrices, refreshInterval);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const tick = async () => {
+      await fetchPrices();
+      if (cancelled) return;
+      const delay = effectivePollInterval(refreshInterval, marketRef.current?.open);
+      timer = setTimeout(tick, delay);
+    };
+
+    tick();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symbolsKey, refreshInterval]);
-
   return { prices, loading, error, lastUpdated, refetch: fetchPrices };
 }
 

@@ -9,13 +9,22 @@
 //
 // `revalidate = 3600` keeps the IST-date daily pick correct (it rotates
 // within an hour after IST midnight) without making the page dynamic.
+//
+// U2 (founder round 7): the page also fetches ONE initial-price snapshot
+// per revalidation through the SAME price path the client endpoints use
+// (lib/dashboardSnapshot → serveQuote / fetchLivePrice — the shared quote
+// cache for equities). The client hook hydrates from it and revalidates on
+// mount. Every value keeps its own observation-time label; the build-phase
+// prerender fetches nothing (hermetic CI builds).
 import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from '@/lib/scoring/rankings'; // T13: real rankings
 import { resolveStockMetrics, getQvps } from '@/lib/scoring'; // T10: single scoring surface
+import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 
 export const revalidate = 3600;
 
-export default function Page() {
+export default async function Page() {
   // T13: Top Buy = top-N by consensus among dataQuality==='OK' stocks,
   // deterministic tie-breaks. Shorts = actual trigger flags with reasons
   // derived from those flags, ranked by the (unvalidated) QVPS short model.
@@ -32,12 +41,25 @@ export default function Page() {
     ? getQvps(resolved, 'LONG').commentary
     : stockOfDay.why;
 
+  // U2: the SSR snapshot covers exactly the symbols the dashboard renders —
+  // the list lives in lib/dashboardSymbols (one source of truth with the
+  // client component), plus the rotating rankings symbols below.
+  const initialPrices = await initialPriceSnapshot([
+    ...TICKER_SYMS,
+    ...rotatingStocks.map(s => s.symbol),
+    ...rotatingShorts.map(s => s.symbol),
+    ...WORLD_MARKETS.map(m => m.sym),
+    ...TOP_CRYPTO.map(c => c.symbol),
+    stockOfDay.symbol,
+  ]);
+
   return (
     <DashboardClient
       rotatingStocks={rotatingStocks}
       rotatingShorts={rotatingShorts}
       stockOfDay={stockOfDay}
       sodCommentary={sodCommentary}
+      initialPrices={initialPrices}
     />
   );
 }

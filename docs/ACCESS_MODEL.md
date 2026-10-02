@@ -1,6 +1,6 @@
 # Access Model — Rishi Terminal (canonical, current)
 
-**Status:** Commit M, 2026-10-02; founder decision 2026-10-03 amends it:
+**Status:** Commit M, 2026-10-02; founder decision 2026-10-02 amends it:
 chat and the Portfolio Lab require NO authentication. Founder decision
 FD-7 is RESOLVED: all current product features are free, and there are no
 entitlement tiers. This document is the canonical statement of who can use
@@ -20,16 +20,16 @@ everyone.
 |---|---|---|
 | Stock pages — the FULL canonical Rishi verdict set (all 20) | every visitor | `/stock/[symbol]` RSC payload (`sanitizeConsensus` shapes the payload; it no longer gates) |
 | `GET /api/rishis/[symbol]` — complete verdicts + knowledge graph | every caller (per-IP rate limit; Commit N1 — the Portfolio Lab's verdict upgrades need no sign-in) | server route |
-| Screener & Portfolio Lab — full verdict set in slim rows | every visitor | `lib/scoring/slimIndex.ts` via RSC props; `/lab` page itself is PUBLIC (founder decision 2026-10-03 — lab data is browser-local) |
-| Chat personas — every canonical persona | every caller (roster is public content; no sign-in, founder decision 2026-10-03) | `GET /api/chat/personas` |
+| Screener & Portfolio Lab — full verdict set in slim rows | every visitor | `lib/scoring/slimIndex.ts` via RSC props; `/lab` page itself is PUBLIC (founder decision 2026-10-02 — lab data is browser-local) |
+| Chat personas — every canonical persona | every caller (roster is public content; no sign-in, founder decision 2026-10-02) | `GET /api/chat/personas` |
 | Crypto/commodity guru verdicts — all categories, full insight | every visitor | `GET /api/gurus` (server-computed, R3) |
 | F&O surfaces | every visitor; data that does not exist is honestly `BLOCKED`/unavailable — never "paid" | `/fno/**` |
-| AI chat (Rishi chat) | every caller — no sign-in (founder decision 2026-10-03), subject to the ONE free quota + burst limits | `POST /api/chat` |
+| AI chat (Rishi chat) | every caller — no sign-in (founder decision 2026-10-02), subject to the ONE free quota + burst limits | `POST /api/chat` |
 | Pricing page | a truthful access statement — no storefront | `/pricing` |
 
 ## Authentication is not an entitlement tier
 
-Founder decision 2026-10-03: **chatting with the Rishis and the Portfolio
+Founder decision 2026-10-02: **chatting with the Rishis and the Portfolio
 Lab require no sign-in**. Authentication remains used ONLY for operations
 that genuinely need an account (preferences; nothing today). The
 per-symbol verdict route is now public too (Commit N1 — the Portfolio

@@ -34,7 +34,8 @@ const MARKETS = [
   { href:"/commodities", icon:"🥇", label:"Commodities",  desc:"Gold, Oil, Metals" },
   { href:"/bonds",       icon:"📜", label:"Bonds",        desc:"G-Secs & Corporate" },
   { href:"/pulse?tab=macro",       icon:"📡", label:"Economy Plus", desc:"Macro regime & rotation" },
-  { href:"/compare",     icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
+  // Commit O (#18): /compare never existed — the real compare surface is the Lab's Compare tab.
+  { href:"/lab",         icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
   
 ];
 
@@ -272,11 +273,14 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
             {[
               { href:"/screener",  label:"📊 " + t("nav.screener"),   primary:true  },
-              { href:"/portfolio", label:"💼 " + t("nav.portfolio"),  primary:false },
-              { href:"/watchlist", label:"⭐ " + t("nav.watchlist"),  primary:false },
+              // Commit O (#18): /portfolio, /watchlist and /compare were dead
+              // links (routes never existed) — the real surfaces live in the
+              // Portfolio Lab (/lab, public since Commit N).
+              { href:"/lab",       label:"💼 " + t("nav.portfolio"),  primary:false },
+              { href:"/lab",       label:"⭐ " + t("nav.watchlist"),  primary:false },
               { href:"/rishis",    label:"🧘 " + t("nav.allRishis"), outline:true  },
               { href:"/news",      label:"📰 " + t("nav.news"),       ghost:true    },
-              { href:"/compare",   label:"⚖️ " + t("nav.compare"),    ghost:true    },
+              { href:"/lab",       label:"⚖️ " + t("nav.compare"),    ghost:true    },
             ].map(b => (
               <Link key={b.href} href={b.href} style={{
                 display:"inline-flex", alignItems:"center", gap:"6px",
@@ -638,8 +642,8 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                   }}
                 >
                   <div style={{ fontSize:"36px", marginBottom:"12px" }}>{icon}</div>
-                  <div style={{ fontSize:"14px",fontWeight:700,color:C.text,marginBottom:"5px",fontFamily:serif }}>{href === "/forex" ? t("nav.forex") : href === "/commodities" ? t("nav.commodities") : href === "/bonds" ? t("nav.bonds") : href.startsWith("/pulse") ? t("nav.economyPlus") : href === "/compare" ? t("nav.compare") : label}</div>
-                  <div style={{ fontSize:"11px",color:C.textMuted }}>{href === "/forex" ? t("dashboard.markets.forexDesc") : href === "/commodities" ? t("dashboard.markets.commoditiesDesc") : href === "/bonds" ? t("dashboard.markets.bondsDesc") : href.startsWith("/pulse") ? t("dashboard.markets.economyPlusDesc") : href === "/compare" ? t("dashboard.markets.compareDesc") : desc}</div>
+                  <div style={{ fontSize:"14px",fontWeight:700,color:C.text,marginBottom:"5px",fontFamily:serif }}>{href === "/forex" ? t("nav.forex") : href === "/commodities" ? t("nav.commodities") : href === "/bonds" ? t("nav.bonds") : href.startsWith("/pulse") ? t("nav.economyPlus") : href === "/lab" ? t("nav.compare") : label}</div>
+                  <div style={{ fontSize:"11px",color:C.textMuted }}>{href === "/forex" ? t("dashboard.markets.forexDesc") : href === "/commodities" ? t("dashboard.markets.commoditiesDesc") : href === "/bonds" ? t("dashboard.markets.bondsDesc") : href.startsWith("/pulse") ? t("dashboard.markets.economyPlusDesc") : href === "/lab" ? t("dashboard.markets.compareDesc") : desc}</div>
                 </div>
               </Link>
             ))}

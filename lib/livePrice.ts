@@ -34,7 +34,7 @@ const NSE_HEADERS = {
 // =============================================================================
 // YAHOO FINANCE v8 — Indian stock price (NSE suffix)
 // =============================================================================
-const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number; observedAt: string | null; ts: number }> = {};
+const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number | null; observedAt: string | null; ts: number }> = {};
 
 /**
  * Pure: price + 24h % change from a Yahoo chart `meta` object.
@@ -45,21 +45,32 @@ const YAHOO_STOCK_CACHE: Record<string, { price: number; change: number; observe
  * fell back to prev = price, silently zeroing every Indian-stock change —
  * homepage tickers were stuck at 0.00% while prices still served.
  * Trust order: regularMarketChangePercent (Yahoo's own, vs true prev close)
- * → previousClose (legacy shape) → chartPreviousClose → change 0.
+ * → previousClose (legacy shape) → chartPreviousClose.
+ *
+ * Commit O (Coder Directions #9, Rule 16): ONE parser for EVERY Yahoo chart
+ * payload — the older fetchYahooQuote duplicate (previousClose || price)
+ * is gone. A change that cannot be established from the payload is `null`,
+ * never 0: a missing upstream field is not a market observation, and a
+ * fabricated 0% would (a) render as a real flat day and (b) ride into the
+ * AI price evidence item as a verifiable "live" fact.
  * Returns null when no usable price exists.
  */
 export function yahooChangeFromMeta(
   meta: Record<string, unknown> | null | undefined
-): { price: number; change: number } | null {
+): { price: number; change: number | null } | null {
   const price = Number(meta?.regularMarketPrice);
   if (!Number.isFinite(price) || price <= 0) return null;
   const direct = Number(meta?.regularMarketChangePercent);
   if (Number.isFinite(direct)) return { price, change: direct };
-  const prev = Number(meta?.previousClose) || Number(meta?.chartPreviousClose) || 0;
-  return { price, change: prev > 0 ? ((price - prev) / prev) * 100 : 0 };
+  // A GENUINE disclosed previous close only — 0/NaN/absent never qualify.
+  const legacy = Number(meta?.previousClose);
+  const chart = Number(meta?.chartPreviousClose);
+  const prev = Number.isFinite(legacy) && legacy > 0 ? legacy : Number.isFinite(chart) && chart > 0 ? chart : null;
+  if (prev === null) return { price, change: null };
+  return { price, change: ((price - prev) / prev) * 100 };
 }
 
-async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change: number; observedAt: string | null } | null> {
+async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change: number | null; observedAt: string | null } | null> {
   const now = Date.now();
   const cached = YAHOO_STOCK_CACHE[symbol];
   if (cached && now - cached.ts < 60000) {
@@ -93,7 +104,7 @@ async function getYahooNSEPrice(symbol: string): Promise<{ price: number; change
 // =============================================================================
 // YAHOO FINANCE v7 — alternate endpoint (different rate limit pool)
 // =============================================================================
-async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; change: number; observedAt: string | null } | null> {
+async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; change: number | null; observedAt: string | null } | null> {
   try {
     const yahooSym = `${symbol}.NS`;
     const url = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(yahooSym)}`;
@@ -106,7 +117,9 @@ async function getYahooNSEPriceV7(symbol: string): Promise<{ price: number; chan
     const q = json?.quoteResponse?.result?.[0];
     if (!q?.regularMarketPrice) return null;
     const price = Number(q.regularMarketPrice);
-    const change = Number(q.regularMarketChangePercent) || 0;
+    // Commit O (Rule 16): a missing disclosed change is null, never 0.
+    const changeNum = Number(q.regularMarketChangePercent);
+    const change = Number.isFinite(changeNum) ? changeNum : null;
     // Corrective gate 3: v7 quotes disclose regularMarketTime — carry it.
     const rt = Number(q.regularMarketTime);
     const observedAt = Number.isFinite(rt) && rt > 0 ? new Date(rt * 1000).toISOString() : null;
@@ -146,7 +159,7 @@ const BSE_SCRIP_MAP: Record<string, string> = {
   EICHERMOT: '505200', BAJAJFINSV: '532978', GRASIM: '500300', APOLLOHOSP: '508869',
 };
 
-async function getBSEPrice(symbol: string): Promise<{ price: number; change: number } | null> {
+async function getBSEPrice(symbol: string): Promise<{ price: number; change: number | null } | null> {
   const scripCode = BSE_SCRIP_MAP[symbol];
   if (!scripCode) return null;
   try {
@@ -162,14 +175,16 @@ async function getBSEPrice(symbol: string): Promise<{ price: number; change: num
     if (!res.ok) return null;
     const json = await res.json();
     const price = parseFloat(json?.CurrRate ?? json?.Ltp ?? '0');
-    const change = parseFloat(json?.PcntChange ?? json?.Change ?? '0');
+    // Commit O (Rule 16): a missing disclosed change is null — a fabricated
+    // 0% would present an unknown session as a flat one.
+    const change = parseFloat(json?.PcntChange ?? json?.Change ?? 'NaN');
     if (price <= 0) return null;
-    return { price, change };
+    return { price, change: Number.isFinite(change) ? change : null };
   } catch {
     return null;
   }
 }
-async function getNSEStockPrice(symbol: string): Promise<{ price: number; change: number } | null> {
+async function getNSEStockPrice(symbol: string): Promise<{ price: number; change: number | null } | null> {
   try {
     const url = `https://www.nseindia.com/api/quote-equity?symbol=${encodeURIComponent(symbol)}`;
     const res = await fetch(url, {
@@ -184,9 +199,12 @@ async function getNSEStockPrice(symbol: string): Promise<{ price: number; change
 
     if (price == null) return null;
 
+    // Commit O (Rule 16): pChange missing/non-numeric is unavailability,
+    // not a flat day. A genuine 0 (Number(0) is finite) is preserved.
+    const changeNum = Number(changePct);
     return {
       price: Number(price),
-      change: Number(changePct) || 0,
+      change: Number.isFinite(changeNum) ? changeNum : null,
     };
   } catch (err) {
     console.error(`[NSE] ${symbol} error:`, (err as Error).message);
@@ -195,7 +213,7 @@ async function getNSEStockPrice(symbol: string): Promise<{ price: number; change
 }
 
 // NSE commodity/derivatives quote
-async function getNSEDerivativePrice(symbol: string): Promise<{ price: number; change: number } | null> {
+async function getNSEDerivativePrice(symbol: string): Promise<{ price: number; change: number | null } | null> {
   try {
     const url = `https://www.nseindia.com/api/quote-derivative?symbol=${encodeURIComponent(symbol)}`;
     const res = await fetch(url, {
@@ -206,13 +224,14 @@ async function getNSEDerivativePrice(symbol: string): Promise<{ price: number; c
 
     const data = await res.json();
     const price = data?.underlyingValue ?? data?.priceInfo?.lastPrice;
-    const changePct = data?.priceInfo?.pChange ?? 0;
 
     if (price == null) return null;
 
+    // Commit O (Rule 16): a missing pChange is unavailability, not a flat day.
+    const changeNum = Number(data?.priceInfo?.pChange);
     return {
       price: Number(price),
-      change: Number(changePct) || 0,
+      change: Number.isFinite(changeNum) ? changeNum : null,
     };
   } catch (err) {
     console.error(`[NSE-D] ${symbol} error:`, (err as Error).message);
@@ -324,9 +343,15 @@ export const YAHOO_COMMODITY_SYMBOLS: Record<string, string> = {
   NATURALGAS: 'NG=F',
 };
 
+/**
+ * Legacy v8 chart quote (indices, commodity futures, FX ETF proxies).
+ * Commit O: parsing is delegated to the ONE unified chart-meta parser
+ * (yahooChangeFromMeta) — the competing previousClose || price
+ * interpretation is retired; an unestablishable change is null, never 0.
+ */
 async function fetchYahooQuote(
   yahooSymbol: string
-): Promise<{ price: number; change: number; observedAt: string | null } | null> {
+): Promise<{ price: number; change: number | null; observedAt: string | null } | null> {
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}`;
     const ac1 = new AbortController();
@@ -343,15 +368,13 @@ async function fetchYahooQuote(
     if (!res.ok) return null;
     const json = await res.json();
     const meta = json?.chart?.result?.[0]?.meta;
-    if (!meta?.regularMarketPrice) return null;
-    const price = Number(meta.regularMarketPrice) || 0;
-    const prevClose = Number(meta.previousClose) || price;
-    const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
-    // Corrective gate 3: the same meta field the bulk path already trusts;
+    const parsed = yahooChangeFromMeta(meta);
+    if (!parsed) return null;
+    // Corrective gate 3: the same meta field the stock path already trusts;
     // null when Yahoo discloses no observation time — never the fetch time.
-    const rt = Number(meta.regularMarketTime);
+    const rt = Number(meta?.regularMarketTime);
     const observedAt = Number.isFinite(rt) && rt > 0 ? new Date(rt * 1000).toISOString() : null;
-    return { price, change, observedAt };
+    return { price: parsed.price, change: parsed.change, observedAt };
   } catch {
     return null;
   }
@@ -508,7 +531,7 @@ const YAHOO_FOREX_SYMBOLS: Record<string, string> = {
   'JPY/INR': 'JPYINR=X',
 };
 
-async function getForexRate(pair: string): Promise<{ price: number; change: number; source?: string; observedAt?: string | null } | null> {
+async function getForexRate(pair: string): Promise<{ price: number; change: number | null; source?: string; observedAt?: string | null } | null> {
   // Try Yahoo Finance first (has 24h change data). Attribution matters
   // (Phase 6): the data source is yahoo here — without the explicit label
   // attempt() would stamp the chain id (exchangerate-api), mislabelling a
@@ -617,7 +640,7 @@ const BOND_YIELDS_STATIC: Record<string, number> = {
 // Bond yield cache — `observedAt` is the ORIGINAL upstream observation
 // time (FRED's own DATE column) so cache replays preserve provenance
 // instead of substituting the cache-fill time (corrective gate 3).
-const bondYieldCache: Record<string, { yield: number; change: number; observedAt: string | null; fetchedAt: number }> = {};
+const bondYieldCache: Record<string, { yield: number; change: number | null; observedAt: string | null; fetchedAt: number }> = {};
 const BOND_CACHE_TTL = 300_000; // 5 minutes
 
 async function fetchFREDYield(fredSeries: string): Promise<number | null> {
@@ -640,7 +663,7 @@ async function fetchFREDYield(fredSeries: string): Promise<number | null> {
   }
 }
 
-async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string | null } | null> {
+async function fetchUSBondYield(symbol: string): Promise<{ price: number; change: number | null; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string | null } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
@@ -697,7 +720,7 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
   return null;
 }
 
-async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string | null } | null> {
+async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; change: number | null; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE"; observedAt?: string | null } | null> {
   const now = Date.now();
   const cached = bondYieldCache[symbol];
   if (cached && now - cached.fetchedAt < BOND_CACHE_TTL) {
@@ -713,6 +736,11 @@ async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; cha
     try {
       const etfData = await fetchYahooQuote(etfTicker);
       if (etfData) {
+        // Commit O (Rule 16): the derivation needs the ETF's own change as
+        // its input. When the upstream disclosed none there is NO directional
+        // signal — skip the derivation honestly (the static fallback below
+        // serves) instead of computing "change 0" from a missing field.
+        if (etfData.change == null) return null;
         // ETF price up = yield down, ETF price down = yield up (inverse)
         const staticYield = BOND_YIELDS_STATIC[symbol] ?? 7.0;
         const yieldChange = -(etfData.change * 0.05); // rough inverse approximation
@@ -731,13 +759,13 @@ async function fetchIndiaBondYield(symbol: string): Promise<{ price: number; cha
 
   // Fallback: static
   const staticYield = BOND_YIELDS_STATIC[symbol];
-  if (staticYield) return { price: staticYield, change: 0, source: "static-yields-in", status: "STATIC" };
+  if (staticYield) return { price: staticYield, change: null, source: "static-yields-in", status: "STATIC" };
   return null;
 }
 
-async function fetchCorporateBondYield(symbol: string): Promise<{ price: number; change: number; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE" } | null> {
+async function fetchCorporateBondYield(symbol: string): Promise<{ price: number; change: number | null; source?: string; status?: "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE" } | null> {
   const staticYield = BOND_YIELDS_STATIC[symbol];
-  if (staticYield) return { price: staticYield, change: 0, source: "static-yields-corp", status: "STATIC" };
+  if (staticYield) return { price: staticYield, change: null, source: "static-yields-corp", status: "STATIC" };
   return null;
 }
 
@@ -766,7 +794,9 @@ const STOCK_ALIASES: Record<string,string> = {
 export type PriceStatus = "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE";
 export interface PricePoint {
   price: number;
-  change: number;
+  /** 24h % change when the upstream disclosed it (directly or via a
+   *  genuine previous close), else null — null is NOT 0 (Rule 16; Commit O). */
+  change: number | null;
   source: string;
   status?: PriceStatus;
   /** 24h trading volume when the upstream disclosed one, else null.
@@ -812,7 +842,7 @@ export const REFERENCE_SYMBOLS: string[] = [
  */
 async function attempt(
   id: string,
-  fn: () => Promise<{ price: number; change: number; source?: string; status?: PriceStatus; observedAt?: string | null } | null>,
+  fn: () => Promise<{ price: number; change: number | null; source?: string; status?: PriceStatus; observedAt?: string | null } | null>,
 ): Promise<PricePoint | null> {
   // Phase 5.1 (T55 enforced at the primitive): ONLY APPROVED providers may
   // serve production routing. Fail-closed inside the routing primitive itself
@@ -892,11 +922,12 @@ async function fetchLivePriceInner(
     return attempt(PROVIDER_IDS.NSE, () => getNSEDerivativePrice(COMMODITY_NSE_SYMBOLS[symbol]));
   }
   // 5. Static commodity reference values — served but honestly labelled
-  //    STATIC (T47: never presented as live).
+  //    STATIC (T47: never presented as live). A reference table has no
+  //    session, so its change is null — never a fabricated flat day.
   if (COMMODITY_STATIC_USD[symbol]) {
     return {
       price: COMMODITY_STATIC_USD[symbol],
-      change: 0,
+      change: null,
       source: "static-commodities",
       status: "STATIC",
       observedAt: null, // a reference table entry has no observation time
@@ -906,12 +937,52 @@ async function fetchLivePriceInner(
   //    Phase 5.1: chain terminates at the last APPROVED provider (BSE).
   //    Screener (RESEARCH_ONLY) was removed — it is unreachable by design;
   //    total failure of every APPROVED source yields honest UNAVAILABLE.
-  return (
-    (await attempt(PROVIDER_IDS.NSE, () => getNSEStockPrice(symbol))) ??
-    (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPrice(symbol))) ??
-    (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPriceV7(symbol))) ??
-    (await attempt(PROVIDER_IDS.BSE, () => getBSEPrice(symbol)))
-  );
+  //
+  //    Commit O (Coder Directions #13): request-level deadline + parallel
+  //    first-choice sources. The pre-O chain waited SERIALLY through
+  //    NSE (8 s) -> Yahoo v8 (6 s) -> Yahoo v7 (6 s) -> BSE (6 s) — a
+  //    ~26 s worst-case wall when the first source hung. Now both
+  //    first-choice sources start in parallel; NSE gets a short preference
+  //    window (its answer, when it arrives fast, wins — no quality
+  //    downgrade), and Yahoo's answer is taken the moment NSE's window
+  //    closes. The tail providers (Yahoo v7, BSE) run only while the
+  //    request deadline has budget left. Losers are bounded by their own
+  //    per-fetch aborts (6-8 s; full signal-threaded cancellation would be
+  //    a wider rewrite — recorded honestly). The winner's own source +
+  //    observation timestamp ride unchanged (attempt()); provider health
+  //    still skips open circuits fast; the in-memory caches + coalescing
+  //    bound the added upstream volume of the race to cold misses only.
+  const REQUEST_DEADLINE_MS = 9_000;
+  const NSE_HEAD_START_MS = 1_200;
+  const deadlineAt = Date.now() + REQUEST_DEADLINE_MS;
+  const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+  const within = (p: Promise<PricePoint | null>, ms: number) =>
+    Promise.race([p, sleep(ms).then(() => null)]);
+
+  const nseP = attempt(PROVIDER_IDS.NSE, () => getNSEStockPrice(symbol));
+  const yahooP = attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPrice(symbol));
+
+  // NSE preference window; Yahoo is already in flight underneath.
+  let point: PricePoint | null = await within(nseP, NSE_HEAD_START_MS);
+  if (!point) point = await within(yahooP, 2_000);
+  // NSE may still settle within budget after Yahoo's window — take it.
+  if (!point && Date.now() < deadlineAt) {
+    point = await within(nseP, Math.max(0, deadlineAt - Date.now()));
+  }
+  // Tail providers, only inside the request deadline.
+  if (!point && Date.now() < deadlineAt) {
+    point = await within(
+      attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPriceV7(symbol)),
+      deadlineAt - Date.now(),
+    );
+  }
+  if (!point && Date.now() < deadlineAt) {
+    point = await within(
+      attempt(PROVIDER_IDS.BSE, () => getBSEPrice(symbol)),
+      deadlineAt - Date.now(),
+    );
+  }
+  return point;
 }
 
 // ── Phase 6 T62: persistent-cache write-through + last-known fallback ───
@@ -976,7 +1047,9 @@ async function lastKnownObservation(symbol: string): Promise<(PricePoint & { las
   if (!payload || !Number.isFinite(payload.price) || payload.price <= 0) return null;
   return {
     price: payload.price,
-    change: Number.isFinite(payload.change) ? payload.change : 0,
+    // Commit O (Rule 16): a persisted entry without a usable change replays
+    // the price honestly; the change is null, never a fabricated 0.
+    change: Number.isFinite(payload.change) ? payload.change : null,
     source: persisted.providerId,
     status: "CACHED",
     observedAt: persisted.observedAt,

@@ -1,5 +1,5 @@
 -- ============================================================
--- 015 — ANONYMOUS CHAT QUOTA IDENTITIES (founder decision 2026-10-03)
+-- 015 — ANONYMOUS CHAT QUOTA IDENTITIES (founder decision 2026-10-02)
 -- ============================================================
 -- Founder decision: chatting with the Rishis requires NO authentication.
 -- POST /api/chat now quota-keys every caller:
@@ -13,7 +13,7 @@
 -- hold an auth user id OR an anonymous per-IP uuid. Migration 005 created
 -- it with `REFERENCES auth.users (id) ON DELETE CASCADE`, which cannot
 -- represent anonymous identities (the insert fails the FK and the quota
--- path fail-closes with 429 — observed locally 2026-10-03).
+-- path fail-closes with 429 — observed locally 2026-10-02).
 --
 -- This migration drops that single constraint. Nothing else changes:
 --   - the table remains service-role-only bookkeeping (RLS: no policies),

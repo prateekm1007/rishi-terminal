@@ -1,5 +1,5 @@
 /**
- * Founder decision 2026-10-03: chatting with the Rishis requires NO
+ * Founder decision 2026-10-02: chatting with the Rishis requires NO
  * authentication. The chat route must accept anonymous callers with the
  * SAME bounded pipeline as signed-in callers:
  *
@@ -93,7 +93,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("anonymous chat (founder 2026-10-03: no sign-in required)", () => {
+describe("anonymous chat (founder 2026-10-02: no sign-in required)", () => {
   it("anonymous caller converses with a canonical persona -> 200", async () => {
     const res = await POST(makeReq({ personaId: "buffett", history: [], message: "hi" }));
     expect(res.status).toBe(200);

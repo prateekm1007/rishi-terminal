@@ -67,6 +67,9 @@ jobs:
       - name: AI-loop architecture audit (Commit M — unified verified pipeline invariants)
         run: npm run aiLoopAudit
 
+      - name: Route / internal-link integrity (Commit O — no dead internal links)
+        run: npm run routeAudit
+
       - name: Unit tests (Vitest)
         run: npx vitest run
 

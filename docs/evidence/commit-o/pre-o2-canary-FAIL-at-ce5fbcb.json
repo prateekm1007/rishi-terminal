@@ -1,0 +1,302 @@
+{
+  "probe": "production-grounded-canary",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "expectedSha": "ce5fbcbc6be83ff4354b74247e92a81da864ad40",
+  "versionSha": "ce5fbcbc6be83ff4354b74247e92a81da864ad40",
+  "generatedAt": "2026-10-02T06:02:16.348Z",
+  "positive": {
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": 200,
+        "grounded": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "invalid",
+        "toolCalls": [
+          {
+            "tool": "getPrices",
+            "status": "ok",
+            "symbol": "RELIANCE"
+          }
+        ],
+        "textHead": "The AI response could not be verified against the supplied financial evidence.",
+        "checks": [
+          {
+            "id": "http-200-anonymous",
+            "ok": true,
+            "detail": "anonymous chat status=200"
+          },
+          {
+            "id": "tool-expected-ok",
+            "ok": true,
+            "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}]"
+          },
+          {
+            "id": "grounded-true",
+            "ok": false,
+            "detail": "grounded=false"
+          },
+          {
+            "id": "mode-structured-claims",
+            "ok": false,
+            "detail": "mode=evidence-context"
+          },
+          {
+            "id": "structured-valid",
+            "ok": false,
+            "detail": "structuredResponse=invalid"
+          },
+          {
+            "id": "validated-claim-present",
+            "ok": false,
+            "detail": "claims=0"
+          },
+          {
+            "id": "verified-surface-server-generated",
+            "ok": false,
+            "detail": "text head: The AI response could not be verified against the supplied financial evidence."
+          },
+          {
+            "id": "commentary-separate",
+            "ok": false,
+            "detail": "no commentary"
+          },
+          {
+            "id": "numbers-covered-by-facts",
+            "ok": true,
+            "detail": "numbers=[] facts=[] uncovered=[]"
+          },
+          {
+            "id": "identity-attested",
+            "ok": true,
+            "detail": "provider=chat-api model=agnes-2.5-flash"
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "status": 502,
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "toolCalls": [],
+        "textHead": "",
+        "checks": [
+          {
+            "id": "http-200-anonymous",
+            "ok": false,
+            "detail": "anonymous chat status=502"
+          },
+          {
+            "id": "tool-expected-ok",
+            "ok": false,
+            "detail": "toolCalls=[]"
+          },
+          {
+            "id": "grounded-true",
+            "ok": false,
+            "detail": "grounded=undefined"
+          },
+          {
+            "id": "mode-structured-claims",
+            "ok": false,
+            "detail": "mode=undefined"
+          },
+          {
+            "id": "structured-valid",
+            "ok": false,
+            "detail": "structuredResponse=undefined"
+          },
+          {
+            "id": "validated-claim-present",
+            "ok": false,
+            "detail": "claims=0"
+          },
+          {
+            "id": "verified-surface-server-generated",
+            "ok": false,
+            "detail": "text head: "
+          },
+          {
+            "id": "commentary-separate",
+            "ok": false,
+            "detail": "no commentary"
+          },
+          {
+            "id": "numbers-covered-by-facts",
+            "ok": true,
+            "detail": "numbers=[] facts=[] uncovered=[]"
+          },
+          {
+            "id": "identity-attested",
+            "ok": false,
+            "detail": "provider=undefined model=undefined"
+          }
+        ]
+      },
+      {
+        "attempt": 3,
+        "status": 502,
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "toolCalls": [],
+        "textHead": "",
+        "checks": [
+          {
+            "id": "http-200-anonymous",
+            "ok": false,
+            "detail": "anonymous chat status=502"
+          },
+          {
+            "id": "tool-expected-ok",
+            "ok": false,
+            "detail": "toolCalls=[]"
+          },
+          {
+            "id": "grounded-true",
+            "ok": false,
+            "detail": "grounded=undefined"
+          },
+          {
+            "id": "mode-structured-claims",
+            "ok": false,
+            "detail": "mode=undefined"
+          },
+          {
+            "id": "structured-valid",
+            "ok": false,
+            "detail": "structuredResponse=undefined"
+          },
+          {
+            "id": "validated-claim-present",
+            "ok": false,
+            "detail": "claims=0"
+          },
+          {
+            "id": "verified-surface-server-generated",
+            "ok": false,
+            "detail": "text head: "
+          },
+          {
+            "id": "commentary-separate",
+            "ok": false,
+            "detail": "no commentary"
+          },
+          {
+            "id": "numbers-covered-by-facts",
+            "ok": true,
+            "detail": "numbers=[] facts=[] uncovered=[]"
+          },
+          {
+            "id": "identity-attested",
+            "ok": false,
+            "detail": "provider=undefined model=undefined"
+          }
+        ]
+      }
+    ],
+    "passed": false,
+    "passingAttempt": null
+  },
+  "negative": {
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": 502,
+        "grounded": null,
+        "structuredResponse": null,
+        "toolCalls": [],
+        "textHead": "",
+        "checks": [
+          {
+            "id": "http-200",
+            "ok": false
+          },
+          {
+            "id": "explicit-failure-state",
+            "ok": false
+          },
+          {
+            "id": "no-false-grounded",
+            "ok": true
+          },
+          {
+            "id": "no-fabricated-price",
+            "ok": true
+          }
+        ]
+      },
+      {
+        "attempt": 2,
+        "status": 502,
+        "grounded": null,
+        "structuredResponse": null,
+        "toolCalls": [],
+        "textHead": "",
+        "checks": [
+          {
+            "id": "http-200",
+            "ok": false
+          },
+          {
+            "id": "explicit-failure-state",
+            "ok": false
+          },
+          {
+            "id": "no-false-grounded",
+            "ok": true
+          },
+          {
+            "id": "no-fabricated-price",
+            "ok": true
+          }
+        ]
+      },
+      {
+        "attempt": 3,
+        "status": 502,
+        "grounded": null,
+        "structuredResponse": null,
+        "toolCalls": [],
+        "textHead": "",
+        "checks": [
+          {
+            "id": "http-200",
+            "ok": false
+          },
+          {
+            "id": "explicit-failure-state",
+            "ok": false
+          },
+          {
+            "id": "no-false-grounded",
+            "ok": true
+          },
+          {
+            "id": "no-fabricated-price",
+            "ok": true
+          }
+        ]
+      }
+    ],
+    "passed": false
+  },
+  "rows": [
+    {
+      "id": "version-binding",
+      "ok": true,
+      "detail": "GET /api/version -> 200 sha=ce5fbcbc6be83ff4354b74247e92a81da864ad40 (expected ce5fbcbc6be83ff4354b74247e92a81da864ad40)"
+    },
+    {
+      "id": "positive-canary-grounded-tool-loop",
+      "ok": false,
+      "detail": "no attempt satisfied the contract in 3 tries"
+    },
+    {
+      "id": "negative-canary-honest-failure",
+      "ok": false,
+      "detail": "no attempt demonstrated the explicit-failure contract in 3 tries"
+    }
+  ]
+}

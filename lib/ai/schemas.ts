@@ -200,6 +200,11 @@ export const AiAnswerSchema = z.object({
   /** §11 latency attribution (router-stamped; optional for legacy
    *  answers/tests). */
   timings: AiTimingsSchema.optional(),
+  /** Commit O (Coder Directions #7/#8): true when the reply was produced by
+   *  the deterministic probe-only witness (production canary mode). Never
+   *  set on ordinary user paths; the canary asserts it to prove which mode
+   *  served the answer. */
+  canaryWitness: z.boolean().optional(),
 });
 
 export type AiAnswer = z.infer<typeof AiAnswerSchema>;
@@ -308,6 +313,8 @@ export const ChatWireSchema = z.object({
     /** §11 latency attribution, router/route-stamped. Optional: absent on
      *  legacy wires; the probe/canary surfaces record it. */
     timings: AiTimingsSchema.optional(),
+    /** Commit O: probe-only deterministic witness mark (see AiAnswer). */
+    canaryWitness: z.boolean().optional(),
   }),
 });
 

@@ -17,17 +17,28 @@ import { createCanonicalStockState } from '@/lib/ai/evidence';
  *     per-IP burst bound as chat, so a leaked secret cannot become an
  *     unbounded free-chat oracle;
  *   - fixed persona, fixed message shape, fixed seed symbol/tool — the
- *     probe answers exactly one question shape, and `mode=negative` seeds
- *     a deliberately unknown symbol through the SAME executor (the honest
- *     unknown-symbol failure path).
+ *     probe answers exactly one question shape.
  *
- * What it proves deterministically (everything except the model's CHOICE
- * to request the tool — the one coin flip the nondeterministic canary
- * retries over): the seed executes through the REAL executor, the REAL
- * evidence is injected, the system prompt is REBUILT with the evidence
- * contract (the 2026-10-02 production defect), the REAL provider produces
- * the structured claims, the REAL validator grounds them, and the wire
- * carries the SERVER-GENERATED verified surface plus §11 timings.
+ * FOUR modes (the 2026-10-02 Commit-O reconciliation unified the sibling
+ * session's chat-route witness entry point HERE — one secret-gated probe
+ * surface, not two):
+ *   positive         — probeSeedToolCall(getPrices RELIANCE): the seeded
+ *                      tool executes, then the REAL model produces the
+ *                      final structured claims (proves the production
+ *                      model itself can ground);
+ *   negative         — probeSeedToolCall(getPrices ZZZZNOPE): the honest
+ *                      unknown-symbol failure through the same executor;
+ *   witness          — deterministicWitness: real provider turn-1 + real
+ *                      executor, then the SERVER-BUILT witness reply
+ *                      (zero-flake pipeline gate; the model is NOT in the
+ *                      final-answer path);
+ *   witness-negative — deterministicWitness({symbol: ZZZZNOPE}): the
+ *                      deterministic unknown-symbol failure.
+ *
+ * What every mode proves through the REAL production path: the canonical
+ * executor, evidence injection, the system-prompt REBUILD with the
+ * evidence contract (the 2026-10-02 production defect), grounding
+ * validation, the server-generated verified surface, and §11 timings.
  *
  * Rule 10: errors are generic outward, detail logged server-side only.
  */
@@ -72,8 +83,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
-  const mode = req.nextUrl.searchParams.get('mode') === 'negative' ? 'negative' : 'positive';
-  const symbol = mode === 'negative' ? NEGATIVE_SYMBOL : PROBE_SYMBOL;
+  const modeParam = req.nextUrl.searchParams.get('mode');
+  const mode =
+    modeParam === 'negative' || modeParam === 'witness' || modeParam === 'witness-negative'
+      ? modeParam
+      : 'positive';
+  const symbol = mode === 'negative' || mode === 'witness-negative' ? NEGATIVE_SYMBOL : PROBE_SYMBOL;
   const persona = resolveCanonicalPersona(PROBE_PERSONA);
   if (!persona) {
     console.error('[probe/ai-loop] probe persona missing from canonical registry');
@@ -90,7 +105,13 @@ export async function GET(req: NextRequest) {
       message,
       evidence: [],
       stockState,
-      probeSeedToolCall: { tool: PROBE_TOOL, args: { symbol } },
+      // Exactly ONE probe mechanism per request — the seed keeps the real
+      // model in the final-answer path; the witness replaces it.
+      ...(mode === 'witness'
+        ? { deterministicWitness: true as const }
+        : mode === 'witness-negative'
+          ? { deterministicWitness: { symbol: NEGATIVE_SYMBOL } as const }
+          : { probeSeedToolCall: { tool: PROBE_TOOL, args: { symbol } } }),
     });
     if (!answer) {
       console.error('[probe/ai-loop] no approved chat provider configured');

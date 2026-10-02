@@ -1,0 +1,31 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/priceChain.deadline.test.ts (1 test | 1 failed) 20009ms
+   ❯ MUST FAIL PRE-O: a hung first-choice source cannot serialize the chain (1)
+     × Yahoo answers within 5 s wall while NSE hangs — provenance preserved (source=yahoo, live) 20008ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/priceChain.deadline.test.ts > MUST FAIL PRE-O: a hung first-choice source cannot serialize the chain > Yahoo answers within 5 s wall while NSE hangs — provenance preserved (source=yahoo, live)
+Error: Test timed out in 20000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/priceChain.deadline.test.ts:50:3
+     48|   });
+     49|
+     50|   it("Yahoo answers within 5 s wall while NSE hangs — provenance prese…
+       |   ^
+     51|     const { fetchLivePrice } = await import("@/lib/livePrice");
+     52|     const t0 = Date.now();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  07:13:49
+   Duration  20.16s (tests 100%)
+

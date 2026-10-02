@@ -1,5 +1,5 @@
 /**
- * Proxy protected-path contract (founder decision 2026-10-03):
+ * Proxy protected-path contract (founder decision 2026-10-02):
  * /lab — the Portfolio Lab — works WITHOUT sign-in; its data is
  * browser-local. The path list lives in lib/auth/protectedPaths.ts and is
  * consumed by proxy.ts, so the redirect decision is unit-testable.

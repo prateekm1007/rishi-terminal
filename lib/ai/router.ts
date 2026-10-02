@@ -35,6 +35,7 @@ import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, type AiToolDeps } from "./tools";
 import { detectFinancialDataIntent } from "./financialIntent";
+import { buildWitnessFinalReply } from "./evidence";
 
 const TIMEOUT_MS = 20_000;
 
@@ -80,6 +81,32 @@ export interface GenerateArgs {
    *  verified surface. Set exclusively by the secret-gated
    *  /api/probe/ai-loop route; the chat route never sets it. */
   probeSeedToolCall?: { tool: string; args: unknown };
+  /**
+   * Commit O (Coder Directions #7/#8) — DETERMINISTIC probe-only witness
+   *  mode for the production canary. Server-INTERNAL: set exclusively by
+   *  the secret-gated /api/probe/ai-loop route (the 2026-10-02 Commit-O
+   *  reconciliation relocated the entry point there — one secret-gated
+   *  probe surface, not two); no client body field can reach it (Rule 7),
+   *  and with the route unprovisioned the mode does not exist at all.
+   *  When set, the router exercises the REAL provider (turn-1 call +
+   *  attestation), the REAL tool executor, the REAL evidence and the REAL
+   *  grounding validator — but the loop's final turn is built
+   *  deterministically (buildWitnessFinalReply) from the actual tool
+   *  outcome instead of a stochastic model turn. It can NEVER fabricate:
+   *  no real tool facts → no claims → honest unavailability.
+   *
+   *  Complementary to probeSeedToolCall: the SEED keeps the REAL model in
+   *  the final-answer path (proving the production model can ground);
+   *  the WITNESS replaces the final turn (a zero-flake gate proving the
+   *  executor/evidence/validator/surface pipeline itself).
+   *
+   *  `true` — the tool request comes from the model or the closed
+   *           intent→tool mapping (positive canary).
+   *  `{ symbol }` — the probe pins the exact tool-input symbol; the REAL
+   *           executor's security master remains the sole authority on
+   *           whether it exists (deterministic negative canary: an unknown
+   *           symbol yields the explicit unknown-symbol failure). */
+  deterministicWitness?: boolean | { symbol: string };
 }
 
 /** §11: mutable timing collector threaded through the loop. */
@@ -295,7 +322,18 @@ const UNTRUSTED_HISTORY_BLOCK =
 /** Commit L1: the bounded tool-calling protocol. When evidence is present
  *  the model may request server-executed tools BEFORE its final structured
  *  reply; each request is validated + executed server-side (executeAiTool)
- *  and its result is injected as a TOOL RESULT/TOOL ERROR turn. */
+ *  and its result is injected as a TOOL RESULT/TOOL ERROR turn.
+ *
+ *  Commit O (Coder Directions #5/#7, production evidence 2026-10-02 —
+ *  docs/evidence/commit-o/raw-provider-diagnostics.md): the real production
+ *  model (agnes-2.5-flash) answers the price canary with claims as
+ *  EVIDENCE-ID STRINGS — `{"claims": ["price:RELIANCE:..."]}` — which the
+ *  structured schema (correctly) rejects, so the canary fail-closed at
+ *  structuredResponse="invalid" forever. An instruction is not a shape
+ *  demonstration: the protocol now carries the EXACT final-JSON example
+ *  (claim objects with evidenceIds + assertions copied from the item's fact
+ *  annotation). Deterministic server-side prompt contract — no new AI path,
+ *  no weakening of validation. */
 function toolProtocolBlock(): string {
   return (
     "\n\nTOOL PROTOCOL — before your FINAL answer you may request server-executed platform data. " +
@@ -307,6 +345,19 @@ function toolProtocolBlock(): string {
     "ids in claims and copy their fact annotations EXACTLY. " +
     `The tool budget is ${MAX_TOOL_ITERATIONS} calls per question: plan ahead, and once you have enough data reply with the FINAL ` +
     "structured JSON ({answer, claims, uncertainties}). " +
+    "FINAL ANSWER SHAPE (this exact structure is REQUIRED — a reply that does not parse as this object is discarded): " +
+    '{"answer": "<your prose>", "claims": [{"claim": "<the fact you state>", ' +
+    '"evidenceIds": ["<the TOOL RESULT item id you are citing>"], ' +
+    '"assertions": [{"field": "<field from the item\'s fact annotation, e.g. price>", ' +
+    '"value": <the exact number from the annotation>, "unit": "<the unit from the annotation, e.g. inr>"}]}], ' +
+    '"uncertainties": ["<what you could not verify>"]}. ' +
+    "Every claim is an OBJECT with (a) claim text, (b) evidenceIds copied VERBATIM from the TOOL RESULT item ids, " +
+    "(c) assertions copying the item's `fact:` annotation field/value/unit EXACTLY — never restate an id as a bare string, " +
+    "never round or reformat the numbers. A claim without a cited item id, or a number without a matching assertion, " +
+    "fails verification and is discarded. " +
+    "If a TOOL RESULT says a value was NOT DISCLOSED (for example '24h change: not disclosed by the source'), the value is " +
+    "UNKNOWN: never state, assert, or imply it anywhere in your reply — writing '0% change' or any other guess for it is a " +
+    "fabrication and the whole reply is discarded. State only the values that appear in a fact annotation. " +
     "If the budget runs out before you answer, the request is terminated BLOCKED — no answer is served. " +
     "Never invent tool results, never claim data you did not receive, never ask the user to run tools."
   );
@@ -496,6 +547,129 @@ async function runGroundedLoop(
     }
     const { text, provider } = await callProvider(transcript, buildSystem(loopEvidence));
 
+    // ── Commit O (Coder Directions #7/#8): the DETERMINISTIC probe-only
+    // witness. Reached only when the route verified the canary probe token
+    // (server env) — no client body field can set this flag (Rule 7).
+    // The turn-1 provider call above is REAL (attested, health-accounted);
+    // everything after it is deterministic:
+    //   tool request  = the model's, else the closed intent→tool mapping;
+    //   execution     = the REAL executeAiTool (zod + allowlist + registry);
+    //   final reply   = buildWitnessFinalReply(loopEvidence) — typed facts
+    //                   of the REAL tool outcome ONLY, no prose, no client
+    //                   input, no fabrication (no facts → honest failure);
+    //   validation    = the UNCHANGED validateGrounding.
+    // No second provider turn ever happens (one attested call per probe).
+    if (args.deterministicWitness) {
+      const pinned =
+        typeof args.deterministicWitness === "object" ? args.deterministicWitness : null;
+      const intent = detectFinancialDataIntent(args.message);
+      const witnessToolReq = extractToolRequest(text) ??
+        (pinned?.symbol
+          ? { tool: intent.suggestedTool ?? "getPrices", args: { symbol: pinned.symbol } as Record<string, unknown> }
+          : intent.financial && intent.suggestedTool
+            ? { tool: intent.suggestedTool, args: { symbol: intent.symbol } as Record<string, unknown> }
+            : null);
+      if (!witnessToolReq) {
+        return {
+          answer:
+            "BLOCKED: the deterministic probe carries no symbol-specific data request to verify. No unverified answer is served.",
+          claims: [],
+          uncertainties: [
+            `witness mode: no canonical tool was deterministically derivable for this message (financial=${intent.financial})`,
+          ],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: false,
+          groundingRejections: [],
+          groundingMode: "evidence-context",
+          structuredResponse: "blocked",
+          toolCalls: [],
+          canaryWitness: true,
+        };
+      }
+      const outcome = await executeAndInject(witnessToolReq);
+      if (outcome.status !== "ok") {
+        return {
+          answer: `BLOCKED: the requested platform data is not available (tool status: ${outcome.status}). No unverified substitute answer is served.`,
+          claims: [],
+          uncertainties: [
+            `witness mode: the REAL tool outcome was ${outcome.tool}:${outcome.status}${"symbol" in outcome ? ` (${outcome.symbol})` : ""} — the honest failure, never fabricated data`,
+          ],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: false,
+          groundingRejections: [],
+          groundingMode: "evidence-context",
+          structuredResponse: "valid",
+          toolCalls,
+          canaryWitness: true,
+        };
+      }
+      loopEvidence.push(...outcome.evidence);
+      const witness = buildWitnessFinalReply(loopEvidence);
+      if (!witness) {
+        return {
+          answer:
+            "BLOCKED: no verifiable platform data was returned for this request. No unverified substitute answer is served.",
+          claims: [],
+          uncertainties: [
+            "witness mode: the tool returned no typed facts — nothing groundable exists, so nothing is claimed",
+          ],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: false,
+          groundingRejections: [],
+          groundingMode: "evidence-context",
+          structuredResponse: "valid",
+          toolCalls,
+          canaryWitness: true,
+        };
+      }
+      const witnessValidationStart = Date.now();
+      const grounding = validateGrounding(loopEvidence, witness.claims, witness.answer);
+      timings.validationMs = Date.now() - witnessValidationStart;
+      if (grounding.grounded && grounding.validatedClaims.length > 0) {
+        return {
+          answer: grounding.verifiedAnswer,
+          claims: grounding.validatedClaims as AiClaim[],
+          uncertainties: [],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: true,
+          groundingRejections: [],
+          groundingMode: grounding.mode,
+          structuredResponse: "valid",
+          toolCalls,
+          canaryWitness: true,
+        };
+      }
+      // Even the deterministic construction is subject to the REAL validator
+      // — if it ever fails, the probe fails closed with the reasons attached.
+      console.error(
+        "[ai/router] witness reply failed grounding:",
+        JSON.stringify(grounding.rejections.slice(0, 4)),
+      );
+      return {
+        answer:
+          "BLOCKED: the deterministic witness reply failed grounding validation. No unverified answer is served.",
+        claims: [],
+        uncertainties: grounding.rejections.slice(0, 4),
+        provider: provider.id,
+        model: provider.model,
+        generatedAt,
+        claimsVerified: false,
+        groundingRejections: grounding.rejections,
+        groundingMode: "evidence-context",
+        structuredResponse: "valid",
+        toolCalls,
+        canaryWitness: true,
+      };
+    }
+
     const toolReq = extractToolRequest(text);
     // §11: attribute this successful completion now that its shape is known.
     const lastCompletion = timings.completions[timings.completions.length - 1];
@@ -620,6 +794,8 @@ async function runGroundedLoop(
           console.error(
             "[ai/router] no-evidence reply carried ungroundable content "
             + `(claims=${structured.data.claims.length}, ungroundedNumbers=${ungroundedNumbers.length}) — discarded`,
+            `rejections=${JSON.stringify(grounding.rejections.slice(0, 4))}`,
+            `answerHead=${JSON.stringify(structured.data.answer.replace(/\s+/g, " ").slice(0, 200))}`,
           );
           return {
             answer:
@@ -663,6 +839,19 @@ async function runGroundedLoop(
       // provider debugging text. Serve the bounded honest response with
       // machine-readable provenance (structuredResponse: "invalid") — no
       // replacement financial answer is fabricated.
+      // Commit O (Rule 10): the failure is diagnosable SERVER-SIDE — the
+      // parse/schema reason and a bounded raw head go to the server log only;
+      // the client still receives the generic bounded response.
+      {
+        const rawHead = String(text ?? "").replace(/\s+/g, " ").slice(0, 300);
+        console.error(
+          "[ai/router] structured reply failed parse/zod:",
+          parsed ? "schema mismatch" : "unparseable JSON",
+          `provider=${provider.id} model=${provider.model}`,
+          parsed ? JSON.stringify(structured?.error?.issues?.slice(0, 4) ?? []) : "",
+          `rawHead=${JSON.stringify(rawHead)}`,
+        );
+      }
       return {
         answer:
           "The AI response could not be verified against the supplied financial evidence.",
@@ -744,6 +933,8 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       toolCalls: answer.toolCalls ?? [],
       // §11: latency attribution rides when present (router-stamped).
       ...(answer.timings ? { timings: answer.timings } : {}),
+      // Commit O: probe-only deterministic witness mark (see AiAnswer).
+      ...(answer.canaryWitness ? { canaryWitness: true } : {}),
     },
   };
 }

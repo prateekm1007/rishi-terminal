@@ -1,6 +1,6 @@
 /** R3 + Commits M3 + N1: per-Rishi verdicts are served ONLY through the
  *  server-enforced route — and under free access (founder decisions
- *  2026-10-02 + 2026-10-03) EVERY caller, signed in or not, receives the
+ *  2026-10-02 + 2026-10-02) EVERY caller, signed in or not, receives the
  *  FULL verdict set (the Portfolio Lab's Intelligence/Compare tabs upgrade
  *  their bounded slice through this route — the lab needs no sign-in).
  *  There is no tier slice, no locked teaser, and no `tier` field on any
@@ -109,7 +109,7 @@ describe("R3/M3 — sanitizeConsensus carries every verdict", () => {
 });
 
 describe("R3/M3 — GET /api/chat/personas", () => {
-  it("serves the full roster WITHOUT sign-in (founder 2026-10-03: no auth gate)", async () => {
+  it("serves the full roster WITHOUT sign-in (founder 2026-10-02: no auth gate)", async () => {
     getSessionUserMock.mockResolvedValueOnce(null);
     const res = await personasGET({} as never);
     expect(res.status).toBe(200);

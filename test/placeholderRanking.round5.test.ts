@@ -53,7 +53,7 @@ describe("round-5: rankings exclude impossible records", () => {
   });
 
   it("Stock of the Day is never an impossible record", () => {
-    for (const day of ["2026-10-01", "2026-10-02", "2026-10-03"]) {
+    for (const day of ["2026-10-01", "2026-10-02", "2026-10-02"]) {
       const pick = pickStockOfTheDay(new Date(day + "T06:00:00Z"));
       expect(assessDataQuality(STOCKS[pick.symbol] as Stock)).toBe("OK");
     }

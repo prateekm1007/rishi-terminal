@@ -3,7 +3,7 @@
  * (proxy.ts redirect). Extracted as a pure module so the redirect contract
  * is unit-testable without spinning the Supabase proxy client.
  *
- * Founder decision 2026-10-03: the Portfolio Lab (/lab) works WITHOUT
+ * Founder decision 2026-10-02: the Portfolio Lab (/lab) works WITHOUT
  * sign-in — its data is browser-local (lib/portfolio, lib/watchlist), so
  * there is nothing to authenticate. /alerts keeps its gate (out of scope
  * for that decision). '/portfolio' is not listed either: no such route

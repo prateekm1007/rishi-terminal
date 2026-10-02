@@ -21,7 +21,7 @@
  * Usage: node scripts/aiLatencyBattery.mjs [BASE_URL] [OUT_JSON]
  * Exit:  0 always (measurement artifact; it reports, it does not gate).
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, appendFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,6 +29,28 @@ const BASE = process.argv[2] || "https://rishi-terminal.vercel.app";
 const OUT =
   process.argv[3] ||
   join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "evidence", "round9", "ai-latency-battery.json");
+
+// R9-11: resumable runs. Two in-flight runs were killed mid-battery by
+// sandbox session reaping (the shell tool reaps the process group when
+// the tool call ends, and 44 paced questions exceed one call's ceiling).
+// When BATTERY_STATE is set, every summarized result is appended to that
+// JSONL file the moment it is collected, and a restart replays the file
+// and skips the (class,index) pairs already done. Same wire behavior,
+// same artifact shape — only the loop gains a checkpoint. The state file
+// is session tooling and is never committed.
+const STATE = process.env.BATTERY_STATE || null;
+const collected = new Map();
+if (STATE) {
+  try {
+    for (const line of readFileSync(STATE, "utf8").split("\n").filter(Boolean)) {
+      const rec = JSON.parse(line);
+      collected.set(`${rec.cls}:${rec.idx}`, rec.summary);
+    }
+    console.log(`resume: ${collected.size} previously collected results replayed from ${STATE}`);
+  } catch {
+    console.log("resume: no prior state (first run)");
+  }
+}
 
 const FINANCIAL = [
   "What is the latest price of RELIANCE?",
@@ -176,13 +198,20 @@ function aggregate(results) {
   };
 }
 
-async function runClass(label, personaId, questions) {
+async function runClass(label, cls, personaId, questions) {
   console.log(`\n== ${label}: ${questions.length} questions ==`);
   const results = [];
-  for (const q of questions) {
+  for (const [idx, q] of questions.entries()) {
+    const cached = collected.get(`${cls}:${idx}`);
+    if (cached) {
+      results.push(cached);
+      console.log(`  [resume] idx=${idx} (previously collected)`);
+      continue;
+    }
     const r = await chat(personaId, q);
     const s = summarizeRun(r);
     results.push(s);
+    if (STATE) appendFileSync(STATE, JSON.stringify({ cls, idx, summary: s }) + "\n");
     console.log(
       `  [${String(r.wallMs).padStart(6)}ms] grounded=${s.grounded} firstPass=${s.firstPassGrounded} ` +
       `repairs=${s.repairs.map(x => x.cause).join(",") || "-"} mode=${s.groundingMode} ` +
@@ -196,9 +225,9 @@ async function runClass(label, personaId, questions) {
 const version = await getJson("/api/version");
 console.log(`bound to /api/version: ${JSON.stringify(version.body)} (HTTP ${version.status})`);
 
-const financial = await runClass("FINANCIAL-DATA", "damani", FINANCIAL);
-const philosophy = await runClass("PHILOSOPHY", "damani", PHILOSOPHY);
-const invalid = await runClass("INVALID-SYMBOL", "damani", INVALID);
+const financial = await runClass("FINANCIAL-DATA", "financial", "damani", FINANCIAL);
+const philosophy = await runClass("PHILOSOPHY", "philosophy", "damani", PHILOSOPHY);
+const invalid = await runClass("INVALID-SYMBOL", "invalid", "damani", INVALID);
 
 const artifact = {
   generatedAt: new Date().toISOString(),

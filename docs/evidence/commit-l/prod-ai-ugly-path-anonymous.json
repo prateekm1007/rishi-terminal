@@ -1,0 +1,81 @@
+{
+  "base": "https://rishi-terminal.vercel.app",
+  "note": "anonymous subset only; authenticated tiers BLOCKED on PROBE_*_PW (not provisioned in vault/mirror)",
+  "rows": [
+    {
+      "name": "anonymous chat (no cookie)",
+      "path": "/api/chat",
+      "status": 401,
+      "ms": 461,
+      "body": {
+        "error": "Authentication required",
+        "fallback": true
+      },
+      "expectHint": "401 + fallback true"
+    },
+    {
+      "name": "forged premium persona, anonymous",
+      "path": "/api/chat",
+      "status": 401,
+      "ms": 328,
+      "body": {
+        "error": "Authentication required",
+        "fallback": true
+      },
+      "expectHint": "401 (auth first; persona 403 pinned by CI with mocks)"
+    },
+    {
+      "name": "unknown persona, anonymous",
+      "path": "/api/chat",
+      "status": 401,
+      "ms": 315,
+      "body": {
+        "error": "Authentication required",
+        "fallback": true
+      },
+      "expectHint": "401"
+    },
+    {
+      "name": "oversized message, anonymous",
+      "path": "/api/chat",
+      "status": 401,
+      "ms": 338,
+      "body": {
+        "error": "Authentication required",
+        "fallback": true
+      },
+      "expectHint": "401 (413 for authed pinned by CI)"
+    },
+    {
+      "name": "malformed JSON, anonymous",
+      "path": "/api/chat",
+      "status": 401,
+      "ms": 279,
+      "body": {
+        "error": "Authentication required",
+        "fallback": true
+      },
+      "expectHint": "401"
+    },
+    {
+      "name": "personas projection leak scan",
+      "path": "/api/chat/personas",
+      "status": 401,
+      "ms": 292,
+      "body": "{\"error\":\"Sign in to chat with the Rishis\"}",
+      "expectHint": "200, no prompt/financial text in client projection",
+      "leakFound": false
+    },
+    {
+      "name": "version binding",
+      "path": "/api/version",
+      "status": 200,
+      "body": {
+        "sha": "910c12a106a0a89317ed21261842485a6fd06a57",
+        "now": "2026-10-02T02:11:17.977Z",
+        "node": "v24.21.0"
+      },
+      "expectHint": "sha = deployed commit"
+    }
+  ]
+}

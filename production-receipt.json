@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-10-01T23:00:42.942Z",
+  "generatedAt": "2026-10-02T02:11:26.238Z",
   "base": "https://rishi-terminal.vercel.app",
-  "deployedCommitSha": "ff14376a063a055981e8339bf99a6b163d88a0b9",
+  "deployedCommitSha": "910c12a106a0a89317ed21261842485a6fd06a57",
   "versionEndpoint": {
-    "sha": "ff14376a063a055981e8339bf99a6b163d88a0b9",
-    "now": "2026-10-01T23:00:42.821Z",
+    "sha": "910c12a106a0a89317ed21261842485a6fd06a57",
+    "now": "2026-10-02T02:11:26.121Z",
     "node": "v24.21.0"
   },
   "vercel": {
-    "deploymentId": "dpl_2HFioNjfyHewVpbrJpTzYkyMJLic",
-    "url": "rishi-terminal-gy2odptnd-prateeks-projects-8c5639bd.vercel.app",
-    "createdAt": "2026-10-01T22:58:55.336Z",
+    "deploymentId": "dpl_GZt1KkJUDpeo5v8M94sQdwn5ze6a",
+    "url": "rishi-terminal-jd687bp0o-prateeks-projects-8c5639bd.vercel.app",
+    "createdAt": "2026-10-02T01:59:33.627Z",
     "target": "production",
-    "githubCommitSha": "ff14376a063a055981e8339bf99a6b163d88a0b9",
+    "githubCommitSha": "910c12a106a0a89317ed21261842485a6fd06a57",
     "githubCommitRef": "main",
     "matchesVersionEndpointSha": true
   },

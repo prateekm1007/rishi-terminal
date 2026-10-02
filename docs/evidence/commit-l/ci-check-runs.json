@@ -1,0 +1,37 @@
+{
+  "head_sha": "78dfc533ae037616697aea945772e5ddf448c513",
+  "check_runs": [
+    {
+      "name": "Vercel Preview Comments",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://vercel.com/github",
+      "started_at": "2026-10-02T01:54:37Z",
+      "completed_at": "2026-10-02T01:54:37Z"
+    },
+    {
+      "name": "Playwright smoke (blocking since round 2 \u2014 green on 4+ consecutive runs)",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/prateekm1007/rishi-terminal/actions/runs/36953035560/job/110670249080",
+      "started_at": "2026-10-02T01:54:34Z",
+      "completed_at": "2026-10-02T01:56:21Z"
+    },
+    {
+      "name": "Lint, typecheck, test, validate",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/prateekm1007/rishi-terminal/actions/runs/36953035560/job/110669915520",
+      "started_at": "2026-10-02T01:53:09Z",
+      "completed_at": "2026-10-02T01:54:31Z"
+    },
+    {
+      "name": "Migrations & RLS invariants (Postgres 16)",
+      "status": "completed",
+      "conclusion": "success",
+      "details_url": "https://github.com/prateekm1007/rishi-terminal/actions/runs/36953035560/job/110669915399",
+      "started_at": "2026-10-02T01:53:09Z",
+      "completed_at": "2026-10-02T01:53:39Z"
+    }
+  ]
+}

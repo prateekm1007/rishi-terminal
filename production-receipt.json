@@ -1,24 +1,40 @@
 {
-  "generatedAt": "2026-10-02T06:08:07.396Z",
+  "generatedAt": "2026-10-02T06:51:18.266Z",
   "base": "https://rishi-terminal.vercel.app",
-  "deployedCommitSha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
+  "deployedCommitSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
   "versionEndpoint": {
-    "sha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
-    "now": "2026-10-02T06:08:07.273Z",
+    "sha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+    "now": "2026-10-02T06:51:18.151Z",
     "node": "v24.21.0"
   },
   "vercel": {
-    "deploymentId": "dpl_GdwgQxMcLvDejvP6FwBLUJcQnD8S",
-    "url": "rishi-terminal-r1c4pf68k-prateeks-projects-8c5639bd.vercel.app",
-    "createdAt": "2026-10-02T06:01:26.784Z",
+    "deploymentId": "dpl_57re12Ehuj8NBL5vVLiVzYATr9aa",
+    "url": "rishi-terminal-bei282rxv-prateeks-projects-8c5639bd.vercel.app",
+    "createdAt": "2026-10-02T06:23:35.369Z",
     "target": "production",
-    "githubCommitSha": "15d0cabbef4b705d2f0311fa08d9db7b47d3de29",
+    "githubCommitSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
     "githubCommitRef": "main",
     "matchesVersionEndpointSha": true
   },
+  "ci": {
+    "headSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+    "queriedFor": "runs whose head_sha == deployed SHA",
+    "runs": [
+      {
+        "id": 36973324809,
+        "workflow": "CI",
+        "branch": "main",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "url": "https://github.com/prateekm1007/rishi-terminal/actions/runs/36973324809"
+      }
+    ],
+    "allCompletedSuccess": true
+  },
   "gates": {
-    "repositoryGate": "tsc 0 · eslint 0 errors (301 warnings, below the 309 ratchet) · vitest 776/776 · eval:chat 113/113 (102 local + 11 CI, all pass) · freeAccessAudit PASS · aiLoopAudit 8/8 · validate:encoding · validate:stocks T12 (916) · score:parity 916/0 · build · bundle budget within ratchet · git env grep clean · no tokens in repo (verified on PR #49 head 2bf631f, merged as 15d0cab; CI green on PRs #47/#48/#49)",
-    "recordedAt": "see PR descriptions for the raw gate logs of the exact HEADs"
+    "repositoryGate": "per-PR raw gate logs live in the PR descriptions of the exact HEADs; the CI state for THIS SHA is queried live and recorded in receipt.ci below — never hand-copied",
+    "recordedAt": "see receipt.ci.queries for the authoritative live CI record"
   },
   "matrices": {
     "routeViewport": {
@@ -38,12 +54,12 @@
     },
     "freeAccessMatrix": {
       "scope": "Commit M §17 + Commit N1: legacy seeker/student/disciple DB rows × ANONYMOUS rows (chat 200, personas roster, /api/rishis full set, /lab page) × /api/auth/me × payment 410s × /pricing honesty × chat with previously-gated personas × forged client tier × tool-loop execution × deployment identity",
-      "result": "36/36 PASS against the deployed SHA (15d0cab)",
+      "result": "36/36 PASS against deployed SHA d7a6c0c46e880d9a06cab738bbe523b0f17aff74 (artifact generated 2026-10-02T06:45:49.358Z, expectedShaMatch=true)",
       "artifact": "docs/evidence/commit-n/production-free-access-matrix.json (regenerate with scripts/prodFreeAccessMatrix.mjs)"
     },
     "groundedCanary": {
       "scope": "Commit N §7/§18 — the COMPLETE production AI loop: anonymous caller, no preselected symbol → model requests getPrices → server executes the canonical tool → structured claims validated → grounded=true · server-generated verified surface (never model prose) · separate commentary · every number covered by validated facts · provider/model attested · negative: unknown symbol → explicit failure, no fabrication, no false grounding",
-      "result": "PASS on 15d0cab (positive satisfied on attempt 2/3; negative on 1/3) — the end-to-end AI loop is operationally closed",
+      "result": "PASS on d7a6c0c46e880d9a06cab738bbe523b0f17aff74 (positive attempt 5/5, negative PASS; artifact generated 2026-10-02T06:46:54.160Z)",
       "artifact": "docs/evidence/commit-n/production-grounded-canary.json (regenerate with scripts/prodGroundedCanary.mjs)"
     }
   }

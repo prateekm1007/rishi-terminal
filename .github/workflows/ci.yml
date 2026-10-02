@@ -55,11 +55,14 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
-      - name: ESLint (errors must be 0; no-explicit-any is an ERROR in app/api, lib/auth, lib/payments, lib/scoring, lib/chat)
+      - name: ESLint (errors must be 0; no-explicit-any is an ERROR in app/api, lib/auth, lib/scoring, lib/chat)
         run: npx eslint .
 
       - name: ESLint warning ratchet (fails above the committed baseline)
         run: npm run lint:ratchet
+
+      - name: Free-access audit (Commit M — no product dependency on tiers/payments)
+        run: npm run freeAccessAudit
 
       - name: Unit tests (Vitest)
         run: npx vitest run

@@ -115,6 +115,9 @@ export interface RouteCase {
   body: { personaId?: string; symbol?: string; message?: string; history?: unknown[] };
   setup?: {
     authenticated?: boolean;
+    /** Legacy tier value to simulate in the session mock — under free
+     *  access the route must behave IDENTICALLY for all of them; kept so
+     *  the golden set can pin that equality (persona-01 vs persona-03). */
     tier?: "seeker" | "student" | "disciple";
     /** consume_chat_quota returns ok:false (daily quota exhausted). */
     quotaExhausted?: boolean;

@@ -138,7 +138,6 @@ const eslintConfig = defineConfig([
     files: [
       "app/api/**/*.ts",
       "lib/auth/**/*.ts",
-      "lib/payments/**/*.ts",
       "lib/scoring/**/*.ts",
       "lib/chat/**/*.ts",
       "hooks/**/*.ts",

@@ -43,12 +43,13 @@ const MAX_MESSAGE_CHARS = 2000;
 const MAX_HISTORY_TURNS = 20;
 const MAX_HISTORY_CHARS = 8000;
 
-// Daily chat quota by tier (documented choice; seeker free tier is modest).
-const DAILY_QUOTA: Record<string, number> = {
-  seeker: 15,
-  student: 150,
-  disciple: 500,
-};
+// Commit M5 (free access): ONE common daily chat quota for every caller —
+// an explicit product/security constant, NOT derived from any legacy tier
+// table (the old seeker/student/disciple split of 15/150/500 is gone).
+// 150/day is generous for real single-user use (the old paid-median) while
+// bounding upstream spend per account; abuse is further bounded by the
+// per-IP burst limiter below. Founder-tunable: change this ONE number.
+export const FREE_CHAT_DAILY_QUOTA = 150;
 
 // ── per-IP burst limiter: PERSISTENT, shared across instances (R6) ──
 const BURST_WINDOW_SECONDS = 60;
@@ -86,12 +87,12 @@ async function ipBurstExceeded(ip: string): Promise<boolean> {
 // can no longer read the same count and each increment it. The day key is
 // the IST date, computed inside the RPC (it used to be UTC, resetting the
 // quota at 05:30 IST).
-async function consumeQuota(userId: string, tier: string): Promise<boolean> {
+async function consumeQuota(userId: string): Promise<boolean> {
   try {
     const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
     const { data, error } = await getAdminSupabase().rpc('consume_chat_quota', {
       p_user_id: userId,
-      p_limit: DAILY_QUOTA[tier] ?? DAILY_QUOTA.seeker,
+      p_limit: FREE_CHAT_DAILY_QUOTA,
     });
     if (error) throw new Error(error.message);
     return (data as { ok?: boolean } | null)?.ok === true;
@@ -224,10 +225,11 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
-  // 5. Daily quota per user by tier (server-resolved tier, never client).
-  //    N4: consumed only after the request validated — 400/413 paths above
-  //    leave the counter untouched, and upstream failures below refund.
-  if (!(await consumeQuota(user.id, user.tier))) {
+  // 5. Daily quota — ONE common free quota for every authenticated caller
+  //    (server-resolved identity, never client). N4: consumed only after
+  //    the request validated — 400/413 paths above leave the counter
+  //    untouched, and upstream failures below refund.
+  if (!(await consumeQuota(user.id))) {
     return NextResponse.json(
       { error: 'Daily chat quota exhausted', fallback: true },
       { status: 429 },

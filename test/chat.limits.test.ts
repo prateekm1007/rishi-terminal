@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/auth/session", () => ({
   getSessionUser: vi.fn(async () => ({
-    id: "u1", email: "t@e.st", tier: "disciple", tierExpiresAt: null,
+    id: "u1", email: "t@e.st", access: "free",
   })),
 }));
 
@@ -13,7 +13,7 @@ let quotaCount = 0;           // units consumed by consume_chat_quota
 let quotaRpcMode: "ok" | "error" = "ok";
 let refundCalls = 0;          // refund_chat_quota invocations
 let rateHits: Record<string, number> = {}; // per-key burst counters
-const QUOTA_LIMIT = 15;       // seeker daily limit (matches DAILY_QUOTA)
+const QUOTA_LIMIT = 15;       // the MOCKED RPC threshold — proves the route honours the RPC refusal (the real limit is FREE_CHAT_DAILY_QUOTA)
 const BURST_LIMIT = 12;       // matches BURST_MAX_REQUESTS in the route
 
 vi.mock("@/lib/services/supabaseAdmin", () => ({

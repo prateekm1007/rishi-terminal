@@ -1,0 +1,33 @@
+
+> rishi-terminal@0.1.0 lhci
+> node scripts/lhciRun.mjs
+
+[lhciRun] server warmed on :3220
+
+── Lighthouse gate (floors from lighthouserc.json) ──
+■ /
+  performance        100 score  (floor 65)  ok
+  accessibility       95 score  (floor 90)  ok
+  best-practices      96 score  (floor 90)  ok
+  seo                100 score  (floor 95)  ok
+  LCP                585 ms  (floor 2500)  ok
+  CLS             0.0063   (floor 0.1)  ok
+  byte-weight     635750 B  (floor 1600000)  ok
+■ /screener
+  performance         70 score  (floor 65)  ok
+  accessibility       96 score  (floor 90)  ok
+  best-practices      96 score  (floor 90)  ok
+  seo                100 score  (floor 95)  ok
+  LCP                660 ms  (floor 2500)  ok
+  CLS             0.0002   (floor 0.1)  ok
+  byte-weight    1445365 B  (floor 1600000)  ok
+■ /stock/RELIANCE
+  performance         99 score  (floor 65)  ok
+  accessibility       96 score  (floor 90)  ok
+  best-practices      96 score  (floor 90)  ok
+  seo                100 score  (floor 95)  ok
+  LCP                928 ms  (floor 2500)  ok
+  CLS             0.0229   (floor 0.1)  ok
+  byte-weight     684831 B  (floor 1600000)  ok
+
+Lighthouse gate: PASS — every floor held.

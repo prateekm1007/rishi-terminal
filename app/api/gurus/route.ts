@@ -68,14 +68,20 @@ export async function GET(req: NextRequest) {
   // Live price overlay, same source the client pages use (CoinGecko via
   // lib/livePrice). Falls back to the static seed price when unreachable —
   // the verdict is then computed on seed data, never fabricated.
-  const overlay: Record<string, { price: number; changePct: number }> = {};
+  // Coder Directions 2026-10-02 §14 (Rule 16): an upstream that discloses
+  // no change observation is UNAVAILABILITY, not a 0% move — the overlay
+  // records null and the scorer input falls back to the SEED's recorded
+  // change (a real observation, honestly stale), exactly like price does.
+  // The old `: 0` fabricated a no-move market that the upstream never
+  // reported.
+  const overlay: Record<string, { price: number; changePct: number | null }> = {};
   const targets = [...new Set(GURU_SCORERS.map((g) => g.target))];
   await Promise.all(
     targets.map(async (t) => {
       try {
         const live = await fetchLivePrice(t);
         if (live && Number.isFinite(live.price) && live.price > 0) {
-          overlay[t] = { price: live.price, changePct: Number.isFinite(live.change) ? live.change : 0 };
+          overlay[t] = { price: live.price, changePct: Number.isFinite(live.change) ? live.change : null };
         }
       } catch {
         // keep the seed value for this target
@@ -91,13 +97,13 @@ export async function GET(req: NextRequest) {
 
     // Live overlay for the symbols the gurus score.
     const targets = detail ? [detail.symbol] : COMMODITIES.map((c) => c.symbol);
-    const overlayC: Record<string, { price: number; changePct: number }> = {};
+    const overlayC: Record<string, { price: number; changePct: number | null }> = {};
     await Promise.all(
       targets.map(async (t) => {
         try {
           const live = await fetchLivePrice(t);
           if (live && Number.isFinite(live.price) && live.price > 0) {
-            overlayC[t] = { price: live.price, changePct: Number.isFinite(live.change) ? live.change : 0 };
+            overlayC[t] = { price: live.price, changePct: Number.isFinite(live.change) ? live.change : null };
           }
         } catch {
           // keep the seed value for this target
@@ -107,12 +113,16 @@ export async function GET(req: NextRequest) {
 
     const scoreCommodity = (c: (typeof COMMODITIES)[number]) => {
       const live = overlayC[c.symbol];
+      // §14 (Rule 16): unavailable live change falls back to the SEED's
+      // recorded change — never to a fabricated 0. The `change:` override
+      // is GONE: it wrote a PERCENT into the absolute-change field (a
+      // units bug); no scorer consumes `change`, and the seed spread
+      // already carries the correct seed value.
       return COMMODITY_SCORERS.map((g) =>
         g.scorer({
           ...c,
           price: live?.price ?? c.price,
-          changePct: live?.changePct ?? c.changePct ?? 0,
-          change: live?.changePct ?? c.change ?? 0,
+          changePct: live?.changePct ?? c.changePct,
         }),
       );
     };
@@ -165,7 +175,9 @@ export async function GET(req: NextRequest) {
     const scored = g.scorer({
       ...asset,
       price: live?.price ?? asset.price,
-      change24h: live?.changePct ?? asset.change24h ?? 0,
+      // §14 (Rule 16): unavailable live change falls back to the SEED's
+      // recorded 24h change — never to a fabricated 0.
+      change24h: live?.changePct ?? asset.change24h,
     });
     return {
       id: g.id,

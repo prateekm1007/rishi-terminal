@@ -433,7 +433,7 @@ export const COINGECKO_IDS: Record<string, string> = {
   SHIB: 'shiba-inu',
 };
 
-const coinGeckoCache: Record<string, { price: number | null; change: number | null; volume24h: number | null; fetchedAt: number }> = {};
+const coinGeckoCache: Record<string, { price: number | null; change: number | null; volume24h: number | null; observedAt: string | null; fetchedAt: number }> = {};
 let lastCoinGeckoFetch = 0;
 let coinGeckoFetchPromise: Promise<void> | null = null;
 
@@ -446,6 +446,11 @@ export interface CoinGeckoParsedEntry {
   change: number | null;
   /** Disclosed 24h volume; null when absent — 0 would claim zero trading. */
   volume24h: number | null;
+  /** R9 §20: the upstream's own observation time (last_updated_at, unix
+   *  seconds → ISO) — null when not disclosed. This is the field the
+   *  single-route provenance gap was missing: without it the client has no
+   *  honest clock for crypto quotes at all. */
+  observedAt: string | null;
 }
 
 /** Rule-16 classification of ONE CoinGecko simple/price entry (pure — the
@@ -461,10 +466,17 @@ export function coinGeckoEntryFromPayload(entry: unknown): CoinGeckoParsedEntry 
   const usd = num(e.usd);
   const chg = num(e.usd_24h_change);
   const vol = num(e.usd_24h_vol);
+  // R9 §20: last_updated_at is unix SECONDS. Only a finite positive value
+  // becomes an ISO instant; anything else is "not disclosed" (null) — the
+  // client must never receive a fabricated observation time.
+  const ts = num(e.last_updated_at);
+  const observedAt =
+    Number.isFinite(ts) && ts > 0 ? new Date(ts * 1000).toISOString() : null;
   return {
     price: Number.isFinite(usd) && usd > 0 ? usd : null,
     change: Number.isFinite(chg) ? chg : null,
     volume24h: Number.isFinite(vol) && vol > 0 ? vol : null,
+    observedAt,
   };
 }
 
@@ -479,7 +491,10 @@ async function fetchAllCoinGecko(): Promise<void> {
       // Audit 2026-10-02 (P1): include_24hr_vol — the crypto "Volume 24h"
       // surface needs the actual volume; the page previously summed
       // PRICES because the transport never carried it.
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`;
+      // R9 §20: include_last_updated_at — the upstream observation time is
+      // part of the provenance contract (the single-route gap: crypto
+      // served observedAt null because it was never requested).
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_last_updated_at=true`;
       const res = await fetch(url, {
         headers: { Accept: 'application/json' },
         signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 8000); return ac.signal; })(),
@@ -511,14 +526,14 @@ async function fetchAllCoinGecko(): Promise<void> {
   return coinGeckoFetchPromise;
 }
 
-async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number | null; volume24h: number | null } | null> {
+async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number | null; volume24h: number | null; observedAt: string | null } | null> {
   await fetchAllCoinGecko();
   const cached = coinGeckoCache[symbol];
   // A cached null price is NOT an observation: the provider answered but
   // disclosed nothing usable → null (honest unavailability downstream),
   // never a zero-priced LIVE quote.
   if (!cached || cached.price === null) return null;
-  return { price: cached.price, change: cached.change, volume24h: cached.volume24h };
+  return { price: cached.price, change: cached.change, volume24h: cached.volume24h, observedAt: cached.observedAt };
 }
 
 // =============================================================================

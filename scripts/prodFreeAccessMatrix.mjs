@@ -309,7 +309,7 @@ const report = {
   rows,
   note: "Sessions carry the three LEGACY database tier values on purpose: under the free-access product (founder decision 2026-10-02) those columns must not change anything. Rows marked with test pointers are externally non-injectable on a fixed production provider and are pinned by the referenced runnable tests (same protocol as the Commit-L matrix).",
 };
-const outPath = new URL(".", import.meta.url).pathname + "../docs/evidence/commit-m/production-free-access-matrix.json";
+const outPath = new URL(".", import.meta.url).pathname + "../docs/evidence/commit-n/production-free-access-matrix.json";
 writeFileSync(outPath, JSON.stringify(report, null, 2) + "\n");
 console.log(`\n${report.passed}/${report.total} passed · written: ${outPath}`);
 process.exit(failed.length > 0 || !report.expectedShaMatch ? 1 : 0);

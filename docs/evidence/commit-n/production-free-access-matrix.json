@@ -1,0 +1,303 @@
+{
+  "probe": {
+    "base": "https://rishi-terminal.vercel.app",
+    "at": "2026-10-02T05:32:50.359Z",
+    "expectedSha": "4ef014ad9b56e48c8b5e7b4049f4bd67e63054e6",
+    "versionSha": "4ef014ad9b56e48c8b5e7b4049f4bd67e63054e6",
+    "versionStatus": 200
+  },
+  "expectedShaMatch": true,
+  "total": 36,
+  "passed": 36,
+  "failed": 0,
+  "rows": [
+    {
+      "id": "identity /api/version",
+      "ok": true,
+      "detail": {
+        "sha": "4ef014ad9b56e48c8b5e7b4049f4bd67e63054e6",
+        "expected": "4ef014ad9b56e48c8b5e7b4049f4bd67e63054e6"
+      }
+    },
+    {
+      "id": "bootstrap seeker session",
+      "ok": true,
+      "detail": {
+        "user": "35eb7f45-9fbe-4da4-b723-3398d3380d8b",
+        "created": false,
+        "tierPatchStatus": 204
+      }
+    },
+    {
+      "id": "bootstrap student session",
+      "ok": true,
+      "detail": {
+        "user": "c1678d06-c32d-4bca-bb52-4517197e6c0e",
+        "created": false,
+        "tierPatchStatus": 204
+      }
+    },
+    {
+      "id": "bootstrap disciple session",
+      "ok": true,
+      "detail": {
+        "user": "8200ab6f-d3bf-4bb8-a234-f9dadc711566",
+        "created": false,
+        "tierPatchStatus": 204
+      }
+    },
+    {
+      "id": "access seeker: every Rishi available (roster = ALL, no tier field)",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "personas": 21,
+        "tierField": "(absent)"
+      }
+    },
+    {
+      "id": "access student: every Rishi available (roster = ALL, no tier field)",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "personas": 21,
+        "tierField": "(absent)"
+      }
+    },
+    {
+      "id": "access disciple: every Rishi available (roster = ALL, no tier field)",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "personas": 21,
+        "tierField": "(absent)"
+      }
+    },
+    {
+      "id": "access student: roster IDENTICAL to seeker's",
+      "ok": true,
+      "detail": {
+        "same": true
+      }
+    },
+    {
+      "id": "access disciple: roster IDENTICAL to seeker's",
+      "ok": true,
+      "detail": {
+        "same": true
+      }
+    },
+    {
+      "id": "access seeker: /api/auth/me publishes access=free, no tier",
+      "ok": true,
+      "detail": {
+        "access": "free",
+        "tier": "(absent)"
+      }
+    },
+    {
+      "id": "access student: /api/auth/me publishes access=free, no tier",
+      "ok": true,
+      "detail": {
+        "access": "free",
+        "tier": "(absent)"
+      }
+    },
+    {
+      "id": "access disciple: /api/auth/me publishes access=free, no tier",
+      "ok": true,
+      "detail": {
+        "access": "free",
+        "tier": "(absent)"
+      }
+    },
+    {
+      "id": "access seeker: /api/rishis/RELIANCE full verdict set",
+      "ok": true,
+      "detail": {
+        "verdicts": 20,
+        "total": 20
+      }
+    },
+    {
+      "id": "access student: /api/rishis/RELIANCE full verdict set",
+      "ok": true,
+      "detail": {
+        "verdicts": 20,
+        "total": 20
+      }
+    },
+    {
+      "id": "access disciple: /api/rishis/RELIANCE full verdict set",
+      "ok": true,
+      "detail": {
+        "verdicts": 20,
+        "total": 20
+      }
+    },
+    {
+      "id": "access anonymous: /api/gurus every verdict in full (no locked)",
+      "ok": true,
+      "detail": {
+        "gurus": 3,
+        "allUnlocked": true
+      }
+    },
+    {
+      "id": "payment POST /api/payment -> 410",
+      "ok": true,
+      "detail": {
+        "status": 410,
+        "body": {
+          "error": "Payments are retired — every feature on Rishi Terminal is free.",
+          "retired": true
+        }
+      }
+    },
+    {
+      "id": "payment PUT /api/payment (forged verify) -> 410",
+      "ok": true,
+      "detail": {
+        "status": 410
+      }
+    },
+    {
+      "id": "payment webhook (forged event) -> 410",
+      "ok": true,
+      "detail": {
+        "status": 410
+      }
+    },
+    {
+      "id": "payment /pricing honest free page (no tiers, no ₹, no checkout)",
+      "ok": true,
+      "detail": {
+        "honest": true
+      }
+    },
+    {
+      "id": "ai anonymous: chat PROCEEDS (200 — no sign-in, per-IP quota identity)",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "grounded": false
+      }
+    },
+    {
+      "id": "ai anonymous: /api/chat/personas full roster (no sign-in)",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "personas": 21
+      }
+    },
+    {
+      "id": "access anonymous: /api/rishis/RELIANCE full verdict set (Portfolio Lab without sign-in)",
+      "ok": true,
+      "detail": {
+        "verdicts": 20,
+        "total": 20
+      }
+    },
+    {
+      "id": "access anonymous: /lab page reachable (no sign-in redirect — Commit N1)",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "location": "(none)"
+      }
+    },
+    {
+      "id": "ai seeker: chat with previously-gated persona (soros) works",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "grounded": false,
+        "mode": "context-only",
+        "structured": "valid",
+        "toolCalls": 0,
+        "model": "agnes-2.5-flash"
+      }
+    },
+    {
+      "id": "ai student: chat with previously-gated persona (soros) works",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "grounded": false,
+        "mode": "context-only",
+        "structured": "valid",
+        "toolCalls": 0,
+        "model": "agnes-2.5-flash"
+      }
+    },
+    {
+      "id": "ai disciple: chat with previously-gated persona (soros) works",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "grounded": false,
+        "mode": "context-only",
+        "structured": "valid",
+        "toolCalls": 0,
+        "model": "agnes-2.5-flash"
+      }
+    },
+    {
+      "id": "ai forged client tier (seeker claims seeker, asks disciple-gated chanos) -> 200",
+      "ok": true,
+      "detail": {
+        "status": 200
+      }
+    },
+    {
+      "id": "ai tool loop: canonical tools execute server-side (audit trail present, statuses explicit)",
+      "ok": true,
+      "detail": {
+        "status": 200,
+        "tools": [
+          "getScore:ok"
+        ],
+        "grounded": false,
+        "mode": "evidence-context",
+        "structured": "valid"
+      }
+    },
+    {
+      "id": "ai tool errors -> no fabricated answer",
+      "ok": true,
+      "detail": "test/aiToolLoop.test.ts (a throwing surface is an explicit failed state)"
+    },
+    {
+      "id": "ai bad structured response -> no raw provider answer",
+      "ok": true,
+      "detail": "test/aiRouter.test.ts + eval golden json-01..04/schema-01..04 (G4: structuredResponse=invalid, honest bounded text)"
+    },
+    {
+      "id": "ai grounding failure -> no verified-surface claim",
+      "ok": true,
+      "detail": "test/chat.grounding.*.test.ts (fail-closed rejections; claimsVerified=false)"
+    },
+    {
+      "id": "ai seed/derived provenance upgrade -> rejected",
+      "ok": true,
+      "detail": "test/chat.grounding.l2.test.ts (closed-vocabulary anti-upgrade)"
+    },
+    {
+      "id": "ai loop exhaustion -> BLOCKED",
+      "ok": true,
+      "detail": "test/aiToolLoop.test.ts + eval golden loop-01..03 (structuredResponse=blocked)"
+    },
+    {
+      "id": "ai tool-state consistency (package == getScore)",
+      "ok": true,
+      "detail": "test/aiToolState.test.ts (byte-identical score items through one canonical state)"
+    },
+    {
+      "id": "quota single FREE_CHAT_DAILY_QUOTA wiring",
+      "ok": true,
+      "detail": "test/freeAccess.contract.test.ts (p_limit identical for seeker/student/disciple sessions) + test/chat.limits.test.ts"
+    }
+  ],
+  "note": "Sessions carry the three LEGACY database tier values on purpose: under the free-access product (founder decision 2026-10-02) those columns must not change anything. Rows marked with test pointers are externally non-injectable on a fixed production provider and are pinned by the referenced runnable tests (same protocol as the Commit-L matrix)."
+}

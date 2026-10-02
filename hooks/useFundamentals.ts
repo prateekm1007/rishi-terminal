@@ -137,6 +137,9 @@ export function useFundamentals(symbol: string): {
 
   useEffect(() => {
     mounted.current = true;
+    // U4: an empty symbol (ranked widgets disabled — no Stock of the Day)
+    // must not fire a wasted 400 request.
+    if (!symbol) return;
     const cached = fromCache(getFromCache(`fund:${symbol}`));
     if (cached) { setFundamentals(cached); return; }
 

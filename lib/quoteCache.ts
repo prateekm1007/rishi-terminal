@@ -38,6 +38,9 @@ export interface CachedQuote {
    *  disclosed none — never the fetch time. */
   observedAt: string | null;
   refreshedAt: string;
+  /** 24h trading volume when the upstream disclosed one, else null —
+   *  null is NOT 0 (Rule 16; migration 017). */
+  volume24h: number | null;
 }
 
 export interface QuoteCacheDeps {
@@ -58,6 +61,7 @@ export interface QuoteCacheResult {
 }
 
 function rowToQuote(row: Record<string, unknown>): CachedQuote {
+  const vol = row.volume24h;
   return {
     symbol: String(row.symbol),
     price: Number(row.price),
@@ -66,17 +70,43 @@ function rowToQuote(row: Record<string, unknown>): CachedQuote {
     source: String(row.source),
     observedAt: row.observed_at == null ? null : String(row.observed_at),
     refreshedAt: String(row.refreshed_at),
+    volume24h: vol == null ? null : Number(vol),
   };
 }
+
+/** A row is a real observation only when its price is a positive finite
+ *  number. The 017 claim INSERT leaves a price-0 placeholder row behind;
+ *  a crashed refresher must leave readers seeing "no observation yet", NOT
+ *  a ₹0 price (Rule 16). */
+function isRealQuote(q: CachedQuote | null): q is CachedQuote & { price: number } {
+  return q != null && Number.isFinite(q.price) && q.price > 0;
+}
+
+const QUOTE_COLUMNS = "symbol, price, change, currency, source, observed_at, refreshed_at, volume24h";
 
 async function readRow(symbol: string): Promise<CachedQuote | null> {
   const { data, error } = await getAdminSupabase()
     .from("quote_cache")
-    .select("symbol, price, change, currency, source, observed_at, refreshed_at")
+    .select(QUOTE_COLUMNS)
     .eq("symbol", symbol)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? rowToQuote(data) : null;
+}
+
+async function readRows(symbols: string[]): Promise<Record<string, CachedQuote>> {
+  if (symbols.length === 0) return {};
+  const { data, error } = await getAdminSupabase()
+    .from("quote_cache")
+    .select(QUOTE_COLUMNS)
+    .in("symbol", symbols);
+  if (error) throw new Error(error.message);
+  const out: Record<string, CachedQuote> = {};
+  for (const row of data ?? []) {
+    const q = rowToQuote(row);
+    out[q.symbol] = q;
+  }
+  return out;
 }
 
 async function writeRow(symbol: string, quote: CachedQuote, ttlSeconds: number, nowIso: string): Promise<void> {
@@ -89,6 +119,7 @@ async function writeRow(symbol: string, quote: CachedQuote, ttlSeconds: number, 
     observed_at: quote.observedAt,
     refreshed_at: nowIso,
     ttl_seconds: ttlSeconds,
+    volume24h: quote.volume24h ?? null,
   });
   if (error) throw new Error(error.message);
 }
@@ -126,7 +157,8 @@ export async function cachedQuote(
     console.error("[quoteCache] read failed:", e instanceof Error ? e.message : e);
   }
 
-  if (row && !Number.isFinite(row.price)) row = null;
+  // A price-0 row is the 017 claim placeholder, not an observation.
+  if (row && !isRealQuote(row)) row = null;
 
   // Freshness: within TTL while open; when closed, a row from the current
   // session never goes stale.
@@ -181,6 +213,144 @@ export async function cachedQuote(
   try {
     row = await readRow(symbol);
   } catch { /* stay honest-miss */ }
-  if (row) return { quote: row, state: "stale-served", market };
+  // The price-0 guard applies to the retried row too: a claim placeholder
+  // or crashed refresher must never surface as a quote.
+  if (row && isRealQuote(row)) return { quote: row, state: "stale-served", market };
   return { quote: null, state: "miss", market };
+}
+
+export interface QuoteCacheBatchDeps {
+  /** The upstream refresher for the batch surface (injected: production
+   *  wires the Yahoo-bulk transport — one upstream pass for exactly the
+   *  claimed symbols; tests inject stubs). Returns null per symbol when the
+   *  upstream had nothing — the honest state. */
+  fetchUpstreamBatch: (symbols: string[]) => Promise<Record<string, CachedQuote | null>>;
+  nowMs?: () => number;
+}
+
+export interface QuoteCacheBatchResult {
+  /** Per-symbol result for EVERY requested symbol (never silently absent). */
+  quotes: Record<string, QuoteCacheResult>;
+  market: MarketState;
+}
+
+/**
+ * Batch surface of the shared quote cache (U2 round 7). Same contract as
+ * cachedQuote, per symbol, with ONE upstream pass for exactly the symbols
+ * THIS caller claimed — the batch transport (Yahoo bulk) refreshes all of
+ * them in a single sweep instead of N per-symbol refresh chains.
+ *
+ * Founder acceptance, batch form: concurrent batch requests cause at most
+ * ONE upstream refresh per TTL (tested with 50 concurrent requests).
+ */
+export async function cachedQuoteBatch(
+  symbols: string[],
+  deps: QuoteCacheBatchDeps,
+): Promise<QuoteCacheBatchResult> {
+  const now = deps.nowMs ?? Date.now;
+  const market = marketState(now());
+  const ttl = market.ttlSeconds;
+
+  const quotes: Record<string, QuoteCacheResult> = {};
+  if (symbols.length === 0) return { quotes, market };
+
+  const result = (symbol: string, quote: CachedQuote | null, state: QuoteCacheResult["state"]): void => {
+    quotes[symbol] = { quote: isRealQuote(quote) ? quote : null, state, market };
+  };
+
+  let rows: Record<string, CachedQuote> = {};
+  let readFailed = false;
+  try {
+    rows = await readRows(symbols);
+  } catch (e) {
+    // Same Rule-6 stance as the single surface: infrastructure failure
+    // falls through to ONE upstream pass — never fabrication, never a
+    // 500 from the cache layer.
+    readFailed = true;
+    console.error("[quoteCache] batch read failed:", e instanceof Error ? e.message : e);
+  }
+
+  // Classify: fresh vs needs-refresh. Closed market: any existing row is
+  // the honest close and serves without refresh; missing rows still try
+  // to populate (fetching the last close is correct on a cold cache).
+  const needRefresh: string[] = [];
+  for (const symbol of symbols) {
+    const row = readFailed ? null : (rows[symbol] ?? null);
+    const real = isRealQuote(row) ? row : null;
+    if (real) {
+      const ageMs = now() - Date.parse(real.refreshedAt);
+      const fresh =
+        market.freshness === "close" || ageMs < (ttl ?? 60) * 1000;
+      if (fresh) {
+        result(symbol, real, "fresh");
+        continue;
+      }
+    }
+    needRefresh.push(symbol);
+  }
+
+  // Atomic refresh claims for exactly the stale/missing symbols.
+  const claimed: string[] = [];
+  let claimErrored = false;
+  if (!readFailed && needRefresh.length > 0) {
+    const claims = await Promise.allSettled(
+      needRefresh.map(async (s) => [s, await tryRefreshClaim(s)] as const),
+    );
+    for (const c of claims) {
+      if (c.status === "fulfilled" && c.value[1]) claimed.push(c.value[0]);
+      else if (c.status === "rejected") claimErrored = true;
+    }
+  }
+
+  // Claim winners refresh via ONE upstream batch pass; losers serve stale.
+  if (claimed.length > 0 || ((readFailed || claimErrored) && needRefresh.length > 0)) {
+    const upstreamSymbols = claimed.length > 0 && !readFailed && !claimErrored
+      ? claimed
+      : needRefresh; // cache/claim infrastructure failed: one honest pass for all
+    let upstream: Record<string, CachedQuote | null> = {};
+    try {
+      upstream = await deps.fetchUpstreamBatch(upstreamSymbols);
+    } catch (e) {
+      console.error("[quoteCache] batch refresh failed:", e instanceof Error ? e.message : e);
+      upstream = {};
+    }
+    const nowIso = new Date(now()).toISOString();
+    for (const symbol of upstreamSymbols) {
+      const u = upstream[symbol] ?? null;
+      if (isRealQuote(u)) {
+        if (claimed.includes(symbol)) {
+          try {
+            await writeRow(symbol, u, ttl ?? 0, nowIso);
+          } catch (e) {
+            console.error("[quoteCache] batch write failed:", e instanceof Error ? e.message : e);
+          }
+        }
+        result(symbol, u, "stale-revalidated");
+      } else {
+        const stale = isRealQuote(rows[symbol]) ? rows[symbol] : null;
+        if (stale) result(symbol, stale, "stale-served");
+        else result(symbol, null, "miss");
+      }
+    }
+  }
+
+  // Claim losers with no row at all: one short bounded retry read (same
+  // first-request contract as the single surface), then honest miss.
+  const pending = symbols.filter(
+    (s) => quotes[s] === undefined && !claimed.includes(s),
+  );
+  if (pending.length > 0) {
+    await new Promise((r) => setTimeout(r, 400));
+    let retried: Record<string, CachedQuote> = {};
+    try {
+      retried = await readRows(pending);
+    } catch { /* stay honest-miss */ }
+    for (const symbol of pending) {
+      const row = isRealQuote(retried[symbol]) ? retried[symbol] : null;
+      if (row) result(symbol, row, "stale-served");
+      else result(symbol, null, "miss");
+    }
+  }
+
+  return { quotes, market };
 }

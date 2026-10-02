@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/client';
 
 interface AuthContextValue {
   session: Session | null;
@@ -28,27 +27,47 @@ export function useSupabaseAuth(): AuthContextValue {
  * Replaces the next-auth SessionProvider. NOTE: the tier exposed here is
  * display-only — the server always re-reads the tier from public.users via
  * lib/auth/session.ts, so a tampered client value grants nothing.
+ *
+ * U3 (founder round 7): the browser client (@supabase/supabase-js, ~66 kB
+ * gzip) was statically imported here — inside the ROOT layout — so it rode
+ * the first-load script set of EVERY route. This provider is the only
+ * client surface that needs it on non-auth pages, and it needs it only
+ * AFTER hydration (session starts null + loading=true either way), so the
+ * client is dynamic-imported inside the effect. The chunk loads async after
+ * first paint; auth pages (sign-in/callback) keep the eager static import.
+ * Pinned by test/bundleBoundary.test.ts.
  */
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      if (cancelled) return;
+      const supabase = createClient();
+
+      supabase.auth.getSession().then(({ data }) => {
+        if (cancelled) return;
+        setSession(data.session);
+        setLoading(false);
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          setSession(newSession);
+          setLoading(false);
+        },
+      );
+      unsubscribe = () => subscription.unsubscribe();
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession);
-        setLoading(false);
-      },
-    );
-
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(() => ({
@@ -56,8 +75,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     user: session?.user ?? null,
     loading,
     signOut: async () => {
-      const supabase = createClient();
-      await supabase.auth.signOut();
+      const { createClient } = await import('@/lib/supabase/client');
+      await createClient().auth.signOut();
     },
   }), [session, loading]);
 

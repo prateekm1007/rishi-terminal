@@ -384,7 +384,10 @@ async function fetchYahooQuote(
 // =============================================================================
 
 // MCX commodities trade on NSE derivatives segment
-const COMMODITY_NSE_SYMBOLS: Record<string, string> = {
+// Exported for lib/quotePath (U2): the single classification source for
+// which symbols belong to the shared NSE-equity cache path reads livePrice's
+// OWN routing sets — one source of truth, no duplicated exclusion lists.
+export const COMMODITY_NSE_SYMBOLS: Record<string, string> = {
   GOLD: 'GOLD',
   SILVER: 'SILVER',
   CRUDEOIL: 'CRUDEOIL',
@@ -398,7 +401,7 @@ const COMMODITY_NSE_SYMBOLS: Record<string, string> = {
 
 // For commodities not on NSE, use static USD prices (updated periodically)
 // Brent crude tracks WTI closely; MCX gold tracks international gold
-const COMMODITY_STATIC_USD: Record<string, number> = {
+export const COMMODITY_STATIC_USD: Record<string, number> = {
   BRENTCRUDE: 65.0,    // USD per barrel - update periodically
   PLATINUM: 980.0,     // USD per troy oz
   PALLADIUM: 980.0,    // USD per troy oz
@@ -769,7 +772,7 @@ async function fetchCorporateBondYield(symbol: string): Promise<{ price: number;
   return null;
 }
 
-function isBondSymbol(symbol: string): boolean {
+export function isBondSymbol(symbol: string): boolean {
   return (
     symbol in BOND_YIELDS_STATIC ||
     symbol in FRED_SERIES ||
@@ -787,7 +790,9 @@ export const YAHOO_SYMBOLS: Record<string, string> = {};
 // MAIN EXPORT FUNCTION
 // =============================================================================
 
-const STOCK_ALIASES: Record<string,string> = {
+// Exported for lib/quotePath: the alias must be applied BEFORE the shared
+// cache key is chosen, so one instrument can never hold two cache rows.
+export const STOCK_ALIASES: Record<string,string> = {
   BGV01: 'BSLIMITED',
 };
 // ── Phase 5 T47/T48: provenance-carrying price points ────────────────

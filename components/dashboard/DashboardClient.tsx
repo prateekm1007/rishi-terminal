@@ -10,7 +10,7 @@ import ProgressBar from "@/components/gamification/ProgressBar";
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useLivePrices } from "@/hooks/useLivePrices";
+import { useLivePrices, type PriceData } from "@/hooks/useLivePrices";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
@@ -19,15 +19,10 @@ import { DataValue } from "@/components/DataValue"; // P0-06: provenance for dis
 import { overlaySourced } from "@/lib/types/sourced";
 
 /* ── Constants ─────────────────────────────────────────────── */
-
-const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","SOL"];
-
-const TOP_CRYPTO = [
-  { symbol:"BTC", name:"Bitcoin",  icon:"₿", color:"#F7931A" },
-  { symbol:"ETH", name:"Ethereum", icon:"Ξ", color:"#627EEA" },
-  { symbol:"SOL", name:"Solana",   icon:"◎", color:"#9945FF" },
-  { symbol:"BNB", name:"BNB",      icon:"B", color:"#F0B90B" },
-];
+// U2: the dashboard's symbol surface moved to lib/dashboardSymbols.ts — the
+// server page builds the SSR initial-price snapshot from the SAME list
+// (Rule 14). MARKETS (nav tiles) stays here: it is presentation-only.
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS, STATS } from "@/lib/dashboardSymbols";
 
 const MARKETS = [
   { href:"/forex",       icon:"💱", label:"Forex",        desc:"10 currency pairs" },
@@ -37,23 +32,6 @@ const MARKETS = [
   // Commit O (#18): /compare never existed — the real compare surface is the Lab's Compare tab.
   { href:"/lab",         icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
   
-];
-
-
-const WORLD_MARKETS = [
-  { label:"S&P 500",    sym:"SPX"  },
-  { label:"Dow Jones",  sym:"DJI"  },
-  { label:"Nasdaq",     sym:"IXIC" },
-  { label:"DAX",        sym:"DAX"  },
-  { label:"FTSE 100",   sym:"FTSE" },
-  { label:"Hang Seng",  sym:"HSI"  },
-];
-const STATS = [
-  { label:"NIFTY 50",   sym:"NIFTY50",    usd:false },
-  { label:"SENSEX",     sym:"SENSEX",     usd:false },
-  { label:"BANK NIFTY", sym:"BANK_NIFTY", usd:false },
-  { label:"Bitcoin",    sym:"BTC",        usd:true  },
-  { label:"Gold / oz",  sym:"GOLD",       usd:true  },
 ];
 
 /* ── Style Helpers ─────────────────────────────────────────── */
@@ -127,17 +105,43 @@ function Divider() {
 /* ── Main Dashboard ────────────────────────────────────────── */
 
 interface DashboardProps {
-  /** T13 rankings, computed on the server (single engine, one pass). */
+  /** T13 rankings, computed on the server (single engine, one pass).
+   *  U4: empty when the RANKINGS_ENABLED flag is off. */
   rotatingStocks: RankedStock[];
   rotatingShorts: ShortCandidate[];
-  /** Deterministic IST-date pick (T13). */
-  stockOfDay: StockOfTheDay;
+  /** Deterministic IST-date pick (T13). U4: null when the flag is off. */
+  stockOfDay: StockOfTheDay | null;
   /** N1: server-computed QVPS commentary for the daily pick (seed
-   *  baseline — the QVPS engine no longer runs client-side). */
-  sodCommentary: string;
+   *  baseline — the QVPS engine no longer runs client-side). U4: null when
+   *  the flag is off. */
+  sodCommentary: string | null;
+  /** U4 (founder round 7): whether the ranked widgets run at all
+   *  (RANKINGS_ENABLED via lib/featureFlags, fail-closed). */
+  rankingsEnabled: boolean;
+  /** U2 (founder round 7): SSR initial-price snapshot from the server page
+   *  (hourly ISR, every value labelled with its own observation time).
+   *  The hook hydrates from it and revalidates on mount. */
+  initialPrices?: Record<string, PriceData> | null;
 }
 
-export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary }: DashboardProps) {
+/** U4 (founder round 7): the honest state shown when RANKINGS_ENABLED is
+ *  off. No fake picks, no empty shells — the sections are gone and this
+ *  panel says why. */
+function RankingsDisabledPanel({ title, note }: { title: string; note: string }) {
+  return (
+    <div style={{
+      marginBottom:"48px",
+      background:"rgba(17,24,39,0.6)",
+      border:"1px solid rgba(51,65,85,0.5)",
+      borderRadius:"14px", padding:"22px 26px",
+    }}>
+      <div style={{ fontSize:"15px", fontWeight:800, color:C.text, fontFamily:mono, marginBottom:"8px" }}>🚦 {title}</div>
+      <div style={{ fontSize:"13px", color:C.textSec, lineHeight:1.7 }}>{note}</div>
+    </div>
+  );
+}
+
+export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, rankingsEnabled, initialPrices }: DashboardProps) {
   const { t } = useLanguage();
 
   const allSyms = useMemo(() => [
@@ -146,11 +150,12 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     ...rotatingShorts.map(s => s.symbol),
     ...WORLD_MARKETS.map(m => m.sym),
     ...TOP_CRYPTO.map(c => c.symbol),
-    stockOfDay.symbol,
-  ], [rotatingStocks, rotatingShorts]);
+    ...(stockOfDay ? [stockOfDay.symbol] : []),
+  ], [rotatingStocks, rotatingShorts, stockOfDay]);
 
-  const { prices, loading, lastUpdated } = useLivePrices(allSyms);
-  const { fundamentals: sodFund } = useFundamentals(stockOfDay.symbol); // loading state is rendered by <DataValue> (null -> em dash)
+  const { prices, loading, lastUpdated } = useLivePrices(allSyms, 60000, initialPrices);
+  // U4: no pick when rankings are off — the empty symbol skips the fetch.
+  const { fundamentals: sodFund } = useFundamentals(stockOfDay?.symbol ?? "");
   const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
 
   const [timeAgo, setTimeAgo] = useState("—");
@@ -375,6 +380,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
 
         <Divider />
 
+        {/* U4: the ranked trio (Stock of the Day / Top Buy Signals / Short
+            Radar) exists only when the RANKINGS_ENABLED flag is on. Off →
+            one honest disabled panel; the ranking engine never ran. */}
+        {rankingsEnabled && stockOfDay ? (<>
         {/* ── STOCK OF THE DAY ─────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>
           <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + stockOfDay.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
@@ -576,6 +585,12 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
             ))}
           </div>
         </div>
+        </>) : (
+          <RankingsDisabledPanel
+            title={t("dashboard2.rankingsDisabled")}
+            note={t("dashboard2.rankingsDisabledNote")}
+          />
+        )}
 
         {/* ── CRYPTO ────────────────────────────────────────── */}
         <div style={{ marginBottom:"48px" }}>

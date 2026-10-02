@@ -138,6 +138,9 @@ jobs:
       - name: Assert RLS invariants (N2)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/rls_invariants.sql
 
+      - name: Assert quote-cache claim invariants (U2 — real-Postgres cold-claim proof)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/quote_cache_invariants.sql
+
       - name: Populate security master (D1-02, generated from the official NSE listing)
         run: psql -v ON_ERROR_STOP=1 -f data/security-master/populate.sql
 
@@ -151,6 +154,12 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      # U4: the smoke suite pins the ENABLED ranked surfaces (Top Buy
+      # section + mandated seed banner). The flag must be present at BUILD
+      # time (the homepage prerender bakes the rankings state — ISR serves
+      # that prerender on the first hit) and at RUNTIME. The DISABLED state
+      # is unit-pinned (flag matrix, i18n parity, source pins).
+      RANKINGS_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
 
@@ -170,3 +179,42 @@ jobs:
 
       - name: Run smoke tests
         run: npx playwright test
+
+  lighthouse:
+    name: Lighthouse gate (U3 — measured-score floors, ratchet)
+    runs-on: ubuntu-latest
+    needs: quality
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium (provides the Chrome binary Lighthouse drives)
+        run: npx playwright install --with-deps chromium
+
+      - name: Export CHROME_PATH (Playwright's chromium)
+        run: echo "CHROME_PATH=$(find ~/.cache/ms-playwright -name chrome -path '*chrome-linux64*' | head -1)" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: npm run build
+
+      - name: Lighthouse gate (warm server, audit /, /screener, /stock/RELIANCE, assert floors)
+        run: npm run lhci
+
+      - name: Upload raw Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/

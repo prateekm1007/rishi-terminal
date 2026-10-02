@@ -57,8 +57,15 @@ for (const vp of VIEWPORTS) {
         await expect(hamburger).toBeVisible();
         await hamburger.click();
         // The drawer renders a second (visible) Sidebar with real links.
+        // The 15 s window (vs the 5 s expect default) is runner-variance
+        // headroom: on a cold shared runner the homepage's hydration can
+        // still be in flight when the click lands, and the drawer (client
+        // state) only exists once React is interactive. Semantics unchanged
+        // — the drawer MUST open; we just stop measuring hydration speed
+        // through an a11y assertion. (Flaked once in CI at 5 s; passed at
+        // 0.5 s locally.)
         const drawerLinks = page.locator(".mobile-sidebar a");
-        await expect(drawerLinks.first()).toBeVisible();
+        await expect(drawerLinks.first()).toBeVisible({ timeout: 15_000 });
         const href = await drawerLinks.first().getAttribute("href");
         expect(href).toBeTruthy();
       });

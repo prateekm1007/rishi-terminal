@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { fetchLivePrice, unavailablePriceEntry } from "@/lib/livePrice";
+import { isEquitySymbol, serveQuote } from "@/lib/quotePath";
 import { normalizeSymbolInput, parseSymbolsList } from "@/lib/registry/validateInput";
 import { checkRateLimit } from "@/lib/rateLimit";
 import {
@@ -67,18 +68,26 @@ export async function GET(req: NextRequest) {
     const appReqId = recordAppRequest('/api/prices', { symbols: list.length });
 
     const t0 = Date.now();
-    const results = await Promise.allSettled(list.map(s => fetchLivePrice(s)));
+
+    // ── U2 (founder round 7): NSE-equity symbols serve from the SHARED
+    // quote cache (lib/quotePath.serveQuote — state mapped to status
+    // honestly; NSE market state rides additively so clients can see the
+    // session). Non-equity classes keep the direct multi-source path.
+    const t0Results = await Promise.allSettled(
+      list.map(s => (isEquitySymbol(s) ? serveQuote(s) : fetchLivePrice(s)))
+    );
     const prices: Record<string, { price?: number; change?: number | null; source?: string; status?: string; lastUpdated?: string | null; checkedAt?: string }> = {};
-    results.forEach((r, i) => {
+    t0Results.forEach((r, i) => {
+      const s = list[i];
       if (r.status === "fulfilled" && r.value) {
-        prices[list[i]] = r.value;
+        prices[s] = r.value as unknown as typeof prices[string];
         recordServe('/api/prices', serveKind(r.value.status), 1);
       } else {
         // T57: honest unavailability — no zeros, no seed placeholders.
         // Phase 5.1: no fabricated observation timestamp either. There is
         // no observation, so lastUpdated is null; checkedAt is the time the
         // system decided it had nothing (decision time ≠ observation time).
-        prices[list[i]] = unavailablePriceEntry();
+        prices[s] = unavailablePriceEntry();
         recordServe('/api/prices', 'unavailable', 1);
       }
     });

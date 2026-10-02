@@ -1,0 +1,20 @@
+UNUSED framer-motion
+UNUSED axios
+UNUSED react-force-graph-2d
+UNUSED d3
+UNUSED cheerio
+UNUSED yahoo-finance2
+UNUSED socket.io
+UNUSED socket.io-client
+UNUSED react-is
+UNUSED bcryptjs
+UNUSED jsonwebtoken
+USED   recharts -> components/lab/CompareTab.tsx
+USED   @supabase/ssr -> lib/supabase/client.ts, lib/supabase/server.ts, proxy.ts
+USED   @supabase/supabase-js -> components/auth/AuthProvider.tsx, lib/db/supabase.ts, lib/services/supabaseAdmin.ts, scripts/pipelineStatus.ts
+USED   zod -> lib/ai/schemas.ts, lib/ai/tools.ts, lib/validation/schemas.ts
+USED   server-only -> .github/workflows/ci.yml, data/stocks/index.ts, docs/DATA_SOURCES.md, docs/PAID_CONTENT.md, eslint.config.mjs
+UNUSED next-intl
+USED   next -> app/api/admin/providers/route.ts, app/api/auth/me/route.ts, app/api/chat/personas/route.ts, app/api/chat/route.ts, app/api/csp-report/route.ts
+USED   react -> app/alerts/page.tsx, app/auth/callback/page.tsx, app/auth/signin/page.tsx, app/bonds/page.tsx, app/commodities/page.tsx
+USED   react-dom -> test/freshness.placeholder.test.ts

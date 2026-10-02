@@ -75,6 +75,7 @@ function makeDeps(): QuoteCacheDeps {
         symbol: "RELIANCE", price: 1167.7, change: 0.42, currency: "INR",
         source: "test-vendor", observedAt: "2026-10-01T09:45:00.000Z",
         refreshedAt: new Date(nowMs).toISOString(),
+        volume24h: null,
       };
     },
     nowMs: () => nowMs,

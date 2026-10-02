@@ -165,9 +165,12 @@ export function StockTable({ stocks }: Props) {
               : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
           }`}
         />
+        {/* Audit retest 2026-10-02 (C.3): label-less select failed Lighthouse
+            select-name — a screen reader announced nothing for this filter. */}
         <select
           value={sectorFilter}
           onChange={e => setSectorFilter(e.target.value)}
+          aria-label="Filter by sector"
           className={`rounded-lg border px-4 py-2 text-sm font-mono transition ${
             dark
               ? "border-gray-700 bg-gray-900/50 text-gray-100"

@@ -22,6 +22,20 @@ function dataSourceLine(pathname: string): string {
   return 'Equity data: NSE India / Yahoo Finance / Screener.in (live where labelled); fundamentals seeded illustratively where marked.';
 }
 
+/**
+ * Persistent footer strip colors. Exported because the pair is contractually
+ * WCAG-AA (>= 4.5:1) — audit retest 2026-10-02 finding C.2 caught the old
+ * #475569-on-#070B14 pair at 2.59:1 — and test/footer.contrast.test.ts
+ * locks the exact values that render. Change these two together.
+ */
+export const FOOTER_STRIP_COLORS = {
+  background: '#070B14',
+  // Audit retest 2026-10-02 (C.2): was #475569 (2.59:1 on this background —
+  // the only a11y failure common to every route). #94A3B8 (Tailwind
+  // slate-400) restores WCAG AA at 7.68:1 for the 10px fine print.
+  text: '#94A3B8',
+} as const;
+
 export function LegalDisclaimer() {
   const [showModal, setShowModal] = useState(false);
   const pathname = usePathname() || '/';
@@ -166,11 +180,11 @@ export function LegalDisclaimer() {
       {/* ── Persistent footer strip on every page ── */}
       <div style={{
         borderTop: '1px solid rgba(212,175,55,0.2)',
-        background: '#070B14',
+        background: FOOTER_STRIP_COLORS.background,
         padding: '8px 24px',
         textAlign: 'center',
         fontSize: '10px',
-        color: '#475569',
+        color: FOOTER_STRIP_COLORS.text,
         lineHeight: 1.5,
         fontFamily: 'monospace',
       }}>

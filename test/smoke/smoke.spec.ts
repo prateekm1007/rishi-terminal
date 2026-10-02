@@ -18,6 +18,13 @@ test.describe("smoke — core surfaces", () => {
   test("screener table renders with null-safe consensus", async ({ page }) => {
     await page.goto("/screener");
     await expect(page.locator("table").first()).toBeVisible({ timeout: 20_000 });
+    // Audit retest 2026-10-02, C.3: the sector filter <select> had no
+    // accessible name (Lighthouse select-name fail). An aria-label is the
+    // fix a screen reader announces for a label-less select.
+    await expect(page.locator("select").first()).toHaveAttribute(
+      "aria-label",
+      "Filter by sector"
+    );
   });
 
   test("stock page for RELIANCE renders the consensus hero", async ({ page }) => {

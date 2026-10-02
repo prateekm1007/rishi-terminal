@@ -218,3 +218,45 @@ provider failover) — re-verified by the full suite.
 | NF-3 | `/alerts` remains behind the proxy sign-in wall although the page persists alerts client-side (localStorage) — same class as the `/lab` wall removed by PR #46, but OUT of the founder's named scope | FOUNDER DECISION NEEDED: should /alerts also be reachable signed-out? |
 | NF-4 | The per-IP anonymous quota identity (PR #46) collates every visitor behind one public IP (CGNAT is common on Indian mobile networks): a busy shared exit can exhaust the 150/day quota for everyone behind it | FOUNDER DECISION NEEDED (only if 429 complaints appear): switch to a server-issued cookie identity for per-device fairness, keeping the per-IP ceiling as the abuse bound. |
 | NF-5 | The chat provider key (apihub.agnes-ai.com, agnes-2.5-flash) is a FREE-TIER key: on 2026-10-02 ~06:18 UTC the account hit the provider's free rate limit ("Upgrade to a Token Plan to unlock higher limits"). Production chat then degrades HONESTLY (502 with quota refund; no fabricated answers) until the limit resets. The grounded-AI canary had already PASSED end-to-end on 15d0cab before the limit hit (receipt in git). | FOUNDER DECISION NEEDED: upgrade the Agnes API plan / provide a paid key, or accept free-tier capacity. This is a vendor/cost decision (Rule 31), not a code defect. |
+
+## Round 9 — correctness/performance closure (2026-10-02/03, session 3)
+
+**Provenance of this section (Rule 28):** the Round-9 fixes were originally
+built as six local branches in a sandbox that was later wiped — never
+pushed, therefore never durable. This session restored credentials via the
+Constitution Article VI protocol (HF mirror → vault), re-cloned at
+`main` = `e478e42` (production `dbc4c7b` verified via `/api/version` and the
+Vercel API), re-read the Constitution, and REBUILT the six scoped branches
+from the Coder Directions defect map, each with fresh fail-first evidence.
+The rebuild was verified against current code before starting: gurus
+null-semantics (NF-2) and the `/fno/builder` route fix (NF-1) were already
+closed on main and were NOT redone.
+
+| Branch | Scope | Highlights |
+|---|---|---|
+| R9-1 Rule-16 UI provenance | LivePriceWidget, useLivePrices, dashboard, alerts, dashboardSnapshot | missing change renders "—" (was `?? 0` → "0.00%"); observation clock = server-disclosed upstream time (was browser `new Date()`); badges derived from entry statuses via `pricePresentation.ts` (conservative aggregate + DELAYED downgrade); hook transports status/source verbatim |
+| R9-2 FX/static-yield semantics | lib/livePrice.ts | ExchangeRate-API fallback: rate observed, change null (was hardcoded 0); static-yields-us change null (parity with IN/corp); Yahoo FX path regression-locked to keep its disclosed change |
+| R9-3 pulse null semantics | /api/pulse/breadth, /api/pulse/blocks, pulse UI | missing percentChange counted `unknown` (not "unchanged"); ratio null at declines=0; blocks: nulls not zeros, no manufactured BUY/SELL side, provider timestamp or null; UI coercions removed |
+| R9-4 AI repair-cause attribution | lib/ai/router.ts, schemas | RepairCause taxonomy (9 codes) recorded in `timings.repairs` at the decision point; completions stage-labelled initial/post-tool/repair; pure `classifyGroundingRejections` |
+| R9-5 price observedAt parity | lib/livePrice.ts (CoinGecko) | `include_last_updated_at` requested and transported; single and batch routes expose the same provenance contract (production gap was BTC `observedAt: null`) |
+| R9-6 this section + provider-matrix addendum | docs | verified-claims-only reconciliation |
+
+### What Round 9 explicitly does NOT claim (still open)
+| Item | State |
+|---|---|
+| AI first-pass reliability | Round-9 battery measured 1/8 first-pass grounded, 7/8 needing the repair completion. The cause taxonomy (R9-4) now makes every future failure attributable; the larger production battery (≥20 financial / ≥10 philosophy / ≥10 invalid) must run on the deployed SHA before any provider/prompt change (directive 9). |
+| AI latency reduction | Dominant measured sink remains provider completion (~16.5 s + ~8.4 s vs ~66 ms tool execution on the deterministic gate). Attribution infrastructure is complete; optimization is NOT started (directive 8: do not touch the tool executor or validator without a disproving battery). |
+| Price wall-time reduction | The 90% upstream-reduction result is preserved as evidence; wall-time attribution under cold/stale/error/fallback conditions needs the production price battery (directive 19/21). |
+| Rule-10 repository-wide sweep | Separate branch (directive 18) — outward `detail`/`String(err)` surfaces remain in some routes' catch blocks (e.g. pulse breadth/blocks), each to be swept with its own fail-first test. |
+| Agnes free-tier capacity | Unchanged vendor constraint (NF-5) — not a code defect; Rule-31 founder decision. |
+
+### Standing invariants re-verified this round
+All-features-free product (no tiers/quotas by rank; the 150/day global chat
+quota is abuse/spend control, not a paid tier); anonymous chat and
+Portfolio Lab; the canonical AI loop (one router, one executor, one
+evidence builder, structured claims, grounding validation,
+server-generated verified surface, separated commentary); reactive
+tool engagement preserved (no unconditional pre-seeding — directive 11);
+`/rishis` context-only contract unchanged pending FD-10; no fabricated
+bond issues (FD-11 stands: IN91DTB class is filtered, never replaced);
+RESEARCH_ONLY providers unreachable through the routing primitive.

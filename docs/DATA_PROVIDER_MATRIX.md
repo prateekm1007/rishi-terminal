@@ -156,3 +156,68 @@ prior scope pending founder licensing decisions (FD-1).
   display licensing remain gated on founder/vendor decisions (FD-1).
 - CoinGecko/Alpha Vantage/Twelve Data commercial terms remain unverified
   (JS-shell terms pages) — RESEARCH_ONLY stands.
+
+---
+
+# Round 9 addendum — provenance-contract closure (2026-10-02)
+
+Scope: Coder Directions 2026-10-02 (directives 14–27). Every change below is
+code-verified with fail-first tests on its branch; this addendum records the
+resulting provider semantics so no surface has to re-derive them.
+
+## Observation-time contract (directive 20)
+Every APPROVED provider that discloses an observation time now transports it
+end-to-end as `observedAt` (the ORIGINAL upstream time — never the serve
+time, never the browser fetch time), identically on `/api/prices` and
+`/api/prices/batch`:
+
+| Provider | Disclosure transported |
+|---|---|
+| NSE bulk (shared quote cache serving path) | `regularMarketTime` → observedAt (`lib/nse/bulkFetch.ts`) |
+| NSE direct quote (fallback inside the chain) | none parsed — observedAt null (honest absence; the equity serving path is the shared cache above) |
+| Yahoo v7/v8 chart | `regularMarketTime` → observedAt |
+| CoinGecko | `last_updated_at` (now REQUESTED via `include_last_updated_at=true`; previously the single-route gap — crypto served `observedAt: null`) |
+| ExchangeRate-API | `time_last_update_unix` → observedAt |
+| FRED fredgraph.csv | DATE column → observedAt |
+| Static references (yields, commodities) | honestly none — `observedAt: null` (there is no observation) |
+
+## Change-semantics contract (directives 16, 17)
+- **ExchangeRate-API**: a rate observation with NO 24h comparison →
+  `change: null` (previously hardcoded `0`, which rendered as a real
+  "0.00%" market move). The Yahoo FX path keeps its disclosed change.
+- **Static reference yields** (US/India/corporate): `change: null` —
+  identical semantics across all three static tables.
+- **NSE breadth** (`/api/pulse/breadth`): an index without a disclosed
+  `percentChange` is counted `unknown`, never classified "unchanged";
+  the advance/decline ratio is null when declines = 0.
+- **NSE block deals** (`/api/pulse/blocks`): missing qty/price/change/
+  pchange are null (never 0); no BUY/SELL side is manufactured from a
+  missing pchange; the response timestamp is the provider's disclosure
+  or null.
+- **UI**: a missing change renders "—" with no direction/color claim on
+  every market surface (shared ownership: `lib/pricePresentation.ts` —
+  `formatChangePair`, `aggregatePresentationState`, `aggregateMarketLabel`
+  with DELAYED downgrade for Yahoo transports).
+
+## Naming discipline (directive 25)
+"LIVE" = an actual approved observation; "DELAYED" = delayed transport
+(Yahoo); "CACHED" = replayed legitimate observation; "STATIC"/"REFERENCE" =
+non-current reference data; "DERIVED" = computed from labelled inputs;
+"UNAVAILABLE" = no usable observation. Page-level badges are derived from
+the entries' statuses (conservative: the stalest usable tile sets the word)
+— a fetch having happened is not a freshness claim.
+
+## Upstream-volume result (preserved, directive 22)
+Round 9 measurement stands: 50 impressions across 5 symbols produced only
+5 distinct upstream observations (90% upstream reduction / 10×
+application-to-upstream deduplication) through the shared quote cache +
+coalescing + snapshot reuse. This is an UPSTREAM-VOLUME result only;
+request wall-time reduction is a separate metric that requires the
+production price battery (cold/warm/stale/concurrency) — not yet claimed.
+
+## Provider status (re-verified)
+The registry (`lib/registry/providerRegistry.ts`) remains the single
+provider authority; APPROVED-only routing is enforced inside the routing
+primitive. No provider was added, removed, or switched in Round 9
+(directive 13: `chat-api / agnes-2.5-flash` remains the attested AI
+provider/model — vendor changes are Rule-31 founder decisions).

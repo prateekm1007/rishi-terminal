@@ -23,6 +23,7 @@ import {
   recordUpstreamAttempt,
   type HttpFailureClass,
 } from '../health/measurement';
+import { yahooChangeFromMeta } from '../livePrice';
 
 /**
  * Corrective gate (deep-audit finding 2): each bulk invocation owns its
@@ -41,8 +42,13 @@ interface BulkAttemptAccumulator {
 
 export interface BulkPriceEntry {
   price: number;
-  change: number;
-  volume: number;
+  /** Commit O (Coder Directions #9/#10, Rule 16): number|null — the change
+   *  comes from the ONE unified chart-meta parser (yahooChangeFromMeta);
+   *  a change the payload does not disclose is null, never a fabricated
+   *  flat day (the old `previousClose || price` fallback is retired). */
+  change: number | null;
+  /** 24h volume when the upstream disclosed one, else null — null is NOT 0. */
+  volume: number | null;
   /** T60.1 provenance: ORIGINAL upstream observation time (ISO), null if
    *  the transport did not disclose one. NEVER the fetch/serve time. */
   observedAt: string | null;
@@ -129,9 +135,15 @@ async function fetchYahooPrice(
         continue; // Reject US ADR prices (INFY without suffix ≈ $12)
       }
 
-      const prevClose = Number(meta.previousClose) || Number(meta.chartPreviousClose) || price;
-      const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
-      const volume = Number(meta.regularMarketVolume) || 0;
+      // Commit O: ONE unified Yahoo chart-meta parser for the whole codebase
+      // (Coder Directions #9) — the third competing interpretation
+      // (`previousClose || price` → change 0) is retired; an unestablishable
+      // change is null, and a missing volume is null (Rule 16).
+      const parsed = yahooChangeFromMeta(meta);
+      if (!parsed) continue;
+      const change = parsed.change;
+      const volumeNum = Number(meta.regularMarketVolume);
+      const volume = Number.isFinite(volumeNum) ? volumeNum : null;
 
       // T60.1 provenance: Yahoo's own observation timestamp for this quote.
       const rt = Number(meta.regularMarketTime);

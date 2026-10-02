@@ -11,6 +11,11 @@ import ProgressBar from "@/components/gamification/ProgressBar";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useLivePrices, type PriceData } from "@/hooks/useLivePrices";
+import {
+  aggregateMarketLabel,
+  aggregatePresentationState,
+  statusColor,
+} from "@/lib/pricePresentation";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
@@ -153,7 +158,16 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     ...(stockOfDay ? [stockOfDay.symbol] : []),
   ], [rotatingStocks, rotatingShorts, stockOfDay]);
 
-  const { prices, loading, lastUpdated } = useLivePrices(allSyms, 60000, initialPrices);
+  const { prices, loading, lastUpdated, observedAt } = useLivePrices(allSyms, 60000, initialPrices);
+
+  // Round 9 (directive 14 — dashboard provenance): the badge is DERIVED from
+  // the actual entry statuses via the shared presentation contract. The old
+  // behavior — a green "Live Market Data" badge whenever a fetch had
+  // happened (keyed off the browser fetch time) — is exactly the defect this
+  // replaces: a fetch is not a freshness claim.
+  const tickerEntries = Object.values(prices);
+  const marketState = aggregatePresentationState(tickerEntries);
+  const marketLabel = tickerEntries.length > 0 ? aggregateMarketLabel(tickerEntries) : null;
   // U4: no pick when rankings are off — the empty symbol skips the fetch.
   const { fundamentals: sodFund } = useFundamentals(stockOfDay?.symbol ?? "");
   const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
@@ -161,15 +175,18 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
   const [timeAgo, setTimeAgo] = useState("—");
 
   useEffect(() => {
-    if (!lastUpdated) return;
+    // Round 9: the "updated …" clock keys off the SERVER-disclosed
+    // observation time (observedAt) — never the browser fetch time. No
+    // disclosed observation → no clock ("—"), not a fabricated age.
+    if (!observedAt) return;
     const update = () => {
-      const s = Math.floor((Date.now() - lastUpdated.getTime()) / 1000);
+      const s = Math.floor((Date.now() - observedAt.getTime()) / 1000);
             setTimeAgo(s < 60 ? (s + t("dashboard.timeAgoSecondsSuffix")) : (Math.floor(s / 60) + t("dashboard.timeAgoMinutesSuffix")));
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [lastUpdated]);
+  }, [observedAt, t]);
 
   // G6: null (unobserved) renders '—' / neutral — never a fabricated 0 or 0.00%.
   const fmtINR = (n?: number | null) =>
@@ -226,21 +243,25 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
       }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            {/* Round-5 audit (finding 9): the green LIVE badge used to render
-                unconditionally — even next to em dashes and while quotes were
-                still loading. It now appears only once live quotes have
-                actually arrived; before that the bar says what is true. */}
-            {lastUpdated ? (
+            {/* Round 9 (directive 14): the badge state is DERIVED from the
+                entries' provenance statuses (aggregateMarketLabel —
+                conservative: the stalest usable tile sets the word, and a
+                delayed transport downgrades LIVE to DELAYED). It renders only
+                once quotes exist; before that the bar says what is true. */}
+            {marketLabel ? (
               <>
-                <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:C.green,boxShadow:"0 0 8px rgba(34,197,94,0.7)" }} className="animate-pulse" />
-                <span style={{ color:C.green, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.liveMarketData")}</span>
+                <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:statusColor(marketState),boxShadow:`0 0 8px ${marketState === "live" ? "rgba(34,197,94,0.7)" : "rgba(100,116,139,0.5)"}` }} className={marketState === "live" ? "animate-pulse" : undefined} />
+                <span style={{ color:statusColor(marketState), fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{marketLabel}</span>
               </>
             ) : (
               <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.connecting")}</span>
             )}
           </div>
           <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
-            {lastUpdated ? (t("dashboard.updatedPrefix") + timeAgo) : t("dashboard.connecting")}
+            {/* Round 9: the age keys off the SERVER observation time; no
+                disclosed observation → an honest dash, never a fabricated
+                "updated Ns" off the fetch clock. */}
+            {observedAt ? (t("dashboard.updatedPrefix") + timeAgo) : (marketLabel ? "—" : t("dashboard.connecting"))}
           </span>
         </div>
       </div>

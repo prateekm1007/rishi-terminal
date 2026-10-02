@@ -32,6 +32,11 @@ export interface InitialPriceEntry {
   changePercent24h: number | null;
   volume24h: number | null;
   lastUpdated: string | null;
+  /** Round 9: the SSR snapshot carries the same provenance fields the
+   *  client contract now transports — status/source verbatim from the
+   * served observation, null when the source did not disclose one. */
+  status: string | null;
+  source: string | null;
 }
 
 /** Structural input for the PURE mapper: everything the two price paths
@@ -68,6 +73,10 @@ export function toPriceData(point: PriceDataLike | null | undefined): InitialPri
     changePercent24h: point.changePercent24h !== undefined ? num(point.changePercent24h) : num(point.change),
     volume24h: num(point.volume24h),
     lastUpdated: typeof point.lastUpdated === "string" && point.lastUpdated ? point.lastUpdated : null,
+    // Round 9: provenance rides through the SSR snapshot too — verbatim
+    // when disclosed, null otherwise (never guessed, Rule 16).
+    status: typeof point.status === "string" && point.status ? point.status : null,
+    source: typeof point.source === "string" && point.source ? point.source : null,
   };
 }
 

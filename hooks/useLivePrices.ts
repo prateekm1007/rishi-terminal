@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { latestObservedAt } from '../lib/pricePresentation';
 
 export interface PriceData {
   /** G6 (audit 2026-10-02, Coder Directions): every field is nullable — a
@@ -19,6 +20,16 @@ export interface PriceData {
    *  the upstream disclosed none. The client never substitutes its own
    *  fetch time here — that would fabricate an observation timestamp. */
   lastUpdated: string | null;
+  /** Round 9 (directive 14): the server's provenance status for THIS entry
+   *  (LIVE / CACHED / STATIC / DERIVED / UNAVAILABLE), verbatim from the
+   *  wire — null when the transport carried none. Page-level badges are
+   *  DERIVED from these (lib/pricePresentation.aggregatePresentationState),
+   *  never from "a fetch happened". */
+  status: string | null;
+  /** Round 9: the entry's upstream source id, verbatim from the wire —
+   *  needed so an aggregate LIVE badge can honestly downgrade to DELAYED
+   *  for delayed transports (yahoo). Null when not transported. */
+  source: string | null;
 }
 
 /** The NSE market state the batch payload carries top-level (U2). */
@@ -59,6 +70,9 @@ export interface BatchPriceEntry {
   changePercent24h?: number;
   volume24h?: number;
   lastUpdated?: string | null;
+  /** Round 9: the wire's upstream source id (for honest delayed-source
+   *  labelling in aggregate badges). */
+  source?: string;
 }
 
 /**
@@ -83,6 +97,11 @@ export function normalizeBatchEntry(
     volume24h: num(raw.volume24h),
     lastUpdated:
       typeof raw.lastUpdated === 'string' && raw.lastUpdated ? raw.lastUpdated : null,
+    // Round 9: the wire's provenance status and source id ride through
+    // verbatim (the fields the badge derivation needs); absent → null,
+    // never guessed.
+    status: typeof raw.status === 'string' && raw.status ? raw.status : null,
+    source: typeof raw.source === 'string' && raw.source ? raw.source : null,
   };
 }
 
@@ -113,6 +132,12 @@ export function useLivePrices(
   const [loading, setLoading] = useState(!initialPrices);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  /** Round 9 (directive 14): the LATEST SERVER-disclosed observation time
+   *  across the fetched entries — the honest clock for "updated …" labels.
+   * `lastUpdated` (fetch/check time) remains for surfaces that mean
+   *  exactly that ("last checked"); it must never be presented as an
+   *  observation time. Null when no entry disclosed one. */
+  const [observedAt, setObservedAt] = useState<Date | null>(null);
 
   const symbolsRef = useRef<string[]>(symbols);
   const marketRef = useRef<WireMarketState | null>(null);
@@ -169,6 +194,11 @@ export function useLivePrices(
 
       setPrices(normalized);
       setLastUpdated(new Date());
+      // Round 9: the observation clock is the LATEST upstream-disclosed
+      // timestamp (never the fetch time). latestObservedAt ignores
+      // unparsable/absent values, so no disclosed time → null stays null.
+      const latestIso = latestObservedAt(Object.values(normalized));
+      setObservedAt(latestIso ? new Date(Date.parse(latestIso)) : null);
       initialLoadDone.current = true;
     } catch (err) {
       console.error('[useLivePrices] fetch error:', err);
@@ -200,13 +230,13 @@ export function useLivePrices(
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symbolsKey, refreshInterval]);
-  return { prices, loading, error, lastUpdated, refetch: fetchPrices };
+  return { prices, loading, error, lastUpdated, observedAt, refetch: fetchPrices };
 }
 
 // Convenience: single symbol — stable key prevents re-mount loop
 export function usePrice(symbol: string) {
   // T18 fix: ref mutation during render replaced with memoized state
   const symbols = useMemo(() => [symbol], [symbol]);
-  const { prices, loading, error, lastUpdated } = useLivePrices(symbols);
-  return { price: prices[symbol] || null, loading, error, lastUpdated };
+  const { prices, loading, error, lastUpdated, observedAt } = useLivePrices(symbols);
+  return { price: prices[symbol] || null, loading, error, lastUpdated, observedAt };
 }

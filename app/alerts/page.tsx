@@ -8,6 +8,13 @@ import {
   type Alert, type AlertType,
 } from '../../lib/alerts/alertEngine';
 import { useLivePrices } from '../../hooks/useLivePrices';
+import {
+  aggregateMarketLabel,
+  aggregatePresentationState,
+  presentationState,
+  statusColor,
+  statusLabel,
+} from '../../lib/pricePresentation';
 
 const ALERT_TYPES: AlertType[] = [
   'price_above', 'price_below', 'percent_change_up',
@@ -33,7 +40,15 @@ export default function AlertsPage() {
     return unique;
   }, [alerts]);
 
-  const { prices, lastUpdated } = useLivePrices(symbols);
+  const { prices, lastUpdated, observedAt } = useLivePrices(symbols);
+
+  // Round 9 (directive 14 — alerts provenance): the header line is DERIVED
+  // from the actual entry statuses via the shared presentation contract —
+  // never a hardcoded "⚡ Live". The observation clock is the server's
+  // disclosed upstream time; "checked" stays the honest fetch time.
+  const marketEntries = Object.values(prices);
+  const marketState = aggregatePresentationState(marketEntries);
+  const marketLabel = marketEntries.length > 0 ? aggregateMarketLabel(marketEntries) : null;
 
   // Check alerts against live prices
   useEffect(() => {
@@ -88,7 +103,11 @@ export default function AlertsPage() {
             </p>
             {lastUpdated && (
               <div style={{ fontSize: 11, color: '#64748B', marginTop: 8 }}>
-                ⚡ Live · Last checked {lastUpdated.toLocaleTimeString()}
+                <span style={{ color: statusColor(marketState), fontWeight: 700 }}>
+                  {marketLabel ?? 'CONNECTING…'}
+                </span>
+                {observedAt && ` · Observed ${observedAt.toLocaleTimeString('en-IN')}`}
+                {' · Checked ' + lastUpdated.toLocaleTimeString('en-IN')}
               </div>
             )}
           </div>
@@ -196,7 +215,20 @@ export default function AlertsPage() {
                     </div>
                     <div style={{ fontSize: 11, color: '#64748B', display: 'flex', gap: 12 }}>
                       {livePrice && (
-                        <span>Live: {livePrice.toFixed(2)}</span>
+                        // Round 9: the per-row price label states the entry's
+                        // ACTUAL provenance (LIVE/CACHED/…), not a hardcoded
+                        // "Live" — the shared vocabulary, per-symbol.
+                        <span>
+                          <span
+                            style={{
+                              color: statusColor(presentationState(prices[alert.symbol])),
+                              fontWeight: 700,
+                            }}
+                          >
+                            {statusLabel(presentationState(prices[alert.symbol]), prices[alert.symbol]?.source)}
+                          </span>
+                          {' ' + livePrice.toFixed(2)}
+                        </span>
                       )}
                       {alert.note && <span>· {alert.note}</span>}
                       {alert.triggered && alert.triggeredAt && (

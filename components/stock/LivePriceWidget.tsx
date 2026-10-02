@@ -2,7 +2,15 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Stock } from '../../lib/types';
-import { presentationState, statusLabel, statusColor, absChangeFromPercent, type PresentationState } from '../../lib/pricePresentation';
+import {
+  presentationState,
+  statusLabel,
+  statusColor,
+  absChangeFromPercent,
+  formatChangePair,
+  observationDateFromEntry,
+  type PresentationState,
+} from '../../lib/pricePresentation';
 
 interface LiveEntry {
   price?: number;
@@ -10,6 +18,11 @@ interface LiveEntry {
   changePercent24h?: number;
   source?: string;
   status?: string;
+  /** The server's upstream observation time (ISO) — null when the
+   *  upstream disclosed none. Round 9: this, never `new Date()`, is the
+   *  "Updated …" clock. */
+  observedAt?: string | null;
+  lastUpdated?: string | null;
 }
 
 interface LivePriceWidgetProps {
@@ -80,12 +93,17 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
         // derived from this observation's own price + percent (H2): mixing
         // the live price with the seed `stock.price` produced
         // "−1.63% (−1332.30)" on /stock/RELIANCE.
+        // Round 9 (Rule 16): a MISSING change stays null — it renders as
+        // "—", never as a fabricated 0.00% / +0.00 move.
         const pct =
           typeof entry.changePercent24h === 'number' ? entry.changePercent24h :
           typeof entry.change           === 'number' ? entry.change           : null;
-        setChangePercent(pct ?? 0);
+        setChangePercent(pct);
         setChangeAbs(pct !== null ? absChangeFromPercent(newPrice, pct) : null);
-        setLastUpdated(new Date());
+        // Round 9: the clock is the UPSTREAM observation time when the
+        // server disclosed one — never the browser fetch time. No disclosed
+        // time → the "Updated" line does not render at all.
+        setLastUpdated(observationDateFromEntry(entry));
       }
     } catch (err) {
       console.error('[LivePriceWidget] fetch error:', err);
@@ -101,8 +119,17 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
     return () => clearInterval(interval);
   }, [stock.symbol]);
 
-  const isPositive = (changePercent ?? 0) >= 0;
+  // Round 9: the display pair (and its direction/color claim) comes from
+  // the shared formatter — a missing change renders "—" with no arrow and
+  // no green/red claim; a genuine 0.00% is a real observation.
+  const change = formatChangePair(changePercent, changeAbs);
   const hasPrice = displayPrice !== null;
+  const changeColor =
+    !hasPrice || change.positive === null
+      ? 'var(--text-muted)'
+      : change.positive
+        ? 'var(--accent-green)'
+        : 'var(--accent-red)';
 
   const flashBg = flashGreen
     ? 'rgba(0,186,124,0.15)'
@@ -170,29 +197,32 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
           : '—'}
       </div>
 
-      {/* Change row */}
+      {/* Change row — Round 9 (Rule 16): a missing change is "—", never a
+          fabricated 0.00% with an arrow (formatChangePair owns the shape). */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
           fontSize:   13,
           fontFamily: 'monospace',
           fontWeight: 700,
-          color:      hasPrice ? (isPositive ? 'var(--accent-green)' : 'var(--accent-red)') : 'var(--text-muted)',
+          color:      changeColor,
         }}>
-          {hasPrice ? `${isPositive ? '▲' : '▼'} ${isPositive ? '+' : ''}${(changePercent ?? 0).toFixed(2)}%` : '—'}
+          {hasPrice ? change.pctText : '—'}
         </span>
         <span style={{
           fontSize:   11,
           fontFamily: 'monospace',
           color:      'var(--text-muted)',
         }}>
-          {hasPrice ? `(${isPositive ? '+' : ''}${(changeAbs ?? 0).toFixed(2)})` : '—'}
+          {hasPrice ? change.absText : '—'}
         </span>
       </div>
 
-      {/* Last updated */}
+      {/* Last updated — the UPSTREAM observation time when disclosed
+          (Round 9); absent a disclosed time, the line does not render —
+          there is no honest clock to show. */}
       {lastUpdated && (
         <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 10 }}>
-          Updated {lastUpdated.toLocaleTimeString('en-IN')}
+          Observed {lastUpdated.toLocaleTimeString('en-IN')}
         </div>
       )}
 

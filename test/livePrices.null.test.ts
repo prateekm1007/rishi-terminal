@@ -27,6 +27,8 @@ describe("G6 — normalizeBatchEntry null contract", () => {
       changePercent24h: null,
       volume24h: null,
       lastUpdated: null,
+      status: null,
+      source: null,
     });
   });
 
@@ -55,6 +57,8 @@ describe("G6 — normalizeBatchEntry null contract", () => {
       changePercent24h: null,
       volume24h: 12345,
       lastUpdated: null,
+      status: null,
+      source: null,
     });
   });
 
@@ -75,6 +79,11 @@ describe("G6 — normalizeBatchEntry null contract", () => {
       changePercent24h: 0,
       volume24h: 0,
       lastUpdated: "2026-10-01T09:00:00.000Z",
+      // Round 9: the wire's status/source ride through verbatim too; the
+      // test payload carries none, so the honest values are null (never
+      // guessed).
+      status: null,
+      source: null,
     });
   });
 });

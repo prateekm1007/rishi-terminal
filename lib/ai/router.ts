@@ -295,7 +295,18 @@ const UNTRUSTED_HISTORY_BLOCK =
 /** Commit L1: the bounded tool-calling protocol. When evidence is present
  *  the model may request server-executed tools BEFORE its final structured
  *  reply; each request is validated + executed server-side (executeAiTool)
- *  and its result is injected as a TOOL RESULT/TOOL ERROR turn. */
+ *  and its result is injected as a TOOL RESULT/TOOL ERROR turn.
+ *
+ *  Commit O (Coder Directions #5/#7, production evidence 2026-10-02 —
+ *  docs/evidence/commit-o/raw-provider-diagnostics.md): the real production
+ *  model (agnes-2.5-flash) answers the price canary with claims as
+ *  EVIDENCE-ID STRINGS — `{"claims": ["price:RELIANCE:..."]}` — which the
+ *  structured schema (correctly) rejects, so the canary fail-closed at
+ *  structuredResponse="invalid" forever. An instruction is not a shape
+ *  demonstration: the protocol now carries the EXACT final-JSON example
+ *  (claim objects with evidenceIds + assertions copied from the item's fact
+ *  annotation). Deterministic server-side prompt contract — no new AI path,
+ *  no weakening of validation. */
 function toolProtocolBlock(): string {
   return (
     "\n\nTOOL PROTOCOL — before your FINAL answer you may request server-executed platform data. " +
@@ -307,6 +318,19 @@ function toolProtocolBlock(): string {
     "ids in claims and copy their fact annotations EXACTLY. " +
     `The tool budget is ${MAX_TOOL_ITERATIONS} calls per question: plan ahead, and once you have enough data reply with the FINAL ` +
     "structured JSON ({answer, claims, uncertainties}). " +
+    "FINAL ANSWER SHAPE (this exact structure is REQUIRED — a reply that does not parse as this object is discarded): " +
+    '{"answer": "<your prose>", "claims": [{"claim": "<the fact you state>", ' +
+    '"evidenceIds": ["<the TOOL RESULT item id you are citing>"], ' +
+    '"assertions": [{"field": "<field from the item\'s fact annotation, e.g. price>", ' +
+    '"value": <the exact number from the annotation>, "unit": "<the unit from the annotation, e.g. inr>"}]}], ' +
+    '"uncertainties": ["<what you could not verify>"]}. ' +
+    "Every claim is an OBJECT with (a) claim text, (b) evidenceIds copied VERBATIM from the TOOL RESULT item ids, " +
+    "(c) assertions copying the item's `fact:` annotation field/value/unit EXACTLY — never restate an id as a bare string, " +
+    "never round or reformat the numbers. A claim without a cited item id, or a number without a matching assertion, " +
+    "fails verification and is discarded. " +
+    "If a TOOL RESULT says a value was NOT DISCLOSED (for example '24h change: not disclosed by the source'), the value is " +
+    "UNKNOWN: never state, assert, or imply it anywhere in your reply — writing '0% change' or any other guess for it is a " +
+    "fabrication and the whole reply is discarded. State only the values that appear in a fact annotation. " +
     "If the budget runs out before you answer, the request is terminated BLOCKED — no answer is served. " +
     "Never invent tool results, never claim data you did not receive, never ask the user to run tools."
   );
@@ -620,6 +644,8 @@ async function runGroundedLoop(
           console.error(
             "[ai/router] no-evidence reply carried ungroundable content "
             + `(claims=${structured.data.claims.length}, ungroundedNumbers=${ungroundedNumbers.length}) — discarded`,
+            `rejections=${JSON.stringify(grounding.rejections.slice(0, 4))}`,
+            `answerHead=${JSON.stringify(structured.data.answer.replace(/\s+/g, " ").slice(0, 200))}`,
           );
           return {
             answer:
@@ -663,6 +689,19 @@ async function runGroundedLoop(
       // provider debugging text. Serve the bounded honest response with
       // machine-readable provenance (structuredResponse: "invalid") — no
       // replacement financial answer is fabricated.
+      // Commit O (Rule 10): the failure is diagnosable SERVER-SIDE — the
+      // parse/schema reason and a bounded raw head go to the server log only;
+      // the client still receives the generic bounded response.
+      {
+        const rawHead = String(text ?? "").replace(/\s+/g, " ").slice(0, 300);
+        console.error(
+          "[ai/router] structured reply failed parse/zod:",
+          parsed ? "schema mismatch" : "unparseable JSON",
+          `provider=${provider.id} model=${provider.model}`,
+          parsed ? JSON.stringify(structured?.error?.issues?.slice(0, 4) ?? []) : "",
+          `rawHead=${JSON.stringify(rawHead)}`,
+        );
+      }
       return {
         answer:
           "The AI response could not be verified against the supplied financial evidence.",

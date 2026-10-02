@@ -22,7 +22,9 @@ import { fetchLivePrice, isPersistableSource, REFERENCE_SYMBOLS } from '../liveP
 
 export type ObservationFetcher = (symbol: string) => Promise<{
   price: number;
-  change: number;
+  /** Commit O (Rule 16): number|null — a change the upstream did not
+   *  disclose is unavailability, never a fabricated flat day. */
+  change: number | null;
   source: string;
   status?: string;
   /** Corrective gate 3: string|null — the upstream-disclosed observation

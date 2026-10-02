@@ -227,14 +227,20 @@ export function buildPriceItem(symbol: string, pricePoint: PricePoint | null): A
     const priceFacts: AiEvidenceFact[] = [
       { field: "price", value: pricePoint.price, unit: FACT_UNIT_BY_FIELD.price, source: priceSource, observedAt },
     ];
-    if (Number.isFinite(pricePoint.change)) {
-      priceFacts.push({ field: "change", value: pricePoint.change, unit: FACT_UNIT_BY_FIELD.change, source: priceSource, observedAt });
+    // Commit O (Rule 16): change === null means the upstream disclosed no
+    // change — the item then carries NO change fact and its text says so.
+    // A fabricated "0 percent" would verify a flat day that never happened.
+    const hasChange = pricePoint.change != null && Number.isFinite(pricePoint.change);
+    if (hasChange) {
+      priceFacts.push({ field: "change", value: pricePoint.change as number, unit: FACT_UNIT_BY_FIELD.change, source: priceSource, observedAt });
     }
     return {
       id: `price:${symbol}:${when}`,
       text:
         `Latest observed price: ${fmt(pricePoint.price)} ` +
-        `(change ${fmt(pricePoint.change)}%). ` +
+        (hasChange
+          ? `(change ${fmt(pricePoint.change as number)}%). `
+          : "(24h change: not disclosed by the source). ") +
         `Source: ${pricePoint.source}; status: ${status}; ` +
         `observation time: ${pricePoint.observedAt ?? "not disclosed by the upstream"}.` +
         factAnnotation(priceFacts),

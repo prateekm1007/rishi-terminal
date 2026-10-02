@@ -4,8 +4,6 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { COMMODITIES } from '../../data/markets';
-import { useTier } from '../../hooks/useTier';
-import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
@@ -27,14 +25,11 @@ export default function CommoditiesPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [category, setCategory] = useState('All');
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const { tier } = useTier();
-  const premium = tier !== 'seeker';
 
-  // R3 (round 2): the average teaser on each card is computed SERVER-SIDE
-  // (/api/gurus?kind=commodity) — the per-guru verdict content never enters
-  // a free-tier browser; locked cards show only the served average.
+  // R3 (round 2) + Commit M3 (free access): the average on each card is
+  // computed SERVER-SIDE (/api/gurus?kind=commodity); every detail page
+  // serves the full per-guru verdicts to every caller.
   const [guruTeasers, setGuruTeasers] = useState<Record<string, { avg: number | null; gurus: Array<{ id: string; initials: string; score: number | null }> }>>({});
   useEffect(() => {
     let cancelled = false;
@@ -88,8 +83,6 @@ export default function CommoditiesPage() {
 
   return (
     <main className="page-bg">
-
-      {showUpgrade && <UpgradePrompt reason="limit_reached" onClose={() => setShowUpgrade(false)} />}
 
       {/* Header */}
       <div className="page-header">
@@ -237,15 +230,10 @@ export default function CommoditiesPage() {
                 onKeyDown={e => {
                   if (e.key !== 'Enter' && e.key !== ' ') return;
                   e.preventDefault();
-                  if (!premium && commodity.category !== 'Energy') { setShowUpgrade(true); return; }
                   router.push('/commodities/' + commodity.symbol);
                 }}
                 style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                 onClick={() => {
-                  if (!premium && commodity.category !== 'Energy') {
-                    setShowUpgrade(true);
-                    return;
-                  }
                   router.push('/commodities/' + commodity.symbol);
                 }}
               >

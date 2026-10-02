@@ -9,7 +9,6 @@ import { usePrice } from '../../hooks/useLivePrices';
 import { CRYPTO_ONCHAIN } from '../../data/crypto';
 import type { UniversalAsset } from '../../lib/types/asset';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
-import { useTier } from '../../hooks/useTier'; // R3: verdicts served by /api/gurus
 import { CRYPTO_GURUS } from '../../lib/gurus/crypto';
 import { ProvenanceChip } from '../shared/ProvenanceChip';
 
@@ -58,13 +57,12 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     price: displayPrice,
     change24h: displayChange,
   };
-  // R3 (round 2): guru verdicts come from /api/gurus (server-computed,
-  // tier-sliced). This component renders only what it is served — the paid
-  // verdict content never enters a free-tier browser.
-  const { tier, loading: tierLoading } = useTier();
+  // R3 (round 2) + Commit M3 (free access): guru verdicts come from
+  // /api/gurus (server-computed, every verdict in full for every caller).
+  // This component renders only what it is served.
   const [verdicts, setVerdicts] = useState<Array<{
     id: string; name: string; score: number | null; label: string;
-    locked: boolean; insight?: string;
+    insight?: string;
     comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
   }> | null>(null);
   useEffect(() => {
@@ -85,7 +83,6 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
       focus: meta?.focus ?? '',
       bio: meta?.bio ?? '',
       result: { score: v.score, label: v.label, insight: v.insight ?? '', comps: v.comps ?? [] },
-      locked: v.locked,
     };
   });
   const validScores = rishiScores.filter(r => r.result.score !== null); // T11: insufficient data excluded

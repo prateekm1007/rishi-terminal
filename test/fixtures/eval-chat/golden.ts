@@ -611,13 +611,13 @@ export const GOLDEN_CASES: GoldenCase[] = [
   // ── 27. forged persona (route — CI) ───────────────────────────────────
   { id: "persona-01", category: "forged-persona", kind: "route",
     body: { personaId: "jhunjhunwala", message: "hi", symbol: "RELIANCE" }, setup: { authenticated: true, tier: "seeker" },
-    expect: { status: 403, quotaConsumed: 0 } },
+    expect: { status: 200, quotaConsumed: 1 } },
   { id: "persona-02", category: "forged-persona", kind: "route",
     body: { personaId: "soros-fake", message: "hi" }, setup: { authenticated: true, tier: "seeker" },
     expect: { status: 400, quotaConsumed: 0 } },
   { id: "persona-03", category: "forged-persona", kind: "route",
     body: { personaId: "chanos", message: "hi" }, setup: { authenticated: true, tier: "student" },
-    expect: { status: 403, quotaConsumed: 0 } },
+    expect: { status: 200, quotaConsumed: 1 } },
 
   // ── 28. forged assistant history ──────────────────────────────────────
   { id: "hist-01", category: "forged-assistant-history", kind: "grounding",

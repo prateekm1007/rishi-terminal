@@ -29,7 +29,7 @@ import {
 import { ALL_RISHIS, resolvePersonaId } from "@/lib/chat/personas";
 import { RISHI_PERSONALITIES } from "@/lib/chat/rishiEngine";
 import { RISHI_PROMPTS } from "@/lib/chat/prompts";
-import { getRishisByTier, isPersonaAllowed } from "@/lib/chat/personaAccess";
+import { getChatPersonas, isCanonicalPersonaId } from "@/lib/chat/personaAccess";
 
 const canonicalIds = new Set(CANONICAL_PERSONAS.map(p => p.id));
 
@@ -39,10 +39,13 @@ describe("P0 persona registry — structural invariants (no drift possible)", ()
     for (const p of CANONICAL_PERSONAS) expect(p.id.length).toBeGreaterThan(0);
   });
 
-  it("every canonical persona has an access tier from the closed set and a non-empty system prompt", () => {
+  it("every canonical persona has a non-empty system prompt (and NO entitlement axis exists anymore)", () => {
     for (const p of CANONICAL_PERSONAS) {
-      expect(["free", "student", "disciple"]).toContain(p.access);
       expect(p.systemPrompt.trim().length).toBeGreaterThan(0);
+      // Commit M3 (free access): the access/fnoAccess entitlement axes were
+      // removed from the registry — their return is a regression.
+      expect((p as unknown as Record<string, unknown>).access).toBeUndefined();
+      expect((p as unknown as Record<string, unknown>).fnoAccess).toBeUndefined();
     }
   });
 
@@ -91,39 +94,31 @@ describe("P0 persona registry — structural invariants (no drift possible)", ()
   });
 });
 
-describe("P0 persona access — the entitlement matrix (server authority)", () => {
-  it("seeker sees ONLY the free persona (damani) — the advertised contract is unchanged", () => {
-    const seeker = getRishisByTier("seeker");
-    expect(seeker.map(p => p.id)).toEqual(["damani"]);
+describe("M3 persona access — canonical validation only (no tier anywhere)", () => {
+  it("the served roster is EVERY canonical persona (founder decision: all free)", () => {
+    const served = getChatPersonas();
+    expect(served.map(p => p.id).sort()).toEqual(
+      CANONICAL_PERSONAS.map(p => p.id).sort(),
+    );
   });
 
-  it("student includes the free + student personas and excludes disciple-only ones", () => {
-    const student = new Set(getRishisByTier("student").map(p => p.id));
-    expect(student.has("damani")).toBe(true);
-    expect(student.has("jhunjhunwala")).toBe(true);
-    expect(student.has("kacholia")).toBe(true); // Master -> student (was UNGATED pre-fix)
-    expect(student.has("chanos")).toBe(false);
-    expect(student.has("graham")).toBe(false); // Legend -> disciple
+  it("isCanonicalPersonaId accepts every canonical id and rejects everything else", () => {
+    for (const p of CANONICAL_PERSONAS) {
+      expect(isCanonicalPersonaId(p.id)).toBe(true);
+    }
+    expect(isCanonicalPersonaId("unknown-persona")).toBe(false);
+    expect(isCanonicalPersonaId("")).toBe(false);
   });
 
-  it("disciple sees the full roster (21 personas)", () => {
-    expect(getRishisByTier("disciple")).toHaveLength(CANONICAL_PERSONAS.length);
+  it("personaAccess exports NO tier-keyed function (the gate cannot return)", async () => {
+    const mod = (await import("@/lib/chat/personaAccess")) as unknown as Record<string, unknown>;
+    expect(typeof mod.getRishisByTier).toBe("undefined");
+    expect(typeof mod.isPersonaAllowed).toBe("undefined");
   });
 
-  it("isPersonaAllowed mirrors the roster exactly", () => {
-    expect(isPersonaAllowed("damani", "seeker")).toBe(true);
-    expect(isPersonaAllowed("jhunjhunwala", "seeker")).toBe(false);
-    expect(isPersonaAllowed("kacholia", "seeker")).toBe(false);
-    expect(isPersonaAllowed("graham", "seeker")).toBe(false);
-    expect(isPersonaAllowed("jhunjhunwala", "student")).toBe(true);
-    expect(isPersonaAllowed("chanos", "student")).toBe(false);
-    expect(isPersonaAllowed("chanos", "disciple")).toBe(true);
-    expect(isPersonaAllowed("soros", "disciple")).toBe(true);
-    expect(isPersonaAllowed("unknown-persona", "disciple")).toBe(false);
-  });
-
-  it("nothing that was reachable before becomes newly FREE ( seeker surface is exactly {damani} )", () => {
-    const freeIds = CANONICAL_PERSONAS.filter(p => p.access === "free").map(p => p.id);
-    expect(freeIds).toEqual(["damani"]);
+  it("RishiPersonality projection carries no tier field", () => {
+    for (const p of Object.values(RISHI_PERSONALITIES)) {
+      expect((p as unknown as Record<string, unknown>).tier).toBeUndefined();
+    }
   });
 });

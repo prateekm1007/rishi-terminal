@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { resolvePersonaId } from '@/lib/chat/personas';
-import { isPersonaAllowed } from '@/lib/chat/personaAccess';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { STOCKS } from '@/data/stocks';
 import { checkRateLimit } from '@/lib/rateLimit';
@@ -18,14 +17,15 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  * - The system prompt is built SERVER-SIDE from the canonical persona
  *   registry — a client-supplied systemPrompt is not part of the contract
  *   and is ignored/rejected.
- * - Persona ENTITLEMENT is enforced per request (audit 2026-10-02 P0): the
- *   resolved persona must be in the caller's tier roster (the same
- *   personaAccess authority /api/chat/personas serves), else 403.
+ * - Persona validation is EXISTENCE + canonical registry resolution
+ *   (Commit M3, founder decision 2026-10-02 — every feature free): an
+ *   unknown persona id is rejected 400; every canonical persona is
+ *   available to every authenticated caller. There is no tier gate.
  * - symbol is validated against the stock seed registry before use.
  * - Limits: message <= 2000 chars; history <= 20 turns and <= 8000 chars
  *   total; roles restricted to user|assistant.
- * - Quotas: per-user daily quota by tier (Supabase chat_usage) plus a
- *   per-IP burst limit.
+ * - Quotas: per-user daily quota (Supabase chat_usage) plus a per-IP
+ *   burst limit.
  * - Providers (resolved per request from env):
  *     1. OpenAI-compatible endpoint — CHAT_API_BASE_URL + CHAT_API_KEY
  *        (+ optional CHAT_MODEL). The key is sent via the
@@ -166,17 +166,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unknown persona' }, { status: 400 });
   }
 
-  // P0 (audit 2026-10-02): authorize the resolved persona against the SAME
-  // canonical server-side roster /api/chat/personas serves. Previously this
-  // route only checked persona EXISTENCE — an authenticated seeker could
-  // submit a premium persona id and receive its answer. 403 must land
-  // BEFORE quota consumption (a rejected request burns nothing).
-  if (!isPersonaAllowed(personaId, user.tier as 'seeker' | 'student' | 'disciple')) {
-    return NextResponse.json(
-      { error: 'This persona requires a higher tier' },
-      { status: 403 },
-    );
-  }
+  // Commit M3 (free access): persona authorization is EXISTENCE + canonical
+  // registry resolution — every authenticated caller may converse with every
+  // canonical persona. The old tier-entitlement 403 (audit 2026-10-02 P0)
+  // is superseded by the founder decision of 2026-10-02: no tier may gate
+  // any feature. resolveCanonicalPersona re-reads the SAME registry the
+  // roster route serves, so the two surfaces cannot drift.
   const persona = resolveCanonicalPersona(personaId)!;
 
   const message = typeof body.message === 'string' ? body.message.trim() : '';

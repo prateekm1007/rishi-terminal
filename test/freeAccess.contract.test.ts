@@ -224,22 +224,26 @@ describe("free access: /api/rishis/[symbol] serves the FULL verdict set for ever
 
 describe("free access: /api/gurus serves no locked teasers", () => {
   for (const tier of ["anonymous", ...LEGACY_TIERS] as const) {
-    it(`${tier} caller -> every crypto guru verdict unlocked`, async () => {
+    it(`${tier} caller -> every crypto guru verdict unlocked (full content, no locked field)`, async () => {
       asUser(tier === "anonymous" ? null : { id: "u1", tier });
       const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=crypto"));
       expect(res.status).toBe(200);
-      const body = (await res.json()) as { gurus: Array<{ locked: boolean }> };
+      const body = (await res.json()) as { gurus: Array<{ locked?: boolean; insight?: string; comps?: unknown[] }> };
       expect(body.gurus.length).toBeGreaterThan(0);
-      expect(body.gurus.every((g) => g.locked === false)).toBe(true);
+      // The locked concept is GONE from the wire — and the full verdict
+      // content (insight + comps) is present for every guru.
+      expect(body.gurus.every((g) => g.locked === undefined)).toBe(true);
+      expect(body.gurus.every((g) => typeof g.insight === "string" && Array.isArray(g.comps))).toBe(true);
     });
 
     it(`${tier} caller -> commodity list mode has NO locked categories (Energy-only free rule gone)`, async () => {
       asUser(tier === "anonymous" ? null : { id: "u1", tier });
       const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=commodity"));
       expect(res.status).toBe(200);
-      const body = (await res.json()) as { commodities: Array<{ locked: boolean }> };
+      const body = (await res.json()) as { commodities: Array<{ locked?: boolean; gurus: unknown[] }> };
       expect(body.commodities.length).toBeGreaterThan(0);
-      expect(body.commodities.every((c) => c.locked === false)).toBe(true);
+      expect(body.commodities.every((c) => c.locked === undefined)).toBe(true);
+      expect(body.commodities.every((c) => c.gurus.length > 0)).toBe(true);
     });
   }
 });

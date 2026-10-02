@@ -9,31 +9,21 @@ import { scoreMichaelSaylor } from '@/lib/scorers/crypto/michaelsaylor';
 import { scoreJimRogers } from '@/lib/scorers/commodity/jimrogers';
 import { scoreRickRule } from '@/lib/scorers/commodity/rickrule';
 import { scoreDanielYergin } from '@/lib/scorers/commodity/danielyergin';
-import { isPremium } from '@/lib/premium';
 import { normalizeSymbolInput } from '@/lib/registry/validateInput';
 
 /**
  * GET /api/gurus?kind=crypto[&symbol=BTC] — the SERVER-side surface for
- * crypto guru verdicts (R3, round 2).
+ * crypto/commodity guru verdicts (R3, round 2).
  *
  * The crypto list and detail pages used to compute every guru verdict in
  * the browser (from the bundled asset data + live overlay) and then hide
- * cards by tier — the verdicts were in the JS bundle and client memory for
- * every visitor. This route computes them on the server and tier-slices
- * the response:
+ * cards by tier. This route computes them on the server and serves them.
  *
- * - anonymous / seeker: gurus whose score >= 50 (the established free rule
- *   from the old list page) come back as full verdicts; the rest come back
- *   as { id, score, locked: true } teasers WITHOUT insight/comps.
- * - student / disciple: every verdict in full.
- *
- * kind=commodity follows the page-level rule that already existed: Energy
- * commodities are free; every other category is premium. The list mode
- * returns the per-commodity average (the free teaser every card shows
- * today) plus a locked flag; ?symbol= returns the per-guru verdicts, full
- * only when unlocked.
- *
- * Free/paid split is a founder decision pending — see docs/PAID_CONTENT.md.
+ * Commit M3 (founder decision 2026-10-02 — every feature free): the
+ * tier-slicing is GONE. Every caller — anonymous or signed in — receives
+ * every verdict in full. The historical score>=50 teaser rule (crypto) and
+ * the Energy-only free rule (commodities) are deleted; there is no
+ * `locked` field on the wire and no locked remainder to render.
  */
 
 interface GuruVerdict {
@@ -41,13 +31,9 @@ interface GuruVerdict {
   name: string;
   score: number | null;
   label: string;
-  locked: boolean;
-  /** Absent when locked — paid content never serialised for a free tier. */
-  insight?: string;
-  comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
+  insight: string;
+  comps: Array<{ label: string; v: number; wt: number; detail: string }>;
 }
-
-const FREE_SCORE_THRESHOLD = 50;
 
 const GURU_SCORERS = [
   { id: 'satoshi', name: 'Satoshi Bodhi', target: 'BTC', scorer: scoreSatoshiBodhi },
@@ -75,9 +61,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unsupported kind' }, { status: 400 });
   }
 
-  const user = await getSessionUser();
-  const tier = user?.tier ?? 'seeker';
-  const premium = isPremium(tier);
+  // Session read kept for abuse telemetry symmetry with the other verdict
+  // routes; under free access it no longer changes the response.
+  await getSessionUser();
 
   // Live price overlay, same source the client pages use (CoinGecko via
   // lib/livePrice). Falls back to the static seed price when unreachable —
@@ -98,7 +84,6 @@ export async function GET(req: NextRequest) {
   );
 
   if (kind === 'commodity') {
-    // Page-level rule (kept): Energy is free, other categories premium.
     const detail = COMMODITIES.find((c) => c.symbol === symbol);
     if (symbol && !detail) {
       return NextResponse.json({ error: 'Unknown symbol' }, { status: 404 });
@@ -133,26 +118,24 @@ export async function GET(req: NextRequest) {
     };
 
     if (detail) {
-      // Detail page: per-guru verdicts, full only when unlocked.
-      const unlocked = premium || detail.category === 'Energy';
+      // Detail page: every per-guru verdict, in full, for every caller.
       const gurus: GuruVerdict[] = COMMODITY_SCORERS.map((g, i) => {
         const scored = scoreCommodity(detail)[i];
-        if (!unlocked) {
-          return { id: g.id, name: g.name, score: scored.score, label: scored.label, locked: true };
-        }
         return {
-          id: g.id, name: g.name, score: scored.score, label: scored.label, locked: false,
+          id: g.id, name: g.name, score: scored.score, label: scored.label,
           insight: scored.insight, comps: scored.comps,
         };
       });
       return NextResponse.json(
-        { kind, tier, symbol: detail.symbol, category: detail.category, gurus },
+        { kind, symbol: detail.symbol, category: detail.category, gurus },
         { headers: { 'Cache-Control': 'private, no-store' } },
       );
     }
 
-    // List page: the average teaser every card already shows (free), plus
-    // the locked flag. Per-guru verdict content is NOT serialised here.
+    // List page: per-commodity average plus the per-guru verdict rows.
+    // (List mode keeps scores only — verdict text/comps are per-symbol
+    // detail; this is a payload decision, not a gate: ?symbol= serves the
+    // full text to anyone.)
     const commodities = COMMODITIES.map((c) => {
       const results = scoreCommodity(c);
       const valid = results.filter((r) => r.score !== null);
@@ -164,14 +147,11 @@ export async function GET(req: NextRequest) {
         symbol: c.symbol,
         category: c.category,
         avg,
-        locked: !premium && c.category !== 'Energy',
-        // Free teaser the cards already show: per-guru SCORES only (the
-        // verdict text/comps are never sent in list mode).
         gurus: results.map((r, i) => ({ id: COMMODITY_SCORERS[i].id, initials: COMMODITY_SCORERS[i].name.slice(0, 2).toUpperCase(), score: r.score })),
       };
     });
     return NextResponse.json(
-      { kind, tier, commodities },
+      { kind, commodities },
       { headers: { 'Cache-Control': 'private, no-store' } },
     );
   }
@@ -179,7 +159,7 @@ export async function GET(req: NextRequest) {
   const gurus: GuruVerdict[] = GURU_SCORERS.filter((g) => !symbol || g.target === symbol).map((g) => {
     const asset = CRYPTO_ASSETS.find((a) => a.symbol === g.target);
     if (!asset) {
-      return { id: g.id, name: g.name, score: null, label: 'Insufficient Data', locked: false };
+      return { id: g.id, name: g.name, score: null, label: 'Insufficient Data', insight: '', comps: [] };
     }
     const live = overlay[g.target];
     const scored = g.scorer({
@@ -187,24 +167,18 @@ export async function GET(req: NextRequest) {
       price: live?.price ?? asset.price,
       change24h: live?.changePct ?? asset.change24h ?? 0,
     });
-    const unlocked = premium || (scored.score !== null && scored.score >= FREE_SCORE_THRESHOLD);
-    if (!unlocked) {
-      // Teaser only — the paid fields stay server-side.
-      return { id: g.id, name: g.name, score: scored.score, label: scored.label, locked: true };
-    }
     return {
       id: g.id,
       name: g.name,
       score: scored.score,
       label: scored.label,
-      locked: false,
       insight: scored.insight,
       comps: scored.comps,
     };
   });
 
   return NextResponse.json(
-    { kind, tier, gurus },
+    { kind, gurus },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
 }

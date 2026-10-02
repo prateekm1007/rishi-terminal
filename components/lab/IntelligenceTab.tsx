@@ -3,16 +3,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-// N1 (round 3): receives the server-generated slim index. The council
-// analytics aggregate the SEEKER-visible free verdict slice; paid tiers
-// upgrade per-symbol verdicts through the server-enforced
-// GET /api/rishis/[symbol] (same pattern as the stock page) — verdicts
-// 6..20 never ship in the client bundle.
+// N1 (round 3) + Commit M3 (free access): receives the server-generated
+// slim index. The list rows carry a BOUNDED summary slice (payload budget,
+// not an entitlement); authenticated sessions upgrade each holding's
+// verdicts to the FULL set through GET /api/rishis/[symbol] — the engine
+// never ships in the client bundle, and every verdict is free for
+// everyone on the stock pages.
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import type { RishiScore } from '@/lib/types';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
-import { useTier } from '@/hooks/useTier';
+import { useSession } from '@/hooks/useSession';
 import { useLanguage } from '../../lib/language';
 import InfoTip from '@/components/lab/InfoTip';
 
@@ -50,7 +51,7 @@ interface Props {
 
 export default function IntelligenceTab({ rows }: Props) {
   const { t } = useLanguage();
-  const { tier, authenticated } = useTier();
+  const { authenticated } = useSession();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [verdictUpgrades, setVerdictUpgrades] = useState<Record<string, RishiScore[]>>({});
 
@@ -58,10 +59,12 @@ export default function IntelligenceTab({ rows }: Props) {
     setHoldings(loadPortfolio().holdings);
   }, []);
 
-  // Paid tiers: upgrade each holding's verdict slice via the
-  // server-enforced route (seeker keeps the embedded free slice).
+  // Free access: any signed-in session upgrades each holding's bounded
+  // summary slice to the FULL verdict set via the server route (the route
+  // is auth-gated for per-request compute/abuse control — the same data is
+  // public on every stock page).
   useEffect(() => {
-    if (!authenticated || tier === 'seeker' || holdings.length === 0) return;
+    if (!authenticated || holdings.length === 0) return;
     let cancelled = false;
     void (async () => {
       const next: Record<string, RishiScore[]> = {};
@@ -70,17 +73,17 @@ export default function IntelligenceTab({ rows }: Props) {
           const res = await fetch(`/api/rishis/${encodeURIComponent(h.symbol)}`, { cache: 'no-store' });
           if (!res.ok) return;
           const data = await res.json();
-          if (data.tier === 'student' || data.tier === 'disciple') {
-            next[h.symbol] = data.verdicts ?? [];
+          if (Array.isArray(data.verdicts)) {
+            next[h.symbol] = data.verdicts;
           }
         } catch {
-          // network failure: keep the free slice
+          // network failure: keep the bounded summary slice
         }
       }));
       if (!cancelled && Object.keys(next).length > 0) setVerdictUpgrades(next);
     })();
     return () => { cancelled = true; };
-  }, [authenticated, tier, holdings]);
+  }, [authenticated, holdings]);
 
   const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
 
@@ -99,7 +102,7 @@ export default function IntelligenceTab({ rows }: Props) {
         row,
         current,
         score: row?.consensus ?? 0, // same display semantics as before (null -> 0 on this surface)
-        scores: verdictUpgrades[h.symbol] ?? row?.freeScores ?? [],
+        scores: verdictUpgrades[h.symbol] ?? row?.summaryScores ?? [],
         topBull: row?.topBull ?? undefined,
         topBear: row?.topBear ?? undefined,
         tensionSpread: row?.tensionSpread ?? 0,

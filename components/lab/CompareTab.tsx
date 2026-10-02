@@ -11,7 +11,7 @@ import type { RishiScore } from '@/lib/types';
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
-import { useTier } from '@/hooks/useTier';
+import { useSession } from '@/hooks/useSession';
 import { useLanguage } from '../../lib/language';
 import { fetchHistoryPoints } from '@/components/lab/helpers';
 import type { HistoryPoint } from '@/components/lab/helpers';
@@ -98,7 +98,7 @@ interface Props {
 
 export default function CompareTab({ rows }: Props) {
   const { t } = useLanguage();
-  const { tier, authenticated } = useTier();
+  const { authenticated } = useSession();
   const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
   const [verdictUpgrades, setVerdictUpgrades] = useState<Record<string, RishiScore[]>>({});
   const [symbols, setSymbols] = useState<string[]>([]);
@@ -238,10 +238,12 @@ export default function CompareTab({ rows }: Props) {
 
   const { prices, loading } = useLivePrices(symbols);
 
-  // Paid tiers: upgrade each symbol's verdict slice via the server-enforced
-  // route (seeker keeps the free slice embedded in the slim row).
+  // Free access: any signed-in session upgrades each symbol's bounded
+  // summary slice to the FULL verdict set via the server route (the route is
+  // auth-gated for per-request compute/abuse control — the same data is
+  // public on every stock page).
   useEffect(() => {
-    if (!authenticated || tier === 'seeker' || symbols.length === 0) return;
+    if (!authenticated || symbols.length === 0) return;
     let cancelled = false;
     void (async () => {
       const next: Record<string, RishiScore[]> = {};
@@ -250,8 +252,8 @@ export default function CompareTab({ rows }: Props) {
           const res = await fetch(`/api/rishis/${encodeURIComponent(sym)}`, { cache: 'no-store' });
           if (!res.ok) return;
           const data = await res.json();
-          if (data.tier === 'student' || data.tier === 'disciple') {
-            next[sym] = data.verdicts ?? [];
+          if (Array.isArray(data.verdicts)) {
+            next[sym] = data.verdicts;
           }
         } catch {
           // network failure: keep the free slice
@@ -260,15 +262,15 @@ export default function CompareTab({ rows }: Props) {
       if (!cancelled && Object.keys(next).length > 0) setVerdictUpgrades(next);
     })();
     return () => { cancelled = true; };
-  }, [authenticated, tier, symbols]);
+  }, [authenticated, symbols]);
 
   const enriched = useMemo(() => {
     return symbols
       .map(sym => {
         const row = rowMap.get(sym);
         if (!row) return null;
-        // N1: the verdict slice is the free set, or the paid upgrade
-        const scores: RishiScore[] = verdictUpgrades[sym] ?? row.freeScores;
+        // N1: the bounded list summary, upgraded to the full set when fetched
+        const scores: RishiScore[] = verdictUpgrades[sym] ?? row.summaryScores;
         const live = prices[sym]?.price ?? null; // T14: no seed fallback
         const chg = prices[sym]?.changePercent24h ?? 0;
         const liveMktcap = (bulkFund[row.symbol]?.marketCap ? bulkFund[row.symbol].marketCap / 10000000 : row.mktcap);

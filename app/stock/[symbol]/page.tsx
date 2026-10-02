@@ -4,7 +4,6 @@ import { STOCKS } from '../../../data/stocks';
 import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
-import { TIER_CONFIG } from '@/lib/premium';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
 import { StockPageClient } from '../../../components/stock/StockPageClient';
@@ -83,18 +82,17 @@ export default async function StockPage({ params }: StockPageProps) {
     return <InsufficientDataRecord stock={stock} />;
   }
 
-  // R3: the RSC payload carries ONLY the free (seeker) verdict set. Paid
-  // tiers upgrade via GET /api/rishis/[symbol], enforced by getSessionUser.
-  // This page is statically prerendered, so the embedded set is the public
-  // free set for every visitor — never the full 20.
-  const sanitized = sanitizeConsensus(consensus, TIER_CONFIG.seeker.rishisVisible);
+  // Commit M3 (free access): the RSC payload carries the FULL verdict set
+  // for every visitor — the seeker slice and the paid upgrade path are
+  // gone. The page is statically prerendered; the embedded set is the
+  // complete council, publicly, for everyone.
+  const sanitized = sanitizeConsensus(consensus);
   const stockDetail = generateStockDetail(stock);
 
   // N1 (round 3): every engine call happens here, on the server. The
   // client components below receive RESULTS — the resolved seed-baseline
   // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
-  // both QVPS modes, and the knowledge graph for the free verdict set
-  // (paid tiers get the tier-aware graph from /api/rishis/[symbol]).
+  // both QVPS modes, and the knowledge graph for the FULL verdict set.
   const resolved = resolveStockMetrics(key);
   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);

@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
-import { getRishisByTier } from '@/lib/chat/personaAccess';
+import { getChatPersonas } from '@/lib/chat/personaAccess';
 
 /**
- * R3: chat persona availability is decided SERVER-side.
- *
- * The persona roster itself is public marketing content (bundled + shown on
- * /rishis); what is tier-gated is WHICH personas a caller may converse with.
- * This route returns the caller's allowed subset resolved from their
- * server-side session tier, using the SAME canonical registry + entitlement
- * check that POST /api/chat enforces per request (audit 2026-10-02 P0 —
- * previously the two routes derived their lists from different authorities,
- * and the POST route enforced nothing).
+ * R3 + Commit M3: chat persona availability is decided SERVER-side, and
+ * under the free-access product (founder decision 2026-10-02) every
+ * authenticated caller receives the SAME full roster — the canonical
+ * registry, with no tier filtering. The roster itself is public marketing
+ * content (bundled + shown on /rishis); what this route decides is only
+ * that the caller is signed in (401 otherwise — abuse control, not a
+ * tier). POST /api/chat re-validates each persona id against the same
+ * canonical registry per request.
  */
 export const dynamic = 'force-dynamic';
 
@@ -24,16 +23,14 @@ export async function GET(_req: NextRequest) {
     );
   }
 
-  const allowed = getRishisByTier(user.tier);
+  const personas = getChatPersonas();
   return NextResponse.json({
-    tier: user.tier,
-    personas: allowed.map((p) => ({
+    personas: personas.map((p) => ({
       id: p.id,
       name: p.name,
       fullName: p.fullName,
       emoji: p.emoji,
       color: p.color,
-      tier: p.access,
       rank: p.rank ?? null,
       philosophy: p.philosophy,
     })),

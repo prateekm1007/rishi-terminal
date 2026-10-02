@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Stock, RishiScore } from '../../lib/types';
 import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
-import { useTier } from '../../hooks/useTier';
 import { ConsensusHero }          from './ConsensusHero';
 import { RishiGrid }              from './RishiGrid';
 import { BullBearBar }            from './BullBearBar';
@@ -25,7 +24,8 @@ import SeedDataBanner             from '../shared/SeedDataBanner'; // N3: seed-d
 
 interface Props {
   stock: Stock;
-  /** R3: server-sanitized consensus — carries only the caller's verdict set. */
+  /** Server-sanitized consensus — carries the FULL verdict set (free
+   *  access: every visitor receives every verdict in the RSC payload). */
   consensus: SanitizedConsensus;
   detail: any;
   /** N1: server-computed seed-baseline resolution (live overlay happens in
@@ -33,8 +33,7 @@ interface Props {
   resolved: ResolvedStockMetrics | null;
   /** N1: both QVPS modes precomputed on the server. */
   qvpsDual: { long: import('../../lib/scorers/types').RishiScoreResult; short: import('../../lib/scorers/types').RishiScoreResult } | null;
-  /** N1: knowledge graph for the free verdict set; paid tiers receive the
-   *  tier-aware graph from /api/rishis/[symbol]. */
+  /** N1: knowledge graph for the full verdict set. */
   eliteGraph: EliteKnowledgeGraph;
 }
 
@@ -43,32 +42,12 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
 
-  // R3: the server embedded the free (seeker) verdict set. A signed-in
-  // user on a paid tier upgrades it via the server-enforced route — the
-  // verdicts rendered here always match what the server returned.
-  const { tier, authenticated } = useTier();
-  const [verdicts, setVerdicts] = useState<RishiScore[]>(consensus.verdicts);
-  const [graph, setGraph] = useState<EliteKnowledgeGraph | null>(null);
-  useEffect(() => {
-    if (!authenticated || tier === 'seeker') return;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch(`/api/rishis/${encodeURIComponent(stock.symbol)}`, { cache: 'no-store' });
-        if (!res.ok) return; // keep the server-embedded free set
-        const data = await res.json();
-        if (!cancelled && (data.tier === 'student' || data.tier === 'disciple')) {
-          setVerdicts(data.verdicts ?? []);
-          // N1: the route also serves the knowledge graph rebuilt for the
-          // paid verdict set (the engine no longer runs client-side).
-          setGraph(data.knowledgeGraph ?? null);
-        }
-      } catch {
-        // network failure: keep the free set
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [authenticated, tier, stock.symbol]);
+  // Commit M3 (free access): the server embeds the FULL verdict set and the
+  // full-set knowledge graph for every visitor — there is no client-side
+  // upgrade path and no tier left to key one on. What is rendered here is
+  // exactly what the server sent.
+  const verdicts: RishiScore[] = consensus.verdicts;
+  const graph: EliteKnowledgeGraph | null = eliteGraph;
 
   const TABS = [
     { id: 'overview',  label: t('stock.overview'),   desc: t('stock.overviewDesc')   },
@@ -447,8 +426,6 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                     symbol={stock.symbol}
                     verdicts={verdicts}
                     totalRishis={consensus.scoresCount}
-                    tier={tier}
-                    authenticated={authenticated}
                   />
                 </div>
               </>

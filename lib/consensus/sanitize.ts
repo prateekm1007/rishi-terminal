@@ -3,16 +3,20 @@ import 'server-only';
 import type { ConsensusResult, RishiScore } from './types';
 
 /**
- * Remediation R3: server-side tier gating for per-Rishi verdicts.
+ * Remediation R3 + Commit M3: server-side sanitization of per-Rishi
+ * verdicts before they cross any network/RSC boundary.
  *
  * The FULL ConsensusResult (every Rishi's score, score components and
- * narrative insight) is PAID content beyond the tier's free set. It must be
- * computed server-side and sanitized here BEFORE it crosses any
- * network/RSC boundary — the client never receives paid verdicts for a
- * lower tier, and UI hiding is UX only, never the control.
+ * narrative insight) is computed server-side and sanitized here — the
+ * client receives RESULTS, never the engine (N1). Under the free-access
+ * product (founder decision 2026-10-02) there is NO visibility slice:
+ * every caller receives every verdict. The historical tier-slice parameter
+ * was removed; if a surface needs a bounded LIST summary for payload
+ * budget, it slices its own display rows (lib/scoring/slimIndex.ts) and
+ * says so — that is a transport decision, never an entitlement.
  *
  * This module is server-only: importing it from client code is a build
- * error, which keeps the gating decision physically on the server.
+ * error, which keeps the sanitization decision physically on the server.
  */
 
 /** Verdict attribution safe to show as part of the free consensus view. */
@@ -32,11 +36,11 @@ export interface SanitizedConsensus {
   tension: string;
   tensionSpread: number;
   weightedBy: string;
-  /** How many Rishi verdicts exist in total (for locked-count UI). */
+  /** How many Rishi verdicts exist in total. */
   scoresCount: number;
   topBull: TrimmedVerdict;
   topBear: TrimmedVerdict;
-  /** Per-Rishi verdicts, LIMITED to the caller's tier visibility. */
+  /** Per-Rishi verdicts — ALL of them (free access: no visibility slice). */
   verdicts: RishiScore[];
 }
 
@@ -47,10 +51,7 @@ const trim = (r: RishiScore): TrimmedVerdict => ({
   score: r.score,
 });
 
-export function sanitizeConsensus(
-  consensus: ConsensusResult,
-  visibleCount: number,
-): SanitizedConsensus {
+export function sanitizeConsensus(consensus: ConsensusResult): SanitizedConsensus {
   return {
     consensus: consensus.consensus,
     category: consensus.category,
@@ -61,8 +62,7 @@ export function sanitizeConsensus(
     scoresCount: consensus.scores.length,
     topBull: trim(consensus.topBull),
     topBear: trim(consensus.topBear),
-    // Server-side tier slice: a seeker never receives verdict 6..20, so no
-    // client code can reveal them.
-    verdicts: consensus.scores.slice(0, Math.max(0, visibleCount)),
+    // Free access: every verdict crosses — there is no hidden remainder.
+    verdicts: consensus.scores,
   };
 }

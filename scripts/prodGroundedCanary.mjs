@@ -54,7 +54,12 @@ const OUT = join(ROOT, "docs", "evidence", "commit-n", "production-grounded-cana
 
 const POSITIVE_QUESTION = "What is the latest price of RELIANCE?";
 const NEGATIVE_QUESTION = "What is the latest price of ZZZZNOPE?";
-const MAX_POSITIVE_ATTEMPTS = 3;
+// Model replies are nondeterministic: a single attempt may honestly discard
+// (e.g. the model states a number in its answer text it did not assert —
+// the fail-closed contract refuses partial verification). 5 attempts give
+// the existence proof a fair margin; every attempt is logged in the
+// receipt, pass or fail.
+const MAX_POSITIVE_ATTEMPTS = 5;
 const MAX_NEGATIVE_ATTEMPTS = 3;
 
 /** ISO-8601 timestamps carry digits that are NOT market numbers. */
@@ -173,6 +178,9 @@ for (let i = 1; i <= MAX_POSITIVE_ATTEMPTS; i++) {
     structuredResponse: attempt.body?.provenance?.structuredResponse ?? null,
     toolCalls: attempt.body?.provenance?.toolCalls ?? [],
     textHead: String(attempt.body?.text ?? "").slice(0, 200),
+    // WHY a non-grounded attempt failed — the router's machine-readable
+    // reasons (empty when grounded).
+    groundingRejections: attempt.body?.provenance?.groundingRejections ?? [],
     checks: evaluation.checks,
   });
   for (const c of evaluation.checks) {

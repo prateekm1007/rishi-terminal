@@ -11,6 +11,8 @@ import { ScreenerClient } from '@/components/screener/ScreenerClient';
 export const metadata = {
   title: "Stock Screener — India equities | Rishi Terminal",
   description: "Screen India equities by consensus score, valuation, quality and leverage. Free tier shows the top-5 Rishi verdicts.",
+  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
+  alternates: { canonical: "/screener" },
 };
 
 export default function ScreenerPage() {

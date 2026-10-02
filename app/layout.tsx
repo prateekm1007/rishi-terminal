@@ -7,14 +7,36 @@ import { LanguageProvider } from "@/lib/language";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { GlobalSearchBar } from "@/components/ui/GlobalSearchBar";
 import { LegalDisclaimer } from "@/components/ui/LegalDisclaimer";
+import { SITE_URL, SITE_NAME } from "@/lib/seo/site";
 
+// Audit M6/B.3 (retest 2026-10-02): canonical + Open Graph + twitter were
+// absent sitewide — parameterized URLs could split crawl equity and link
+// unfurls (WhatsApp/X/LinkedIn) rendered as bare URLs. metadataBase anchors
+// every relative canonical/og URL; route layouts add their own
+// alternates.canonical (one line each), stock pages get per-symbol og.
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Rishi Terminal - Sacred Investment Intelligence",
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
   description: "AI-powered investment wisdom from 20 legendary investors",
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    url: SITE_URL,
+    title: "Rishi Terminal - Sacred Investment Intelligence",
+    description: "AI-powered investment wisdom from 20 legendary investors",
+  },
+  twitter: {
+    card: "summary",
+    title: "Rishi Terminal - Sacred Investment Intelligence",
+    description: "AI-powered investment wisdom from 20 legendary investors",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -5,6 +5,8 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Commodities — gold, silver, crude, base metals | Rishi Terminal",
   description: "MCX and global commodity reference data analysed through commodity Rishi frameworks.",
+  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
+  alternates: { canonical: "/commodities" },
 };
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {

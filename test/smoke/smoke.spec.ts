@@ -32,6 +32,28 @@ test.describe("smoke — core surfaces", () => {
     await expect(page.getByText(/RISHI CONSENSUS/i).first()).toBeVisible({ timeout: 20_000 });
   });
 
+  // Audit M6/B.3: canonical + Open Graph were absent sitewide (0 occurrences
+  // on every probed page) — parameterized URLs could split crawl equity and
+  // link unfurls rendered bare.
+  test("home and stock pages emit canonical + Open Graph tags", async ({ page }) => {
+    await page.goto("/");
+    // Next (trailingSlash: false) normalizes the root canonical without a
+    // trailing slash — assert the emitted form, not a hand-written one.
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      "https://rishi-terminal.vercel.app"
+    );
+    await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
+    await expect(page.locator('meta[property="og:url"]')).toHaveCount(1);
+
+    await page.goto("/stock/RELIANCE");
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      "https://rishi-terminal.vercel.app/stock/RELIANCE"
+    );
+    await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
+  });
+
   test("F&O backtester shows an honest empty state without data", async ({ page }) => {
     await page.goto("/fno/backtester");
     // T1: fabricated F&O results removed — page renders without fake tables

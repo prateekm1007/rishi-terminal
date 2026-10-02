@@ -1,0 +1,18 @@
+
+== GET /api/version ==
+HTTP 200
+{"sha":"9e3a7f2cc05fa4732efd802ecfd1668e0ab32f24","now":"2026-10-02T05:08:10.669Z","node":"v24.21.0"}
+
+== GET /api/chat/personas (anonymous) ==
+HTTP 200
+{"personas":[{"id":"jhunjhunwala","name":"Jhunjhunwala","fullName":"Rakesh Jhunjhunwala","emoji":"🦁","color":"#F59E0B","rank":"Legend","philosophy":"Bold conviction betting on India growth. Comfortable with volatility for multibagger potential."},{"id":"damani","name":"Damani","fullName":"Radhakishan Damani","emoji":"🧘","color":"#D4AF37","rank":"Legend","philosophy":"Conservative compounder. For…
+
+== GET /api/rishis/RELIANCE (anonymous) ==
+HTTP 401
+{"error":"Sign in to view Rishi verdicts"}
+
+== POST /api/chat (anonymous) ==
+HTTP 200
+{"text":"The most important quality is financial discipline — keeping debt at zero, generating consistent cash flows, and staying within businesses you understand completely. In life and business, simplicity and prudence beat complexity every time.","provenance":{"provider":"chat-api","model":"agnes-2.5-flash","generatedAt":"2026-10-02T05:08:14.074Z","grounded":false,"groundingMode":"context-only"…
+
+version sha: 9e3a7f2cc05fa4732efd802ecfd1668e0ab32f24

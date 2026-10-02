@@ -2,16 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-// N1 (round 3): receives the server-generated slim index. Per-Rishi
-// verdict rows aggregate the SEEKER-visible free slice; paid tiers
-// upgrade each symbol's verdicts through the server-enforced
-// GET /api/rishis/[symbol] — verdicts 6..20 never ship in the bundle.
+// N1 (round 3) + Commits M3/N1 (free access): receives the server-generated
+// slim index. Per-Rishi verdict rows aggregate the bounded summary slice
+// (a payload budget, never an entitlement); EVERY caller — signed in or
+// not — upgrades each symbol's verdicts to the full set through
+// GET /api/rishis/[symbol] — the engine never ships in the bundle.
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import type { RishiScore } from '@/lib/types';
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
-import { useSession } from '@/hooks/useSession';
 import { useLanguage } from '../../lib/language';
 import { fetchHistoryPoints } from '@/components/lab/helpers';
 import type { HistoryPoint } from '@/components/lab/helpers';
@@ -98,7 +98,6 @@ interface Props {
 
 export default function CompareTab({ rows }: Props) {
   const { t } = useLanguage();
-  const { authenticated } = useSession();
   const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
   const [verdictUpgrades, setVerdictUpgrades] = useState<Record<string, RishiScore[]>>({});
   const [symbols, setSymbols] = useState<string[]>([]);
@@ -238,12 +237,13 @@ export default function CompareTab({ rows }: Props) {
 
   const { prices, loading } = useLivePrices(symbols);
 
-  // Free access: any signed-in session upgrades each symbol's bounded
-  // summary slice to the FULL verdict set via the server route (the route is
-  // auth-gated for per-request compute/abuse control — the same data is
-  // public on every stock page).
+  // Commit N1 (founder decision 2026-10-02): every caller — signed in or
+  // not — upgrades each symbol's bounded summary slice to the FULL verdict
+  // set via the server route (the route is per-IP rate-limited for
+  // per-request compute/abuse control; the same data is public on every
+  // stock page). Portfolio Lab needs no sign-in.
   useEffect(() => {
-    if (!authenticated || symbols.length === 0) return;
+    if (symbols.length === 0) return;
     let cancelled = false;
     void (async () => {
       const next: Record<string, RishiScore[]> = {};
@@ -262,7 +262,7 @@ export default function CompareTab({ rows }: Props) {
       if (!cancelled && Object.keys(next).length > 0) setVerdictUpgrades(next);
     })();
     return () => { cancelled = true; };
-  }, [authenticated, symbols]);
+  }, [symbols]);
 
   const enriched = useMemo(() => {
     return symbols

@@ -1,0 +1,7 @@
+     × MUST FAIL PRE-N1: GET /lab signed-out passes through (no sign-in redirect) 9ms
+     × MUST FAIL PRE-N1: GET /lab?tab=compare signed-out keeps its query (no redirect) 1ms
+     × GET /portfolio (no such route) is not walled either — an honest 404 beats a sign-in wall 1ms
+     ✓ GET /alerts signed-out STILL redirects to sign-in (retained, out-of-scope gate) 1ms
+     ✓ the middleware matcher still covers /lab (session refresh, not gating, must run there) 0ms
+     × source contract: protectedPaths contains no lab/portfolio entry (drift guard) 2ms
+      Tests  4 failed | 2 passed (6)

@@ -8,19 +8,23 @@
  * free-access product those columns must not change anything, and this
  * matrix proves it end to end.
  *
- * Matrix (§17):
+ * Matrix (§17 + Commit N1 anonymous access, 2026-10-02 session 2):
  *   Access:    authenticated user -> every Rishi available
  *              same user -> every product feature available
  *              no payment -> feature still available
+ *              ANONYMOUS -> chat proceeds (identity cookie + one common
+ *              free quota), personas roster, verdicts, Portfolio Lab page
  *   Payment:   page retired · API 410 · checkout unreachable · no grant
- *   AI:        all personas chat (auth/abuse controls only) · tool loop
+ *   AI:        all personas chat (abuse controls only) · tool loop
  *              executes canonical tools · ugly paths pinned by tests
  *              (externally non-injectable rows carry exact test pointers)
  *   Identity:  git SHA = Vercel deployment = /api/version = probe SHA
  *
  * Secrets come from env ONLY (nothing hardcoded, nothing logged).
  * Usage: node scripts/prodFreeAccessMatrix.mjs [BASE_URL] [EXPECTED_SHA]
- * Output: docs/evidence/commit-m/production-free-access-matrix.json
+ * Output: docs/evidence/commit-n/production-free-access-matrix.json
+ *         (supersedes the Commit-M run at docs/evidence/commit-m/, which
+ *         remains as the historical record of the pre-N1 401 contract)
  */
 import { writeFileSync } from "node:fs";
 
@@ -59,7 +63,11 @@ async function api(method, path, { cookie, body } = {}) {
   const text = await resp.text();
   let parsed = null;
   try { parsed = JSON.parse(text); } catch { /* keep text */ }
-  return { status: resp.status, body: parsed ?? text };
+  return {
+    status: resp.status,
+    body: parsed ?? text,
+    location: resp.headers.get("location"),
+  };
 }
 
 // ── session bootstrap (Supabase admin API; fresh users each run) ─────────
@@ -197,8 +205,44 @@ for (const tier of LEGACY_TIERS) {
 }
 
 // ── 4. AI matrix ──────────────────────────────────────────────────────────
-row("ai anonymous: chat 401 (auth is abuse control, not a tier)",
-  (await api("POST", "/api/chat", { body: { personaId: "damani", history: [], message: "hi" } })).status === 401, {});
+// Founder decision 2026-10-03 ("chat requires no authentication"), as
+// deployed by PR #46: the anonymous probe caller PROCEEDS — 200,
+// quota-keyed to the deterministic per-IP identity (mechanics pinned by
+// test/chat.anonymous.test.ts; one real provider call per matrix run).
+{
+  const r = await api("POST", "/api/chat", { body: { personaId: "damani", history: [], message: "One sentence on patience." } });
+  row("ai anonymous: chat PROCEEDS (200 — no sign-in, per-IP quota identity)",
+    r.status === 200 && typeof r.body?.text === "string",
+    { status: r.status, grounded: r.body?.provenance?.grounded ?? null });
+}
+
+// Commit N1: the persona roster serves anonymous callers too.
+{
+  const r = await api("GET", "/api/chat/personas");
+  const ids = (r.body?.personas ?? []).map(p => p.id);
+  row("ai anonymous: /api/chat/personas full roster (no sign-in)",
+    r.status === 200 && ids.length >= 20,
+    { status: r.status, personas: ids.length });
+}
+
+// Commit N1 (this session): Portfolio Lab's verdict upgrades serve
+// anonymous callers — the half of the founder's ask PR #46 left walled
+// (verified 401 on production before this commit).
+{
+  const r = await api("GET", "/api/rishis/RELIANCE");
+  row("access anonymous: /api/rishis/RELIANCE full verdict set (Portfolio Lab without sign-in)",
+    r.status === 200 && r.body?.verdicts?.length === r.body?.totalRishis,
+    { verdicts: r.body?.verdicts?.length, total: r.body?.totalRishis });
+}
+
+// The Portfolio Lab PAGE is reachable signed-out (the proxy no longer
+// redirects /lab to /auth/signin — PR #46).
+{
+  const r = await api("GET", "/lab");
+  row("access anonymous: /lab page reachable (no sign-in redirect — Commit N1)",
+    r.status === 200 && !r.location,
+    { status: r.status, location: r.location ?? "(none)" });
+}
 
 // every legacy-tier session chats with a PREVIOUSLY-GATED persona
 for (const tier of LEGACY_TIERS) {

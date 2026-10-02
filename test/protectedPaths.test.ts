@@ -18,6 +18,11 @@ describe("proxy protected paths", () => {
     expect(isProtectedPath("/alerts")).toBe(true);
   });
 
+  it("'/portfolio' is not protected — no such route exists (the lab is /lab); an honest 404 beats a sign-in wall", () => {
+    expect(isProtectedPath("/portfolio")).toBe(false);
+    expect(PROTECTED_PATHS).not.toContain("/portfolio");
+  });
+
   it("matching is by path SEGMENT (R9): /laboratory is not /lab", () => {
     expect(isProtectedPath("/laboratory")).toBe(false);
     expect(isProtectedPath("/alerts-foo")).toBe(false);

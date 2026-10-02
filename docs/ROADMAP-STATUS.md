@@ -176,3 +176,44 @@ SUPERSEDED, body kept).
 Not resolved by this change (still OPEN, per the founder's explicit
 list): FD-1, FD-2, FD-8..FD-18. G7-03 (pricing experiments) is NOT
 APPLICABLE under the free decision.
+
+## Commit N — anonymous access completion + grounded-AI closure (2026-10-02/03, session 2)
+
+**Founder decision (verbatim):** "make sure chat with rishi's works, and
+requires no autehentication when I use it. Also make sure portfolio lab
+works, without me needng to log into google."
+
+**Reconciliation note (Rule 28):** a parallel session (PR #46, merged
+8e9cada) implemented anonymous CHAT + the /lab page redirect removal
+while this session was in flight, using a deterministic per-IP uuidv5
+quota identity riding the existing atomic `chat_usage` RPCs (migration
+015 drops the FK so anonymous ids fit). This session ADOPTED that design
+(it is live and Rule-12-complete) and dropped its own draft cookie-based
+quota rather than rebuild a live surface. What production still lacked —
+verified by probe before this commit (`GET /api/rishis/RELIANCE` -> 401
+anonymous, docs/evidence/commit-n/production-baseline-pre-n.txt) — is
+what Commit N adds:
+
+| Step | What | Evidence |
+|---|---|---|
+| N1 (completion) | Portfolio Lab DATA without sign-in: `GET /api/rishis/[symbol]` opened to every caller (the Intelligence/Compare tabs upgrade their bounded slice through it — previously a silent 401 degradation for signed-out visitors), per-IP rate-limited (fails open — defense in depth; the chat quota remains the fail-closed spend control); lab tabs un-gated from `useSession`; `'/portfolio'` removed from the proxy's protected list (dead path — no route exists; an honest 404 beats a sign-in wall) | `app/api/rishis/[symbol]/route.ts`, `components/lab/{CompareTab,IntelligenceTab}.tsx`, `lib/auth/protectedPaths.ts`; fail-first `test/anonymous.access.test.ts` + `test/proxy.access.test.ts` (RED on pre-N main), evidence in `docs/evidence/commit-n/` |
+| N8 | Deterministic financial-data intent guard on the no-initial-evidence path: a closed two-signal detector (registry symbol token AND a closed data-term vocabulary — not an NLP classifier) requires canonical-tool engagement before a context-only reply is accepted for a clear symbol-specific data question; otherwise honest `BLOCKED` | `lib/ai/financialIntent.ts`, `test/financialIntent.test.ts`, router guard in `lib/ai/router.ts` |
+| N9 | Production-grade complete-loop contract (local deterministic twin of the production canary): user → model → `getPrices` tool → typed evidence → validated claims → SERVER-generated verified surface + separate commentary, wire-schema-validated end to end | `test/ailoop.unified.test.ts` (Commit N describes) |
+| N12 | Display terminology: `tier` → `rank` (`Persona.rank`, `RANK_COLORS`, `selectedRishi.rank`) — the marketing display rank (Legend/Master) no longer spells entitlement vocabulary; client-safe projection pinned to carry `rank` and no entitlement concept | `test/persona.clientProjection.test.ts` |
+| N7 | Production grounded-AI canary + negative canary (automated probe, not a manual browser procedure): binds to the exact `/api/version` SHA; requires `getPrices:ok` on the registry symbol, `grounded=true`, `structured-claims`, the server-generated verified surface (not model prose), separate commentary, every number covered by validated facts, identity attestation; negative canary requires an explicit failure state for an unknown symbol with no fabricated answer and no false grounding | `scripts/prodGroundedCanary.mjs` |
+
+All existing AI protections preserved (strict zod tool args, canonical
+state, one tool allowlist, MAX_TOOL_ITERATIONS=4, explicit tool failures,
+server-only evidence growth, numeric field/value/unit matching,
+provenance anti-upgrade, server-generated verified surface, untrusted
+client history, invalid-response fail-closed, BLOCKED exhaustion,
+provider failover) — re-verified by the full suite.
+
+### Commit N follow-ups (recorded separately, NOT fixed here)
+
+| ID | Finding | Disposition |
+|---|---|---|
+| NF-1 | `app/fno/page.tsx` links to `/fno/builder`, but no `builder/` route exists in the current `app/fno` tree (`page.tsx`, `backtester/`, `options/`) — a real broken product path | Needs its own commit: either remove the link or build the route (founder decision). Do not fabricate a builder or hide the link inside Commit N. |
+| NF-2 | `app/api/gurus/route.ts` contains `?? 0` fallbacks that coerce missing change values to `0`, conflicting with Constitution Rule 16 (`null` is a real value) | Needs a separate fail-first data-semantics task (gurus API + consumers). Not mixed into the AI-loop commit. |
+| NF-3 | `/alerts` remains behind the proxy sign-in wall although the page persists alerts client-side (localStorage) — same class as the `/lab` wall removed by PR #46, but OUT of the founder's named scope | FOUNDER DECISION NEEDED: should /alerts also be reachable signed-out? |
+| NF-4 | The per-IP anonymous quota identity (PR #46) collates every visitor behind one public IP (CGNAT is common on Indian mobile networks): a busy shared exit can exhaust the 150/day quota for everyone behind it | FOUNDER DECISION NEEDED (only if 429 complaints appear): switch to a server-issued cookie identity for per-device fairness, keeping the per-IP ceiling as the abuse bound. |

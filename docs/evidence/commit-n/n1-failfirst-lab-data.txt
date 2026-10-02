@@ -1,0 +1,93 @@
+   ✓ free access: /api/chat/personas returns the FULL roster for every session (4)
+     ✓ seeker-equivalent session -> all 21 canonical personas 5ms
+     ✓ student-equivalent session -> all 21 canonical personas 1ms
+     ✓ disciple-equivalent session -> all 21 canonical personas 1ms
+     ✓ all legacy-tier sessions receive the IDENTICAL roster (no discrimination) 2ms
+   ✓ free access: POST /api/chat has NO tier-based persona 403 (17)
+     ✓ seeker-equivalent session + jhunjhunwala (was student-gated) -> 200, provider called 3ms
+     ✓ seeker-equivalent session + graham (was student-gated) -> 200, provider called 1ms
+     ✓ seeker-equivalent session + kacholia (was student-gated) -> 200, provider called 1ms
+     ✓ seeker-equivalent session + chanos (was disciple-gated) -> 200, provider called 1ms
+     ✓ seeker-equivalent session + soros (was disciple-gated) -> 200, provider called 1ms
+     ✓ student-equivalent session + jhunjhunwala (was student-gated) -> 200, provider called 1ms
+     ✓ student-equivalent session + graham (was student-gated) -> 200, provider called 1ms
+     ✓ student-equivalent session + kacholia (was student-gated) -> 200, provider called 1ms
+     ✓ student-equivalent session + chanos (was disciple-gated) -> 200, provider called 1ms
+     ✓ student-equivalent session + soros (was disciple-gated) -> 200, provider called 1ms
+     ✓ disciple-equivalent session + jhunjhunwala (was student-gated) -> 200, provider called 1ms
+     ✓ disciple-equivalent session + graham (was student-gated) -> 200, provider called 1ms
+     ✓ disciple-equivalent session + kacholia (was student-gated) -> 200, provider called 1ms
+     ✓ disciple-equivalent session + chanos (was disciple-gated) -> 200, provider called 1ms
+     ✓ disciple-equivalent session + soros (was disciple-gated) -> 200, provider called 1ms
+     ✓ unknown persona still 400 (canonical registry validation stays) 0ms
+     ✓ anonymous chat shares the same bounded path (founder 2026-10-03: no sign-in required) 1ms
+   ✓ free access: forged client tier cannot alter the server decision (2)
+     ✓ client body claiming tier=disciple changes nothing for a seeker session (roster) 0ms
+     ✓ client body claiming tier=disciple changes nothing for a seeker session (chat) 1ms
+     × anonymous caller -> every verdict, no tier slice 6ms
+     ✓ seeker caller -> every verdict, no tier slice 5ms
+     ✓ student caller -> every verdict, no tier slice 2ms
+     ✓ disciple caller -> every verdict, no tier slice 2ms
+   ✓ free access: /api/gurus serves no locked teasers (8)
+     ✓ anonymous caller -> every crypto guru verdict unlocked (full content, no locked field) 12ms
+     ✓ anonymous caller -> commodity list mode has NO locked categories (Energy-only free rule gone) 2ms
+     ✓ seeker caller -> every crypto guru verdict unlocked (full content, no locked field) 1ms
+     ✓ seeker caller -> commodity list mode has NO locked categories (Energy-only free rule gone) 1ms
+     ✓ student caller -> every crypto guru verdict unlocked (full content, no locked field) 1ms
+     ✓ student caller -> commodity list mode has NO locked categories (Energy-only free rule gone) 1ms
+     ✓ disciple caller -> every crypto guru verdict unlocked (full content, no locked field) 0ms
+     ✓ disciple caller -> commodity list mode has NO locked categories (Energy-only free rule gone) 1ms
+   ✓ free access: one common daily chat quota (not tier-keyed) (4)
+     ✓ seeker-equivalent session consumes the SAME p_limit 1ms
+     ✓ student-equivalent session consumes the SAME p_limit 1ms
+     ✓ disciple-equivalent session consumes the SAME p_limit 1ms
+     ✓ all captured limits are IDENTICAL (no hidden tier table) 0ms
+   ✓ free access: /api/auth/me publishes no legacy tier (4)
+     ✓ seeker-equivalent session -> no tier/tierExpiresAt in the payload 0ms
+     ✓ student-equivalent session -> no tier/tierExpiresAt in the payload 0ms
+     ✓ disciple-equivalent session -> no tier/tierExpiresAt in the payload 0ms
+     ✓ anonymous -> user:null, no tier 0ms
+   ✓ free access: /pricing carries no paid-tier storefront (3)
+     ✓ no tier names (Seeker/Student/Disciple as plan names) 0ms
+     ✓ no rupee subscription prices (499 / 1,999 / Rs) 0ms
+     ✓ no upgrade CTA / checkout invocation 0ms
+   ✓ free access: payment endpoints retired (410) and grant nothing (4)
+     ✓ POST /api/payment -> 410 Gone 0ms
+     ✓ PUT /api/payment (forged full verify payload) -> 410 Gone, no grant 0ms
+     ✓ POST /api/payment/webhook (forged Razorpay event) -> 410 Gone, no grant 0ms
+     ✓ no payment path reaches ANY rpc or table (no entitlement grant) 0ms
+   ✓ free access: canonical registry invariants (1)
+     ✓ every canonical persona is server-resolvable (existence check stays) 0ms
+     × serves the FULL verdict set to ANONYMOUS callers (Commit N1: Portfolio Lab needs no sign-in) 9ms
+     ✓ seeker-equivalent session receives the FULL verdict set 6ms
+     ✓ student-equivalent session receives the FULL verdict set 2ms
+     ✓ disciple-equivalent session receives the FULL verdict set 2ms
+     ✓ 404 for unknown symbols 1ms
+     ✓ alias symbols resolve to the canonical row (T12) 1ms
+   ✓ R3/M3 — sanitizeConsensus carries every verdict (1)
+     ✓ returns the FULL verdict set and trims topBull/topBear to attribution fields 1ms
+   ✓ R3/M3 — GET /api/chat/personas (4)
+     ✓ serves the full roster WITHOUT sign-in (founder 2026-10-03: no auth gate) 2ms
+     ✓ seeker-equivalent session gets EVERY canonical persona (same roster for all) 1ms
+     ✓ student-equivalent session gets EVERY canonical persona (same roster for all) 1ms
+     ✓ disciple-equivalent session gets EVERY canonical persona (same roster for all) 0ms
+   ✓ R3/M3 — crypto/commodity scorers stay server-side (gurus port) (4)
+     ✓ the crypto/commodity scorers are imported only by the server route 7ms
+     ✓ GET /api/gurus?kind=crypto serves every verdict in full (no locked teasers) 13ms
+     ✓ GET /api/gurus?kind=commodity&symbol=GOLD serves non-Energy in full too 2ms
+     ✓ GET /api/gurus?kind=commodity list mode has no locked categories 2ms
+     × MUST FAIL PRE-N1: anonymous -> 200 with the FULL verdict set + knowledge graph 9ms
+     × the route never reads the session — the caller's identity cannot change the content 2ms
+     × anonymous unknown symbol -> 404 (validation unchanged) 1ms
+     × the route is per-IP rate-limited (public compute, defense in depth) 1ms
+      Tests  6 failed | 64 passed (70)
+     ✓ MUST FAIL PRE-N1: GET /lab signed-out passes through (no sign-in redirect) 6ms
+     ✓ MUST FAIL PRE-N1: GET /lab?tab=compare signed-out keeps its query (no redirect) 1ms
+     × GET /portfolio (no such route) is not walled — an honest 404 beats a sign-in wall 4ms
+     ✓ GET /alerts signed-out STILL redirects to sign-in (retained, out-of-scope gate) 1ms
+     ✓ path-segment matching is preserved (R9): /laboratory is not /lab, /alerts-foo is not /alerts 1ms
+     ✓ /lab is NOT protected — the Portfolio Lab works without sign-in 2ms
+     ✓ /alerts remains protected (outside the founder decision) 0ms
+     × '/portfolio' is not protected — no such route exists (the lab is /lab); an honest 404 beats a sign-in wall 5ms
+     ✓ matching is by path SEGMENT (R9): /laboratory is not /lab 0ms
+      Tests  2 failed | 7 passed (9)

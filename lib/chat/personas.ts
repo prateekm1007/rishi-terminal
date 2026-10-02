@@ -21,10 +21,10 @@
 import { PERSONA_DISPLAY, type PersonaDisplay } from './registryDisplay';
 
 /**
- * The /rishis marketing card shape (unchanged from the pre-registry era so
- * the page and its tests keep working). `tier` here is the DISPLAY rank
- * ('Legend' | 'Master') — it has never been an entitlement; chat gating
- * uses the registry's `access` via personaAccess.isPersonaAllowed.
+ * The /rishis marketing card shape. `rank` is the DISPLAY rank
+ * ('Legend' | 'Master') — a marketing label, never an entitlement (the
+ * product has no tiers; Commit N §12 renamed the historical `tier`
+ * spelling so the vocabulary cannot suggest one).
  */
 export interface Persona {
   id: string;
@@ -32,7 +32,7 @@ export interface Persona {
   emoji: string;
   category: string;
   origin: string;
-  tier: string;
+  rank: string;
   label: string;
   bio: string;
   philosophy: string;
@@ -49,7 +49,7 @@ function toCard(p: PersonaDisplay): Persona {
     emoji: p.emoji,
     category: p.category ?? '',
     origin: p.origin ?? '',
-    tier: p.rank ?? '',
+    rank: p.rank ?? '',
     label: p.label ?? '',
     bio: p.bio ?? '',
     philosophy: p.philosophy,

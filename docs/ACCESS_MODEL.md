@@ -19,7 +19,7 @@ everyone.
 | Surface | Who gets it | Where it is enforced |
 |---|---|---|
 | Stock pages — the FULL canonical Rishi verdict set (all 20) | every visitor | `/stock/[symbol]` RSC payload (`sanitizeConsensus` shapes the payload; it no longer gates) |
-| `GET /api/rishis/[symbol]` — complete verdicts + knowledge graph | authenticated users (401 anonymous) | server route |
+| `GET /api/rishis/[symbol]` — complete verdicts + knowledge graph | every caller (per-IP rate limit; Commit N1 — the Portfolio Lab's verdict upgrades need no sign-in) | server route |
 | Screener & Portfolio Lab — full verdict set in slim rows | every visitor | `lib/scoring/slimIndex.ts` via RSC props; `/lab` page itself is PUBLIC (founder decision 2026-10-03 — lab data is browser-local) |
 | Chat personas — every canonical persona | every caller (roster is public content; no sign-in, founder decision 2026-10-03) | `GET /api/chat/personas` |
 | Crypto/commodity guru verdicts — all categories, full insight | every visitor | `GET /api/gurus` (server-computed, R3) |
@@ -31,7 +31,10 @@ everyone.
 
 Founder decision 2026-10-03: **chatting with the Rishis and the Portfolio
 Lab require no sign-in**. Authentication remains used ONLY for operations
-that genuinely need an account (per-symbol verdict routes, preferences).
+that genuinely need an account (preferences; nothing today). The
+per-symbol verdict route is now public too (Commit N1 — the Portfolio
+Lab tabs that upgrade through it work without sign-in, per-IP
+rate-limited).
 It is protection and abuse control, never a product level:
 
 - Chat spend is bounded WITHOUT auth: a signed-in session contributes its

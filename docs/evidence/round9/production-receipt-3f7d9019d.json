@@ -1,0 +1,157 @@
+{
+  "artifact": "production-receipt",
+  "round": "R9 closure (R9-11)",
+  "generatedAt": "2026-10-02T21:07:16Z",
+  "tuple": {
+    "gitMainHead": "3f7d9019d4ec741cad2a2c6440396c335cee94b5",
+    "ci": "success (actions run on 3f7d9019d, 2026-10-02T20:39Z, ~5 min)",
+    "deployedSha": "3f7d9019d4ec741cad2a2c6440396c335cee94b5",
+    "deployedVia": "vercel auto-deploy dpl_5RDaApi3ZLeqQRZrg6WRSRADS2Bp (READY) after PR #71 + #72 merges",
+    "apiVersionProbed": "3f7d9019d4ec741cad2a2c6440396c335cee94b5 @ 2026-10-02T20:51:14Z",
+    "match": true
+  },
+  "mergeChain": {
+    "PR71": "fix(R9-9) chat financial intent covers the canonical price registry (Rule 14) — RED 8-fail -> GREEN 32/32 -> suite 960/960",
+    "PR72": "ci(R9-10) commit-scope audit gate + round-9 registry — merged-chain audit PASS, Rule-24 bite proof FAIL-as-designed",
+    "audit": "commitScopeAudit e478e42..221a5db: 9 commits audited, 0 cross-task leaks; 221a5db..a6d710f PASS; 221a5db..audit-branch PASS"
+  },
+  "surfaceProbes": {
+    "note": "exact-SHA probes against the deployed runtime (non-chat surfaces)",
+    "priceSingleObservedAtParity": {
+      "btc": {
+        "status": "LIVE",
+        "price": 84352,
+        "change": -0.31337738831260553,
+        "volume24h": 45324293781.8377,
+        "observedAt": "2026-10-02T20:50:30.000Z",
+        "source": "coingecko",
+        "lastUpdated": "2026-10-02T20:50:30.000Z"
+      },
+      "reliance": {
+        "symbol": "RELIANCE",
+        "price": 1167.7,
+        "change": -1.626,
+        "volume24h": null,
+        "source": "yahoo",
+        "status": "LIVE",
+        "observedAt": "2026-10-01T09:45:00.000Z",
+        "lastUpdated": "2026-10-01T09:45:00.000Z",
+        "marketOpen": false,
+        "marketFreshness": "close",
+        "sessionDate": "2026-10-02"
+      },
+      "usd_inr": {
+        "status": "LIVE",
+        "price": 96.3,
+        "change": -0.0104,
+        "observedAt": "2026-10-02T20:37:18.000Z",
+        "source": "yahoo",
+        "lastUpdated": "2026-10-02T20:37:18.000Z"
+      },
+      "verdict": "single route now carries observedAt/lastUpdated/source/status identically to batch (R9-5 parity live)"
+    },
+    "priceBatchPost": {
+      "RELIANCE": {
+        "status": "LIVE",
+        "source": "yahoo-bulk",
+        "change": -1.626,
+        "observedAt": "2026-10-01T09:45:00.000Z"
+      },
+      "BTC": {
+        "status": "LIVE",
+        "source": "coingecko",
+        "change": -0.31337738831260553,
+        "observedAt": "2026-10-02T20:50:30.000Z"
+      },
+      "GOLD": {
+        "status": "LIVE",
+        "source": "yahoo",
+        "change": -0.819,
+        "observedAt": "2026-10-02T20:42:07.000Z"
+      },
+      "WTI": {
+        "status": "LIVE",
+        "source": "yahoo",
+        "change": -1.561,
+        "observedAt": "2026-10-02T20:42:01.000Z"
+      },
+      "USD/INR": {
+        "status": "LIVE",
+        "source": "yahoo",
+        "change": -0.0104,
+        "observedAt": "2026-10-02T20:37:18.000Z"
+      }
+    },
+    "pulseBreadthKeys": [
+      "nifty",
+      "bankNifty",
+      "breadth",
+      "sectors",
+      "generatedAt"
+    ],
+    "pulseBlocksKeys": [
+      "deals",
+      "count",
+      "timestamp",
+      "generatedAt"
+    ]
+  },
+  "aiLatencyBattery": {
+    "boundTo": {
+      "sha": "3f7d9019d4ec741cad2a2c6440396c335cee94b5",
+      "now": "2026-10-02T21:03:01.570Z",
+      "node": "v24.21.0"
+    },
+    "providerModel": {
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash"
+    },
+    "effectiveSamples": {
+      "financial": 4,
+      "philosophy": 0,
+      "invalid": 3,
+      "total": 7
+    },
+    "directiveMinimum": {
+      "financial": 20,
+      "philosophy": 10,
+      "invalid": 10
+    },
+    "metMinimum": false,
+    "status": "PARTIAL - infrastructure-blocked, resumable",
+    "blockers": {
+      "agnes502": "18/22 financial + 1/11 philosophy + 4/11 invalid returned HTTP 502 (free-tier vendor capacity, honest failures)",
+      "globalQuota429": "10/11 philosophy + 4/11 invalid returned HTTP 429 (the product's own 150/day global free-access quota consumed by live public traffic mid-battery)"
+    },
+    "measuredOnEffective": {
+      "groundedWhenProviderAnswered": "7/7 requests that reached the provider returned honest governed shapes (4 financial structured-claims grounded incl. 2 first-pass + 2 repaired; 3 invalid evidence-context)",
+      "repairTaxonomyOnWire": {
+        "unsupported-numeric-prose": 2,
+        "missing-claims": 3
+      },
+      "repairRecovery": "2/2 repaired runs reached grounded (unsupported-numeric-prose both recovered)",
+      "stageAveragesMs": {
+        "initial": {
+          "count": 7,
+          "avgMs": 981
+        },
+        "post-tool": {
+          "count": 7,
+          "avgMs": 4065
+        },
+        "repair": {
+          "count": 5,
+          "avgMs": 3932
+        }
+      },
+      "wallP50Overall": 915,
+      "wallP95Overall": 11427
+    },
+    "resume": "BATTERY_STATE=/tmp/my-project/r9-battery-state.jsonl node scripts/aiLatencyBattery.mjs (7/44 collected; restart skips them)"
+  },
+  "notes": [
+    "Production tuple is the first in the round to include ALL of: R9-1..R9-9 runtime fixes, the Direction-5 audit gate, and repair-cause attribution on the wire.",
+    "Agnes 502s and global-quota 429s are honest infrastructure states (Rules 1/5/6): reported, not papered over; no vendor switch was made (Direction 13).",
+    "The receipt commit itself is docs/scripts-only; the probed runtime SHA above stays the evidence anchor."
+  ]
+}

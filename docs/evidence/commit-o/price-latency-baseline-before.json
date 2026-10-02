@@ -1,0 +1,75 @@
+{
+  "probe": "price-latency-attribution",
+  "baseUrl": "http://localhost:3118",
+  "at": "2026-10-02T07:12:40.930Z",
+  "rounds": 5,
+  "ledgerDeltasAvailable": true,
+  "singleSymbol": [
+    {
+      "symbol": "RELIANCE",
+      "wallMs": 1399,
+      "httpStatus": 200,
+      "source": null,
+      "provStatus": null,
+      "observedAt": null,
+      "change": null
+    },
+    {
+      "symbol": "TCS",
+      "wallMs": 346,
+      "httpStatus": 200,
+      "source": null,
+      "provStatus": null,
+      "observedAt": null,
+      "change": null
+    },
+    {
+      "symbol": "HDFCBANK",
+      "wallMs": 658,
+      "httpStatus": 200,
+      "source": null,
+      "provStatus": null,
+      "observedAt": null,
+      "change": null
+    },
+    {
+      "symbol": "INFY",
+      "wallMs": 326,
+      "httpStatus": 200,
+      "source": null,
+      "provStatus": null,
+      "observedAt": null,
+      "change": null
+    },
+    {
+      "symbol": "ICICIBANK",
+      "wallMs": 319,
+      "httpStatus": 200,
+      "source": null,
+      "provStatus": null,
+      "observedAt": null,
+      "change": null
+    }
+  ],
+  "batch": [
+    {
+      "symbols": 10,
+      "wallMs": 901,
+      "httpStatus": 200,
+      "unavailable": 0,
+      "perSource": {
+        "yahoo-bulk": 10
+      }
+    }
+  ],
+  "chat": [],
+  "providerDeltas": {
+    "singlePhase": {},
+    "batchPhase": {}
+  },
+  "summary": {
+    "singleP50Ms": 346,
+    "singleP95Ms": 1399,
+    "batchWallMs": 901
+  }
+}

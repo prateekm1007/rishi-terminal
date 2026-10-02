@@ -906,12 +906,52 @@ async function fetchLivePriceInner(
   //    Phase 5.1: chain terminates at the last APPROVED provider (BSE).
   //    Screener (RESEARCH_ONLY) was removed — it is unreachable by design;
   //    total failure of every APPROVED source yields honest UNAVAILABLE.
-  return (
-    (await attempt(PROVIDER_IDS.NSE, () => getNSEStockPrice(symbol))) ??
-    (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPrice(symbol))) ??
-    (await attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPriceV7(symbol))) ??
-    (await attempt(PROVIDER_IDS.BSE, () => getBSEPrice(symbol)))
-  );
+  //
+  //    Commit O (Coder Directions #13): request-level deadline + parallel
+  //    first-choice sources. The pre-O chain waited SERIALLY through
+  //    NSE (8 s) -> Yahoo v8 (6 s) -> Yahoo v7 (6 s) -> BSE (6 s) — a
+  //    ~26 s worst-case wall when the first source hung. Now both
+  //    first-choice sources start in parallel; NSE gets a short preference
+  //    window (its answer, when it arrives fast, wins — no quality
+  //    downgrade), and Yahoo's answer is taken the moment NSE's window
+  //    closes. The tail providers (Yahoo v7, BSE) run only while the
+  //    request deadline has budget left. Losers are bounded by their own
+  //    per-fetch aborts (6-8 s; full signal-threaded cancellation would be
+  //    a wider rewrite — recorded honestly). The winner's own source +
+  //    observation timestamp ride unchanged (attempt()); provider health
+  //    still skips open circuits fast; the in-memory caches + coalescing
+  //    bound the added upstream volume of the race to cold misses only.
+  const REQUEST_DEADLINE_MS = 9_000;
+  const NSE_HEAD_START_MS = 1_200;
+  const deadlineAt = Date.now() + REQUEST_DEADLINE_MS;
+  const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+  const within = (p: Promise<PricePoint | null>, ms: number) =>
+    Promise.race([p, sleep(ms).then(() => null)]);
+
+  const nseP = attempt(PROVIDER_IDS.NSE, () => getNSEStockPrice(symbol));
+  const yahooP = attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPrice(symbol));
+
+  // NSE preference window; Yahoo is already in flight underneath.
+  let point: PricePoint | null = await within(nseP, NSE_HEAD_START_MS);
+  if (!point) point = await within(yahooP, 2_000);
+  // NSE may still settle within budget after Yahoo's window — take it.
+  if (!point && Date.now() < deadlineAt) {
+    point = await within(nseP, Math.max(0, deadlineAt - Date.now()));
+  }
+  // Tail providers, only inside the request deadline.
+  if (!point && Date.now() < deadlineAt) {
+    point = await within(
+      attempt(PROVIDER_IDS.YAHOO, () => getYahooNSEPriceV7(symbol)),
+      deadlineAt - Date.now(),
+    );
+  }
+  if (!point && Date.now() < deadlineAt) {
+    point = await within(
+      attempt(PROVIDER_IDS.BSE, () => getBSEPrice(symbol)),
+      deadlineAt - Date.now(),
+    );
+  }
+  return point;
 }
 
 // ── Phase 6 T62: persistent-cache write-through + last-known fallback ───

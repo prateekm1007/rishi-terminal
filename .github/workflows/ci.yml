@@ -154,6 +154,12 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      # U4: the smoke suite pins the ENABLED ranked surfaces (Top Buy
+      # section + mandated seed banner). The flag must be present at BUILD
+      # time (the homepage prerender bakes the rankings state — ISR serves
+      # that prerender on the first hit) and at RUNTIME. The DISABLED state
+      # is unit-pinned (flag matrix, i18n parity, source pins).
+      RANKINGS_ENABLED: "true"
     steps:
       - uses: actions/checkout@v4
 

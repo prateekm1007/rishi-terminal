@@ -229,6 +229,7 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
 }));
 
 import { POST as chatPOST } from "@/app/api/chat/route";
+import { GET as probeGET } from "@/app/api/probe/ai-loop/route";
 
 function makeRouteReq(
   json: unknown,
@@ -248,14 +249,32 @@ function makeRouteReq(
   } as never;
 }
 
-describe("MUST FAIL PRE-O3: route-level — the probe control is header-token-gated only", () => {
+function makeProbeReq(
+  mode: string,
+  headers: Record<string, string> = {},
+  ip = "10.9.0.2",
+): never {
+  return {
+    headers: {
+      get: (k: string) => {
+        const lk = k.toLowerCase();
+        if (lk === "x-forwarded-for") return ip;
+        return headers[lk] ?? null;
+      },
+    },
+    nextUrl: { searchParams: new URL(`http://x/api/probe/ai-loop?mode=${mode}`).searchParams },
+  } as never;
+}
+
+describe("MUST FAIL PRE-O3: route-level — the probe control is secret-gated only", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
   it("a forged body field can NEVER activate the witness (Rule 7 — client untrusted)", async () => {
-    vi.stubEnv("CHAT_CANARY_PROBE_TOKEN", "probe-secret");
+    vi.stubEnv("CHAT_API_BASE_URL", "https://example.invalid/v1");
+    vi.stubEnv("CHAT_API_KEY", "k-test");
     (globalThis as { fetch: unknown }).fetch = vi.fn(async () =>
       new Response(
         JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "philosophy", claims: [], uncertainties: [] }) } }] }),
@@ -266,7 +285,7 @@ describe("MUST FAIL PRE-O3: route-level — the probe control is header-token-ga
       personaId: "damani",
       history: [],
       message: "What is your view on patience?",
-      // The forged field: the route must ignore it completely.
+      // The forged field: the chat route must ignore it completely.
       deterministicWitness: true,
     }));
     expect(res.status).toBe(200);
@@ -274,34 +293,27 @@ describe("MUST FAIL PRE-O3: route-level — the probe control is header-token-ga
     expect(body.provenance.canaryWitness).toBeUndefined();
   });
 
-  it("a wrong or missing probe token -> 403 fail-closed (mode not reachable)", async () => {
-    vi.stubEnv("CHAT_CANARY_PROBE_TOKEN", "probe-secret");
+  it("a wrong or missing probe secret -> 404 (mode not reachable)", async () => {
+    vi.stubEnv("PROBE_SECRET", "probe-secret-minimum16chars");
     (globalThis as { fetch: unknown }).fetch = vi.fn(async () => {
       throw new Error("provider must never be called for a rejected probe");
     });
-    for (const token of ["wrong-token", ""]) {
-      // The header is PRESENT in both cases (an empty value is still a probe
-      // attempt) — a request with NO header at all is an ordinary user and
-      // follows the ordinary path.
-      const res = await chatPOST(makeRouteReq(
-        { personaId: "damani", history: [], message: "What is the latest price of RELIANCE?" },
-        { "x-rishi-canary-token": token },
-      ));
-      expect(res.status).toBe(403);
+    for (const secret of ["wrong-secret", ""]) {
+      const res = await probeGET(makeProbeReq("witness", { "x-probe-secret": secret }));
+      expect(res.status).toBe(404);
     }
   });
 
-  it("with the env unset the mode does not exist — a presented header fails closed 403", async () => {
-    vi.stubEnv("CHAT_CANARY_PROBE_TOKEN", "");
-    const res = await chatPOST(makeRouteReq(
-      { personaId: "damani", history: [], message: "What is the latest price of RELIANCE?" },
-      { "x-rishi-canary-token": "probe-secret" },
-    ));
-    expect(res.status).toBe(403);
+  it("with the env unset the route does not exist — a presented secret fails closed 404", async () => {
+    vi.stubEnv("PROBE_SECRET", "");
+    const res = await probeGET(makeProbeReq("witness", { "x-probe-secret": "probe-secret" }));
+    expect(res.status).toBe(404);
   });
 
-  it("the correct token activates the witness through the REAL route pipeline (real tool executor, real grounding)", async () => {
-    vi.stubEnv("CHAT_CANARY_PROBE_TOKEN", "probe-secret");
+  it("the correct secret activates the witness through the REAL probe pipeline (real tool executor, real grounding)", async () => {
+    vi.stubEnv("PROBE_SECRET", "probe-secret-minimum16chars");
+    vi.stubEnv("CHAT_API_BASE_URL", "https://example.invalid/v1");
+    vi.stubEnv("CHAT_API_KEY", "k-test");
     (globalThis as { fetch: unknown }).fetch = vi.fn(async (input: RequestInfo | URL) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       if (url.includes("/chat/completions")) {
@@ -320,16 +332,37 @@ describe("MUST FAIL PRE-O3: route-level — the probe control is header-token-ga
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     });
-    const res = await chatPOST(makeRouteReq(
-      { personaId: "damani", history: [], message: "What is the latest price of RELIANCE?" },
-      { "x-rishi-canary-token": "probe-secret" },
-    ));
+    const res = await probeGET(makeProbeReq("witness", { "x-probe-secret": "probe-secret-minimum16chars" }));
     expect(res.status).toBe(200);
     const body = await res.json();
+    expect(body.probe.mode).toBe("witness");
     expect(body.provenance.canaryWitness).toBe(true);
     expect(body.provenance.grounded).toBe(true);
     expect(body.provenance.groundingMode).toBe("structured-claims");
     expect(body.provenance.toolCalls).toEqual([{ tool: "getPrices", status: "ok", symbol: "RELIANCE" }]);
     expect(body.text).toContain("price = 1167.7 inr");
+  });
+
+  it("witness-negative pins the unknown symbol: explicit unknown-symbol failure, no fabrication", async () => {
+    vi.stubEnv("PROBE_SECRET", "probe-secret-minimum16chars");
+    vi.stubEnv("CHAT_API_BASE_URL", "https://example.invalid/v1");
+    vi.stubEnv("CHAT_API_KEY", "k-test");
+    (globalThis as { fetch: unknown }).fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (url.includes("/chat/completions")) {
+        return new Response(
+          JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "no data", claims: [], uncertainties: [] }) } }] }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      throw new Error("the unknown symbol must never reach a price upstream");
+    });
+    const res = await probeGET(makeProbeReq("witness-negative", { "x-probe-secret": "probe-secret-minimum16chars" }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.provenance.canaryWitness).toBe(true);
+    expect(body.provenance.grounded).toBe(false);
+    expect(body.provenance.toolCalls).toEqual([{ tool: "getPrices", status: "unknown-symbol", symbol: "ZZZZNOPE" }]);
+    expect(body.text).not.toContain("price =");
   });
 });

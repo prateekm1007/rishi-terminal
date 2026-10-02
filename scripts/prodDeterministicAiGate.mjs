@@ -10,12 +10,18 @@
  * path exists: if the real model fails to produce validatable claims, or
  * the real provider fails, this gate FAILS.
  *
- * Runs BOTH modes:
- *   positive — seeded getPrices(RELIANCE) → must satisfy the FULL §6
- *              contract (exact server-surface equality, bijection,
- *              claimsVerified, exact identity, timings present);
- *   negative — seeded getPrices(ZZZZNOPE) → must satisfy the FULL §7
- *              structural negative contract.
+ * Runs ALL FOUR modes (the 2026-10-02 Commit-O reconciliation unified the
+ * sibling session's witness here):
+ *   positive         — seeded getPrices(RELIANCE) → real model final
+ *                      claims → the FULL §6 contract (exact server-surface
+ *                      equality, bijection, claimsVerified, exact identity);
+ *   negative         — seeded getPrices(ZZZZNOPE) → the FULL §7 structural
+ *                      negative contract;
+ *   witness          — deterministicWitness: real provider turn-1 + real
+ *                      executor + SERVER-BUILT final claims → the §6
+ *                      contract (zero-flake pipeline gate);
+ *   witness-negative — pinned unknown symbol → explicit failure, no
+ *                      fabrication.
  *
  * §11 latency attribution: the probe response carries the router's stage
  * timings; this script records them into the artifact (provider attempts,
@@ -135,6 +141,40 @@ row("positive-deterministic-grounded-loop", positiveOk,
     ? "seeded getPrices → real provider → structured claims → grounded=true with the EXACT server-generated surface, in ONE deterministic run (no retries)"
     : "the deterministic positive contract failed");
 
+// ── 1b. witness: deterministic server-built final claims (zero-flake gate) ─
+let witnessOk = false;
+try {
+  const wit = await callProbe("witness");
+  if (wit.status === 404) {
+    row("witness-probe-reachable", false, "probe route 404 — PROBE_SECRET not provisioned or wrong secret");
+  } else {
+    const evaluation = evaluatePositiveCanary(wit, {
+      expectedProvider: EXPECTED_PROVIDER,
+      expectedModel: EXPECTED_MODEL,
+      expectedTool: EXPECTED_TOOL,
+      expectedSymbol: EXPECTED_SYMBOL,
+    });
+    const witnessChecks = [
+      ...evaluation.checks,
+      { id: "witness-marked", ok: wit.body?.provenance?.canaryWitness === true, detail: `canaryWitness=${wit.body?.provenance?.canaryWitness}` },
+    ];
+    receipt.witness = {
+      status: wit.status,
+      probe: wit.body?.probe ?? null,
+      timings: wit.body?.provenance?.timings ?? null,
+      checks: witnessChecks,
+    };
+    for (const c of witnessChecks) console.log(`  ${c.ok ? "ok " : "FAIL"} ${c.id} — ${c.detail}`);
+    witnessOk = wit.status === 200 && witnessChecks.every((c) => c.ok);
+  }
+} catch (e) {
+  row("witness-probe-reachable", false, `request failed: ${e.message}`);
+}
+row("witness-deterministic-pipeline", witnessOk,
+  witnessOk
+    ? "real provider turn-1 + real executor + server-built claims → grounded=true, zero model-turn flakiness"
+    : "the witness contract failed");
+
 // ── 2. negative: seeded UNKNOWN symbol → structural §7 contract ──────────
 let negativeOk = false;
 try {
@@ -160,6 +200,34 @@ row("negative-deterministic-honest-failure", negativeOk,
     ? "seeded unknown symbol → explicit failure state, zero numbers, zero verified facts, no false grounding — deterministically"
     : "the deterministic negative contract failed");
 
+// ── 2b. witness-negative: pinned unknown symbol, deterministic failure ────
+let witnessNegativeOk = false;
+try {
+  const neg = await callProbe("witness-negative");
+  if (neg.status === 404) {
+    row("witness-negative-probe-reachable", false, "probe route 404 — PROBE_SECRET not provisioned or wrong secret");
+  } else {
+    const evaluation = evaluateNegativeCanary(neg);
+    const negChecks = [
+      ...evaluation.checks,
+      { id: "witness-marked", ok: neg.body?.provenance?.canaryWitness === true, detail: `canaryWitness=${neg.body?.provenance?.canaryWitness}` },
+    ];
+    receipt.witnessNegative = {
+      status: neg.status,
+      probe: neg.body?.probe ?? null,
+      checks: negChecks,
+    };
+    for (const c of negChecks) console.log(`  ${c.ok ? "ok " : "FAIL"} ${c.id} — ${c.detail}`);
+    witnessNegativeOk = neg.status === 200 && negChecks.every((c) => c.ok);
+  }
+} catch (e) {
+  row("witness-negative-probe-reachable", false, `request failed: ${e.message}`);
+}
+row("witness-negative-deterministic-honest-failure", witnessNegativeOk,
+  witnessNegativeOk
+    ? "witness with pinned unknown symbol → explicit unknown-symbol failure, deterministically"
+    : "the witness negative contract failed");
+
 // ── §11: latency summary (attribution artifact) ───────────────────────────
 if (receipt.positive?.timings) {
   const t = receipt.positive.timings;
@@ -177,6 +245,6 @@ if (receipt.positive?.timings) {
 // ── receipt + exit ────────────────────────────────────────────────────────
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(receipt, null, 2) + "\n");
-const allPassed = shaOk && positiveOk && negativeOk;
+const allPassed = shaOk && positiveOk && negativeOk && witnessOk && witnessNegativeOk;
 console.log(`\n${allPassed ? "DETERMINISTIC GATE: PASS" : "DETERMINISTIC GATE: FAIL"} — receipt: ${OUT}`);
 process.exit(allPassed ? 0 : 1);

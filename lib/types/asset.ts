@@ -6,7 +6,10 @@ export interface UniversalAsset {
 
   // Core pricing
   price:     number;
-  change24h: number;
+  /** Commit L3 (§9): null is a real state — an unobserved 24h change is
+   *  unavailability, NEVER a 0.00% fill (rule 16). Consumers must handle
+   *  null explicitly. */
+  change24h: number | null;
 
   // Optional display fields
   // (present on some asset types, accessed via optional chaining)

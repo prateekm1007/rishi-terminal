@@ -243,8 +243,19 @@ export async function POST(req: NextRequest) {
   //    symbol context comes from the canonical evidence assembler with
   //    stable, validated ids (end-to-end AI loop) — never seed-only
   //    context, never an AI-side score recomputation.
-  const evidencePackage = symbol ? await buildAiEvidencePackage(symbol) : null;
-  const evidence = evidencePackage?.items ?? [];
+  //    Commit L3 (§8): evidence assembly is inside the refund-protected
+  //    region — an unexpected assembly throw must NOT consume a quota unit
+  //    without reaching the provider (the provider-call block below has
+  //    always refunded; assembly was outside it).
+  let evidence;
+  try {
+    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol) : null;
+    evidence = evidencePackage?.items ?? [];
+  } catch (e) {
+    console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
+    await refundQuota(user.id);
+    return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
+  }
 
   // 7. Call the AI abstraction — provider resolution, timeout, health and
   //    provenance are handled in lib/ai (T49/T50). Fail-closed: explicit

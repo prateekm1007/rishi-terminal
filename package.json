@@ -12,6 +12,7 @@
     "lint:ratchet": "node scripts/eslintRatchet.mjs",
     "test": "vitest run",
     "test:smoke": "playwright test",
+    "eval:chat": "tsx --conditions react-server scripts/evalChat.ts",
     "validate:stocks": "tsx --conditions react-server scripts/validateStocksImpl.ts",
     "score:parity": "tsx --conditions react-server scripts/scoreParityImpl.ts",
     "snapshot:batch": "tsx --conditions react-server scripts/snapshotBatch.ts",

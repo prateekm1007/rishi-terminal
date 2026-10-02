@@ -28,10 +28,12 @@
 import 'server-only';
 
 import { resolveStockMetrics, getStockScore, SCORE_ENGINE_VERSION } from '@/lib/scoring';
+import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { FullFundamentals } from '@/lib/liveFundamentals';
 import { fetchFullFundamentals } from '@/lib/liveFundamentals';
 import { fetchLivePrice } from '@/lib/livePrice';
-import type { AiEvidenceFact, AiEvidenceItem } from './schemas';
+import type { PricePoint } from '@/lib/livePrice';
+import type { AiEvidenceFact, AiEvidenceItem, AiSourceState } from './schemas';
 
 /**
  * resolveStockMetrics (the canonical resolver) types its live input via the
@@ -55,6 +57,29 @@ export interface EvidenceDeps {
   news?: Array<{ id: string; headline: string; summary: string; source: string; pubDate: string }>;
 }
 
+/** Budget for the live fundamentals fetch — the chat path must stay bounded. */
+const FUNDAMENTALS_TIMEOUT_MS = 10_000;
+
+/**
+ * One bounded live-fundamentals fetch, shared by the evidence assembler and
+ * the AI tool layer (Commit L1) so both paths enforce the SAME budget and
+ * the SAME null-on-failure semantics (one source of truth — no second
+ * copy of the fetch contract that can drift).
+ */
+export async function fetchFundamentalsBounded(
+  symbol: string,
+  get: (symbol: string) => Promise<FullFundamentals | null>,
+): Promise<FullFundamentals | null> {
+  try {
+    return await Promise.race([
+      get(symbol),
+      new Promise<null>(r => setTimeout(() => r(null), FUNDAMENTALS_TIMEOUT_MS)),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
 export interface AiEvidencePackage {
   symbol: string;
   items: AiEvidenceItem[];
@@ -63,94 +88,77 @@ export interface AiEvidencePackage {
   engineVersion: string;
 }
 
-/** Budget for the live fundamentals fetch — the chat path must stay bounded. */
-const FUNDAMENTALS_TIMEOUT_MS = 10_000;
-
 function fmt(n: number): string {
   return Number.isFinite(n) ? String(Number(n.toFixed(4))) : String(n);
 }
 
+// ── Evidence item builders (Commit L1) ────────────────────────────────────
+// ONE set of constructors for every evidence item class. The package
+// assembler below AND the AI tool layer (lib/ai/tools.ts) both consume
+// them, so a tool can never mint an item whose id contract, fact
+// annotations or provenance wording drifts from the canonical assembler's
+// (rule 14: one source of truth per concept).
+
+/** Registry profile (name/sector are registry facts, not market data). */
+export function buildProfileItem(resolved: ResolvedStockMetrics): AiEvidenceItem {
+  return {
+    id: `stock:${resolved.symbol}:profile`,
+    text: `${resolved.name} (${resolved.symbol}), sector: ${resolved.sector}. Seed dataset status: ${resolved.seedStatus}.`,
+  };
+}
+
 /**
- * Build the canonical evidence package for one symbol, or null when the
- * symbol is unknown to the registry (callers decide 400 vs empty state).
+ * Price observation with provenance (single canonical path; the observation
+ * time is the upstream's own — null stays null). A null/non-positive price
+ * yields the explicit UNAVAILABLE item — never a fabricated number.
+ * Commit L2 (provenance closure): the typed fact's `source` now honors the
+ * upstream's own PricePoint status — a STATIC fallback is a seed/reference
+ * value and a DERIVED proxy is derived; neither may be typed (or claimed)
+ * as a live observation. LIVE/CACHED (a real observation, replayed or not)
+ * stay live, carrying the upstream's own observation time.
  */
-export async function buildAiEvidencePackage(
-  symbol: string,
-  deps: EvidenceDeps = {},
-): Promise<AiEvidencePackage | null> {
-  const sym = symbol?.trim().toUpperCase();
-  if (!sym) return null;
-
-  // Live surfaces, in parallel, each individually non-fatal: a failed fetch
-  // degrades to seed-labelled provenance, never to a fabricated value.
-  const [live, pricePoint] = await Promise.all([
-    (async () => {
-      try {
-        const get = deps.getFundamentals ?? fetchFullFundamentals;
-        return await Promise.race([
-          get(sym),
-          new Promise<null>(r => setTimeout(() => r(null), FUNDAMENTALS_TIMEOUT_MS)),
-        ]);
-      } catch {
-        return null;
-      }
-    })(),
-    (async () => {
-      try {
-        const get = deps.getPrice ?? fetchLivePrice;
-        return await get(sym);
-      } catch {
-        return null;
-      }
-    })(),
-  ]);
-
-  const resolved = resolveStockMetrics(sym, live ? toResolverFundamentals(live) : null);
-  if (!resolved) return null;
-
-  const items: AiEvidenceItem[] = [];
-  const vendorName = live?.source && live.source !== "static" ? live.source : undefined;
-
-  // 0. Registry profile (name/sector are registry facts, not market data).
-  items.push({
-    id: `stock:${sym}:profile`,
-    text: `${resolved.name} (${sym}), sector: ${resolved.sector}. Seed dataset status: ${resolved.seedStatus}.`,
-  });
-
-  // 1. Price observation with provenance (single canonical path; the
-  //    observation time is the upstream's own — null stays null).
+export function buildPriceItem(symbol: string, pricePoint: PricePoint | null): AiEvidenceItem {
   if (pricePoint && Number.isFinite(pricePoint.price) && pricePoint.price > 0) {
     const when = pricePoint.observedAt ?? "no-disclosed-observation-time";
+    const status = pricePoint.status ?? "LIVE";
+    const priceSource: AiEvidenceFact["source"] =
+      status === "STATIC" ? "seed" : status === "DERIVED" ? "derived" : "live";
+    const observedAt = priceSource === "live" ? pricePoint.observedAt ?? null : null;
     const priceFacts: AiEvidenceFact[] = [
-      { field: "price", value: pricePoint.price, unit: FACT_UNIT_BY_FIELD.price, source: "live" },
+      { field: "price", value: pricePoint.price, unit: FACT_UNIT_BY_FIELD.price, source: priceSource, observedAt },
     ];
     if (Number.isFinite(pricePoint.change)) {
-      priceFacts.push({ field: "change", value: pricePoint.change, unit: FACT_UNIT_BY_FIELD.change, source: "live" });
+      priceFacts.push({ field: "change", value: pricePoint.change, unit: FACT_UNIT_BY_FIELD.change, source: priceSource, observedAt });
     }
-    items.push({
-      id: `price:${sym}:${when}`,
+    return {
+      id: `price:${symbol}:${when}`,
       text:
         `Latest observed price: ${fmt(pricePoint.price)} ` +
         `(change ${fmt(pricePoint.change)}%). ` +
-        `Source: ${pricePoint.source}; status: ${pricePoint.status ?? "LIVE"}; ` +
+        `Source: ${pricePoint.source}; status: ${status}; ` +
         `observation time: ${pricePoint.observedAt ?? "not disclosed by the upstream"}.` +
         factAnnotation(priceFacts),
       facts: priceFacts,
-    });
-  } else {
-    items.push({
-      id: `price:${sym}:unavailable`,
-      text: "Price: UNAVAILABLE at assembly time. No observation exists — do not state or imply a price.",
-    });
+    };
   }
+  return {
+    id: `price:${symbol}:unavailable`,
+    text: "Price: UNAVAILABLE at assembly time. No observation exists — do not state or imply a price.",
+  };
+}
 
-  // 2. Resolved fundamentals — one item per field, provenance preserved.
+/** Resolved fundamentals — one item per field, provenance preserved. */
+export function buildFundamentalItems(
+  resolved: ResolvedStockMetrics,
+  vendorName?: string,
+): AiEvidenceItem[] {
   const FIELD_LABELS: Record<string, string> = {
     pe: "P/E", roe: "ROE %", roce: "ROCE %", opm: "Operating margin %",
     de: "Debt/Equity", promo: "Promoter holding %", revcagr: "Revenue CAGR 3Y %",
     epscagr: "EPS CAGR 3Y %", mktcap: "Market cap (Cr)", bvps: "Book value/share",
     pb: "P/B", fcfMargin: "FCF margin %",
   };
+  const out: AiEvidenceItem[] = [];
   for (const [field, rf] of Object.entries(resolved.fields)) {
     const label = FIELD_LABELS[field] ?? field;
     const asOf = rf.source === "live" && rf.asOf ? rf.asOf : null;
@@ -176,31 +184,40 @@ export async function buildAiEvidencePackage(
     // source "derived" is EXPLICIT — the model may cite it, never re-derive
     // other figures from it (any derived number it asserts must itself be
     // an emitted fact, else validation rejects it).
+    // Commit L2: live facts carry the upstream's own observation time
+    // (null = live with NO disclosed time) so the closed source-state
+    // vocabulary and the verified surface can distinguish
+    // live / live-undated / derived / seed — and reject upgrades.
     const fact: AiEvidenceFact = {
       field,
       value: rf.value,
       unit: FACT_UNIT_BY_FIELD[field] ?? "value",
       source: rf.source,
+      observedAt: rf.source === "live" ? rf.asOf ?? null : null,
     };
-    items.push({
-      id: `fundamental:${sym}:${field}:${idFragment}`,
+    out.push({
+      id: `fundamental:${resolved.symbol}:${field}:${idFragment}`,
       text: `${label}: ${fmt(rf.value)} | provenance: ${prov}.${factAnnotation([fact])}`,
       facts: [fact],
     });
   }
+  return out;
+}
 
-  // 3. THE canonical Rishi consensus — consumed, never recomputed by the AI.
-  //    The id embeds the engine version so an audit can pin which engine
-  //    produced the number the model cites.
+/** THE canonical Rishi consensus — consumed, never recomputed by the AI.
+ *  The id embeds the engine version so an audit can pin which engine
+ *  produced the number the model cites. Insufficient data emits NO fact —
+ *  any numeric score assertion then fails closed. */
+export function buildScoreItem(resolved: ResolvedStockMetrics): AiEvidenceItem {
   const consensus = getStockScore(resolved);
   const liveAsOfs = [...new Set(Object.values(resolved.fields).map(f => f.asOf).filter((a): a is string => !!a))];
   const scoreAsOf = liveAsOfs.length === 1 ? liveAsOfs[0] : "seed-derived";
   const scoreFacts: AiEvidenceFact[] =
     consensus.consensus === null
       ? [] // insufficient data → NO fact exists → any numeric score assertion fails closed
-      : [{ field: "score", value: consensus.consensus, unit: FACT_UNIT_BY_FIELD.score, source: "derived" as const }];
-  items.push({
-    id: `score:${sym}:${SCORE_ENGINE_VERSION}:${scoreAsOf}`,
+      : [{ field: "score", value: consensus.consensus, unit: FACT_UNIT_BY_FIELD.score, source: "derived" as const, observedAt: null }];
+  return {
+    id: `score:${resolved.symbol}:${SCORE_ENGINE_VERSION}:${scoreAsOf}`,
     text:
       `Rishi consensus score (${SCORE_ENGINE_VERSION}): ` +
       (consensus.consensus === null
@@ -212,23 +229,97 @@ export async function buildAiEvidencePackage(
       "This is the platform's only official score — do not recompute or second-guess it." +
       factAnnotation(scoreFacts),
     ...(scoreFacts.length > 0 ? { facts: scoreFacts } : {}),
-  });
+  };
+}
 
-  // 4. News — provenance-carrying items where a surface exists; otherwise an
-  //    explicit unavailable note (never invented headlines).
-  if (deps.news && deps.news.length > 0) {
-    for (const n of deps.news) {
-      items.push({
-        id: `news:${n.id}`,
-        text: `News: "${n.headline}" — ${n.summary} (source: ${n.source}, published: ${n.pubDate}).`,
-      });
-    }
-  } else {
-    items.push({
-      id: `news:${sym}:unavailable`,
-      text: "Per-symbol news: not available in the evidence pipeline (market-level feeds are not yet mapped to symbols). Do not cite specific news.",
-    });
+/** News — provenance-carrying items where a surface exists; otherwise an
+ *  explicit unavailable note (never invented headlines). */
+export function buildNewsItems(
+  symbol: string,
+  news?: EvidenceDeps["news"],
+): AiEvidenceItem[] {
+  if (news && news.length > 0) {
+    return news.map(n => ({
+      id: `news:${n.id}`,
+      text: `News: "${n.headline}" — ${n.summary} (source: ${n.source}, published: ${n.pubDate}).`,
+    }));
   }
+  return [{
+    id: `news:${symbol}:unavailable`,
+    text: "Per-symbol news: not available in the evidence pipeline (market-level feeds are not yet mapped to symbols). Do not cite specific news.",
+  }];
+}
+
+/** One same-sector peer row for getPeers (Commit L1). All figures are seed
+ *  registry values and are typed as `source: "seed"` so the grounding
+ *  validator applies the full provenance discipline to them — a peer price
+ *  can never be claimed as a live observation. */
+export interface AiPeerRow {
+  symbol: string;
+  name: string;
+  sector: string;
+  price: number;
+  mktcap: number;
+  pe: number;
+  roe: number;
+}
+
+export function buildPeerItems(symbol: string, peers: readonly AiPeerRow[]): AiEvidenceItem[] {
+  return peers.map(p => {
+    const facts: AiEvidenceFact[] = [
+      { field: "price", value: p.price, unit: FACT_UNIT_BY_FIELD.price, source: "seed", observedAt: null },
+      { field: "mktcap", value: p.mktcap, unit: FACT_UNIT_BY_FIELD.mktcap, source: "seed", observedAt: null },
+      { field: "pe", value: p.pe, unit: FACT_UNIT_BY_FIELD.pe, source: "seed", observedAt: null },
+      { field: "roe", value: p.roe, unit: FACT_UNIT_BY_FIELD.roe, source: "seed", observedAt: null },
+    ];
+    return {
+      id: `peer:${symbol}:${p.symbol}:seed`,
+      text:
+        `Peer (SEED REGISTRY — may be stale): ${p.name} (${p.symbol}), sector ${p.sector}; ` +
+        `seed price ${fmt(p.price)}, seed market cap ${fmt(p.mktcap)} Cr, seed P/E ${fmt(p.pe)}, seed ROE ${fmt(p.roe)}%.` +
+        factAnnotation(facts),
+      facts,
+    };
+  });
+}
+
+/**
+ * Build the canonical evidence package for one symbol, or null when the
+ * symbol is unknown to the registry (callers decide 400 vs empty state).
+ */
+export async function buildAiEvidencePackage(
+  symbol: string,
+  deps: EvidenceDeps = {},
+): Promise<AiEvidencePackage | null> {
+  const sym = symbol?.trim().toUpperCase();
+  if (!sym) return null;
+
+  // Live surfaces, in parallel, each individually non-fatal: a failed fetch
+  // degrades to seed-labelled provenance, never to a fabricated value.
+  const [live, pricePoint] = await Promise.all([
+    fetchFundamentalsBounded(sym, deps.getFundamentals ?? fetchFullFundamentals),
+    (async () => {
+      try {
+        const get = deps.getPrice ?? fetchLivePrice;
+        return await get(sym);
+      } catch {
+        return null;
+      }
+    })(),
+  ]);
+
+  const resolved = resolveStockMetrics(sym, live ? toResolverFundamentals(live) : null);
+  if (!resolved) return null;
+
+  const vendorName = live?.source && live.source !== "static" ? live.source : undefined;
+
+  const items: AiEvidenceItem[] = [
+    buildProfileItem(resolved),
+    buildPriceItem(sym, pricePoint),
+    ...buildFundamentalItems(resolved, vendorName),
+    buildScoreItem(resolved),
+    ...buildNewsItems(sym, deps.news),
+  ];
 
   return {
     symbol: sym,
@@ -240,15 +331,30 @@ export async function buildAiEvidencePackage(
 
 // ── Grounding validation (fail closed) ──────────────────────────────────
 
+/** Commit L2: a SERVER-GENERATED verified fact — the matched typed fact
+ *  plus its closed source state and the user-visible verified statement
+ *  `[field] = [value] [unit] — [source state]`. This — never the model's
+ *  prose — is the authoritative grounded surface. */
+export interface AiVerifiedFact {
+  field: string;
+  value: number;
+  unit: string;
+  sourceState: AiSourceState;
+  observedAt: string | null;
+  statement: string;
+}
+
 export interface GroundingResult {
   /** The claims that survived validation — empty unless EVERY claim's every
    *  evidenceId exists in the package AND every numeric assertion matches a
    *  typed fact on the claim's OWN cited items (one fabricated id, one
-   *  unsupported figure, or one field/unit/value mismatch fails them all). */
+   *  unsupported figure, or one field/unit/value mismatch fails them all).
+   *  Each surviving claim carries its server-generated verifiedFacts. */
   validatedClaims: Array<{
     claim: string;
     evidenceIds: string[];
     assertions: Array<{ field: string; value: number; unit: string }>;
+    verifiedFacts: AiVerifiedFact[];
   }>;
   grounded: boolean;
   /** Coder Directions G3 (audit 2026-10-02) — TWO explicit states plus the
@@ -263,7 +369,54 @@ export interface GroundingResult {
   mode: "structured-claims" | "context-only" | "evidence-context";
   /** Machine-readable rejection notes for the audit trail / UI. */
   rejections: string[];
+  /** Commit L2 — the SERVER-GENERATED grounded answer surface, built ONLY
+   *  from validated typed facts (one verified statement per matched fact,
+   *  each carrying its source state). The model's prose never enters this
+   *  surface, so an answer can never be labelled grounded while containing
+   *  unvalidated claims. Empty unless grounded=true. */
+  verifiedAnswer: string;
+  /** Commit L2 — model prose that carries NO validation state (qualitative
+   *  context-only claims and rejected claims). Disclosed separately; the
+   *  router renders it (if at all) as explicitly-unverified commentary,
+   *  never inside the grounded surface. */
+  unvalidatedProse: string[];
 }
+
+/** Derive the closed source state from a matched fact's source + observedAt
+ *  (no fuzzy NLP — the vocabulary is structural). */
+function sourceStateOf(fact: AiEvidenceFact): AiSourceState {
+  if (fact.source === "derived") return "derived";
+  if (fact.source === "seed") return "seed";
+  if (fact.source === "live") return fact.observedAt ? "live" : "live-undated";
+  return "unavailable";
+}
+
+/** The user-visible verified statement for one matched fact. The source
+ *  state wording comes from the closed vocabulary above — the model cannot
+ *  influence it, so it can never upgrade seed/derived data by phrasing. */
+function verifiedStatement(fact: Omit<AiVerifiedFact, "statement">): string {
+  const stateText =
+    fact.sourceState === "live"
+      ? `live (observed/as-of ${fact.observedAt})`
+      : fact.sourceState === "live-undated"
+        ? "live (no disclosed observation time)"
+        : fact.sourceState === "derived"
+          ? "derived by the platform engine"
+          : fact.sourceState === "seed"
+            ? "seed/reference (may be stale)"
+            : "unavailable";
+  return `${fact.field} = ${canonicalNumber(fact.value)} ${fact.unit} — ${stateText}`;
+}
+
+/** Commit L2 — provenance anti-upgrade vocabulary: CLOSED and conservative
+ *  (word-boundary matches, no NLP). If a claim or the answer uses any of
+ *  these terms while the underlying matched fact is seed/derived, the
+ *  wording upgrades the provenance and fails closed. Live-dated facts may
+ *  legitimately be described with them; live-undated facts may be called
+ *  live (they ARE live) but an inserted observation DATE already fails the
+ *  number floor. */
+const PROVENANCE_UPGRADE_RE =
+  /\b(?:live|current|currently|latest|right\s+now|as\s+of\s+now|today|real[-\s]?time)\b/i;
 
 /**
  * Extract every number from text, normalized: thousands separators and
@@ -609,13 +762,20 @@ export function validateGrounding(
       grounded: false,
       mode: "evidence-context",
       rejections: ["model produced no claims — context injection only"],
+      verifiedAnswer: "",
+      unvalidatedProse: [],
     };
   }
   const rejections: string[] = [];
   /** G3: claims classified context-only (qualitative — no numeric statement). */
   const qualitative: string[] = [];
-  /** G3: a HARD failure (unknown id, assertion mismatch, unsupported figure)
-   *  fails the whole batch; a qualitative classification does NOT. */
+  /** Commit L2: claims rejected WITHOUT a hard failure (e.g. the metric-name
+   *  cite gate) — their text is disclosed as unvalidated prose and can never
+   *  enter the server-generated grounded surface. */
+  const rejectedProse: string[] = [];
+  /** G3: a HARD failure (unknown id, assertion mismatch, unsupported figure,
+   *  provenance upgrade) fails the whole batch; a qualitative classification
+   *  does NOT. */
   let hardFailure = false;
   const surviving: Array<{
     claim: string;
@@ -623,8 +783,8 @@ export function validateGrounding(
     assertions: Array<{ field: string; value: number; unit: string }>;
     citedItems: AiEvidenceItem[];
     matchedValues: Set<string>;
-    /** Canonical field -> matched assertion (for attribution checks). */
-    matchedByField: Map<string, { value: string; unit: string }>;
+    /** Canonical field -> matched fact (for attribution + provenance). */
+    matchedByField: Map<string, AiEvidenceFact>;
   }> = [];
 
   for (let i = 0; i < claims.length; i += 1) {
@@ -665,7 +825,7 @@ export function validateGrounding(
 
     // (a) every assertion must exactly match a fact in THIS claim's pool
     const matchedValues = new Set<string>();
-    const matchedByField = new Map<string, { value: string; unit: string }>();
+    const matchedByField = new Map<string, AiEvidenceFact>();
     let assertionFailure = false;
     for (const a of assertions) {
       const af = canonicalFactField(a.field);
@@ -685,9 +845,22 @@ export function validateGrounding(
         continue;
       }
       matchedValues.add(av);
-      if (!matchedByField.has(af)) matchedByField.set(af, { value: av, unit: au });
+      if (!matchedByField.has(af)) matchedByField.set(af, hit);
     }
     if (assertionFailure) {
+      hardFailure = true;
+      continue;
+    }
+
+    // (a2) Commit L2 — provenance anti-upgrade (claim level): if ANY matched
+    // fact is seed/derived and the claim text words it as live/current, the
+    // wording upgrades the provenance — a semantic lie, hard failure.
+    const matchedStates = [...matchedByField.values()].map(sourceStateOf);
+    const hasNonLive = matchedStates.some(s => s === "seed" || s === "derived");
+    if (hasNonLive && PROVENANCE_UPGRADE_RE.test(c.claim)) {
+      rejections.push(
+        `claim ${i + 1}: provenance upgrade — the matched fact(s) are ${[...new Set(matchedStates)].join("/")} but the claim words them as live/current — rejected (Commit L2; seed/derived data can never be relabelled live)`,
+      );
       hardFailure = true;
       continue;
     }
@@ -717,16 +890,16 @@ export function validateGrounding(
           numberFailure = true;
           continue;
         }
-        if (m.value !== sn.key) {
+        if (canonicalNumber(m.value) !== sn.key) {
           rejections.push(
-            `claim ${i + 1}: claims ${sn.field}=${JSON.stringify(sn.raw)} but the matched ${sn.field} assertion is ${m.value} — rejected (audit 2026-10-02)`,
+            `claim ${i + 1}: claims ${sn.field}=${JSON.stringify(sn.raw)} but the matched ${sn.field} assertion is ${canonicalNumber(m.value)} — rejected (audit 2026-10-02)`,
           );
           numberFailure = true;
           continue;
         }
-        if (sn.unit !== null && sn.unit !== m.unit) {
+        if (sn.unit !== null && sn.unit !== canonicalFactUnit(m.unit)) {
           rejections.push(
-            `claim ${i + 1}: states ${sn.field}=${JSON.stringify(sn.raw)} ${sn.unit} but the matched assertion's unit is ${m.unit} — rejected (audit 2026-10-02)`,
+            `claim ${i + 1}: states ${sn.field}=${JSON.stringify(sn.raw)} ${sn.unit} but the matched assertion's unit is ${canonicalFactUnit(m.unit)} — rejected (audit 2026-10-02)`,
           );
           numberFailure = true;
           continue;
@@ -771,7 +944,12 @@ export function validateGrounding(
         fieldCiteFailure = true;
       }
     }
-    if (fieldCiteFailure) continue;
+    if (fieldCiteFailure) {
+      // Commit L2: the rejected claim's text is disclosed as UNVALIDATED
+      // prose — it can never enter the server-generated grounded surface.
+      rejectedProse.push(c.claim);
+      continue;
+    }
 
     surviving.push({
       claim: c.claim,
@@ -789,6 +967,9 @@ export function validateGrounding(
   // Round-5: word numbers and lakh/crore forms count here too.
   // G3: a purely-qualitative classification is not a hard failure, so the
   // floor still runs whenever no HARD failure has occurred.
+  // Commit L2: the answer may also not UPGRADE provenance — when any
+  // surviving matched fact is seed/derived, wording the answer as
+  // live/current/latest is a provenance lie (closed vocabulary, no NLP).
   if (!hardFailure) {
     const pool = new Set<string>();
     for (const s of surviving) {
@@ -800,20 +981,27 @@ export function validateGrounding(
         hardFailure = true;
       }
     }
+    const batchStates = surviving.flatMap(s => [...s.matchedByField.values()]).map(sourceStateOf);
+    if (batchStates.some(s => s === "seed" || s === "derived") && answer && PROVENANCE_UPGRADE_RE.test(answer)) {
+      rejections.push("answer: labels seed/derived data as live/current/latest — provenance upgrade rejected (Commit L2)");
+      hardFailure = true;
+    }
   }
 
   // ── G3: classification outcome ──
-  // A HARD failure (unknown id, assertion mismatch, answer-floor violation)
-  // fails the whole batch → evidence-context. A batch whose claims are ALL
-  // qualitative (no hard failure) is the explicit "context-only" state:
-  // grounded=false, zero validated claims, disclosed — never silently
-  // presented as verified.
+  // A HARD failure (unknown id, assertion mismatch, answer-floor violation,
+  // provenance upgrade) fails the whole batch → evidence-context. A batch
+  // whose claims are ALL qualitative (no hard failure) is the explicit
+  // "context-only" state: grounded=false, zero validated claims, disclosed —
+  // never silently presented as verified.
   if (rejections.length > 0 && hardFailure) {
     return {
       validatedClaims: [],
       grounded: false,
       mode: "evidence-context",
       rejections,
+      verifiedAnswer: "",
+      unvalidatedProse: [],
     };
   }
   if (surviving.length === 0) {
@@ -824,12 +1012,44 @@ export function validateGrounding(
       rejections: qualitative.length > 0
         ? rejections
         : [...rejections, "no numeric claim survived validation — context-only"],
+      verifiedAnswer: "",
+      unvalidatedProse: [...qualitative, ...rejectedProse],
     };
   }
+  // ── Commit L2: build the SERVER-GENERATED grounded surface ──
+  // One verified statement per matched fact (deduped across claims), each
+  // carrying its closed source state. The model's claim text and answer
+  // prose NEVER appear here — structural guarantee that a grounded answer
+  // contains no unvalidated text.
+  const verifiedFactsByClaim = surviving.map(s =>
+    [...s.matchedByField.entries()].map(([field, fact]) => {
+      const sourceState = sourceStateOf(fact);
+      const observedAt = typeof fact.observedAt === "string" ? fact.observedAt : null;
+      const vf = { field, value: fact.value, unit: canonicalFactUnit(fact.unit), sourceState, observedAt };
+      return { ...vf, statement: verifiedStatement(vf) };
+    }),
+  );
+  const seenStatements = new Set<string>();
+  const verifiedLines: string[] = [];
+  for (const vfs of verifiedFactsByClaim) {
+    for (const vf of vfs) {
+      if (!seenStatements.has(vf.statement)) {
+        seenStatements.add(vf.statement);
+        verifiedLines.push(vf.statement);
+      }
+    }
+  }
   return {
-    validatedClaims: surviving.map(({ claim, evidenceIds, assertions }) => ({ claim, evidenceIds, assertions })),
+    validatedClaims: surviving.map(({ claim, evidenceIds, assertions }, idx) => ({
+      claim,
+      evidenceIds,
+      assertions,
+      verifiedFacts: verifiedFactsByClaim[idx],
+    })),
     grounded: true,
     mode: "structured-claims",
     rejections: [],
+    verifiedAnswer: verifiedLines.join("\n"),
+    unvalidatedProse: [...qualitative, ...rejectedProse],
   };
 }

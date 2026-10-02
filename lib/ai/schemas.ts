@@ -23,13 +23,33 @@ import { z } from "zod";
  * live, derived by the platform's own engine, or seed. Validation operates
  * on these structured facts — the item's `text` remains for the model, but
  * presence of a number in text is never proof of a semantic assertion.
+ *
+ * Commit L2: `observedAt` carries the upstream's own observation time for
+ * live facts (null = live with NO disclosed observation time). Together
+ * with `source` it determines the closed source-state vocabulary used for
+ * provenance verification and the server-generated verified surface —
+ * a model can no longer upgrade seed/derived data to "live" by wording.
  */
 export type AiEvidenceFact = {
   field: string;
   value: number;
   unit: string;
   source?: "live" | "derived" | "seed";
+  /** The upstream's own observation/as-of time; present only for live
+   *  facts. null = live but the upstream disclosed no time. Absent for
+   *  seed/derived (they claim no observation). */
+  observedAt?: string | null;
 };
+
+/** Commit L2 — the closed source-state vocabulary (no fuzzy NLP). Derived
+ *  from the matched fact's `source` + `observedAt`; drives provenance
+ *  verification and the server-generated verified statements. */
+export type AiSourceState =
+  | "live" // observed live WITH a disclosed observation time
+  | "live-undated" // observed live, NO disclosed observation time
+  | "derived" // computed by the platform's engine from other facts
+  | "seed" // seed/reference dataset — may be stale
+  | "unavailable"; // no verifiable observation exists (fails closed)
 
 /** What the MODEL asserts about the world for one claim (Q4 Commit A):
  *  every numeric claim must declare the field/value/unit it states, and
@@ -49,6 +69,22 @@ export const AiClaimSchema = z.object({
       }),
     )
     .max(6)
+    .optional(),
+  /** Commit L2: the SERVER-GENERATED verified facts for a grounded claim —
+   *  field/value/unit copied from the matched typed fact plus its closed
+   *  source state and the user-visible verified statement. Populated by the
+   *  validator, never by the model. */
+  verifiedFacts: z
+    .array(
+      z.object({
+        field: z.string(),
+        value: z.number().finite(),
+        unit: z.string(),
+        sourceState: z.enum(["live", "live-undated", "derived", "seed", "unavailable"]),
+        observedAt: z.string().nullable().optional(),
+        statement: z.string(),
+      }),
+    )
     .optional(),
 });
 
@@ -72,11 +108,31 @@ export const AiAnswerSchema = z.object({
   groundingMode: z
     .enum(["structured-claims", "context-only", "evidence-context"])
     .optional(),
+  /** Commit L2: the model's prose when the response IS grounded. The wire
+   *  `text` is then the server-generated verified surface (built only from
+   *  validated typed facts); the model's own answer is commentary that
+   *  carries NO validation state and must be labelled as such by the UI. */
+  commentary: z.string().optional(),
   /** Coder Directions G4 (audit 2026-10-02): machine-readable mark for the
    *  structured-response contract — "invalid" when the model reply failed
    *  parse/schema validation and the bounded honest response was served
-   *  instead of the raw payload. */
-  structuredResponse: z.enum(["valid", "invalid"]).optional(),
+   *  instead of the raw payload. Commit L1 adds "blocked": the tool-loop
+   *  budget was exhausted before a verifiable answer was produced — the
+   *  honest BLOCKED termination, never a plausible fallback. */
+  structuredResponse: z.enum(["valid", "invalid", "blocked"]).optional(),
+  /** Commit L1: the bounded tool loop's audit trail — every tool the model
+   *  requested with its explicit outcome status (ok | unknown-tool |
+   *  invalid-args | unknown-symbol | no-data | failed). Machine-readable
+   *  provenance; empty when the loop was not engaged. */
+  toolCalls: z
+    .array(
+      z.object({
+        tool: z.string(),
+        status: z.string(),
+        symbol: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 export type AiAnswer = z.infer<typeof AiAnswerSchema>;
@@ -151,10 +207,29 @@ export const ChatWireSchema = z.object({
       .enum(["evidence-context", "context-only", "structured-claims"])
       .default("evidence-context"),
     /** G4: "invalid" when the structured reply failed parse/schema and the
-     *  bounded honest response was served (raw payload never displayed). */
-    structuredResponse: z.enum(["valid", "invalid"]).default("valid"),
-    /** Validated claims only — an empty array when grounding failed closed. */
+     *  bounded honest response was served (raw payload never displayed).
+     *  L1 adds "blocked": tool-loop exhaustion terminated the request
+     *  honestly instead of serving a plausible fallback. */
+    structuredResponse: z.enum(["valid", "invalid", "blocked"]).default("valid"),
+    /** L1: the tool loop's audit trail (empty when the loop was not
+     *  engaged or no tool was called). */
+    toolCalls: z
+      .array(
+        z.object({
+          tool: z.string(),
+          status: z.string(),
+          symbol: z.string().optional(),
+        }),
+      )
+      .default([]),
+    /** Validated claims only — an empty array when grounding failed closed.
+     *  Each grounded claim carries its SERVER-GENERATED verifiedFacts. */
     claims: z.array(AiClaimSchema).default([]),
+    /** Commit L2: the model's prose when `text` is the server-generated
+     *  verified surface. Commentary has NO validation state — the UI must
+     *  label it ("model commentary — not verified") and never merge it into
+     *  the grounded surface. */
+    commentary: z.string().optional(),
     /** Q4 Commit A: why the reply is not grounded (empty when grounded).
      *  Auditable provenance — the client can show/disclose the reason. */
     groundingRejections: z.array(z.string()).default([]),

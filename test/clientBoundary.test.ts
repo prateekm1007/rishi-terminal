@@ -31,14 +31,22 @@ const CLIENT_DIRS = ["app", "components", "hooks"];
  *   EXCEPT the pure-type modules (lib/<tree>/types.ts) — type-only imports
  *   are erased and carry zero runtime bytes;
  * - the numeric seed dataset (data/stocks/index.ts). seedMeta.ts and
- *   master-list.ts are public on purpose (banner constants / symbol list).
+ *   master-list.ts are public on purpose (banner constants / symbol list);
+ * - the F&O persona/prompt surface (lib/fno/rishiPrompts.ts) — Coder
+ *   Directions §12.
  */
 function isBanned(resolvedAbs: string): boolean {
   const rel = path.relative(REPO, resolvedAbs).split(path.sep).join("/");
   if (rel.startsWith("lib/consensus/") || rel.startsWith("lib/scorers/") || rel.startsWith("lib/scoring/")) {
     return rel !== "lib/consensus/types.ts" && rel !== "lib/scorers/types.ts";
   }
-  return rel === "data/stocks/index.ts" || rel === "data/stocks/index.tsx";
+  if (rel === "data/stocks/index.ts" || rel === "data/stocks/index.tsx") return true;
+  // Coder Directions §12 (Commit L hardening): the F&O persona/prompt surface
+  // is server-only (derived from the canonical registry, fnoAccess-entitled).
+  // It must never become reachable from a browser bundle — the deleted
+  // RishiStrategyAdvisor.tsx pseudo-advisor must stay deleted.
+  if (rel === "lib/fno/rishiPrompts.ts") return true;
+  return false;
 }
 
 function walk(dir: string, out: string[] = []): string[] {

@@ -31,12 +31,12 @@ const EVIDENCE: AiEvidenceItem[] = [
   {
     id: "fundamental:RELIANCE:roe:2026-09-30",
     text: "ROE %: 12 | provenance: live, observed 2026-09-30 | fact: roe=12 percent (live)",
-    facts: [{ field: "roe", value: 12, unit: "percent", source: "live" }],
+    facts: [{ field: "roe", value: 12, unit: "percent", source: "live", observedAt: "2026-09-30" }],
   },
   {
     id: "fundamental:RELIANCE:pe:2026-09-30",
     text: "P/E: 99 | provenance: live, observed 2026-09-30 | fact: pe=99 multiple (live)",
-    facts: [{ field: "pe", value: 99, unit: "multiple", source: "live" }],
+    facts: [{ field: "pe", value: 99, unit: "multiple", source: "live", observedAt: "2026-09-30" }],
   },
 ];
 const ROE_ID = EVIDENCE[0].id;
@@ -79,7 +79,15 @@ describe("G3 mandatory negative #2 — qualitative claims are context-only", () 
     expect(r.mode).toBe("context-only");
   });
 
-  it("mixed batch: a valid numeric claim grounds; the qualitative claim rides as context-only and does NOT poison the batch", () => {
+  it("mixed batch (Commit L2 contract flip): the valid numeric claim grounds; the qualitative claim is disclosed as UNVALIDATED prose and NEVER enters the server-generated grounded surface", () => {
+    // Rule 21 record: under the pre-L2 contract this case asserted
+    // grounded=true with the model's full answer (including the unsupported
+    // qualitative prose) riding as the grounded surface — the exact hole
+    // Coder Directions §2 closed. The batch still grounds on the valid
+    // numeric claim, but the grounded surface is now SERVER-GENERATED from
+    // the validated typed fact and the qualitative claim is disclosed as
+    // unvalidated prose. (This test failed on the pre-L2 tree under the new
+    // assertions; raw output in the PR.)
     const r = validateGrounding(EVIDENCE, [
       {
         claim: "ROE is 12%",
@@ -92,6 +100,11 @@ describe("G3 mandatory negative #2 — qualitative claims are context-only", () 
     expect(r.mode).toBe("structured-claims");
     expect(r.validatedClaims).toHaveLength(1);
     expect(r.validatedClaims[0].claim).toBe("ROE is 12%");
+    // The grounded surface contains ONLY the verified statement.
+    expect(r.verifiedAnswer).toBe("roe = 12 percent — live (observed/as-of 2026-09-30)");
+    expect(r.verifiedAnswer).not.toContain("The business is strong");
+    // The unsupported prose is disclosed as unvalidated.
+    expect(r.unvalidatedProse).toEqual(["The business is strong"]);
   });
 });
 

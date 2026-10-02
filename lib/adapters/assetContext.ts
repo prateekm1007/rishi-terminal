@@ -10,9 +10,9 @@ export function buildAssetContext(asset: UniversalAsset): string {
       return `
 Crypto Asset: ${asset.name} (${asset.symbol})
 Price: ${asset.price.toLocaleString('en-US')}
-Market Cap: ${(asset.marketCap ?? meta.marketCap ?? 0).toLocaleString('en-US')}
-24h Volume: ${(asset.volume24h ?? meta.volume24h ?? 0).toLocaleString('en-US')}
-24h Change: ${asset.change24h}%
+Market Cap: ${(asset.marketCap ?? meta.marketCap ?? 'unavailable')}
+24h Volume: ${(asset.volume24h ?? meta.volume24h ?? 'unavailable')}
+24h Change: ${asset.change24h === null || asset.change24h === undefined ? 'unavailable (no 24h observation)' : `${asset.change24h}%`}
 RSI: ${meta.rsi ?? 'N/A'}
 MACD: ${meta.macd ?? 'N/A'}
 Distance from ATH: ${meta.fromAth ?? 'N/A'}%
@@ -24,7 +24,7 @@ Discuss: network effects, adoption, macro liquidity, speculative excess, digital
       return `
 Forex Pair: ${asset.name} (${asset.symbol})
 Spot Rate: ${asset.price}
-24h Change: ${asset.change24h}%
+24h Change: ${asset.change24h === null || asset.change24h === undefined ? 'unavailable (no 24h observation)' : `${asset.change24h}%`}
 Volatility: ${asset.volatility ?? meta.volatility ?? 'N/A'}
 Spread: ${meta.spread ?? 'N/A'}
 Interest Rate Diff: ${meta.interestDiff?.diff ?? 'N/A'}%
@@ -36,7 +36,7 @@ Discuss: interest rate differentials, carry trades, central banks, inflation, ma
       return `
 Commodity: ${asset.name} (${asset.symbol})
 Price: ${asset.price} ${meta.unit ?? ''}
-24h Change: ${asset.change24h}%
+24h Change: ${asset.change24h === null || asset.change24h === undefined ? 'unavailable (no 24h observation)' : `${asset.change24h}%`}
 Category: ${asset.sector ?? meta.commodityCategory ?? 'N/A'}
 Exchange: ${asset.exchange ?? meta.exchange ?? 'MCX'}
 
@@ -60,7 +60,7 @@ Discuss: yield curves, recession risk, duration risk, central bank policy, infla
 Asset: ${asset.name} (${asset.symbol})
 Category: ${asset.category}
 Price: ${asset.price}
-24h Change: ${asset.change24h}%
+24h Change: ${asset.change24h === null || asset.change24h === undefined ? 'unavailable (no 24h observation)' : `${asset.change24h}%`}
 `;
   }
 }

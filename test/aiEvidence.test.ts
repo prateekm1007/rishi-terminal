@@ -61,18 +61,20 @@ describe("evidence assembler — canonical surfaces, deterministic ids", () => {
 
   it("carries TYPED FACTS (field/value/unit/source) for every numeric surface (Q4 Commit A)", async () => {
     const pkg = await buildAiEvidencePackage("RELIANCE", makeDeps());
-    // fundamental fact: unit + source + value copied from the resolver
+    // fundamental fact: unit + source + value copied from the resolver.
+    // Commit L2: live facts also carry the upstream's own observation time.
     const roe = pkg!.items.find(i => i.id.startsWith("fundamental:RELIANCE:roe:"));
-    expect(roe!.facts).toEqual([{ field: "roe", value: 18, unit: "percent", source: "live" }]);
+    expect(roe!.facts).toEqual([{ field: "roe", value: 18, unit: "percent", source: "live", observedAt: "2026-09-30T10:00:00.000Z" }]);
     expect(roe!.text).toContain("fact: roe=18 percent (live)"); // model-visible annotation
-    // derived source is EXPLICIT on the fact
+    // derived source is EXPLICIT on the fact (no claimed observation time)
     const fcf = pkg!.items.find(i => i.id.startsWith("fundamental:RELIANCE:fcfMargin:"));
     expect(fcf!.facts![0].source).toBe("seed");
-    // price facts: price in ₹, change in percent
+    expect(fcf!.facts![0].observedAt).toBeNull();
+    // price facts: price in ₹, change in percent, observation time = upstream's own
     const price = pkg!.items.find(i => i.id.startsWith("price:RELIANCE:"));
     expect(price!.facts).toEqual([
-      { field: "price", value: 1420.5, unit: "inr", source: "live" },
-      { field: "change", value: 0.8, unit: "percent", source: "live" },
+      { field: "price", value: 1420.5, unit: "inr", source: "live", observedAt: "2025-10-31T08:40:00.000Z" },
+      { field: "change", value: 0.8, unit: "percent", source: "live", observedAt: "2025-10-31T08:40:00.000Z" },
     ]);
     // score fact: derived by THE engine, value equals getStockScore output
     const resolved = resolveStockMetrics("RELIANCE", { ...liveFundamentals("RELIANCE", "2026-09-30T10:00:00.000Z"), isLive: true });
@@ -81,11 +83,28 @@ describe("evidence assembler — canonical surfaces, deterministic ids", () => {
     if (expected.consensus === null) {
       expect(score!.facts).toBeUndefined(); // no fact → any numeric score assertion fails closed
     } else {
-      expect(score!.facts).toEqual([{ field: "score", value: expected.consensus, unit: "points", source: "derived" }]);
+      expect(score!.facts).toEqual([{ field: "score", value: expected.consensus, unit: "points", source: "derived", observedAt: null }]);
     }
     // qualitative items carry NO facts (nothing to assert against)
     expect(pkg!.items.find(i => i.id === `stock:RELIANCE:profile`)!.facts).toBeUndefined();
     expect(pkg!.items.find(i => i.id === "news:RELIANCE:unavailable")!.facts).toBeUndefined();
+  });
+
+  it("Commit L2: a STATIC price fallback is typed seed/reference and a DERIVED proxy stays derived — neither can be claimed live", async () => {
+    const staticPkg = await buildAiEvidencePackage(
+      "RELIANCE",
+      makeDeps({ getPrice: vi.fn(async () => ({ ...FAKE_PRICE, status: "STATIC" as const, observedAt: null, lastUpdated: null })) }),
+    );
+    const staticPrice = staticPkg!.items.find(i => i.id.startsWith("price:RELIANCE:"));
+    expect(staticPrice!.facts![0].source).toBe("seed");
+    expect(staticPrice!.facts![0].observedAt).toBeNull();
+
+    const derivedPkg = await buildAiEvidencePackage(
+      "RELIANCE",
+      makeDeps({ getPrice: vi.fn(async () => ({ ...FAKE_PRICE, status: "DERIVED" as const, observedAt: null, lastUpdated: null })) }),
+    );
+    const derivedPrice = derivedPkg!.items.find(i => i.id.startsWith("price:RELIANCE:"));
+    expect(derivedPrice!.facts![0].source).toBe("derived");
   });
 
   it("price evidence keeps the upstream observation time; unavailable price is an explicit note (never fabricated)", async () => {
@@ -262,7 +281,7 @@ async function withProvider(content: string, fn: () => Promise<void>): Promise<v
 }
 
 describe("router — structured output is validated before grounding is claimed", () => {
-  it("valid structured reply with known ids and matching assertions → grounded wire with claims", async () => {
+  it("valid structured reply with known ids and matching assertions → grounded wire with claims (Commit L2: verified surface + commentary)", async () => {
     await withProvider(
       JSON.stringify({
         answer: "INFY shows a solid consensus.",
@@ -285,7 +304,20 @@ describe("router — structured output is validated before grounding is claimed"
         expect(wire.provenance.claims).toHaveLength(2);
         expect(wire.provenance.claims[0].evidenceIds).toContain("price:INFY:2025-10-31T08:40:00.000Z");
         expect(wire.provenance.claims[0].assertions).toEqual([{ field: "price", value: 1600, unit: "inr" }]);
-        expect(wire.text).toBe("INFY shows a solid consensus.");
+        // Commit L2: the grounded TEXT surface is SERVER-GENERATED from the
+        // validated typed facts — one verified statement per matched fact,
+        // each carrying its closed source state.
+        expect(wire.text).toBe(
+          "price = 1600 inr — live (no disclosed observation time)\n" +
+          "score = 71 points — derived by the platform engine",
+        );
+        // The model's prose is commentary — present, but NEVER in the
+        // grounded surface.
+        expect(wire.provenance.commentary).toBe("INFY shows a solid consensus.");
+        expect(wire.text).not.toContain("INFY shows a solid consensus.");
+        // Source states propagate to the wire claims.
+        expect(wire.provenance.claims[0].verifiedFacts![0].sourceState).toBe("live-undated");
+        expect(wire.provenance.claims[1].verifiedFacts![0].sourceState).toBe("derived");
       },
     );
   });

@@ -374,6 +374,23 @@ export default function RishiChat({ stock }: Props) {
             }}>
               {msg.text}
             </div>
+            {/* Commit L2 (two-surface contract): when grounded, msg.text is
+                the SERVER-GENERATED verified surface; the model's prose is
+                commentary with NO validation state — rendered separately,
+                explicitly labelled, never merged into the grounded bubble. */}
+            {msg.role === "rishi" && msg.provenance?.grounded && msg.provenance.commentary && (
+              <div style={{
+                marginTop: 4, padding: "8px 12px",
+                border: "1px dashed rgba(51,65,85,0.6)", borderRadius: "10px",
+                fontSize: "11px", color: "#94A3B8", lineHeight: 1.6,
+                whiteSpace: "pre-wrap", wordBreak: "break-word",
+              }}>
+                <div style={{ fontSize: "9px", letterSpacing: "0.08em", color: "#64748B", marginBottom: 3 }}>
+                  MODEL COMMENTARY · NOT VERIFIED
+                </div>
+                {msg.provenance.commentary}
+              </div>
+            )}
             <div style={{ fontSize: "9px", color: "#1E293B", marginTop: "3px", textAlign: msg.role === "user" ? "right" : "left" }}>
               {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
             </div>
@@ -383,6 +400,11 @@ export default function RishiChat({ stock }: Props) {
                 {msg.provenance.grounded
                   ? `cites ${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0)} evidence item${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0) === 1 ? "" : "s"} · numbers checked`
                   : "not grounded · context-only"}
+                {msg.provenance.toolCalls && msg.provenance.toolCalls.length > 0 && (
+                  <div>
+                    · tools: {msg.provenance.toolCalls.map(tc => `${tc.tool}(${tc.symbol ?? ""})→${tc.status}`).join(", ")}
+                  </div>
+                )}
                 {msg.provenance.grounded && msg.provenance.claims.length > 0 && (
                   <div style={{ color: "#334155" }}>
                     {msg.provenance.claims.map((c, i) => (

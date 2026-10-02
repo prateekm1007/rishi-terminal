@@ -1,6 +1,13 @@
 /**
  * OpenAI-compatible chat provider (T49). Key travels via the Authorization
  * header — never the URL. User text only ever enters user/system messages.
+ *
+ * Commit L1: `loopTurns` carries the server-generated turns of the bounded
+ * tool loop (assistant tool-request + user TOOL RESULT/TOOL ERROR), in
+ * conversation order AFTER the user's message. These turns are produced
+ * exclusively by executeAiTool — a client or the model can never inject a
+ * tool result (the router builds them; the request contract has no field
+ * that reaches here).
  */
 
 export interface ChatTurn {
@@ -16,11 +23,13 @@ export async function callOpenAiCompatible(
   history: ChatTurn[],
   message: string,
   timeoutMs: number,
+  loopTurns: ChatTurn[] = [],
 ): Promise<string> {
   const messages = [
     { role: "system" as const, content: systemPrompt },
     ...history.map(h => ({ role: h.role, content: h.content })),
     { role: "user" as const, content: message },
+    ...loopTurns.map(h => ({ role: h.role, content: h.content })),
   ];
 
   const res = await fetch(`${baseUrl}/chat/completions`, {

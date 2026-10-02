@@ -12,6 +12,7 @@ export async function callGemini(
   history: ChatTurn[],
   message: string,
   timeoutMs: number,
+  loopTurns: ChatTurn[] = [],
 ): Promise<string> {
   const contents = [
     ...history.map(h => ({
@@ -19,6 +20,12 @@ export async function callGemini(
       parts: [{ text: h.content }],
     })),
     { role: "user", parts: [{ text: message }] },
+    // Commit L1: server-generated tool-loop turns (assistant tool request +
+    // user TOOL RESULT/TOOL ERROR), in conversation order after the message.
+    ...loopTurns.map(h => ({
+      role: h.role === "user" ? "user" : "model",
+      parts: [{ text: h.content }],
+    })),
   ];
 
   const body = {

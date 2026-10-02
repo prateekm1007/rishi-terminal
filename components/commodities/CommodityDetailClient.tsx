@@ -92,10 +92,9 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     name: commodity.name,
     category: 'commodity',
     price: displayPrice,
-    // Chart-internal shim (the line plot reads `price`): the observed percent
-    // when live; 0 only as the shape's filler for the reference fallback —
-    // the UI never renders this as a "0.00%" claim.
-    change24h: displayChange ?? 0,
+    // Commit L3 (§9): null is a real state — an unobserved change stays
+    // null (rule 16), never a 0.00% shape filler.
+    change24h: displayChange,
     metadata: commodity,
   };
 

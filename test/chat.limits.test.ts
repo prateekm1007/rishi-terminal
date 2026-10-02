@@ -57,7 +57,7 @@ beforeEach(() => {
       return new Response(JSON.stringify({ error: "boom" }), { status: 500 });
     }
     return new Response(
-      JSON.stringify({ candidates: [{ content: { parts: [{ text: "ok" }] } }] }),
+      JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ answer: "ok", claims: [], uncertainties: [] }) }] } }] }),
       { status: 200 },
     );
   }) as unknown as typeof fetch);

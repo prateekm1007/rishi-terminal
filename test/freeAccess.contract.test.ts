@@ -77,7 +77,7 @@ function stubProvider(): void {
     vi.fn(async () => {
       providerCalls += 1;
       return new Response(
-        JSON.stringify({ choices: [{ message: { content: "OK" } }] }),
+        JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "ok", claims: [], uncertainties: [] }) } }] }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }) as unknown as typeof fetch,

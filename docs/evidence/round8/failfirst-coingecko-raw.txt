@@ -1,0 +1,110 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/coingecko-null.test.ts (8 tests | 7 failed) 35ms
+   ❯ coinGeckoEntryFromPayload — Rule-16 classification (pure) (7)
+     × MUST FAIL PRE-FIX: missing usd_24h_change → change null, never 0 4ms
+     × MUST FAIL PRE-FIX: missing usd → price null, never a fake zero observation 1ms
+     × a GENUINE numeric zero change stays 0 (a flat day is real data) 1ms
+     × garbage fields → null (never NaN, never coerced zeros) 1ms
+     × a zero or negative price is not an observation (price null) 0ms
+     × absent volume → null, never 0 (0 would claim zero trading) 0ms
+     × a fully present entry keeps every real number 0ms
+   ✓ transport: a price-less CoinGecko payload is NO observation (1)
+     ✓ MUST FAIL PRE-FIX: fetchLivePrice(BTC) → null when the batch entry has no usable usd price 26ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/coingecko-null.test.ts > coinGeckoEntryFromPayload — Rule-16 classification (pure) > MUST FAIL PRE-FIX: missing usd_24h_change → change null, never 0
+TypeError: coinGeckoEntryFromPayload is not a function
+ ❯ test/coingecko-null.test.ts:29:15
+     27| describe("coinGeckoEntryFromPayload — Rule-16 classification (pure)", …
+     28|   it("MUST FAIL PRE-FIX: missing usd_24h_change → change null, never 0…
+     29|     const e = coinGeckoEntryFromPayload({ usd: 67000.12, usd_24h_vol: …
+       |               ^
+     30|     expect(e.price).toBe(67000.12);
+     31|     expect(e.change).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/coingecko-null.test.ts > coinGeckoEntryFromPayload — Rule-16 classification (pure) > MUST FAIL PRE-FIX: missing usd → price null, never a fake zero observation
+TypeError: coinGeckoEntryFromPayload is not a function
+ ❯ test/coingecko-null.test.ts:36:15
+     34|
+     35|   it("MUST FAIL PRE-FIX: missing usd → price null, never a fake zero o…
+     36|     const e = coinGeckoEntryFromPayload({ usd_24h_change: -1.25, usd_2…
+       |               ^
+     37|     expect(e.price).toBeNull();
+     38|     expect(e.change).toBe(-1.25);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/coingecko-null.test.ts > coinGeckoEntryFromPayload — Rule-16 classification (pure) > a GENUINE numeric zero change stays 0 (a flat day is real data)
+TypeError: coinGeckoEntryFromPayload is not a function
+ ❯ test/coingecko-null.test.ts:42:15
+     40|
+     41|   it("a GENUINE numeric zero change stays 0 (a flat day is real data)"…
+     42|     const e = coinGeckoEntryFromPayload({ usd: 1.0, usd_24h_change: 0,…
+       |               ^
+     43|     expect(e.change).toBe(0);
+     44|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  test/coingecko-null.test.ts > coinGeckoEntryFromPayload — Rule-16 classification (pure) > garbage fields → null (never NaN, never coerced zeros)
+TypeError: coinGeckoEntryFromPayload is not a function
+ ❯ test/coingecko-null.test.ts:47:15
+     45|
+     46|   it("garbage fields → null (never NaN, never coerced zeros)", () => {
+     47|     const e = coinGeckoEntryFromPayload({ usd: "abc", usd_24h_change: …
+       |               ^
+     48|     expect(e).toEqual({ price: null, change: null, volume24h: null });
+     49|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/coingecko-null.test.ts > coinGeckoEntryFromPayload — Rule-16 classification (pure) > a zero or negative price is not an observation (price null)
+TypeError: coinGeckoEntryFromPayload is not a function
+ ❯ test/coingecko-null.test.ts:52:12
+     50|
+     51|   it("a zero or negative price is not an observation (price null)", ()…
+     52|     expect(coinGeckoEntryFromPayload({ usd: 0 }).price).toBeNull();
+       |            ^
+     53|     expect(coinGeckoEntryFromPayload({ usd: -3 }).price).toBeNull();
+     54|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/coingecko-null.test.ts > coinGeckoEntryFromPayload — Rule-16 classification (pure) > absent volume → null, never 0 (0 would claim zero trading)
+TypeError: coinGeckoEntryFromPayload is not a function
+ ❯ test/coingecko-null.test.ts:57:15
+     55|
+     56|   it("absent volume → null, never 0 (0 would claim zero trading)", () …
+     57|     const e = coinGeckoEntryFromPayload({ usd: 2.5, usd_24h_change: 0.…
+       |               ^
+     58|     expect(e.volume24h).toBeNull();
+     59|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/coingecko-null.test.ts > coinGeckoEntryFromPayload — Rule-16 classification (pure) > a fully present entry keeps every real number
+TypeError: coinGeckoEntryFromPayload is not a function
+ ❯ test/coingecko-null.test.ts:62:15
+     60|
+     61|   it("a fully present entry keeps every real number", () => {
+     62|     const e = coinGeckoEntryFromPayload({ usd: 3000.5, usd_24h_change:…
+       |               ^
+     63|     expect(e).toEqual({ price: 3000.5, change: -2.75, volume24h: 8_000…
+     64|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 1 passed (8)
+   Start at  12:42:01
+   Duration  340ms (transform 56%, import 22%, tests 17%, setup 3%, worker 2%)
+

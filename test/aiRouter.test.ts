@@ -56,8 +56,7 @@ describe("generateEvidenceGroundedAnswer (T50–T52)", () => {
   it("returns provenance-carrying answer and a backwards-compatible wire shape", async () => {
     // Commit M unified pipeline: the provider replies with the structured
     // contract; raw prose would be discarded (founder §24).
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "Buy quality.", claims: [], uncertainties: [] }) } }] }), {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "Buy quality.", claims: [], uncertainties: [] }) } }] }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -80,8 +79,7 @@ describe("generateEvidenceGroundedAnswer (T50–T52)", () => {
   });
 
   it("evidence context flows into the request system prompt (T51)", async () => {
-    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 }),
+    const spy = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(JSON.stringify({ choices: [{ message: { content: "ok" } }] }), { status: 200 }),
     );
     await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
@@ -103,7 +101,7 @@ describe("generateEvidenceGroundedAnswer (T50–T52)", () => {
   });
 
   it("upstream 502 → throws with the failure recorded in provider health (T45)", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("nope", { status: 502 }));
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response("nope", { status: 502 }));
     await expect(
       generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" }),
     ).rejects.toThrow();
@@ -124,8 +122,7 @@ describe("Phase 5.1 — runtime failover chain (T50)", () => {
   });
 
   it("chat-api succeeds → Gemini is never attempted", async () => {
-    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "primary", claims: [], uncertainties: [] }) } }] }), { status: 200 }),
+    const spy = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "primary", claims: [], uncertainties: [] }) } }] }), { status: 200 }),
     );
     const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
     expect(a?.provider).toBe("chat-api");
@@ -172,7 +169,7 @@ describe("Phase 5.1 — runtime failover chain (T50)", () => {
   });
 
   it("both providers fail → the upstream error propagates (caller surfaces 502)", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("everything is down", { status: 503 }));
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response("everything is down", { status: 503 }));
     await expect(
       generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" }),
     ).rejects.toThrow();
@@ -192,9 +189,10 @@ describe("Phase 5.1 — runtime failover chain (T50)", () => {
   it("chat-api circuit OPEN → Gemini is attempted and chat-api is never fetched", async () => {
     // 3 consecutive failures open the chat-api circuit (60 s cooldown).
     for (let i = 0; i < 3; i++) recordProviderResult("chat-api", false, 5, "forced failure");
-    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
-        JSON.stringify({ candidates: [{ content: { parts: [{ text: "via gemini" }] } }] }),
+    // Contract-valid structured reply — the fixture must not trip the bounded
+    // final-answer repair (that contract is pinned in aiRouter.requestPath).
+    const spy = vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
+        JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ answer: "via gemini", claims: [], uncertainties: [] }) }] } }] }),
         { status: 200 },
       ),
     );
@@ -216,8 +214,7 @@ describe("Phase 5.1 — honest AI provenance (T52)", () => {
   });
 
   it("with evidence context: an unparseable model reply degrades honestly (grounded false, mode disclosed)", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "answer" } }] }), { status: 200 }),
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(JSON.stringify({ choices: [{ message: { content: "answer" } }] }), { status: 200 }),
     );
     const a = await generateEvidenceGroundedAnswer({
       systemPrompt: "p",
@@ -238,8 +235,7 @@ describe("Phase 5.1 — honest AI provenance (T52)", () => {
   });
 
   it("without evidence: a clean reply is context-only, explicitly unverified (Commit M)", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "Patience matters.", claims: [], uncertainties: [] }) } }] }), { status: 200 }),
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "Patience matters.", claims: [], uncertainties: [] }) } }] }), { status: 200 }),
     );
     const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
     expect(a?.uncertainties.join(" ")).toContain("context-only reply");
@@ -268,8 +264,7 @@ describe("audit 2026-10-02 (production probe follow-up): string-typed assertion 
         facts: [{ field: "roe", value: 8.91, unit: "percent", source: "live" as const }],
       },
     ];
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
         JSON.stringify({
           choices: [
             {
@@ -321,8 +316,7 @@ describe("audit 2026-10-02 (production probe follow-up): string-typed assertion 
         facts: [{ field: "roe", value: 8.91, unit: "percent", source: "live" as const }],
       },
     ];
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
         JSON.stringify({
           choices: [
             {
@@ -382,8 +376,7 @@ describe("G4 — invalid structured output never becomes displayed financial tex
 
   it("MUST FAIL PRE-FIX: malformed JSON → bounded honest response, never the raw payload", async () => {
     const RAW = 'Here is my analysis {"answer": "BUY NOW roe 12", claims: [broken';
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
         JSON.stringify({ choices: [{ message: { content: RAW } }] }),
         { status: 200 },
       ),
@@ -402,8 +395,7 @@ describe("G4 — invalid structured output never becomes displayed financial tex
 
   it("MUST FAIL PRE-FIX: wrong schema (answer is a number) → bounded response, no raw JSON displayed", async () => {
     const RAW = JSON.stringify({ answer: 42, claims: [], uncertainties: [] });
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
         JSON.stringify({ choices: [{ message: { content: RAW } }] }),
         { status: 200 },
       ),
@@ -418,8 +410,7 @@ describe("G4 — invalid structured output never becomes displayed financial tex
 
   it("MUST FAIL PRE-FIX: provider error/debug body → never surfaced as the answer", async () => {
     const RAW = "InternalError: upstream model overloaded - trace 99f2 - retry later";
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
         JSON.stringify({ choices: [{ message: { content: RAW } }] }),
         { status: 200 },
       ),
@@ -444,8 +435,7 @@ describe("G4 — invalid structured output never becomes displayed financial tex
       ],
       uncertainties: [],
     });
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
         JSON.stringify({ choices: [{ message: { content: RAW } }] }),
         { status: 200 },
       ),
@@ -473,8 +463,7 @@ describe("G4 — invalid structured output never becomes displayed financial tex
       ],
       uncertainties: [],
     });
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(
         JSON.stringify({ choices: [{ message: { content: RAW } }] }),
         { status: 200 },
       ),

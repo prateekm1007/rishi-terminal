@@ -1,0 +1,60 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/fundamentals-null.test.ts (4 tests | 2 failed) 32ms
+   ✓ resolver: null live fundamentals keep the seed; genuine zeros override (2)
+     ✓ MUST FAIL PRE-FIX: a live roe of 0 (transport-fabricated) no longer overrides the seed via a missing field — null keeps the seed 2ms
+     ✓ a GENUINE negative/zero live observation still overrides the seed (Rule 16 both halves) 1ms
+   ❯ transport: missing fields parse to null, never sentinel 0 (2)
+     × MUST FAIL PRE-FIX: Yahoo payload without ROE/dividendYield → null (negative ROE survives) 26ms
+     × MUST FAIL PRE-FIX: screener page missing the ratio rows → nulls, never 0 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/fundamentals-null.test.ts > transport: missing fields parse to null, never sentinel 0 > MUST FAIL PRE-FIX: Yahoo payload without ROE/dividendYield → null (negative ROE survives)
+AssertionError: expected +0 to be null
+
+- Expected:
+null
+
++ Received:
+0
+
+ ❯ test/fundamentals-null.test.ts:110:30
+    108|     expect(f!.pe).toBe(22.4);
+    109|     expect(f!.roe).toBe(-5.2); // genuine negative survives
+    110|     expect(f!.dividendYield).toBeNull(); // absent → null, never 0
+       |                              ^
+    111|     expect(f!.roce).toBeNull(); // not disclosed by these modules
+    112|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/fundamentals-null.test.ts > transport: missing fields parse to null, never sentinel 0 > MUST FAIL PRE-FIX: screener page missing the ratio rows → nulls, never 0
+AssertionError: expected +0 to be null
+
+- Expected:
+null
+
++ Received:
+0
+
+ ❯ test/fundamentals-null.test.ts:124:19
+    122|     const f = await fetchScreenerFundamentals("RELIANCE");
+    123|     expect(f).not.toBeNull();
+    124|     expect(f!.pe).toBeNull(); // no "Stock P/E" row → null, never 0
+       |                   ^
+    125|     expect(f!.roe).toBeNull();
+    126|     expect(f!.roce).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  12:51:30
+   Duration  679ms (transform 79%, import 14%, tests 6%, setup 1%, worker 1%)
+

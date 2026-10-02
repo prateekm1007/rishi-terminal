@@ -1,0 +1,57 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/pulse.currency.null.test.ts (2 tests | 2 failed) 75ms
+   ❯ /api/pulse/currency — null semantics (§9) (2)
+     × MUST FAIL PRE-FIX: pairs without a genuine previous close or price are OMITTED — never zero-filled flat rows 72ms
+     × Rule 10: an unexpected route failure returns a generic 503 without upstream detail 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pulse.currency.null.test.ts > /api/pulse/currency — null semantics (§9) > MUST FAIL PRE-FIX: pairs without a genuine previous close or price are OMITTED — never zero-filled flat rows
+AssertionError: expected [ { pair: 'USD/INR', …(6) }, …(3) ] to have a length of 1 but got 4
+
+- Expected
++ Received
+
+- 1
++ 4
+
+ ❯ test/pulse.currency.null.test.ts:59:29
+     57|     // Exactly the ONE pair with a full observation; the fabricated ro…
+     58|     // gone (pre-fix: 4 rows with EURINR change=0, JPYINR rate=0, GBP …
+     59|     expect(body.currencies).toHaveLength(1);
+       |                             ^
+     60|     expect(body.currencies[0]).toMatchObject({ pair: "USD/INR", rate: …
+     61|     for (const row of body.currencies) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/pulse.currency.null.test.ts > /api/pulse/currency — null semantics (§9) > Rule 10: an unexpected route failure returns a generic 503 without upstream detail
+AssertionError: expected 200 to be 503 // Object.is equality
+
+- Expected
++ Received
+
+- 503
++ 200
+
+ ❯ test/pulse.currency.null.test.ts:74:24
+     72|     const res = await GET();
+     73|     const body = await res.json();
+     74|     expect(res.status).toBe(503);
+       |                        ^
+     75|     expect(JSON.stringify(body)).not.toContain("api.internal.example");
+     76|     expect(JSON.stringify(body)).not.toContain("detail");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  12:53:34
+   Duration  228ms (tests 62%, transform 25%, setup 5%, import 4%, worker 3%)
+

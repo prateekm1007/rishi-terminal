@@ -10,7 +10,11 @@ const PAIRS = [
   { symbol: 'JPYINR=X', pair: 'JPY/INR', base: 'JPY', quote: 'INR' },
 ];
 
-async function fetchPair(symbol: string) {
+// Rule 16 (Coder Directions §9 sweep): a pair with no usable observation
+// yields null — the route omits the row (the page's existing unavailable
+// state covers it). The previous `prev = price` fallback fabricated a flat
+// 0% day, and `regularMarketPrice ?? 0` served a fake ₹0 rate.
+async function fetchPair(symbol: string): Promise<{ price: number; change: number; changePct: number } | null> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=2d`;
   const res = await fetch(url, {
     signal: AbortSignal.timeout(7000),
@@ -24,12 +28,19 @@ async function fetchPair(symbol: string) {
   const meta = data?.chart?.result?.[0]?.meta;
   if (!meta) throw new Error('No meta for ' + symbol);
 
-  const price    = meta.regularMarketPrice ?? 0;
-  const prev     = meta.chartPreviousClose ?? meta.previousClose ?? price;
-  const change   = parseFloat((price - prev).toFixed(4));
-  const changePct = prev > 0 ? parseFloat(((change / prev) * 100).toFixed(3)) : 0;
+  const price = typeof meta.regularMarketPrice === 'number' && meta.regularMarketPrice > 0 ? meta.regularMarketPrice : null;
+  const prev =
+    typeof meta.chartPreviousClose === 'number' && meta.chartPreviousClose > 0 ? meta.chartPreviousClose :
+    typeof meta.previousClose === 'number' && meta.previousClose > 0 ? meta.previousClose :
+    null;
+  // No price, or no genuine previous close → NO change observation. The old
+  // `?? price` fallback computed change = 0 from price − itself: a flat-day
+  // fabrication, banned by Commit O on the Yahoo chart path.
+  if (price === null || prev === null) return null;
+  const change = parseFloat((price - prev).toFixed(4));
+  const changePct = parseFloat(((change / prev) * 100).toFixed(3));
 
-  return { price, prev, change, changePct };
+  return { price, change, changePct };
 }
 
 export async function GET() {
@@ -38,11 +49,12 @@ export async function GET() {
       PAIRS.map(p => fetchPair(p.symbol))
     );
 
+    // Only pairs with a REAL observation are served; rejected fetches and
+    // null observations are OMITTED (honest absence — the page renders its
+    // explicit unavailable state), never zero-filled rows.
     const currencies = PAIRS.map((p, i) => {
       const r = results[i];
-      if (r.status === 'rejected') {
-        return { pair: p.pair, rate: 0, change: 0, changePct: 0, error: true };
-      }
+      if (r.status === 'rejected' || r.value === null) return null;
       const { price, change, changePct } = r.value;
 
       const trend =
@@ -75,7 +87,7 @@ export async function GET() {
         volatility,
         signal,
       };
-    });
+    }).filter((row): row is NonNullable<typeof row> => row !== null);
 
     return NextResponse.json(
       { currencies, generatedAt: new Date().toISOString() },
@@ -83,9 +95,12 @@ export async function GET() {
     );
 
   } catch (err) {
+    // Rule 10: generic outward, detail server-side only. The previous body
+    // leaked `String(err)` (upstream exception text) to clients.
+    console.error('[pulse/currency] fetch failed:', err instanceof Error ? err.message : err);
     return NextResponse.json(
-      { error: 'Failed to fetch currencies', detail: String(err) },
-      { status: 500 }
+      { error: 'Currency rates unavailable' },
+      { status: 503 }
     );
   }
 }

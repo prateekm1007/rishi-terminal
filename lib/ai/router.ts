@@ -319,10 +319,21 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
 
   const evidence = args.evidence ?? [];
   const hasInitialEvidence = evidence.length > 0;
-  const fullSystem =
+  // Commit N (production canary root cause, 2026-10-02): the system prompt
+  // is rebuilt from the CURRENT evidence state on every provider call.
+  // The historical bug: it was composed ONCE from the INITIAL evidence, so
+  // after a tool landed evidence on the no-initial-evidence path the model
+  // still saw the CONTEXT-ONLY contract — which demands `claims: []` and
+  // never teaches the claims/evidenceIds/assertions format — and the live
+  // provider improvised `claims` as an array of fact-annotation STRINGS,
+  // which zod must reject (structuredResponse=invalid, bounded honest
+  // response). Re-prompting with the evidence contract once evidence exists
+  // is the root-cause fix; the canary (scripts/prodGroundedCanary.mjs)
+  // caught it in production where scripted local tests could not.
+  const buildSystem = (ev: AiEvidenceItem[]): string =>
     args.systemPrompt +
     UNTRUSTED_HISTORY_BLOCK +
-    (hasInitialEvidence ? evidenceBlock(evidence) : contextOnlyBlock()) +
+    (ev.length > 0 ? evidenceBlock(ev) : contextOnlyBlock()) +
     toolProtocolBlock();
 
   const generatedAt = new Date().toISOString();
@@ -336,6 +347,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
   // the tool loop may issue several completions.)
   const callProvider = async (
     loopTurns: ChatTurn[],
+    system: string,
   ): Promise<{ text: string; provider: AiProvider }> => {
     let lastError: unknown = null;
     for (const provider of candidates) {
@@ -343,10 +355,10 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
         const t =
           provider.kind === "openai"
             ? await withProviderHealth(provider.id, () =>
-                callOpenAiCompatible(provider.baseUrl, provider.apiKey, provider.model, fullSystem, args.history, args.message, TIMEOUT_MS, loopTurns),
+                callOpenAiCompatible(provider.baseUrl, provider.apiKey, provider.model, system, args.history, args.message, TIMEOUT_MS, loopTurns),
               )
             : await withProviderHealth(provider.id, () =>
-                callGemini(provider.apiKey, provider.model, fullSystem, args.history, args.message, TIMEOUT_MS, loopTurns),
+                callGemini(provider.apiKey, provider.model, system, args.history, args.message, TIMEOUT_MS, loopTurns),
               );
         return { text: t, provider };
       } catch (err) {
@@ -372,7 +384,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
   const toolCalls: AiAnswer["toolCalls"] = [];
 
   for (;;) {
-    const { text, provider } = await callProvider(transcript);
+    const { text, provider } = await callProvider(transcript, buildSystem(loopEvidence));
 
     const toolReq = extractToolRequest(text);
     if (!toolReq) {

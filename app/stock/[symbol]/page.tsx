@@ -27,7 +27,9 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   if (!stock) {
     return { title: `Stock not found | Rishi Terminal` };
   }
-  const ogUrl = `/stock/${canonicalSym}`;
+  // Percent-encode: J&KBANK/M&M/M&MFIN carry & — the encoded canonical
+  // matches the sitemap URL form exactly (both forms serve the same page).
+  const ogUrl = `/stock/${encodeURIComponent(canonicalSym)}`;
   if (getStockScore(stock).dataQuality === "INCOMPLETE") {
     const title = `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`;
     const description = `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`;

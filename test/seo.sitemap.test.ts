@@ -30,7 +30,11 @@ describe('app/sitemap.ts (served at /sitemap.xml)', () => {
     const symbols = Object.keys(STOCKS);
     expect(symbols.length).toBeGreaterThanOrEqual(900); // 916 at round-5 close
     for (const s of symbols) {
-      expect(urls, `missing /stock/${s}`).toContain(`${SITE_URL}/stock/${s}`);
+      // Symbols with URI-special characters (J&KBANK, M&M, M&MFIN) are
+      // percent-encoded in URLs — encodeURIComponent is identity for the
+      // rest. Both forms serve the same page; the encoded form is the one
+      // that can be serialized into XML.
+      expect(urls, `missing /stock/${s}`).toContain(`${SITE_URL}/stock/${encodeURIComponent(s)}`);
     }
   });
 
@@ -69,5 +73,15 @@ describe('app/sitemap.ts (served at /sitemap.xml)', () => {
 
   it('aliases are NOT listed (canonical symbols only — /stock/BAJAJ_AUTO 308s)', () => {
     expect(urls.some(u => u.includes('BAJAJ_AUTO'))).toBe(false);
+  });
+
+  it('every URL is XML-safe as serialized (no raw & < > " \u0027 — the follow-up fix)', () => {
+    // Found in production acceptance of PR #41: J&KBANK / M&M / M&MFIN
+    // produced raw ampersands in <loc> and the whole sitemap failed
+    // XML parsing (Search Console would reject the file). Special-char
+    // symbols must ship percent-encoded.
+    for (const u of urls) {
+      expect(/[<>&'\"]/.test(u), `raw XML-unsafe character in: ${u}`).toBe(false);
+    }
   });
 });

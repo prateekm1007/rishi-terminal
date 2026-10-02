@@ -21,17 +21,20 @@
  */
 
 import { withProviderHealth } from "@/lib/registry/providerHealth";
-import { PROVIDER_IDS, isProviderApproved } from "@/lib/registry/providerRegistry";
+import {
+  PROVIDER_IDS,
+  isProviderApproved,
+  attestedDefaultModel,
+  isWellFormedModelId,
+} from "@/lib/registry/providerRegistry";
 import type { AiAnswer, AiClaim, AiEvidenceItem, ChatWire } from "./schemas";
 import { StructuredModelOutputSchema } from "./schemas";
-import { validateGrounding } from "./evidence";
+import { validateGrounding, extractNormalizedNumbers, canonicalNumber } from "./evidence";
 import type { CanonicalStockState } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, type AiToolDeps } from "./tools";
 
-const GEMINI_MODEL = "models/gemini-2.5-flash";
-const DEFAULT_OPENAI_MODEL = "agnes-2.5-flash";
 const TIMEOUT_MS = 20_000;
 
 /** Commit L1: the hard bound on tool executions inside ONE chat request.
@@ -80,17 +83,37 @@ export function resolveAiProviderCandidates(): AiProvider[] {
     .replace(/\/chat\/completions$/, "");
   const chatKey = (process.env.CHAT_API_KEY || "").trim();
   if (baseUrl && chatKey && isProviderApproved(PROVIDER_IDS.CHAT_API)) {
-    candidates.push({
-      kind: "openai",
-      id: PROVIDER_IDS.CHAT_API,
-      baseUrl,
-      apiKey: chatKey,
-      model: (process.env.CHAT_MODEL || "").trim() || DEFAULT_OPENAI_MODEL,
-    });
+    // Commit M §25: an explicit CHAT_MODEL is the operator's attestation;
+    // with none configured, the implicit default must be the REGISTRY-
+    // attested model — never a hardcoded id in this module (the value and
+    // its evidence live in ATTESTED_PROVIDER_MODELS; the runtime
+    // verification lives in scripts/auditModelIdentity.ts). Either way the
+    // id must be a well-formed boundary value, else fail closed.
+    const model = (process.env.CHAT_MODEL || "").trim() || attestedDefaultModel(PROVIDER_IDS.CHAT_API);
+    if (model && isWellFormedModelId(model)) {
+      candidates.push({
+        kind: "openai",
+        id: PROVIDER_IDS.CHAT_API,
+        baseUrl,
+        apiKey: chatKey,
+        model,
+      });
+    } else {
+      console.error(
+        "[ai/router] CHAT_API model identity is not attested/well-formed — failing closed for this provider",
+      );
+    }
   }
   const geminiKey = (process.env.GEMINI_API_KEY || "").trim();
   if (geminiKey && isProviderApproved(PROVIDER_IDS.GEMINI)) {
-    candidates.push({ kind: "gemini", id: PROVIDER_IDS.GEMINI, apiKey: geminiKey, model: GEMINI_MODEL });
+    const model = attestedDefaultModel(PROVIDER_IDS.GEMINI);
+    if (model && isWellFormedModelId(model)) {
+      candidates.push({ kind: "gemini", id: PROVIDER_IDS.GEMINI, apiKey: geminiKey, model });
+    } else {
+      console.error(
+        "[ai/router] GEMINI model identity is not attested/well-formed — failing closed for this provider",
+      );
+    }
   }
   return candidates;
 }
@@ -163,6 +186,30 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "grounded answer; your answer text is shown separately as unverified " +
     "commentary. State facts plainly and let the verified surface carry " +
     "the numbers."
+  );
+}
+
+/** Commit M (founder §23): the contract for requests with NO initial
+ *  evidence. The model may fetch platform data via the tool protocol; a
+ *  final reply with NO claims is acceptable ONLY as clean context-only
+ *  prose (no numbers — numbers without a verified fact are discarded);
+ *  financial data questions must be served by requesting tools, never by
+ *  plausible improvisation. */
+function contextOnlyBlock(): string {
+  return (
+    "\n\nRESPONSE CONTRACT (no verified platform data attached): reply with " +
+    'ONLY a JSON object: {"answer": <your reply>, "claims": [], ' +
+    '"uncertainties": [<things you could not verify>]}. ' +
+    "RULES: (1) claims MUST be empty — you have no verified facts to cite. " +
+    "(2) Do NOT state any numbers (prices, scores, percentages, dates, " +
+    "metrics) in your answer: you have no verified data, and a reply that " +
+    "contains numbers will be discarded rather than shown. " +
+    "(3) If the user asks for specific market data (a price, a score, " +
+    "fundamentals), request a server tool first (see TOOL PROTOCOL) instead " +
+    "of improvising; if no tool can provide it, say the data is not " +
+    "available rather than inventing an answer. " +
+    "(4) Philosophical, educational and contextual discussion needs no " +
+    "tools — answer plainly and mark your uncertainties."
   );
 }
 
@@ -264,13 +311,18 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
   const candidates = resolveAiProviderCandidates();
   // Zero candidates → explicit unconfigured state; caller surfaces 503 (T50).
   if (candidates.length === 0) return null;
+  if (process.env.CHAT_BITE === "1") {
+    // BITE PROOF ONLY (scratch branch): reintroduce the raw no-evidence path.
+    return null;
+  }
 
   const evidence = args.evidence ?? [];
+  const hasInitialEvidence = evidence.length > 0;
   const fullSystem =
     args.systemPrompt +
     UNTRUSTED_HISTORY_BLOCK +
-    evidenceBlock(evidence) +
-    (evidence.length > 0 ? toolProtocolBlock() : "");
+    (hasInitialEvidence ? evidenceBlock(evidence) : contextOnlyBlock()) +
+    toolProtocolBlock();
 
   const generatedAt = new Date().toISOString();
   // Phase 5.1: RUNTIME failover. Each candidate is attempted in order; a
@@ -307,36 +359,13 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
       : new Error(`ai upstream failure across ${candidates.length} provider(s)`);
   };
 
-  // ── T52 — general (no evidence) path: unstructured provider output, no
-  // tool loop. Claims stay empty and `grounded` is false by construction.
-  // (General context-only chat; the symbol-scoped financial path below is
-  // the one bound to the structured contract + bounded tool loop.)
-  if (evidence.length === 0) {
-    const { text, provider } = await callProvider([]);
-    return {
-      answer: text,
-      claims: [],
-      uncertainties: [
-        "unstructured provider output — claims not extracted (no evidence pipeline context supplied)",
-      ],
-      provider: provider.id,
-      model: provider.model,
-      generatedAt,
-      claimsVerified: false,
-      groundingRejections: [],
-      groundingMode: "evidence-context",
-      toolCalls: [],
-    };
-  }
-
-  // ── End-to-end AI loop (Commit L1: bounded iterative tool calling) ──
-  // model → tool request → server validates + executes the canonical tool →
-  // typed tool result injected → model → (bounded repeats) → final
-  // structured response → grounding validation against the ACCUMULATED
-  // evidence (initial package + every successful tool's items). Tool
-  // results are produced exclusively by executeAiTool: neither the client
-  // nor the model can mint one. Exhaustion of the tool budget terminates
-  // the request BLOCKED — never with a plausible fallback.
+  // ── Commit M (founder §22–§24): THE unified loop — every request, with
+  // or without initial evidence, goes through the SAME bounded tool loop
+  // and structured-response validation. The historical unstructured
+  // no-evidence path (raw provider text as the answer) is GONE: a
+  // financial-looking numeric reply that nobody grounded can never reach
+  // the client, a clean claims-free reply is the explicitly-unverified
+  // context-only state, and tool exhaustion is BLOCKED in every path.
   const loopEvidence: AiEvidenceItem[] = [...evidence];
   const transcript: ChatTurn[] = [];
   const toolCalls: AiAnswer["toolCalls"] = [];
@@ -357,7 +386,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
         // the claim's own cited items. G3: qualitative claims come back
         // classified "context-only" instead of masquerading as grounded.
         const grounding = validateGrounding(loopEvidence, structured.data.claims, structured.data.answer);
-        if (grounding.grounded) {
+        if (grounding.grounded && grounding.validatedClaims.length > 0) {
           // ── Commit L2: TWO SURFACES. The grounded answer surface is the
           // SERVER-GENERATED verified text (built only from validated typed
           // facts, each with its source state). The model's prose is
@@ -381,6 +410,66 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
             claimsVerified: true,
             groundingRejections: [],
             groundingMode: grounding.mode,
+            structuredResponse: "valid",
+            toolCalls: toolCalls.length > 0 ? toolCalls : [],
+          };
+        }
+        // ── Commit M §23: the CONTEXT-ONLY state. A valid structured reply
+        // with NO claims and NO numbers is honest unverified prose — the
+        // philosophical/educational path. Numbers the grounding validator
+        // could not match to a verified fact make the reply financially
+        // shaped unverifiable text; on the no-initial-evidence path (the
+        // historical bypass) that reply is DISCARDED for the bounded honest
+        // response (founder §24), and on the evidence path it is disclosed
+        // and served strictly as unverified context (Commit-L behavior).
+        const matchedValues = new Set<string>();
+        for (const c of grounding.validatedClaims) {
+          for (const a of c.assertions) matchedValues.add(canonicalNumber(a.value));
+        }
+        const ungroundedNumbers = [...extractNormalizedNumbers(structured.data.answer)]
+          .filter(n => !matchedValues.has(n));
+        const isCleanContextOnly =
+          structured.data.claims.length === 0 && ungroundedNumbers.length === 0;
+        if (isCleanContextOnly) {
+          return {
+            answer: structured.data.answer,
+            claims: [],
+            uncertainties: [
+              ...structured.data.uncertainties,
+              "context-only reply — no verified claims were made; this text is unverified",
+            ],
+            provider: provider.id,
+            model: provider.model,
+            generatedAt,
+            claimsVerified: false,
+            groundingRejections: [],
+            groundingMode: "context-only",
+            structuredResponse: "valid",
+            toolCalls: toolCalls.length > 0 ? toolCalls : [],
+          };
+        }
+        if (!hasInitialEvidence) {
+          // No verified evidence exists in this request at all, so there is
+          // nothing this reply could be honest ABOUT: unsupported numbers
+          // and/or ungroundable claims → bounded honest response, nothing
+          // from the model reply is displayed.
+          console.error(
+            "[ai/router] no-evidence reply carried ungroundable content "
+            + `(claims=${structured.data.claims.length}, ungroundedNumbers=${ungroundedNumbers.length}) — discarded`,
+          );
+          return {
+            answer:
+              "The AI reply could not be verified against platform evidence and was not shown.",
+            claims: [],
+            uncertainties: [
+              "the model replied without verified platform data and its reply contained unsupported financial figures or unverifiable claims — no part of it is displayed",
+            ],
+            provider: provider.id,
+            model: provider.model,
+            generatedAt,
+            claimsVerified: false,
+            groundingRejections: [],
+            groundingMode: "evidence-context",
             structuredResponse: "valid",
             toolCalls: toolCalls.length > 0 ? toolCalls : [],
           };

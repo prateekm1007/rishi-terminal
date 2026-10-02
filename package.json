@@ -19,7 +19,8 @@
     "populate:security-master": "tsx --conditions react-server scripts/populateSecurityMasterImpl.ts",
     "validate:security-master": "tsx --conditions react-server scripts/validateSecurityMasterImpl.ts",
     "bundle:budget": "tsx scripts/bundleBudget.ts",
-    "freeAccessAudit": "node scripts/freeAccessAudit.mjs"
+    "freeAccessAudit": "node scripts/freeAccessAudit.mjs",
+    "aiLoopAudit": "node scripts/aiLoopAudit.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

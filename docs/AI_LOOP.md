@@ -1,8 +1,25 @@
-# End-to-End AI Loop (Commit L — implemented: tool loop + verified surface)
+# End-to-End AI Loop (Commit L + Commit M reconciliation — ONE unified verified pipeline)
 
-Every AI answer on a stock surface now flows through ONE chain. No component
-may bypass it (enforced by the router being the only AI entry point —
-application code calls `lib/ai/**`, never a provider URL):
+Every AI answer — on a stock surface AND in general `/rishis` chat — flows
+through ONE chain. **Commit M closed the last bypass**: the historical
+no-evidence path that returned raw unstructured provider text is GONE; a
+request without a symbol enters the SAME bounded tool loop (the model may
+request canonical tools; a clean claims-free, number-free reply is served
+explicitly as unverified context-only text; unsupported financial figures
+are discarded, never shown). No component may bypass the pipeline
+(enforced by the router being the only AI entry point and by
+`npm run aiLoopAudit`).
+
+Commit M additionally: tool arguments are STRICT zod contracts
+(`.strict()` — unexpected keys are rejections, not stripped fields); the
+evidence assembler and every tool consume the ONE per-request
+`CanonicalStockState` observation (same inputs → same resolved state);
+score ids/statements carry a closed observation-state vocabulary
+(`seed-derived | <asOf> | live-undated | live-mixed-observation |
+mixed-provenance`); the implicit provider model default is attested in
+`ATTESTED_PROVIDER_MODELS` (lib/registry/providerRegistry.ts) with runtime
+verification in `scripts/auditModelIdentity.ts`, failing closed when
+unattested.
 
 ```
 AUTHORITATIVE DATA            (seed registry + live fundamentals + price path)

@@ -54,8 +54,10 @@ describe("generateEvidenceGroundedAnswer (T50–T52)", () => {
   });
 
   it("returns provenance-carrying answer and a backwards-compatible wire shape", async () => {
+    // Commit M unified pipeline: the provider replies with the structured
+    // contract; raw prose would be discarded (founder §24).
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "  Buy quality.  " } }] }), {
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "Buy quality.", claims: [], uncertainties: [] }) } }] }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -123,7 +125,7 @@ describe("Phase 5.1 — runtime failover chain (T50)", () => {
 
   it("chat-api succeeds → Gemini is never attempted", async () => {
     const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "primary" } }] }), { status: 200 }),
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "primary", claims: [], uncertainties: [] }) } }] }), { status: 200 }),
     );
     const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
     expect(a?.provider).toBe("chat-api");
@@ -138,7 +140,7 @@ describe("Phase 5.1 — runtime failover chain (T50)", () => {
       .mockResolvedValueOnce(new Response("primary exploded", { status: 500 }))
       .mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ candidates: [{ content: { parts: [{ text: "gemini rescued" }] } }] }),
+          JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ answer: "gemini rescued", claims: [], uncertainties: [] }) }] } }] }),
           { status: 200 },
         ),
       );
@@ -160,7 +162,7 @@ describe("Phase 5.1 — runtime failover chain (T50)", () => {
         setTimeout(() => reject(new Error("TimeoutError")), 5)))
       .mockResolvedValueOnce(
         new Response(
-          JSON.stringify({ candidates: [{ content: { parts: [{ text: "late rescue" }] } }] }),
+          JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify({ answer: "late rescue", claims: [], uncertainties: [] }) }] } }] }),
           { status: 200 },
         ),
       );
@@ -235,13 +237,14 @@ describe("Phase 5.1 — honest AI provenance (T52)", () => {
     expect(wire.provenance.groundingMode).toBe("evidence-context");
   });
 
-  it("without evidence: the uncertainty note names the missing pipeline", async () => {
+  it("without evidence: a clean reply is context-only, explicitly unverified (Commit M)", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ choices: [{ message: { content: "answer" } }] }), { status: 200 }),
+      new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "Patience matters.", claims: [], uncertainties: [] }) } }] }), { status: 200 }),
     );
     const a = await generateEvidenceGroundedAnswer({ systemPrompt: "p", history: [], message: "m" });
-    expect(a?.uncertainties[0]).toContain("no evidence pipeline context supplied");
+    expect(a?.uncertainties.join(" ")).toContain("context-only reply");
     expect(toChatWire(a!).provenance.grounded).toBe(false);
+    expect(toChatWire(a!).provenance.groundingMode).toBe("context-only");
   });
 });
 

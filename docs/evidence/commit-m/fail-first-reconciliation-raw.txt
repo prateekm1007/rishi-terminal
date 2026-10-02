@@ -1,0 +1,238 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/ailoop.unified.test.ts (8 tests | 7 failed) 50ms
+   ❯ the unified loop — no raw unstructured provider output can escape (founder §24) (4)
+     × MUST FAIL PRE-M: a financial-looking numeric answer on the NO-EVIDENCE path is never served as the answer 33ms
+     × MUST FAIL PRE-M: claims with no evidence and no tools can never ground — not even the raw text is served 2ms
+     × a clearly non-financial reply with NO numbers is context-only: shown, explicitly unverified 2ms
+     × MUST FAIL PRE-M: an unparseable reply on the no-evidence path is discarded, never shown raw 1ms
+   ❯ the unified loop — financial questions in general chat enter the same tool path (founder §23) (4)
+     × MUST FAIL PRE-M: with NO initial evidence the model can request a canonical tool and ground its answer on the TOOL result 2ms
+     × an unsupported data request in general chat discloses unavailability — no invented numbers 2ms
+     × tool exhaustion in the no-evidence path terminates BLOCKED (same budget, same honesty) 1ms
+     ✓ REGRESSION (founder §27): the evidence path still grounds via the bounded loop (Commit-L behavior preserved) 6ms
+ ❯ test/score.provenance.truth.test.ts (6 tests | 5 failed) 18ms
+   ❯ score provenance describes the ACTUAL inputs (founder §21) (6)
+     × MUST FAIL PRE-M (statement half): a coherent live snapshot keeps its asOf in the id AND the statement names the observation time 10ms
+     × REGRESSION: an all-seed resolution is honestly 'seed-derived' 1ms
+     × MUST FAIL PRE-M: every direct field live but NO disclosed observation time → 'live-undated', never 'seed-derived' 2ms
+     × MUST FAIL PRE-M: mixed live observation times → 'live-mixed-observation', never collapsed to 'seed-derived' 1ms
+     × MUST FAIL PRE-M: partially-live resolution → 'mixed-provenance' — seed inputs may not hide behind a live timestamp 1ms
+     ✓ the score fact itself stays 'derived' in every case (the engine derives it; inputs vary, the fact's source does not) 1ms
+ ✓ test/toolboundary.strict.test.ts (11 tests) 18ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 12 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/ailoop.unified.test.ts > the unified loop — no raw unstructured provider output can escape (founder §24) > MUST FAIL PRE-M: a financial-looking numeric answer on the NO-EVIDENCE path is never served as the answer
+AssertionError: expected 'RELIANCE is trading at 2500 right now…' not to contain '2500'
+
+Expected: "2500"
+Received: "RELIANCE is trading at 2500 right now and it is a great buy."
+
+ ❯ test/ailoop.unified.test.ts:79:27
+     77|     // The fabricated number can be neither grounded nor displayed:
+     78|     expect(wire.provenance.grounded).toBe(false);
+     79|     expect(wire.text).not.toContain("2500");
+       |                           ^
+     80|     expect(wire.text).not.toBe("RELIANCE is trading at 2500 right now …
+     81|     expect(answer!.claimsVerified).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  test/ailoop.unified.test.ts > the unified loop — no raw unstructured provider output can escape (founder §24) > MUST FAIL PRE-M: claims with no evidence and no tools can never ground — not even the raw text is served
+AssertionError: expected '{"answer":"The Rishi score is 88 and …' not to contain '9999'
+
+Expected: "9999"
+Received: "{"answer":"The Rishi score is 88 and the price is 9999.","claims":[{"claim":"The Rishi score is 88","evidenceIds":["score:MADEUP:v9:2026-10-02"],"assertions":[{"field":"score","value":88,"unit":"points"}]}],"uncertainties":[]}"
+
+ ❯ test/ailoop.unified.test.ts:100:27
+     98|     const wire = toChatWire(answer!);
+     99|     expect(wire.provenance.grounded).toBe(false);
+    100|     expect(wire.text).not.toContain("9999");
+       |                           ^
+    101|     expect(wire.text).not.toContain("88");
+    102|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  test/ailoop.unified.test.ts > the unified loop — no raw unstructured provider output can escape (founder §24) > a clearly non-financial reply with NO numbers is context-only: shown, explicitly unverified
+AssertionError: expected '{"answer":"Patience is a temperament,…' to be 'Patience is a temperament, not a tech…' // Object.is equality
+
+Expected: "Patience is a temperament, not a technique."
+Received: "{"answer":"Patience is a temperament, not a technique.","claims":[],"uncertainties":[]}"
+
+ ❯ test/ailoop.unified.test.ts:117:28
+    115|     });
+    116|     expect(answer).not.toBeNull();
+    117|     expect(answer!.answer).toBe("Patience is a temperament, not a tech…
+       |                            ^
+    118|     expect(answer!.claimsVerified).toBe(false); // explicitly unverifi…
+    119|     const wire = toChatWire(answer!);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+ FAIL  test/ailoop.unified.test.ts > the unified loop — no raw unstructured provider output can escape (founder §24) > MUST FAIL PRE-M: an unparseable reply on the no-evidence path is discarded, never shown raw
+AssertionError: expected 'I am feeling chatty today!!! No JSON …' not to be 'I am feeling chatty today!!! No JSON …' // Object.is equality
+ ❯ test/ailoop.unified.test.ts:130:32
+    128|       evidence: [], toolDeps: NO_TOOLS,
+    129|     });
+    130|     expect(answer!.answer).not.toBe("I am feeling chatty today!!! No J…
+       |                                ^
+    131|     expect(answer!.structuredResponse).toBe("invalid");
+    132|     expect(answer!.claimsVerified).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  test/ailoop.unified.test.ts > the unified loop — financial questions in general chat enter the same tool path (founder §23) > MUST FAIL PRE-M: with NO initial evidence the model can request a canonical tool and ground its answer on the TOOL result
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ test/ailoop.unified.test.ts:174:26
+    172|     });
+    173|     // two provider completions: the tool request + the final structur…
+    174|     expect(calls.length).toBe(2);
+       |                          ^
+    175|     expect(answer!.toolCalls).toEqual([{ tool: "getPrices", status: "o…
+    176|     expect(answer!.claimsVerified).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  test/ailoop.unified.test.ts > the unified loop — financial questions in general chat enter the same tool path (founder §23) > an unsupported data request in general chat discloses unavailability — no invented numbers
+AssertionError: expected [] to deeply equal [ { tool: 'getPrices', …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "status": "unknown-symbol",
+-     "symbol": "FAKECOIN",
+-     "tool": "getPrices",
+-   },
+- ]
++ []
+
+ ❯ test/ailoop.unified.test.ts:197:31
+    195|       evidence: [], toolDeps: TOOL_DEPS,
+    196|     });
+    197|     expect(answer!.toolCalls).toEqual([{ tool: "getPrices", status: "u…
+       |                               ^
+    198|     expect(answer!.claimsVerified).toBe(false);
+    199|     expect(answer!.answer).not.toMatch(/\d{3,}/); // no plausible pric…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  test/ailoop.unified.test.ts > the unified loop — financial questions in general chat enter the same tool path (founder §23) > tool exhaustion in the no-evidence path terminates BLOCKED (same budget, same honesty)
+AssertionError: expected 1 to be 5 // Object.is equality
+
+- Expected
++ Received
+
+- 5
++ 1
+
+ ❯ test/ailoop.unified.test.ts:211:26
+    209|       evidence: [], toolDeps: NO_TOOLS,
+    210|     });
+    211|     expect(calls.length).toBe(MAX_TOOL_ITERATIONS + 1);
+       |                          ^
+    212|     expect(answer!.structuredResponse).toBe("blocked");
+    213|     expect(answer!.claimsVerified).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  test/score.provenance.truth.test.ts > score provenance describes the ACTUAL inputs (founder §21) > MUST FAIL PRE-M (statement half): a coherent live snapshot keeps its asOf in the id AND the statement names the observation time
+AssertionError: expected 'Rishi consensus score (rishi-merit-v1…' to contain '2026-09-30T10:00:00.000Z'
+
+Expected: "2026-09-30T10:00:00.000Z"
+Received: "Rishi consensus score (rishi-merit-v1): 68/100 | category: Classic Value Opportunity | data quality: OK | tension: Sharp Division | top bull: Munger 100, top bear: Greenblatt 0. This is the platform's only official score — do not recompute or second-guess it. | fact: score=68 points (derived)"
+
+ ❯ test/score.provenance.truth.test.ts:67:23
+     65|     const item = buildScoreItem(withFields(coherentLiveFields(T1, base…
+     66|     expect(item.id).toBe(`score:TCS:${SCORE_ENGINE_VERSION}:${T1}`);
+     67|     expect(item.text).toContain(T1); // the statement names the observ…
+       |                       ^
+     68|   });
+     69|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  test/score.provenance.truth.test.ts > score provenance describes the ACTUAL inputs (founder §21) > REGRESSION: an all-seed resolution is honestly 'seed-derived'
+AssertionError: expected 'rishi consensus score (rishi-merit-v1…' to contain 'seed'
+
+Expected: "seed"
+Received: "rishi consensus score (rishi-merit-v1): 68/100 | category: classic value opportunity | data quality: ok | tension: sharp division | top bull: munger 100, top bear: greenblatt 0. this is the platform's only official score — do not recompute or second-guess it. | fact: score=68 points (derived)"
+
+ ❯ test/score.provenance.truth.test.ts:74:37
+     72|     const item = buildScoreItem(base);
+     73|     expect(item.id).toBe(`score:TCS:${SCORE_ENGINE_VERSION}:seed-deriv…
+     74|     expect(item.text.toLowerCase()).toContain("seed");
+       |                                     ^
+     75|   });
+     76|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  test/score.provenance.truth.test.ts > score provenance describes the ACTUAL inputs (founder §21) > MUST FAIL PRE-M: every direct field live but NO disclosed observation time → 'live-undated', never 'seed-derived'
+AssertionError: expected 'score:TCS:rishi-merit-v1:seed-derived' to be 'score:TCS:rishi-merit-v1:live-undated' // Object.is equality
+
+Expected: "score:TCS:rishi-merit-v1:live-undated"
+Received: "score:TCS:rishi-merit-v1:seed-derived"
+
+ ❯ test/score.provenance.truth.test.ts:80:21
+     78|     const base = resolveStockMetrics("TCS")!;
+     79|     const item = buildScoreItem(withFields(coherentLiveFields(null, ba…
+     80|     expect(item.id).toBe(`score:TCS:${SCORE_ENGINE_VERSION}:live-undat…
+       |                     ^
+     81|     expect(item.id).not.toContain("seed");
+     82|     expect(item.text).toContain("live"); // the statement says the inp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+ FAIL  test/score.provenance.truth.test.ts > score provenance describes the ACTUAL inputs (founder §21) > MUST FAIL PRE-M: mixed live observation times → 'live-mixed-observation', never collapsed to 'seed-derived'
+AssertionError: expected 'score:TCS:rishi-merit-v1:seed-derived' to be 'score:TCS:rishi-merit-v1:live-mixed-o…' // Object.is equality
+
+Expected: "score:TCS:rishi-merit-v1:live-mixed-observation"
+Received: "score:TCS:rishi-merit-v1:seed-derived"
+
+ ❯ test/score.provenance.truth.test.ts:90:21
+     88|     fields.roe = liveField(base.fields.roe.value, T2); // a second, la…
+     89|     const item = buildScoreItem(withFields(fields));
+     90|     expect(item.id).toBe(`score:TCS:${SCORE_ENGINE_VERSION}:live-mixed…
+       |                     ^
+     91|     expect(item.id).not.toContain("seed");
+     92|     expect(item.text).toContain("mixed"); // the statement discloses t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/12]⎯
+
+ FAIL  test/score.provenance.truth.test.ts > score provenance describes the ACTUAL inputs (founder §21) > MUST FAIL PRE-M: partially-live resolution → 'mixed-provenance' — seed inputs may not hide behind a live timestamp
+AssertionError: expected 'score:TCS:rishi-merit-v1:2026-09-30T1…' to be 'score:TCS:rishi-merit-v1:mixed-proven…' // Object.is equality
+
+Expected: "score:TCS:rishi-merit-v1:mixed-provenance"
+Received: "score:TCS:rishi-merit-v1:2026-09-30T10:00:00.000Z"
+
+ ❯ test/score.provenance.truth.test.ts:104:21
+    102|     fields.fcfMargin = seedField(base.fields.fcfMargin.value);
+    103|     const item = buildScoreItem(withFields(fields));
+    104|     expect(item.id).toBe(`score:TCS:${SCORE_ENGINE_VERSION}:mixed-prov…
+       |                     ^
+    105|     expect(item.text).toContain("mixed"); // the statement discloses t…
+    106|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/12]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  12 failed | 13 passed (25)
+   Start at  03:45:49
+   Duration  1.35s (transform 53%, import 36%, tests 8%, setup 1%, worker 1%)
+

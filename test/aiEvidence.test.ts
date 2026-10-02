@@ -391,7 +391,7 @@ describe("router — structured output is validated before grounding is claimed"
     );
   });
 
-  it("model returning claims as empty → context-only (never 'grounded')", async () => {
+  it("model returning claims as empty → context-only (never 'grounded') — Commit M label", async () => {
     await withProvider(
       JSON.stringify({ answer: "Opinion only.", claims: [], uncertainties: [] }),
       async () => {
@@ -400,20 +400,26 @@ describe("router — structured output is validated before grounding is claimed"
         });
         const wire = toChatWire(answer!);
         expect(wire.provenance.grounded).toBe(false);
-        expect(wire.provenance.groundingMode).toBe("evidence-context");
+        // Commit M unified pipeline: a claims-free, number-free reply is the
+        // explicit CONTEXT-ONLY state (the old label collapsed it into
+        // "evidence-context"; the unified pipeline names it for what it is).
+        expect(wire.provenance.groundingMode).toBe("context-only");
       },
     );
   });
 
-  it("no evidence → legacy unstructured path unchanged (grounded=false)", async () => {
+  it("Commit M §24 — no evidence + raw (unparseable) reply → discarded, never served", async () => {
     await withProvider("plain answer", async () => {
       const answer = await generateEvidenceGroundedAnswer({
         systemPrompt: "x", history: [], message: "q",
       });
       const wire = toChatWire(answer!);
       expect(wire.provenance.grounded).toBe(false);
-      expect(wire.provenance.groundingMode).toBe("evidence-context");
-      expect(wire.text).toBe("plain answer");
+      // The historical raw path is GONE: raw provider text can never become
+      // the answer (founder §24 regression).
+      expect(wire.text).not.toBe("plain answer");
+      expect(wire.text).toContain("could not be verified");
+      expect(answer!.structuredResponse).toBe("invalid");
     });
   });
 });

@@ -31,7 +31,7 @@ import { POST } from "@/app/api/chat/route";
 let calls: Array<{ url: string; headers: any; body: any }> = [];
 let upstreamResponse: (url: string) => Response = () =>
   new Response(
-    JSON.stringify({ choices: [{ message: { content: "  hi  " } }] }),
+    JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "hi", claims: [], uncertainties: [] }) } }] }),
     { status: 200 },
   );
 
@@ -39,7 +39,7 @@ beforeEach(() => {
   calls = [];
   upstreamResponse = () =>
     new Response(
-      JSON.stringify({ choices: [{ message: { content: "  hi  " } }] }),
+      JSON.stringify({ choices: [{ message: { content: JSON.stringify({ answer: "hi", claims: [], uncertainties: [] }) } }] }),
       { status: 200 },
     );
   vi.stubGlobal("fetch", vi.fn(async (url: any, init: any) => {

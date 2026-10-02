@@ -16,7 +16,9 @@
 //   stock:<symbol>:profile
 //   price:<symbol>:<observedAt | "no-disclosed-observation-time" | "unavailable">
 //   fundamental:<symbol>:<field>:<asOf | "seed">
-//   score:<symbol>:<engine-version>:<asOf | "seed-derived">
+//   score:<symbol>:<engine-version>:<observation-state>  (closed vocabulary:
+//                              <asOf> | seed-derived | live-undated |
+//                              live-mixed-observation | mixed-provenance)
 //   news:<stable-id>          (class supported; per-symbol wiring pending —
 //                              the honest unavailable note is emitted instead)
 //
@@ -275,19 +277,66 @@ export function buildFundamentalItems(
 }
 
 /** THE canonical Rishi consensus — consumed, never recomputed by the AI.
- *  The id embeds the engine version so an audit can pin which engine
- *  produced the number the model cites. Insufficient data emits NO fact —
- *  any numeric score assertion then fails closed. */
+ *  The id embeds the engine version AND an observation-state fragment from
+ *  a CLOSED vocabulary that describes the ACTUAL score inputs (founder §21:
+ *  the id and the statement must describe the inputs — never collapse a
+ *  live/mixed observation into a seed claim):
+ *
+ *    "seed-derived"           — no live inputs at all (seed/derived-from-seed)
+ *    "<asOf>"                 — every direct field live, ONE shared asOf,
+ *                               none undated (a coherent live snapshot)
+ *    "live-undated"           — every direct field live, NO disclosed asOf
+ *    "live-mixed-observation" — every direct field live, ≥2 distinct asOfs
+ *    "mixed-provenance"       — some direct fields live, others seed
+ *
+ *  (pb is structurally derived and fcfMargin structurally seed — the
+ *  fragment is driven by the DIRECT observations, which is what the score
+ *  actually consumes.)
+ *
+ *  Insufficient data emits NO fact — any numeric score assertion then
+ *  fails closed. */
+/** The resolver's direct observation fields (everything except the two
+ *  structural derivations pb/fcfMargin). */
+const DIRECT_SCORE_FIELDS = [
+  "pe", "roe", "roce", "opm", "de", "promo", "revcagr", "epscagr", "mktcap", "bvps",
+] as const;
+
+interface ResolvedFieldShim {
+  value: number;
+  source: "seed" | "live" | "derived";
+  asOf: string | null;
+}
+
+export function scoreObservationFragment(fields: Record<string, ResolvedFieldShim>): string {
+  const direct = DIRECT_SCORE_FIELDS
+    .map(f => fields[f])
+    .filter((f): f is ResolvedFieldShim => Boolean(f));
+  const live = direct.filter(f => f.source === "live");
+  if (live.length === 0) return "seed-derived";
+  if (live.length < direct.length) return "mixed-provenance"; // some direct fields still seed
+  const liveAsOfs = [...new Set(live.map(f => f.asOf).filter((a): a is string => !!a))];
+  const hasUndated = live.some(f => !f.asOf);
+  if (liveAsOfs.length === 0) return "live-undated"; // every direct field live, none disclosed a time
+  if (liveAsOfs.length === 1 && !hasUndated) return liveAsOfs[0]; // one coherent live snapshot
+  return "live-mixed-observation"; // ≥2 distinct times, or some undated + some dated
+}
+
 export function buildScoreItem(resolved: ResolvedStockMetrics): AiEvidenceItem {
   const consensus = getStockScore(resolved);
-  const liveAsOfs = [...new Set(Object.values(resolved.fields).map(f => f.asOf).filter((a): a is string => !!a))];
-  const scoreAsOf = liveAsOfs.length === 1 ? liveAsOfs[0] : "seed-derived";
+  const fragment = scoreObservationFragment(resolved.fields as Record<string, ResolvedFieldShim>);
+  const fragmentWording: Record<string, string> = {
+    "seed-derived": "inputs: seed/derived-from-seed data (no live observations)",
+    "live-undated": "inputs: live observations (no disclosed observation time)",
+    "live-mixed-observation": "inputs: live observations with mixed or missing observation times",
+    "mixed-provenance": "inputs: mixed freshness — some live observations, some seed values",
+  };
+  const inputsNote = fragmentWording[fragment] ?? `inputs: live observations as-of ${fragment}`;
   const scoreFacts: AiEvidenceFact[] =
     consensus.consensus === null
       ? [] // insufficient data → NO fact exists → any numeric score assertion fails closed
       : [{ field: "score", value: consensus.consensus, unit: FACT_UNIT_BY_FIELD.score, source: "derived" as const, observedAt: null }];
   return {
-    id: `score:${resolved.symbol}:${SCORE_ENGINE_VERSION}:${scoreAsOf}`,
+    id: `score:${resolved.symbol}:${SCORE_ENGINE_VERSION}:${fragment}`,
     text:
       `Rishi consensus score (${SCORE_ENGINE_VERSION}): ` +
       (consensus.consensus === null
@@ -296,7 +345,7 @@ export function buildScoreItem(resolved: ResolvedStockMetrics): AiEvidenceItem {
       ` | category: ${consensus.category} | data quality: ${consensus.dataQuality}` +
       ` | tension: ${consensus.tension}` +
       ` | top bull: ${consensus.topBull.name} ${consensus.topBull.score}, top bear: ${consensus.topBear.name} ${consensus.topBear.score}. ` +
-      "This is the platform's only official score — do not recompute or second-guess it." +
+      `This is the platform's only official score — do not recompute or second-guess it. ${inputsNote}.` +
       factAnnotation(scoreFacts),
     ...(scoreFacts.length > 0 ? { facts: scoreFacts } : {}),
   };

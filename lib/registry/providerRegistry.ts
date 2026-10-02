@@ -225,3 +225,43 @@ export function isProviderApproved(id: string): boolean {
 export function approvedProviders(): ProviderDefinition[] {
   return Object.values(PROVIDER_REGISTRY).filter(p => p.status === "APPROVED");
 }
+
+/**
+ * Commit M reconciliation (founder §25) — model identity ATTESTATION.
+ *
+ * A model id may be used as the IMPLICIT default (and surfaced as
+ * authoritative provenance metadata) only when it is attested HERE, in the
+ * approved provider registry. Attestation basis for each entry:
+ *
+ *  - chat-api / "agnes-2.5-flash": the operator's OpenAI-compatible endpoint
+ *    (CHAT_API_BASE_URL, documented in .env.example) serves this model id;
+ *    archived production AI-probe output records `model: "agnes-2.5-flash"`
+ *    from live production responses (production-ugly-path-matrix.json), and
+ *    scripts/auditModelIdentity.ts re-verifies it against the provider's
+ *    own /models + completion echo. Not a guess: archived + re-runnable
+ *    evidence.
+ *  - gemini / "models/gemini-2.5-flash": the Google-approved model family
+ *    per the Gemini API docs (provider docsUrl), the runtime fallback
+ *    since Phase 5.
+ *
+ * An operator-configured CHAT_MODEL is an explicit attestation and is
+ * accepted as-is. What fails closed here is the UNATTESTED implicit case:
+ * with no env model and no registry entry, no candidate is created (the
+ * request surfaces 503) — never an invented model id. `isWellFormedModelId`
+ * keeps control characters/whitespace out of provider metadata (rule 9).
+ */
+export const ATTESTED_PROVIDER_MODELS: Record<string, ReadonlySet<string>> = {
+  [PROVIDER_IDS.CHAT_API]: new Set(["agnes-2.5-flash"]),
+  [PROVIDER_IDS.GEMINI]: new Set(["models/gemini-2.5-flash"]),
+};
+
+/** The attested implicit default model for a provider, or undefined. */
+export function attestedDefaultModel(providerId: string): string | undefined {
+  const set = ATTESTED_PROVIDER_MODELS[providerId];
+  return set ? [...set][0] : undefined;
+}
+
+/** A model id is a boundary input (rule 9): shape-check before use. */
+export function isWellFormedModelId(model: string): boolean {
+  return /^[A-Za-z0-9._:\/-]{1,80}$/.test(model);
+}

@@ -64,6 +64,9 @@ jobs:
       - name: Free-access audit (Commit M — no product dependency on tiers/payments)
         run: npm run freeAccessAudit
 
+      - name: AI-loop architecture audit (Commit M — unified verified pipeline invariants)
+        run: npm run aiLoopAudit
+
       - name: Unit tests (Vitest)
         run: npx vitest run
 

@@ -1,0 +1,45 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/proxy.access.test.ts (8 tests | 1 failed) 19ms
+   ✓ Commit N1 — the proxy no longer walls off Portfolio Lab (5)
+     ✓ MUST FAIL PRE-N1: GET /lab signed-out passes through (no sign-in redirect) 7ms
+     ✓ MUST FAIL PRE-N1: GET /lab?tab=compare signed-out keeps its query (no redirect) 1ms
+     ✓ GET /portfolio (no such route) is not walled — an honest 404 beats a sign-in wall 1ms
+     ✓ GET /alerts signed-out STILL redirects to sign-in (retained, out-of-scope gate) 1ms
+     ✓ path-segment matching is preserved (R9): /laboratory is not /lab, /alerts-foo is not /alerts 1ms
+   ❯ MUST FAIL PRE-U5: unknown stock symbols 404 at the proxy, before streaming (3)
+     × GET /stock/ZZZZ (not in the security master) -> 404 6ms
+     ✓ GET /stock/reliance unknown-case is not 404 — the page handles alias/canonical flow 1ms
+     ✓ non-stock paths are untouched by the registry gate 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/proxy.access.test.ts > MUST FAIL PRE-U5: unknown stock symbols 404 at the proxy, before streaming > GET /stock/ZZZZ (not in the security master) -> 404
+AssertionError: expected 200 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 200
+
+ ❯ test/proxy.access.test.ts:82:24
+     80|   it("GET /stock/ZZZZ (not in the security master) -> 404", async () =…
+     81|     const res = await proxy(req("/stock/ZZZZ"));
+     82|     expect(res.status).toBe(404);
+       |                        ^
+     83|   });
+     84|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  07:52:33
+   Duration  236ms (import 41%, transform 38%, tests 14%, setup 4%, worker 3%)
+

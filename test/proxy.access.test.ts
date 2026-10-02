@@ -70,3 +70,27 @@ describe("Commit N1 — the proxy no longer walls off Portfolio Lab", () => {
     expect(alertsFoo.headers.get("location")).toBeNull();
   });
 });
+
+// ── Commit O / U5 (founder round 6): unknown stock symbols must return a
+// REAL 404. The page component calls notFound(), but the segment's
+// loading.tsx streams the shell first — the docs' sanctioned fix is the
+// proxy-level existence check (Next.js docs, loading.md "Status Codes":
+// "run this check in proxy ... produce a 404 response"). ──────────────────
+describe("MUST FAIL PRE-U5: unknown stock symbols 404 at the proxy, before streaming", () => {
+  it("GET /stock/ZZZZ (not in the security master) -> 404", async () => {
+    const res = await proxy(req("/stock/ZZZZ"));
+    expect(res.status).toBe(404);
+  });
+
+  it("GET /stock/reliance unknown-case is not 404 — the page handles alias/canonical flow", async () => {
+    const res = await proxy(req("/stock/reliance"));
+    // RELIANCE is canonical (uppercase); a lowercase variant is still in
+    // the registry's normalized identity — the proxy must NOT block it.
+    expect(res.status).not.toBe(404);
+  });
+
+  it("non-stock paths are untouched by the registry gate", async () => {
+    const res = await proxy(req("/lab"));
+    expect(res.status).not.toBe(404);
+  });
+});

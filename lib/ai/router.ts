@@ -34,6 +34,7 @@ import type { CanonicalStockState } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, type AiToolDeps } from "./tools";
+import { detectFinancialDataIntent } from "./financialIntent";
 
 const TIMEOUT_MS = 20_000;
 
@@ -431,6 +432,42 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
         const isCleanContextOnly =
           structured.data.claims.length === 0 && ungroundedNumbers.length === 0;
         if (isCleanContextOnly) {
+          // ── Commit N (Coder Directions §8): deterministic financial-intent
+          // enforcement on the no-initial-evidence path. A model INSTRUCTION
+          // to use tools is not a gate: when the request clearly asks for
+          // symbol-specific financial data (closed two-signal detector — see
+          // lib/ai/financialIntent.ts) and the model never engaged the tool
+          // loop, the context-only reply is a silent downgrade of a data
+          // question into philosophy. Refuse it: honest BLOCKED state, no
+          // part of the model reply displayed. If the model DID engage the
+          // loop (a tool ran and failed honestly — unknown symbol, no data),
+          // the disclosed unavailability stands: that IS the honest outcome.
+          if (!hasInitialEvidence && toolCalls.length === 0) {
+            const intent = detectFinancialDataIntent(args.message);
+            if (intent.financial) {
+              console.error(
+                "[ai/router] financial-data request ("
+                  + `symbol=${intent.symbol}, term="${intent.matchedTerm}"`
+                  + ") answered context-only with ZERO tool engagement — BLOCKED",
+              );
+              return {
+                answer:
+                  "BLOCKED: this looks like a request for specific market data, but no verified platform data was retrieved for it. No unverified financial answer is served. Name a listed symbol explicitly, or ask a philosophical or educational question instead.",
+                claims: [],
+                uncertainties: [
+                  `financial-data intent detected (symbol ${intent.symbol}, term "${intent.matchedTerm}") but the model requested no canonical tool — the request terminated honestly instead of serving an unverified answer`,
+                ],
+                provider: provider.id,
+                model: provider.model,
+                generatedAt,
+                claimsVerified: false,
+                groundingRejections: [],
+                groundingMode: "evidence-context",
+                structuredResponse: "blocked",
+                toolCalls: [],
+              };
+            }
+          }
           return {
             answer: structured.data.answer,
             claims: [],

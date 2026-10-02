@@ -45,6 +45,25 @@ const NO_TOOLS: AiToolDeps = {
   getPrice: async () => null,
 };
 
+// Shared production-grade fixtures (Commit N §9): one typed live price
+// fact exactly as buildPriceItem produces for a successful observation.
+const PRICE_ITEM = {
+  id: "price:RELIANCE:2026-10-01T10:00:00.000Z",
+  text: "Latest observed price: 1000 (change 0.5%). Source: test-vendor; status: LIVE; observation time: 2026-10-01T10:00:00.000Z. | fact: price=1000 inr (live); change=0.5 percent (live)",
+  facts: [
+    { field: "price", value: 1000, unit: "inr", source: "live" as const, observedAt: "2026-10-01T10:00:00.000Z" },
+    { field: "change", value: 0.5, unit: "percent" as const, source: "live" as const, observedAt: "2026-10-01T10:00:00.000Z" },
+  ],
+};
+
+const TOOL_DEPS: AiToolDeps = {
+  ...NO_TOOLS,
+  getPrice: async () => ({
+    price: 1000, change: 0.5, source: "test-vendor", status: "LIVE",
+    observedAt: "2026-10-01T10:00:00.000Z", lastUpdated: "2026-10-01T10:00:00.000Z",
+  } as never),
+};
+
 /** Script the provider: each fetch call returns the next scripted reply. */
 function scriptProvider(replies: string[]): { calls: Array<{ url: string; body: Record<string, unknown> }> } {
   const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
@@ -134,23 +153,6 @@ describe("the unified loop — no raw unstructured provider output can escape (f
 });
 
 describe("the unified loop — financial questions in general chat enter the same tool path (founder §23)", () => {
-  const PRICE_ITEM = {
-    id: "price:RELIANCE:2026-10-01T10:00:00.000Z",
-    text: "Latest observed price: 1000 (change 0.5%). Source: test-vendor; status: LIVE; observation time: 2026-10-01T10:00:00.000Z. | fact: price=1000 inr (live); change=0.5 percent (live)",
-    facts: [
-      { field: "price", value: 1000, unit: "inr", source: "live" as const, observedAt: "2026-10-01T10:00:00.000Z" },
-      { field: "change", value: 0.5, unit: "percent" as const, source: "live" as const, observedAt: "2026-10-01T10:00:00.000Z" },
-    ],
-  };
-
-  const TOOL_DEPS: AiToolDeps = {
-    ...NO_TOOLS,
-    getPrice: async () => ({
-      price: 1000, change: 0.5, source: "test-vendor", status: "LIVE",
-      observedAt: "2026-10-01T10:00:00.000Z", lastUpdated: "2026-10-01T10:00:00.000Z",
-    } as never),
-  };
-
   it("MUST FAIL PRE-M: with NO initial evidence the model can request a canonical tool and ground its answer on the TOOL result", async () => {
     const { calls } = scriptProvider([
       '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
@@ -236,5 +238,196 @@ describe("the unified loop — financial questions in general chat enter the sam
     expect(answer!.claimsVerified).toBe(true);
     expect(answer!.answer).toContain("price = 1000 inr");
     expect(answer!.commentary).toBe("RELIANCE trades at 1000.");
+  });
+});
+
+// ── Commit N (Coder Directions §8–§9) — deterministic financial-intent
+// enforcement + the production-grade end-to-end loop contract. The intent
+// guard closes the model-choice gap: on the no-initial-evidence path a
+// clean context-only reply is acceptable ONLY when the request is not a
+// clear symbol-specific market-data ask, or when the model actually
+// engaged the tool loop. A data question answered from nothing is BLOCKED.
+describe("Commit N — financial-intent enforcement before context-only acceptance", () => {
+  it("MUST FAIL PRE-N: a symbol-specific data question answered context-only WITHOUT any tool call is BLOCKED, not served", async () => {
+    scriptProvider([
+      JSON.stringify({
+        answer: "Patience is the key to markets.",
+        claims: [],
+        uncertainties: [],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.",
+      history: [],
+      message: "What is the price of RELIANCE?",
+      evidence: [], // general chat — no preselected symbol
+      toolDeps: NO_TOOLS,
+    });
+    expect(answer).not.toBeNull();
+    const wire = toChatWire(answer!);
+    expect(wire.provenance.grounded).toBe(false);
+    expect(wire.provenance.structuredResponse).toBe("blocked");
+    expect(wire.text).toMatch(/^BLOCKED/);
+    // the unverified philosophical prose is NOT displayed either
+    expect(wire.text).not.toContain("Patience is the key");
+  });
+
+  it("a philosophical question with NO symbol/data-term is still served context-only (guard does not over-trigger)", async () => {
+    scriptProvider([
+      JSON.stringify({
+        answer: "Patience is a temperament, not a technique.",
+        claims: [],
+        uncertainties: [],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.", history: [], message: "What is the most important quality?",
+      evidence: [], toolDeps: NO_TOOLS,
+    });
+    expect(answer!.answer).toBe("Patience is a temperament, not a technique.");
+    expect(answer!.groundingMode).toBe("context-only");
+    expect(answer!.structuredResponse).toBe("valid");
+  });
+
+  it("a data question where the model DID engage a tool is disclosed (not blocked) — even when the tool failed honestly", async () => {
+    // FAKECOIN -> unknown-symbol TOOL ERROR -> the model's honest
+    // unavailability reply is the correct context-only outcome (the loop
+    // was engaged; the failure is disclosed, never fabricated).
+    scriptProvider([
+      '{"tool": "getPrices", "args": {"symbol": "FAKECOIN"}}',
+      JSON.stringify({
+        answer: "FAKECOIN is not in the security master — I cannot provide its price.",
+        claims: [],
+        uncertainties: ["no security-master entry for FAKECOIN"],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.", history: [], message: "What is the price of FAKECOIN?",
+      evidence: [], toolDeps: TOOL_DEPS,
+    });
+    expect(answer!.structuredResponse).toBe("valid");
+    expect(answer!.groundingMode).toBe("context-only");
+    expect(answer!.claimsVerified).toBe(false);
+  });
+
+  it("a numeric improvised answer to a data question is discarded (number rule) — and with the guard, zero-tool context-only is gone entirely", async () => {
+    scriptProvider([
+      JSON.stringify({
+        answer: "RELIANCE trades around 2500 and looks cheap.",
+        claims: [],
+        uncertainties: [],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.", history: [], message: "What is the price of RELIANCE?",
+      evidence: [], toolDeps: NO_TOOLS,
+    });
+    const wire = toChatWire(answer!);
+    // The fail-closed number rule (pre-existing): an unsupported number
+    // can never reach the verified surface.
+    expect(wire.text).not.toContain("2500");
+    expect(wire.provenance.grounded).toBe(false);
+    expect(wire.text).not.toBe("RELIANCE trades around 2500 and looks cheap.");
+  });
+});
+
+// ── Commit N (Coder Directions §9) — the production-grade contract for the
+// COMPLETE loop: user -> model -> canonical tool -> evidence -> validated
+// claims -> server-generated verified surface -> wire. This is the local
+// deterministic twin of the production grounded-AI canary.
+describe("Commit N — the complete general-chat loop contract (production-grade)", () => {
+  it("What is the price of RELIANCE? -> getPrices -> grounded=true with the server-generated verified surface", async () => {
+    const { calls } = scriptProvider([
+      '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
+      JSON.stringify({
+        answer: "RELIANCE trades at 1000, up 0.5%.",
+        claims: [
+          {
+            claim: "RELIANCE trades at 1000, up 0.5%",
+            evidenceIds: [PRICE_ITEM.id],
+            // BOTH numbers in the prose are asserted and both are carried
+            // by the same typed fact item — the fail-closed validator
+            // rejects any number the assertions do not cover.
+            assertions: [
+              { field: "price", value: 1000, unit: "inr" },
+              { field: "change", value: 0.5, unit: "percent" },
+            ],
+          },
+        ],
+        uncertainties: [],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.",
+      history: [],
+      message: "What is the price of RELIANCE?",
+      evidence: [],
+      toolDeps: TOOL_DEPS,
+    });
+
+    // 1. Two provider completions: the tool request + the final structure.
+    expect(calls.length).toBe(2);
+
+    // 2. The tool audit trail shows the expected tool, ok, on the symbol.
+    expect(answer!.toolCalls).toEqual([{ tool: "getPrices", status: "ok", symbol: "RELIANCE" }]);
+
+    // 3. Grounded: at least one validated claim, claimsVerified true.
+    expect(answer!.claimsVerified).toBe(true);
+    expect(answer!.claims.length).toBeGreaterThan(0);
+
+    // 4. The verified surface is the SERVER-GENERATED statement built from
+    //    the matched typed fact — never the model's prose.
+    const wire = toChatWire(answer!);
+    expect(wire.provenance.grounded).toBe(true);
+    expect(wire.provenance.groundingMode).toBe("structured-claims");
+    expect(wire.text).toContain("price = 1000 inr");
+    expect(wire.text).not.toBe("RELIANCE trades at 1000, up 0.5%.");
+
+    // 5. Commentary (the model prose) rides SEPARATELY, never merged.
+    expect(wire.provenance.commentary).toBe("RELIANCE trades at 1000, up 0.5%.");
+
+    // 6. The validated claim carries its evidence id and the
+    //    server-generated verifiedFacts with the closed source state.
+    const claim = wire.provenance.claims[0];
+    expect(claim.evidenceIds).toEqual([PRICE_ITEM.id]);
+    expect(claim.verifiedFacts?.length).toBeGreaterThan(0);
+    const priceFact = claim.verifiedFacts?.find((f) => f.field === "price");
+    expect(priceFact).toBeDefined();
+    expect(priceFact?.value).toBe(1000);
+    expect(priceFact?.sourceState).toBe("live");
+    expect(priceFact?.statement).toContain("price = 1000 inr");
+
+    // 7. An unsupported number cannot appear in the verified surface: the
+    //    0.5% change IS carried by the same fact item, but a number the
+    //    evidence does not carry (e.g. 9999) is absent by construction —
+    //    the surface is rendered only from matched typed facts.
+    expect(wire.text).not.toContain("9999");
+
+    // 8. The wire is schema-valid end to end (the UI contract).
+    const { ChatWireSchema } = await import("@/lib/ai/schemas");
+    expect(ChatWireSchema.safeParse(wire).success).toBe(true);
+  });
+
+  it("negative: an unknown-symbol tool request returns an explicit failure state and never a fabricated price", async () => {
+    scriptProvider([
+      '{"tool": "getPrices", "args": {"symbol": "FAKECOIN"}}',
+      JSON.stringify({
+        answer: "FAKECOIN is not in the security master — I cannot provide its price.",
+        claims: [],
+        uncertainties: ["no security-master entry for FAKECOIN"],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.", history: [], message: "price of FAKECOIN?",
+      evidence: [], toolDeps: TOOL_DEPS,
+    });
+    // Explicit failure state on the audit trail:
+    expect(answer!.toolCalls).toEqual([
+      { tool: "getPrices", status: "unknown-symbol", symbol: "FAKECOIN" },
+    ]);
+    const wire = toChatWire(answer!);
+    // No fabricated financial answer, no false grounding:
+    expect(wire.provenance.grounded).toBe(false);
+    expect(wire.text).not.toMatch(/\d{3,}/);
   });
 });

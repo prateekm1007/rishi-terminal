@@ -37,6 +37,7 @@ import 'server-only';
 
 import { z } from "zod";
 import { STOCKS } from "@/data/stocks";
+import { isValidSymbolInput, normalizeSymbolInput } from "@/lib/registry/validateInput";
 import type { ResolvedStockMetrics } from "@/lib/scoring";
 import { fetchLivePrice } from "@/lib/livePrice";
 import { fetchFullFundamentals } from "@/lib/liveFundamentals";
@@ -155,16 +156,36 @@ export async function executeAiTool(
     };
   }
 
-  // 3. security-master validation against the one registry.
-  const symbol = parsed.data.symbol.trim().toUpperCase();
-  if (!STOCKS[symbol]) {
+  // 3. validation against the ONE registry (R9-12, Rule 14). Until this
+  //    fix the gate was the stock master alone: getPrices(WTI) answered
+  //    unknown-symbol while /api/prices?symbol=WTI served LIVE data on the
+  //    same runtime — the tool layer lied to the model. Now: genuinely
+  //    unknown → unknown-symbol; registry-but-not-stock → stock-only tools
+  //    answer honest no-data (known-but-out-of-scope is NOT unknown);
+  //    getPrices serves the full canonical price registry through the same
+  //    shared canonical state (lib/livePrice underneath).
+  const rawSymbol = parsed.data.symbol.trim().toUpperCase();
+  if (!isValidSymbolInput(rawSymbol)) {
     return {
       status: "unknown-symbol",
       tool,
-      symbol,
+      symbol: rawSymbol,
       modelPayload: failPayload(tool, "unknown-symbol", {
+        symbol: rawSymbol,
+        message: `Symbol ${rawSymbol} is not in the security master. Do not guess data for it.`,
+      }),
+    };
+  }
+  const symbol = normalizeSymbolInput(rawSymbol) ?? rawSymbol;
+  const isStock = Object.prototype.hasOwnProperty.call(STOCKS, symbol);
+  if (!isStock && tool !== "getPrices") {
+    return {
+      status: "no-data",
+      tool,
+      symbol,
+      modelPayload: failPayload(tool, "no-data", {
         symbol,
-        message: `Symbol ${symbol} is not in the security master. Do not guess data for it.`,
+        message: `${symbol} is in the canonical price registry but has no equity security-master record; ${tool} serves stock data only. Use getPrices for its observed price, or answer without equity data.`,
       }),
     };
   }

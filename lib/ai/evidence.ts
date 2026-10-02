@@ -875,12 +875,33 @@ function numberSpans(text: string): NumberSpan[] {
   return spans.sort((a, b) => a.start - b.start);
 }
 
+/** U6 (founder round 6): a year in DATE CONTEXT is not a market number —
+ *  "In 2025 ROE was 12%" must ground. The exemption is deliberately narrow:
+ *  only bare 4-digit 19xx/20xx tokens immediately preceded by a date marker
+ *  (in|by|since|during|as of|FY|fiscal). A genuine value that happens to be
+ *  4 digits without a date marker (a price of 2500) is NOT exempt. */
+const YEAR_TOKEN_RE = /^(?:19|20)\d{2}$/;
+const DATE_CONTEXT_RE = /(?:\bin|\bby|\bsince|\bduring|\bas of|\bfy|\bfiscal year|\bfiscal)[\s:]*$/i;
+
+/** U6 (founder round 6): forecast / advice-superlative language — a CLOSED
+ *  vocabulary (no NLP). Platform facts are typed numbers with provenance; no
+ *  fact can ever back a prediction, so a numeric claim or a grounded answer
+ *  carrying this language is rejected wholesale (atomic claims). Deliberately
+ *  conservative: qualitative forecast prose without numbers is still the
+ *  disclosed context-only state, not a batch-killing failure. */
+const FORECAST_LANGUAGE_RE =
+  /\b(?:will|going to|expects? to|expected to|forecast(?:s|ed|ing)?|predict(?:s|ed|ing|ions?)?|doubl(?:e|es|ing)|tripl(?:e|es|ing)|quadrupl(?:e|es|ing)|multibagger(?:s)?|guarantee(?:d|s)?|sure[- ]shot|risk[- ]free|certain to|can(?:no|')t miss|skyrocket(?:s|ing)?|10x|100x)\b/i;
+
 /** Parse every stated number with its attribution + attached unit token. */
 function statedNumbers(text: string): StatedNumber[] {
   const collapsed = text.replace(/(-?\d[\d,]*(?:\.\d+)?)\s*\/\s*100\b/g, "$1");
   const out: StatedNumber[] = [];
   for (const span of numberSpans(collapsed)) {
     const { start, end, value } = span;
+    // U6: date-context year tokens never reach the unsupported-number gate.
+    if (!span.isWord && YEAR_TOKEN_RE.test(span.raw) && DATE_CONTEXT_RE.test(collapsed.slice(Math.max(0, start - 16), start))) {
+      continue;
+    }
     // nearest field mention within the window (distance, then specificity)
     let field: string | null = null;
     let bestDist = Infinity;
@@ -1020,6 +1041,17 @@ export function validateGrounding(
         `claim ${i + 1}: qualitative claim (no numeric statement) — classified context-only, NOT grounded (evidenceIds alone are never grounding${hasUnusedAssertions ? "; its unused assertions are ignored" : ""}) (G3)`,
       );
       qualitative.push(c.claim);
+      continue;
+    }
+
+    // ── U6: atomic claims. A numeric claim that ALSO carries forecast or
+    // advice-superlative language is rejected: the verified number would
+    // otherwise lend the model's prediction a grounding it never had.
+    if (FORECAST_LANGUAGE_RE.test(c.claim)) {
+      rejections.push(
+        `claim ${i + 1}: forecast/advice-superlative language (${JSON.stringify((FORECAST_LANGUAGE_RE.exec(c.claim) ?? [""])[0])}) — no platform fact can back a prediction; the claim is rejected wholesale (U6 atomic claims)`,
+      );
+      hardFailure = true;
       continue;
     }
 
@@ -1185,6 +1217,12 @@ export function validateGrounding(
         rejections.push(`answer: number ${JSON.stringify(sn.raw)} is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02)`);
         hardFailure = true;
       }
+    }
+    // U6: a grounded answer may not carry forecast language either — the
+    // verified facts would otherwise dress a prediction as verified.
+    if (FORECAST_LANGUAGE_RE.test(answer)) {
+      rejections.push(`answer: forecast/advice-superlative language (${JSON.stringify((FORECAST_LANGUAGE_RE.exec(answer) ?? [""])[0])}) — no platform fact can back a prediction (U6 atomic claims)`);
+      hardFailure = true;
     }
     const batchStates = surviving.flatMap(s => [...s.matchedByField.values()]).map(sourceStateOf);
     if (batchStates.some(s => s === "seed" || s === "derived") && answer && PROVENANCE_UPGRADE_RE.test(answer)) {

@@ -6,7 +6,9 @@ import Link from "next/link";
 const FEATURES = [
   
   {
-    href:  "/fno/builder",
+    // Commit O (#18): /fno/builder never existed (production 404). The real
+    // F&O advisor surface is the (free) Rishi chat.
+    href:  "/chat",
     icon:  "🧘",
     title: "Rishi Advisor",
     desc:  "Get contextual F&O advice from Jhunjhunwala, Damani, Buffett, Munger, Chanos, Lynch & Soros.",
@@ -14,10 +16,12 @@ const FEATURES = [
     color: "#8B5CF6",
   },
   {
-    href:  "/fno/builder",
+    // Commit O (#18): the honest F&O strategy surface — the backtester page
+    // states its data unavailability explicitly (no synthetic derivatives).
+    href:  "/fno/backtester",
     icon:  "📊",
-    title: "Payoff Chart",
-    desc:  "Interactive P&L curve showing max profit, max loss, and breakeven points at expiry.",
+    title: "Payoff & Backtest",
+    desc:  "Requires rights-cleared NSE derivatives data — currently unavailable, stated honestly (no synthetic numbers).",
     tag:   "Visual",
     color: "#22C55E",
   },
@@ -72,7 +76,7 @@ export default function FnOHubPage() {
           <p style={{ fontSize: "16px", color: "#94A3B8", maxWidth: "560px", margin: "0 auto 32px", lineHeight: 1.8 }}>
             {t("fno.wisdomDesc1")} <span style={{ color: "#D4AF37" }}>{t("fno.wisdomDesc2")}</span>. {t("fno.wisdomDesc3")}
           </p>
-          <Link href="/fno/builder" style={{
+          <Link href="/fno/backtester" style={{
             display: "inline-flex", alignItems: "center", gap: "8px",
             padding: "14px 32px",
             background: "linear-gradient(135deg,#A88B20,#D4AF37)",
@@ -80,7 +84,7 @@ export default function FnOHubPage() {
             fontSize: "15px", textDecoration: "none",
             boxShadow: "0 4px 24px rgba(212,175,55,0.4)",
           }}>
-            🎯 Open Strategy Builder →
+            📊 Open Strategy Backtester →
           </Link>
         </div>
 
@@ -131,7 +135,7 @@ export default function FnOHubPage() {
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "12px" }}>
             {STRATEGIES.map(s => (
-              <Link key={s.name} href="/fno/builder" style={{ textDecoration: "none" }}>
+              <Link key={s.name} href="/fno/backtester" style={{ textDecoration: "none" }}>
                 <div style={{
                   background: "rgba(17,24,39,0.7)",
                   border: "1px solid rgba(51,65,85,0.4)",

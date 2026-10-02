@@ -1,0 +1,40 @@
+routeIntegrity: 58 filesystem routes · 73 internal hrefs scanned
+
+BROKEN internal links (route does not exist):
+  ✗ /
+      at app/bonds/page.tsx
+      at app/bonds/rishis/page.tsx
+      at app/bonds/screener/page.tsx
+      at app/commodities/page.tsx
+      at app/crypto/page.tsx
+  ✗ /fno/builder
+      at app/fno/page.tsx
+      at app/fno/page.tsx
+      at app/fno/page.tsx
+      at app/fno/page.tsx
+      at app/forex/page.tsx
+      at app/forex/pairs/page.tsx
+      at app/forex/rishis/page.tsx
+      at app/index/[symbol]/page.tsx
+      at app/index/[symbol]/page.tsx
+      at app/news/page.tsx
+      at app/pricing/page.tsx
+      at app/privacy/page.tsx
+      at app/pulse/page.tsx
+      at app/rishis/page.tsx
+      at app/stock/[symbol]/error.tsx
+      at app/terms/page.tsx
+      at components/Sidebar.tsx
+      at components/commodities/CommodityDetailClient.tsx
+      at components/crypto/CryptoDetailClient.tsx
+  ✗ /compare
+      at components/dashboard/DashboardClient.tsx
+  ✗ /portfolio
+      at components/dashboard/DashboardClient.tsx
+  ✗ /watchlist
+      at components/dashboard/DashboardClient.tsx
+      at components/dashboard/DashboardClient.tsx
+      at components/forex/ForexDetailClient.tsx
+      at components/lab/LabContent.tsx
+      at components/screener/ScreenerClient.tsx
+      at components/stock/InsufficientDataRecord.tsx

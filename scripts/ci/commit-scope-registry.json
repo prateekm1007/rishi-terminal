@@ -64,6 +64,11 @@
       "scripts/ci/",
       "package.json"
     ],
+    "R9-11": [
+      "scripts/aiLatencyBattery.mjs",
+      "docs/evidence/round9/",
+      "scripts/ci/commit-scope-registry.json"
+    ],
     "redeploy": []
   }
 }

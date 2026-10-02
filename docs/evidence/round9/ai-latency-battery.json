@@ -1,0 +1,1211 @@
+{
+  "generatedAt": "2026-10-02T21:05:57.352Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "version": {
+    "sha": "3f7d9019d4ec741cad2a2c6440396c335cee94b5",
+    "now": "2026-10-02T21:03:01.570Z",
+    "node": "v24.21.0"
+  },
+  "providerModelIdentity": {
+    "provider": "chat-api",
+    "model": "agnes-2.5-flash"
+  },
+  "classes": {
+    "financial": {
+      "n": 22,
+      "firstPassGrounded": 2,
+      "grounded": 4,
+      "repaired": 2,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": 1092,
+      "wallP95": 11427,
+      "wallAvg": 2571,
+      "completionStageAverages": {
+        "initial": {
+          "count": 4,
+          "avgMs": 883
+        },
+        "post-tool": {
+          "count": 4,
+          "avgMs": 4756
+        },
+        "repair": {
+          "count": 2,
+          "avgMs": 4495
+        }
+      },
+      "repairCauses": {
+        "unsupported-numeric-prose": 2
+      },
+      "totalToolExecutions": 4,
+      "validationMsTotal": 2,
+      "providerAttemptsTotal": 10
+    },
+    "philosophy": {
+      "n": 11,
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": 583,
+      "wallP95": 878,
+      "wallAvg": 621,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "invalid": {
+      "n": 11,
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 3,
+      "blocked": 0,
+      "invalid": 1,
+      "wallP50": 1300,
+      "wallP95": 13693,
+      "wallAvg": 4055,
+      "completionStageAverages": {
+        "initial": {
+          "count": 3,
+          "avgMs": 1110
+        },
+        "post-tool": {
+          "count": 3,
+          "avgMs": 3144
+        },
+        "repair": {
+          "count": 3,
+          "avgMs": 3556
+        }
+      },
+      "repairCauses": {
+        "missing-claims": 3
+      },
+      "totalToolExecutions": 3,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 9
+    }
+  },
+  "overall": {
+    "n": 44,
+    "firstPassGrounded": 2,
+    "grounded": 4,
+    "repaired": 5,
+    "blocked": 0,
+    "invalid": 1,
+    "wallP50": 915,
+    "wallP95": 11427,
+    "wallAvg": 2455,
+    "completionStageAverages": {
+      "initial": {
+        "count": 7,
+        "avgMs": 981
+      },
+      "post-tool": {
+        "count": 7,
+        "avgMs": 4065
+      },
+      "repair": {
+        "count": 5,
+        "avgMs": 3932
+      }
+    },
+    "repairCauses": {
+      "unsupported-numeric-prose": 2,
+      "missing-claims": 3
+    },
+    "totalToolExecutions": 7,
+    "validationMsTotal": 2,
+    "providerAttemptsTotal": 19
+  },
+  "raw": {
+    "financial": [
+      {
+        "status": 200,
+        "wallMs": 11427,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "RELIANCE",
+            "status": "ok",
+            "ms": 76
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "RELIANCE",
+            "ms": 76
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1022
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4817
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 4265
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)"
+      },
+      {
+        "status": 200,
+        "wallMs": 11712,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "TCS",
+            "status": "ok",
+            "ms": 92
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "TCS",
+            "ms": 91
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 957
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4698
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 4725
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 2075 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)"
+      },
+      {
+        "status": 200,
+        "wallMs": 8496,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "INFY",
+            "status": "ok",
+            "ms": 78
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "INFY",
+            "ms": 78
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 796
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 6557
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 1035 inr — live (observed/as-of 2026-10-01T09:44:59.000Z)\nchange = 4.114 percent — live (observed/as-of 2026-10-01T09:44:59.000Z)"
+      },
+      {
+        "status": 200,
+        "wallMs": 4785,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "HDFCBANK",
+            "status": "ok",
+            "ms": 67
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "HDFCBANK",
+            "ms": 66
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 758
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 2952
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 721.2 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\nchange = 1.764 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)"
+      },
+      {
+        "status": 502,
+        "wallMs": 1334,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1359,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1526,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1037,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1092,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1007,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 2160,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1010,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1115,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 900,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1183,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 870,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 915,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 733,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1108,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1027,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 904,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 869,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      }
+    ],
+    "philosophy": [
+      {
+        "status": 502,
+        "wallMs": 878,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 604,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 413,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 583,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 565,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 824,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 865,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 420,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 550,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 399,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 733,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      }
+    ],
+    "invalid": [
+      {
+        "status": 429,
+        "wallMs": 594,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 391,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 419,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 429,
+        "wallMs": 726,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 200,
+        "wallMs": 13693,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "XYZZY42",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 909
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 6389
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 2610
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown."
+      },
+      {
+        "status": 200,
+        "wallMs": 6850,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "invalid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "QWERTY9",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1582
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 1658
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 2903
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI response could not be verified against the supplied financial evidence."
+      },
+      {
+        "status": 200,
+        "wallMs": 9385,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "PLUGH77",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 840
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 1385
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 5155
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown."
+      },
+      {
+        "status": 502,
+        "wallMs": 9106,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1300,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 1466,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      },
+      {
+        "status": 502,
+        "wallMs": 676,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": ""
+      }
+    ]
+  }
+}

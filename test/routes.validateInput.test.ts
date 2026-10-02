@@ -19,6 +19,8 @@ import {
   parseSymbolsList,
   parseSymbolsBody,
   MAX_SYMBOLS_BATCH,
+  PRICE_REGISTRY_TOKENS,
+  SLASHED,
 } from "@/lib/registry/validateInput";
 import { STOCKS } from "@/data/stocks";
 
@@ -168,5 +170,32 @@ describe("R5 — source scan: every symbol-reading route imports the gate", () =
       }
     }
     expect(offenders).toEqual([]);
+  });
+});
+
+// ── R9-9: registry exports for the AI intent backstop (Rule 14) ─────────
+// The intent detector must read the SAME price registry the price layer
+// serves — exported here so there is exactly one registry, not a second
+// hand-maintained list inside lib/ai.
+describe("R9-9 — validateInput registry exports", () => {
+  it("PRICE_REGISTRY_TOKENS covers the app-served price universe", () => {
+    expect(PRICE_REGISTRY_TOKENS.has("WTI")).toBe(true);
+    expect(PRICE_REGISTRY_TOKENS.has("BRENT")).toBe(true);
+    expect(PRICE_REGISTRY_TOKENS.has("GOLD")).toBe(true);
+    expect(PRICE_REGISTRY_TOKENS.has("BTC")).toBe(true);
+    expect(PRICE_REGISTRY_TOKENS.has("NIFTY50")).toBe(true);
+    expect(PRICE_REGISTRY_TOKENS.has("SENSEX")).toBe(true);
+    expect(PRICE_REGISTRY_TOKENS.has("USDINR")).toBe(true);
+    expect(PRICE_REGISTRY_TOKENS.has("IN10YS")).toBe(true);
+  });
+
+  it("SLASHED carries the BASE/QUOTE spellings the price layer uses", () => {
+    expect(SLASHED.has("USD/INR")).toBe(true);
+    expect(SLASHED.has("EUR/USD")).toBe(true);
+  });
+
+  it("stock master stays OUT of the price-registry token set (one registry per concept)", () => {
+    expect(PRICE_REGISTRY_TOKENS.has("RELIANCE")).toBe(false);
+    expect(PRICE_REGISTRY_TOKENS.has("TCS")).toBe(false);
   });
 });

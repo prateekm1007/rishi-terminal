@@ -33,11 +33,29 @@
 import 'server-only';
 
 import { STOCKS } from '@/data/stocks';
+import { PRICE_REGISTRY_TOKENS, SLASHED } from '@/lib/registry/validateInput';
 
-/** Registry symbol tokens (security master — the one registry). */
-const SYMBOL_TOKENS: ReadonlySet<string> = new Set(
-  Object.keys(STOCKS).filter((s) => s.length >= 2),
-);
+/** Registry symbol tokens (R9-9, Rule 14): the security master UNION the
+ * canonical price registry (indexes/commodities/crypto/forex/bonds — the
+ * tickers the price layer itself serves). Both sets are imported, never
+ * re-enumerated here, so the detector cannot drift from the registry. */
+const SYMBOL_TOKENS: ReadonlySet<string> = new Set([
+  ...Object.keys(STOCKS).filter((s) => s.length >= 2),
+  ...PRICE_REGISTRY_TOKENS,
+]);
+
+/** R9-9: slashed "BASE/QUOTE" pairs are invisible to the tokenizer (it
+ * splits on '/'), so they are matched against the RAW text instead. Built
+ * once from validateInput's SLASHED set — one registry, no re-listing. */
+const SLASHED_PAIR_RE: RegExp | null =
+  SLASHED.size > 0
+    ? new RegExp(
+        `\\b(${Array.from(SLASHED)
+          .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+          .join('|')})\\b`,
+        'i',
+      )
+    : null;
 
 /**
  * The closed financial-data vocabulary. Adding a term here is a reviewed
@@ -45,8 +63,12 @@ const SYMBOL_TOKENS: ReadonlySet<string> = new Set(
  * (getStock/getFinancials/getPrices/getScore/getPeers) or an explicit
  * data/advice ask that requires such data. Keep it conservative.
  */
+// R9-9 adds the conservative terms the Direction-9 production battery
+// showed were dodging the backstop: "What is WTI trading at?", "USD/INR
+// exchange rate?", "10Y yield level?". Each names a datum the canonical
+// price layer serves; the Signal-1 conjunction still gates every trigger.
 const DATA_TERM_RE =
-  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price)\b/i;
+  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|trading|levels?|yields?|exchange rates?)\b/i;
 
 export interface FinancialDataIntent {
   /** True when the request clearly asks for symbol-specific financial data. */
@@ -68,6 +90,16 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
 
   const termMatch = DATA_TERM_RE.exec(text);
   if (!termMatch) return { financial: false };
+
+  // R9-9: slashed FX pairs first — tokenization would split "USD/INR"
+  // into USD + INR and lose the pair. The slashed spelling is exactly
+  // what the price layer consumes, so it is the symbol we report.
+  if (SLASHED_PAIR_RE) {
+    const pair = SLASHED_PAIR_RE.exec(text);
+    if (pair) {
+      return { financial: true, symbol: pair[0].toUpperCase(), matchedTerm: termMatch[0] };
+    }
+  }
 
   // Standalone tokens: split on everything that is not part of a symbol
   // (letters, digits, '&' for M&M-style symbols).

@@ -47,6 +47,35 @@ const ALLOWED = new Set<string>([
   ...BONDS.map((b) => b.symbol),
 ]);
 
+/** R9-9 (Rule 14: one source of truth): the price-registry token set —
+ * every index/commodity/crypto/forex/bond ticker the price layer itself
+ * serves, DERIVED from the same data files as ALLOWED above (never
+ * hand-enumerated). Exported for the AI financial-intent backstop so its
+ * Signal 1 covers the full canonical price registry, not just the stock
+ * master. Deliberately EXCLUDES the stock master: the two registries
+ * compose at the consumer (STOCKS ∪ PRICE_REGISTRY_TOKENS), each stays
+ * single-concept. */
+export const PRICE_REGISTRY_TOKENS: ReadonlySet<string> = new Set(
+  [
+    ...Object.keys(YAHOO_INDEX_SYMBOLS),
+    ...Object.keys(YAHOO_COMMODITY_SYMBOLS),
+    ...Object.keys(COINGECKO_IDS),
+    ...Object.keys(YAHOO_SPECIAL),
+    ...INDIAN_INDEXES.map((i) => i.symbol),
+    ...COMMODITIES.map((c) => c.symbol),
+    ...CRYPTO_ASSETS.map((c) => c.symbol),
+    ...FOREX_PAIRS.map((f) => f.symbol.toUpperCase()),
+    ...BONDS.map((b) => b.symbol),
+  ].filter((s) => s.length >= 2),
+);
+
+/** R9-9: the slashed "BASE/QUOTE" spellings the price layer expects for
+ * forex (data/forex.ts stores pairs unslashed). Exported so the intent
+ * detector can match "USD/INR" even though its tokenizer splits on '/'. */
+export const SLASHED: ReadonlySet<string> = new Set(
+  FOREX_PAIRS.map((f) => (f.pair ?? f.symbol).toUpperCase()),
+);
+
 /** The price layer (lib/livePrice) and history expect forex pairs in the
  * slashed "BASE/QUOTE" spelling; data/forex.ts stores them unslashed. Map
  * every accepted spelling to the slashed canonical form. */

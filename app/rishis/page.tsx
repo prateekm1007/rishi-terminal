@@ -49,11 +49,14 @@ export default function ChatWithRishisPage() {
   const currentMessages = chatHistories[selectedRishi.id] || [];
 
   // The most recent assistant reply's actual model (provenance rides on
-  // every reply) — never an invented vendor name.
+  // every reply) — never an invented vendor name. When no reply with
+  // provenance exists yet, the label says so honestly (Commit M7 §4: a
+  // model name is presented only when the server's provenance supplied
+  // it — no hardcoded vendor claims).
   const lastProvenance = [...currentMessages].reverse().find(m => m.role === 'assistant')?.provenance;
   const lastModelLabel = lastProvenance
     ? `${lastProvenance.provider} ${lastProvenance.model}`
-    : 'Google Gemini 2.5 Flash';
+    : 'model: not yet reported';
 
   const filteredRishis = useMemo(() =>
     ALL_RISHIS.filter(r =>

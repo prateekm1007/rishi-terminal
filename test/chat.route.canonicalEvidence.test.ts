@@ -22,7 +22,7 @@ import type { FullFundamentals } from "@/lib/liveFundamentals";
 
 vi.mock("@/lib/auth/session", () => ({
   getSessionUser: vi.fn(async () => ({
-    id: "u1", email: "t@e.st", tier: "disciple", tierExpiresAt: null,
+    id: "u1", email: "t@e.st", access: "free",
   })),
 }));
 

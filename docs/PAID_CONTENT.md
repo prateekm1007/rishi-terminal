@@ -1,6 +1,12 @@
 # Paid vs Free Content — Rishi Terminal
 
-**Status:** R3 (round 2), 2026-09-30. **This matrix is the spec v2 assumption,
+**SUPERSEDED (2026-10-02, Commit M / founder decision):** every feature is
+now FREE — no tiers, no paid gates, no checkout. The matrix below is kept
+as the HISTORICAL record of the R3-era design it documents; it no longer
+describes the product. The living invariants are
+`scripts/freeAccessAudit.mjs` + `test/freeAccess.contract.test.ts`.
+
+**Status:** R3 (round 2), 2026-09-30 (historical). **This matrix is the spec v2 assumption,
 implemented; the founder has NOT yet ratified it** (spec §"Not for the coder",
 item 1). Changing any line below requires moving the corresponding slice from
 the server route to the client (or vice versa) — the enforcement is structural,

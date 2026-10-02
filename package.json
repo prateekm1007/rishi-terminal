@@ -18,7 +18,8 @@
     "snapshot:batch": "tsx --conditions react-server scripts/snapshotBatch.ts",
     "populate:security-master": "tsx --conditions react-server scripts/populateSecurityMasterImpl.ts",
     "validate:security-master": "tsx --conditions react-server scripts/validateSecurityMasterImpl.ts",
-    "bundle:budget": "tsx scripts/bundleBudget.ts"
+    "bundle:budget": "tsx scripts/bundleBudget.ts",
+    "freeAccessAudit": "node scripts/freeAccessAudit.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -32,7 +33,6 @@
     "jsonwebtoken": "^9.0.3",
     "next": "16.2.4",
     "next-intl": "^4.11.0",
-    "razorpay": "^2.9.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-force-graph-2d": "^1.29.1",

@@ -1,0 +1,15 @@
+freeAccessAudit: scanned 352 product files (app, lib, components, hooks, messages, data, proxy.ts, next.config.js, package.json)
+
+allowlisted legacy persistence (documented, non-failing): 1
+  [ok-legacy] app/privacy/page.tsx:33 (PAYMENT_PROCESSOR) — LEGAL DISCLOSURE (not product code coupling): the privacy policy names the FORMER payment processor …
+
+VIOLATIONS: product code still depends on a tier/payment concept (2)
+  [TIER_VALUE_LITERAL] components/BiteViolation.tsx:4: const premium = tier !== 'seeker';
+      -> a tier VALUE literal in code is an entitlement decision
+  [PAYMENT_PROCESSOR] lib/scratchPayment.ts:2: export const RZP = 'https://checkout.razorpay.com/v1/checkout.js';
+      -> the payment processor is retired — no origin, SDK, env or identifier may return
+
+RESURRECTED SURFACES (Rule 17 — deleted code must stay deleted): 1
+  [resurrected] lib/premium.ts — the tier model module (TIER_CONFIG + stock-view counter)
+
+freeAccessAudit: FAIL — every feature must be free; see the violations above.

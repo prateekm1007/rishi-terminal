@@ -10,8 +10,9 @@ export const metadata: Metadata = {
  * Round-5 audit (finding 9): the sign-in page referenced a "Terms of
  * Service" that did not exist. This page states, factually and minimally,
  * what the product is and is not. It is written to match what the code
- * actually does — not aspirational legal boilerplate. (FD-13: founder to
- * have counsel review before paid tiers scale.)
+ * actually does — not aspirational legal boilerplate. (FD-14: founder to
+ * have counsel review — still open. Commit M4 (2026-10-02): the product
+ * is now entirely free; section 4 reflects that.)
  */
 export default function TermsPage() {
   return (
@@ -55,12 +56,13 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>4. Paid tiers and refunds</h2>
+            <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>4. Access and historical purchases</h2>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-              Paid tiers (Student, Disciple) are billed annually in INR via our payment provider and grant the
-              features listed on the pricing page — features that do not exist are not listed. If a purchase
-              fails to grant access, contact us and we will restore it or refund it. Beyond that, purchases are
-              refundable within 7 days if the service has not met what the pricing page states.
+              Every feature of the service is available free of charge; there are no paid tiers, no subscriptions
+              and no checkout. If you purchased a subscription while paid tiers existed (2026), that purchase no
+              longer gates anything — you retain full access, as does everyone. If you believe you are owed a
+              refund for a recent purchase under the terms that applied at the time (refundable within 7 days if
+              the service had not met what the pricing page stated), contact us and we will honour it.
             </p>
           </section>
 
@@ -78,7 +80,7 @@ export default function TermsPage() {
               The service is provided &ldquo;as is&rdquo; without warranty of accuracy, availability or fitness
               for a particular purpose. To the maximum extent permitted by law, our liability for any claim
               arising from use of the service is limited to the amount you paid us in the 12 months before the
-              claim.
+              claim (for the avoidance of doubt: the service is now free, so that amount is typically zero).
             </p>
           </section>
         </div>

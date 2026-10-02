@@ -4,23 +4,19 @@ import { RishiScore } from "../../lib/types";
 // N1: weights are public methodology metadata (S2-01) — lib/gurus/weights,
 // not the server-only engine module lib/consensus/weights.
 import { RISHI_WEIGHT_CONFIG } from "../../lib/gurus/weights";
-import { WisdomTier } from "../../lib/premium";
-import Link from "next/link";
 import { useState } from "react";
 import { useLanguage } from '../../lib/language';
 
 interface Props {
   symbol: string;
   /**
-   * R3: verdicts come from the server (embedded free set at build time,
-   * upgraded via GET /api/rishis/[symbol] for paid tiers). The client never
-   * receives verdicts beyond the caller's tier — this component only renders
-   * what the server sent.
+   * Verdicts come from the server — the FULL set for every visitor
+   * (Commit M3 free access: the RSC payload carries the complete council;
+   * there is no tier slice and no client-side upgrade). This component
+   * only renders what the server sent.
    */
   verdicts: RishiScore[];
   totalRishis: number;
-  tier: WisdomTier;
-  authenticated: boolean;
 }
 
 function getTierLabel(weight: number): string {
@@ -54,14 +50,12 @@ function getWeightForRishi(name: string): number {
   return config?.weight ?? 1.0;
 }
 
-export function RishiGrid({ verdicts, totalRishis, authenticated, tier }: Props) {
+export function RishiGrid({ verdicts, totalRishis }: Props) {
   const { t } = useLanguage();
   const [expandedRishi, setExpandedRishi] = useState<string | null>(null);
 
-  // The server already limited `verdicts` to the caller's tier.
+  // Free access: the server sent every verdict — nothing is locked.
   const visibleScores = verdicts;
-  const lockedCount = Math.max(0, totalRishis - verdicts.length);
-  const premium = lockedCount === 0;
 
   return (
     <div className="card-sacred p-6">
@@ -214,64 +208,7 @@ export function RishiGrid({ verdicts, totalRishis, authenticated, tier }: Props)
             </div>
           );
         })}
-
-        {/* Locked Cards */}
-        {!premium && lockedCount > 0 && Array.from({ length: Math.min(lockedCount, 3) }).map((_, idx) => (
-          <div
-            key={`locked-${idx}`}
-            className="border border-border-primary rounded-xl p-4 opacity-40 relative overflow-hidden"
-          >
-            <div className="absolute inset-0 backdrop-blur-sm bg-zinc-900/60 flex flex-col items-center justify-center z-10">
-              <span className="text-2xl mb-2">🔒</span>
-              <span className="text-xs text-muted text-center px-4">
-                {authenticated
-                  ? 'Upgrade to Student to unlock all 20 Rishis'
-                  : 'Sign in to see your tier\u2019s full Rishi panel'}
-              </span>
-              <Link
-                href={authenticated ? '/pricing' : '/auth/signin'}
-                className="mt-3 px-3 py-1.5 bg-accent-gold text-black text-xs font-bold rounded-lg"
-                onClick={e => e.stopPropagation()}
-              >
-                {authenticated ? 'Upgrade' : 'Sign in'}
-              </Link>
-            </div>
-            {/* Blurred placeholder */}
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <div className="h-3 bg-zinc-700 rounded w-24 mb-2" />
-                <div className="h-2 bg-zinc-800 rounded w-16" />
-              </div>
-              <div className="h-8 w-8 bg-zinc-700 rounded" />
-            </div>
-            <div className="h-1.5 bg-zinc-800 rounded-full mb-3" />
-            <div className="space-y-1.5">
-              <div className="h-2 bg-zinc-800 rounded w-full" />
-              <div className="h-2 bg-zinc-800 rounded w-3/4" />
-            </div>
-          </div>
-        ))}
       </div>
-
-      {/* Upgrade Banner */}
-      {!premium && lockedCount > 0 && (
-        <div className="mt-6 p-4 border border-accent-gold/30 rounded-xl bg-accent-gold/5 text-center">
-          <p className="text-sm font-medium mb-1">
-            {lockedCount} more Rishis await your wisdom
-          </p>
-          <p className="text-xs text-muted mb-3">
-            {tier === 'seeker'
-              ? 'Upgrade to Student tier to unlock all 20 philosophical lenses'
-              : 'Sign in to unlock the full Rishi panel for your tier'}
-          </p>
-          <Link
-            href={authenticated ? '/pricing' : '/auth/signin'}
-            className="inline-block px-6 py-2 bg-accent-gold text-black font-bold rounded-lg text-sm hover:bg-accent-gold/90 transition-colors"
-          >
-            {authenticated ? 'Unlock All Rishis — 499/year' : 'Sign in'}
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

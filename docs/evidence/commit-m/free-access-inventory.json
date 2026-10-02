@@ -1,0 +1,1478 @@
+{
+  "generatedAt": "2026-10-02T02:43:54.219Z",
+  "commit": "f1f30b02d03780d9e677c74f563686e7c4f05b62",
+  "terms": [
+    "TIER_CONFIG",
+    "WisdomTier",
+    "isPremium",
+    "isDisciple",
+    "canAccess",
+    "canViewStock",
+    "getRishisVisible",
+    "getRishisByTier",
+    "student",
+    "disciple",
+    "seeker",
+    "tierExpiresAt",
+    "tier_purchased",
+    "pricing",
+    "upgrade",
+    "checkout",
+    "Razorpay",
+    "paid",
+    "premium"
+  ],
+  "totalOccurrences": 1089,
+  "totalFiles": 131,
+  "byCategory": {
+    "documentation": {
+      "files": 16,
+      "occurrences": 73
+    },
+    "runtime-entitlement": {
+      "files": 22,
+      "occurrences": 204
+    },
+    "payment-surface": {
+      "files": 13,
+      "occurrences": 157
+    },
+    "legitimate-concept": {
+      "files": 39,
+      "occurrences": 196
+    },
+    "ui-copy": {
+      "files": 9,
+      "occurrences": 60
+    },
+    "db-persistence": {
+      "files": 6,
+      "occurrences": 142
+    },
+    "dead-code": {
+      "files": 1,
+      "occurrences": 15
+    },
+    "test": {
+      "files": 25,
+      "occurrences": 242
+    }
+  },
+  "files": [
+    {
+      "file": ".env.example",
+      "category": "documentation",
+      "note": "RAZORPAY_* section + CHAT_MODEL default",
+      "hits": {
+        "Razorpay": 5
+      },
+      "total": 5
+    },
+    {
+      "file": "AUDIT_FINDINGS_COMPREHENSIVE.md",
+      "category": "documentation",
+      "note": "historical audit report — preserved verbatim (evidence)",
+      "hits": {
+        "disciple": 1,
+        "pricing": 1,
+        "paid": 1,
+        "premium": 5
+      },
+      "total": 8
+    },
+    {
+      "file": "AUDIT_REPORT_20260616_233109.md",
+      "category": "documentation",
+      "note": "historical audit report — preserved verbatim (evidence)",
+      "hits": {
+        "paid": 1,
+        "premium": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "CONSTITUTION.md",
+      "category": "documentation",
+      "note": "governing rules — DO NOT MODIFY (tier mentions are rule evidence)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 1,
+        "paid": 5,
+        "premium": 1
+      },
+      "total": 10
+    },
+    {
+      "file": "README.md",
+      "category": "documentation",
+      "note": "pricing mention in overview",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "app/api/auth/me/route.ts",
+      "category": "runtime-entitlement",
+      "note": "returns tier + tierExpiresAt to clients (feeds client gates)",
+      "hits": {
+        "seeker": 1,
+        "tierExpiresAt": 2
+      },
+      "total": 3
+    },
+    {
+      "file": "app/api/chat/personas/route.ts",
+      "category": "runtime-entitlement",
+      "note": "serves the caller tier roster",
+      "hits": {
+        "getRishisByTier": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "app/api/chat/route.ts",
+      "category": "runtime-entitlement",
+      "note": "persona 403 by tier + tier-keyed DAILY_QUOTA",
+      "hits": {
+        "student": 2,
+        "disciple": 2,
+        "seeker": 5,
+        "premium": 1
+      },
+      "total": 10
+    },
+    {
+      "file": "app/api/gurus/route.ts",
+      "category": "runtime-entitlement",
+      "note": "isPremium() locks crypto/commodity guru verdicts into teasers",
+      "hits": {
+        "isPremium": 2,
+        "student": 1,
+        "disciple": 1,
+        "seeker": 2,
+        "paid": 3,
+        "premium": 7
+      },
+      "total": 16
+    },
+    {
+      "file": "app/api/payment/route.ts",
+      "category": "payment-surface",
+      "note": "Razorpay order create (POST) + client verify (PUT)",
+      "hits": {
+        "tier_purchased": 1,
+        "Razorpay": 19
+      },
+      "total": 20
+    },
+    {
+      "file": "app/api/payment/webhook/route.ts",
+      "category": "payment-surface",
+      "note": "Razorpay webhook -> grant_tier_for_payment",
+      "hits": {
+        "Razorpay": 12,
+        "paid": 2
+      },
+      "total": 14
+    },
+    {
+      "file": "app/api/rishis/[symbol]/route.ts",
+      "category": "runtime-entitlement",
+      "note": "verdict slice by TIER_CONFIG[user.tier].rishisVisible",
+      "hits": {
+        "TIER_CONFIG": 2,
+        "paid": 1,
+        "premium": 1
+      },
+      "total": 4
+    },
+    {
+      "file": "app/commodities/page.tsx",
+      "category": "runtime-entitlement",
+      "note": "premium flag + UpgradePrompt + category gate",
+      "hits": {
+        "seeker": 1,
+        "premium": 4
+      },
+      "total": 5
+    },
+    {
+      "file": "app/crypto/page.tsx",
+      "category": "runtime-entitlement",
+      "note": "premium flag + UpgradePrompt + locked-teaser copy",
+      "hits": {
+        "student": 1,
+        "seeker": 2,
+        "premium": 3
+      },
+      "total": 6
+    },
+    {
+      "file": "app/pricing/layout.tsx",
+      "category": "payment-surface",
+      "note": "pricing page metadata mentioning tiers",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 2
+      },
+      "total": 5
+    },
+    {
+      "file": "app/pricing/page.tsx",
+      "category": "payment-surface",
+      "note": "paid-tier storefront with upgrade buttons + Razorpay checkout",
+      "hits": {
+        "TIER_CONFIG": 2,
+        "WisdomTier": 6,
+        "student": 3,
+        "disciple": 3,
+        "seeker": 7,
+        "pricing": 16,
+        "checkout": 1,
+        "Razorpay": 2,
+        "paid": 1,
+        "premium": 2
+      },
+      "total": 43
+    },
+    {
+      "file": "app/privacy/page.tsx",
+      "category": "documentation",
+      "note": "privacy copy: subscription/tier/Razorpay statements — updated to reflect the free product + retained historical records",
+      "hits": {
+        "Razorpay": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "app/sitemap.ts",
+      "category": "legitimate-concept",
+      "note": "/pricing sitemap entry — kept (route remains as the free-access notice)",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "app/stock/[symbol]/page.tsx",
+      "category": "runtime-entitlement",
+      "note": "RSC embeds only the seeker slice",
+      "hits": {
+        "TIER_CONFIG": 2,
+        "seeker": 2,
+        "upgrade": 1,
+        "paid": 2,
+        "premium": 1
+      },
+      "total": 8
+    },
+    {
+      "file": "app/terms/page.tsx",
+      "category": "documentation",
+      "note": "terms section 4 (paid tiers and refunds) — rewritten for the free product; counsel review still FD-14",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "pricing": 2,
+        "paid": 4
+      },
+      "total": 8
+    },
+    {
+      "file": "components/Sidebar.tsx",
+      "category": "ui-copy",
+      "note": "nav link to /pricing — kept (page becomes the free-access notice)",
+      "hits": {
+        "pricing": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "components/bonds/BondDetailClient.tsx",
+      "category": "legitimate-concept",
+      "note": "bond premium market term",
+      "hits": {
+        "premium": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "components/chat/RishiChat.tsx",
+      "category": "runtime-entitlement",
+      "note": "roster-fallback surface described as the seeker set {damani}",
+      "hits": {
+        "seeker": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "components/crypto/CryptoDetailClient.tsx",
+      "category": "runtime-entitlement",
+      "note": "premium-locked guru verdict display",
+      "hits": {
+        "paid": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "components/dashboard/DashboardClient.tsx",
+      "category": "ui-copy",
+      "note": "View Plans CTA to /pricing — relabel (no plans exist)",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "components/gamification/ProgressBar.tsx",
+      "category": "legitimate-concept",
+      "note": "XP level display (EnlightenmentLevel)",
+      "hits": {
+        "seeker": 4
+      },
+      "total": 4
+    },
+    {
+      "file": "components/lab/CompareTab.tsx",
+      "category": "runtime-entitlement",
+      "note": "verdict upgrade only for paid tiers",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 3,
+        "upgrade": 3,
+        "paid": 3
+      },
+      "total": 11
+    },
+    {
+      "file": "components/lab/IntelligenceTab.tsx",
+      "category": "runtime-entitlement",
+      "note": "verdict upgrade only for paid tiers",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 3,
+        "upgrade": 2,
+        "paid": 2
+      },
+      "total": 9
+    },
+    {
+      "file": "components/markets/WorldMarketsGrid.tsx",
+      "category": "legitimate-concept",
+      "note": "pricing-power market commentary",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "components/premium/PaymentButton.tsx",
+      "category": "payment-surface",
+      "note": "Razorpay Checkout integration",
+      "hits": {
+        "WisdomTier": 1,
+        "student": 1,
+        "disciple": 1,
+        "pricing": 1,
+        "checkout": 6,
+        "Razorpay": 16,
+        "premium": 1
+      },
+      "total": 27
+    },
+    {
+      "file": "components/premium/UpgradePrompt.tsx",
+      "category": "payment-surface",
+      "note": "upgrade modal (Rs 499/year paid perks)",
+      "hits": {
+        "pricing": 1,
+        "upgrade": 1,
+        "premium": 3
+      },
+      "total": 5
+    },
+    {
+      "file": "components/stock/KnowledgeGraphView.tsx",
+      "category": "runtime-entitlement",
+      "note": "comments describe the paid-tier graph upgrade path (logic is prop-driven)",
+      "hits": {
+        "upgrade": 1,
+        "paid": 2
+      },
+      "total": 3
+    },
+    {
+      "file": "components/stock/RishiGrid.tsx",
+      "category": "runtime-entitlement",
+      "note": "upgrade banner / lock teasers keyed on tier",
+      "hits": {
+        "WisdomTier": 2,
+        "student": 2,
+        "seeker": 1,
+        "pricing": 2,
+        "upgrade": 4,
+        "paid": 1,
+        "premium": 4
+      },
+      "total": 16
+    },
+    {
+      "file": "components/stock/StockPageClient.tsx",
+      "category": "runtime-entitlement",
+      "note": "skips verdict upgrade when tier === seeker",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 2,
+        "paid": 3
+      },
+      "total": 7
+    },
+    {
+      "file": "components/stock/WisdomSidebar.tsx",
+      "category": "legitimate-concept",
+      "note": "pricing-power lesson copy",
+      "hits": {
+        "pricing": 1,
+        "premium": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "data/economyPlus/macroData.bn.ts",
+      "category": "legitimate-concept",
+      "note": "macro glossary (locale)",
+      "hits": {
+        "pricing": 6,
+        "premium": 2
+      },
+      "total": 8
+    },
+    {
+      "file": "data/economyPlus/macroData.mr.ts",
+      "category": "legitimate-concept",
+      "note": "macro glossary (locale)",
+      "hits": {
+        "pricing": 6,
+        "premium": 2
+      },
+      "total": 8
+    },
+    {
+      "file": "data/economyPlus/macroData.ta.ts",
+      "category": "legitimate-concept",
+      "note": "macro glossary (locale)",
+      "hits": {
+        "pricing": 6,
+        "premium": 2
+      },
+      "total": 8
+    },
+    {
+      "file": "data/economyPlus/macroData.te.ts",
+      "category": "legitimate-concept",
+      "note": "macro glossary (locale)",
+      "hits": {
+        "pricing": 6,
+        "premium": 2
+      },
+      "total": 8
+    },
+    {
+      "file": "data/economyPlus/macroData.ts",
+      "category": "legitimate-concept",
+      "note": "macro glossary (pricing power, risk premium)",
+      "hits": {
+        "pricing": 5,
+        "premium": 2
+      },
+      "total": 7
+    },
+    {
+      "file": "data/glossary.ts",
+      "category": "legitimate-concept",
+      "note": "glossary definitions (pricing power)",
+      "hits": {
+        "pricing": 9,
+        "paid": 3
+      },
+      "total": 12
+    },
+    {
+      "file": "data/news/index.ts",
+      "category": "legitimate-concept",
+      "note": "seed news copy (rating upgrades)",
+      "hits": {
+        "upgrade": 3
+      },
+      "total": 3
+    },
+    {
+      "file": "data/rishi-portfolios/global-plays.ts",
+      "category": "legitimate-concept",
+      "note": "investment thesis copy (pricing power)",
+      "hits": {
+        "pricing": 6,
+        "paid": 1,
+        "premium": 2
+      },
+      "total": 9
+    },
+    {
+      "file": "data/security-master/SOURCES.md",
+      "category": "documentation",
+      "note": "NSE column documentation (PAID UP VALUE is an exchange field name)",
+      "hits": {
+        "paid": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "data/stockDetails/index.ts",
+      "category": "legitimate-concept",
+      "note": "stock commentary (premium as valuation concept)",
+      "hits": {
+        "pricing": 1,
+        "premium": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "data/stocks/index.ts",
+      "category": "legitimate-concept",
+      "note": "comment describing the N1 boundary + Zaggle PREPAID company name",
+      "hits": {
+        "paid": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "docs/AI_LOOP.md",
+      "category": "documentation",
+      "note": "AI loop doc tier references",
+      "hits": {
+        "upgrade": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "docs/DATA_SOURCES.md",
+      "category": "documentation",
+      "note": "data-source doc mentioning tiers",
+      "hits": {
+        "Razorpay": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "docs/FREE_OPEN_DATA_RESEARCH.md",
+      "category": "documentation",
+      "note": "provider research mention (premium = paid API tier of a vendor)",
+      "hits": {
+        "premium": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "docs/PAID_CONTENT.md",
+      "category": "documentation",
+      "note": "paid/free matrix — superseded by the free-access decision",
+      "hits": {
+        "student": 2,
+        "disciple": 2,
+        "seeker": 2,
+        "upgrade": 1,
+        "paid": 8
+      },
+      "total": 15
+    },
+    {
+      "file": "docs/PROVENANCE.md",
+      "category": "documentation",
+      "note": "pricing field-name mention (data provenance, not commerce)",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "docs/RELEASE.md",
+      "category": "documentation",
+      "note": "release notes mentioning tiers",
+      "hits": {
+        "Razorpay": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "docs/ROADMAP-STATUS.md",
+      "category": "documentation",
+      "note": "FD-7 register + tier references",
+      "hits": {
+        "pricing": 1,
+        "upgrade": 1,
+        "Razorpay": 1,
+        "paid": 2
+      },
+      "total": 5
+    },
+    {
+      "file": "docs/ROADMAP.md",
+      "category": "documentation",
+      "note": "task definitions mentioning pricing",
+      "hits": {
+        "disciple": 1,
+        "tierExpiresAt": 2,
+        "pricing": 2,
+        "Razorpay": 1,
+        "paid": 4
+      },
+      "total": 10
+    },
+    {
+      "file": "docs/evidence/commit-l/prod-ai-ugly-path-anonymous.json",
+      "category": "db-persistence",
+      "note": "historical Commit-L evidence — preserved verbatim",
+      "hits": {
+        "premium": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "hooks/useTier.ts",
+      "category": "runtime-entitlement",
+      "note": "client tier state that drives client-side gates",
+      "hits": {
+        "WisdomTier": 3,
+        "seeker": 3,
+        "tierExpiresAt": 4,
+        "premium": 1
+      },
+      "total": 11
+    },
+    {
+      "file": "lib/adapters/stockAdapter.ts",
+      "category": "legitimate-concept",
+      "note": "Core pricing field-group comment",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/ai/evidence.ts",
+      "category": "legitimate-concept",
+      "note": "provenance ANTI-UPGRADE vocabulary — AI provenance concept, not commerce",
+      "hits": {
+        "upgrade": 8
+      },
+      "total": 8
+    },
+    {
+      "file": "lib/ai/router.ts",
+      "category": "legitimate-concept",
+      "note": "anti-upgrade wording rule in the model contract",
+      "hits": {
+        "upgrade": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/ai/schemas.ts",
+      "category": "legitimate-concept",
+      "note": "anti-upgrade comment",
+      "hits": {
+        "upgrade": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/auth/session.ts",
+      "category": "runtime-entitlement",
+      "note": "Tier type + resolveTier — DB tier currently drives product policy",
+      "hits": {
+        "student": 2,
+        "disciple": 2,
+        "seeker": 9,
+        "tierExpiresAt": 11
+      },
+      "total": 24
+    },
+    {
+      "file": "lib/chat/personaAccess.ts",
+      "category": "runtime-entitlement",
+      "note": "getRishisByTier / isPersonaAllowed — tier roster for chat personas",
+      "hits": {
+        "getRishisByTier": 1,
+        "student": 3,
+        "disciple": 3,
+        "seeker": 3
+      },
+      "total": 10
+    },
+    {
+      "file": "lib/chat/registry.ts",
+      "category": "legitimate-concept",
+      "note": "rank axis = display (kept); access + fnoAccess axes = entitlement (removed in M3)",
+      "hits": {
+        "getRishisByTier": 1,
+        "student": 25,
+        "disciple": 10,
+        "seeker": 4,
+        "pricing": 2,
+        "paid": 2,
+        "premium": 4
+      },
+      "total": 48
+    },
+    {
+      "file": "lib/chat/registryDisplay.ts",
+      "category": "legitimate-concept",
+      "note": "rank strings / formula copy (Listing Premium, PE Premium) / bios (Graham student)",
+      "hits": {
+        "student": 1,
+        "premium": 2
+      },
+      "total": 3
+    },
+    {
+      "file": "lib/chat/rishiEngine.ts",
+      "category": "runtime-entitlement",
+      "note": "client fallback engine personas carry the access axis as tier",
+      "hits": {
+        "getRishisByTier": 1,
+        "student": 1,
+        "disciple": 1
+      },
+      "total": 3
+    },
+    {
+      "file": "lib/consensus/sanitize.ts",
+      "category": "runtime-entitlement",
+      "note": "sanitizes verdicts to a tier visibility count (comments describe the paid slice)",
+      "hits": {
+        "seeker": 1,
+        "paid": 2
+      },
+      "total": 3
+    },
+    {
+      "file": "lib/db/migrations/001_initial_schema.sql",
+      "category": "db-persistence",
+      "note": "users.tier, tier_expires_at, transactions(tier_purchased) — historical schema; PRESERVED (Coder Directions 12)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 3,
+        "tierExpiresAt": 1,
+        "tier_purchased": 1,
+        "Razorpay": 5,
+        "paid": 1,
+        "premium": 1
+      },
+      "total": 14
+    },
+    {
+      "file": "lib/db/migrations/002_supabase_auth.sql",
+      "category": "db-persistence",
+      "note": "handle_new_user trigger defaulting tier — historical; PRESERVED",
+      "hits": {
+        "seeker": 4,
+        "tierExpiresAt": 5
+      },
+      "total": 9
+    },
+    {
+      "file": "lib/db/migrations/007_grant_tier_rpc.sql",
+      "category": "db-persistence",
+      "note": "grant_tier_for_payment RPC — historical settlement logic; PRESERVED",
+      "hits": {
+        "student": 5,
+        "disciple": 5,
+        "seeker": 5,
+        "tierExpiresAt": 13,
+        "tier_purchased": 2,
+        "upgrade": 4,
+        "Razorpay": 7,
+        "paid": 7
+      },
+      "total": 48
+    },
+    {
+      "file": "lib/fno/rishiPrompts.ts",
+      "category": "dead-code",
+      "note": "zero runtime importers (only its test) — F&O fnoAccess tier axis + getRishisByTier",
+      "hits": {
+        "getRishisByTier": 1,
+        "student": 3,
+        "disciple": 3,
+        "seeker": 3,
+        "premium": 5
+      },
+      "total": 15
+    },
+    {
+      "file": "lib/fno/strategyEngine.ts",
+      "category": "legitimate-concept",
+      "note": "options premium = price paid for an option (market term)",
+      "hits": {
+        "premium": 5
+      },
+      "total": 5
+    },
+    {
+      "file": "lib/gamification/index.ts",
+      "category": "legitimate-concept",
+      "note": "EnlightenmentLevel XP progress names (Seeker/Apprentice/Practitioner/Rishi) — achievement levels, NOT payment tiers",
+      "hits": {
+        "seeker": 6,
+        "pricing": 1
+      },
+      "total": 7
+    },
+    {
+      "file": "lib/gurus/crypto.ts",
+      "category": "legitimate-concept",
+      "note": "comment describing the (now removed) paid-verdict boundary — comment updated in M3",
+      "hits": {
+        "paid": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/livePrice.ts",
+      "category": "legitimate-concept",
+      "note": "live pricing module comment",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/payments/grantTier.ts",
+      "category": "payment-surface",
+      "note": "grant RPC wrapper + TIER_PRICES (499/1999 INR paise)",
+      "hits": {
+        "student": 2,
+        "disciple": 2,
+        "tierExpiresAt": 1,
+        "Razorpay": 8
+      },
+      "total": 13
+    },
+    {
+      "file": "lib/payments/signatures.ts",
+      "category": "payment-surface",
+      "note": "Razorpay signature verification",
+      "hits": {
+        "checkout": 1,
+        "Razorpay": 5
+      },
+      "total": 6
+    },
+    {
+      "file": "lib/premium.ts",
+      "category": "runtime-entitlement",
+      "note": "TIER_CONFIG, tier predicates, anonymous stock-view counter — the tier model itself",
+      "hits": {
+        "TIER_CONFIG": 5,
+        "WisdomTier": 8,
+        "isPremium": 1,
+        "isDisciple": 1,
+        "canAccess": 1,
+        "canViewStock": 1,
+        "getRishisVisible": 1,
+        "student": 6,
+        "disciple": 7,
+        "seeker": 9,
+        "paid": 1
+      },
+      "total": 41
+    },
+    {
+      "file": "lib/scorers/bond/buffett.ts",
+      "category": "legitimate-concept",
+      "note": "bond premium valuation term",
+      "hits": {
+        "premium": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "lib/scorers/commentary.ts",
+      "category": "legitimate-concept",
+      "note": "valuation commentary (premium = valuation concept)",
+      "hits": {
+        "pricing": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "lib/scorers/commodity/crude.ts",
+      "category": "legitimate-concept",
+      "note": "commodity commentary",
+      "hits": {
+        "premium": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/scorers/commodity/danielyergin.ts",
+      "category": "legitimate-concept",
+      "note": "energy commentary",
+      "hits": {
+        "pricing": 1,
+        "premium": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "lib/scorers/commodity/jimrogers.ts",
+      "category": "legitimate-concept",
+      "note": "commodity commentary",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/scorers/config.ts",
+      "category": "legitimate-concept",
+      "note": "pillar weight labels (premium as valuation concept)",
+      "hits": {
+        "pricing": 1,
+        "premium": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "lib/scorers/graham.ts",
+      "category": "legitimate-concept",
+      "note": "margin-of-safety commentary",
+      "hits": {
+        "premium": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/scorers/pillars/moat.ts",
+      "category": "legitimate-concept",
+      "note": "pricing-power pillar (13 mentions — the moat concept)",
+      "hits": {
+        "pricing": 1,
+        "premium": 13
+      },
+      "total": 14
+    },
+    {
+      "file": "lib/scoring/slimIndex.ts",
+      "category": "runtime-entitlement",
+      "note": "freeScores sliced to seeker visibility",
+      "hits": {
+        "TIER_CONFIG": 2,
+        "seeker": 2,
+        "upgrade": 1,
+        "paid": 4,
+        "premium": 1
+      },
+      "total": 10
+    },
+    {
+      "file": "lib/types/asset.ts",
+      "category": "legitimate-concept",
+      "note": "Core pricing field-group comment",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/wisdom/graph.ts",
+      "category": "legitimate-concept",
+      "note": "wisdom graph copy",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "lib/wisdom/parallels.ts",
+      "category": "legitimate-concept",
+      "note": "wisdom parallels copy",
+      "hits": {
+        "pricing": 2,
+        "paid": 1,
+        "premium": 1
+      },
+      "total": 4
+    },
+    {
+      "file": "lib/wisdom/stockParallels.ts",
+      "category": "legitimate-concept",
+      "note": "wisdom parallels copy",
+      "hits": {
+        "pricing": 9,
+        "premium": 2
+      },
+      "total": 11
+    },
+    {
+      "file": "lib/wisdom/universalParallels.ts",
+      "category": "legitimate-concept",
+      "note": "wisdom parallels copy",
+      "hits": {
+        "premium": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "messages/bn.json",
+      "category": "ui-copy",
+      "note": "locale copy (same treatment as en.json)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 2,
+        "upgrade": 1,
+        "premium": 1
+      },
+      "total": 7
+    },
+    {
+      "file": "messages/en.json",
+      "category": "ui-copy",
+      "note": "locale copy: pricing/tiers/personaLocked keys (updated), formula premium strings (kept)",
+      "hits": {
+        "student": 2,
+        "disciple": 3,
+        "seeker": 3,
+        "pricing": 3,
+        "upgrade": 3,
+        "premium": 2
+      },
+      "total": 16
+    },
+    {
+      "file": "messages/gu.json",
+      "category": "ui-copy",
+      "note": "locale copy (same treatment as en.json)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 2,
+        "upgrade": 1
+      },
+      "total": 6
+    },
+    {
+      "file": "messages/hi.json",
+      "category": "ui-copy",
+      "note": "locale copy (same treatment as en.json)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 2,
+        "upgrade": 1,
+        "premium": 1
+      },
+      "total": 7
+    },
+    {
+      "file": "messages/mr.json",
+      "category": "ui-copy",
+      "note": "locale copy (same treatment as en.json)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 2,
+        "upgrade": 1,
+        "premium": 1
+      },
+      "total": 7
+    },
+    {
+      "file": "messages/ta.json",
+      "category": "ui-copy",
+      "note": "locale copy (same treatment as en.json)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 2,
+        "upgrade": 1,
+        "premium": 1
+      },
+      "total": 7
+    },
+    {
+      "file": "messages/te.json",
+      "category": "ui-copy",
+      "note": "locale copy (same treatment as en.json)",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1,
+        "pricing": 2,
+        "upgrade": 1,
+        "premium": 1
+      },
+      "total": 7
+    },
+    {
+      "file": "next.config.js",
+      "category": "payment-surface",
+      "note": "CSP allows checkout.razorpay.com / api.razorpay.com origins — obsolete once payments retire",
+      "hits": {
+        "upgrade": 3,
+        "checkout": 4,
+        "Razorpay": 6
+      },
+      "total": 13
+    },
+    {
+      "file": "package-lock.json",
+      "category": "payment-surface",
+      "note": "transitive lock entries — regenerated when the dependency is removed",
+      "hits": {
+        "Razorpay": 4
+      },
+      "total": 4
+    },
+    {
+      "file": "package.json",
+      "category": "payment-surface",
+      "note": "unused razorpay npm dependency (no importers; checkout loads via script tag)",
+      "hits": {
+        "Razorpay": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "production-receipt.json",
+      "category": "db-persistence",
+      "note": "historical deployment receipt (probe output mentions tiers) — superseded by the M12 receipt",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1
+      },
+      "total": 3
+    },
+    {
+      "file": "production-ugly-path-matrix.json",
+      "category": "db-persistence",
+      "note": "historical probe evidence — superseded by the M11 matrix",
+      "hits": {
+        "student": 41,
+        "disciple": 17,
+        "seeker": 9
+      },
+      "total": 67
+    },
+    {
+      "file": "proxy.ts",
+      "category": "payment-surface",
+      "note": "webhook matcher/routing comment",
+      "hits": {
+        "Razorpay": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "scripts/checkEnv.ts",
+      "category": "payment-surface",
+      "note": "env checker referencing RAZORPAY vars",
+      "hits": {
+        "Razorpay": 5
+      },
+      "total": 5
+    },
+    {
+      "file": "scripts/evalChatRunner.ts",
+      "category": "test",
+      "note": "eval harness tier field — updated with the quota change",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1
+      },
+      "total": 3
+    },
+    {
+      "file": "scripts/populateSecurityMasterImpl.ts",
+      "category": "legitimate-concept",
+      "note": "NSE PAID UP VALUE exchange column name",
+      "hits": {
+        "paid": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "scripts/prodReceipt.mjs",
+      "category": "test",
+      "note": "receipt generator tier probes — updated for the M12 receipt",
+      "hits": {
+        "student": 1,
+        "disciple": 1,
+        "seeker": 1
+      },
+      "total": 3
+    },
+    {
+      "file": "scripts/prodUglyPathAnonymous.mjs",
+      "category": "test",
+      "note": "anonymous probe (premium mention) — updated for the M11 matrix",
+      "hits": {
+        "premium": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "scripts/prodUglyPathMatrix.mjs",
+      "category": "test",
+      "note": "tier probes — updated for the M11 matrix",
+      "hits": {
+        "student": 4,
+        "disciple": 7,
+        "seeker": 7,
+        "tierExpiresAt": 4
+      },
+      "total": 22
+    },
+    {
+      "file": "test/chat.grounding.l2.test.ts",
+      "category": "test",
+      "note": "provenance ANTI-UPGRADE tests (AI concept, not commerce) — kept",
+      "hits": {
+        "upgrade": 9
+      },
+      "total": 9
+    },
+    {
+      "file": "test/chat.limits.test.ts",
+      "category": "test",
+      "note": "quota by tier expectations — updated to the single free quota",
+      "hits": {
+        "disciple": 1,
+        "seeker": 1,
+        "tierExpiresAt": 1
+      },
+      "total": 3
+    },
+    {
+      "file": "test/chat.provider.test.ts",
+      "category": "test",
+      "note": "provider tests with tier mocks — updated",
+      "hits": {
+        "disciple": 1,
+        "tierExpiresAt": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "test/chat.quota.assembly.test.ts",
+      "category": "test",
+      "note": "quota assembly by tier — updated",
+      "hits": {
+        "disciple": 1,
+        "tierExpiresAt": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "test/chat.quota.order.test.ts",
+      "category": "test",
+      "note": "quota order (tier mention in mocks) — updated",
+      "hits": {
+        "disciple": 1,
+        "tierExpiresAt": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "test/chat.route.canonicalEvidence.test.ts",
+      "category": "test",
+      "note": "route tests with tier mocks — updated",
+      "hits": {
+        "disciple": 1,
+        "tierExpiresAt": 1
+      },
+      "total": 2
+    },
+    {
+      "file": "test/chat.route.personaAuth.test.ts",
+      "category": "test",
+      "note": "persona 403-by-tier contract — replaced by all-personas-for-all-users contract",
+      "hits": {
+        "student": 9,
+        "disciple": 8,
+        "seeker": 10,
+        "tierExpiresAt": 1,
+        "premium": 1
+      },
+      "total": 29
+    },
+    {
+      "file": "test/clientBoundary.test.ts",
+      "category": "test",
+      "note": "client-graph boundary incl. premium.ts import rules — updated",
+      "hits": {
+        "paid": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "test/csp.headers.test.ts",
+      "category": "test",
+      "note": "upgrade-insecure-requests CSP tests — kept",
+      "hits": {
+        "upgrade": 7
+      },
+      "total": 7
+    },
+    {
+      "file": "test/evalChat.golden.test.ts",
+      "category": "test",
+      "note": "golden-set tier references — updated",
+      "hits": {
+        "disciple": 3,
+        "tierExpiresAt": 4
+      },
+      "total": 7
+    },
+    {
+      "file": "test/fixtures/eval-chat/golden.ts",
+      "category": "test",
+      "note": "golden questions tier references — updated",
+      "hits": {
+        "student": 1,
+        "disciple": 6,
+        "seeker": 2,
+        "upgrade": 3
+      },
+      "total": 12
+    },
+    {
+      "file": "test/fno.registry.test.ts",
+      "category": "test",
+      "note": "F&O tier policy verbatim expectations — deleted with the dead module",
+      "hits": {
+        "getRishisByTier": 4,
+        "student": 5,
+        "disciple": 4,
+        "seeker": 6
+      },
+      "total": 19
+    },
+    {
+      "file": "test/payments.grantTier.test.ts",
+      "category": "test",
+      "note": "grant RPC wrapper tests — deleted with the retired surface",
+      "hits": {
+        "student": 1,
+        "disciple": 4,
+        "tierExpiresAt": 1,
+        "Razorpay": 3
+      },
+      "total": 9
+    },
+    {
+      "file": "test/payments.signatures.test.ts",
+      "category": "test",
+      "note": "signature tests — deleted with the retired surface",
+      "hits": {
+        "checkout": 2,
+        "Razorpay": 1,
+        "paid": 1
+      },
+      "total": 4
+    },
+    {
+      "file": "test/persona.registry.test.ts",
+      "category": "test",
+      "note": "registry access-axis expectations — updated",
+      "hits": {
+        "getRishisByTier": 4,
+        "student": 14,
+        "disciple": 8,
+        "seeker": 9
+      },
+      "total": 35
+    },
+    {
+      "file": "test/rishis.route.test.ts",
+      "category": "test",
+      "note": "tier-slice expectations for /api/rishis/[symbol] — updated",
+      "hits": {
+        "TIER_CONFIG": 3,
+        "student": 8,
+        "disciple": 3,
+        "seeker": 8,
+        "tierExpiresAt": 7,
+        "paid": 1,
+        "premium": 1
+      },
+      "total": 31
+    },
+    {
+      "file": "test/seo.sitemap.test.ts",
+      "category": "test",
+      "note": "/pricing sitemap entry — kept (page remains as the free-access notice)",
+      "hits": {
+        "pricing": 1
+      },
+      "total": 1
+    },
+    {
+      "file": "test/session.tier.test.ts",
+      "category": "test",
+      "note": "resolveTier policy tests — subject removed in M3",
+      "hits": {
+        "student": 3,
+        "disciple": 8,
+        "seeker": 11,
+        "paid": 2
+      },
+      "total": 24
+    },
+    {
+      "file": "test/setup.ts",
+      "category": "test",
+      "note": "test bootstrap tier references — updated",
+      "hits": {
+        "Razorpay": 2
+      },
+      "total": 2
+    },
+    {
+      "file": "test/webhook.grantStatus.test.ts",
+      "category": "test",
+      "note": "webhook grant tests — deleted with the retired surface",
+      "hits": {
+        "Razorpay": 3
+      },
+      "total": 3
+    },
+    {
+      "file": "test/webhook.signature.test.ts",
+      "category": "test",
+      "note": "webhook signature tests — deleted; replaced by the 410 retirement contract",
+      "hits": {
+        "Razorpay": 7
+      },
+      "total": 7
+    }
+  ],
+  "unclassified": []
+}

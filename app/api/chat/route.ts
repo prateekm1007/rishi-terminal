@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { resolvePersonaId } from '@/lib/chat/personas';
-import { isPersonaAllowed } from '@/lib/chat/personaAccess';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { STOCKS } from '@/data/stocks';
 import { checkRateLimit } from '@/lib/rateLimit';
@@ -18,14 +17,15 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  * - The system prompt is built SERVER-SIDE from the canonical persona
  *   registry — a client-supplied systemPrompt is not part of the contract
  *   and is ignored/rejected.
- * - Persona ENTITLEMENT is enforced per request (audit 2026-10-02 P0): the
- *   resolved persona must be in the caller's tier roster (the same
- *   personaAccess authority /api/chat/personas serves), else 403.
+ * - Persona validation is EXISTENCE + canonical registry resolution
+ *   (Commit M3, founder decision 2026-10-02 — every feature free): an
+ *   unknown persona id is rejected 400; every canonical persona is
+ *   available to every authenticated caller. There is no tier gate.
  * - symbol is validated against the stock seed registry before use.
  * - Limits: message <= 2000 chars; history <= 20 turns and <= 8000 chars
  *   total; roles restricted to user|assistant.
- * - Quotas: per-user daily quota by tier (Supabase chat_usage) plus a
- *   per-IP burst limit.
+ * - Quotas: per-user daily quota (Supabase chat_usage) plus a per-IP
+ *   burst limit.
  * - Providers (resolved per request from env):
  *     1. OpenAI-compatible endpoint — CHAT_API_BASE_URL + CHAT_API_KEY
  *        (+ optional CHAT_MODEL). The key is sent via the
@@ -43,12 +43,13 @@ const MAX_MESSAGE_CHARS = 2000;
 const MAX_HISTORY_TURNS = 20;
 const MAX_HISTORY_CHARS = 8000;
 
-// Daily chat quota by tier (documented choice; seeker free tier is modest).
-const DAILY_QUOTA: Record<string, number> = {
-  seeker: 15,
-  student: 150,
-  disciple: 500,
-};
+// Commit M5 (free access): ONE common daily chat quota for every caller —
+// an explicit product/security constant, NOT derived from any legacy tier
+// table (the old seeker/student/disciple split of 15/150/500 is gone).
+// 150/day is generous for real single-user use (the old paid-median) while
+// bounding upstream spend per account; abuse is further bounded by the
+// per-IP burst limiter below. Founder-tunable: change this ONE number.
+export const FREE_CHAT_DAILY_QUOTA = 150;
 
 // ── per-IP burst limiter: PERSISTENT, shared across instances (R6) ──
 const BURST_WINDOW_SECONDS = 60;
@@ -86,12 +87,12 @@ async function ipBurstExceeded(ip: string): Promise<boolean> {
 // can no longer read the same count and each increment it. The day key is
 // the IST date, computed inside the RPC (it used to be UTC, resetting the
 // quota at 05:30 IST).
-async function consumeQuota(userId: string, tier: string): Promise<boolean> {
+async function consumeQuota(userId: string): Promise<boolean> {
   try {
     const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
     const { data, error } = await getAdminSupabase().rpc('consume_chat_quota', {
       p_user_id: userId,
-      p_limit: DAILY_QUOTA[tier] ?? DAILY_QUOTA.seeker,
+      p_limit: FREE_CHAT_DAILY_QUOTA,
     });
     if (error) throw new Error(error.message);
     return (data as { ok?: boolean } | null)?.ok === true;
@@ -121,7 +122,11 @@ async function refundQuota(userId: string): Promise<void> {
 // deterministic evidence ids the structured AI response is validated
 // against. The seed-only stockEvidence() (N3) is superseded here; it
 // remains exported for its own labeling-contract tests.
-import { buildAiEvidencePackage } from '@/lib/ai/evidence';
+// Commit M7: the package and the tool loop share ONE CanonicalStockState —
+// a single memoized live-fundamentals fetch + price observation per
+// symbol per request — so getScore/getStock/getFinancials answer from the
+// SAME data state as the initial evidence (byte-identical items/ids).
+import { buildAiEvidencePackage, createCanonicalStockState } from '@/lib/ai/evidence';
 
 interface HistoryTurn {
   role: 'user' | 'assistant';
@@ -166,17 +171,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unknown persona' }, { status: 400 });
   }
 
-  // P0 (audit 2026-10-02): authorize the resolved persona against the SAME
-  // canonical server-side roster /api/chat/personas serves. Previously this
-  // route only checked persona EXISTENCE — an authenticated seeker could
-  // submit a premium persona id and receive its answer. 403 must land
-  // BEFORE quota consumption (a rejected request burns nothing).
-  if (!isPersonaAllowed(personaId, user.tier as 'seeker' | 'student' | 'disciple')) {
-    return NextResponse.json(
-      { error: 'This persona requires a higher tier' },
-      { status: 403 },
-    );
-  }
+  // Commit M3 (free access): persona authorization is EXISTENCE + canonical
+  // registry resolution — every authenticated caller may converse with every
+  // canonical persona. The old tier-entitlement 403 (audit 2026-10-02 P0)
+  // is superseded by the founder decision of 2026-10-02: no tier may gate
+  // any feature. resolveCanonicalPersona re-reads the SAME registry the
+  // roster route serves, so the two surfaces cannot drift.
   const persona = resolveCanonicalPersona(personaId)!;
 
   const message = typeof body.message === 'string' ? body.message.trim() : '';
@@ -229,10 +229,11 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
-  // 5. Daily quota per user by tier (server-resolved tier, never client).
-  //    N4: consumed only after the request validated — 400/413 paths above
-  //    leave the counter untouched, and upstream failures below refund.
-  if (!(await consumeQuota(user.id, user.tier))) {
+  // 5. Daily quota — ONE common free quota for every authenticated caller
+  //    (server-resolved identity, never client). N4: consumed only after
+  //    the request validated — 400/413 paths above leave the counter
+  //    untouched, and upstream failures below refund.
+  if (!(await consumeQuota(user.id))) {
     return NextResponse.json(
       { error: 'Daily chat quota exhausted', fallback: true },
       { status: 429 },
@@ -248,8 +249,12 @@ export async function POST(req: NextRequest) {
   //    without reaching the provider (the provider-call block below has
   //    always refunded; assembly was outside it).
   let evidence;
+  let stockState = null;
   try {
-    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol) : null;
+    // One canonical observation state per request: the package below and
+    // every tool call inside generateEvidenceGroundedAnswer reuse it.
+    stockState = createCanonicalStockState();
+    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol, {}, stockState) : null;
     evidence = evidencePackage?.items ?? [];
   } catch (e) {
     console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
@@ -267,6 +272,7 @@ export async function POST(req: NextRequest) {
       history,
       message,
       evidence,
+      stockState: stockState ?? undefined,
     });
   } catch (e) {
     // Upstream broke (timeout/5xx/empty) — 502 with generic body, quota

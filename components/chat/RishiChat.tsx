@@ -23,8 +23,9 @@ interface Props {
 //
 // The persona roster the UI renders comes from the CLIENT-SAFE display
 // projection (lib/chat/registryDisplay — rendering fields only). WHICH
-// personas a session may use is decided by the server (G10: entitlement is
-// never a client field); this component only projects that server answer.
+// personas a session may use is decided by the server (G10: the canonical
+// registry validation lives server-side); this component only projects
+// that server answer.
 
 export default function RishiChat({ stock }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -48,14 +49,17 @@ export default function RishiChat({ stock }: Props) {
   ];
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // R3: WHICH personas a caller may use is decided by the server
-  // (GET /api/chat/personas from the session tier; /api/chat re-enforces it
-  // per request — audit 2026-10-02: now it really does). Fallback on fetch
-  // failure is the historical seeker surface {damani} — fail closed for UX;
-  // the server remains the control. (G10: the access matrix is NOT a client
-  // field, so the fallback is this single hardcoded id, not a client-side
-  // entitlement computation.)
-  const [allowedPersonaIds, setAllowedPersonaIds] = useState<string[]>(() => ["damani"]);
+  // R3 + M3: WHICH personas a caller may use is decided by the server
+  // (GET /api/chat/personas serves every canonical persona to any
+  // authenticated caller; /api/chat re-validates each id against the
+  // canonical registry per request). On roster-fetch failure the fallback
+  // is the full display roster — under free access there is no entitlement
+  // to compute or bypass client-side, and the server still validates every
+  // POST, so a wider fallback can only ever yield an honest 401/400, never
+  // an unauthorized answer.
+  const [allowedPersonaIds, setAllowedPersonaIds] = useState<string[]>(() =>
+    PERSONA_DISPLAY.map(p => p.id),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +71,7 @@ export default function RishiChat({ stock }: Props) {
           setAllowedPersonaIds((data.personas ?? []).map((p: { id: string }) => p.id));
         }
       } catch {
-        // keep the fail-closed free set
+        // keep the full display roster as the offline fallback
       }
     })();
     return () => { cancelled = true; };
@@ -78,8 +82,8 @@ export default function RishiChat({ stock }: Props) {
     [allowedPersonaIds],
   );
 
-  // Keep the selection inside the authorized roster (e.g. after a tier
-  // change the previously selected persona may no longer be allowed).
+  // Keep the selection inside the served roster (a roster refresh may
+  // reorder or shrink the projection — the server stays the authority).
   useEffect(() => {
     if (allowedPersonaIds.length > 0 && !allowedPersonaIds.includes(selectedRishi)) {
       setSelectedRishi(allowedPersonaIds[0]);
@@ -167,12 +171,13 @@ export default function RishiChat({ stock }: Props) {
     setMessages(prev => [...prev, userMsg]);
     addMessageToSession(currentSession, userMsg);
 
-    // P0 (audit 2026-10-02): validate the persona(s) against the
-    // server-resolved roster BEFORE submitting. The server re-enforces
-    // (403), but the client must not even attempt an unauthorized pair.
+    // P0 (audit 2026-10-02) + M3 (free access): validate the persona(s)
+    // against the served roster BEFORE submitting (a stale local selection
+    // after a roster refresh). The server still validates every POST; the
+    // notice is availability wording, never an entitlement claim.
     const idsToSend = debateMode ? [...debateRishis] : [selectedRishi];
     if (idsToSend.some(id => !allowedPersonaIds.includes(id))) {
-      setNotice(t('chat.personaLocked'));
+      setNotice(t('chat.personaUnavailable'));
       setApiStatus('unavailable');
       setLoading(false);
       return;
@@ -277,7 +282,7 @@ export default function RishiChat({ stock }: Props) {
         <button
           onClick={() => availableRishis.length >= 2 && setDebateMode(!debateMode)}
           disabled={availableRishis.length < 2}
-          title={availableRishis.length < 2 ? t('chat.personaLocked') : undefined}
+          title={availableRishis.length < 2 ? t('chat.personaUnavailable') : undefined}
           style={{
             padding: "6px 12px", borderRadius: "8px", fontSize: "11px", fontWeight: 700,
             cursor: availableRishis.length >= 2 ? "pointer" : "not-allowed",
@@ -300,7 +305,7 @@ export default function RishiChat({ stock }: Props) {
               <button
                 key={p.id}
                 onClick={() => isAvailable && setSelectedRishi(p.id)}
-                title={isAvailable ? p.fullName : `${p.fullName} — ${t('chat.personaLocked')}`}
+                title={isAvailable ? p.fullName : `${p.fullName} — ${t('chat.personaUnavailable')}`}
                 style={{
                   padding: "5px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600,
                   cursor: isAvailable ? "pointer" : "not-allowed",

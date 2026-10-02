@@ -25,6 +25,7 @@ import { PROVIDER_IDS, isProviderApproved } from "@/lib/registry/providerRegistr
 import type { AiAnswer, AiClaim, AiEvidenceItem, ChatWire } from "./schemas";
 import { StructuredModelOutputSchema } from "./schemas";
 import { validateGrounding } from "./evidence";
+import type { CanonicalStockState } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, type AiToolDeps } from "./tools";
@@ -58,6 +59,12 @@ export interface GenerateArgs {
    *  on the canonical defaults. There is no client-facing counterpart —
    *  the tool loop is unreachable from outside the server. */
   toolDeps?: AiToolDeps;
+  /** Commit M7: the per-request canonical observation state. Pass the SAME
+   *  state that built `evidence` (lib/ai/evidence.createCanonicalStockState)
+   *  so every tool call resolves from the SAME memoized observation as the
+   *  initial package — one data state per symbol per request. Omitted, a
+   *  fresh state is created from toolDeps (isolated callers/tests). */
+  stockState?: CanonicalStockState;
 }
 
 /**
@@ -448,7 +455,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
       };
     }
 
-    const outcome = await executeAiTool(toolReq, args.toolDeps ?? {});
+    const outcome = await executeAiTool(toolReq, args.toolDeps ?? {}, args.stockState);
     toolCalls.push({
       tool: outcome.tool,
       status: outcome.status,

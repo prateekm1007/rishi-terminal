@@ -65,9 +65,9 @@ export const config = {
      * - _next/static, _next/image (build assets)
      * - favicon.ico and static files with extensions
      * - api/ingest (cron-authenticated, cookie handling unnecessary)
-     * - api/payment/webhook (R9: Razorpay server-to-server — no session
-     *   cookies; the supabase.auth.getUser() round-trip was wasted latency
-     *   on every webhook delivery)
+     * - api/payment/webhook (R9-era exclusion, kept for the retired route:
+     *   the 410 responder needs no session cookies and no
+     *   supabase.auth.getUser() round-trip on any delivery)
      */
     '/((?!_next/static|_next/image|favicon.ico|api/ingest|api/payment/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],

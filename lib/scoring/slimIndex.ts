@@ -1,19 +1,19 @@
 import 'server-only';
 
-// N1 (round 3): the slim index — what client surfaces may receive.
+// N1 (round 3): the slim index — what client LIST surfaces may receive.
 //
 // The auditor's finding: the full 944-record seed dataset and the scoring
 // engine shipped in the public JS bundle, so any browser could recompute
-// every paid per-Rishi verdict (docs/PAID_CONTENT.md: verdicts 6–20 are
-// paid). Client components now receive RESULTS, not engines:
+// every per-Rishi verdict. Client components now receive RESULTS, not
+// engines:
 //
 //   - list/sort surfaces (screener, lab tabs, chat picker) consume this
-//     slim index via RSC props — free fields only: the consensus number
-//     and category are free for everyone, topBull/topBear summaries are
-//     free for everyone, and pe/roe/mktcap/de are the free display and
-//     preset-filter fields already shown on every stock page.
-//   - per-Rishi verdicts 6..20 are served only by GET /api/rishis/[symbol]
-//     (tier-gated, server-enforced).
+//     slim index via RSC props: the consensus number and category, the
+//     topBull/topBear summaries, and pe/roe/mktcap/de display and
+//     preset-filter fields.
+//   - the FULL per-Rishi verdict set is served per-symbol: by the stock
+//     page RSC (everyone — Commit M3 free access) and by
+//     GET /api/rishis/[symbol] (authenticated client upgrades).
 //   - the per-stock display record crosses via RSC props on
 //     /stock/[symbol] or GET /api/stock/[symbol].
 //
@@ -25,9 +25,8 @@ import 'server-only';
 
 import { STOCKS } from '@/data/stocks';
 import { getStockScore } from './index';
-import { TIER_CONFIG } from '@/lib/premium';
 
-/** Free per-Rishi summary (PAID_CONTENT: topBull/topBear are free). */
+/** Per-Rishi verdict summary (name/label/score/origin only). */
 export interface SlimVerdictSummary {
   name: string;
   full: string;
@@ -54,12 +53,15 @@ export interface SlimStockRow {
   tension: string;
   tensionSpread: number;
   /**
-   * The SEEKER-visible per-Rishi verdict slice (PAID_CONTENT: first 5 are
-   * free for everyone; 6..20 are paid and served only by the tier-gated
-   * GET /api/rishis/[symbol]). Lab analytics aggregate this free slice;
-   * paid tiers upgrade per-symbol verdicts through the route.
+   * A BOUNDED per-Rishi summary slice for LIST payloads (Commit M3 free
+   * access: this is a transport budget, NOT an entitlement — the full
+   * verdict set is public on every stock page and served by
+   * GET /api/rishis/[symbol] to any authenticated caller, which the lab
+   * tabs use to upgrade these rows). 936 stocks x every verdict would
+   * balloon the screener/lab flight payload (already the M5 perf
+   * bottleneck), so the list rows carry the first few and say so.
    */
-  freeScores: SlimVerdictScore[];
+  summaryScores: SlimVerdictScore[];
   /** Free display / preset-filter fields (shown on every stock page). */
   pe: number;
   roe: number;
@@ -96,6 +98,10 @@ function toSummary(v: {
 
 let cache: SlimStockRow[] | null = null;
 
+/** How many per-verdict summary rows a LIST row carries (see the
+ *  summaryScores field comment — payload budget, not an entitlement). */
+const LIST_SUMMARY_VERDICTS = 5;
+
 /**
  * Server-generated slim index for all seed symbols. Deterministic
  * (seed + engine are static), so it is computed once per process and
@@ -106,7 +112,6 @@ let cache: SlimStockRow[] | null = null;
 export function getSlimIndex(): SlimStockRow[] {
   if (cache) return cache;
 
-  const seekerVisible = TIER_CONFIG.seeker.rishisVisible;
   cache = Object.values(STOCKS).map((stock) => {
     const report = getStockScore(stock);
     return {
@@ -120,7 +125,7 @@ export function getSlimIndex(): SlimStockRow[] {
       topBear: toSummary(report.topBear),
       tension: report.tension,
       tensionSpread: report.tensionSpread,
-      freeScores: report.scores.slice(0, seekerVisible).map((rs) => ({
+      summaryScores: report.scores.slice(0, LIST_SUMMARY_VERDICTS).map((rs) => ({
         name: rs.name,
         full: rs.full,
         label: rs.label,

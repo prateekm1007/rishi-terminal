@@ -4,9 +4,9 @@
 //
 // The engine-parameter view of the canonical registry: the seven personas
 // that carry scoring-engine parameters. This file no longer owns any data —
-// ids, tiers and metadata come from the registry, so the historical drift
-// (RISHI_PERSONALITIES tier vs CHAT_PERSONAS membership disagreeing) is
-// impossible by construction.
+// ids and metadata come from the registry. Commit M3 (free access): the
+// tier field is gone; the projection carries rendering + engine fields
+// only, and no consumer filters personas by entitlement anywhere.
 // ============================================================
 
 import { CANONICAL_PERSONAS } from './registry';
@@ -17,7 +17,6 @@ export interface RishiPersonality {
   fullName: string;
   emoji: string;
   color: string;
-  tier: 'free' | 'student' | 'disciple';
   philosophy: string;
   keyMentalModels: string[];
   shortBias: number; // -100 (pure short) to +100 (pure long)
@@ -36,7 +35,6 @@ export const RISHI_PERSONALITIES: Record<string, RishiPersonality> = Object.from
         fullName: p.fullName,
         emoji: p.emoji,
         color: p.color,
-        tier: p.access,
         philosophy: p.philosophy,
         keyMentalModels: p.engine!.keyMentalModels,
         shortBias: p.engine!.shortBias,
@@ -66,9 +64,9 @@ export function getRishiPersonality(id: string): RishiPersonality {
   return RISHI_PERSONALITIES[id] || RISHI_PERSONALITIES.damani;
 }
 
-// R3: getRishisByTier moved to lib/chat/personaAccess.ts (server-only) —
-// persona tier filtering must only ever run on the server. The roster itself
-// (the registry) is public marketing content.
+// R3 + M3: persona availability is decided by the server from the canonical
+// registry (personaAccess.ts) with no tier filtering anywhere. The roster
+// itself (the registry) is public marketing content.
 
 export function formatContextForPrompt(context: ChatContext): string {
   if (!context.symbol) return '';

@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-10-02T03:24:26.131Z",
+  "configuredProvider": "openai-compatible (CHAT_API_BASE_URL + CHAT_API_KEY)",
+  "configuredEndpoint": "https://apihub.agnes-ai.com/v1",
+  "configuredModelEnv": "agnes-2.5-flash",
+  "codeDefaultModel": "agnes-2.5-flash",
+  "effectiveModel": "agnes-2.5-flash",
+  "providerRegistry": {
+    "chatApi": {
+      "approved": true,
+      "status": "APPROVED"
+    },
+    "gemini": {
+      "approved": true,
+      "status": "APPROVED"
+    }
+  },
+  "probe": {
+    "modelsListed": [
+      "agnes-2.5-pro-alpha",
+      "agnes-video-2.5-flash",
+      "agnes-3.0-flash",
+      "agnes-image-2.1-flash",
+      "agnes-video-2.5",
+      "agnes-2.0-flash",
+      "agnes-image-2.0-flash",
+      "agnes-2.5-flash",
+      "agnes-2.5-pro",
+      "agnes-2.5-pro-beta",
+      "agnes-video-v2.0",
+      "agnes-image-2.5-flash"
+    ],
+    "modelsListError": null,
+    "completionReturnedModel": "agnes-2.5-flash",
+    "completionEchoMatchesRequested": true,
+    "completionError": null
+  },
+  "verdict": {
+    "modelIdentityEstablished": true,
+    "basis": "the provider's /models list contains the model id; the completion response itself echoes model=\"agnes-2.5-flash\"",
+    "notes": []
+  }
+}

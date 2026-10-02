@@ -230,22 +230,22 @@
     "deepDive": "गहन विश्लेषण"
   },
   "pricing": {
-    "title": "ज्ञान के स्तर",
-    "subtitle": "साधक से शिष्य तक की यात्रा गंभीर निवेशक की यात्रा है।",
     "breadcrumb": "ज्ञान स्तर",
-    "benjaminFranklin": "ज्ञान में निवेश सबसे अच्छा ब्याज देता है।",
-    "franklinAuthor": "Benjamin Franklin",
-    "currentTier": "वर्तमान स्तर",
-    "yourCurrentTier": "आपका वर्तमान स्तर",
-    "freeForever": "हमेशा मुफ़्त",
-    "becomeA": "बनें",
-    "active": "सक्रिय",
-    "rishisVisible": "ऋषि दृश्यमान",
-    "viewsPerDay": "दृश्य/दिन",
-    "unlimitedViews": "असीमित दृश्य",
-    "guarantee": "भुगतान से पहले यह पढ़ें",
-    "guaranteeText": "यह निवेश सलाह नहीं है। ऋषि मूल्य के बारे में सोचने के लिए दार्शनिक ढांचे प्रदान करते हैं। सबसे बड़ा निवेश आप अपनी समझ में कर सकते हैं।",
-    "localStorage": "सभी स्तर localStorage का उपयोग करते हैं — कोई खाता आवश्यक नहीं। कोई डेटा आपके डिवाइस से बाहर नहीं जाता।"
+    "free": {
+      "title": "Everything Is Free",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "price": "Free",
+      "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
+      "cta": "Meet the Rishis",
+      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "aiChat": "AI Rishi chat with verified, grounded answers",
+      "screener": "Full screener with every filter and field",
+      "portfolio": "Portfolio, watchlist and lab analytics",
+      "knowledgeGraph": "Knowledge graphs and council tension views",
+      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
+      "_note": "English copy pending translation"
+    }
   },
   "news": {
     "title": "बाज़ार खुफिया",
@@ -359,14 +359,6 @@
     "bondsTag": "निश्चित आय",
     "news": "समाचार",
     "newsTag": "नवीनतम शीर्षक"
-  },
-  "tiers": {
-    "seeker": "साधक",
-    "student": "छात्र",
-    "disciple": "शिष्य",
-    "free": "मुफ़्त",
-    "perYear": "/वर्ष",
-    "upgrade": "अपग्रेड करें"
   },
   "rishiQuotes": {
     "buffett1": "निवेश में तीन सबसे महत्वपूर्ण शब्द सुरक्षा का मार्जिन हैं।",
@@ -564,7 +556,8 @@
       "valuation": "क्या मूल्यांकन उचित है?",
       "aiUnavailable": "AI अनुपलब्ध — कोई उत्तर तैयार नहीं हुआ। कृपया पुनः प्रयास करें।",
       "personaLocked": "यह ऋषि उच्च टियर की आवश्यकता रखता है। जारी रखने के लिए अपग्रेड करें।"
-    }
+    },
+    "personaUnavailable": "This Rishi is temporarily unavailable — the roster could not be loaded. Please retry."
   },
   "kg": {
     "close": "बंद करें",

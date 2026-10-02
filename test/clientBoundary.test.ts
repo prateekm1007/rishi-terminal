@@ -3,8 +3,10 @@
  *
  * The seed dataset (data/stocks/index.ts) and the scoring engine
  * (lib/consensus/**, lib/scorers/**, lib/scoring/**) are server-only:
- * any browser that receives them can recompute every paid per-Rishi
- * verdict (docs/PAID_CONTENT.md — verdicts 6..20 are paid).
+ * any browser that receives them can recompute every per-Rishi verdict.
+ * (Commit M3: the verdicts are free for everyone now — the boundary
+ * still matters because the ENGINE and the raw dataset are server
+ * infrastructure, not because any verdict is paid.)
  *
  * This test walks the RUNTIME import graph starting from EVERY 'use
  * client' file (the modules Next.js would bundle for the browser) and
@@ -31,9 +33,7 @@ const CLIENT_DIRS = ["app", "components", "hooks"];
  *   EXCEPT the pure-type modules (lib/<tree>/types.ts) — type-only imports
  *   are erased and carry zero runtime bytes;
  * - the numeric seed dataset (data/stocks/index.ts). seedMeta.ts and
- *   master-list.ts are public on purpose (banner constants / symbol list);
- * - the F&O persona/prompt surface (lib/fno/rishiPrompts.ts) — Coder
- *   Directions §12.
+ *   master-list.ts are public on purpose (banner constants / symbol list).
  */
 function isBanned(resolvedAbs: string): boolean {
   const rel = path.relative(REPO, resolvedAbs).split(path.sep).join("/");
@@ -41,11 +41,6 @@ function isBanned(resolvedAbs: string): boolean {
     return rel !== "lib/consensus/types.ts" && rel !== "lib/scorers/types.ts";
   }
   if (rel === "data/stocks/index.ts" || rel === "data/stocks/index.tsx") return true;
-  // Coder Directions §12 (Commit L hardening): the F&O persona/prompt surface
-  // is server-only (derived from the canonical registry, fnoAccess-entitled).
-  // It must never become reachable from a browser bundle — the deleted
-  // RishiStrategyAdvisor.tsx pseudo-advisor must stay deleted.
-  if (rel === "lib/fno/rishiPrompts.ts") return true;
   return false;
 }
 
@@ -164,5 +159,12 @@ describe("N1 — client bundle boundary (server-only modules never reachable fro
     const src = readFileSync(path.join(REPO, "components/stock/StockPageClient.tsx"), "utf8");
     expect(src).toMatch(/import type \{ SanitizedConsensus \}/);
     expect(src).not.toMatch(/^\s*import\s+\{[^}]*SanitizedConsensus[^}]*\}\s*from/m);
+  });
+
+  it("the deleted pseudo-advisor surfaces STAY deleted (Rule 17)", () => {
+    // Commit M3 removed the dead tier-gated F&O prompt module; the earlier
+    // audit had removed RishiStrategyAdvisor.tsx. Neither may return.
+    expect(existsSync(path.join(REPO, "lib/fno/rishiPrompts.ts"))).toBe(false);
+    expect(existsSync(path.join(REPO, "components/fno/RishiStrategyAdvisor.tsx"))).toBe(false);
   });
 });

@@ -9,7 +9,7 @@ delivered) and `CONSTITUTION.md` (the governing rules).
 **Statuses:** ✅ done (evidence linked) · 🟡 partial (what remains, who blocks it) ·
 ⬜ not started · 🚫 blocked on an FD · ➖ not applicable yet.
 
-Last updated: 2026-10-02 (Commit L — AI tool loop, grounding/provenance closure, eval harness; FD-9..FD-18 reconciled into the register below).
+Last updated: 2026-10-02 (Commit M — founder decision: ALL FEATURES FREE, no tiers; pricing/payment surface retired; FD-7 resolved. Prior: Commit L — AI tool loop, grounding/provenance closure, eval harness; FD-9..FD-18 reconciled).
 
 **Phase-0 status correction (Q5):** the round-3 close-out commit (`301a9d0`)
 said "Phase 0 closed"; that was an overclaim — P0-03 remains 🟡 (no staging
@@ -75,7 +75,7 @@ R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 
 |---|---|---|
 | L5-01 SEBI positioning + copy audit | 🚫 FD-2 | Counsel task. |
 | L5-02 Privacy + account controls | ⬜ | COUNSEL + CODER; the enumeration test pattern is specified in the roadmap. |
-| L5-03 Payment operations | 🟡 | T6 shipped idempotent grants + webhook; GST invoices/refunds/reconciliation emails remain (Razorpay keys still unset on prod). |
+| L5-03 Payment operations | ➖ superseded (free product) | **Commit M (2026-10-02): payments RETIRED** — /api/payment + webhook answer 410, the Razorpay surface and dead code are deleted, CSP/env references removed. Historical transaction rows + migrations preserved. GST invoices/refunds/reconciliation for the 2026 era remain a founder/finance matter outside the codebase (the processor dashboard handles them); nothing further is owed by code. |
 | L5-04 Terms + data-licensing map | 🚫 D1-01 | |
 | L5-05 Pre-launch security | ⬜ | CSP is report-only (R8); pen test, PITR restore drill pending. |
 | L5-06 Incident runbook + status page | 🟡 | One post-mortem runbook exists (`docs/runbooks/2026-09-30-observations-starving-snapshot.md`, D-4). General incident.md + status page pending. |
@@ -98,7 +98,7 @@ R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 
 
 ## Phase 7 — Growth (only after G-A and G-B)
 
-G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-03 needs FD-7, G7-06 needs D1-01 licence terms).
+G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-06 needs D1-01 licence terms). **G7-03 (pricing experiments): ➖ NOT APPLICABLE — superseded by the FD-7 resolution (all features free, 2026-10-02). There are no plans to experiment with; any future paid surface would require a NEW founder decision.**
 
 ## Founder decisions register (blocks tasks above)
 
@@ -110,7 +110,7 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-03 needs FD-7, G7-06 needs D1
 | FD-4 | Analytics tool | G7-01 | OPEN. |
 | FD-5 | Email/push/WhatsApp providers | X3-08, G7-04 | OPEN. |
 | FD-6 | Broker CSV formats | X3-07 | OPEN. |
-| FD-7 | Pricing + free-tier limits | G7-03 | OPEN. |
+| FD-7 | Pricing + free-tier limits | G7-03 | **RESOLVED (2026-10-02, founder instruction): ALL FEATURES ARE FREE — no tiers, no paid gates, no upgrade paths, no Razorpay checkout, no feature/Rishi/stock-view limits.** Implemented by Commit M (M1–M5): tier entitlements removed, persona/verdict/guru surfaces serve everyone, one global free chat quota (FREE_CHAT_DAILY_QUOTA=150), pricing page honest ("Free"), /api/payment + webhook 410, dead payment code deleted (migrations + historical rows preserved). Mechanical invariants: `npm run freeAccessAudit` + `test/freeAccess.contract.test.ts` (evidence: `docs/evidence/commit-m/`). |
 | FD-8 | Chat/LLM vendor + retention terms | R4-02/03 | OPEN (current chat provider works; terms unreviewed). |
 
 **Round-4/round-5 additions — reconciled into this register (all OPEN, founder-owned; detailed entries below):**
@@ -122,7 +122,7 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-03 needs FD-7, G7-06 needs D1
 | FD-11 | Matured bond instruments (IN91DTB and successors) (detail below) | `data/bonds.ts` | OPEN. |
 | FD-12 | Non-equity heuristic-reference scores: promote to official scores or keep labelled heuristic reference | crypto/forex/commodity/bond score surfaces | OPEN (they remain explicitly labelled heuristic reference; do not silently redesign). |
 | FD-13 | Seed-dataset residual placeholders (~416 boilerplate clones, ~422 mktcap artifacts) — impossibility gate + seed banner is interim | D1 live-fundamentals project | OPEN (real fix is D1, not more placeholder edits). |
-| FD-14 | `/terms` + `/privacy` minimal honest drafts — counsel review before paid tiers scale; refund wording sign-off | paid-tier scaling | OPEN. |
+| FD-14 | `/terms` + `/privacy` minimal honest drafts — counsel review of the free-product wording; refund wording sign-off | legal copy | OPEN (the "before paid tiers scale" trigger is moot — there are no paid tiers; the drafts were updated for the free product in Commit M and still need counsel review). |
 | FD-15 | Non-equity asset classes in main nav (keep for traffic vs demote for focus) | nav/product scope | OPEN. |
 | FD-16 | Banks scored with non-bank metrics — NIM/GNPA/CRAR modelling needs a data-source decision | bank scoring surfaces | OPEN. |
 | FD-17 | Soft-404 on unknown stock symbols (HTTP 200 + not-found UI) — fix vs leave | SEO hygiene | OPEN. |
@@ -134,7 +134,7 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-03 needs FD-7, G7-06 needs D1
   Rules 32–37 (Article VI, credential provisioning) were added by coder commits without founder approval recorded. **No further edits to `CONSTITUTION.md` will be made without the founder's approval in the PR thread** — the Constitution is frozen pending ratification.
   **Proposal (for the founder to approve, NOT implemented):** replace the base64-obfuscated HF mirror blob (`rishi-credentials.b64`) with a passphrase-encrypted blob (e.g. `age` or `openssl enc -aes-256-cbc`) whose passphrase only the founder holds. Coder-side recovery would then require the founder to supply the passphrase once per sandbox reset (one interruption per reset, in exchange for the mirror not being readable with the HF token alone). The founder may also reject or amend — the current base64 scheme stays in force until a decision is recorded.
 
-Plus non-FD founder actions outstanding: **ratify Constitution rules 32–37 and decide FD-9 (Q6)**; ratify `docs/PAID_CONTENT.md`; download the NSE `EQUITY_L.csv` in a browser for the Q3 hash comparison; create the staging Supabase project (Q2); confirm the PROPOSED env-matrix thresholds; staging env var pastes (`CHAT_API_KEY`, optionally `FMP_API_KEY`/`NEXTAUTH_SECRET`); `GEMINI_API_KEY` (§C.2); `PAID_CONTENT.md` ratification (D.1).
+Plus non-FD founder actions outstanding: **ratify Constitution rules 32–37 and decide FD-9 (Q6)**; download the NSE `EQUITY_L.csv` in a browser for the Q3 hash comparison; create the staging Supabase project (Q2); confirm the PROPOSED env-matrix thresholds; staging env var pastes (`CHAT_API_KEY`, optionally `FMP_API_KEY`/`NEXTAUTH_SECRET`); `GEMINI_API_KEY` (§C.2). ~~ratify `docs/PAID_CONTENT.md`~~ (MOOT 2026-10-02: superseded by the FD-7 free-access resolution — there is no paid/free matrix to ratify).
 
 ### Audit 2026-10-02 additions (D/E/F) — pending founder decisions
 
@@ -143,3 +143,34 @@ Plus non-FD founder actions outstanding: **ratify Constitution rules 32–37 and
 
 - **FD-11 | Matured bond instruments (IN91DTB and successors)** | `data/bonds.ts` | OPEN.
   IN91DTB's recorded maturity (2026-08-15) passed on 2026-10-01 and the 182D bill matures 2026-11-15. The honest interim fix derives maturity state from the recorded date and labels the row MATURED (historical reference). **FOUNDER DECISION NEEDED: replace matured instruments with current-issue T-Bills from an authoritative source (and which source), or retire them from the default view?** No replacement dates were invented.
+
+## Commit M — free-access conversion (2026-10-02)
+
+**Founder decision (supersedes the spec-v2 pricing assumption):** every
+product feature is FREE. No Seeker/Student/Disciple, no paid gates, no
+upgrade buttons, no Razorpay checkout, no feature/Rishi/stock-view
+limits. Authentication is not a tier — it stays only for security,
+account state, abuse prevention and persisted user functionality.
+
+Implemented in work order M1→M5 (branch `feat/free-access-commit-m`):
+
+| Step | What | Evidence |
+|---|---|---|
+| M1 | Repository-wide classified inventory — 1,089 occurrences across 131 files, every one classified (runtime entitlement / payment surface / UI copy / db-persistence / dead code / docs / test / legitimate concept) BEFORE any deletion | `docs/evidence/commit-m/free-access-inventory.{md,json}` + `scripts/freeAccessInventory.mjs` (fails on unclassified matches) |
+| M2 | Fail-first contract tests, written pre-conversion: **26 failing** on the pre-fix tree (persona matrix, forged tier, verdict slices, guru locks, quota equality, /api/auth/me, pricing page, payment 410s) | `test/freeAccess.contract.test.ts` + raw output `docs/evidence/commit-m/m2-failfirst-vitest.txt` |
+| M3 | Tier entitlements removed: registry access/fnoAccess axes deleted; personaAccess = existence + canonical validation; /api/chat 403-by-tier gone; /api/rishis + stock-page RSC serve the FULL verdict set; /api/gurus serves everyone in full (no locked teasers); dead F&O tier module deleted; client hooks/components de-gated (`useSession`) | commits `feat(M3)`; `test/persona.registry.test.ts` pins the axes cannot return |
+| M4 | Payment surface retired: POST/PUT /api/payment + webhook → **410 Gone**; PaymentButton/UpgradePrompt/grantTier/signatures/lib/premium.ts deleted (zero importers); unused `razorpay` dep removed; CSP origins cleaned; /pricing = honest free page; privacy/terms/locale copy truthful | commits `feat(M4)`; 410s + no-grant pinned in the M2 contract |
+| M5 | One global free quota `FREE_CHAT_DAILY_QUOTA=150` (explicit constant, not tier-derived); session model = single `access: 'free'` (legacy DB tier columns not even selected); client stock-view counter gone; **`npm run freeAccessAudit`** — the canonical gate (comment-stripped, entitlement-specific patterns, documented legacy-persistence allowlist, filesystem walk so untracked violations fail too), wired into CI before vitest | `scripts/freeAccessAudit.mjs`; Rule 24 bite proof `docs/evidence/commit-m/m5-gate-bite-proof.txt` (scratch tier gate + razorpay URL + resurrected lib/premium.ts → exit 1) |
+
+Post-conversion state: **692/692 vitest green** (the 26 fail-first rows
+now pass with no assertion weakened); `tsc --noEmit` 0; eslint 0 errors
+(warnings 302, below the 305 baseline); encoding validation clean.
+
+Preserved verbatim (historical): `lib/db/migrations/001, 002, 007`
+(users.tier columns, transactions, grant RPC), all transaction rows, and
+the audit-history documents (`docs/PAID_CONTENT.md` is banner-marked
+SUPERSEDED, body kept).
+
+Not resolved by this change (still OPEN, per the founder's explicit
+list): FD-1, FD-2, FD-8..FD-18. G7-03 (pricing experiments) is NOT
+APPLICABLE under the free decision.

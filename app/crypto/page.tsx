@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import { CRYPTO_ASSETS, FEAR_GREED_INDEX, MARKET_DOMINANCE, getCryptoMetrics } from '../../data/crypto';
 import { formatUsdCompact } from '../../lib/format';
 import { CRYPTO_GURUS } from '../../lib/gurus/crypto'; // R3: metadata only — verdicts come from /api/gurus
-import { useTier } from '../../hooks/useTier';
-import { UpgradePrompt } from '../../components/premium/UpgradePrompt';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
@@ -23,19 +21,15 @@ export default function CryptoPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [sector, setSector] = useState('All');
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const { tier } = useTier();
-  const premium = tier !== 'seeker';
 
-  // R3 (round 2): guru verdicts are computed SERVER-SIDE (/api/gurus) and
-  // tier-sliced there. This page renders only what it is served: a seeker
-  // (or anonymous visitor) receives the free cards plus locked teasers
-  // without insight/comps; the full verdicts exist only for premium tiers.
+  // R3 (round 2) + Commit M3 (free access): guru verdicts are computed
+  // SERVER-SIDE (/api/gurus) and served in full to every caller. This page
+  // renders only what it is served.
   const [guruVerdicts, setGuruVerdicts] = useState<Array<{
     id: string; name: string; score: number | null; label: string;
-    locked: boolean; insight?: string; comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
+    insight?: string; comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
   }> | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -307,19 +301,6 @@ export default function CryptoPage() {
             if (!guru) return null;
             const isExpanded = expandedCard === guru.id;
 
-            if (verdict.locked) {
-              // R3: locked teaser — only the score is served for locked
-              // gurus; insight/comps never reached the browser.
-              return (
-                <div key={guru.id} className="card-sacred" style={{ padding: 24, opacity: 0.6 }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      Unlock {guru.name} (Score {verdict.score ?? '—'}) with Student tier
-                    </div>
-                  </div>
-                </div>
-              );
-            }
             const result = {
               score: verdict.score,
               label: verdict.label,
@@ -399,7 +380,6 @@ export default function CryptoPage() {
           })}
         </div>
 
-        {showUpgrade && <UpgradePrompt reason="limit_reached" onClose={() => setShowUpgrade(false)} />}
       </div>
     </main>
   );

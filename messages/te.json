@@ -230,22 +230,22 @@
     "deepDive": "లోతైన విశ్లేషణ"
   },
   "pricing": {
-    "title": "జ్ఞాన స్థాయిలు",
-    "subtitle": "సాధకుడి నుండి శిష్యుడి వరకు ప్రయాణం అనేది గంభీర పెట్టుబడిదారుని ప్రయాణం.",
     "breadcrumb": "జ్ఞాన స్థాయిలు",
-    "benjaminFranklin": "జ్ఞానంలో పెట్టుబడి ఉత్తమ వడ్డీని చెల్లిస్తుంది.",
-    "franklinAuthor": "బెంజమిన్ ఫ్రాంక్లిన్",
-    "currentTier": "ప్రస్తుత స్థాయి",
-    "yourCurrentTier": "మీ ప్రస్తుత స్థాయి",
-    "freeForever": "ఎల్లప్పుడూ ఉచితం",
-    "becomeA": "అవ్వండి",
-    "active": "యాక్టివ్",
-    "rishisVisible": "కనిపించే ఋషులు",
-    "viewsPerDay": "వ్యూలు/రోజు",
-    "unlimitedViews": "అపరిమిత వ్యూలు",
-    "guarantee": "చెల్లించే ముందు ఇది చదవండి",
-    "guaranteeText": "ఇది పెట్టుబడి సలహా కాదు. ఋషులు విలువ గురించి ఆలోచించడానికి తాత్విక ఫ్రేమ్‌వర్క్‌లను అందిస్తారు. మీరు చేయగల గొప్ప పెట్టుబడి మీ స్వంత అవగాహనలో.",
-    "localStorage": "అన్ని స్థాయిలు localStorage ఉపయోగిస్తాయి - ఖాతా అవసరం లేదు. మీ డేటా మీ పరికరాన్ని విడిచిపెట్టదు."
+    "free": {
+      "title": "Everything Is Free",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "price": "Free",
+      "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
+      "cta": "Meet the Rishis",
+      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "aiChat": "AI Rishi chat with verified, grounded answers",
+      "screener": "Full screener with every filter and field",
+      "portfolio": "Portfolio, watchlist and lab analytics",
+      "knowledgeGraph": "Knowledge graphs and council tension views",
+      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
+      "_note": "English copy pending translation"
+    }
   },
   "news": {
     "title": "మార్కెట్ ఇంటెలిజెన్స్",
@@ -359,14 +359,6 @@
     "bondsTag": "ఫిక్సెడ్ ఇన్‌కమ్",
     "news": "వార్తలు",
     "newsTag": "తాజా శీర్షికలు"
-  },
-  "tiers": {
-    "seeker": "సాధకుడు",
-    "student": "విద్యార్థి",
-    "disciple": "శిష్యుడు",
-    "free": "ఉచితం",
-    "perYear": "/సంవత్సరం",
-    "upgrade": "అప్‌గ్రేడ్"
   },
   "rishiQuotes": {
     "buffett1": "పెట్టుబడిలో మూడు అత్యంత ముఖ్యమైన పదాలు భద్రతా మార్జిన్.",
@@ -564,7 +556,8 @@
       "valuation": "వాల్యుయేషన్ సమర్థించబడిందా?",
       "aiUnavailable": "AI అందుబాటులో లేదు — ఏ సమాధానం రూపొందించబడలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.",
       "personaLocked": "ఈ ఋషికి ఉన్నత స్థాయి అవసరం. కొనసాగించడానికి అప్‌గ్రేడ్ చేయండి."
-    }
+    },
+    "personaUnavailable": "This Rishi is temporarily unavailable — the roster could not be loaded. Please retry."
   },
   "kg": {
     "close": "మూసివేయండి",

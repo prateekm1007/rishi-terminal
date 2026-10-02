@@ -230,22 +230,22 @@
     "deepDive": "ஆழமான பகுப்பாய்வு"
   },
   "pricing": {
-    "title": "ஞான நிலைகள்",
-    "subtitle": "தேடுபவரிலிருந்து சீடருக்கான பயணம் தீவிர முதலீட்டாளரின் பயணம்.",
     "breadcrumb": "ஞான நிலைகள்",
-    "benjaminFranklin": "அறிவில் முதலீடு சிறந்த வட்டியை செலுத்துகிறது.",
-    "franklinAuthor": "பென்ஜமின் ஃபிராங்க்ளின்",
-    "currentTier": "தற்போதைய நிலை",
-    "yourCurrentTier": "உங்கள் தற்போதைய நிலை",
-    "freeForever": "எப்போதும் இலவசம்",
-    "becomeA": "ஆகுங்கள்",
-    "active": "செயலில்",
-    "rishisVisible": "தெரியும் ரிஷிகள்",
-    "viewsPerDay": "பார்வைகள்/நாள்",
-    "unlimitedViews": "வரம்பற்ற பார்வைகள்",
-    "guarantee": "பணம் செலுத்துவதற்கு முன் இதைப் படிக்கவும்",
-    "guaranteeText": "இது முதலீட்டு ஆலோசனை அல்ல. ரிஷிகள் மதிப்பைப் பற்றி சிந்திக்க தத்துவ கட்டமைப்புகளை வழங்குகிறார்கள். நீங்கள் செய்யக்கூடிய மிகச்சிறந்த முதலீடு உங்கள் சொந்த புரிதலில் உள்ளது.",
-    "localStorage": "அனைத்து நிலைகளும் localStorage பயன்படுத்துகின்றன — கணக்கு தேவையில்லை. எந்தத் தரவும் உங்கள் சாதனத்தை விட்டு வெளியேறாது."
+    "free": {
+      "title": "Everything Is Free",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "price": "Free",
+      "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
+      "cta": "Meet the Rishis",
+      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "aiChat": "AI Rishi chat with verified, grounded answers",
+      "screener": "Full screener with every filter and field",
+      "portfolio": "Portfolio, watchlist and lab analytics",
+      "knowledgeGraph": "Knowledge graphs and council tension views",
+      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
+      "_note": "English copy pending translation"
+    }
   },
   "news": {
     "title": "சந்தை நுண்ணறிவு",
@@ -359,14 +359,6 @@
     "bondsTag": "நிலையான வருமானம்",
     "news": "செய்திகள்",
     "newsTag": "சமீபத்திய தலைப்புச் செய்திகள்"
-  },
-  "tiers": {
-    "seeker": "தேடுபவர்",
-    "student": "மாணவர்",
-    "disciple": "சீடர்",
-    "free": "இலவசம்",
-    "perYear": "/ஆண்டு",
-    "upgrade": "மேம்படுத்து"
   },
   "rishiQuotes": {
     "buffett1": "முதலீட்டில் மூன்று மிக முக்கியமான வார்த்தைகள் பாதுகாப்பு விளிம்பு.",
@@ -564,7 +556,8 @@
       "valuation": "மதிப்பீடு நியாயப்படுத்தப்பட்டதா?",
       "aiUnavailable": "AI கிடைக்கவில்லை — எந்த பதிலும் உருவாக்கப்படவில்லை. மீண்டும் முயற்சிக்கவும்.",
       "personaLocked": "இந்த முனிவுக்கு உயர்நிலை தேவை. தொடர மேம்படுத்தவும்."
-    }
+    },
+    "personaUnavailable": "This Rishi is temporarily unavailable — the roster could not be loaded. Please retry."
   },
   "kg": {
     "close": "மூடுக",

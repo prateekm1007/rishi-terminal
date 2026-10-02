@@ -5,17 +5,20 @@ import { normalizeSymbolInput } from '@/lib/registry/validateInput'; // R5: unif
 import { getStockScore } from '@/lib/scoring';
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
-import { TIER_CONFIG } from '@/lib/premium';
 
 /**
- * R3: per-Rishi verdicts are served ONLY from this server route.
+ * R3 + Commit M3 (founder decision 2026-10-02 — every feature free):
+ * per-Rishi verdicts are served ONLY from this server route.
  *
- * - Anonymous callers get 401 (the public stock pages embed the free set
- *   server-side at build/render time; this route is for signed-in upgrades).
- * - The tier comes from getSessionUser() (server-resolved from
- *   public.users) — a client-supplied tier cannot widen the response.
- * - The response contains only the tier's verdict slice; verdicts beyond it
- *   are never serialized.
+ * - Anonymous callers get 401 — the route exists for signed-in client
+ *   surfaces (lab tabs) that upgrade their list-row summary slice to the
+ *   full verdict set on demand; the PUBLIC per-symbol surface is the stock
+ *   page RSC, which now embeds the FULL verdict set for everyone. Auth here
+ *   is abuse control (per-request compute), never a paywall.
+ * - The response contains EVERY verdict — the tier-visibility slice is
+ *   gone. There is no locked remainder to tease or upsell.
+ * - The identity comes from getSessionUser() (server-resolved); nothing
+ *   about the caller changes the content of this response.
  */
 export const dynamic = 'force-dynamic';
 
@@ -42,15 +45,13 @@ export async function GET(
   }
 
   const consensus = getStockScore(stock);
-  const visibleCount = TIER_CONFIG[user.tier].rishisVisible;
-  const sanitized = sanitizeConsensus(consensus, visibleCount);
+  const sanitized = sanitizeConsensus(consensus);
 
-  // N1 (round 3): the knowledge graph is rebuilt here for the caller's
-  // tier — the engine no longer runs client-side, so paid users receive
-  // their richer graph from this response instead of recomputing it.
+  // N1 (round 3): the knowledge graph is built here on the server — the
+  // engine never runs client-side, so callers receive the computed graph
+  // instead of recomputing it.
   return NextResponse.json({
     symbol: key,
-    tier: user.tier,
     totalRishis: consensus.scores.length,
     ...sanitized,
     knowledgeGraph: buildEliteKnowledgeGraph(stock, sanitized.verdicts),

@@ -221,22 +221,22 @@
     "deepDive": "ઊંડું વિશ્લેષણ"
   },
   "pricing": {
-    "title": "જ્ઞાનના સ્તરો",
-    "subtitle": "શોધકથી શિષ્ય સુધીની યાત્રા ગંભીર રોકાણકારની યાત્રા છે.",
     "breadcrumb": "જ્ઞાન સ્તરો",
-    "benjaminFranklin": "જ્ઞાનમાં રોકાણ શ્રેષ્ઠ વ્યાજ આપે છે.",
-    "franklinAuthor": "Benjamin Franklin",
-    "currentTier": "વર્તમાન સ્તર",
-    "yourCurrentTier": "તમારો વર્તમાન સ્તર",
-    "freeForever": "હંમેશા મફત",
-    "becomeA": "બનો",
-    "active": "સક્રિય",
-    "rishisVisible": "ઋષિઓ દૃશ્યમાન",
-    "viewsPerDay": "દૃશ્યો/દિવસ",
-    "unlimitedViews": "અમર્યાદિત દૃશ્યો",
-    "guarantee": "ચુકવણી કરતા પહેલાં આ વાંચો",
-    "guaranteeText": "આ રોકાણ સલાહ નથી. ઋષિઓ મૂલ્ય વિશે વિચારવા માટે દાર્શનિક માળખાં પ્રદાન કરે છે. સૌથી મોટું રોકાણ તમે તમારી સમજણમાં કરી શકો છો.",
-    "localStorage": "બધા સ્તરો localStorage નો ઉપયોગ કરે છે — કોઈ એકાઉન્ટ જરૂરી નથી. કોઈ ડેટા તમારા ડિવાઇસમાંથી બહાર જતો નથી."
+    "free": {
+      "title": "Everything Is Free",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "price": "Free",
+      "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
+      "cta": "Meet the Rishis",
+      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "aiChat": "AI Rishi chat with verified, grounded answers",
+      "screener": "Full screener with every filter and field",
+      "portfolio": "Portfolio, watchlist and lab analytics",
+      "knowledgeGraph": "Knowledge graphs and council tension views",
+      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
+      "_note": "English copy pending translation"
+    }
   },
   "news": {
     "title": "બજાર બુદ્ધિ",
@@ -401,14 +401,6 @@
     "bondsTag": "નિશ્ચિત આવક",
     "news": "સમાચાર",
     "newsTag": "તાજા હેડલાઇન્સ"
-  },
-  "tiers": {
-    "seeker": "શોધક",
-    "student": "વિદ્યાર્થી",
-    "disciple": "શિષ્ય",
-    "free": "મફત",
-    "perYear": "/વર્ષ",
-    "upgrade": "અપગ્રેડ કરો"
   },
   "rishiQuotes": {
     "buffett1": "રોકાણમાં ત્રણ સૌથી મહત્વપૂર્ણ શબ્દો સલામતીનો માર્જિન છે.",

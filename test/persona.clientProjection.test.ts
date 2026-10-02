@@ -36,11 +36,12 @@ import { PERSONA_DISPLAY } from "@/lib/chat/registryDisplay";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const AUTHORITY_KEYS = ["systemPrompt", "stockPrompt", "engine"] as const;
 
-/** All fields a client-facing persona object is allowed to carry. `tier` on
- *  the marketing card is the DISPLAY rank (registry `rank`) under its
- *  historical name — never the entitlement. */
+/** All fields a client-facing persona object is allowed to carry. The
+ *  marketing display rank is `rank` (Commit N §12 renamed the historical
+ *  `tier` field — the product has no tiers, so the vocabulary must not
+ *  suggest one). */
 const CLIENT_SAFE_KEYS = new Set([
-  "id", "name", "fullName", "emoji", "color", "rank", "tier",
+  "id", "name", "fullName", "emoji", "color", "rank",
   "philosophy", "label", "bio", "formula", "bestFor", "quote",
   "famousPicks", "category", "origin",
 ]);
@@ -79,6 +80,30 @@ describe("G10 — the client projection carries no authority fields", () => {
         expect(card, `card ${card.id} must not carry "${k}"`).not.toHaveProperty(k);
       }
     }
+  });
+
+  it("Commit N §12: the client-safe projection carries `rank` and NO entitlement vocabulary", () => {
+    // The product has no tiers. The display rank (Legend | Master) is a
+    // marketing label — it must be named `rank`, and the historical `tier`
+    // spelling must be gone from the ENTIRE client-safe projection
+    // (personas.ts is the client-reachable module; registryDisplay already
+    // uses `rank`).
+    expect(ALL_RISHIS.length).toBeGreaterThan(0);
+    for (const card of ALL_RISHIS) {
+      expect(card, `card ${card.id} must carry "rank"`).toHaveProperty("rank");
+      expect(card, `card ${card.id} must NOT carry the entitlement-sounding "tier" key`).not.toHaveProperty("tier");
+      expect(["Legend", "Master", ""]).toContain(card.rank);
+    }
+    const personasSrc = readFileSync(join(ROOT, "lib/chat/personas.ts"), "utf8");
+    // comments may honestly document the rename; code must not spell the
+    // field `tier` — strip comments the same way freeAccessAudit does.
+    const code = personasSrc
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/(^|\s)\/\/[^\n]*/g, "$1");
+    expect(code.includes("tier"), "personas.ts code must not name a field 'tier'").toBe(false);
+    const rishisPage = readFileSync(join(ROOT, "app/rishis/page.tsx"), "utf8");
+    expect(rishisPage.includes("TIER_COLORS"), "the /rishis page must use RANK_COLORS").toBe(false);
+    expect(rishisPage.includes(".tier"), "the /rishis page must read .rank, not .tier").toBe(false);
   });
 
   it("INVARIANT: no client module imports the server persona authority", () => {

@@ -30,7 +30,7 @@ interface ChatHistory {
 
 
 
-const TIER_COLORS: Record<string, string> = {
+const RANK_COLORS: Record<string, string> = {
   Legend: '#FFD700',
   Master: '#3B82F6',
 };
@@ -142,7 +142,7 @@ export default function ChatWithRishisPage() {
     setError(null);
   };
 
-  const tierColor = TIER_COLORS[selectedRishi.tier] || '#888';
+  const rankColor = RANK_COLORS[selectedRishi.rank] || '#888';
 
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 60px)', background: 'var(--bg-primary)', color: 'var(--text-primary)', overflow: 'hidden' }}>
@@ -184,7 +184,7 @@ export default function ChatWithRishisPage() {
           {filteredRishis.map(rishi => {
             const isActive  = selectedRishi.id === rishi.id;
             const hasChat   = (chatHistories[rishi.id] || []).length > 0;
-            const tColor    = TIER_COLORS[rishi.tier] || '#888';
+            const tColor    = RANK_COLORS[rishi.rank] || '#888';
             return (
               <div
                 key={rishi.id}
@@ -208,7 +208,7 @@ export default function ChatWithRishisPage() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
                   <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 10, background: tColor + '20', color: tColor, fontWeight: 700, fontFamily: 'monospace' }}>
-                    {rishi.tier.toUpperCase()}
+                    {rishi.rank.toUpperCase()}
                   </span>
                   {hasChat && (
                     <span style={{ fontSize: 8, color: '#00BA7C' }}>● active</span>
@@ -229,9 +229,9 @@ export default function ChatWithRishisPage() {
             <span style={{ fontSize: 32 }}>{selectedRishi.emoji}</span>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 16, fontWeight: 800, color: tierColor }}>{selectedRishi.name}</span>
-                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: tierColor + '20', color: tierColor, fontWeight: 700, fontFamily: 'monospace' }}>
-                  {selectedRishi.tier.toUpperCase()}
+                <span style={{ fontSize: 16, fontWeight: 800, color: rankColor }}>{selectedRishi.name}</span>
+                <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: rankColor + '20', color: rankColor, fontWeight: 700, fontFamily: 'monospace' }}>
+                  {selectedRishi.rank.toUpperCase()}
                 </span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>
@@ -258,7 +258,7 @@ export default function ChatWithRishisPage() {
           {currentMessages.length === 0 && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: 'var(--text-muted)', padding: '40px 20px' }}>
               <div style={{ fontSize: 56, marginBottom: 16 }}>{selectedRishi.emoji}</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: tierColor, marginBottom: 8 }}>{selectedRishi.name}</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: rankColor, marginBottom: 8 }}>{selectedRishi.name}</div>
               <div style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 420, lineHeight: 1.7, marginBottom: 20 }}>
                 &quot;{selectedRishi.quote}&quot;
               </div>
@@ -266,7 +266,7 @@ export default function ChatWithRishisPage() {
                 {selectedRishi.bio}
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', background: 'var(--bg-secondary)', padding: '12px 20px', borderRadius: 8, maxWidth: 420, lineHeight: 1.7, textAlign: 'left' }}>
-                <div style={{ marginBottom: 6, color: tierColor, fontWeight: 700 }}>FORMULA</div>
+                <div style={{ marginBottom: 6, color: rankColor, fontWeight: 700 }}>FORMULA</div>
                 {selectedRishi.formula}
               </div>
               <div style={{ marginTop: 20, fontSize: 11, color: 'var(--text-muted)' }}>
@@ -284,7 +284,7 @@ export default function ChatWithRishisPage() {
               <div style={{
                 maxWidth: '75%', padding: '12px 16px', borderRadius: 12,
                 background: msg.role === 'user'
-                  ? tierColor
+                  ? rankColor
                   : 'var(--bg-secondary)',
                 color: msg.role === 'user' ? '#000' : 'var(--text-primary)',
                 fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
@@ -315,7 +315,7 @@ export default function ChatWithRishisPage() {
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                   {[0,1,2].map(i => (
                     <div key={i} style={{
-                      width: 6, height: 6, borderRadius: '50%', background: tierColor,
+                      width: 6, height: 6, borderRadius: '50%', background: rankColor,
                       animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
                     }} />
                   ))}
@@ -357,7 +357,7 @@ export default function ChatWithRishisPage() {
               disabled={isLoading || !input.trim()}
               style={{
                 padding: '10px 22px', borderRadius: 8, fontWeight: 700, fontSize: 13,
-                background: isLoading || !input.trim() ? 'var(--bg-hover)' : tierColor,
+                background: isLoading || !input.trim() ? 'var(--bg-hover)' : rankColor,
                 color: isLoading || !input.trim() ? 'var(--text-muted)' : '#000',
                 border: 'none', cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s', whiteSpace: 'nowrap', height: 'fit-content',

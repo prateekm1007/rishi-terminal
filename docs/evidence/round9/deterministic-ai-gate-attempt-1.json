@@ -1,0 +1,154 @@
+{
+  "probe": "production-deterministic-ai-gate",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "expectedSha": "0a0af32f30f32fa8ff277c257e5e5df6a000858c",
+  "versionSha": "0a0af32f30f32fa8ff277c257e5e5df6a000858c",
+  "generatedAt": "2026-10-02T17:52:01.364Z",
+  "contract": {
+    "source": "scripts/lib/groundedCanaryContract.mjs (Coder Directions 2026-10-02 \u00a76/\u00a77)",
+    "deterministicBy": "seeded first tool call via secret-gated /api/probe/ai-loop \u2014 every downstream stage is the real production path"
+  },
+  "identity": {
+    "expectedProvider": "chat-api",
+    "expectedModel": "agnes-2.5-flash",
+    "expectedTool": "getPrices",
+    "expectedSymbol": "RELIANCE"
+  },
+  "positive": {
+    "status": 502,
+    "probe": null,
+    "timings": null,
+    "checks": [
+      {
+        "id": "http-200-anonymous",
+        "ok": false,
+        "detail": "anonymous chat status=502"
+      },
+      {
+        "id": "tool-expected-ok",
+        "ok": false,
+        "detail": "toolCalls=[]"
+      },
+      {
+        "id": "grounded-true",
+        "ok": false,
+        "detail": "grounded=undefined"
+      },
+      {
+        "id": "claims-verified-true",
+        "ok": false,
+        "detail": "claimsVerified=undefined"
+      },
+      {
+        "id": "mode-structured-claims",
+        "ok": false,
+        "detail": "mode=undefined"
+      },
+      {
+        "id": "structured-valid",
+        "ok": false,
+        "detail": "structuredResponse=undefined"
+      },
+      {
+        "id": "validated-claim-present",
+        "ok": false,
+        "detail": "claims=0"
+      },
+      {
+        "id": "verified-surface-exact",
+        "ok": false,
+        "detail": "text !== expected surface\n  text:     \"\"\n  expected: \"\""
+      },
+      {
+        "id": "no-extra-prose",
+        "ok": false,
+        "detail": "lines=1, non-statement lines=[\"\"]"
+      },
+      {
+        "id": "facts-claims-bijection",
+        "ok": false,
+        "detail": "text lines=1, fact statements=0"
+      },
+      {
+        "id": "commentary-present",
+        "ok": false,
+        "detail": "no commentary"
+      },
+      {
+        "id": "numbers-covered-by-facts",
+        "ok": true,
+        "detail": "numbers=[] facts=[] uncovered=[]"
+      },
+      {
+        "id": "identity-attested-exact",
+        "ok": false,
+        "detail": "provider=undefined (expected \"chat-api\"), model=undefined (expected \"agnes-2.5-flash\")"
+      },
+      {
+        "id": "timings-present",
+        "ok": false,
+        "detail": "no/invalid timings on the probe wire"
+      }
+    ]
+  },
+  "negative": {
+    "status": 502,
+    "probe": null,
+    "timings": null,
+    "checks": [
+      {
+        "id": "http-200",
+        "ok": false,
+        "detail": "status=502"
+      },
+      {
+        "id": "no-verified-price-fact",
+        "ok": true,
+        "detail": "claims=0, verifiedFacts=0"
+      },
+      {
+        "id": "no-false-grounding",
+        "ok": true,
+        "detail": "grounded=undefined, claimsVerified=undefined"
+      },
+      {
+        "id": "no-server-price-stmt",
+        "ok": true,
+        "detail": "text head: \"\""
+      },
+      {
+        "id": "no-numeric-answer",
+        "ok": true,
+        "detail": "numbers found: []"
+      },
+      {
+        "id": "explicit-failure-state",
+        "ok": false,
+        "detail": "toolCalls=[], structuredResponse=undefined, textStartsBLOCKED=false"
+      },
+      {
+        "id": "no-fake-commentary",
+        "ok": true,
+        "detail": "commentary=(absent)"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "id": "version-binding",
+      "ok": true,
+      "detail": "GET /api/version -> 200 sha=0a0af32f30f32fa8ff277c257e5e5df6a000858c (expected 0a0af32f30f32fa8ff277c257e5e5df6a000858c)"
+    },
+    {
+      "id": "positive-deterministic-grounded-loop",
+      "ok": false,
+      "detail": "the deterministic positive contract failed"
+    },
+    {
+      "id": "negative-deterministic-honest-failure",
+      "ok": false,
+      "detail": "the deterministic negative contract failed"
+    }
+  ],
+  "r9Note": "Attempt on 0a0af32 2026-10-02 ~17:50 UTC: the probe route AUTHENTICATES (env attachment fixed via the explicit-env redeploy) but the AI upstream returns 502 \u2014 the Agnes free-tier vendor limit (NF-5), the same external constraint recorded in the round-9 checklist. The app fails closed (all negative-honesty checks PASS; no fabricated output). The chat-quota is also exhausted for the day (429 on /api/chat). RE-RUN this gate and the grounded canary when vendor/quota capacity resets \u2014 the round-9 closure of the AI gates is PENDING on capacity, not on code."
+}

@@ -1,0 +1,169 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+stderr | test/ailoop.witness.test.ts > MUST FAIL PRE-O3: the witness runs the REAL chain deterministically > grounded=true on one request: real provider turn-1, REAL tool execution, witness reply, REAL grounding — exactly ONE provider call
+[ai/router] financial-data request (symbol=RELIANCE, term="latest price") answered context-only with ZERO tool engagement — BLOCKED
+
+stderr | test/ailoop.witness.test.ts > MUST FAIL PRE-O3: the witness runs the REAL chain deterministically > the witness never fabricates: a failing tool yields grounded=false with the explicit failure state
+[ai/router] financial-data request (symbol=RELIANCE, term="latest price") answered context-only with ZERO tool engagement — BLOCKED
+
+ ❯ test/ailoop.witness.test.ts (7 tests | 7 failed) 47ms
+   ❯ the deterministic intent→tool mapping (closed vocabulary, no NLP) (1)
+     × a price question maps to getPrices; fundamentals to getFinancials; score to getScore 7ms
+   ❯ buildWitnessFinalReply — deterministic construction from real tool evidence only (2)
+     × one claim per fact-carrying item, ids verbatim, assertions copied 1ms
+     × items without typed facts produce NOTHING (no claims from thin air) 0ms
+   ❯ MUST FAIL PRE-O3: the witness runs the REAL chain deterministically (4)
+     × grounded=true on one request: real provider turn-1, REAL tool execution, witness reply, REAL grounding — exactly ONE provider call 33ms
+     × the witness never fabricates: a failing tool yields grounded=false with the explicit failure state 2ms
+     × the witness never fabricates: an unknown symbol yields the explicit unknown-symbol state, no price 1ms
+     × a non-financial message in witness mode has no deterministic tool to call — honest unavailable, provider still attested 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/ailoop.witness.test.ts > the deterministic intent→tool mapping (closed vocabulary, no NLP) > a price question maps to getPrices; fundamentals to getFinancials; score to getScore
+AssertionError: expected undefined to be 'getPrices' // Object.is equality
+
+- Expected:
+"getPrices"
+
++ Received:
+undefined
+
+ ❯ test/ailoop.witness.test.ts:88:70
+     86| describe("the deterministic intent→tool mapping (closed vocabulary, no…
+     87|   it("a price question maps to getPrices; fundamentals to getFinancial…
+     88|     expect(detectFinancialDataIntent(CANARY_QUESTION).suggestedTool).t…
+       |                                                                      ^
+     89|     expect(detectFinancialDataIntent("What is the ROE of TCS?").sugges…
+     90|     expect(detectFinancialDataIntent("What is the Rishi consensus scor…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/ailoop.witness.test.ts > buildWitnessFinalReply — deterministic construction from real tool evidence only > one claim per fact-carrying item, ids verbatim, assertions copied
+TypeError: buildWitnessFinalReply is not a function
+ ❯ test/ailoop.witness.test.ts:97:21
+     95| describe("buildWitnessFinalReply — deterministic construction from rea…
+     96|   it("one claim per fact-carrying item, ids verbatim, assertions copie…
+     97|     const witness = buildWitnessFinalReply([
+       |                     ^
+     98|       {
+     99|         id: "price:RELIANCE:2026-10-01T09:45:00.000Z",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/ailoop.witness.test.ts > buildWitnessFinalReply — deterministic construction from real tool evidence only > items without typed facts produce NOTHING (no claims from thin air)
+TypeError: buildWitnessFinalReply is not a function
+ ❯ test/ailoop.witness.test.ts:113:21
+    111|
+    112|   it("items without typed facts produce NOTHING (no claims from thin a…
+    113|     const witness = buildWitnessFinalReply([
+       |                     ^
+    114|       { id: "news:RELIANCE:unavailable", text: "News: UNAVAILABLE." },
+    115|       { id: "price:RELIANCE:unavailable", text: "Price: UNAVAILABLE at…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  test/ailoop.witness.test.ts > MUST FAIL PRE-O3: the witness runs the REAL chain deterministically > grounded=true on one request: real provider turn-1, REAL tool execution, witness reply, REAL grounding — exactly ONE provider call
+AssertionError: expected [] to deeply equal [ { tool: 'getPrices', …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "status": "ok",
+-     "symbol": "RELIANCE",
+-     "tool": "getPrices",
+-   },
+- ]
++ []
+
+ ❯ test/ailoop.witness.test.ts:142:39
+    140|     expect(calls).toHaveLength(1);
+    141|     // The REAL tool executed server-side and its status rides the aud…
+    142|     expect(wire.provenance.toolCalls).toEqual([{ tool: "getPrices", st…
+       |                                       ^
+    143|     // The REAL grounding validator passed the witness reply against t…
+    144|     expect(wire.provenance.grounded).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/ailoop.witness.test.ts > MUST FAIL PRE-O3: the witness runs the REAL chain deterministically > the witness never fabricates: a failing tool yields grounded=false with the explicit failure state
+AssertionError: expected [] to deeply equal [ { tool: 'getPrices', …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "status": "failed",
+-     "symbol": "RELIANCE",
+-     "tool": "getPrices",
+-   },
+- ]
++ []
+
+ ❯ test/ailoop.witness.test.ts:171:39
+    169|     const wire = toChatWire(answer!);
+    170|     expect(wire.provenance.grounded).toBe(false);
+    171|     expect(wire.provenance.toolCalls).toEqual([{ tool: "getPrices", st…
+       |                                       ^
+    172|     expect(wire.text).not.toMatch(/\d{3,}/); // no fabricated price
+    173|     expect(wire.provenance.claims).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/ailoop.witness.test.ts > MUST FAIL PRE-O3: the witness runs the REAL chain deterministically > the witness never fabricates: an unknown symbol yields the explicit unknown-symbol state, no price
+AssertionError: expected [] to deeply equal [ { tool: 'getPrices', …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "status": "unknown-symbol",
+-     "symbol": "ZZZZNOPE",
+-     "tool": "getPrices",
+-   },
+- ]
++ []
+
+ ❯ test/ailoop.witness.test.ts:190:39
+    188|     const wire = toChatWire(answer!);
+    189|     expect(wire.provenance.grounded).toBe(false);
+    190|     expect(wire.provenance.toolCalls).toEqual([{ tool: "getPrices", st…
+       |                                       ^
+    191|     expect(wire.text).not.toMatch(/\d{3,}/);
+    192|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/ailoop.witness.test.ts > MUST FAIL PRE-O3: the witness runs the REAL chain deterministically > a non-financial message in witness mode has no deterministic tool to call — honest unavailable, provider still attested
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ test/ailoop.witness.test.ts:208:43
+    206|     const wire = toChatWire(answer!);
+    207|     expect(wire.provenance.grounded).toBe(false);
+    208|     expect(wire.provenance.canaryWitness).toBe(true);
+       |                                           ^
+    209|     expect(wire.provenance.provider).toBe("chat-api");
+    210|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed (7)
+   Start at  06:45:12
+   Duration  871ms (transform 71%, import 22%, tests 6%, setup 1%)
+

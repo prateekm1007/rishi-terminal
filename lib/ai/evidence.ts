@@ -710,6 +710,52 @@ export function factAnnotation(facts: readonly AiEvidenceFact[]): string {
   return ` | fact: ${parts.join("; ")}`;
 }
 
+/**
+ * Commit O (Coder Directions #7/#8) — the DETERMINISTIC canary witness.
+ *
+ * A PURE construction of the final structured reply from REAL evidence items
+ * ONLY: one claim per fact-carrying item, the item id cited verbatim, every
+ * typed fact copied into an assertion (field/value/unit verbatim). The claim
+ * text restates each fact in the canonical `field = value unit` form so the
+ * grounding validator's stated-number gate can match it.
+ *
+ * Properties that make it a safe probe primitive (direction #8):
+ *   - it CANNOT fabricate: an item without typed facts yields no claim, and
+ *     with no fact-carrying items at all the witness yields null (the router
+ *     reports honest unavailability) — a failed/unknown tool can never
+ *     produce grounded=true;
+ *   - it is DETERMINISTIC: the same evidence always produces the same reply;
+ *   - it carries NO prose, NO model output and NO client input.
+ *
+ * The router feeds the result through the UNCHANGED validateGrounding, so the
+ * witness is itself subject to the same grounding contract as a real model
+ * reply.
+ */
+export function buildWitnessFinalReply(
+  evidence: readonly AiEvidenceItem[],
+): { answer: string; claims: Array<{ claim: string; evidenceIds: string[]; assertions: Array<{ field: string; value: number; unit: string }> }>; uncertainties: string[] } | null {
+  const claims: Array<{ claim: string; evidenceIds: string[]; assertions: Array<{ field: string; value: number; unit: string }> }> = [];
+  for (const item of evidence) {
+    const facts = item.facts ?? [];
+    if (facts.length === 0) continue;
+    claims.push({
+      claim: facts
+        .map(f => `${f.field} = ${canonicalNumber(f.value)} ${f.unit}`)
+        .join("; "),
+      evidenceIds: [item.id],
+      assertions: facts.map(f => ({ field: f.field, value: f.value, unit: f.unit })),
+    });
+    // The schema bounds claims at 10 — the witness respects the same bound.
+    if (claims.length >= 10) break;
+  }
+  if (claims.length === 0) return null;
+  return {
+    answer: claims.map(c => c.claim).join("; "),
+    claims,
+    uncertainties: [],
+  };
+}
+
 // ── Audit 2026-10-02 (P0): claim-text semantic attribution ────────────────
 // Field mentions a claim may use, mapped to canonical fact fields. Order is
 // SPECIFICITY: composite names (price-to-earnings) must win over their

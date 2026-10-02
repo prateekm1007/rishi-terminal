@@ -55,7 +55,31 @@ export interface FinancialDataIntent {
   symbol?: string;
   /** The matched data term (when financial). */
   matchedTerm?: string;
+  /**
+   * Commit O (Coder Directions #7): the deterministic tool that serves this
+   * data term — part of the SAME closed vocabulary as DATA_TERM_RE (every
+   * term maps to exactly one canonical tool or none). Used ONLY by the
+   * probe-only deterministic witness; the ordinary chat path always lets the
+   * model choose its own tool. Undefined when no single tool is implied.
+   */
+  suggestedTool?: "getStock" | "getFinancials" | "getPrices" | "getScore" | "getPeers";
 }
+
+/** Term → canonical tool. Order matters only for readability; the first
+ *  matching group wins. Kept literally adjacent to DATA_TERM_RE so the two
+ *  cannot drift apart in review. */
+const TERM_TOOL_GROUPS: Array<{ tool: FinancialDataIntent["suggestedTool"]; re: RegExp }> = [
+  { tool: "getPrices", re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote)\b/i },
+  { tool: "getScore", re: /\b(scores?|rishi scores?|consensus|verdicts?)\b/i },
+  { tool: "getPeers", re: /\b(peers?|competitors?)\b/i },
+  {
+    tool: "getFinancials",
+    re: /\b(fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?)\b/i,
+  },
+  // Advice asks need the full data picture, not one tool — the witness maps
+  // none of them (undefined) and reports honest unavailability instead of
+  // guessing a single source.
+];
 
 /**
  * Detect a clear symbol-specific financial-data request. Pure and
@@ -69,6 +93,10 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   const termMatch = DATA_TERM_RE.exec(text);
   if (!termMatch) return { financial: false };
 
+  // Commit O: the deterministic tool suggestion — the group containing the
+  // matched term (first match wins; advice asks intentionally map to none).
+  const suggestedTool = TERM_TOOL_GROUPS.find((g) => g.re.test(text))?.tool;
+
   // Standalone tokens: split on everything that is not part of a symbol
   // (letters, digits, '&' for M&M-style symbols).
   const tokens = text
@@ -78,7 +106,7 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
 
   for (const token of tokens) {
     if (SYMBOL_TOKENS.has(token)) {
-      return { financial: true, symbol: token, matchedTerm: termMatch[0] };
+      return { financial: true, symbol: token, matchedTerm: termMatch[0], suggestedTool };
     }
   }
   return { financial: false };

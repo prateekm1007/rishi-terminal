@@ -1,0 +1,137 @@
+{
+  "probe": "production-grounded-canary",
+  "baseUrl": "http://localhost:3117",
+  "expectedSha": null,
+  "versionSha": "unknown",
+  "generatedAt": "2026-10-02T06:53:19.559Z",
+  "layers": {
+    "deterministicWitness": {
+      "required": true,
+      "rows": [
+        {
+          "id": "version-binding",
+          "ok": true,
+          "required": true,
+          "detail": "GET /api/version -> 200 sha=unknown"
+        },
+        {
+          "id": "witness-positive-grounded",
+          "ok": true,
+          "required": true,
+          "detail": "{\"status\":200,\"checks\":{\"http-200-anonymous\":true,\"witness-mode\":true,\"tool-expected-ok\":true,\"grounded-true\":true,\"mode-structured-claims\":true,\"structured-valid\":true,\"validated-claim-present\":true,\"verified-surface-server-generated\":true,\"numbers-covered-by-facts\":true,\"identity-attested\":true},\"detail\":{\"grounded\":true,\"mode\":\"structured-claims\",\"structured\":\"valid\",\"toolCalls\":[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}],\"textHead\":\"price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)\",\"uncovered\":[]}}"
+        },
+        {
+          "id": "witness-negative-honest-failure",
+          "ok": true,
+          "required": true,
+          "detail": "{\"status\":200,\"checks\":{\"http-200-or-403\":true,\"witness-mode-or-rejected\":true,\"explicit-failure-state\":true,\"no-false-grounded\":true,\"no-fabricated-price\":true},\"detail\":{\"grounded\":false,\"structured\":\"valid\",\"toolCalls\":[{\"tool\":\"getStock\",\"status\":\"unknown-symbol\",\"symbol\":\"ZZZZNOPE\"}],\"textHead\":\"BLOCKED: the requested platform data is not available (tool status: unknown-symbol). No unverified substitute answer is served.\"}}"
+        }
+      ],
+      "passed": false
+    },
+    "liveModelDiagnostic": {
+      "required": false,
+      "attempts": [
+        {
+          "attempt": 1,
+          "status": 200,
+          "checks": {
+            "http-200-anonymous": true,
+            "tool-expected-ok": true,
+            "grounded-true": false,
+            "mode-structured-claims": false,
+            "commentary-separate": true,
+            "numbers-covered-by-facts": true,
+            "identity-attested": true
+          },
+          "grounded": false,
+          "mode": "evidence-context",
+          "structured": "valid",
+          "toolCalls": [
+            {
+              "tool": "getPrices",
+              "status": "ok",
+              "symbol": "RELIANCE"
+            }
+          ],
+          "textHead": "The AI reply could not be verified against platform evidence and was not shown."
+        },
+        {
+          "attempt": 2,
+          "status": 200,
+          "checks": {
+            "http-200-anonymous": true,
+            "tool-expected-ok": true,
+            "grounded-true": false,
+            "mode-structured-claims": false,
+            "commentary-separate": true,
+            "numbers-covered-by-facts": true,
+            "identity-attested": true
+          },
+          "grounded": false,
+          "mode": "evidence-context",
+          "structured": "valid",
+          "toolCalls": [
+            {
+              "tool": "getPrices",
+              "status": "ok",
+              "symbol": "RELIANCE"
+            }
+          ],
+          "textHead": "The AI reply could not be verified against platform evidence and was not shown."
+        },
+        {
+          "attempt": 3,
+          "status": 200,
+          "checks": {
+            "http-200-anonymous": true,
+            "tool-expected-ok": true,
+            "grounded-true": false,
+            "mode-structured-claims": false,
+            "commentary-separate": true,
+            "numbers-covered-by-facts": true,
+            "identity-attested": true
+          },
+          "grounded": false,
+          "mode": "evidence-context",
+          "structured": "valid",
+          "toolCalls": [
+            {
+              "tool": "getPrices",
+              "status": "ok",
+              "symbol": "RELIANCE"
+            }
+          ],
+          "textHead": "The AI reply could not be verified against platform evidence and was not shown."
+        }
+      ],
+      "passed": false
+    }
+  },
+  "rows": [
+    {
+      "id": "version-binding",
+      "ok": true,
+      "required": true,
+      "detail": "GET /api/version -> 200 sha=unknown"
+    },
+    {
+      "id": "witness-positive-grounded",
+      "ok": true,
+      "required": true,
+      "detail": "{\"status\":200,\"checks\":{\"http-200-anonymous\":true,\"witness-mode\":true,\"tool-expected-ok\":true,\"grounded-true\":true,\"mode-structured-claims\":true,\"structured-valid\":true,\"validated-claim-present\":true,\"verified-surface-server-generated\":true,\"numbers-covered-by-facts\":true,\"identity-attested\":true},\"detail\":{\"grounded\":true,\"mode\":\"structured-claims\",\"structured\":\"valid\",\"toolCalls\":[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}],\"textHead\":\"price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)\",\"uncovered\":[]}}"
+    },
+    {
+      "id": "witness-negative-honest-failure",
+      "ok": true,
+      "required": true,
+      "detail": "{\"status\":200,\"checks\":{\"http-200-or-403\":true,\"witness-mode-or-rejected\":true,\"explicit-failure-state\":true,\"no-false-grounded\":true,\"no-fabricated-price\":true},\"detail\":{\"grounded\":false,\"structured\":\"valid\",\"toolCalls\":[{\"tool\":\"getStock\",\"status\":\"unknown-symbol\",\"symbol\":\"ZZZZNOPE\"}],\"textHead\":\"BLOCKED: the requested platform data is not available (tool status: unknown-symbol). No unverified substitute answer is served.\"}}"
+    },
+    {
+      "id": "live-model-diagnostic (NOT gating — recorded as diagnostic evidence)",
+      "ok": false,
+      "required": false,
+      "detail": "the real model did not close the loop within 3 paced attempts — see the receipt (the deterministic gate above is the production proof)"
+    }
+  ]
+}

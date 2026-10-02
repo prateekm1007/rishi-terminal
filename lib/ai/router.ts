@@ -35,6 +35,7 @@ import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, type AiToolDeps } from "./tools";
 import { detectFinancialDataIntent } from "./financialIntent";
+import { buildWitnessFinalReply } from "./evidence";
 
 const TIMEOUT_MS = 20_000;
 
@@ -80,6 +81,32 @@ export interface GenerateArgs {
    *  verified surface. Set exclusively by the secret-gated
    *  /api/probe/ai-loop route; the chat route never sets it. */
   probeSeedToolCall?: { tool: string; args: unknown };
+  /**
+   * Commit O (Coder Directions #7/#8) — DETERMINISTIC probe-only witness
+   *  mode for the production canary. Server-INTERNAL: set exclusively by
+   *  the secret-gated /api/probe/ai-loop route (the 2026-10-02 Commit-O
+   *  reconciliation relocated the entry point there — one secret-gated
+   *  probe surface, not two); no client body field can reach it (Rule 7),
+   *  and with the route unprovisioned the mode does not exist at all.
+   *  When set, the router exercises the REAL provider (turn-1 call +
+   *  attestation), the REAL tool executor, the REAL evidence and the REAL
+   *  grounding validator — but the loop's final turn is built
+   *  deterministically (buildWitnessFinalReply) from the actual tool
+   *  outcome instead of a stochastic model turn. It can NEVER fabricate:
+   *  no real tool facts → no claims → honest unavailability.
+   *
+   *  Complementary to probeSeedToolCall: the SEED keeps the REAL model in
+   *  the final-answer path (proving the production model can ground);
+   *  the WITNESS replaces the final turn (a zero-flake gate proving the
+   *  executor/evidence/validator/surface pipeline itself).
+   *
+   *  `true` — the tool request comes from the model or the closed
+   *           intent→tool mapping (positive canary).
+   *  `{ symbol }` — the probe pins the exact tool-input symbol; the REAL
+   *           executor's security master remains the sole authority on
+   *           whether it exists (deterministic negative canary: an unknown
+   *           symbol yields the explicit unknown-symbol failure). */
+  deterministicWitness?: boolean | { symbol: string };
 }
 
 /** §11: mutable timing collector threaded through the loop. */
@@ -520,6 +547,129 @@ async function runGroundedLoop(
     }
     const { text, provider } = await callProvider(transcript, buildSystem(loopEvidence));
 
+    // ── Commit O (Coder Directions #7/#8): the DETERMINISTIC probe-only
+    // witness. Reached only when the route verified the canary probe token
+    // (server env) — no client body field can set this flag (Rule 7).
+    // The turn-1 provider call above is REAL (attested, health-accounted);
+    // everything after it is deterministic:
+    //   tool request  = the model's, else the closed intent→tool mapping;
+    //   execution     = the REAL executeAiTool (zod + allowlist + registry);
+    //   final reply   = buildWitnessFinalReply(loopEvidence) — typed facts
+    //                   of the REAL tool outcome ONLY, no prose, no client
+    //                   input, no fabrication (no facts → honest failure);
+    //   validation    = the UNCHANGED validateGrounding.
+    // No second provider turn ever happens (one attested call per probe).
+    if (args.deterministicWitness) {
+      const pinned =
+        typeof args.deterministicWitness === "object" ? args.deterministicWitness : null;
+      const intent = detectFinancialDataIntent(args.message);
+      const witnessToolReq = extractToolRequest(text) ??
+        (pinned?.symbol
+          ? { tool: intent.suggestedTool ?? "getPrices", args: { symbol: pinned.symbol } as Record<string, unknown> }
+          : intent.financial && intent.suggestedTool
+            ? { tool: intent.suggestedTool, args: { symbol: intent.symbol } as Record<string, unknown> }
+            : null);
+      if (!witnessToolReq) {
+        return {
+          answer:
+            "BLOCKED: the deterministic probe carries no symbol-specific data request to verify. No unverified answer is served.",
+          claims: [],
+          uncertainties: [
+            `witness mode: no canonical tool was deterministically derivable for this message (financial=${intent.financial})`,
+          ],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: false,
+          groundingRejections: [],
+          groundingMode: "evidence-context",
+          structuredResponse: "blocked",
+          toolCalls: [],
+          canaryWitness: true,
+        };
+      }
+      const outcome = await executeAndInject(witnessToolReq);
+      if (outcome.status !== "ok") {
+        return {
+          answer: `BLOCKED: the requested platform data is not available (tool status: ${outcome.status}). No unverified substitute answer is served.`,
+          claims: [],
+          uncertainties: [
+            `witness mode: the REAL tool outcome was ${outcome.tool}:${outcome.status}${"symbol" in outcome ? ` (${outcome.symbol})` : ""} — the honest failure, never fabricated data`,
+          ],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: false,
+          groundingRejections: [],
+          groundingMode: "evidence-context",
+          structuredResponse: "valid",
+          toolCalls,
+          canaryWitness: true,
+        };
+      }
+      loopEvidence.push(...outcome.evidence);
+      const witness = buildWitnessFinalReply(loopEvidence);
+      if (!witness) {
+        return {
+          answer:
+            "BLOCKED: no verifiable platform data was returned for this request. No unverified substitute answer is served.",
+          claims: [],
+          uncertainties: [
+            "witness mode: the tool returned no typed facts — nothing groundable exists, so nothing is claimed",
+          ],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: false,
+          groundingRejections: [],
+          groundingMode: "evidence-context",
+          structuredResponse: "valid",
+          toolCalls,
+          canaryWitness: true,
+        };
+      }
+      const witnessValidationStart = Date.now();
+      const grounding = validateGrounding(loopEvidence, witness.claims, witness.answer);
+      timings.validationMs = Date.now() - witnessValidationStart;
+      if (grounding.grounded && grounding.validatedClaims.length > 0) {
+        return {
+          answer: grounding.verifiedAnswer,
+          claims: grounding.validatedClaims as AiClaim[],
+          uncertainties: [],
+          provider: provider.id,
+          model: provider.model,
+          generatedAt,
+          claimsVerified: true,
+          groundingRejections: [],
+          groundingMode: grounding.mode,
+          structuredResponse: "valid",
+          toolCalls,
+          canaryWitness: true,
+        };
+      }
+      // Even the deterministic construction is subject to the REAL validator
+      // — if it ever fails, the probe fails closed with the reasons attached.
+      console.error(
+        "[ai/router] witness reply failed grounding:",
+        JSON.stringify(grounding.rejections.slice(0, 4)),
+      );
+      return {
+        answer:
+          "BLOCKED: the deterministic witness reply failed grounding validation. No unverified answer is served.",
+        claims: [],
+        uncertainties: grounding.rejections.slice(0, 4),
+        provider: provider.id,
+        model: provider.model,
+        generatedAt,
+        claimsVerified: false,
+        groundingRejections: grounding.rejections,
+        groundingMode: "evidence-context",
+        structuredResponse: "valid",
+        toolCalls,
+        canaryWitness: true,
+      };
+    }
+
     const toolReq = extractToolRequest(text);
     // §11: attribute this successful completion now that its shape is known.
     const lastCompletion = timings.completions[timings.completions.length - 1];
@@ -783,6 +933,8 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       toolCalls: answer.toolCalls ?? [],
       // §11: latency attribution rides when present (router-stamped).
       ...(answer.timings ? { timings: answer.timings } : {}),
+      // Commit O: probe-only deterministic witness mark (see AiAnswer).
+      ...(answer.canaryWitness ? { canaryWitness: true } : {}),
     },
   };
 }

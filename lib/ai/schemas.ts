@@ -106,7 +106,9 @@ export const AiTimingsSchema = z.object({
   providerAttempts: z.number().int().nonnegative(),
   /** One entry per provider completion attempt, in order. `outcome`
    *  distinguishes a turn the model spent requesting a tool from the final
-   *  structured response and from a failed attempt. */
+   *  structured response and from a failed attempt. `stage` (Round 9,
+   *  directive 12) places the completion in the latency chain explicitly:
+   *  initial → (tool request → tool execution) → post-tool → repair. */
   completions: z
     .array(
       z.object({
@@ -114,6 +116,28 @@ export const AiTimingsSchema = z.object({
         model: z.string(),
         ms: z.number().finite().nonnegative(),
         outcome: z.enum(["tool-request", "final-response", "failed"]),
+        stage: z.enum(["initial", "post-tool", "repair"]).default("initial"),
+      }),
+    )
+    .default([]),
+  /** Round 9 (directive 7): one entry per FINAL-ANSWER REPAIR, in order —
+   *  the router's own cause code for why the re-ask happened, recorded at
+   *  the decision point (never re-inferred from text logs later). */
+  repairs: z
+    .array(
+      z.object({
+        cause: z.enum([
+          "malformed-json",
+          "schema-mismatch",
+          "evidence-id-mismatch",
+          "field-value-mismatch",
+          "unsupported-numeric-prose",
+          "forecast-advice-wording",
+          "provenance-wording",
+          "missing-claims",
+          "zero-tool-engagement",
+        ]),
+        feedback: z.string(),
       }),
     )
     .default([]),

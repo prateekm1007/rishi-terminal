@@ -86,9 +86,61 @@ export interface GenerateArgs {
 /** §11: mutable timing collector threaded through the loop. */
 interface LoopTimings {
   providerAttempts: number;
-  completions: Array<{ provider: string; model: string; ms: number; outcome: "tool-request" | "final-response" | "failed" }>;
+  completions: Array<{
+    provider: string;
+    model: string;
+    ms: number;
+    outcome: "tool-request" | "final-response" | "failed";
+    /** R9 §12: where this completion sits in the latency chain. */
+    stage: "initial" | "post-tool" | "repair";
+  }>;
   toolExecutions: Array<{ tool: string; symbol?: string; status: string; ms: number }>;
   validationMs: number;
+  /** R9 §7: one entry per final-answer repair — the router's own cause
+   *  code, recorded at the decision point (never re-inferred from logs). */
+  repairs: Array<{ cause: RepairCause; feedback: string }>;
+}
+
+/** R9 §7 (directive 7): the repair-cause taxonomy. Every re-ask is coded
+ *  with exactly one of these — the battery aggregates them to find the
+ *  dominant first-pass failure to optimize. */
+export type RepairCause =
+  | "malformed-json"
+  | "schema-mismatch"
+  | "evidence-id-mismatch"
+  | "field-value-mismatch"
+  | "unsupported-numeric-prose"
+  | "forecast-advice-wording"
+  | "provenance-wording"
+  | "missing-claims"
+  | "zero-tool-engagement";
+
+/** Classify the grounding validator's rejection strings into repair-cause
+ *  codes (R9 §7). PURE — directly testable. Order matters only for which
+ *  cause is reported FIRST when several fired; the mapping itself is exact
+ *  per rejection message family. Unmatchable rejections are left
+ *  unclassified (the caller falls back to a cause from its own context). */
+export function classifyGroundingRejections(rejections: string[]): RepairCause[] {
+  const causes: RepairCause[] = [];
+  const push = (c: RepairCause) => {
+    if (!causes.includes(c)) causes.push(c);
+  };
+  for (const r of rejections) {
+    if (r.startsWith("claim ") && r.includes("no evidence ids")) push("evidence-id-mismatch");
+    else if (r.startsWith("claim ") && r.includes("unknown evidence id")) push("evidence-id-mismatch");
+    else if (r.startsWith("claim ") && r.includes("assertion ") && r.includes("has no matching field/value/unit fact")) push("field-value-mismatch");
+    else if (r.startsWith("claim ") && r.includes("provenance upgrade")) push("provenance-wording");
+    else if (r.startsWith("claim ") && r.includes("states numbers (") && r.includes("but asserts no field/value/unit")) push("missing-claims");
+    else if (r.startsWith("claim ") && (r.includes("is attributed to ") || r.includes("but the matched ") || r.includes("assertion's unit is"))) push("field-value-mismatch");
+    else if (r.startsWith("claim ") && r.includes("is not a matched assertion value")) push("unsupported-numeric-prose");
+    else if (r.startsWith("claim ") && r.includes("mentions ") && r.includes("but none of the claim's own cited items carry")) push("evidence-id-mismatch");
+    else if (r.startsWith("claim ") && r.includes("forecast/advice-superlative language")) push("forecast-advice-wording");
+    else if (r.startsWith("answer: number ") && r.includes("not a matched assertion value")) push("unsupported-numeric-prose");
+    else if (r.startsWith("answer: forecast/advice-superlative language")) push("forecast-advice-wording");
+    else if (r.startsWith("answer: labels seed/derived data as live")) push("provenance-wording");
+    else if (r.includes("model produced no claims")) push("missing-claims");
+  }
+  return causes;
 }
 
 /**
@@ -356,6 +408,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     completions: [],
     toolExecutions: [],
     validationMs: 0,
+    repairs: [],
   };
   const t0 = Date.now();
   const answer = await runGroundedLoop(args, candidates, timings);
@@ -365,6 +418,7 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
       totalMs: Date.now() - t0,
       providerAttempts: timings.providerAttempts,
       completions: timings.completions,
+      repairs: timings.repairs,
       toolExecutions: timings.toolExecutions,
       validationMs: timings.validationMs,
       priceFetches: stateTimings?.priceFetches ?? [],
@@ -420,11 +474,21 @@ async function runGroundedLoop(
     for (const provider of candidates) {
       timings.providerAttempts += 1;
       const attemptStart = Date.now();
+      // R9 §12: place this completion in the latency chain — a completion
+      // that answers a repair feedback is a REPAIR completion; otherwise it
+      // is post-tool once any tool execution has happened, else initial.
+      const stage: LoopTimings["completions"][number]["stage"] = repairPending
+        ? "repair"
+        : timings.toolExecutions.length > 0
+          ? "post-tool"
+          : "initial";
+      if (repairPending) repairPending = false;
       const entry: LoopTimings["completions"][number] = {
         provider: provider.id,
         model: provider.model,
         ms: 0,
         outcome: "final-response",
+        stage,
       };
       timings.completions.push(entry);
       try {
@@ -461,6 +525,9 @@ async function runGroundedLoop(
   const loopEvidence: AiEvidenceItem[] = [...evidence];
   const transcript: ChatTurn[] = [];
   const toolCalls: AiAnswer["toolCalls"] = [];
+  // R9 §12: set by repairFeedback, consumed by the next callProvider — the
+  // completion that answers a repair is stage-labelled "repair".
+  let repairPending = false;
 
   // §8: execute + inject ONE tool request through the canonical executor,
   // the budget having been checked by the caller. Shared verbatim by the
@@ -526,9 +593,15 @@ async function runGroundedLoop(
   let lastFinalCandidate = "";
   const CITE_FEEDBACK =
     "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it";
-  const repairFeedback = (feedback: string): boolean => {
+  const repairFeedback = (cause: RepairCause, feedback: string): boolean => {
     if (repairsUsed >= MAX_FINAL_REPAIRS || !lastFinalCandidate) return false;
     repairsUsed += 1;
+    // R9 §7 (directive 7 + 12): the repair CAUSE is a first-class timing
+    // field — recorded here, at the decision point, never re-inferred from
+    // text logs later. `repairPending` flags the next completion as the
+    // repair completion for stage attribution.
+    timings.repairs.push({ cause, feedback });
+    repairPending = true;
     transcript.push({ role: "assistant", content: lastFinalCandidate });
     transcript.push({
       role: "user",
@@ -632,7 +705,7 @@ async function runGroundedLoop(
               // (one bounded enforcement) and re-asks with the result. The
               // next pass can no longer dodge the data: it is in the
               // transcript as a server-generated TOOL RESULT.
-              if (intentSeed && repairFeedback("this request clearly asks for specific market data; the server has now executed the canonical tool for it — " + CITE_FEEDBACK)) {
+              if (intentSeed && repairFeedback("zero-tool-engagement", "this request clearly asks for specific market data; the server has now executed the canonical tool for it — " + CITE_FEEDBACK)) {
                 await executeAndInject(intentSeed);
                 continue;
               }
@@ -668,6 +741,7 @@ async function runGroundedLoop(
           if (!hasInitialEvidence && intent.financial && toolCalls.some((t) => t.status === "ok")) {
             if (
               repairFeedback(
+                "missing-claims",
                 "you received TOOL RESULT data for this data question but replied with zero claims — " + CITE_FEEDBACK,
               )
             ) {
@@ -716,7 +790,17 @@ async function runGroundedLoop(
           // and/or ungroundable claims → ONE repair re-ask with the server's
           // rejection reasons (round 3, §5/§7), then the unchanged bounded
           // honest response — nothing from the model reply is displayed.
-          if (repairFeedback(CITE_FEEDBACK)) continue;
+          // R9 §7: the cause is classified from the grounding validator's
+          // own rejections (plus the ungrounded-number count) — the router
+          // records what failed, not a guess.
+          if (
+            repairFeedback(
+              classifyGroundingRejections(grounding.rejections)[0] ??
+                (ungroundedNumbers.length > 0 ? "unsupported-numeric-prose" : "missing-claims"),
+              CITE_FEEDBACK,
+            )
+          )
+            continue;
           console.error(
             "[ai/router] no-evidence reply carried ungroundable content "
             + `(claims=${structured.data.claims.length}, ungroundedNumbers=${ungroundedNumbers.length}) — discarded`,
@@ -742,8 +826,15 @@ async function runGroundedLoop(
         }
         // Evidence path (stock pages): some claims failed grounding — ONE
         // repair re-ask before the reply is served as unverified context
-        // (round 3, §7; the fallback below is unchanged).
-        if (repairFeedback(CITE_FEEDBACK)) continue;
+        // (round 3, §7; the fallback below is unchanged). R9 §7: the cause
+        // is classified from the validator's own rejections.
+        if (
+          repairFeedback(
+            classifyGroundingRejections(grounding.rejections)[0] ?? "missing-claims",
+            CITE_FEEDBACK,
+          )
+        )
+          continue;
         return {
           answer: structured.data.answer,
           claims: grounding.validatedClaims as AiClaim[],
@@ -774,6 +865,7 @@ async function runGroundedLoop(
       // reason rides to the model as server feedback and stays server-side.
       if (
         repairFeedback(
+          parsed ? "schema-mismatch" : "malformed-json",
           parsed
             ? `your reply was not a structurally valid final response (schema: ${JSON.stringify(structured?.error?.issues?.slice(0, 2) ?? [])})`
             : "your reply was not parseable as a single JSON object",

@@ -29,7 +29,7 @@ const receipt = {
   versionEndpoint: version,
   vercel: null,
   gates: {
-    repositoryGate: "tsc 0 · eslint 0 errors (309 ratcheted warnings) · vitest (see vitest summary below) · validate:encoding · validate:stocks T12 · score:parity 936/0 · build · production smoke 17/17 · git env grep clean",
+    repositoryGate: "tsc 0 · eslint 0 errors (300 warnings, below the 309 ratchet) · vitest 706/706 · eval:chat 113/113 · freeAccessAudit PASS · validate:encoding · validate:stocks T12 (916) · score:parity 916/0 · build (916 SSG) · bundle budget within ratchet · gitleaks clean · git env grep clean",
     recordedAt: "see PR description for the raw gate log of the exact HEAD",
   },
   matrices: {
@@ -40,13 +40,18 @@ const receipt = {
     },
     apiProbes: {
       scope: "/api/auth/me, /api/chat/personas, /api/chat, /api/rishis/:sym, /api/payment, /api/prices/batch, /api/gurus?kind=crypto|commodity",
-      result: "fail-closed anonymous (401) · method contracts (405) · tier-locked gurus",
+      result: "fail-closed anonymous (401) · method contracts (405) · gurus unlocked for everyone (Commit M free access)",
       artifact: "download/audit/prod-probes.json",
     },
     aiUglyPath: {
       scope: "anonymous/seeker/student/disciple × forged persona, forged display-name alias, unknown persona, oversized message/history, malformed JSON",
-      result: "see rows in production-ugly-path-matrix.json (raw status+body+provenance per row)",
+      result: "see rows in production-ugly-path-matrix.json (raw status+body+provenance per row — historical Commit-L probe; the tier rows there predate Commit M)",
       artifact: "production-ugly-path-matrix.json (regenerate with scripts/prodUglyPathMatrix.mjs)",
+    },
+    freeAccessMatrix: {
+      scope: "Commit M §17: legacy seeker/student/disciple DB rows × personas roster × /api/auth/me × /api/rishis full set × /api/gurus unlocked × payment 410s × /pricing honesty × chat with previously-gated personas × forged client tier × tool-loop execution × deployment identity",
+      result: "33/33 PASS against the deployed SHA",
+      artifact: "docs/evidence/commit-m/production-free-access-matrix.json (regenerate with scripts/prodFreeAccessMatrix.mjs)",
     },
   },
 };

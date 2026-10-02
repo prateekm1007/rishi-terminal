@@ -162,7 +162,9 @@ Implemented in work order M1→M5 (branch `feat/free-access-commit-m`):
 | M4 | Payment surface retired: POST/PUT /api/payment + webhook → **410 Gone**; PaymentButton/UpgradePrompt/grantTier/signatures/lib/premium.ts deleted (zero importers); unused `razorpay` dep removed; CSP origins cleaned; /pricing = honest free page; privacy/terms/locale copy truthful | commits `feat(M4)`; 410s + no-grant pinned in the M2 contract |
 | M5 | One global free quota `FREE_CHAT_DAILY_QUOTA=150` (explicit constant, not tier-derived); session model = single `access: 'free'` (legacy DB tier columns not even selected); client stock-view counter gone; **`npm run freeAccessAudit`** — the canonical gate (comment-stripped, entitlement-specific patterns, documented legacy-persistence allowlist, filesystem walk so untracked violations fail too), wired into CI before vitest | `scripts/freeAccessAudit.mjs`; Rule 24 bite proof `docs/evidence/commit-m/m5-gate-bite-proof.txt` (scratch tier gate + razorpay URL + resurrected lib/premium.ts → exit 1) |
 
-Post-conversion state: **692/692 vitest green** (the 26 fail-first rows
+M9-M12 (deployment + production proof): PR #45 merged (d7f16ac), CI green on all three jobs including the new free-access audit step (evidence: docs/evidence/commit-m/m9-ci-jobs.txt), production deployed (dpl_BSZ2XF1QXq) and probed — **33/33 free-access + AI-loop matrix rows PASS** against the deployed SHA with REAL legacy-tier database rows (docs/evidence/commit-m/production-free-access-matrix.json), and the exact-SHA receipt binds git SHA = Vercel deployment = /api/version = probe SHA = d7f16ac (production-receipt.json). Model identity in production confirmed: agnes-2.5-flash.
+
+Post-conversion state: **706/706 vitest green** (692 at M5, +14 from the M7 tool-state suite) (the 26 fail-first rows
 now pass with no assertion weakened); `tsc --noEmit` 0; eslint 0 errors
 (warnings 302, below the 305 baseline); encoding validation clean.
 

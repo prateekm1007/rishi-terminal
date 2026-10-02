@@ -167,9 +167,12 @@ export async function GET(req: NextRequest) {
         points = await fetchYahooSeries(ticker, tf);
       }
     } catch (e) {
-      // graceful fallback: return empty points with explanation
+      // graceful fallback: empty points with an HONEST explanation —
+      // Rule 10 (R9 §18): `warning: String(e)` rode upstream exception text
+      // (vendor URLs, connection diagnostics) to the client on a 200 body.
+      console.error(`[/api/history] ${source} series failed for ${upper}:`, e);
       return NextResponse.json(
-        { symbol: upper, tf, source, points: [], warning: String(e) },
+        { symbol: upper, tf, source, points: [], warning: "upstream unavailable — no data returned" },
         { status: 200, headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
       );
     }
@@ -179,7 +182,10 @@ export async function GET(req: NextRequest) {
       { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
     );
   } catch (error) {
-    return NextResponse.json({ error: "History fetch failed", detail: String(error) }, { status: 500 });
+    // Rule 10 (R9 §18): generic outward, detailed inward — the previous body
+    // leaked `detail: String(error)` (upstream exception text) to the client.
+    console.error("[/api/history] fetch failed:", error);
+    return NextResponse.json({ error: "History fetch failed" }, { status: 500 });
   }
 }
 

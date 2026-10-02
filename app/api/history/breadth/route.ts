@@ -117,12 +117,16 @@ export async function GET(req: Request) {
       }
     );
   } catch (err) {
+    // Rule 10 (R9 §18): the fallback stays honest WITHOUT the upstream
+    // message — `error: err.message` rode exception text (vendor URLs,
+    // connection diagnostics) to the client inside a 200 body. Detail
+    // stays in the server log.
+    console.error('[/api/history/breadth] fetch failed:', err);
     return NextResponse.json(
       {
         breadth30dAvg: 50,
         daysSampled:   0,
         note:          'fallback — history fetch failed',
-        error:         err instanceof Error ? err.message : String(err),
         generatedAt:   new Date().toISOString(),
       },
       { status: 200 }

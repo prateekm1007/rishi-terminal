@@ -50,7 +50,10 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
 
   const { price: livePriceData } = usePrice(asset.symbol);
   const displayPrice = livePriceData?.price && livePriceData.price > 0 ? livePriceData.price : asset.price;
-  const displayChange = livePriceData?.changePercent24h !== undefined ? livePriceData.changePercent24h : asset.change24h;
+  // U5 (founder round 6, Rule 3): a STATIC reference value never wears a
+  // "24h" figure — the seed change24h is a reference number, not an
+  // observed day. Live change only; when absent the UI says so.
+  const displayChange = livePriceData?.changePercent24h != null ? livePriceData.changePercent24h : null;
 
   const liveAsset = {
     ...asset,
@@ -272,7 +275,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 36, fontWeight: 700, fontFamily: 'monospace', color: 'var(--text-primary)', lineHeight: 1, display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', gap: 8 }}>
-                {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                ${displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
                 <ProvenanceChip state={livePriceData?.price && livePriceData.price > 0 ? 'live' : 'reference'} title={livePriceData?.price && livePriceData.price > 0 ? 'Live price observation' : 'Static reference price — live price unavailable'} />
               </div>
               <div style={{ fontSize: 14, fontWeight: 700, fontFamily: 'monospace', marginTop: 6, color: displayChange === null ? 'var(--text-muted)' : displayChange >= 0 ? '#22C55E' : '#EF4444' }}>

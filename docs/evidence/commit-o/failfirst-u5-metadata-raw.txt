@@ -1,0 +1,69 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/assetPageMetadata.test.ts (4 tests | 4 failed) 6ms
+   ❯ MUST FAIL PRE-U5: per-asset canonical and OG metadata (4)
+     × crypto/BTC names the asset and carries its own canonical + og:url 3ms
+     × crypto metadata for an unknown symbol does not promise a page 0ms
+     × commodity/GOLD carries its own canonical + og:url 0ms
+     × forex pair USD/INR carries its own canonical + og:url 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/assetPageMetadata.test.ts > MUST FAIL PRE-U5: per-asset canonical and OG metadata > crypto/BTC names the asset and carries its own canonical + og:url
+TypeError: generateMetadata is not a function
+ ❯ test/assetPageMetadata.test.ts:22:21
+     20| describe("MUST FAIL PRE-U5: per-asset canonical and OG metadata", () =…
+     21|   it("crypto/BTC names the asset and carries its own canonical + og:ur…
+     22|     const m = await cryptoMeta({ params: Promise.resolve({ symbol: "BT…
+       |                     ^
+     23|     expect(m.title).toContain("BTC");
+     24|     expect(m.alternates?.canonical).toBe(`${SITE}/crypto/BTC`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/assetPageMetadata.test.ts > MUST FAIL PRE-U5: per-asset canonical and OG metadata > crypto metadata for an unknown symbol does not promise a page
+TypeError: generateMetadata is not a function
+ ❯ test/assetPageMetadata.test.ts:29:21
+     27|
+     28|   it("crypto metadata for an unknown symbol does not promise a page", …
+     29|     const m = await cryptoMeta({ params: Promise.resolve({ symbol: "NO…
+       |                     ^
+     30|     expect(String(m.title)).toMatch(/not found/i);
+     31|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/assetPageMetadata.test.ts > MUST FAIL PRE-U5: per-asset canonical and OG metadata > commodity/GOLD carries its own canonical + og:url
+TypeError: generateMetadata is not a function
+ ❯ test/assetPageMetadata.test.ts:34:21
+     32|
+     33|   it("commodity/GOLD carries its own canonical + og:url", async () => {
+     34|     const m = await commodityMeta({ params: Promise.resolve({ symbol: …
+       |                     ^
+     35|     expect(m.title).toContain("GOLD");
+     36|     expect(m.alternates?.canonical).toBe(`${SITE}/commodities/GOLD`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/assetPageMetadata.test.ts > MUST FAIL PRE-U5: per-asset canonical and OG metadata > forex pair USD/INR carries its own canonical + og:url
+TypeError: generateMetadata is not a function
+ ❯ test/assetPageMetadata.test.ts:41:21
+     39|
+     40|   it("forex pair USD/INR carries its own canonical + og:url", async ()…
+     41|     const m = await forexMeta({ params: Promise.resolve({ pair: "USD/I…
+       |                     ^
+     42|     expect(m.alternates?.canonical).toBe(`${SITE}/forex/pairs/USD-INR`…
+     43|     expect((m.openGraph?.url as string) ?? "").toBe(`${SITE}/forex/pai…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  07:54:07
+   Duration  469ms (transform 74%, import 21%, worker 2%, tests 2%, setup 2%)
+

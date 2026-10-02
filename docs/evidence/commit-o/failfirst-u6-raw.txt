@@ -1,0 +1,100 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/grounding.yearAndForecast.test.ts (6 tests | 4 failed) 15ms
+   ❯ MUST FAIL PRE-U6: years in date context are not market numbers (3)
+     × 'In 2025 ROE was 12%' grounds against the roe fact 9ms
+     × 'ROE was 12% in FY2025' grounds (FY date form) 1ms
+     ✓ a non-date 4-digit figure is still rejected (the exemption cannot launder a price) 1ms
+   ❯ MUST FAIL PRE-U6: forecast language rejects the whole claim (atomic claims) (3)
+     × the founder's case — 'ROE is 12% and the company will double profits' is NOT grounded 1ms
+     × forecast language in the ANSWER prose also rejects the batch 1ms
+     ✓ plain factual wording still grounds (no over-trigger) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/grounding.yearAndForecast.test.ts > MUST FAIL PRE-U6: years in date context are not market numbers > 'In 2025 ROE was 12%' grounds against the roe fact
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/grounding.yearAndForecast.test.ts:41:24
+     39|   it("'In 2025 ROE was 12%' grounds against the roe fact", () => {
+     40|     const g = validateGrounding([ROE_ITEM], roeClaim("In 2025 ROE was …
+     41|     expect(g.grounded).toBe(true);
+       |                        ^
+     42|     expect(g.validatedClaims).toHaveLength(1);
+     43|     expect(g.rejections.join(" ")).not.toMatch(/2025/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/grounding.yearAndForecast.test.ts > MUST FAIL PRE-U6: years in date context are not market numbers > 'ROE was 12% in FY2025' grounds (FY date form)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/grounding.yearAndForecast.test.ts:48:24
+     46|   it("'ROE was 12% in FY2025' grounds (FY date form)", () => {
+     47|     const g = validateGrounding([ROE_ITEM], roeClaim("ROE was 12% in F…
+     48|     expect(g.grounded).toBe(true);
+       |                        ^
+     49|   });
+     50|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/grounding.yearAndForecast.test.ts > MUST FAIL PRE-U6: forecast language rejects the whole claim (atomic claims) > the founder's case — 'ROE is 12% and the company will double profits' is NOT grounded
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/grounding.yearAndForecast.test.ts:60:24
+     58|   it("the founder's case — 'ROE is 12% and the company will double pro…
+     59|     const g = validateGrounding([ROE_ITEM], roeClaim("ROE is 12% and t…
+     60|     expect(g.grounded).toBe(false);
+       |                        ^
+     61|     expect(g.validatedClaims).toHaveLength(0);
+     62|     expect(g.rejections.join(" ")).toMatch(/forecast/i);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/grounding.yearAndForecast.test.ts > MUST FAIL PRE-U6: forecast language rejects the whole claim (atomic claims) > forecast language in the ANSWER prose also rejects the batch
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/grounding.yearAndForecast.test.ts:67:24
+     65|   it("forecast language in the ANSWER prose also rejects the batch", (…
+     66|     const g = validateGrounding([ROE_ITEM], roeClaim("ROE is 12%."), "…
+     67|     expect(g.grounded).toBe(false);
+       |                        ^
+     68|     expect(g.rejections.join(" ")).toMatch(/forecast/i);
+     69|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  07:59:43
+   Duration  750ms (transform 78%, import 18%, tests 2%, setup 1%, worker 1%)
+

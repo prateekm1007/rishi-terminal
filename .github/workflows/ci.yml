@@ -70,6 +70,11 @@ jobs:
       - name: Route / internal-link integrity (Commit O — no dead internal links)
         run: npm run routeAudit
 
+      - name: PROVENANCE.md drift gate (U5 — regeneration must match the committed doc)
+        run: |
+          npx tsx scripts/provenanceAudit.ts
+          git diff --exit-code docs/PROVENANCE.md || (echo "::error::docs/PROVENANCE.md is stale — run provenanceAudit and commit the regenerated file" && exit 1)
+
       - name: Unit tests (Vitest)
         run: npx vitest run
 

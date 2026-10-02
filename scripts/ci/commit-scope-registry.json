@@ -1,0 +1,69 @@
+{
+  "comment": "Direction-5 commit-scope registry (Round 9): task ID -> allowed path prefixes. scripts/commitScopeAudit.mjs fails any commit in an audited range that (a) lacks a task token in its subject, (b) touches a path outside its task's allowlist, or (c) has a parent outside the range. Entries are exact file paths or directory prefixes ending in '/'. Derive new entries from the task's own PR before pushing; never widen an entry retroactively to make a failing commit pass.",
+  "tasks": {
+    "R9-1": [
+      "app/alerts/page.tsx",
+      "components/dashboard/DashboardClient.tsx",
+      "components/stock/LivePriceWidget.tsx",
+      "hooks/useLivePrices.ts",
+      "lib/dashboardSnapshot.ts",
+      "lib/pricePresentation.ts",
+      "test/dashboardSnapshot.test.ts",
+      "test/livePrices.null.test.ts",
+      "test/uiProvenance.round9.test.ts",
+      "docs/evidence/round9/"
+    ],
+    "R9-2": [
+      "lib/livePrice.ts",
+      "test/fxStaticYieldNullChange.round9.test.ts",
+      "docs/DATA_SOURCES.md"
+    ],
+    "R9-3": [
+      "app/api/pulse/",
+      "app/pulse/page.tsx",
+      "messages/",
+      "test/pulseNullSemantics.round9.test.ts"
+    ],
+    "R9-4": [
+      "lib/ai/router.ts",
+      "lib/ai/schemas.ts",
+      "lib/ai/repairTaxonomy.ts",
+      "test/aiRepairCause.round9.test.ts"
+    ],
+    "R9-5": [
+      "lib/livePrice.ts",
+      "test/coingecko-null.test.ts",
+      "test/priceObservedAtParity.round9.test.ts"
+    ],
+    "R9-6": [
+      "docs/"
+    ],
+    "R9-7": [
+      "app/api/fundamentals/route.ts",
+      "app/api/history/",
+      "app/api/news/route.ts",
+      "app/api/pulse/blocks/route.ts",
+      "app/api/pulse/breadth/route.ts",
+      "test/rule10ErrorHygiene.round9.test.ts",
+      "eslint-ratchet.json"
+    ],
+    "R9-8": [
+      "docs/evidence/round9/",
+      "scripts/aiLatencyBattery.mjs",
+      "scripts/priceLatencyAttribution.mjs"
+    ],
+    "R9-9": [
+      "lib/registry/validateInput.ts",
+      "lib/ai/financialIntent.ts",
+      "test/financialIntent.test.ts",
+      "test/routes.validateInput.test.ts",
+      "test/chat.route.canonicalEvidence.test.ts"
+    ],
+    "R9-10": [
+      "scripts/commitScopeAudit.mjs",
+      "scripts/ci/",
+      "package.json"
+    ],
+    "redeploy": []
+  }
+}

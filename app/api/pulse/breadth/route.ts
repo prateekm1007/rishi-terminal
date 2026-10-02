@@ -127,8 +127,11 @@ export async function GET() {
     });
 
   } catch (err) {
+    // Rule 10 (R9 §18): generic outward, detailed inward — the previous body
+    // leaked `detail: String(err)` (upstream exception text) to the client.
+    console.error('[/api/pulse/breadth] fetch failed:', err);
     return NextResponse.json(
-      { error: 'Failed to fetch breadth', detail: String(err) },
+      { error: 'Failed to fetch breadth' },
       { status: 500 }
     );
   }

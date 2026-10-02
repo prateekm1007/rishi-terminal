@@ -369,8 +369,12 @@ export async function GET(req: Request) {
       }
     );
   } catch (error) {
+    // Rule 10 (R9 §18): generic outward, detailed inward. The previous body
+    // leaked `detail: String(error)` — upstream exception text (vendor URLs,
+    // connection errors) reached the client.
+    console.error('[/api/news] fetch failed:', error);
     return NextResponse.json(
-      { news: [], error: 'Failed to fetch news', detail: String(error) },
+      { news: [], error: 'Failed to fetch news' },
       { status: 500 }
     );
   }

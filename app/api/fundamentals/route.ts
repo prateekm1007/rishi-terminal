@@ -186,6 +186,10 @@ export async function POST(req: NextRequest) {
       headers: { 'Cache-Control': 'public, s-maxage=86400' },
     });
   } catch (err) {
-    return NextResponse.json({ error: 'Failed', details: (err as Error).message }, { status: 500 });
+    // Rule 10 (R9 §18): generic outward, detailed inward — the previous body
+    // leaked `details: (err as Error).message` (scrape/upstream exception
+    // text) to the client.
+    console.error('[/api/fundamentals] fetch failed:', err);
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }

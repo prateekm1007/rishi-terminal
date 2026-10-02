@@ -80,8 +80,11 @@ export async function GET() {
     );
 
   } catch (err) {
+    // Rule 10 (R9 §18): generic outward, detailed inward — the previous body
+    // leaked `detail: String(err)` (upstream exception text) to the client.
+    console.error('[/api/pulse/blocks] fetch failed:', err);
     return NextResponse.json(
-      { error: 'Failed to fetch block deals', detail: String(err) },
+      { error: 'Failed to fetch block deals' },
       { status: 500 }
     );
   }

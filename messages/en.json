@@ -479,6 +479,7 @@
       "advancing": "Advancing",
       "declining": "Declining",
       "unchanged": "Unchanged",
+      "unknown": "No Data",
       "adRatio": "A/D Ratio",
       "sectorMovesTitle": "SECTOR INDEX MOVES (LIVE)",
       "tableHeaders": {

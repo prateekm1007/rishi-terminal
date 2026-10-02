@@ -546,13 +546,15 @@ export default function MarketPulsePage() {
               <SectionTitle emoji="📈" title={t('pulse.overview.sectorSnapshot')} />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
                 {(breadth?.sectors || []).slice(0, 12).map((s: any) => {
-                  const pct = safeNum(s.changePct) ?? 0;
-                  const col = pct >= 0 ? 'var(--green)' : 'var(--red)';
+                  // R9 §17: a missing sector change renders '—' with no
+                  // direction/color claim — never a fabricated '+0.00%'.
+                  const pct = safeNum(s.changePct);
+                  const col = pct === null ? 'var(--text-muted)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
                   return (
                     <div key={s.sector} className="card-unified" style={{ padding: 14 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
                         <div style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>{s.sector}</div>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: col, fontFamily: 'var(--font-mono)' }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: col, fontFamily: 'var(--font-mono)' }}>{pct !== null ? ((pct >= 0 ? '+' : '') + pct.toFixed(2) + '%') : '—'}</div>
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
                         {t('pulse.overview.lastLabel')}: {safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}
@@ -619,8 +621,10 @@ export default function MarketPulsePage() {
               ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14 }}>
                 {currencies.filter((c: { error?: boolean }) => !c.error).map((c: any) => {
-                  const pos = (safeNum(c.changePct) ?? 0) >= 0;
-                  const col = pos ? 'var(--red)' : 'var(--green)';
+                  // R9 §17: color only from a REAL change observation.
+                  const cpct = safeNum(c.changePct);
+                  const pos = cpct !== null ? cpct >= 0 : null;
+                  const col = pos === null ? 'var(--text-muted)' : pos ? 'var(--red)' : 'var(--green)';
                   const rate = safeNum(c.rate);
                   return (
                     <div key={c.pair} className="card-unified" style={{ padding: 16 }}>
@@ -629,7 +633,7 @@ export default function MarketPulsePage() {
                         <div style={{ fontSize: 13, fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{rate !== null ? rate.toFixed(4) : '—'}</div>
                       </div>
                       <div style={{ fontSize: 11, color: col, fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
-                        {(safeNum(c.changePct) !== null) ? ((pos ? '+' : '') + Number(c.changePct).toFixed(2) + '%') : '—'}
+                        {cpct !== null ? ((pos ? '+' : '') + cpct.toFixed(2) + '%') : '—'}
                         {' '}
                         {(safeNum(c.change) !== null) ? '(' + (pos ? '+' : '') + Number(c.change).toFixed(4) + ')' : ''}
                       </div>
@@ -892,6 +896,11 @@ export default function MarketPulsePage() {
                 <StatBox label={t('pulse.breadth.advancing')} value={breadth?.breadth ? String(breadth.breadth.advances) : '—'} color="var(--green)" />
                 <StatBox label={t('pulse.breadth.declining')} value={breadth?.breadth ? String(breadth.breadth.declines) : '—'} color="var(--red)" />
                 <StatBox label={t('pulse.breadth.unchanged')} value={breadth?.breadth ? String(breadth.breadth.unchanged) : '—'} color="#818CF8" />
+                {/* R9 §17: indices with no disclosed change — counted, not
+                    silently relabelled "unchanged". Rendered only when > 0. */}
+                {(breadth?.breadth?.unknown ?? 0) > 0 && (
+                  <StatBox label={t('pulse.breadth.unknown')} value={String(breadth.breadth.unknown)} color="var(--text-muted)" />
+                )}
                 <StatBox label={t('pulse.breadth.adRatio')} value={breadth?.breadth?.advanceDeclineRatio ? String(breadth.breadth.advanceDeclineRatio) : '—'} color="var(--amber)" />
               </div>
             </div>
@@ -919,13 +928,14 @@ export default function MarketPulsePage() {
                   </thead>
                   <tbody>
                     {(breadth?.sectors || []).map((s: any, i: number) => {
-                      const pct = safeNum(s.changePct) ?? 0;
-                      const col = pct >= 0 ? 'var(--green)' : 'var(--red)';
+                      // R9 §17: missing change → '—' with no color claim.
+                      const pct = safeNum(s.changePct);
+                      const col = pct === null ? 'var(--text-muted)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
                       return (
                         <tr key={s.sector}>
                           <td style={{ fontWeight: 600 }}>{s.sector}</td>
                           <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{safeNum(s.last) !== null ? Number(s.last).toFixed(2) : '—'}</td>
-                          <td style={{ textAlign: 'right', fontWeight: 800, color: col }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 800, color: col }}>{pct !== null ? ((pct >= 0 ? '+' : '') + pct.toFixed(2) + '%') : '—'}</td>
                           <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{safeNum(s.high) !== null ? Number(s.high).toFixed(2) : '—'}</td>
                           <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{safeNum(s.low) !== null ? Number(s.low).toFixed(2) : '—'}</td>
                           <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{safeNum(s.open) !== null ? Number(s.open).toFixed(2) : '—'}</td>
@@ -966,27 +976,34 @@ export default function MarketPulsePage() {
                   </thead>
                   <tbody>
                     {(blocks?.deals || []).map((d: any, i: number) => {
-                      const pct = safeNum(d.changePct) ?? 0;
-                      const col = pct >= 0 ? 'var(--green)' : 'var(--red)';
+                      // R9 §17: a missing pchange renders '—' with no color
+                      // claim; a missing side renders a neutral chip — never
+                      // a manufactured green BUY.
+                      const pct = safeNum(d.changePct);
+                      const col = pct === null ? 'var(--text-muted)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
                       return (
                         <tr key={d.symbol + '-' + i}>
                           <td style={{ color: 'var(--amber)', fontWeight: 700 }}>{d.symbol}</td>
                           <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{safeNum(d.quantity) !== null ? Number(d.quantity).toLocaleString() : '—'}</td>
                           <td style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{safeNum(d.price) !== null ? Number(d.price).toFixed(2) : '—'}</td>
                           <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent-gold)' }}>{safeNum(d.value) !== null ? Number(d.value).toFixed(2) : '—'}</td>
-                          <td style={{ textAlign: 'right', fontWeight: 800, color: col }}>{(pct >= 0 ? '+' : '') + pct.toFixed(2) + '%'}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 800, color: col }}>{pct !== null ? ((pct >= 0 ? '+' : '') + pct.toFixed(2) + '%') : '—'}</td>
                           <td style={{ textAlign: 'right' }}>
-                            <span style={{
-                              background: d.side === 'BUY' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-                              border: '1px solid ' + (d.side === 'BUY' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'),
-                              color: d.side === 'BUY' ? 'var(--green)' : 'var(--red)',
-                              borderRadius: 6,
-                              padding: '4px 12px',
-                              fontSize: 10,
-                              fontWeight: 700
-                            }}>
-                              {d.side}
-                            </span>
+                            {d.side ? (
+                              <span style={{
+                                background: d.side === 'BUY' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                                border: '1px solid ' + (d.side === 'BUY' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'),
+                                color: d.side === 'BUY' ? 'var(--green)' : 'var(--red)',
+                                borderRadius: 6,
+                                padding: '4px 12px',
+                                fontSize: 10,
+                                fontWeight: 700
+                              }}>
+                                {d.side}
+                              </span>
+                            ) : (
+                              <span style={{ color: 'var(--text-muted)', fontSize: 10, fontWeight: 700 }}>—</span>
+                            )}
                           </td>
                           <td style={{ textAlign: 'right', color: 'var(--text-muted)' }}>{d.series || ''}</td>
                         </tr>

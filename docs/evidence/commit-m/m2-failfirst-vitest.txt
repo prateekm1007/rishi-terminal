@@ -1,0 +1,5 @@
+exit=1
+      Tests  26 failed | 24 passed (50)
+   Start at  02:47:19
+   Duration  1.09s (transform 71%, import 21%, tests 8%, setup 1%)
+

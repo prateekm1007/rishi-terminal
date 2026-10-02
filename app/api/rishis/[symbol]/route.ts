@@ -1,38 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSessionUser } from '@/lib/auth/session';
 import { STOCKS } from '@/data/stocks';
 import { normalizeSymbolInput } from '@/lib/registry/validateInput'; // R5: unified input gate (registry + aliases)
 import { getStockScore } from '@/lib/scoring';
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 /**
- * R3 + Commit M3 (founder decision 2026-10-02 — every feature free):
- * per-Rishi verdicts are served ONLY from this server route.
+ * R3 + Commit M3 + Commit N1 (founder decisions 2026-10-02 — every feature
+ * free; Portfolio Lab works without sign-in): per-Rishi verdicts are served
+ * ONLY from this server route, to EVERY caller.
  *
- * - Anonymous callers get 401 — the route exists for signed-in client
- *   surfaces (lab tabs) that upgrade their list-row summary slice to the
- *   full verdict set on demand; the PUBLIC per-symbol surface is the stock
- *   page RSC, which now embeds the FULL verdict set for everyone. Auth here
- *   is abuse control (per-request compute), never a paywall.
  * - The response contains EVERY verdict — the tier-visibility slice is
  *   gone. There is no locked remainder to tease or upsell.
- * - The identity comes from getSessionUser() (server-resolved); nothing
- *   about the caller changes the content of this response.
+ * - The same full verdict set is public on every stock page RSC, so this
+ *   route gates nothing confidential; the per-IP rate limit below is
+ *   compute/abuse defense for a public, deterministic dataset.
+ * - Nothing about the caller changes the content of this response.
  */
 export const dynamic = 'force-dynamic';
 
+// Per-IP rate limit (defense in depth for per-request compute). Generous
+// for real Lab usage (a portfolio of ~20 holdings bursts one request per
+// symbol on tab mount); fails OPEN like every abuse layer that is not
+// accounting — the chat quota remains the fail-closed spend control.
+const VERDICTS_IP_LIMIT = 60;
+const VERDICTS_IP_WINDOW = 60;
+
+function clientIp(req: NextRequest): string {
+  // Same Vercel-documented parsing contract as the chat route (N4 round 3):
+  // the platform overwrites x-forwarded-for with exactly the client's
+  // public IP; parsing the LAST entry stays correct behind conventional
+  // appending proxies as well.
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length > 0) return parts[parts.length - 1];
+  }
+  return req.headers.get('x-real-ip') ?? 'unknown';
+}
+
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ symbol: string }> },
 ) {
   const { symbol } = await params;
-  const user = await getSessionUser();
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Sign in to view Rishi verdicts' },
-      { status: 401 },
-    );
+
+  const r = await checkRateLimit(
+    `rishis:verdicts:${clientIp(req)}`,
+    VERDICTS_IP_LIMIT,
+    VERDICTS_IP_WINDOW,
+  );
+  if (!r.allowed) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
   const key = normalizeSymbolInput(symbol);

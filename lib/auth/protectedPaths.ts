@@ -6,9 +6,11 @@
  * Founder decision 2026-10-03: the Portfolio Lab (/lab) works WITHOUT
  * sign-in — its data is browser-local (lib/portfolio, lib/watchlist), so
  * there is nothing to authenticate. /alerts keeps its gate (out of scope
- * for that decision).
+ * for that decision). '/portfolio' is not listed either: no such route
+ * exists (the lab lives at /lab), and protecting a dead path only
+ * converts an honest 404 into a sign-in wall.
  */
-export const PROTECTED_PATHS: readonly string[] = ['/portfolio', '/alerts'];
+export const PROTECTED_PATHS: readonly string[] = ['/alerts'];
 
 /**
  * R9 path-segment matching: '/alerts' must not also swallow '/alerts-foo'.

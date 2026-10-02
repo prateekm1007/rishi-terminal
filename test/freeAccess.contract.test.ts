@@ -213,9 +213,11 @@ describe("free access: forged client tier cannot alter the server decision", () 
 // ── §13: verdict surfaces serve everyone the same full content ────────────
 
 describe("free access: /api/rishis/[symbol] serves the FULL verdict set for every session", () => {
-  for (const tier of LEGACY_TIERS) {
-    it(`${tier}-equivalent session -> every verdict, no tier slice`, async () => {
-      asUser({ id: "u1", tier });
+  // Commit N1: anonymous callers are part of the matrix (Portfolio Lab's
+  // verdict upgrades work without sign-in — the founder's decision).
+  for (const tier of ["anonymous", ...LEGACY_TIERS] as const) {
+    it(`${tier} caller -> every verdict, no tier slice`, async () => {
+      asUser(tier === "anonymous" ? null : { id: "u1", tier });
       const res = await rishisGET(makeGetReq("http://x/api/rishis/RELIANCE"), {
         params: Promise.resolve({ symbol: "RELIANCE" }),
       });

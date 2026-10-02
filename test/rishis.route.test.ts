@@ -1,14 +1,29 @@
-/** R3 + Commit M3: per-Rishi verdicts are served ONLY through the
- *  server-enforced route — and under free access (founder decision
- *  2026-10-02) every authenticated caller receives the FULL verdict set.
+/** R3 + Commits M3 + N1: per-Rishi verdicts are served ONLY through the
+ *  server-enforced route — and under free access (founder decisions
+ *  2026-10-02 + 2026-10-03) EVERY caller, signed in or not, receives the
+ *  FULL verdict set (the Portfolio Lab's Intelligence/Compare tabs upgrade
+ *  their bounded slice through this route — the lab needs no sign-in).
  *  There is no tier slice, no locked teaser, and no `tier` field on any
- *  of these wires anymore. */
+ *  of these wires anymore. The route is per-IP rate-limited for
+ *  compute/abuse control. */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 const getSessionUserMock = vi.fn();
 
 vi.mock("@/lib/auth/session", () => ({
   getSessionUser: () => getSessionUserMock(),
+}));
+
+// Commit N1: the verdicts route is per-IP rate-limited through the
+// persistent limiter; mock it allowed (its mechanics are pinned in
+// test/anonymous.access.test.ts).
+vi.mock("@/lib/services/supabaseAdmin", () => ({
+  getAdminSupabase: () => ({
+    rpc: async (fn: string) => {
+      if (fn === "hit_rate_limit") return { data: { allowed: true, count: 1 }, error: null };
+      throw new Error(`unexpected rpc: ${fn}`);
+    },
+  }),
 }));
 
 import { GET } from "@/app/api/rishis/[symbol]/route";
@@ -33,17 +48,20 @@ import { getStockScore } from "@/lib/scoring";
 import { CANONICAL_PERSONAS } from "@/lib/chat/registry";
 
 const route = (symbol: string) =>
-  GET({} as never, { params: Promise.resolve({ symbol }) });
+  GET({ headers: { get: () => null } } as never, { params: Promise.resolve({ symbol }) });
 
 beforeEach(() => {
   getSessionUserMock.mockReset();
 });
 
-describe("R3/M3 — GET /api/rishis/[symbol]", () => {
-  it("401 for anonymous callers (auth is abuse control, not a tier)", async () => {
+describe("R3/M3/N1 — GET /api/rishis/[symbol]", () => {
+  it("serves the FULL verdict set to ANONYMOUS callers (Commit N1: Portfolio Lab needs no sign-in)", async () => {
     getSessionUserMock.mockResolvedValueOnce(null);
     const res = await route("RELIANCE");
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.totalRishis).toBe(20);
+    expect(data.verdicts.length).toBe(data.totalRishis);
   });
 
   for (const legacyTier of ["seeker", "student", "disciple"]) {

@@ -1,0 +1,4 @@
+     × MUST FAIL PRE-N: a symbol-specific data question answered context-only WITHOUT any tool call is BLOCKED, not served 6ms
+Error: Cannot find package '@/lib/ai/financialIntent' imported from /home/z/rishi-terminal/test/financialIntent.test.ts
+ Test Files  2 failed (2)
+      Tests  1 failed | 13 passed (14)

@@ -3,17 +3,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
-// N1 (round 3) + Commit M3 (free access): receives the server-generated
+// N1 (round 3) + Commit M3/N1 (free access): receives the server-generated
 // slim index. The list rows carry a BOUNDED summary slice (payload budget,
-// not an entitlement); authenticated sessions upgrade each holding's
-// verdicts to the FULL set through GET /api/rishis/[symbol] — the engine
-// never ships in the client bundle, and every verdict is free for
-// everyone on the stock pages.
+// not an entitlement); EVERY caller — signed in or not — upgrades each
+// holding's verdicts to the FULL set through GET /api/rishis/[symbol] —
+// the engine never ships in the client bundle, and every verdict is free
+// for everyone on the stock pages.
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import type { RishiScore } from '@/lib/types';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
-import { useSession } from '@/hooks/useSession';
 import { useLanguage } from '../../lib/language';
 import InfoTip from '@/components/lab/InfoTip';
 
@@ -51,7 +50,6 @@ interface Props {
 
 export default function IntelligenceTab({ rows }: Props) {
   const { t } = useLanguage();
-  const { authenticated } = useSession();
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([]);
   const [verdictUpgrades, setVerdictUpgrades] = useState<Record<string, RishiScore[]>>({});
 
@@ -59,12 +57,13 @@ export default function IntelligenceTab({ rows }: Props) {
     setHoldings(loadPortfolio().holdings);
   }, []);
 
-  // Free access: any signed-in session upgrades each holding's bounded
-  // summary slice to the FULL verdict set via the server route (the route
-  // is auth-gated for per-request compute/abuse control — the same data is
-  // public on every stock page).
+  // Commit N1 (founder decision 2026-10-02): every caller — signed in or
+  // not — upgrades each holding's bounded summary slice to the FULL
+  // verdict set via the server route (the route is per-IP rate-limited
+  // for per-request compute/abuse control; the same data is public on
+  // every stock page). Portfolio Lab needs no sign-in.
   useEffect(() => {
-    if (!authenticated || holdings.length === 0) return;
+    if (holdings.length === 0) return;
     let cancelled = false;
     void (async () => {
       const next: Record<string, RishiScore[]> = {};
@@ -83,7 +82,7 @@ export default function IntelligenceTab({ rows }: Props) {
       if (!cancelled && Object.keys(next).length > 0) setVerdictUpgrades(next);
     })();
     return () => { cancelled = true; };
-  }, [authenticated, holdings]);
+  }, [holdings]);
 
   const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
 

@@ -153,5 +153,23 @@
     "Production tuple is the first in the round to include ALL of: R9-1..R9-9 runtime fixes, the Direction-5 audit gate, and repair-cause attribution on the wire.",
     "Agnes 502s and global-quota 429s are honest infrastructure states (Rules 1/5/6): reported, not papered over; no vendor switch was made (Direction 13).",
     "The receipt commit itself is docs/scripts-only; the probed runtime SHA above stays the evidence anchor."
-  ]
+  ],
+  "addendum": {
+    "at": "2026-10-02T21:29:05Z",
+    "batteryCollectionComplete": true,
+    "batteryCollected": {
+      "financial": 22,
+      "philosophy": 11,
+      "invalid": 11
+    },
+    "batteryStatuses": {
+      "200": 7,
+      "502": 23,
+      "429": 14
+    },
+    "mergedAfterThisReceipt": {
+      "PR74": "fix(R9-12) the AI tool layer reads the ONE registry — main 073cd7a86, CI success, AWAITING DEPLOY (Vercel api-deployments-free-per-day exhausted, resets ~2026-10-02T23:48Z)",
+      "evidence": "WTI live probe on 3f7d9019d: intent engages getPrices but tool gate returned unknown-symbol (stock-master-only) while /api/prices?symbol=WTI served LIVE — root cause fixed by R9-12"
+    }
+  }
 }

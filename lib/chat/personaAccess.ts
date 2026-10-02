@@ -20,7 +20,7 @@ import { CANONICAL_PERSONAS, PERSONA_BY_ID, type CanonicalPersona } from './regi
  *   persona existence + tier entitlement
  *
  * Every caller may converse with every canonical persona — no tier and no
- * sign-in (founder decision 2026-10-03). Abuse is bounded by the ONE free
+ * sign-in (founder decision 2026-10-02). Abuse is bounded by the ONE free
  * quota and the per-IP burst limiter on POST /api/chat, not by hiding the
  * roster or the personas.
  */

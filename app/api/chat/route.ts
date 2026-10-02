@@ -13,7 +13,7 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
  *
  * Contract: { personaId, symbol?, history, message }
- * - NO authentication required (founder decision 2026-10-03): anonymous
+ * - NO authentication required (founder decision 2026-10-02): anonymous
  *   callers run the SAME bounded pipeline as signed-in callers. A signed-in
  *   session (if present) is used as the quota identity; an anonymous caller
  *   is quota-keyed to a DETERMINISTIC per-IP uuidv5 (lib/auth/anonIdentity)
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
   // end, on the successful wire; error paths return without it — the
   // router timings are the attribution surface that matters there).
   const routeStart = Date.now();
-  // 1. Identity (T5 sessions, now OPTIONAL — founder decision 2026-10-03):
+  // 1. Identity (T5 sessions, now OPTIONAL — founder decision 2026-10-02):
   //    a signed-in session supplies the account id; an anonymous caller is
   //    quota-keyed to a deterministic per-IP uuidv5. Neither path is a
   //    feature gate — every caller gets the same pipeline, evidence loop,
@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
   // Commit M3 (free access): persona authorization is EXISTENCE + canonical
   // registry resolution — every caller may converse with every canonical
   // persona (founder decision 2026-10-02: no tier may gate any feature;
-  // founder decision 2026-10-03: no sign-in gate either).
+  // founder decision 2026-10-02: no sign-in gate either).
   // resolveCanonicalPersona re-reads the SAME registry the roster route
   // serves, so the two surfaces cannot drift.
   const persona = resolveCanonicalPersona(personaId)!;

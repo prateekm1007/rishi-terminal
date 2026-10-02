@@ -1,5 +1,5 @@
 /**
- * Commit N1 (founder decision 2026-10-03: Portfolio Lab works without
+ * Commit N1 (founder decision 2026-10-02: Portfolio Lab works without
  * sign-in) — the LAB-DATA anonymous surface.
  *
  * The parallel session (PR #46) opened chat + the personas roster + the

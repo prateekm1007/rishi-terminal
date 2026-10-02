@@ -136,16 +136,21 @@ describe("the loop grounds when the model emits the contract shape (canary mecha
   });
 });
 
-describe("MUST FAIL PRE-O: the tool protocol teaches the final-answer shape", () => {
-  it("the system prompt carries an explicit final-JSON example with claim objects, evidenceIds and copied assertions", async () => {
+describe("MUST FAIL PRE-O: the evidence contract teaches the final-answer shape", () => {
+  it("the system prompt (evidence path) carries a final-JSON example with claim objects, evidenceIds and copied assertions", async () => {
     const { calls } = scriptProvider([
       JSON.stringify({ answer: "ok", claims: [], uncertainties: [] }),
     ]);
     await generateEvidenceGroundedAnswer({
       systemPrompt: "test persona",
       history: [],
-      message: "What is the latest price of RELIANCE?",
-      evidence: [],
+      message: "What is your read on RELIANCE?",
+      // The evidence path: the rebuilt post-tool prompt carries THIS block.
+      evidence: [{
+        id: "price:RELIANCE:2026-10-01T10:00:00.000Z",
+        text: "Latest observed price: 1000 (change 0.5%). | fact: price=1000 inr (live)",
+        facts: [{ field: "price", value: 1000, unit: "inr", source: "live", observedAt: "2026-10-01T10:00:00.000Z" }],
+      }],
       stockState: undefined,
       toolDeps: TOOL_DEPS,
     });
@@ -157,19 +162,19 @@ describe("MUST FAIL PRE-O: the tool protocol teaches the final-answer shape", ()
     expect(system).toContain('"assertions"');
     expect(system).toContain('"field"');
     expect(system).toContain('"unit"');
-    // The contract's claims example must be structurally valid JSON — a
-    // broken example would teach the defect it exists to prevent.
+    // The contract's claims example must be structurally valid — claims as
+    // OBJECTS with a CLOSED evidenceIds array followed by a sibling
+    // assertions array (a nested/broken example would teach the defect it
+    // exists to prevent).
     const claimsStart = system.indexOf('"claims": [{"claim"');
     expect(claimsStart).toBeGreaterThan(-1);
-    const objStart = system.lastIndexOf("{", claimsStart);
-    const objEnd = system.indexOf("}", system.indexOf('"assertions"', claimsStart));
-    const example = system.slice(objStart, objEnd + 1);
-    expect(() => JSON.parse(example.replace(/<[^>]+>/g, "1"))).not.toThrow();
-    const parsedExample = JSON.parse(example.replace(/<[^>]+>/g, "1")) as { claims?: Array<Record<string, unknown>> };
-    expect(Array.isArray(parsedExample.claims)).toBe(true);
-    expect(typeof parsedExample.claims?.[0]).toBe("object");
-    expect(Array.isArray((parsedExample.claims?.[0] as Record<string, unknown>).evidenceIds)).toBe(true);
-    expect(Array.isArray((parsedExample.claims?.[0] as Record<string, unknown>).assertions)).toBe(true);
+    const idsArr = /"evidenceIds":\s*\[[^\]]*\]/.exec(system.slice(claimsStart));
+    expect(idsArr).not.toBeNull();
+    const assertionsArr = /"assertions":\s*\[\s*\{"field":/.exec(system.slice(claimsStart));
+    expect(assertionsArr).not.toBeNull();
+    // assertions must be a SIBLING member (opened after the ids array closed).
+    expect(claimsStart + (idsArr as RegExpExecArray).index).toBeLessThan(claimsStart + (assertionsArr as RegExpExecArray).index);
+    expect(system.slice(claimsStart)).toMatch(/\]\s*,\s*"assertions"/);
   });
 });
 

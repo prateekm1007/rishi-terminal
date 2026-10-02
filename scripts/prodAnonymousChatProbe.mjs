@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * prodAnonymousChatProbe.mjs — reusable production probe for the founder
- * decision 2026-10-03 (chat + lab require NO authentication).
+ * decision 2026-10-02 (chat + lab require NO authentication).
  *
  * Rows:
  *  1. anonymous chat round-trip → 200, wire provenance, structured
@@ -34,7 +34,7 @@ const rows = [];
     name: "anonymous chat round-trip (no cookies)",
     status: resp.status,
     ms: Date.now() - started,
-    http: "200 expected (founder 2026-10-03: no authentication)",
+    http: "200 expected (founder 2026-10-02: no authentication)",
     wire: {
       provider: body?.provenance?.provider ?? null,
       model: body?.provenance?.model ?? null,

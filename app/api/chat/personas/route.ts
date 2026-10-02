@@ -6,7 +6,7 @@ import { getChatPersonas } from '@/lib/chat/personaAccess';
  * under the free-access product it is no longer a gate at all: the roster
  * served here is the canonical registry with NO tier filtering (founder
  * decision 2026-10-02) and NO sign-in requirement (founder decision
- * 2026-10-03 — the roster is public marketing content, also rendered on
+ * 2026-10-02 — the roster is public marketing content, also rendered on
  * /rishis). POST /api/chat re-validates each persona id against the same
  * canonical registry per request; abuse is bounded there by quota/burst,
  * not by hiding the roster.

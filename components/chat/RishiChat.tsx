@@ -49,7 +49,7 @@ export default function RishiChat({ stock }: Props) {
   ];
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // R3 + M3 + founder decision 2026-10-03 (no sign-in required): WHICH
+  // R3 + M3 + founder decision 2026-10-02 (no sign-in required): WHICH
   // personas a caller may use is decided by the server (GET
   // /api/chat/personas serves every canonical persona to ANY caller;
   // /api/chat re-validates each id against the canonical registry per

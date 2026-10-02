@@ -77,7 +77,7 @@ function makeReq(json: unknown, ip = "1.2.3.4"): never {
 const okBody = { personaId: "buffett", message: "What do you think of reliance?" };
 
 describe("T7 — chat route limits", () => {
-  it("anonymous callers share the same bounded path (founder 2026-10-03: no sign-in required)", async () => {
+  it("anonymous callers share the same bounded path (founder 2026-10-02: no sign-in required)", async () => {
     const { getSessionUser } = await import("@/lib/auth/session");
     vi.mocked(getSessionUser).mockResolvedValueOnce(null as never);
     const res = await POST(makeReq(okBody));

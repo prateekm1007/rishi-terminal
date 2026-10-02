@@ -646,7 +646,7 @@ export const GOLDEN_CASES: GoldenCase[] = [
     expect: { status: 200, quotaConsumed: 1, refunds: 0 } },
 
   // ── 30. unauthenticated (route — CI) ──────────────────────────────────
-  // Founder decision 2026-10-03: chat requires NO authentication. An
+  // Founder decision 2026-10-02: chat requires NO authentication. An
   // anonymous caller runs the SAME bounded pipeline — same persona
   // validation, same evidence loop, same ONE free quota (keyed to a
   // deterministic per-IP uuid on the route).

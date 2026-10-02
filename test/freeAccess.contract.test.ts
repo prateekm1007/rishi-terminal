@@ -21,7 +21,7 @@
  *   payment retirement  — POST/PUT /api/payment and the webhook answer 410
  *                         and NEVER reach the grant path.
  *
- * Auth is NOT a tier and NOT a feature gate (founder decision 2026-10-03):
+ * Auth is NOT a tier and NOT a feature gate (founder decision 2026-10-02):
  * anonymous callers run the same chat pipeline, quota-keyed per IP — that
  * contract is pinned by chat.anonymous.test.ts and
  * chat.route.personaAuth.test.ts.
@@ -176,7 +176,7 @@ describe("free access: POST /api/chat has NO tier-based persona 403", () => {
     expect(res.status).toBe(400);
   });
 
-  it("anonymous chat shares the same bounded path (founder 2026-10-03: no sign-in required)", async () => {
+  it("anonymous chat shares the same bounded path (founder 2026-10-02: no sign-in required)", async () => {
     asUser(null);
     const res = await chatPOST(makeReq({ personaId: "damani", history: [], message: "hi" }));
     // Anonymous callers run the SAME pipeline — same persona validation,

@@ -7,6 +7,12 @@
 // only restricts who may embed us in an iframe and cannot break the app itself.
 // 'unsafe-inline' / 'unsafe-eval' are still required by Next.js (inline theme
 // bootstrap script, dev-mode HMR); tighten together with enforcement later.
+//
+// Audit retest 2026-10-02 (A.1): `upgrade-insecure-requests` is spec-ignored
+// inside a Report-Only policy and Chrome logs a console error on EVERY
+// pageview — it was the sole console error on the whole site. It is enforced
+// directly instead (the deployment is HTTPS-only behind HSTS preload, so
+// upgrading http:// subresources is belt-and-braces and breaks nothing).
 const cspReportOnly = [
   "default-src 'self'",
   // inline theme bootstrap in app/layout.tsx; Razorpay checkout.js;
@@ -21,7 +27,6 @@ const cspReportOnly = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  "upgrade-insecure-requests",
   // R8: violations land on /api/csp-report (logged server-side, rate-limited).
   // ENFORCEMENT TARGET: 2026-10-07 — after >= 1 week of clean reports, drop
   // the -Report-Only suffix (keep frame-ancestors enforced as it is today).
@@ -34,8 +39,12 @@ const securityHeaders = [
   { key: 'Reporting-Endpoints', value: 'csp-endpoint="/api/csp-report"' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  // Enforced immediately — see comment above.
-  { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+  // Enforced immediately — see comment above. upgrade-insecure-requests
+  // moved here from Report-Only (audit retest 2026-10-02, A.1).
+  {
+    key: 'Content-Security-Policy',
+    value: "frame-ancestors 'none'; upgrade-insecure-requests",
+  },
   { key: 'Content-Security-Policy-Report-Only', value: cspReportOnly },
   {
     key: 'Permissions-Policy',

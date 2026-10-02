@@ -62,6 +62,17 @@ export interface EvidenceDeps {
 /** Budget for the live fundamentals fetch — the chat path must stay bounded. */
 const FUNDAMENTALS_TIMEOUT_MS = 10_000;
 
+/** §11 latency attribution for one request's observation state: per-symbol
+ *  FIRST-fetch durations plus memo-hit counts. The state is the request's
+ *  coalescing layer, so `memoHits` IS the cache/coalescing-hit count for
+ *  the AI loop (a second tool asking for the same symbol's price is a hit,
+ *  not a second upstream fetch). */
+export interface CanonicalStockStateTimings {
+  priceFetches: Array<{ symbol: string; ms: number }>;
+  fundamentalsFetches: Array<{ symbol: string; ms: number }>;
+  memoHits: { price: number; fundamentals: number };
+}
+
 /**
  * Commit M7 — THE per-request canonical observation state.
  *
@@ -87,6 +98,8 @@ export interface CanonicalStockState {
   /** The canonical resolver applied to the memoized overlay (null for an
    *  unknown symbol). Same inputs → same ResolvedStockMetrics, always. */
   resolve(symbol: string): Promise<ResolvedStockMetrics | null>;
+  /** §11 attribution (measurement only — never changes behavior). */
+  timings(): CanonicalStockStateTimings;
 }
 
 export function createCanonicalStockState(deps: EvidenceDeps = {}): CanonicalStockState {
@@ -95,13 +108,23 @@ export function createCanonicalStockState(deps: EvidenceDeps = {}): CanonicalSto
   const fundamentalsCache = new Map<string, Promise<FullFundamentals | null>>();
   const priceCache = new Map<string, Promise<PricePoint | null>>();
   const resolveCache = new Map<string, ResolvedStockMetrics | null>();
+  const timings: CanonicalStockStateTimings = {
+    priceFetches: [],
+    fundamentalsFetches: [],
+    memoHits: { price: 0, fundamentals: 0 },
+  };
 
   const fundamentals = (symbol: string): Promise<FullFundamentals | null> => {
     const key = symbol.trim().toUpperCase();
     let p = fundamentalsCache.get(key);
     if (!p) {
-      p = fetchFundamentalsBounded(key, getFundamentals);
+      const t0 = Date.now();
+      p = fetchFundamentalsBounded(key, getFundamentals).finally(() => {
+        timings.fundamentalsFetches.push({ symbol: key, ms: Date.now() - t0 });
+      });
       fundamentalsCache.set(key, p);
+    } else {
+      timings.memoHits.fundamentals += 1;
     }
     return p;
   };
@@ -110,12 +133,17 @@ export function createCanonicalStockState(deps: EvidenceDeps = {}): CanonicalSto
     const key = symbol.trim().toUpperCase();
     let p = priceCache.get(key);
     if (!p) {
+      const t0 = Date.now();
       // The RAW promise is memoized: a throw propagates to consumers that
       // await without catching (getPrices → explicit `failed` state), while
       // the evidence package catches it and renders the honest unavailable
       // price item. One observation, two consumption contracts.
-      p = Promise.resolve(getPrice(key));
+      p = Promise.resolve(getPrice(key)).finally(() => {
+        timings.priceFetches.push({ symbol: key, ms: Date.now() - t0 });
+      });
       priceCache.set(key, p);
+    } else {
+      timings.memoHits.price += 1;
     }
     return p;
   };
@@ -129,7 +157,7 @@ export function createCanonicalStockState(deps: EvidenceDeps = {}): CanonicalSto
     return resolved;
   };
 
-  return { fundamentals, price, resolve };
+  return { fundamentals, price, resolve, timings: () => timings };
 }
 
 /**

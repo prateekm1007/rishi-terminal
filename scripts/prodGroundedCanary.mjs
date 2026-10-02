@@ -1,43 +1,33 @@
 /**
  * Commit N7/N18 — PRODUCTION grounded-AI canary + negative canary
- * (Coder Directions 2026-10-02 §7/§18).
+ * (Coder Directions 2026-10-02 §7/§18; contract strengthened per §6/§7).
  *
  * THE remaining production gap: the free-access matrix proved the tool
  * loop can EXECUTE (getScore:ok) but the loop's final answer was
  * grounded=false / mode=evidence-context — tool-execution proof, not
  * end-to-end proof. This probe closes that distinction or fails loudly.
  *
- * Positive canary (anonymous caller — no sign-in, per the founder
- * decision deployed by PR #46; no symbol preselected, so the general chat
- * path is exercised and the MODEL must request the canonical tool itself):
+ * Positive canary (anonymous caller — no sign-in; no symbol preselected,
+ * so the general chat path is exercised and the MODEL must request the
+ * canonical tool itself):
  *   user ─▶ model ─▶ {"tool":"getPrices","args":{"symbol":"RELIANCE"}}
  *        ─▶ executeAiTool (server) ─▶ canonical evidence
  *        ─▶ model structured final claims ─▶ validateGrounding
  *        ─▶ grounded=true + SERVER-GENERATED verified surface + separate
  *            commentary ─▶ ChatWire ─▶ (this probe asserts the wire).
  *
- * Required rows (all must hold on at least one attempt, ≤3 attempts —
- * model choice is nondeterministic; every attempt is logged in the
- * receipt, and a passing attempt must satisfy EVERY row):
- *   version-binding   /api/version sha == expected (when given)
- *   anonymous-access  POST /api/chat without a session returns 200
- *                     (quota-keyed to the per-IP identity)
- *   tool-expected     audit trail shows getPrices with status ok on the
- *                     exact registry symbol
- *   structured-claims groundingMode === "structured-claims"
- *   grounded          provenance.grounded === true with ≥1 validated claim
- *   verified-surface  text is the SERVER-generated statement (contains
- *                     "price = <value> <unit> — <source state>"), never
- *                     the model prose
- *   separate-commentary  provenance.commentary exists and differs from text
- *   numbers-covered   every number in the verified surface (timestamps
- *                     stripped) is one of the validated fact values
- *   identity          provider/model attested on the wire
+ * The CONTRACT lives in scripts/lib/groundedCanaryContract.mjs (§6/§7 —
+ * exact server-surface equality, facts/claims bijection, exact attested
+ * identity, structural negative) and is unit-tested there; this script
+ * applies it against production and records every attempt.
  *
- * Negative canary: an unknown-symbol data question must produce an
- * EXPLICIT failure (tool status unknown-symbol, or the deterministic
- * intent guard's BLOCKED state) — never a fabricated price and never a
- * false grounded=true.
+ * Nondeterminism note (§8): the model may fail to produce a validatable
+ * structured reply on any given attempt — that is exactly what the
+ * receipt records, every attempt with its machine-readable rejection
+ * reasons. The DETERMINISTIC gate (scripts/prodDeterministicAiGate.mjs,
+ * secret-gated /api/probe/ai-loop) is the permanent regression surface;
+ * this canary remains the diagnostic existence proof that the UNSEEDED
+ * production path (model's own tool choice) also closes the loop.
  *
  * Usage: node scripts/prodGroundedCanary.mjs [BASE_URL] [EXPECTED_SHA]
  * Output: docs/evidence/commit-n/production-grounded-canary.json
@@ -46,6 +36,10 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  evaluatePositiveCanary,
+  evaluateNegativeCanary,
+} from "./lib/groundedCanaryContract.mjs";
 
 const BASE = process.argv[2] || "https://rishi-terminal.vercel.app";
 const EXPECTED_SHA = process.argv[3] || "";
@@ -54,25 +48,23 @@ const OUT = join(ROOT, "docs", "evidence", "commit-n", "production-grounded-cana
 
 const POSITIVE_QUESTION = "What is the latest price of RELIANCE?";
 const NEGATIVE_QUESTION = "What is the latest price of ZZZZNOPE?";
-// Model replies are nondeterministic: a single attempt may honestly discard
-// (e.g. the model states a number in its answer text it did not assert —
-// the fail-closed contract refuses partial verification). 5 attempts give
-// the existence proof a fair margin; every attempt is logged in the
-// receipt, pass or fail.
+// Model replies are nondeterministic: a single attempt may honestly fail
+// (provider hiccup, or the model states a number it did not assert — the
+// fail-closed contract refuses partial verification). 5 attempts give the
+// existence proof a fair margin; every attempt is logged in the receipt,
+// pass or fail, WITH its machine-readable rejection reasons.
 const MAX_POSITIVE_ATTEMPTS = 5;
 const MAX_NEGATIVE_ATTEMPTS = 3;
 
-/** ISO-8601 timestamps carry digits that are NOT market numbers. */
-const ISO_TS_RE = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?/g;
-
-function extractNumbers(text) {
-  const stripped = String(text ?? "").replace(ISO_TS_RE, " ");
-  const out = new Set();
-  for (const raw of stripped.match(/-?\d[\d,]*(?:\.\d+)?/g) ?? []) {
-    out.add(raw.replace(/[,\s]/g, ""));
-  }
-  return out;
-}
+// §6: EXACT attested identity — the registry-approved provider id and the
+// attested model for it (lib/registry/providerRegistry.ts is the
+// authority; these defaults mirror it and can be overridden via env for
+// scratch verification of a NEWLY attested model before the registry
+// lands).
+const EXPECTED_PROVIDER = process.env.CANARY_EXPECTED_PROVIDER || "chat-api";
+const EXPECTED_MODEL = process.env.CANARY_EXPECTED_MODEL || "agnes-2.5-flash";
+const EXPECTED_TOOL = "getPrices";
+const EXPECTED_SYMBOL = "RELIANCE";
 
 const receipt = {
   probe: "production-grounded-canary",
@@ -80,6 +72,12 @@ const receipt = {
   expectedSha: EXPECTED_SHA || null,
   versionSha: null,
   generatedAt: new Date().toISOString(),
+  contract: {
+    source: "scripts/lib/groundedCanaryContract.mjs (Coder Directions 2026-10-02 §6/§7)",
+    positive: "exact server-surface equality, no extra prose, facts/claims bijection, claimsVerified, exact identity",
+    negative: "structural: no verified facts, no price statement, NO numbers at all, explicit failure state, no fake commentary",
+  },
+  identity: { expectedProvider: EXPECTED_PROVIDER, expectedModel: EXPECTED_MODEL, expectedTool: EXPECTED_TOOL, expectedSymbol: EXPECTED_SYMBOL },
   positive: { attempts: [], passed: false, passingAttempt: null },
   negative: { attempts: [], passed: false },
   rows: [],
@@ -104,52 +102,6 @@ async function chat(message) {
   return { status: resp.status, body, raw: text };
 }
 
-function evaluatePositive(attempt) {
-  const checks = [];
-  const prov = attempt.body?.provenance ?? {};
-  const ok = (id, cond, detail) => {
-    checks.push({ id, ok: !!cond, detail });
-    return !!cond;
-  };
-
-  ok("http-200-anonymous", attempt.status === 200, `anonymous chat status=${attempt.status}`);
-  const priceTool = (prov.toolCalls ?? []).find(
-    (tc) => tc.tool === "getPrices" && tc.status === "ok" && tc.symbol === "RELIANCE",
-  );
-  ok("tool-expected-ok", !!priceTool, `toolCalls=${JSON.stringify(prov.toolCalls ?? [])}`);
-  ok("grounded-true", prov.grounded === true, `grounded=${prov.grounded}`);
-  ok("mode-structured-claims", prov.groundingMode === "structured-claims", `mode=${prov.groundingMode}`);
-  ok("structured-valid", prov.structuredResponse === "valid", `structuredResponse=${prov.structuredResponse}`);
-  const claims = prov.claims ?? [];
-  ok("validated-claim-present",
-    claims.length >= 1 && claims.every((c) => (c.evidenceIds ?? []).length >= 1),
-    `claims=${claims.length}`);
-
-  const text = String(attempt.body?.text ?? "");
-  const facts = claims.flatMap((c) => c.verifiedFacts ?? []);
-  ok("verified-surface-server-generated",
-    facts.length >= 1 && facts.some((f) => f.field === "price" && text.includes(`${f.field} = `)),
-    `text head: ${text.slice(0, 120)}`);
-  ok("commentary-separate",
-    typeof prov.commentary === "string" && prov.commentary.length > 0 && prov.commentary !== text,
-    prov.commentary ? `commentary head: ${prov.commentary.slice(0, 80)}` : "no commentary");
-
-  // Every number in the verified surface must be a validated fact value
-  // (ISO timestamps are infrastructure, not market numbers).
-  const factValues = new Set(facts.map((f) => String(f.value)));
-  const textNumbers = [...extractNumbers(text)];
-  const uncovered = textNumbers.filter((n) => !factValues.has(n));
-  ok("numbers-covered-by-facts",
-    uncovered.length === 0,
-    `numbers=${JSON.stringify(textNumbers)} facts=${JSON.stringify([...factValues])} uncovered=${JSON.stringify(uncovered)}`);
-
-  ok("identity-attested",
-    typeof prov.provider === "string" && prov.provider.length > 0 && typeof prov.model === "string" && prov.model.length > 0,
-    `provider=${prov.provider} model=${prov.model}`);
-
-  return { checks, allPassed: checks.every((c) => c.ok) };
-}
-
 // ── 0. version binding ────────────────────────────────────────────────────
 const vResp = await fetch(BASE + "/api/version", { signal: AbortSignal.timeout(30_000) });
 const version = await vResp.json().catch(() => ({}));
@@ -169,18 +121,26 @@ for (let i = 1; i <= MAX_POSITIVE_ATTEMPTS; i++) {
     console.log(`  request failed: ${e.message}`);
     continue;
   }
-  const evaluation = evaluatePositive(attempt);
+  const evaluation = evaluatePositiveCanary(attempt, {
+    expectedProvider: EXPECTED_PROVIDER,
+    expectedModel: EXPECTED_MODEL,
+    expectedTool: EXPECTED_TOOL,
+    expectedSymbol: EXPECTED_SYMBOL,
+  });
   receipt.positive.attempts.push({
     attempt: i,
     status: attempt.status,
     grounded: attempt.body?.provenance?.grounded ?? null,
     groundingMode: attempt.body?.provenance?.groundingMode ?? null,
+    claimsVerified: attempt.body?.provenance?.claimsVerified ?? null,
     structuredResponse: attempt.body?.provenance?.structuredResponse ?? null,
     toolCalls: attempt.body?.provenance?.toolCalls ?? [],
     textHead: String(attempt.body?.text ?? "").slice(0, 200),
     // WHY a non-grounded attempt failed — the router's machine-readable
-    // reasons (empty when grounded).
+    // reasons (empty when grounded). Threaded to the wire since the
+    // 2026-10-02 §10 fix; before that this was always [].
     groundingRejections: attempt.body?.provenance?.groundingRejections ?? [],
+    timings: attempt.body?.provenance?.timings ?? null,
     checks: evaluation.checks,
   });
   for (const c of evaluation.checks) {
@@ -194,43 +154,34 @@ for (let i = 1; i <= MAX_POSITIVE_ATTEMPTS; i++) {
 }
 row("positive-canary-grounded-tool-loop", receipt.positive.passed,
   receipt.positive.passed
-    ? `attempt ${receipt.positive.passingAttempt}/${MAX_POSITIVE_ATTEMPTS} satisfied every row (grounded=true after a real getPrices call)`
+    ? `attempt ${receipt.positive.passingAttempt}/${MAX_POSITIVE_ATTEMPTS} satisfied every §6 row (grounded=true, exact server surface, after a real ${EXPECTED_TOOL} call)`
     : `no attempt satisfied the contract in ${MAX_POSITIVE_ATTEMPTS} tries`);
 
 // ── 2. negative canary: unknown symbol -> explicit failure, no fabrication ─
 // Model choice is nondeterministic: the model may answer a fake symbol
-// directly instead of requesting the tool. The CONTRACT (Coder Directions
-// §7) requires demonstrating the explicit-failure path, so retry until the
-// model actually requests the unknown symbol (every attempt is logged).
+// directly instead of requesting the tool. The CONTRACT (§7) requires
+// demonstrating the explicit-failure path, so retry until the model
+// actually requests the unknown symbol (every attempt is logged).
 for (let i = 1; i <= MAX_NEGATIVE_ATTEMPTS; i++) {
   console.log(`\n— negative attempt ${i}/${MAX_NEGATIVE_ATTEMPTS}: "${NEGATIVE_QUESTION}"`);
   try {
     const neg = await chat(NEGATIVE_QUESTION);
-    const prov = neg.body?.provenance ?? {};
-    const explicitFailure =
-      (prov.toolCalls ?? []).some((tc) => tc.status === "unknown-symbol" || tc.status === "unknown-tool" || tc.status === "invalid-args")
-      || prov.structuredResponse === "blocked";
-    const noFalseGrounding = prov.grounded !== true;
-    const noFabricatedPrice = !/\d{3,}/.test(String(neg.body?.text ?? "").replace(ISO_TS_RE, " "));
-    const negChecks = {
-      "http-200": neg.status === 200,
-      "explicit-failure-state": explicitFailure,
-      "no-false-grounded": noFalseGrounding,
-      "no-fabricated-price": noFabricatedPrice,
-    };
+    const evaluation = evaluateNegativeCanary(neg);
     receipt.negative.attempts.push({
       attempt: i,
       status: neg.status,
-      grounded: prov.grounded ?? null,
-      structuredResponse: prov.structuredResponse ?? null,
-      toolCalls: prov.toolCalls ?? [],
+      grounded: neg.body?.provenance?.grounded ?? null,
+      claimsVerified: neg.body?.provenance?.claimsVerified ?? null,
+      structuredResponse: neg.body?.provenance?.structuredResponse ?? null,
+      toolCalls: neg.body?.provenance?.toolCalls ?? [],
       textHead: String(neg.body?.text ?? "").slice(0, 200),
-      checks: Object.entries(negChecks).map(([id, ok]) => ({ id, ok })),
+      groundingRejections: neg.body?.provenance?.groundingRejections ?? [],
+      checks: evaluation.checks,
     });
-    for (const [id, ok] of Object.entries(negChecks)) {
-      console.log(`  ${ok ? "ok " : "FAIL"} ${id}`);
+    for (const c of evaluation.checks) {
+      console.log(`  ${c.ok ? "ok " : "FAIL"} ${c.id} — ${c.detail}`);
     }
-    if (Object.values(negChecks).every(Boolean)) {
+    if (evaluation.allPassed) {
       receipt.negative.passed = true;
       break;
     }
@@ -241,7 +192,7 @@ for (let i = 1; i <= MAX_NEGATIVE_ATTEMPTS; i++) {
 }
 row("negative-canary-honest-failure", receipt.negative.passed,
   receipt.negative.passed
-    ? `an attempt demonstrated the explicit failure state (unknown symbol; no fabricated answer, no false grounding) within ${MAX_NEGATIVE_ATTEMPTS} tries`
+    ? `an attempt demonstrated the explicit failure state (unknown symbol; no fabricated answer, no numbers, no false grounding) within ${MAX_NEGATIVE_ATTEMPTS} tries`
     : `no attempt demonstrated the explicit-failure contract in ${MAX_NEGATIVE_ATTEMPTS} tries`);
 
 // ── receipt + exit ────────────────────────────────────────────────────────

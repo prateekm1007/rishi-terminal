@@ -88,6 +88,70 @@ export const AiClaimSchema = z.object({
     .optional(),
 });
 
+/** Coder Directions 2026-10-02 §11 (latency attribution): per-request AI
+ *  stage timings, stamped by the ROUTER (and the chat route for its own
+ *  stages) — never by the model. Optional so legacy/test answers remain
+ *  valid. Durations are milliseconds; attribution, not billing. */
+export const AiTimingsSchema = z.object({
+  /** Whole generateEvidenceGroundedAnswer call (the AI loop itself). */
+  totalMs: z.number().finite().nonnegative(),
+  /** Route-level wall time (set by the caller route, not the router). */
+  wallMs: z.number().finite().nonnegative().optional(),
+  /** Evidence-package assembly duration at the route level (live price +
+   *  fundamentals fetches for the pre-attached context, when a symbol was
+   *  in scope). */
+  evidenceMs: z.number().finite().nonnegative().optional(),
+  /** Total upstream completion attempts across the loop, INCLUDING
+   *  failover attempts that threw (timeout / 5xx / open circuit). */
+  providerAttempts: z.number().int().nonnegative(),
+  /** One entry per provider completion attempt, in order. `outcome`
+   *  distinguishes a turn the model spent requesting a tool from the final
+   *  structured response and from a failed attempt. */
+  completions: z
+    .array(
+      z.object({
+        provider: z.string(),
+        model: z.string(),
+        ms: z.number().finite().nonnegative(),
+        outcome: z.enum(["tool-request", "final-response", "failed"]),
+      }),
+    )
+    .default([]),
+  /** One entry per tool execution inside the loop (§11 tool-execution
+   *  time — includes the live price / fundamentals fetch when the tool
+   *  triggered the first observation for its symbol). */
+  toolExecutions: z
+    .array(
+      z.object({
+        tool: z.string(),
+        symbol: z.string().optional(),
+        status: z.string(),
+        ms: z.number().finite().nonnegative(),
+      }),
+    )
+    .default([]),
+  /** validateGrounding duration for the final structured response. */
+  validationMs: z.number().finite().nonnegative().default(0),
+  /** Canonical-observation attribution (§11 live-price / live-fundamentals
+   *  time): per-symbol FIRST-fetch durations. Subsequent resolutions of
+   *  the same symbol are memo hits, counted below — the per-request state
+   *  IS the coalescing layer for the AI loop. */
+  priceFetches: z
+    .array(z.object({ symbol: z.string(), ms: z.number().finite().nonnegative() }))
+    .default([]),
+  fundamentalsFetches: z
+    .array(z.object({ symbol: z.string(), ms: z.number().finite().nonnegative() }))
+    .default([]),
+  memoHits: z
+    .object({
+      price: z.number().int().nonnegative().default(0),
+      fundamentals: z.number().int().nonnegative().default(0),
+    })
+    .default({ price: 0, fundamentals: 0 }),
+});
+
+export type AiTimings = z.infer<typeof AiTimingsSchema>;
+
 export const AiAnswerSchema = z.object({
   answer: z.string(),
   claims: z.array(AiClaimSchema).default([]),
@@ -133,6 +197,9 @@ export const AiAnswerSchema = z.object({
       }),
     )
     .optional(),
+  /** §11 latency attribution (router-stamped; optional for legacy
+   *  answers/tests). */
+  timings: AiTimingsSchema.optional(),
 });
 
 export type AiAnswer = z.infer<typeof AiAnswerSchema>;
@@ -201,6 +268,11 @@ export const ChatWireSchema = z.object({
     model: z.string(),
     generatedAt: z.string(),
     grounded: z.boolean(),
+    /** Coder Directions 2026-10-02 §6: the router's own verification flag,
+    *  threaded verbatim (grounded === claimsVerified && claims.length > 0
+    *  — surfaced separately so the canary/gate can assert the router's
+    *  decision directly, not only its derived form). */
+    claimsVerified: z.boolean().default(false),
     /** G3: "context-only" = the model made only qualitative claims (or none
      *  survived) — presented as context, never as verified numbers. */
     groundingMode: z
@@ -233,6 +305,9 @@ export const ChatWireSchema = z.object({
     /** Q4 Commit A: why the reply is not grounded (empty when grounded).
      *  Auditable provenance — the client can show/disclose the reason. */
     groundingRejections: z.array(z.string()).default([]),
+    /** §11 latency attribution, router/route-stamped. Optional: absent on
+     *  legacy wires; the probe/canary surfaces record it. */
+    timings: AiTimingsSchema.optional(),
   }),
 });
 

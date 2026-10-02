@@ -140,6 +140,10 @@ interface HistoryTurn {
 }
 
 export async function POST(req: NextRequest) {
+  // §11 latency attribution: route-level wall clock (set once, at the very
+  // end, on the successful wire; error paths return without it — the
+  // router timings are the attribution surface that matters there).
+  const routeStart = Date.now();
   // 1. Identity (T5 sessions, now OPTIONAL — founder decision 2026-10-03):
   //    a signed-in session supplies the account id; an anonymous caller is
   //    quota-keyed to a deterministic per-IP uuidv5. Neither path is a
@@ -254,11 +258,14 @@ export async function POST(req: NextRequest) {
   //    always refunded; assembly was outside it).
   let evidence;
   let stockState = null;
+  let evidenceMs = 0;
   try {
     // One canonical observation state per request: the package below and
     // every tool call inside generateEvidenceGroundedAnswer reuse it.
     stockState = createCanonicalStockState();
+    const evidenceStart = Date.now();
     const evidencePackage = symbol ? await buildAiEvidencePackage(symbol, {}, stockState) : null;
+    evidenceMs = Date.now() - evidenceStart;
     evidence = evidencePackage?.items ?? [];
   } catch (e) {
     console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
@@ -295,6 +302,16 @@ export async function POST(req: NextRequest) {
   }
 
   // 8. T52: auditable wire response — {text} preserved for the UI,
-  //    provenance (provider/model/generatedAt) rides along (T50).
-  return NextResponse.json(toChatWire(answer));
+  //    provenance (provider/model/generatedAt) rides along (T50). §11: the
+  //    route decorates the router's stage timings with its own wall and
+  //    evidence-assembly durations before serving.
+  const wire = toChatWire(answer);
+  if (answer.timings) {
+    wire.provenance.timings = {
+      ...answer.timings,
+      wallMs: Date.now() - routeStart,
+      evidenceMs,
+    };
+  }
+  return NextResponse.json(wire);
 }

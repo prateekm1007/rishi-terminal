@@ -1,45 +1,116 @@
 {
   "probe": "production-grounded-canary",
   "baseUrl": "https://rishi-terminal.vercel.app",
-  "expectedSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
-  "versionSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
-  "generatedAt": "2026-10-02T06:46:54.160Z",
+  "expectedSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+  "versionSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+  "generatedAt": "2026-10-02T13:12:05.617Z",
+  "contract": {
+    "source": "scripts/lib/groundedCanaryContract.mjs (Coder Directions 2026-10-02 §6/§7)",
+    "positive": "exact server-surface equality, no extra prose, facts/claims bijection, claimsVerified, exact identity",
+    "negative": "structural: no verified facts, no price statement, NO numbers at all, explicit failure state, no fake commentary"
+  },
+  "identity": {
+    "expectedProvider": "chat-api",
+    "expectedModel": "agnes-2.5-flash",
+    "expectedTool": "getPrices",
+    "expectedSymbol": "RELIANCE"
+  },
   "positive": {
     "attempts": [
       {
         "attempt": 1,
-        "status": 502,
-        "grounded": null,
-        "groundingMode": null,
-        "structuredResponse": null,
-        "toolCalls": [],
-        "textHead": "",
-        "groundingRejections": [],
+        "status": 200,
+        "grounded": false,
+        "groundingMode": "evidence-context",
+        "claimsVerified": false,
+        "structuredResponse": "valid",
+        "toolCalls": [
+          {
+            "tool": "getPrices",
+            "status": "ok",
+            "symbol": "RELIANCE"
+          }
+        ],
+        "textHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "groundingRejections": [
+          "claim 1: claims change=\"1167.7\" but the matched change assertion is -1.626 — rejected (audit 2026-10-02)"
+        ],
+        "timings": {
+          "totalMs": 19735,
+          "providerAttempts": 3,
+          "completions": [
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 2510,
+              "outcome": "tool-request"
+            },
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 6335,
+              "outcome": "final-response"
+            },
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 10812,
+              "outcome": "final-response"
+            }
+          ],
+          "toolExecutions": [
+            {
+              "tool": "getPrices",
+              "symbol": "RELIANCE",
+              "status": "ok",
+              "ms": 70
+            }
+          ],
+          "validationMs": 1,
+          "priceFetches": [
+            {
+              "symbol": "RELIANCE",
+              "ms": 69
+            }
+          ],
+          "fundamentalsFetches": [],
+          "memoHits": {
+            "price": 0,
+            "fundamentals": 0
+          },
+          "wallMs": 20682,
+          "evidenceMs": 0
+        },
         "checks": [
           {
             "id": "http-200-anonymous",
-            "ok": false,
-            "detail": "anonymous chat status=502"
+            "ok": true,
+            "detail": "anonymous chat status=200"
           },
           {
             "id": "tool-expected-ok",
-            "ok": false,
-            "detail": "toolCalls=[]"
+            "ok": true,
+            "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}]"
           },
           {
             "id": "grounded-true",
             "ok": false,
-            "detail": "grounded=undefined"
+            "detail": "grounded=false"
+          },
+          {
+            "id": "claims-verified-true",
+            "ok": false,
+            "detail": "claimsVerified=false"
           },
           {
             "id": "mode-structured-claims",
             "ok": false,
-            "detail": "mode=undefined"
+            "detail": "mode=evidence-context"
           },
           {
             "id": "structured-valid",
-            "ok": false,
-            "detail": "structuredResponse=undefined"
+            "ok": true,
+            "detail": "structuredResponse=valid"
           },
           {
             "id": "validated-claim-present",
@@ -47,12 +118,22 @@
             "detail": "claims=0"
           },
           {
-            "id": "verified-surface-server-generated",
+            "id": "verified-surface-exact",
             "ok": false,
-            "detail": "text head: "
+            "detail": "text !== expected surface\n  text:     \"The AI reply could not be verified against platform evidence and was not shown.\"\n  expected: \"\""
           },
           {
-            "id": "commentary-separate",
+            "id": "no-extra-prose",
+            "ok": false,
+            "detail": "lines=1, non-statement lines=[\"The AI reply could not be verified against platform evidence and was not shown.\"]"
+          },
+          {
+            "id": "facts-claims-bijection",
+            "ok": false,
+            "detail": "text lines=1, fact statements=0"
+          },
+          {
+            "id": "commentary-present",
             "ok": false,
             "detail": "no commentary"
           },
@@ -62,9 +143,9 @@
             "detail": "numbers=[] facts=[] uncovered=[]"
           },
           {
-            "id": "identity-attested",
-            "ok": false,
-            "detail": "provider=undefined model=undefined"
+            "id": "identity-attested-exact",
+            "ok": true,
+            "detail": "provider=\"chat-api\" (expected \"chat-api\"), model=\"agnes-2.5-flash\" (expected \"agnes-2.5-flash\")"
           }
         ]
       },
@@ -73,6 +154,7 @@
         "status": 200,
         "grounded": false,
         "groundingMode": "evidence-context",
+        "claimsVerified": false,
         "structuredResponse": "valid",
         "toolCalls": [
           {
@@ -82,7 +164,55 @@
           }
         ],
         "textHead": "The AI reply could not be verified against platform evidence and was not shown.",
-        "groundingRejections": [],
+        "groundingRejections": [
+          "answer: forecast/advice-superlative language (\"will\") — no platform fact can back a prediction (U6 atomic claims)"
+        ],
+        "timings": {
+          "totalMs": 28221,
+          "providerAttempts": 3,
+          "completions": [
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 1473,
+              "outcome": "tool-request"
+            },
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 10851,
+              "outcome": "final-response"
+            },
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 15789,
+              "outcome": "final-response"
+            }
+          ],
+          "toolExecutions": [
+            {
+              "tool": "getPrices",
+              "symbol": "RELIANCE",
+              "status": "ok",
+              "ms": 106
+            }
+          ],
+          "validationMs": 0,
+          "priceFetches": [
+            {
+              "symbol": "RELIANCE",
+              "ms": 105
+            }
+          ],
+          "fundamentalsFetches": [],
+          "memoHits": {
+            "price": 0,
+            "fundamentals": 0
+          },
+          "wallMs": 28841,
+          "evidenceMs": 0
+        },
         "checks": [
           {
             "id": "http-200-anonymous",
@@ -100,6 +230,11 @@
             "detail": "grounded=false"
           },
           {
+            "id": "claims-verified-true",
+            "ok": false,
+            "detail": "claimsVerified=false"
+          },
+          {
             "id": "mode-structured-claims",
             "ok": false,
             "detail": "mode=evidence-context"
@@ -115,12 +250,22 @@
             "detail": "claims=0"
           },
           {
-            "id": "verified-surface-server-generated",
+            "id": "verified-surface-exact",
             "ok": false,
-            "detail": "text head: The AI reply could not be verified against platform evidence and was not shown."
+            "detail": "text !== expected surface\n  text:     \"The AI reply could not be verified against platform evidence and was not shown.\"\n  expected: \"\""
           },
           {
-            "id": "commentary-separate",
+            "id": "no-extra-prose",
+            "ok": false,
+            "detail": "lines=1, non-statement lines=[\"The AI reply could not be verified against platform evidence and was not shown.\"]"
+          },
+          {
+            "id": "facts-claims-bijection",
+            "ok": false,
+            "detail": "text lines=1, fact statements=0"
+          },
+          {
+            "id": "commentary-present",
             "ok": false,
             "detail": "no commentary"
           },
@@ -130,153 +275,18 @@
             "detail": "numbers=[] facts=[] uncovered=[]"
           },
           {
-            "id": "identity-attested",
+            "id": "identity-attested-exact",
             "ok": true,
-            "detail": "provider=chat-api model=agnes-2.5-flash"
+            "detail": "provider=\"chat-api\" (expected \"chat-api\"), model=\"agnes-2.5-flash\" (expected \"agnes-2.5-flash\")"
           }
         ]
       },
       {
         "attempt": 3,
         "status": 200,
-        "grounded": false,
-        "groundingMode": "evidence-context",
-        "structuredResponse": "valid",
-        "toolCalls": [
-          {
-            "tool": "getPrices",
-            "status": "ok",
-            "symbol": "RELIANCE"
-          }
-        ],
-        "textHead": "The AI reply could not be verified against platform evidence and was not shown.",
-        "groundingRejections": [],
-        "checks": [
-          {
-            "id": "http-200-anonymous",
-            "ok": true,
-            "detail": "anonymous chat status=200"
-          },
-          {
-            "id": "tool-expected-ok",
-            "ok": true,
-            "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}]"
-          },
-          {
-            "id": "grounded-true",
-            "ok": false,
-            "detail": "grounded=false"
-          },
-          {
-            "id": "mode-structured-claims",
-            "ok": false,
-            "detail": "mode=evidence-context"
-          },
-          {
-            "id": "structured-valid",
-            "ok": true,
-            "detail": "structuredResponse=valid"
-          },
-          {
-            "id": "validated-claim-present",
-            "ok": false,
-            "detail": "claims=0"
-          },
-          {
-            "id": "verified-surface-server-generated",
-            "ok": false,
-            "detail": "text head: The AI reply could not be verified against platform evidence and was not shown."
-          },
-          {
-            "id": "commentary-separate",
-            "ok": false,
-            "detail": "no commentary"
-          },
-          {
-            "id": "numbers-covered-by-facts",
-            "ok": true,
-            "detail": "numbers=[] facts=[] uncovered=[]"
-          },
-          {
-            "id": "identity-attested",
-            "ok": true,
-            "detail": "provider=chat-api model=agnes-2.5-flash"
-          }
-        ]
-      },
-      {
-        "attempt": 4,
-        "status": 200,
-        "grounded": false,
-        "groundingMode": "evidence-context",
-        "structuredResponse": "valid",
-        "toolCalls": [
-          {
-            "tool": "getPrices",
-            "status": "ok",
-            "symbol": "RELIANCE"
-          }
-        ],
-        "textHead": "The AI reply could not be verified against platform evidence and was not shown.",
-        "groundingRejections": [],
-        "checks": [
-          {
-            "id": "http-200-anonymous",
-            "ok": true,
-            "detail": "anonymous chat status=200"
-          },
-          {
-            "id": "tool-expected-ok",
-            "ok": true,
-            "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}]"
-          },
-          {
-            "id": "grounded-true",
-            "ok": false,
-            "detail": "grounded=false"
-          },
-          {
-            "id": "mode-structured-claims",
-            "ok": false,
-            "detail": "mode=evidence-context"
-          },
-          {
-            "id": "structured-valid",
-            "ok": true,
-            "detail": "structuredResponse=valid"
-          },
-          {
-            "id": "validated-claim-present",
-            "ok": false,
-            "detail": "claims=0"
-          },
-          {
-            "id": "verified-surface-server-generated",
-            "ok": false,
-            "detail": "text head: The AI reply could not be verified against platform evidence and was not shown."
-          },
-          {
-            "id": "commentary-separate",
-            "ok": false,
-            "detail": "no commentary"
-          },
-          {
-            "id": "numbers-covered-by-facts",
-            "ok": true,
-            "detail": "numbers=[] facts=[] uncovered=[]"
-          },
-          {
-            "id": "identity-attested",
-            "ok": true,
-            "detail": "provider=chat-api model=agnes-2.5-flash"
-          }
-        ]
-      },
-      {
-        "attempt": 5,
-        "status": 200,
         "grounded": true,
         "groundingMode": "structured-claims",
+        "claimsVerified": true,
         "structuredResponse": "valid",
         "toolCalls": [
           {
@@ -285,8 +295,54 @@
             "symbol": "RELIANCE"
           }
         ],
-        "textHead": "price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)",
+        "textHead": "price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)",
         "groundingRejections": [],
+        "timings": {
+          "totalMs": 26930,
+          "providerAttempts": 3,
+          "completions": [
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 1019,
+              "outcome": "tool-request"
+            },
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 6670,
+              "outcome": "final-response"
+            },
+            {
+              "provider": "chat-api",
+              "model": "agnes-2.5-flash",
+              "ms": 19240,
+              "outcome": "final-response"
+            }
+          ],
+          "toolExecutions": [
+            {
+              "tool": "getPrices",
+              "symbol": "RELIANCE",
+              "status": "ok",
+              "ms": 0
+            }
+          ],
+          "validationMs": 1,
+          "priceFetches": [
+            {
+              "symbol": "RELIANCE",
+              "ms": 0
+            }
+          ],
+          "fundamentalsFetches": [],
+          "memoHits": {
+            "price": 0,
+            "fundamentals": 0
+          },
+          "wallMs": 27593,
+          "evidenceMs": 0
+        },
         "checks": [
           {
             "id": "http-200-anonymous",
@@ -304,6 +360,11 @@
             "detail": "grounded=true"
           },
           {
+            "id": "claims-verified-true",
+            "ok": true,
+            "detail": "claimsVerified=true"
+          },
+          {
             "id": "mode-structured-claims",
             "ok": true,
             "detail": "mode=structured-claims"
@@ -319,30 +380,40 @@
             "detail": "claims=1"
           },
           {
-            "id": "verified-surface-server-generated",
+            "id": "verified-surface-exact",
             "ok": true,
-            "detail": "text head: price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)"
+            "detail": "text !== expected surface\n  text:     \"price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)\"\n  expected: \"price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)\""
           },
           {
-            "id": "commentary-separate",
+            "id": "no-extra-prose",
             "ok": true,
-            "detail": "commentary head: Reliance is trading at 1167.7 rupees. A large conglomerate, sprawling across ene"
+            "detail": "lines=2, non-statement lines=[]"
+          },
+          {
+            "id": "facts-claims-bijection",
+            "ok": true,
+            "detail": "text lines=2, fact statements=2"
+          },
+          {
+            "id": "commentary-present",
+            "ok": true,
+            "detail": "commentary present (451 chars), distinct=true"
           },
           {
             "id": "numbers-covered-by-facts",
             "ok": true,
-            "detail": "numbers=[\"1167.7\"] facts=[\"1167.7\"] uncovered=[]"
+            "detail": "numbers=[\"1167.7\",\"-1.626\"] facts=[\"1167.7\",\"-1.626\"] uncovered=[]"
           },
           {
-            "id": "identity-attested",
+            "id": "identity-attested-exact",
             "ok": true,
-            "detail": "provider=chat-api model=agnes-2.5-flash"
+            "detail": "provider=\"chat-api\" (expected \"chat-api\"), model=\"agnes-2.5-flash\" (expected \"agnes-2.5-flash\")"
           }
         ]
       }
     ],
     "passed": true,
-    "passingAttempt": 5
+    "passingAttempt": 3
   },
   "negative": {
     "attempts": [
@@ -350,6 +421,7 @@
         "attempt": 1,
         "status": 200,
         "grounded": false,
+        "claimsVerified": false,
         "structuredResponse": "valid",
         "toolCalls": [
           {
@@ -358,23 +430,45 @@
             "symbol": "ZZZZNOPE"
           }
         ],
-        "textHead": "I don't know that one. If it's not in the registry, it's not a business I'd touch. We focus on real companies with real cash flows, not phantoms.",
+        "textHead": "I don't have any record for a stock with the symbol ZZZZNOPE — it doesn't appear in my security master. If this is a real company, the ticker might be different. Happy to look it up if you have the co",
+        "groundingRejections": [
+          "model produced no claims — context injection only"
+        ],
         "checks": [
           {
             "id": "http-200",
-            "ok": true
+            "ok": true,
+            "detail": "status=200"
+          },
+          {
+            "id": "no-verified-price-fact",
+            "ok": true,
+            "detail": "claims=0, verifiedFacts=0"
+          },
+          {
+            "id": "no-false-grounding",
+            "ok": true,
+            "detail": "grounded=false, claimsVerified=false"
+          },
+          {
+            "id": "no-server-price-stmt",
+            "ok": true,
+            "detail": "text head: \"I don't have any record for a stock with the symbol ZZZZNOPE — it doesn't appear in my security master. If this is a rea\""
+          },
+          {
+            "id": "no-numeric-answer",
+            "ok": true,
+            "detail": "numbers found: []"
           },
           {
             "id": "explicit-failure-state",
-            "ok": true
+            "ok": true,
+            "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"unknown-symbol\",\"symbol\":\"ZZZZNOPE\"}], structuredResponse=valid, textStartsBLOCKED=false"
           },
           {
-            "id": "no-false-grounded",
-            "ok": true
-          },
-          {
-            "id": "no-fabricated-price",
-            "ok": true
+            "id": "no-fake-commentary",
+            "ok": true,
+            "detail": "commentary=(absent)"
           }
         ]
       }
@@ -385,17 +479,17 @@
     {
       "id": "version-binding",
       "ok": true,
-      "detail": "GET /api/version -> 200 sha=d7a6c0c46e880d9a06cab738bbe523b0f17aff74 (expected d7a6c0c46e880d9a06cab738bbe523b0f17aff74)"
+      "detail": "GET /api/version -> 200 sha=dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4 (expected dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4)"
     },
     {
       "id": "positive-canary-grounded-tool-loop",
       "ok": true,
-      "detail": "attempt 5/5 satisfied every row (grounded=true after a real getPrices call)"
+      "detail": "attempt 3/5 satisfied every §6 row (grounded=true, exact server surface, after a real getPrices call)"
     },
     {
       "id": "negative-canary-honest-failure",
       "ok": true,
-      "detail": "an attempt demonstrated the explicit failure state (unknown symbol; no fabricated answer, no false grounding) within 3 tries"
+      "detail": "an attempt demonstrated the explicit failure state (unknown symbol; no fabricated answer, no numbers, no false grounding) within 3 tries"
     }
   ]
 }

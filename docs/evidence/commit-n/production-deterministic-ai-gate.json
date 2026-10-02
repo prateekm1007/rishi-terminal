@@ -1,0 +1,228 @@
+{
+  "probe": "production-deterministic-ai-gate",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "expectedSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+  "versionSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+  "generatedAt": "2026-10-02T13:13:37.308Z",
+  "contract": {
+    "source": "scripts/lib/groundedCanaryContract.mjs (Coder Directions 2026-10-02 §6/§7)",
+    "deterministicBy": "seeded first tool call via secret-gated /api/probe/ai-loop — every downstream stage is the real production path"
+  },
+  "identity": {
+    "expectedProvider": "chat-api",
+    "expectedModel": "agnes-2.5-flash",
+    "expectedTool": "getPrices",
+    "expectedSymbol": "RELIANCE"
+  },
+  "positive": {
+    "status": 200,
+    "probe": {
+      "mode": "positive",
+      "seededTool": "getPrices",
+      "seededSymbol": "RELIANCE",
+      "persona": "damani",
+      "wallMs": 24874
+    },
+    "timings": {
+      "totalMs": 24872,
+      "providerAttempts": 2,
+      "completions": [
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 16456,
+          "outcome": "final-response"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 8350,
+          "outcome": "final-response"
+        }
+      ],
+      "toolExecutions": [
+        {
+          "tool": "getPrices",
+          "symbol": "RELIANCE",
+          "status": "ok",
+          "ms": 66
+        }
+      ],
+      "validationMs": 0,
+      "priceFetches": [
+        {
+          "symbol": "RELIANCE",
+          "ms": 66
+        }
+      ],
+      "fundamentalsFetches": [],
+      "memoHits": {
+        "price": 0,
+        "fundamentals": 0
+      }
+    },
+    "checks": [
+      {
+        "id": "http-200-anonymous",
+        "ok": true,
+        "detail": "anonymous chat status=200"
+      },
+      {
+        "id": "tool-expected-ok",
+        "ok": true,
+        "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"ok\",\"symbol\":\"RELIANCE\"}]"
+      },
+      {
+        "id": "grounded-true",
+        "ok": true,
+        "detail": "grounded=true"
+      },
+      {
+        "id": "claims-verified-true",
+        "ok": true,
+        "detail": "claimsVerified=true"
+      },
+      {
+        "id": "mode-structured-claims",
+        "ok": true,
+        "detail": "mode=structured-claims"
+      },
+      {
+        "id": "structured-valid",
+        "ok": true,
+        "detail": "structuredResponse=valid"
+      },
+      {
+        "id": "validated-claim-present",
+        "ok": true,
+        "detail": "claims=2"
+      },
+      {
+        "id": "verified-surface-exact",
+        "ok": true,
+        "detail": "text !== expected surface\n  text:     \"price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)\"\n  expected: \"price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)\""
+      },
+      {
+        "id": "no-extra-prose",
+        "ok": true,
+        "detail": "lines=2, non-statement lines=[]"
+      },
+      {
+        "id": "facts-claims-bijection",
+        "ok": true,
+        "detail": "text lines=2, fact statements=2"
+      },
+      {
+        "id": "commentary-present",
+        "ok": true,
+        "detail": "commentary present (85 chars), distinct=true"
+      },
+      {
+        "id": "numbers-covered-by-facts",
+        "ok": true,
+        "detail": "numbers=[\"1167.7\",\"-1.626\"] facts=[\"1167.7\",\"-1.626\"] uncovered=[]"
+      },
+      {
+        "id": "identity-attested-exact",
+        "ok": true,
+        "detail": "provider=\"chat-api\" (expected \"chat-api\"), model=\"agnes-2.5-flash\" (expected \"agnes-2.5-flash\")"
+      },
+      {
+        "id": "timings-present",
+        "ok": true,
+        "detail": "totalMs=24872, attempts=2"
+      }
+    ]
+  },
+  "negative": {
+    "status": 200,
+    "probe": {
+      "mode": "negative",
+      "seededTool": "getPrices",
+      "seededSymbol": "ZZZZNOPE",
+      "persona": "damani",
+      "wallMs": 3644
+    },
+    "timings": {
+      "totalMs": 3644,
+      "providerAttempts": 1,
+      "completions": [
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 3644,
+          "outcome": "final-response"
+        }
+      ],
+      "toolExecutions": [
+        {
+          "tool": "getPrices",
+          "symbol": "ZZZZNOPE",
+          "status": "unknown-symbol",
+          "ms": 0
+        }
+      ],
+      "validationMs": 0,
+      "priceFetches": [],
+      "fundamentalsFetches": [],
+      "memoHits": {
+        "price": 0,
+        "fundamentals": 0
+      }
+    },
+    "checks": [
+      {
+        "id": "http-200",
+        "ok": true,
+        "detail": "status=200"
+      },
+      {
+        "id": "no-verified-price-fact",
+        "ok": true,
+        "detail": "claims=0, verifiedFacts=0"
+      },
+      {
+        "id": "no-false-grounding",
+        "ok": true,
+        "detail": "grounded=false, claimsVerified=false"
+      },
+      {
+        "id": "no-server-price-stmt",
+        "ok": true,
+        "detail": "text head: \"The symbol ZZZZNOPE is not in the security master, so no price data is available. In our line of work, we only deal with\""
+      },
+      {
+        "id": "no-numeric-answer",
+        "ok": true,
+        "detail": "numbers found: []"
+      },
+      {
+        "id": "explicit-failure-state",
+        "ok": true,
+        "detail": "toolCalls=[{\"tool\":\"getPrices\",\"status\":\"unknown-symbol\",\"symbol\":\"ZZZZNOPE\"}], structuredResponse=valid, textStartsBLOCKED=false"
+      },
+      {
+        "id": "no-fake-commentary",
+        "ok": true,
+        "detail": "commentary=(absent)"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "id": "version-binding",
+      "ok": true,
+      "detail": "GET /api/version -> 200 sha=dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4 (expected dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4)"
+    },
+    {
+      "id": "positive-deterministic-grounded-loop",
+      "ok": true,
+      "detail": "seeded getPrices → real provider → structured claims → grounded=true with the EXACT server-generated surface, in ONE deterministic run (no retries)"
+    },
+    {
+      "id": "negative-deterministic-honest-failure",
+      "ok": true,
+      "detail": "seeded unknown symbol → explicit failure state, zero numbers, zero verified facts, no false grounding — deterministically"
+    }
+  ]
+}

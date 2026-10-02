@@ -1,33 +1,33 @@
 {
-  "generatedAt": "2026-10-02T06:51:18.266Z",
+  "generatedAt": "2026-10-02T13:14:20.910Z",
   "base": "https://rishi-terminal.vercel.app",
-  "deployedCommitSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+  "deployedCommitSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
   "versionEndpoint": {
-    "sha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
-    "now": "2026-10-02T06:51:18.151Z",
+    "sha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+    "now": "2026-10-02T13:14:20.791Z",
     "node": "v24.21.0"
   },
   "vercel": {
-    "deploymentId": "dpl_57re12Ehuj8NBL5vVLiVzYATr9aa",
-    "url": "rishi-terminal-bei282rxv-prateeks-projects-8c5639bd.vercel.app",
-    "createdAt": "2026-10-02T06:23:35.369Z",
+    "deploymentId": "dpl_oTYCuRovpkEmsVxRDPMX6cQK3LtH",
+    "url": "rishi-terminal-mjn7qojty-prateeks-projects-8c5639bd.vercel.app",
+    "createdAt": "2026-10-02T13:03:10.490Z",
     "target": "production",
-    "githubCommitSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
-    "githubCommitRef": "main",
+    "githubCommitSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+    "githubCommitRef": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
     "matchesVersionEndpointSha": true
   },
   "ci": {
-    "headSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+    "headSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
     "queriedFor": "runs whose head_sha == deployed SHA",
     "runs": [
       {
-        "id": 36973324809,
+        "id": 37010446716,
         "workflow": "CI",
         "branch": "main",
         "status": "completed",
         "conclusion": "success",
         "event": "push",
-        "url": "https://github.com/prateekm1007/rishi-terminal/actions/runs/36973324809"
+        "url": "https://github.com/prateekm1007/rishi-terminal/actions/runs/37010446716"
       }
     ],
     "allCompletedSuccess": true
@@ -44,7 +44,7 @@
     },
     "apiProbes": {
       "scope": "/api/auth/me, /api/chat/personas, /api/chat, /api/rishis/:sym, /api/payment, /api/prices/batch, /api/gurus?kind=crypto|commodity",
-      "result": "anonymous chat/personas/verdicts OPEN (founder decision 2026-10-03 + Commit N1) · payments 410 · gurus unlocked for everyone · remaining auth-gated surfaces: none on the probed set",
+      "result": "anonymous chat/personas/verdicts OPEN (founder decision 2026-10-02 + Commit N1) · payments 410 · gurus unlocked for everyone · remaining auth-gated surfaces: none on the probed set",
       "artifact": "download/audit/prod-probes.json (historical; regenerate with scripts/prodUglyPathAnonymous.mjs / the Commit-N matrix)"
     },
     "aiUglyPath": {
@@ -54,12 +54,12 @@
     },
     "freeAccessMatrix": {
       "scope": "Commit M §17 + Commit N1: legacy seeker/student/disciple DB rows × ANONYMOUS rows (chat 200, personas roster, /api/rishis full set, /lab page) × /api/auth/me × payment 410s × /pricing honesty × chat with previously-gated personas × forged client tier × tool-loop execution × deployment identity",
-      "result": "36/36 PASS against deployed SHA d7a6c0c46e880d9a06cab738bbe523b0f17aff74 (artifact generated 2026-10-02T06:45:49.358Z, expectedShaMatch=true)",
+      "result": "36/36 PASS against deployed SHA dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4 (artifact generated 2026-10-02T13:09:02.472Z, expectedShaMatch=true)",
       "artifact": "docs/evidence/commit-n/production-free-access-matrix.json (regenerate with scripts/prodFreeAccessMatrix.mjs)"
     },
     "groundedCanary": {
       "scope": "Commit N §7/§18 — the COMPLETE production AI loop: anonymous caller, no preselected symbol → model requests getPrices → server executes the canonical tool → structured claims validated → grounded=true · server-generated verified surface (never model prose) · separate commentary · every number covered by validated facts · provider/model attested · negative: unknown symbol → explicit failure, no fabrication, no false grounding",
-      "result": "PASS on d7a6c0c46e880d9a06cab738bbe523b0f17aff74 (positive attempt 5/5, negative PASS; artifact generated 2026-10-02T06:46:54.160Z)",
+      "result": "PASS on dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4 (positive attempt 3/3, negative PASS; artifact generated 2026-10-02T13:12:05.617Z)",
       "artifact": "docs/evidence/commit-n/production-grounded-canary.json (regenerate with scripts/prodGroundedCanary.mjs)"
     }
   }

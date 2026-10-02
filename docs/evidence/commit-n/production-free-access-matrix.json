@@ -1,9 +1,9 @@
 {
   "probe": {
     "base": "https://rishi-terminal.vercel.app",
-    "at": "2026-10-02T06:45:49.358Z",
-    "expectedSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
-    "versionSha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
+    "at": "2026-10-02T13:09:02.472Z",
+    "expectedSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+    "versionSha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
     "versionStatus": 200
   },
   "expectedShaMatch": true,
@@ -15,8 +15,8 @@
       "id": "identity /api/version",
       "ok": true,
       "detail": {
-        "sha": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74",
-        "expected": "d7a6c0c46e880d9a06cab738bbe523b0f17aff74"
+        "sha": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4",
+        "expected": "dbc4c7bd93a10829b2ff2c3e2f2deb4a40e5ddf4"
       }
     },
     {
@@ -255,10 +255,12 @@
       "ok": true,
       "detail": {
         "status": 200,
-        "tools": [],
-        "grounded": false,
-        "mode": "evidence-context",
-        "structured": "invalid"
+        "tools": [
+          "getScore:ok"
+        ],
+        "grounded": true,
+        "mode": "structured-claims",
+        "structured": "valid"
       }
     },
     {

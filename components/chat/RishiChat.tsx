@@ -49,14 +49,15 @@ export default function RishiChat({ stock }: Props) {
   ];
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // R3 + M3: WHICH personas a caller may use is decided by the server
-  // (GET /api/chat/personas serves every canonical persona to any
-  // authenticated caller; /api/chat re-validates each id against the
-  // canonical registry per request). On roster-fetch failure the fallback
-  // is the full display roster — under free access there is no entitlement
-  // to compute or bypass client-side, and the server still validates every
-  // POST, so a wider fallback can only ever yield an honest 401/400, never
-  // an unauthorized answer.
+  // R3 + M3 + founder decision 2026-10-03 (no sign-in required): WHICH
+  // personas a caller may use is decided by the server (GET
+  // /api/chat/personas serves every canonical persona to ANY caller;
+  // /api/chat re-validates each id against the canonical registry per
+  // request). On roster-fetch failure the fallback is the full display
+  // roster — under free access there is no entitlement to compute or
+  // bypass client-side, and the server still validates every POST, so a
+  // wider fallback can only ever yield an honest 400/429, never an
+  // unauthorized answer.
   const [allowedPersonaIds, setAllowedPersonaIds] = useState<string[]>(() =>
     PERSONA_DISPLAY.map(p => p.id),
   );

@@ -91,10 +91,14 @@ describe("R3/M3 — sanitizeConsensus carries every verdict", () => {
 });
 
 describe("R3/M3 — GET /api/chat/personas", () => {
-  it("401 for anonymous callers", async () => {
+  it("serves the full roster WITHOUT sign-in (founder 2026-10-03: no auth gate)", async () => {
     getSessionUserMock.mockResolvedValueOnce(null);
     const res = await personasGET({} as never);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(Array.isArray(data.personas)).toBe(true);
+    expect(data.personas.length).toBeGreaterThan(0);
+    expect(data.tier).toBeUndefined(); // no tier on the wire
   });
 
   for (const legacyTier of ["seeker", "student", "disciple"]) {

@@ -77,11 +77,13 @@ function makeReq(json: unknown, ip = "1.2.3.4"): never {
 const okBody = { personaId: "buffett", message: "What do you think of reliance?" };
 
 describe("T7 — chat route limits", () => {
-  it("401s anonymous callers before anything else", async () => {
+  it("anonymous callers share the same bounded path (founder 2026-10-03: no sign-in required)", async () => {
     const { getSessionUser } = await import("@/lib/auth/session");
     vi.mocked(getSessionUser).mockResolvedValueOnce(null as never);
     const res = await POST(makeReq(okBody));
-    expect(res.status).toBe(401);
+    // Anonymous callers are NOT rejected: they run the same pipeline,
+    // quota-keyed to a deterministic per-IP uuid (test/chat.anonymous.test.ts).
+    expect(res.status).toBe(200);
   });
 
   it("429s the call after the burst limit from one IP (persistent limiter)", async () => {

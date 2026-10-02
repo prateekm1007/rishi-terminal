@@ -19,11 +19,13 @@ import { CANONICAL_PERSONAS, PERSONA_BY_ID, type CanonicalPersona } from './regi
  *   NOT
  *   persona existence + tier entitlement
  *
- * Every authenticated caller may converse with every canonical persona.
- * Authentication (401 for anonymous) is abuse/quota control, not a tier.
+ * Every caller may converse with every canonical persona — no tier and no
+ * sign-in (founder decision 2026-10-03). Abuse is bounded by the ONE free
+ * quota and the per-IP burst limiter on POST /api/chat, not by hiding the
+ * roster or the personas.
  */
 
-/** The personas available to an authenticated caller — ALL of them.
+/** The personas available to any caller — ALL of them.
  *  Kept as a function (not a bare re-export) so the server-only boundary
  *  and the call-site semantics stay explicit. */
 export function getChatPersonas(): CanonicalPersona[] {

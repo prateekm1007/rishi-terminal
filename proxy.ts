@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { isProtectedPath } from '@/lib/auth/protectedPaths';
 
 /**
  * Next.js 16 proxy (the file convention formerly known as middleware).
@@ -37,13 +38,12 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Protected routes: signed-out users are sent to sign-in.
-  // R9: match on PATH SEGMENTS — startsWith('/lab') also matched
-  // '/laboratory' and '/alerts-foo', redirecting legitimate public pages.
-  const protectedPaths = ['/lab', '/portfolio', '/alerts'];
+  // R9: match on PATH SEGMENTS — a prefix like '/alerts' must not also
+  // match '/alerts-foo', redirecting legitimate public pages.
+  // Founder decision 2026-10-03: /lab is PUBLIC (the Portfolio Lab is
+  // browser-local data; no sign-in required) — see lib/auth/protectedPaths.
   const pathname = request.nextUrl.pathname;
-  const isProtected = protectedPaths.some(
-    p => pathname === p || pathname.startsWith(p + '/'),
-  );
+  const isProtected = isProtectedPath(pathname);
   if (!user && isProtected) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/auth/signin';

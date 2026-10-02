@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
+import { anonQuotaId } from '@/lib/auth/anonIdentity';
 import { resolvePersonaId } from '@/lib/chat/personas';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { STOCKS } from '@/data/stocks';
@@ -12,20 +13,25 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
  *
  * Contract: { personaId, symbol?, history, message }
- * - Session required (401 otherwise; the UI shows an explicit unavailable
- *   state — never a locally fabricated answer).
+ * - NO authentication required (founder decision 2026-10-03): anonymous
+ *   callers run the SAME bounded pipeline as signed-in callers. A signed-in
+ *   session (if present) is used as the quota identity; an anonymous caller
+ *   is quota-keyed to a DETERMINISTIC per-IP uuidv5 (lib/auth/anonIdentity)
+ *   so the persistent atomic counter below keeps bounding the spend (R12).
+ *   Authentication here is an identity convenience, not a feature gate.
  * - The system prompt is built SERVER-SIDE from the canonical persona
  *   registry — a client-supplied systemPrompt is not part of the contract
  *   and is ignored/rejected.
  * - Persona validation is EXISTENCE + canonical registry resolution
  *   (Commit M3, founder decision 2026-10-02 — every feature free): an
  *   unknown persona id is rejected 400; every canonical persona is
- *   available to every authenticated caller. There is no tier gate.
+ *   available to every caller. There is no tier gate and no sign-in gate.
  * - symbol is validated against the stock seed registry before use.
  * - Limits: message <= 2000 chars; history <= 20 turns and <= 8000 chars
  *   total; roles restricted to user|assistant.
- * - Quotas: per-user daily quota (Supabase chat_usage) plus a per-IP
- *   burst limit.
+ * - Quotas: per-IDENTITY daily quota (Supabase chat_usage — account id,
+ *   or the deterministic per-IP uuid for anonymous callers) plus a per-IP
+ *   burst limit. One common free quota either way (Commit M5).
  * - Providers (resolved per request from env):
  *     1. OpenAI-compatible endpoint — CHAT_API_BASE_URL + CHAT_API_KEY
  *        (+ optional CHAT_MODEL). The key is sent via the
@@ -134,16 +140,13 @@ interface HistoryTurn {
 }
 
 export async function POST(req: NextRequest) {
-  // 1. Auth (T5 sessions). Anonymous callers get 401 — the UI shows an
-  //    explicit sign-in/unavailable state (the pseudo-AI local fallbacks
-  //    were removed by the audit 2026-10-02 P0: no fabricated answers).
+  // 1. Identity (T5 sessions, now OPTIONAL — founder decision 2026-10-03):
+  //    a signed-in session supplies the account id; an anonymous caller is
+  //    quota-keyed to a deterministic per-IP uuidv5. Neither path is a
+  //    feature gate — every caller gets the same pipeline, evidence loop,
+  //    grounding and ONE common free quota (R12 spend control retained).
   const user = await getSessionUser();
-  if (!user) {
-    return NextResponse.json(
-      { error: 'Authentication required', fallback: true },
-      { status: 401 },
-    );
-  }
+  const quotaIdentity = user?.id ?? anonQuotaId(clientIp(req));
 
   // 2. Burst limit per IP.
   if (await ipBurstExceeded(clientIp(req))) {
@@ -172,11 +175,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Commit M3 (free access): persona authorization is EXISTENCE + canonical
-  // registry resolution — every authenticated caller may converse with every
-  // canonical persona. The old tier-entitlement 403 (audit 2026-10-02 P0)
-  // is superseded by the founder decision of 2026-10-02: no tier may gate
-  // any feature. resolveCanonicalPersona re-reads the SAME registry the
-  // roster route serves, so the two surfaces cannot drift.
+  // registry resolution — every caller may converse with every canonical
+  // persona (founder decision 2026-10-02: no tier may gate any feature;
+  // founder decision 2026-10-03: no sign-in gate either).
+  // resolveCanonicalPersona re-reads the SAME registry the roster route
+  // serves, so the two surfaces cannot drift.
   const persona = resolveCanonicalPersona(personaId)!;
 
   const message = typeof body.message === 'string' ? body.message.trim() : '';
@@ -229,11 +232,12 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
-  // 5. Daily quota — ONE common free quota for every authenticated caller
-  //    (server-resolved identity, never client). N4: consumed only after
-  //    the request validated — 400/413 paths above leave the counter
-  //    untouched, and upstream failures below refund.
-  if (!(await consumeQuota(user.id))) {
+  // 5. Daily quota — ONE common free quota for every caller (identity is
+  //    the server-resolved account id or the deterministic per-IP uuid —
+  //    never a client-supplied value). N4: consumed only after the request
+  //    validated — 400/413 paths above leave the counter untouched, and
+  //    upstream failures below refund.
+  if (!(await consumeQuota(quotaIdentity))) {
     return NextResponse.json(
       { error: 'Daily chat quota exhausted', fallback: true },
       { status: 429 },
@@ -258,7 +262,7 @@ export async function POST(req: NextRequest) {
     evidence = evidencePackage?.items ?? [];
   } catch (e) {
     console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
-    await refundQuota(user.id);
+    await refundQuota(quotaIdentity);
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 
@@ -278,7 +282,7 @@ export async function POST(req: NextRequest) {
     // Upstream broke (timeout/5xx/empty) — 502 with generic body, quota
     // refunded (R6.2). Details logged server-side only.
     console.error('[chat] upstream failed:', e instanceof Error ? e.message : e);
-    await refundQuota(user.id);
+    await refundQuota(quotaIdentity);
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
   if (!answer) {
@@ -286,7 +290,7 @@ export async function POST(req: NextRequest) {
     console.error(
       '[chat] no approved chat provider configured: set CHAT_API_BASE_URL + CHAT_API_KEY (OpenAI-compatible) or GEMINI_API_KEY',
     );
-    await refundQuota(user.id); // R6.2: unanswerable request must not burn quota
+    await refundQuota(quotaIdentity); // R6.2: unanswerable request must not burn quota
     return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
   }
 

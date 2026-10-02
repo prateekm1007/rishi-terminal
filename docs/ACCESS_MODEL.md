@@ -1,9 +1,11 @@
 # Access Model — Rishi Terminal (canonical, current)
 
-**Status:** Commit M, 2026-10-02. Founder decision FD-7 is RESOLVED: all
-current product features are free, and there are no entitlement tiers. This
-document is the canonical statement of who can use what, and why. It
-supersedes `docs/PAID_CONTENT.md` (kept as a historical record only).
+**Status:** Commit M, 2026-10-02; founder decision 2026-10-03 amends it:
+chat and the Portfolio Lab require NO authentication. Founder decision
+FD-7 is RESOLVED: all current product features are free, and there are no
+entitlement tiers. This document is the canonical statement of who can use
+what, and why. It supersedes `docs/PAID_CONTENT.md` (kept as a historical
+record only).
 
 ## The one rule
 
@@ -18,19 +20,25 @@ everyone.
 |---|---|---|
 | Stock pages — the FULL canonical Rishi verdict set (all 20) | every visitor | `/stock/[symbol]` RSC payload (`sanitizeConsensus` shapes the payload; it no longer gates) |
 | `GET /api/rishis/[symbol]` — complete verdicts + knowledge graph | authenticated users (401 anonymous) | server route |
-| Screener & Portfolio Lab — full verdict set in slim rows | every visitor | `lib/scoring/slimIndex.ts` via RSC props |
-| Chat personas — every canonical persona | authenticated users (401 anonymous) | `GET /api/chat/personas`, `POST /api/chat` |
+| Screener & Portfolio Lab — full verdict set in slim rows | every visitor | `lib/scoring/slimIndex.ts` via RSC props; `/lab` page itself is PUBLIC (founder decision 2026-10-03 — lab data is browser-local) |
+| Chat personas — every canonical persona | every caller (roster is public content; no sign-in, founder decision 2026-10-03) | `GET /api/chat/personas` |
 | Crypto/commodity guru verdicts — all categories, full insight | every visitor | `GET /api/gurus` (server-computed, R3) |
 | F&O surfaces | every visitor; data that does not exist is honestly `BLOCKED`/unavailable — never "paid" | `/fno/**` |
-| AI chat (Rishi chat) | authenticated users, subject to the ONE free quota + burst limits | `POST /api/chat` |
+| AI chat (Rishi chat) | every caller — no sign-in (founder decision 2026-10-03), subject to the ONE free quota + burst limits | `POST /api/chat` |
 | Pricing page | a truthful access statement — no storefront | `/pricing` |
 
 ## Authentication is not an entitlement tier
 
-Authentication remains REQUIRED for operations that need an account (chat,
-per-symbol verdict routes, preferences). That is protection and abuse
-control, not a product level:
+Founder decision 2026-10-03: **chatting with the Rishis and the Portfolio
+Lab require no sign-in**. Authentication remains used ONLY for operations
+that genuinely need an account (per-symbol verdict routes, preferences).
+It is protection and abuse control, never a product level:
 
+- Chat spend is bounded WITHOUT auth: a signed-in session contributes its
+  account id as the quota identity; an anonymous caller is keyed to a
+  **deterministic per-IP uuidv5** (`lib/auth/anonIdentity.ts` — the raw IP
+  is never stored). The same atomic counter, refund-on-failure and
+  fail-closed semantics apply to both (R12).
 - `lib/auth/session.ts` resolves **authentication identity only**
   (`id`, `email`). It no longer resolves any product tier.
 - `GET /api/auth/me` returns `{ user: { id, email } }` or `{ user: null }` —
@@ -44,10 +52,12 @@ control, not a product level:
 
 ## Quotas and rate limits are abuse/cost controls, not plans
 
-- `POST /api/chat` enforces **one per-user daily free quota**
+- `POST /api/chat` enforces **one per-identity daily free quota**
   (`FREE_CHAT_DAILY_QUOTA`, `consume_chat_quota` RPC — atomic,
-  refund-on-failure, fail-closed) plus a per-IP burst limit. The limit is
-  identical for every user; it is not purchasable and not tier-dependent.
+  refund-on-failure, fail-closed) plus a per-IP burst limit. The identity
+  is the signed-in account id, or the deterministic per-IP uuid for
+  anonymous callers. The limit is identical for everyone; it is not
+  purchasable and not tier-dependent.
 - These controls exist because the upstream costs money per call — they
   protect the service, they do not sell anything.
 

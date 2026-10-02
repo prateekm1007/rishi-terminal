@@ -83,7 +83,16 @@ const before = await ledgerSnapshot();
 for (let i = 0; i < ROUNDS; i++) {
   const sym = STOCKS[i % STOCKS.length];
   const r = await timedFetch(`${BASE}/api/prices?symbol=${sym}`, { headers: { "Cache-Control": "no-cache" } });
-  const entry = r.body?.prices?.[sym] ?? r.body?.[sym] ?? null;
+  // R9 fix: the SINGLE route returns the entry UNWRAPPED for ?symbol=X
+  // (no {prices:{}} wrapper, no symbol key) — the old lookup read
+  // body.prices[sym] ?? body[sym] and silently recorded nulls for every
+  // provenance field (a probe defect: the artifact claimed nothing while
+  // the wire carried everything).
+  const b = r.body;
+  const entry =
+    b?.prices?.[sym] ??
+    (b && typeof b === "object" && ("price" in b || "status" in b) ? b : b?.[sym]) ??
+    null;
   report.singleSymbol.push({
     symbol: sym,
     wallMs: r.ms,

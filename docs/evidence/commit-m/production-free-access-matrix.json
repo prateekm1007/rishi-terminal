@@ -1,9 +1,9 @@
 {
   "probe": {
     "base": "https://rishi-terminal.vercel.app",
-    "at": "2026-10-02T03:42:58.889Z",
-    "expectedSha": "d7f16acaea06f90524f44200ef90b64d03a9117f",
-    "versionSha": "d7f16acaea06f90524f44200ef90b64d03a9117f",
+    "at": "2026-10-02T04:12:49.163Z",
+    "expectedSha": "d13a583a88d42f569b0fd0d57eae2b7edab86484",
+    "versionSha": "d13a583a88d42f569b0fd0d57eae2b7edab86484",
     "versionStatus": 200
   },
   "expectedShaMatch": true,
@@ -15,8 +15,8 @@
       "id": "identity /api/version",
       "ok": true,
       "detail": {
-        "sha": "d7f16acaea06f90524f44200ef90b64d03a9117f",
-        "expected": "d7f16acaea06f90524f44200ef90b64d03a9117f"
+        "sha": "d13a583a88d42f569b0fd0d57eae2b7edab86484",
+        "expected": "d13a583a88d42f569b0fd0d57eae2b7edab86484"
       }
     },
     {
@@ -24,7 +24,7 @@
       "ok": true,
       "detail": {
         "user": "35eb7f45-9fbe-4da4-b723-3398d3380d8b",
-        "created": true,
+        "created": false,
         "tierPatchStatus": 204
       }
     },
@@ -33,7 +33,7 @@
       "ok": true,
       "detail": {
         "user": "c1678d06-c32d-4bca-bb52-4517197e6c0e",
-        "created": true,
+        "created": false,
         "tierPatchStatus": 204
       }
     },
@@ -42,7 +42,7 @@
       "ok": true,
       "detail": {
         "user": "8200ab6f-d3bf-4bb8-a234-f9dadc711566",
-        "created": true,
+        "created": false,
         "tierPatchStatus": 204
       }
     },
@@ -186,7 +186,7 @@
       "detail": {
         "status": 200,
         "grounded": false,
-        "mode": "evidence-context",
+        "mode": "context-only",
         "structured": "valid",
         "toolCalls": 0,
         "model": "agnes-2.5-flash"
@@ -199,7 +199,7 @@
         "status": 200,
         "grounded": false,
         "mode": "evidence-context",
-        "structured": "valid",
+        "structured": "invalid",
         "toolCalls": 0,
         "model": "agnes-2.5-flash"
       }

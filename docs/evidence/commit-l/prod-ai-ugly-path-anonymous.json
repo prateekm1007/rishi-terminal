@@ -6,7 +6,7 @@
       "name": "anonymous chat (no cookie)",
       "path": "/api/chat",
       "status": 401,
-      "ms": 461,
+      "ms": 359,
       "body": {
         "error": "Authentication required",
         "fallback": true
@@ -17,7 +17,7 @@
       "name": "forged premium persona, anonymous",
       "path": "/api/chat",
       "status": 401,
-      "ms": 328,
+      "ms": 305,
       "body": {
         "error": "Authentication required",
         "fallback": true
@@ -28,7 +28,7 @@
       "name": "unknown persona, anonymous",
       "path": "/api/chat",
       "status": 401,
-      "ms": 315,
+      "ms": 280,
       "body": {
         "error": "Authentication required",
         "fallback": true
@@ -39,7 +39,7 @@
       "name": "oversized message, anonymous",
       "path": "/api/chat",
       "status": 401,
-      "ms": 338,
+      "ms": 521,
       "body": {
         "error": "Authentication required",
         "fallback": true
@@ -50,7 +50,7 @@
       "name": "malformed JSON, anonymous",
       "path": "/api/chat",
       "status": 401,
-      "ms": 279,
+      "ms": 326,
       "body": {
         "error": "Authentication required",
         "fallback": true
@@ -61,7 +61,7 @@
       "name": "personas projection leak scan",
       "path": "/api/chat/personas",
       "status": 401,
-      "ms": 292,
+      "ms": 294,
       "body": "{\"error\":\"Sign in to chat with the Rishis\"}",
       "expectHint": "200, no prompt/financial text in client projection",
       "leakFound": false
@@ -71,8 +71,8 @@
       "path": "/api/version",
       "status": 200,
       "body": {
-        "sha": "910c12a106a0a89317ed21261842485a6fd06a57",
-        "now": "2026-10-02T02:11:17.977Z",
+        "sha": "d13a583a88d42f569b0fd0d57eae2b7edab86484",
+        "now": "2026-10-02T04:13:48.021Z",
         "node": "v24.21.0"
       },
       "expectHint": "sha = deployed commit"

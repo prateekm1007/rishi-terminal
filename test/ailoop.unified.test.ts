@@ -430,4 +430,84 @@ describe("Commit N — the complete general-chat loop contract (production-grade
     expect(wire.provenance.grounded).toBe(false);
     expect(wire.text).not.toMatch(/\d{3,}/);
   });
+
+  it("MUST FAIL PRE-FIX (canary root cause): once a tool lands evidence, the model is re-prompted with the EVIDENCE contract", async () => {
+    // Production evidence 2026-10-02 (scripts/prodGroundedCanary.mjs on
+    // ce5fbcb): the tool executed (getPrices:ok) but the final reply was
+    // structuredResponse=invalid — the live model, still holding the
+    // CONTEXT-ONLY contract (which demands claims:[] and never teaches the
+    // claims/evidenceIds/assertions format), improvised claims as an array
+    // of fact-annotation STRINGS. Root cause: the system prompt was built
+    // once from the INITIAL evidence and never rebuilt after tool evidence
+    // landed. This regression pins both halves of the fix.
+    const { calls } = scriptProvider([
+      '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
+      // The REAL model's reply shape after the fix (captured live): a
+      // proper claims object with STRINGLY assertion values — exactly what
+      // coerceStringlyTypedValues exists to admit at the parse boundary.
+      JSON.stringify({
+        answer: "RELIANCE trades at 1000 INR, down 0.5 percent on the session.",
+        claims: [
+          {
+            claim: "The latest observed price for RELIANCE is 1000 INR with a session change of 0.5 percent.",
+            evidenceIds: [PRICE_ITEM.id],
+            assertions: [
+              { field: "price", value: "1000", unit: "inr" },
+              { field: "change", value: "0.5", unit: "percent" },
+            ],
+          },
+        ],
+        uncertainties: [],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.",
+      history: [],
+      message: "What is the latest price of RELIANCE?",
+      evidence: [], // no initial evidence — the tool must supply it
+      toolDeps: TOOL_DEPS,
+    });
+
+    // 1. The SECOND provider call's system prompt must carry the EVIDENCE
+    //    contract (VERIFIED CONTEXT + the claims format), NOT the stale
+    //    context-only contract that starves the model of the format.
+    expect(calls.length).toBe(2);
+    const secondSystem = JSON.stringify(calls[1]?.body ?? {});
+    expect(secondSystem, "the post-tool system prompt must teach the claims format").toContain("VERIFIED CONTEXT");
+    expect(
+      secondSystem,
+      "the post-tool system prompt must no longer demand empty claims",
+    ).not.toContain("RESPONSE CONTRACT (no verified platform data attached)");
+
+    // 2. The real-model-shaped reply (stringly values included) GROUNDS:
+    //    validated claims + the server-generated verified surface.
+    expect(answer!.claimsVerified).toBe(true);
+    const wire = toChatWire(answer!);
+    expect(wire.provenance.grounded).toBe(true);
+    expect(wire.provenance.groundingMode).toBe("structured-claims");
+    expect(wire.text).toContain("price = 1000 inr");
+    expect(wire.provenance.commentary).toBe("RELIANCE trades at 1000 INR, down 0.5 percent on the session.");
+  });
+
+  it("the pre-fix failure shape itself stays honest: a string-array claims reply is STILL rejected (invalid), never displayed", async () => {
+    // Belt-and-braces: the live model's PRE-FIX reply (claims as an array
+    // of fact-annotation strings) must keep failing the schema — the fix
+    // changes the PROMPT, it must not loosen the VALIDATOR.
+    scriptProvider([
+      '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
+      JSON.stringify({
+        answer: "The latest observed price of Reliance is 1294.30.",
+        claims: ["price=1294.3 inr (live) - Source: price:RELIANCE:2026-10-02T05:53:40.947Z"],
+        uncertainties: [],
+      }),
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are Damani.", history: [], message: "What is the latest price of RELIANCE?",
+      evidence: [], toolDeps: TOOL_DEPS,
+    });
+    const wire = toChatWire(answer!);
+    expect(answer!.structuredResponse).toBe("invalid");
+    expect(wire.provenance.grounded).toBe(false);
+    expect(wire.text).not.toContain("1294");
+  });
 });

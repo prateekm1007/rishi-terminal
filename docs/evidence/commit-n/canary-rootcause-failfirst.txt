@@ -1,0 +1,3 @@
+     × MUST FAIL PRE-FIX (canary root cause): once a tool lands evidence, the model is re-prompted with the EVIDENCE contract 13ms
+     ✓ the pre-fix failure shape itself stays honest: a string-array claims reply is STILL rejected (invalid), never displayed 1ms
+      Tests  1 failed | 15 passed (16)

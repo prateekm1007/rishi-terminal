@@ -106,13 +106,10 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
     assetClass: 'bond',
     category: 'bond',
     price: displayPrice,
-    // Chart-internal shim (the line plot reads `price`): the observed percent
-    // when live; 0 only as the shape's filler for the reference fallback —
-    // the UI never renders this as a "0.00%" claim.
-    change24h: displayChange ?? 0,
-    changePercent24h: displayChange ?? 0,
-    marketCap: 0,
-    volume24h: 0,
+    // Commit L3 (§9): null is a real state — an unobserved change stays
+    // null (rendered as an em dash below), never a 0.00% filler. The unused
+    // marketCap/volume24h shape-fillers are OMITTED (absence ≠ 0).
+    change24h: displayChange,
     country: bond.country,
     sector: bond.type,
   } as unknown as UniversalAsset;

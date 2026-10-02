@@ -29,7 +29,7 @@ const receipt = {
   versionEndpoint: version,
   vercel: null,
   gates: {
-    repositoryGate: "tsc 0 · eslint 0 errors (300 warnings, below the 309 ratchet) · vitest 706/706 · eval:chat 113/113 · freeAccessAudit PASS · validate:encoding · validate:stocks T12 (916) · score:parity 916/0 · build (916 SSG) · bundle budget within ratchet · gitleaks clean · git env grep clean",
+    repositoryGate: "tsc 0 · eslint 0 errors (301 warnings, below the 309 ratchet) · vitest 746/746 · eval:chat 113 (102 local + 11 CI, all pass) · freeAccessAudit PASS · aiLoopAudit 8/8 · validate:encoding · validate:stocks T12 (916) · score:parity 916/0 · build · bundle budget within ratchet · git env grep clean (verified on PR #46 head c96d6db, the identical tree merged as 8e9cada)",
     recordedAt: "see PR description for the raw gate log of the exact HEAD",
   },
   matrices: {

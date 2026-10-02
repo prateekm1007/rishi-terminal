@@ -5,65 +5,84 @@
     {
       "name": "anonymous chat (no cookie)",
       "path": "/api/chat",
-      "status": 401,
-      "ms": 359,
+      "status": 200,
+      "ms": 4327,
       "body": {
-        "error": "Authentication required",
-        "fallback": true
+        "text": "The ROE is 8.91 percent. Now, I'll tell you straight — that's not a number that makes me jump out of my chair. I'd rather see a business earning 15 or 20 percent on equity with a sturdy moat. Eight point nine-one tells me this company is working hard but not exactly swimming in returns. Still, at a P/E of 21 and promoter stake of over half, there's conviction behind it. Whether it's a good buy at this price? That's a question for your wallet and your patience.",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-02T04:50:36.913Z",
+          "grounded": false,
+          "groundingMode": "evidence-context",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "claim 1: unknown evidence id(s) \"fundamental:RELIANCE:ro e:no-disclosed-observation-time\" — rejected"
+          ],
+          "toolCalls": []
+        }
       },
-      "expectHint": "401 + fallback true"
+      "expectHint": "200 + wire provenance (anonymous allowed; quota/burst still bound)"
     },
     {
-      "name": "forged premium persona, anonymous",
+      "name": "canonical persona, anonymous",
       "path": "/api/chat",
-      "status": 401,
-      "ms": 305,
+      "status": 200,
+      "ms": 2683,
       "body": {
-        "error": "Authentication required",
-        "fallback": true
+        "text": "Namaste, yaar! 🇮🇳 Achha aaya tum. Main hoon Rakesh Jhunjhunwala — the Big Bull, though I prefer to think of myself as simply someone who had faith in this great nation. Whether you want to talk markets, stocks, or the India growth story, I am here. What is on your mind?",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-02T04:50:40.175Z",
+          "grounded": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [],
+          "toolCalls": []
+        }
       },
-      "expectHint": "401 (auth first; persona 403 pinned by CI with mocks)"
+      "expectHint": "200 (no tier gate, no sign-in gate)"
     },
     {
       "name": "unknown persona, anonymous",
       "path": "/api/chat",
-      "status": 401,
-      "ms": 280,
+      "status": 400,
+      "ms": 567,
       "body": {
-        "error": "Authentication required",
-        "fallback": true
+        "error": "Unknown persona"
       },
-      "expectHint": "401"
+      "expectHint": "400"
     },
     {
       "name": "oversized message, anonymous",
       "path": "/api/chat",
-      "status": 401,
-      "ms": 521,
+      "status": 413,
+      "ms": 411,
       "body": {
-        "error": "Authentication required",
-        "fallback": true
+        "error": "Message too long"
       },
-      "expectHint": "401 (413 for authed pinned by CI)"
+      "expectHint": "413"
     },
     {
       "name": "malformed JSON, anonymous",
       "path": "/api/chat",
-      "status": 401,
-      "ms": 326,
+      "status": 400,
+      "ms": 619,
       "body": {
-        "error": "Authentication required",
-        "fallback": true
+        "error": "Unknown persona"
       },
-      "expectHint": "401"
+      "expectHint": "400"
     },
     {
       "name": "personas projection leak scan",
       "path": "/api/chat/personas",
-      "status": 401,
-      "ms": 294,
-      "body": "{\"error\":\"Sign in to chat with the Rishis\"}",
-      "expectHint": "200, no prompt/financial text in client projection",
+      "status": 200,
+      "ms": 280,
+      "body": "{\"personas\":[{\"id\":\"jhunjhunwala\",\"name\":\"Jhunjhunwala\",\"fullName\":\"Rakesh Jhunjhunwala\",\"emoji\":\"🦁\",\"color\":\"#F59E0B\",\"rank\":\"Legend\",\"philosophy\":\"Bold convi",
+      "expectHint": "200, full public roster, no server prompt fields in client projection",
       "leakFound": false
     },
     {
@@ -71,8 +90,8 @@
       "path": "/api/version",
       "status": 200,
       "body": {
-        "sha": "d13a583a88d42f569b0fd0d57eae2b7edab86484",
-        "now": "2026-10-02T04:13:48.021Z",
+        "sha": "8e9cada9d7ee1ab2234bb313a815e4f0a0388d78",
+        "now": "2026-10-02T04:50:44.357Z",
         "node": "v24.21.0"
       },
       "expectHint": "sha = deployed commit"

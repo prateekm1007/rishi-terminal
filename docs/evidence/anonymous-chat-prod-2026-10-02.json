@@ -1,0 +1,66 @@
+{
+  "base": "https://rishi-terminal.vercel.app",
+  "rows": [
+    {
+      "name": "anonymous chat round-trip (no cookies)",
+      "status": 200,
+      "ms": 8066,
+      "http": "200 expected (founder 2026-10-03: no authentication)",
+      "wire": {
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "grounded": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "claims": [
+          {
+            "claim": "Reliance Industries has a return on equity (ROE) of 8.91 percent.",
+            "evidenceIds": [
+              "fundamental:RELIANCE:roe:no-disclosed-observation-time"
+            ],
+            "assertions": [
+              {
+                "field": "roe",
+                "value": 8.91,
+                "unit": "percent"
+              }
+            ]
+          }
+        ],
+        "verifiedText": "roe = 8.91 percent — live (no disclosed observation time)",
+        "commentarySeparate": true
+      }
+    },
+    {
+      "name": "GET /lab anonymous",
+      "status": 200,
+      "ms": 208,
+      "http": "200 expected (no sign-in redirect)",
+      "htmlHasLabHeading": true
+    },
+    {
+      "name": "GET /lab?tab=holdings anonymous",
+      "status": 200,
+      "ms": 89,
+      "http": "200 expected (no sign-in redirect)",
+      "htmlHasLabHeading": true
+    },
+    {
+      "name": "GET /alerts anonymous (scope guard)",
+      "status": 307,
+      "http": "307 expected (still gated)"
+    },
+    {
+      "name": "GET /api/chat/personas anonymous",
+      "status": 200,
+      "rosterSize": 21,
+      "promptLeakFound": false,
+      "http": "200 expected (public roster)"
+    },
+    {
+      "name": "version binding",
+      "status": 200,
+      "sha": "8e9cada9d7ee1ab2234bb313a815e4f0a0388d78"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ delivered) and `CONSTITUTION.md` (the governing rules).
 **Statuses:** ✅ done (evidence linked) · 🟡 partial (what remains, who blocks it) ·
 ⬜ not started · 🚫 blocked on an FD · ➖ not applicable yet.
 
-Last updated: 2026-10-01 (audit round 4 — Q1–Q5 remediation).
+Last updated: 2026-10-02 (Commit L — AI tool loop, grounding/provenance closure, eval harness; FD-9..FD-18 reconciled into the register below).
 
 **Phase-0 status correction (Q5):** the round-3 close-out commit (`301a9d0`)
 said "Phase 0 closed"; that was an overclaim — P0-03 remains 🟡 (no staging
@@ -66,8 +66,8 @@ R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 
 
 | Task | Status | Evidence / notes |
 |---|---|---|
-| R4-01 Internal data API for tools | 🟡 (started early) | The canonical evidence assembler (`lib/ai/evidence.ts`) exposes typed, server-side data surfaces (`resolveStockMetrics` → `getStockScore` → `fetchLivePrice`) with provenance-carrying evidence ids consumed by `/api/chat`; contract tests (`test/aiEvidence.test.ts`). **Remaining for ✅:** the full `getStock`/`getFinancials`/`getPrices`/`getScore`/`getPeers` route surface with zod contracts, 401/404 semantics (roadmap acceptance). |
-| R4-02 Grounded chat with numeric verification ★ | 🟡 (started early) | Evidence-ID validation (fail closed) + SEMANTIC per-claim grounding (Q4 Commit A): every numeric claim carries `{field, value, unit}` assertions that must EXACTLY match a typed fact on the claim's OWN cited items (canonicalized field/unit, exact value; numbers pooled per claim, never across claims; derived facts marked `source: derived` and never extended by the model); the answer's numbers trace to the validated claims' own cites; rejections ride to the wire as `provenance.groundingRejections`. Route integration test pins `/api/chat` → `buildAiEvidencePackage` and fails if seed-only evidence (`seed:<SYM>:profile`) ever reappears (`lib/ai/evidence.ts`, `test/chat.grounding.semantic.test.ts`, `test/chat.route.canonicalEvidence.test.ts` — includes the escalated "ROE is 99% while P/E=99 is in the same evidence" rejection). UI labels grounded replies "cites N evidence items · numbers checked" (no "verified" overclaim). **Remaining for ✅:** tool-calling loop, `eval:chat` fixture harness + golden set (≥100 questions), FD-8 chat-vendor terms. |
+| R4-01 Internal data API for tools | ✅ implemented (pending independent verification) | **Commit L1:** `lib/ai/tools.ts` — the typed tool layer `getStock`/`getFinancials`/`getPrices`/`getScore`/`getPeers`, each resolving ONLY through the canonical surfaces (registry, `resolveStockMetrics`, `getStockScore`, `fetchLivePrice`) — no second source of truth, no AI-side score recomputation. Strict allowlist + zod argument validation + security-master check + explicit failure states (`unknown-tool | invalid-args | unknown-symbol | no-data | failed`). **HTTP-exposure note (deliberate):** the tools are server-internal with NO route of their own — the only consumer is the bounded loop inside `/api/chat` (401-guarded), because Coder Directions §4 forbids client-supplied tool results; the roadmap's 'unknown symbol → 404' maps to the explicit `unknown-symbol` failure state at the tool boundary ('where applicable', §5). Evidence: `test/aiToolLoop.test.ts` (20 cases, incl. score parity vs `getStockScore`), `test/aiTools` coverage in the golden set, `docs/AI_LOOP.md`. |
+| R4-02 Grounded chat with numeric verification ★ | 🚫 blocked on FD-8 (founder) — technical contract complete | **Commit L closes the technical scope:** bounded tool-calling loop (L1, `MAX_TOOL_ITERATIONS=4`, exhaustion → honest BLOCKED, `structuredResponse:"blocked"`); server-generated verified surface (L2 — the grounded `text` is built ONLY from validated typed facts `[field] = [value] [unit] — [source state]`, model prose rides as labelled unverified commentary — the mixed-claim hole from §2 is structurally closed); provenance in the grounding contract (closed source-state vocabulary live/live-undated/derived/seed/unavailable + conservative closed-vocabulary anti-upgrade, claims and answer); untrusted-transcript contract for client history; `eval:chat` harness + 113 golden questions across all 31 mandated categories (`npm run eval:chat`, `test/evalChat.golden.test.ts`), every case an expected contract state; evidence-assembly quota refund; `null→0` cleanup. **Remaining for ✅:** FD-8 (chat/LLM vendor + retention terms) and FD-2 (SEBI positioning) — founder-owned; plus the founder-reviewed slice of the golden set (roadmap asks ≥30 questions reviewed by the founder) and the PROPOSED threshold confirmation. Evidence: `test/chat.grounding.l2.test.ts`, `test/aiToolLoop.test.ts`, `test/evalChat.golden.test.ts`, `test/chat.quota.assembly.test.ts`, `docs/AI_LOOP.md`. |
 
 ## Phase 5 — Legal, money, security ops (parallel)
 
@@ -112,6 +112,21 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-03 needs FD-7, G7-06 needs D1
 | FD-6 | Broker CSV formats | X3-07 | OPEN. |
 | FD-7 | Pricing + free-tier limits | G7-03 | OPEN. |
 | FD-8 | Chat/LLM vendor + retention terms | R4-02/03 | OPEN (current chat provider works; terms unreviewed). |
+
+**Round-4/round-5 additions — reconciled into this register (all OPEN, founder-owned; detailed entries below):**
+
+| FD | Decision | Blocks | Status |
+|---|---|---|---|
+| FD-9 | Constitution rules 32–37 ratification + encrypted-credentials-mirror proposal (detail below) | Article VI governance | OPEN (Constitution frozen pending ratification). |
+| FD-10 | `/rishis` general chat scope: philosophy-only vs symbol-aware evidence-grounded (detail below) | `app/rishis` product contract | OPEN. |
+| FD-11 | Matured bond instruments (IN91DTB and successors) (detail below) | `data/bonds.ts` | OPEN. |
+| FD-12 | Non-equity heuristic-reference scores: promote to official scores or keep labelled heuristic reference | crypto/forex/commodity/bond score surfaces | OPEN (they remain explicitly labelled heuristic reference; do not silently redesign). |
+| FD-13 | Seed-dataset residual placeholders (~416 boilerplate clones, ~422 mktcap artifacts) — impossibility gate + seed banner is interim | D1 live-fundamentals project | OPEN (real fix is D1, not more placeholder edits). |
+| FD-14 | `/terms` + `/privacy` minimal honest drafts — counsel review before paid tiers scale; refund wording sign-off | paid-tier scaling | OPEN. |
+| FD-15 | Non-equity asset classes in main nav (keep for traffic vs demote for focus) | nav/product scope | OPEN. |
+| FD-16 | Banks scored with non-bank metrics — NIM/GNPA/CRAR modelling needs a data-source decision | bank scoring surfaces | OPEN. |
+| FD-17 | Soft-404 on unknown stock symbols (HTTP 200 + not-found UI) — fix vs leave | SEO hygiene | OPEN. |
+| FD-18 | `data/security-master/populate.sql` mirrors the pre-round-5 symbol list — regeneration owned by the D1 pipeline | D1-04/D1-05 (must not resurrect removed symbols) | OPEN (flagged). |
 
 ### Round-4 additions (Q6) — pending founder approval
 

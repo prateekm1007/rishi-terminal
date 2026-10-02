@@ -16,6 +16,9 @@ import { InsufficientDataRecord } from '../../../components/stock/InsufficientDa
 // stock, sector and headline scores. Follow-up: INCOMPLETE records get a
 // title/description that matches the insufficient-data page they render —
 // the metadata must not promise scores the page no longer shows.
+// Audit M6/B.3 (retest 2026-10-02): per-symbol canonical + Open Graph —
+// aliases 308 to the canonical symbol, and the canonical link makes each
+// company exactly one indexable URL; og gives WhatsApp/X/LinkedIn unfurls.
 export async function generateMetadata({ params }: StockPageProps): Promise<Metadata> {
   const { symbol } = await params;
   const key = symbol.toUpperCase();
@@ -24,15 +27,24 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   if (!stock) {
     return { title: `Stock not found | Rishi Terminal` };
   }
+  const ogUrl = `/stock/${canonicalSym}`;
   if (getStockScore(stock).dataQuality === "INCOMPLETE") {
+    const title = `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`;
+    const description = `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`;
     return {
-      title: `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`,
-      description: `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`,
+      title,
+      description,
+      alternates: { canonical: ogUrl },
+      openGraph: { title, description, url: ogUrl, type: "article" },
     };
   }
+  const title = `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`;
+  const description = `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`;
   return {
-    title: `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`,
-    description: `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`,
+    title,
+    description,
+    alternates: { canonical: ogUrl },
+    openGraph: { title, description, url: ogUrl, type: "article" },
   };
 }
 

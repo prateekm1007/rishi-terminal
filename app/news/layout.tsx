@@ -5,6 +5,8 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Market Intelligence — live news | Rishi Terminal",
   description: "Latest India and global market headlines with region and category filters.",
+  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
+  alternates: { canonical: "/news" },
 };
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {

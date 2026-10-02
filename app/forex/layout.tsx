@@ -5,6 +5,8 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Forex — USD/INR, majors and crosses | Rishi Terminal",
   description: "FX rates with forward points, PPP context and carry analysis. Reference-labelled; live where a quote exists.",
+  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
+  alternates: { canonical: "/forex" },
 };
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {

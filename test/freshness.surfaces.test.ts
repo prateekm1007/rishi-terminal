@@ -65,6 +65,8 @@ const EXEMPTED_SURFACES: Record<string, string> = {
     "renders on /stock/[symbol] under the StockPageClient page-level banner (imports only the SanitizedConsensus type)",
   "components/shared/SeedDataBanner.tsx":
     "this IS the banner component (imports only the public seedMeta constants)",
+  "app/sitemap.ts":
+    "crawler infrastructure, not a user-facing data surface: emits URL locs (symbols only, no seed values) at build time; every /stock/<symbol> page it lists carries the banner via StockPageClient",
 };
 
 function walk(dir: string, out: string[] = []): string[] {

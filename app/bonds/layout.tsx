@@ -5,6 +5,8 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Bonds — G-Secs, SDLs, corporates, US Treasuries | Rishi Terminal",
   description: "Sovereign and corporate debt reference yields across G-Secs, SDLs, T-Bills, corporates and US Treasuries.",
+  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
+  alternates: { canonical: "/bonds" },
 };
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {

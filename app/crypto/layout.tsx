@@ -5,6 +5,8 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Crypto Markets — BTC, ETH and top assets | Rishi Terminal",
   description: "Crypto assets through the Rishi lenses with live CoinGecko prices where available and labelled reference analytics.",
+  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
+  alternates: { canonical: "/crypto" },
 };
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {

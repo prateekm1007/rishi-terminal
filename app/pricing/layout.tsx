@@ -5,6 +5,8 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "Pricing — Tiers of Wisdom | Rishi Terminal",
   description: "Seeker, Student and Disciple tiers. Only features that actually exist are listed.",
+  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
+  alternates: { canonical: "/pricing" },
 };
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {

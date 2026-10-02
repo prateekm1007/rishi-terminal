@@ -55,6 +55,34 @@ truth on data quality.
 
 ## 3. Refresh pipeline (what actually runs)
 
+### 3a. Live-quote serving path (U2, founder round 7)
+
+NSE-equity quotes on `/api/prices` and `/api/prices/batch` serve through the
+**shared quote cache** (`quote_cache`, migrations 016/017 — founder-directed;
+its RLS denies everyone but the service role). One observation is reused by
+every user and instance for the TTL window:
+
+- market open: 60 s TTL; one atomic time-expiring refresh claim per symbol
+  (`try_quote_cache_refresh`) means at most ONE upstream refresher per
+  window — every other request serves the cached row;
+- market closed: the last close is the honest observation — existing rows
+  serve without any refresh, each labelled with its own upstream
+  observation time;
+- the wire status is honest per state: a just-revalidated row is `LIVE`;
+  a row served from the cache is `CACHED`; nothing is an explicit
+  `UNAVAILABLE` (no zeros, no fabricated timestamps). `observedAt` stays
+  the UPSTREAM's own time or null — never the fetch time;
+- the batch refresher is the Yahoo-bulk transport (source label
+  `yahoo-bulk`); the single-symbol refresher is the multi-source chain
+  (`yahoo`/`nse`/`bse` — provider labels unchanged);
+- storage-rights note: `quote_cache` is a short-lived operational cache
+  (60 s TTL while open), explicitly accepted by the founder for U2 — this
+  supersedes the Phase-6 `isPersistableSource` restraint for THIS table
+  only; the 24 h persistent cache keeps its stricter allow-list.
+
+Non-equity classes (crypto/forex/bonds/commodities/indices) keep the direct
+multi-source path — the cache is NSE-session scoped by design.
+
 - **`/api/ingest/snapshot`** — recomputes consensus scores for the whole
   registry and persists them to `rishi_snapshots` (with
   `SCORE_ENGINE_VERSION`, T10). Scheduled in `vercel.json`:

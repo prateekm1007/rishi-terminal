@@ -1,0 +1,36 @@
+── Round 7 (U2/U3/U4) — full local gate suite on 32f7f03 ──
+
+1. tsc --noEmit: exit 0 (no output)
+
+2. eslint .: exit 0 — 0 errors, 299 warnings (below the 305 ratchet)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+
+3. lint:ratchet: PASS (count below baseline)
+
+4. vitest run:
+   Test Files  90 passed (90)
+   Tests  882 passed (882)
+
+5. eval:chat: 113 golden cases · 102 executed locally (102 passed, 0 failed) · 11 CI-delegated · 31 categories
+
+6. validate:encoding: ✅ no mojibake detected
+7. validate:stocks: all T12 gates passed
+8. score:parity: 0 mismatches / 0 non-finite of 916
+9. next build: exit 0
+
+10. bundle:budget (post re-lock):
+── bundleBudget (PROPOSED budgets; founder to confirm) ──
+route                first-load   budget   ratchet   verdict
+/                       210.1 kB    200 kB   210.1 kB   over proposed budget  (9 scripts)
+/screener               208.6 kB    200 kB   208.6 kB   over proposed budget  (9 scripts)
+/stock/[symbol]         244.3 kB    200 kB   244.3 kB   over proposed budget  (11 scripts)
+Ratchet: fails on increase beyond +2 kB (budgets PROPOSED, currently exceeded — shrink bundles, then re-lock).
+
+11. audits:
+freeAccessAudit: PASS — no product-access dependency on tiers or payments.
+aiLoopAudit: OK — unified AI-loop architecture invariants hold (8/8 checks).
+routeIntegrity: PASS — every internal link resolves to a real route
+
+12. provenanceAudit: regenerated — git diff --exit-code docs/PROVENANCE.md = clean (no drift)
+13. git ls-files | grep .env: only .env.example

@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
 
     const t0 = Date.now();
     const results = await Promise.allSettled(list.map(s => fetchLivePrice(s)));
-    const prices: Record<string, { price?: number; change?: number; source?: string; status?: string; lastUpdated?: string | null; checkedAt?: string }> = {};
+    const prices: Record<string, { price?: number; change?: number | null; source?: string; status?: string; lastUpdated?: string | null; checkedAt?: string }> = {};
     results.forEach((r, i) => {
       if (r.status === "fulfilled" && r.value) {
         prices[list[i]] = r.value;

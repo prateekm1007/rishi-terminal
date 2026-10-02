@@ -582,6 +582,9 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
 
   // Fallback to ExchangeRate-API (no 24h change). The rate table's own
   // upstream update time (when disclosed) rides along as observedAt.
+  // Round 9 §16: this table is a RATE OBSERVATION with no 24h comparison —
+  // `change` is null ("no change disclosed"), never a fabricated 0% move.
+  // A 0.00% on the wire would render as a real market observation (Rule 16).
   await fetchForexRates();
   if (!forexCacheData) return null;
 
@@ -594,12 +597,12 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
   // rates are all relative to USD
   if (base === 'USD') {
     const price = rates[quote];
-    return price ? { price, change: 0, observedAt: forexCacheData.observedAt } : null;
+    return price ? { price, change: null, observedAt: forexCacheData.observedAt } : null;
   }
 
   if (quote === 'USD') {
     const baseRate = rates[base];
-    return baseRate ? { price: 1 / baseRate, change: 0, observedAt: forexCacheData.observedAt } : null;
+    return baseRate ? { price: 1 / baseRate, change: null, observedAt: forexCacheData.observedAt } : null;
   }
 
   // Cross rate
@@ -607,7 +610,7 @@ async function getForexRate(pair: string): Promise<{ price: number; change: numb
   const quoteRate = rates[quote];
   if (!baseRate || !quoteRate) return null;
 
-  return { price: quoteRate / baseRate, change: 0, observedAt: forexCacheData.observedAt };
+  return { price: quoteRate / baseRate, change: null, observedAt: forexCacheData.observedAt };
 }
 
 // =============================================================================
@@ -748,13 +751,15 @@ async function fetchUSBondYield(symbol: string): Promise<{ price: number; change
 
   // Fallback: static reference yield — served but honestly labelled STATIC
   // (T47: a static reference must never present itself as a live observation).
+  // Round 9 §16: a static reference carries NO change observation — null,
+  // never 0 (matches the India/corporate static fallbacks' semantics).
   // Corrective gate 5 (documented precedence): this STATIC reference
   // resolves BEFORE fetchLivePrice ever reaches lastKnownObservation, so
   // T62's persisted last-known observation is unreachable for symbols with
   // a static entry. Measured design gap — recorded, not changed here.
   const staticYield = BOND_YIELDS_STATIC[symbol];
   if (staticYield) {
-    return { price: staticYield, change: 0, source: "static-yields-us", status: "STATIC" };
+    return { price: staticYield, change: null, source: "static-yields-us", status: "STATIC" };
   }
   return null;
 }

@@ -1,0 +1,163 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-terminal
+
+ ❯ test/protectedPaths.test.ts (3 tests | 1 failed) 7ms
+   ❯ proxy protected paths (3)
+     × /lab is NOT protected — the Portfolio Lab works without sign-in 6ms
+     ✓ /alerts remains protected (outside the founder decision) 0ms
+     ✓ matching is by path SEGMENT (R9): /laboratory is not /lab 0ms
+ ❯ test/chat.anonymous.test.ts (8 tests | 6 failed) 20ms
+   ❯ anonymous chat (founder 2026-10-03: no sign-in required) (8)
+     × anonymous caller converses with a canonical persona -> 200 9ms
+     × same IP twice -> ONE deterministic quota identity (a uuidv5, never the raw IP) 1ms
+     × different IP -> different quota identity 1ms
+     × anonymous daily quota is enforced per IP (fail closed, never unbounded spend) 1ms
+     × anonymous quota infra failure still fails closed (429) 1ms
+     ✓ signed-in caller keeps the ACCOUNT id as the quota identity (not the IP uuid) 4ms
+     × GET /api/chat/personas serves the FULL roster without sign-in 1ms
+     ✓ anonQuotaId is a pure deterministic uuidv5 of the ip string 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-03: no sign-in required) > anonymous caller converses with a canonical persona -> 200
+AssertionError: expected 401 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 401
+
+ ❯ test/chat.anonymous.test.ts:99:24
+     97|   it("anonymous caller converses with a canonical persona -> 200", asy…
+     98|     const res = await POST(makeReq({ personaId: "buffett", history: []…
+     99|     expect(res.status).toBe(200);
+       |                        ^
+    100|   });
+    101|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-03: no sign-in required) > same IP twice -> ONE deterministic quota identity (a uuidv5, never the raw IP)
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ test/chat.anonymous.test.ts:105:33
+    103|     await POST(makeReq({ personaId: "buffett", history: [], message: "…
+    104|     await POST(makeReq({ personaId: "buffett", history: [], message: "…
+    105|     expect(consumeCalls.length).toBe(2);
+       |                                 ^
+    106|     const a = consumeCalls[0].p_user_id as string;
+    107|     const b = consumeCalls[1].p_user_id as string;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-03: no sign-in required) > different IP -> different quota identity
+AssertionError: expected +0 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ test/chat.anonymous.test.ts:117:33
+    115|     await POST(makeReq({ personaId: "buffett", history: [], message: "…
+    116|     await POST(makeReq({ personaId: "buffett", history: [], message: "…
+    117|     expect(consumeCalls.length).toBe(2);
+       |                                 ^
+    118|     expect(consumeCalls[0].p_user_id).not.toBe(consumeCalls[1].p_user_…
+    119|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-03: no sign-in required) > anonymous daily quota is enforced per IP (fail closed, never unbounded spend)
+AssertionError: expected 401 to be 429 // Object.is equality
+
+- Expected
++ Received
+
+- 429
++ 401
+
+ ❯ test/chat.anonymous.test.ts:124:24
+    122|     quotaRpcMode = "exhausted";
+    123|     const res = await POST(makeReq({ personaId: "buffett", history: []…
+    124|     expect(res.status).toBe(429);
+       |                        ^
+    125|   });
+    126|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-03: no sign-in required) > anonymous quota infra failure still fails closed (429)
+AssertionError: expected 401 to be 429 // Object.is equality
+
+- Expected
++ Received
+
+- 429
++ 401
+
+ ❯ test/chat.anonymous.test.ts:130:24
+    128|     quotaRpcMode = "error";
+    129|     const res = await POST(makeReq({ personaId: "buffett", history: []…
+    130|     expect(res.status).toBe(429);
+       |                        ^
+    131|   });
+    132|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-03: no sign-in required) > GET /api/chat/personas serves the FULL roster without sign-in
+AssertionError: expected 401 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 401
+
+ ❯ test/chat.anonymous.test.ts:146:24
+    144|   it("GET /api/chat/personas serves the FULL roster without sign-in", …
+    145|     const res = await personasGET(makeGetReq("http://x/api/chat/person…
+    146|     expect(res.status).toBe(200);
+       |                        ^
+    147|     const body = (await res.json()) as { personas: Array<{ id: string …
+    148|     expect(body.personas.length).toBe(CANONICAL_PERSONAS.length);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/protectedPaths.test.ts > proxy protected paths > /lab is NOT protected — the Portfolio Lab works without sign-in
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/protectedPaths.test.ts:12:37
+     10| describe("proxy protected paths", () => {
+     11|   it("/lab is NOT protected — the Portfolio Lab works without sign-in"…
+     12|     expect(isProtectedPath("/lab")).toBe(false);
+       |                                     ^
+     13|     expect(isProtectedPath("/lab/")).toBe(false);
+     14|     expect(PROTECTED_PATHS).not.toContain("/lab");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 4 passed (11)
+   Start at  04:30:01
+   Duration  930ms (transform 71%, import 24%, tests 4%, setup 1%, worker 1%)
+

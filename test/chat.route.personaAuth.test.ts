@@ -9,11 +9,13 @@
  * caller may converse with every canonical persona, and there is no 403
  * path left on this route.
  *
- * Required contract:
- *   any authenticated session + any canonical persona  -> proceeds (200)
- *   unknown persona                                     -> 400
- *   anonymous                                           -> 401
- *   a forged client tier value in the body              -> no effect
+ * Required contract (founder decision 2026-10-03: chat requires NO
+ * authentication — anonymous callers are quota-keyed per IP; every other
+ * validation mechanism unchanged):
+ *   anonymous session + any canonical persona         -> proceeds (200)
+ *   signed-in session + any canonical persona         -> proceeds (200)
+ *   unknown persona                                   -> 400
+ *   a forged client tier value in the body            -> no effect
  *
  * The persona-equality matrix across legacy tier values and the
  * forged-client-tier cases live in test/freeAccess.contract.test.ts;
@@ -85,10 +87,11 @@ afterEach(() => {
 });
 
 describe("M3 /api/chat persona validation (existence + canonical registry, no tier)", () => {
-  it("anonymous -> 401", async () => {
+  it("anonymous + canonical persona -> 200 (founder 2026-10-03: no sign-in required)", async () => {
     asUser(null);
     const res = await POST(makeReq({ personaId: "damani", history: [], message: "hi" }));
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(200);
+    expect(providerCalls).toBe(1);
   });
 
   it("unknown persona -> 400, no quota, no provider call", async () => {

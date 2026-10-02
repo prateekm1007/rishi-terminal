@@ -30,23 +30,33 @@ async function probe(name, path, body, expectHint) {
   console.log(`${String(status).padEnd(3)} ${name} (${Date.now() - started}ms)`);
 }
 
-// 1. unauthenticated chat → 401, no fabricated answer
-await probe("anonymous chat (no cookie)", "/api/chat", { personaId: "buffett", symbol: "RELIANCE", message: "What is the ROE?" }, "401 + fallback true");
-// 2. forged premium persona, anonymous → 401 (auth precedes persona authz)
-await probe("forged premium persona, anonymous", "/api/chat", { personaId: "jhunjhunwala", message: "hi" }, "401 (auth first; persona 403 pinned by CI with mocks)");
-// 3. unknown persona id, anonymous → 401
-await probe("unknown persona, anonymous", "/api/chat", { personaId: "soros-fake", message: "hi" }, "401");
-// 4. oversized message, anonymous → 401 (auth precedes 413)
-await probe("oversized message, anonymous", "/api/chat", { personaId: "buffett", message: "x".repeat(4001) }, "401 (413 for authed pinned by CI)");
-// 5. malformed JSON body, anonymous → 401 (auth precedes parse)
-await probe("malformed JSON, anonymous", "/api/chat", "{not json", "401");
+// Founder decision 2026-10-03: chat requires NO authentication. The
+// anonymous surface is now the FULL surface: the rows below pin that the
+// anonymous path is the same bounded pipeline (quota/burst still apply)
+// and that validation still fails closed WITHOUT an auth gate.
+// Raw output archived as evidence for the anonymous-chat contract.
+
+// 1. anonymous chat → the SAME pipeline as signed-in callers (200 + wire;
+//    honest failure states 502/503/429 mean the bounds, not a sign-in wall)
+await probe("anonymous chat (no cookie)", "/api/chat", { personaId: "buffett", symbol: "RELIANCE", message: "What is the ROE?" }, "200 + wire provenance (anonymous allowed; quota/burst still bound)");
+// 2. canonical persona, anonymous → 200 (persona validation is existence-only, no tier)
+await probe("canonical persona, anonymous", "/api/chat", { personaId: "jhunjhunwala", message: "hi" }, "200 (no tier gate, no sign-in gate)");
+// 3. unknown persona id, anonymous → 400 (validation precedes quota; no auth precedes it anymore)
+await probe("unknown persona, anonymous", "/api/chat", { personaId: "soros-fake", message: "hi" }, "400");
+// 4. oversized message, anonymous → 413 (limit validation, no auth gate)
+await probe("oversized message, anonymous", "/api/chat", { personaId: "buffett", message: "x".repeat(4001) }, "413");
+// 5. malformed JSON body, anonymous → 400 (parse validation, no auth gate)
+await probe("malformed JSON, anonymous", "/api/chat", "{not json", "400");
 // 6. person as evidence probe: /api/chat/personas must NOT leak prompts
+//    (the roster itself is public marketing content — philosophy blurbs
+//    intentionally ship to /rishis too; the LEAK check is for the SERVER
+//    prompt fields, never the model's system/stock prompts)
 {
   const started = Date.now();
   const resp = await fetch(BASE + "/api/chat/personas", { signal: AbortSignal.timeout(30_000) });
   const text = await resp.text();
-  const leak = /systemPrompt|ROE|P\/E|price/i.test(text) && !/"stockPrompt"/.test(text);
-  rows.push({ name: "personas projection leak scan", path: "/api/chat/personas", status: resp.status, ms: Date.now() - started, body: text.slice(0, 160), expectHint: "200, no prompt/financial text in client projection", leakFound: leak });
+  const leak = /systemPrompt|stockPrompt/i.test(text);
+  rows.push({ name: "personas projection leak scan", path: "/api/chat/personas", status: resp.status, ms: Date.now() - started, body: text.slice(0, 160), expectHint: "200, full public roster, no server prompt fields in client projection", leakFound: leak });
   console.log(`${String(resp.status).padEnd(3)} personas leak scan → leakFound=${leak}`);
 }
 // 7. /api/version sanity (binds the probe run to the deployed SHA)

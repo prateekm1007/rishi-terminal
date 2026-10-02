@@ -646,12 +646,16 @@ export const GOLDEN_CASES: GoldenCase[] = [
     expect: { status: 200, quotaConsumed: 1, refunds: 0 } },
 
   // ── 30. unauthenticated (route — CI) ──────────────────────────────────
+  // Founder decision 2026-10-03: chat requires NO authentication. An
+  // anonymous caller runs the SAME bounded pipeline — same persona
+  // validation, same evidence loop, same ONE free quota (keyed to a
+  // deterministic per-IP uuid on the route).
   { id: "auth-01", category: "unauthenticated", kind: "route",
     body: { personaId: "buffett", message: "hi" }, setup: { authenticated: false },
-    expect: { status: 401, quotaConsumed: 0 } },
+    expect: { status: 200, quotaConsumed: 1 } },
   { id: "auth-02", category: "unauthenticated", kind: "route",
     body: { personaId: "buffett", message: "hi", symbol: "RELIANCE" }, setup: { authenticated: false },
-    expect: { status: 401 } },
+    expect: { status: 200 } },
 
   // ── 31. oversized input (route — CI) ──────────────────────────────────
   { id: "big-01", category: "oversized-input", kind: "route",

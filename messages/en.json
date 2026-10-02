@@ -231,22 +231,21 @@
     "deepDive": "Deep Analyze"
   },
   "pricing": {
-    "title": "Tiers of Wisdom",
-    "subtitle": "The journey from Seeker to Disciple is the journey of the serious investor.",
     "breadcrumb": "WISDOM TIERS",
-    "benjaminFranklin": "An investment in knowledge pays the best interest.",
-    "franklinAuthor": "Benjamin Franklin",
-    "currentTier": "CURRENT TIER",
-    "yourCurrentTier": "Your current tier",
-    "freeForever": "Free forever",
-    "becomeA": "Become a",
-    "active": "Active",
-    "rishisVisible": "Rishis visible",
-    "viewsPerDay": "views/day",
-    "unlimitedViews": "Unlimited views",
-    "guarantee": "Before You Pay — Read This",
-    "guaranteeText": "This is not investment advice. The Rishis offer philosophical frameworks for thinking about value. The greatest investment you can make is in your own understanding.",
-    "localStorage": "All tiers use localStorage - no account required. No data leaves your device."
+    "free": {
+      "title": "Everything Is Free",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "price": "Free",
+      "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
+      "cta": "Meet the Rishis",
+      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "aiChat": "AI Rishi chat with verified, grounded answers",
+      "screener": "Full screener with every filter and field",
+      "portfolio": "Portfolio, watchlist and lab analytics",
+      "knowledgeGraph": "Knowledge graphs and council tension views",
+      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
+    }
   },
   "news": {
     "title": "Market Intelligence",
@@ -360,14 +359,6 @@
     "bondsTag": "FIXED INCOME",
     "news": "News",
     "newsTag": "LATEST HEADLINES"
-  },
-  "tiers": {
-    "seeker": "Seeker",
-    "student": "Student",
-    "disciple": "Disciple",
-    "free": "Free",
-    "perYear": "/year",
-    "upgrade": "Upgrade"
   },
   "rishiQuotes": {
     "buffett1": "The three most important words in investing are margin of safety.",
@@ -565,7 +556,8 @@
       "valuation": "Is the valuation justified?",
       "aiUnavailable": "AI unavailable — no answer was generated. Please try again.",
       "personaLocked": "This Rishi requires a higher tier. Upgrade to continue."
-    }
+    },
+    "personaUnavailable": "This Rishi is temporarily unavailable — the roster could not be loaded. Please retry."
   },
   "kg": {
     "close": "CLOSE",

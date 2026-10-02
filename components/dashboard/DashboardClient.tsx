@@ -673,12 +673,8 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                 color:"#0A0F1C", borderRadius:"12px", fontWeight:700, fontSize:"14px",
                 textDecoration:"none", boxShadow:"0 4px 20px rgba(212,175,55,0.3)",
               }}>🧘 Meet the Rishis</Link>
-              <Link href="/pricing" style={{
-                padding:"13px 26px",
-                background:"rgba(31,41,59,0.7)",
-                color:C.text, borderRadius:"12px", fontWeight:600, fontSize:"14px",
-                textDecoration:"none", border:"1px solid rgba(51,65,85,0.5)",
-              }}>💎 View Plans</Link>
+              {/* Commit M4 (free access): the "View Plans" CTA is gone —
+                  there are no plans. Every feature is free. */}
             </div>
           </div>
         </div>

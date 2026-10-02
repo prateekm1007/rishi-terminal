@@ -230,22 +230,22 @@
     "deepDive": "গভীর বিশ্লেষণ"
   },
   "pricing": {
-    "title": "জ্ঞানের স্তর",
-    "subtitle": "সাধক থেকে শিষ্য — এই যাত্রা হলো গুরুতর বিনিয়োগকারীর যাত্রা।",
     "breadcrumb": "জ্ঞান স্তর",
-    "benjaminFranklin": "জ্ঞানে বিনিয়োগ সর্বোত্তম সুদ প্রদান করে।",
-    "franklinAuthor": "বেঞ্জামিন ফ্রাঙ্কলিন",
-    "currentTier": "বর্তমান স্তর",
-    "yourCurrentTier": "আপনার বর্তমান স্তর",
-    "freeForever": "চিরকাল বিনামূল্যে",
-    "becomeA": "হয়ে উঠুন",
-    "active": "সক্রিয়",
-    "rishisVisible": "দৃশ্যমান ঋষি",
-    "viewsPerDay": "ভিউ/দিন",
-    "unlimitedViews": "সীমাহীন ভিউ",
-    "guarantee": "পেমেন্ট করার আগে এটি পড়ুন",
-    "guaranteeText": "এটি বিনিয়োগ পরামর্শ নয়। ঋষিরা মূল্য সম্পর্কে চিন্তার জন্য দার্শনিক কাঠামো প্রদান করেন। আপনি সর্বোত্তম বিনিয়োগ করতে পারেন আপনার নিজের জ্ঞানে।",
-    "localStorage": "সকল স্তর localStorage ব্যবহার করে — কোনো অ্যাকাউন্ট প্রয়োজন নেই। কোনো ডেটা আপনার ডিভাইস ত্যাগ করে না।"
+    "free": {
+      "title": "Everything Is Free",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "price": "Free",
+      "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
+      "cta": "Meet the Rishis",
+      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "aiChat": "AI Rishi chat with verified, grounded answers",
+      "screener": "Full screener with every filter and field",
+      "portfolio": "Portfolio, watchlist and lab analytics",
+      "knowledgeGraph": "Knowledge graphs and council tension views",
+      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
+      "_note": "English copy pending translation"
+    }
   },
   "news": {
     "title": "বাজার বুদ্ধিমত্তা",
@@ -359,14 +359,6 @@
     "bondsTag": "ফিক্সড ইনকাম",
     "news": "সংবাদ",
     "newsTag": "সর্বশেষ শিরোনাম"
-  },
-  "tiers": {
-    "seeker": "সাধক",
-    "student": "ছাত্র",
-    "disciple": "শিষ্য",
-    "free": "বিনামূল্যে",
-    "perYear": "/বছর",
-    "upgrade": "আপগ্রেড"
   },
   "rishiQuotes": {
     "buffett1": "বিনিয়োগের তিনটি সবচেয়ে গুরুত্বপূর্ণ শব্দ হলো সুরক্ষা মার্জিন।",
@@ -564,7 +556,8 @@
       "valuation": "মূল্যায়ন কি যৌক্তিক?",
       "aiUnavailable": "AI অনুপলব্ধ — কোনো উত্তর তৈরি হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
       "personaLocked": "এই ঋষির জন্য উচ্চতর স্তর প্রয়োজন। চালিয়ে যেতে আপগ্রেড করুন।"
-    }
+    },
+    "personaUnavailable": "This Rishi is temporarily unavailable — the roster could not be loaded. Please retry."
   },
   "kg": {
     "close": "বন্ধ করুন",

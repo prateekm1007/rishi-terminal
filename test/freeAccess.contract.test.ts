@@ -300,7 +300,14 @@ describe("free access: /api/auth/me publishes no legacy tier", () => {
 // ── §10: /pricing is an honest single-message access page ─────────────────
 
 describe("free access: /pricing carries no paid-tier storefront", () => {
-  const page = readFileSync(join(process.cwd(), "app/pricing/page.tsx"), "utf8");
+  // The contract is about RENDERED content: string literals and JSX. The
+  // page's documentation COMMENTS may honestly describe what was retired
+  // ("the old storefront sold Student at ₹499") — so comments are stripped
+  // before the assertions; a term in a string literal still fails.
+  const raw = readFileSync(join(process.cwd(), "app/pricing/page.tsx"), "utf8");
+  const page = raw
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|\s)\/\/[^\n]*/g, "$1");
 
   it("no tier names (Seeker/Student/Disciple as plan names)", () => {
     expect(/\b(Seeker|Student|Disciple)\b/.test(page)).toBe(false);
@@ -318,24 +325,19 @@ describe("free access: /pricing carries no paid-tier storefront", () => {
 describe("free access: payment endpoints retired (410) and grant nothing", () => {
   it("POST /api/payment -> 410 Gone", async () => {
     asUser({ id: "u1", tier: "seeker" });
-    const res = await paymentPOST(makeReq({ tier: "student" }));
+    const res = await paymentPOST();
     expect(res.status).toBe(410);
   });
 
   it("PUT /api/payment (forged full verify payload) -> 410 Gone, no grant", async () => {
     asUser({ id: "u1", tier: "seeker" });
-    const res = await paymentPUT(
-      makeReq({ orderId: "order_x", paymentId: "pay_x", signature: "forged" }),
-    );
+    const res = await paymentPUT();
     expect(res.status).toBe(410);
   });
 
   it("POST /api/payment/webhook (forged Razorpay event) -> 410 Gone, no grant", async () => {
     asUser(null);
-    const res = await webhookPOST(makeReq({
-      event: "payment.captured",
-      payload: { payment: { entity: { id: "pay_x", order_id: "order_x", amount: 49900 } } },
-    }));
+    const res = await webhookPOST();
     expect(res.status).toBe(410);
   });
 

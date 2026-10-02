@@ -171,12 +171,13 @@ export default function RishiChat({ stock }: Props) {
     setMessages(prev => [...prev, userMsg]);
     addMessageToSession(currentSession, userMsg);
 
-    // P0 (audit 2026-10-02): validate the persona(s) against the
-    // server-resolved roster BEFORE submitting. The server re-enforces
-    // (403), but the client must not even attempt an unauthorized pair.
+    // P0 (audit 2026-10-02) + M3 (free access): validate the persona(s)
+    // against the served roster BEFORE submitting (a stale local selection
+    // after a roster refresh). The server still validates every POST; the
+    // notice is availability wording, never an entitlement claim.
     const idsToSend = debateMode ? [...debateRishis] : [selectedRishi];
     if (idsToSend.some(id => !allowedPersonaIds.includes(id))) {
-      setNotice(t('chat.personaLocked'));
+      setNotice(t('chat.personaUnavailable'));
       setApiStatus('unavailable');
       setLoading(false);
       return;
@@ -281,7 +282,7 @@ export default function RishiChat({ stock }: Props) {
         <button
           onClick={() => availableRishis.length >= 2 && setDebateMode(!debateMode)}
           disabled={availableRishis.length < 2}
-          title={availableRishis.length < 2 ? t('chat.personaLocked') : undefined}
+          title={availableRishis.length < 2 ? t('chat.personaUnavailable') : undefined}
           style={{
             padding: "6px 12px", borderRadius: "8px", fontSize: "11px", fontWeight: 700,
             cursor: availableRishis.length >= 2 ? "pointer" : "not-allowed",
@@ -304,7 +305,7 @@ export default function RishiChat({ stock }: Props) {
               <button
                 key={p.id}
                 onClick={() => isAvailable && setSelectedRishi(p.id)}
-                title={isAvailable ? p.fullName : `${p.fullName} — ${t('chat.personaLocked')}`}
+                title={isAvailable ? p.fullName : `${p.fullName} — ${t('chat.personaUnavailable')}`}
                 style={{
                   padding: "5px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600,
                   cursor: isAvailable ? "pointer" : "not-allowed",

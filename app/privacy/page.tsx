@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           <section>
             <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>1. The short version</h2>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-              We collect the minimum needed to run your account and your subscription. We do not sell your
+              We collect the minimum needed to run your account. We do not sell your
               personal data, and we do not share it with advertisers. Much of what the product stores —
               watchlists, notes, local preferences — lives only in your own browser and never reaches our
               servers unless you are signed in and the feature requires it.
@@ -35,8 +35,8 @@ export default function PrivacyPage() {
             <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>2. What we store on the server (signed-in use)</h2>
             <ul style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.9, paddingLeft: 20 }}>
               <li>Account: your email address and authentication credentials managed by our auth provider.</li>
-              <li>Subscription: your tier, its expiry, and the payment-processor order reference needed to keep access granted. Card details never touch our servers — our payment provider (Razorpay) handles them.</li>
-              <li>Product use needed to enforce limits: per-day usage counters tied to your account.</li>
+              <li>Historical payments (2026, retired): if you ever purchased a subscription, the order reference and granted-access dates remain on record for accounting; no new payments are processed and card details never touched our servers (our former payment provider, Razorpay, handled them). Nothing about these records changes what you can access — every feature is free now.</li>
+              <li>Product use needed for abuse prevention: per-day usage counters tied to your account.</li>
             </ul>
           </section>
 
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
             <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>3. What stays in your browser (localStorage)</h2>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
               Watchlists, notes, chat histories with the Rishi personas, the one-time disclaimer acceptance,
-              language and layout preferences, and the anonymous daily view counter. These live in your
+              and language and layout preferences. These live in your
               browser&rsquo;s localStorage. You can clear them at any time from your browser settings, and
               clearing them removes them permanently.
             </p>
@@ -71,7 +71,8 @@ export default function PrivacyPage() {
           <section>
             <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>6. Your controls</h2>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-              You can delete your account, which removes your email, tier and usage records from our database.
+              You can delete your account, which removes your email and usage records from our database
+              (historical payment records, if any, are retained only as long as accounting law requires).
               Browser-stored data you control directly from your browser. To exercise any of these, contact us
               from the address you signed up with.
             </p>

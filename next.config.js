@@ -15,14 +15,14 @@
 // upgrading http:// subresources is belt-and-braces and breaks nothing).
 const cspReportOnly = [
   "default-src 'self'",
-  // inline theme bootstrap in app/layout.tsx; Razorpay checkout.js;
+  // inline theme bootstrap in app/layout.tsx;
   // 'unsafe-eval' needed by next dev / React refresh in development.
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com",
+  // (Commit M4: the Razorpay checkout origins are gone — payments retired.)
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://checkout.razorpay.com https://api.razorpay.com https://generativelanguage.googleapis.com https://www.nseindia.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://api.coingecko.com https://open.er-api.com",
-  "frame-src https://api.razorpay.com https://checkout.razorpay.com",
+  "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://generativelanguage.googleapis.com https://www.nseindia.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://api.coingecko.com https://open.er-api.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

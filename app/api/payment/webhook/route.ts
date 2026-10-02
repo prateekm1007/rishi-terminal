@@ -1,91 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { grantTierForPayment } from '@/lib/payments/grantTier';
-import { verifyWebhookSignature } from '@/lib/payments/signatures';
+import { NextResponse } from 'next/server';
 
 /**
- * Razorpay webhook (remediation T6).
+ * POST /api/payment/webhook — RETIRED (Commit M4, founder decision
+ * 2026-10-02: every feature free).
  *
- * - Reads the RAW body and verifies X-Razorpay-Signature with
- *   HMAC-SHA256(RAZORPAY_WEBHOOK_SECRET) using crypto.timingSafeEqual
- *   (equal-length buffers first).
- * - On payment.captured / order.paid: grants the tier through the atomic
- *   Postgres RPC `grant_tier_for_payment` (migration 007): lock -> verify ->
- *   settle -> grant in one transaction; replays never extend the tier twice.
- * - Transient failures (RPC/DB down) -> 500 so Razorpay retries; permanent
- *   rejections (unknown order, amount mismatch) -> 200 {ok:false}, logged.
- * - Fail closed: missing secret in production -> 503.
+ * Historical contract (remediation T6 era): verified the Razorpay
+ * X-Razorpay-Signature (HMAC-SHA256, timing-safe) and granted the tier
+ * through the atomic `grant_tier_for_payment` RPC. That product no longer
+ * exists: no orders can be created (POST /api/payment is 410), and there
+ * is no entitlement left that a payment could grant.
+ *
+ * Fail-closed retirement (Coder Directions §11): 410 Gone for EVERY
+ * delivery — a permanent status tells the processor to stop retrying.
+ * Nothing here reads the body, verifies a signature, or touches the
+ * database; no grant is possible from this endpoint. Historical
+ * transaction rows and the settlement migrations are preserved in the
+ * database, out of reach of this route.
  */
-export async function POST(req: NextRequest) {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      return NextResponse.json({ error: 'Webhook unavailable' }, { status: 503 });
-    }
-    return NextResponse.json({ error: 'RAZORPAY_WEBHOOK_SECRET not configured' }, { status: 503 });
-  }
-
-  const raw = await req.text();
-  const signature = req.headers.get('x-razorpay-signature');
-
-  if (!signature) {
-    return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
-  }
-
-  if (!verifyWebhookSignature(raw, signature, secret)) {
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
-  }
-
-  let event: {
-    event?: string;
-    payload?: {
-      payment?: { entity?: { order_id?: string; id?: string; amount?: number; currency?: string } };
-      order?: { entity?: { id?: string; amount?: number; currency?: string } };
-    };
-  };
-  try {
-    event = JSON.parse(raw);
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
-
-  if (event.event !== 'payment.captured' && event.event !== 'order.paid') {
-    return NextResponse.json({ ok: true, ignored: event.event });
-  }
-
-  const payment = event.payload?.payment?.entity;
-  const order = event.payload?.order?.entity;
-  const orderId = payment?.order_id ?? order?.id;
-  const paymentId = payment?.id;
-  const amount = payment?.amount ?? order?.amount;
-  const currency = payment?.currency ?? order?.currency ?? 'INR';
-
-  if (!orderId || !paymentId || typeof amount !== 'number') {
-    return NextResponse.json({ error: 'Incomplete event payload' }, { status: 400 });
-  }
-
-  let result;
-  try {
-    result = await grantTierForPayment({
-      razorpayOrderId: orderId,
-      razorpayPaymentId: paymentId,
-      amount,
-      currency,
-    });
-  } catch (err) {
-    // TRANSIENT failure (RPC/DB down): return 500 so Razorpay retries the
-    // delivery. Retrying is safe — the grant RPC is idempotent (migration 007).
-    console.error('[webhook] transient grant failure, Razorpay will retry:', err);
-    return NextResponse.json({ error: 'Temporary failure' }, { status: 500 });
-  }
-
-  if (!result.ok) {
-    // PERMANENT rejection (unknown order, amount mismatch, conflict) —
-    // retrying will never succeed. Acknowledge with 200 {ok:false} and log
-    // the reason server-side; never 5xx Razorpay for these.
-    console.error('[webhook] grant refused (permanent):', result.reason);
-    return NextResponse.json({ ok: false }, { status: 200 });
-  }
-
-  return NextResponse.json({ ok: true, alreadyProcessed: result.alreadyProcessed === true });
+export async function POST() {
+  return NextResponse.json(
+    {
+      error: 'Payments are retired — every feature on Rishi Terminal is free.',
+      retired: true,
+    },
+    {
+      status: 410,
+      headers: { 'Cache-Control': 'no-store' },
+    },
+  );
 }

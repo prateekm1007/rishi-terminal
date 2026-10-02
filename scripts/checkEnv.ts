@@ -124,11 +124,12 @@ if (exampleNames.length === 0) {
 }
 
 // ── Required-per-environment matrix ────────────────────────────────
-// PROPOSED matrix (P0-03 default; founder to confirm via E6-09/FD-7):
+// PROPOSED matrix (P0-03 default; founder to confirm via E6-09):
 //  - development: Supabase public pair only; everything else optional.
-//  - staging: full server stack (cron, chat) but payments stay OFF until
-//    Razorpay staging keys exist, so RAZORPAY_* are WARN there.
+//  - staging: full server stack (cron, chat).
 //  - production: everything the app reads is required.
+// Commit M4: RAZORPAY_* are RETIRED vars (payments gone — free product);
+// they are neither required nor warned about anymore.
 const REQUIRED: Record<EnvName, string[]> = {
   development: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
   staging: [
@@ -146,7 +147,7 @@ const REQUIRED: Record<EnvName, string[]> = {
 
 const WARN_ONLY: Record<EnvName, string[]> = {
   development: [],
-  staging: ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET", "FMP_API_KEY"],
+  staging: ["FMP_API_KEY"],
   production: [],
 };
 

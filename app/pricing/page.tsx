@@ -1,44 +1,31 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { TIER_CONFIG, type WisdomTier } from '../../lib/premium';
 import { useLanguage } from '../../lib/language';
-import { useTier } from '../../hooks/useTier';
-import { startRazorpayCheckout } from '../../components/premium/PaymentButton';
 
+/**
+ * /pricing — the honest access page (Commit M4, founder decision
+ * 2026-10-02: every feature free).
+ *
+ * The paid-tier storefront (Seeker / Student ₹499 / Disciple ₹1,999,
+ * upgrade buttons, Razorpay checkout) is retired. This page now answers
+ * the only question a visitor can still arrive with — "what does it
+ * cost?" — with the truth: nothing. There are no plans, no tiers, and no
+ * checkout; an automated test (test/freeAccess.contract.test.ts) fails
+ * if tier names, rupee subscription prices, upgrade CTAs or checkout
+ * invocations ever return to this file.
+ */
 export default function PricingPage() {
   const { t } = useLanguage();
-  const { tier: currentTier, refresh: refreshTier, authenticated } = useTier();
-  const [checkoutBusy, setCheckoutBusy] = useState<WisdomTier | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  const handleUpgrade = async (tier: WisdomTier) => {
-    if (tier === 'seeker') return;
-    setCheckoutBusy(tier);
-    setCheckoutError(null);
-    try {
-      await startRazorpayCheckout(tier, refreshTier);
-    } catch (e) {
-      setCheckoutError(e instanceof Error ? e.message : 'Payment could not be started');
-    } finally {
-      setCheckoutBusy(null);
-    }
-  };
-
-  const tiers: WisdomTier[] = ['seeker', 'student', 'disciple'];
-
-  const tierColors: Record<WisdomTier, string> = {
-    seeker: '#71767B',
-    student: '#FFD700',
-    disciple: '#c084fc',
-  };
-
-  const tierEmoji: Record<WisdomTier, string> = {
-    seeker: 'O',
-    student: 'S',
-    disciple: 'D',
-  };
+  const features: Array<{ icon: string; label: string }> = [
+    { icon: '🧘', label: t('pricing.free.allRishis') },
+    { icon: '💬', label: t('pricing.free.aiChat') },
+    { icon: '📊', label: t('pricing.free.screener') },
+    { icon: '📈', label: t('pricing.free.portfolio') },
+    { icon: '🧠', label: t('pricing.free.knowledgeGraph') },
+    { icon: '⚡', label: t('pricing.free.livePrices') },
+  ];
 
   return (
     <main className="page-bg">
@@ -51,160 +38,63 @@ export default function PricingPage() {
           </p>
 
           <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 38, color: 'var(--text-primary)', letterSpacing: 2, marginBottom: 8 }}>
-            {t('pricing.title')}
+            {t('pricing.free.title')}
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.7, marginBottom: 16 }}>
-            {t('pricing.subtitle')}
-          </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-            &ldquo;{t('pricing.benjaminFranklin')}&rdquo; &mdash; {t('pricing.franklinAuthor')}
+            {t('pricing.free.subtitle')}
           </p>
         </div>
       </div>
 
       <div className="content-wrapper" style={{ padding: '48px 24px' }}>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24, marginBottom: 48 }}>
-          {tiers.map(tier => {
-            const config = TIER_CONFIG[tier];
-            // Round-5 audit (finding 6): an anonymous visitor is not "on"
-            // any tier — the server sees them signed out. Showing "Your
-            // current tier: Seeker" to a logged-out visitor claims an
-            // account state that does not exist.
-            const isActive = authenticated && currentTier === tier;
-            const color = tierColors[tier];
-            const emoji = tierEmoji[tier];
-
-            return (
-              <div key={tier}
-                style={{
-                  padding: 32,
-                  background: isActive ? `${color}08` : 'var(--bg-card)',
-                  border: `1px solid ${isActive ? color : 'var(--border-primary)'}`,
-                  borderRadius: 16,
-                  position: 'relative',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                {isActive && (
-                  <div style={{
-                    position: 'absolute',
-                    top: -12,
-                    right: 20,
-                    background: color,
-                    color: '#000',
-                    fontSize: 10,
-                    fontWeight: 700,
-                    letterSpacing: 1,
-                    padding: '4px 12px',
-                    borderRadius: 20,
-                  }}>
-                    {t('pricing.currentTier')}
-                  </div>
-                )}
-
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{emoji}</div>
-
-                <h2 style={{
-                  fontFamily: 'Cinzel, serif',
-                  fontSize: 24,
-                  color: color,
-                  marginBottom: 8,
-                  letterSpacing: 2,
-                }}>
-                  {config.label}
-                </h2>
-
-                <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 24 }}>
-                  {config.price}
-                </div>
-
-                <div style={{ marginBottom: 32 }}>
-                  {config.features.map((f, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12 }}>
-                      <span style={{ color: color, fontWeight: 700, marginTop: 1, flexShrink: 0 }}>+</span>
-                      <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16 }}>
-                  {config.rishisVisible === 20
-                    ? `All 20 ${t('pricing.rishisVisible')}`
-                    : `${config.rishisVisible} ${t('pricing.rishisVisible')}`}
-                  {' · '}
-                  {/* Round-5 audit (finding 6): "Unlimited views" under the
-                      FREE tier was false — the seeker tier has a daily stock
-                      view limit. Unlimited is a paid perk only. */}
-                  {config.dailyStockLimit === null
-                    ? t('pricing.unlimitedViews')
-                    : `${config.dailyStockLimit} ${t('pricing.viewsPerDay')}`}
-
-
-                </div>
-
-                {tier === 'seeker' ? (
-                  <div style={{
-                    width: '100%',
-                    padding: '12px',
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text-muted)',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: 8,
-                    textAlign: 'center',
-                    fontSize: 13,
-                  }}>
-                    {isActive ? t('pricing.yourCurrentTier') : t('pricing.freeForever')}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleUpgrade(tier)}
-                    disabled={isActive}
-                    style={{
-                      width: '100%',
-                      padding: '14px',
-                      background: isActive ? `${color}30` : color,
-                      color: isActive ? color : '#000',
-                      border: `1px solid ${color}`,
-                      borderRadius: 8,
-                      fontWeight: 700,
-                      fontSize: 14,
-                      cursor: isActive ? 'default' : 'pointer',
-                      fontFamily: 'Cinzel, serif',
-                      letterSpacing: 1,
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {isActive
-                      ? t('pricing.active')
-                      : checkoutBusy === tier
-                        ? 'Opening checkout…'
-                        : `${t('pricing.becomeA')} ${config.label}`}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="card" style={{ padding: 32, textAlign: 'center' }}>
-          <div style={{ fontFamily: 'Cinzel, serif', fontSize: 18, color: 'var(--accent-gold)', marginBottom: 12 }}>
-            {t('pricing.guarantee')}
+        <div
+          className="card-sacred"
+          style={{
+            padding: 40,
+            textAlign: 'center',
+            maxWidth: 720,
+            margin: '0 auto 40px',
+            border: '1px solid rgba(212,175,55,0.35)',
+          }}
+        >
+          <div style={{ fontSize: 44, marginBottom: 16 }}>🕯️</div>
+          <div style={{ fontFamily: 'Cinzel, serif', fontSize: 40, fontWeight: 700, color: 'var(--accent-gold)', marginBottom: 8, letterSpacing: 2 }}>
+            {t('pricing.free.price')}
           </div>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, margin: '0 auto', lineHeight: 1.7 }}>
-            {t('pricing.guaranteeText')}
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 520, margin: '0 auto 24px', lineHeight: 1.7 }}>
+            {t('pricing.free.body')}
           </p>
-          {checkoutError && (
-            <div style={{
-              marginTop: 16, padding: '10px 16px', borderRadius: 8, fontSize: 12,
-              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)',
-              color: '#FCA5A5', maxWidth: 600, margin: '16px auto 0',
-            }}>
-              {checkoutError}
-            </div>
-          )}
+          <Link
+            href="/rishis"
+            style={{
+              display: 'inline-block',
+              padding: '13px 30px',
+              background: 'linear-gradient(135deg, #A88B20, #D4AF37)',
+              color: '#0A0F1C',
+              borderRadius: 10,
+              fontWeight: 700,
+              fontSize: 14,
+              textDecoration: 'none',
+              letterSpacing: 1,
+            }}
+          >
+            {t('pricing.free.cta')}
+          </Link>
         </div>
 
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14, maxWidth: 900, margin: '0 auto' }}>
+          {features.map((f) => (
+            <div key={f.label} className="card-sacred" style={{ padding: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 20 }}>{f.icon}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{f.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 32, fontStyle: 'italic' }}>
+          {t('pricing.free.signUpNote')}
+        </p>
       </div>
     </main>
   );

@@ -178,9 +178,13 @@ export async function POST(req: NextRequest) {
       { headers: { 'Cache-Control': 'public, s-maxage=30' } }
     );
   } catch (error) {
+    // Rule 10 (Coder Directions #12): generic outward, detailed inward. The
+    // pre-O response leaked `(error as Error).message` as `details` —
+    // upstream exception text (vendor URLs, connection errors) reached the
+    // client. The detail stays in the server log only.
     console.error('[/api/prices/batch] error:', error);
     return NextResponse.json(
-      { error: 'Batch fetch failed', details: (error as Error).message },
+      { error: 'Batch fetch failed' },
       { status: 500 }
     );
   }

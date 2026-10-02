@@ -89,6 +89,59 @@ describe("executeAiTool — boundaries (rule 9: validate at every trust boundary
   });
 });
 
+// ── R9-12: the tool layer reads the ONE registry (Rule 14) ───────────────
+// Production probe on 3f7d9019d: after R9-9 the model ENGAGES the tools
+// for WTI (intent fix live), but executeAiTool step 3 validates against
+// the stock master only — getPrices(WTI) returned status=unknown-symbol
+// while /api/prices?symbol=WTI served LIVE yahoo data on the same
+// runtime. The model then truthfully reported "my tools are limited to
+// equity securities" — the tool layer lied to it. Fix: validation goes
+// through lib/registry/validateInput (the one registry); getPrices serves
+// the full price registry through the same canonical state; stock-only
+// tools answer honest no-data for registry tickers with no equity record
+// (known-but-out-of-scope is NOT unknown).
+describe("R9-12 — price tools serve the canonical price registry", () => {
+  const REGISTRY_PRICE_DEPS: AiToolDeps = {
+    getFundamentals: async () => null,
+    getPrice: async (symbol: string) =>
+      symbol === "WTI" || symbol === "USD/INR"
+        ? {
+            price: 88.15,
+            change: -1.56,
+            source: "yahoo",
+            status: "LIVE" as const,
+            observedAt: "2026-10-02T20:42:01.000Z",
+            lastUpdated: "2026-10-02T20:42:01.000Z",
+          }
+        : null,
+  };
+
+  it("getPrices serves a commodity registry ticker (WTI) — ok, not unknown-symbol", async () => {
+    const r = await executeAiTool({ tool: "getPrices", args: { symbol: "WTI" } }, REGISTRY_PRICE_DEPS);
+    expect(r.status).toBe("ok");
+    expect(r.modelPayload).toContain("WTI");
+  });
+
+  it("getPrices canonicalizes the unslashed FX spelling (USDINR -> USD/INR)", async () => {
+    const r = await executeAiTool({ tool: "getPrices", args: { symbol: "USDINR" } }, REGISTRY_PRICE_DEPS);
+    expect(r.status).toBe("ok");
+    if (r.status === "ok" || r.status === "no-data") {
+      expect(r.symbol).toBe("USD/INR");
+    }
+  });
+
+  it("stock-only tools answer honest no-data for a registry ticker with no equity record", async () => {
+    const r = await executeAiTool({ tool: "getFinancials", args: { symbol: "WTI" } }, REGISTRY_PRICE_DEPS);
+    expect(r.status).toBe("no-data");
+    expect(r.modelPayload).toContain("no-data");
+  });
+
+  it("genuinely unknown symbols stay unknown-symbol (unchanged)", async () => {
+    const r = await executeAiTool({ tool: "getPrices", args: { symbol: "BOGUSXYZ" } }, REGISTRY_PRICE_DEPS);
+    expect(r.status).toBe("unknown-symbol");
+  });
+});
+
 // ── tool layer: canonical data surfaces, typed facts ─────────────────────
 
 describe("executeAiTool — canonical surfaces (no second source of truth)", () => {

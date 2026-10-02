@@ -69,6 +69,11 @@
       "docs/evidence/round9/",
       "scripts/ci/commit-scope-registry.json"
     ],
-    "redeploy": []
+    "redeploy": [],
+    "R9-12": [
+      "lib/ai/tools.ts",
+      "test/aiToolLoop.test.ts",
+      "scripts/ci/commit-scope-registry.json"
+    ]
   }
 }

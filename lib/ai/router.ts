@@ -44,6 +44,17 @@ const TIMEOUT_MS = 20_000;
  *  request BLOCKED — honestly, never with a plausible fallback answer. */
 export const MAX_TOOL_ITERATIONS = 4;
 
+/** Final-answer repair re-asks per request (the loop's honest-retry
+ *  budget). Exported so the global spend reservation (lib/chat/
+ *  globalSpend.ts) derives its completion ceiling from the SAME number
+ *  the loop enforces (Rule 14 — no restated constants). */
+export const MAX_FINAL_REPAIRS = 1;
+
+/** The loop's hard completion ceiling: 1 initial + one per tool
+ *  iteration + one repair. The global token cap reserves exactly this
+ *  budget per admitted request. */
+export const MAX_COMPLETIONS_PER_REQUEST = 1 + MAX_TOOL_ITERATIONS + MAX_FINAL_REPAIRS;
+
 export type AiProvider =
   | { kind: "openai"; id: string; baseUrl: string; apiKey: string; model: string }
   | { kind: "gemini"; id: string; apiKey: string; model: string };
@@ -602,7 +613,7 @@ async function runGroundedLoop(
   // validation and the same server-generated surfaces — no second witness
   // path, no weakening. Exhausted repairs fall through to the unchanged
   // fail-closed returns.
-  const MAX_FINAL_REPAIRS = 1;
+  // MAX_FINAL_REPAIRS: module-level export (single source with the global spend reservation).
   let repairsUsed = 0;
   let lastFinalCandidate = "";
   const CITE_FEEDBACK =

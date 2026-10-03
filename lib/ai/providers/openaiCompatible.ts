@@ -10,6 +10,11 @@
  * that reaches here).
  */
 
+/** The per-completion OUTPUT ceiling sent in the request body below —
+ *  the single mechanical source for the global token cap's reservation
+ *  (lib/chat/globalSpend.ts). Gemini's maxOutputTokens mirrors it. */
+export const MAX_COMPLETION_TOKENS = 2048;
+
 export interface ChatTurn {
   role: "user" | "assistant";
   content: string;
@@ -51,7 +56,7 @@ export async function callOpenAiCompatible(
       messages,
       temperature: 0.9,
       top_p: 0.95,
-      max_tokens: 2048,
+      max_tokens: MAX_COMPLETION_TOKENS,
     }),
     signal: AbortSignal.timeout(timeoutMs),
   });

@@ -3,9 +3,9 @@ import { getSessionUser } from '@/lib/auth/session';
 import { anonQuotaIdFromEnv } from '@/lib/auth/anonIdentity';
 import {
   chatDisabled,
-  globalRequestCapExceeded,
-  globalTokenCapExceeded,
-  recordGlobalTokens,
+  reserveChatGlobalSpend,
+  settleChatGlobalTokens,
+  type GlobalSpendReservation,
 } from '@/lib/chat/globalSpend';
 import { resolvePersonaId } from '@/lib/chat/personas';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
@@ -281,19 +281,21 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
-  // 4.5 W3 (founder round-10): GLOBAL spend caps — bound TOTAL daily
-  //     spend regardless of how many identities ask (the per-identity
-  //     quota cannot bound a distributed abuser). Checked AFTER validation
-  //     (a 400/413 costs nothing) and BEFORE per-identity consumption (a
-  //     globally-capped request must not burn the caller's unit). Both
-  //     fail closed on infrastructure errors, matching consume_chat_quota.
-  if (await globalRequestCapExceeded()) {
-    return NextResponse.json(
-      { error: 'Chat temporarily unavailable', fallback: true },
-      { status: 503 },
-    );
-  }
-  if (await globalTokenCapExceeded()) {
+  // 4.5 W3 (founder round-10, CLOSED round-11): GLOBAL spend caps — bound
+  //     TOTAL daily spend regardless of how many identities ask (the
+  //     per-identity quota cannot bound a distributed abuser). ONE atomic
+  //     guarded reservation: +1 request slot and this request's worst-case
+  //     completion budget (max_tokens x completions ceiling) enter the
+  //     daily counter together, only if BOTH caps still fit (migration
+  //     020; the IST day is computed in SQL). Checked AFTER validation (a
+  //     400/413 costs nothing) and BEFORE per-identity consumption (a
+  //     globally-capped request must not burn the caller's unit). Fails
+  //     closed on infrastructure errors — spend never runs unbounded.
+  //     Every exit path below settles the reservation to the ACTUAL usage
+  //     (0 when the provider was never reached) — no double counting, no
+  //     leaked reservations.
+  const spend: GlobalSpendReservation = await reserveChatGlobalSpend();
+  if (!spend.ok) {
     return NextResponse.json(
       { error: 'Chat temporarily unavailable', fallback: true },
       { status: 503 },
@@ -306,6 +308,7 @@ export async function POST(req: NextRequest) {
   //    validated — 400/413 paths above leave the counter untouched, and
   //    upstream failures below refund.
   if (!(await consumeQuota(quotaIdentity))) {
+    await settleChatGlobalTokens(spend.reservedTokens, 0);
     return NextResponse.json(
       { error: 'Daily chat quota exhausted', fallback: true },
       { status: 429 },
@@ -333,6 +336,7 @@ export async function POST(req: NextRequest) {
     evidence = evidencePackage?.items ?? [];
   } catch (e) {
     console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
+    await settleChatGlobalTokens(spend.reservedTokens, 0);
     await refundQuota(quotaIdentity);
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
@@ -353,6 +357,7 @@ export async function POST(req: NextRequest) {
     // Upstream broke (timeout/5xx/empty) — 502 with generic body, quota
     // refunded (R6.2). Details logged server-side only.
     console.error('[chat] upstream failed:', e instanceof Error ? e.message : e);
+    await settleChatGlobalTokens(spend.reservedTokens, 0);
     await refundQuota(quotaIdentity);
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
@@ -361,6 +366,7 @@ export async function POST(req: NextRequest) {
     console.error(
       '[chat] no approved chat provider configured: set CHAT_API_BASE_URL + CHAT_API_KEY (OpenAI-compatible) or GEMINI_API_KEY',
     );
+    await settleChatGlobalTokens(spend.reservedTokens, 0);
     await refundQuota(quotaIdentity); // R6.2: unanswerable request must not burn quota
     return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
   }
@@ -377,9 +383,11 @@ export async function POST(req: NextRequest) {
       evidenceMs,
     };
   }
-  // W3: record the provider-reported token usage against the global daily
-  // token cap (best-effort after the response is composed — see
-  // lib/chat/globalSpend for the failure semantics).
-  await recordGlobalTokens(answer.usage?.totalTokens);
+  // W3 (closed round-11): settle the reservation to the ACTUAL
+  // provider-reported usage (0 when the vendor reported none — the
+  // reservation already bounded the completion budget). Best-effort: a
+  // failed settlement leaks at most one reservation until the IST day
+  // rolls (see lib/chat/globalSpend).
+  await settleChatGlobalTokens(spend.reservedTokens, answer.usage?.totalTokens ?? null);
   return NextResponse.json(wire);
 }

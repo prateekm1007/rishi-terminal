@@ -3,6 +3,7 @@
  * header — never the URL.
  */
 
+import { MAX_COMPLETION_TOKENS } from "./openaiCompatible";
 import type { ChatTurn, ProviderCompletion } from "./openaiCompatible";
 
 export async function callGemini(
@@ -35,7 +36,7 @@ export async function callGemini(
       temperature: 0.9,
       topK: 40,
       topP: 0.95,
-      maxOutputTokens: 2048,
+      maxOutputTokens: MAX_COMPLETION_TOKENS,
     },
   };
 

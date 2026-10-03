@@ -34,8 +34,13 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
         rateHits[key] = (rateHits[key] ?? 0) + 1;
         return { data: { allowed: rateHits[key] <= BURST_LIMIT, count: rateHits[key] }, error: null };
       }
-      // W3: global spend caps (bump_rate_limit) — allowed by default here.
-      if (fn === "bump_rate_limit") return { data: { allowed: true, count: 0 }, error: null };
+      // W3 closure: the guarded reservation + settlement (migration 020) —
+      // admitted by default here; the cap-contract itself is pinned in
+      // test/chat.globalSpend.test.ts and on the Postgres harness.
+      if (fn === "reserve_chat_global_spend")
+        return { data: { ok: true, tokens: 0, requests: 1 }, error: null };
+      if (fn === "settle_chat_global_tokens")
+        return { data: { ok: true, settled: true }, error: null };
       throw new Error(`unexpected rpc: ${fn}`);
     },
   }),

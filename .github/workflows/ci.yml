@@ -150,6 +150,9 @@ jobs:
       - name: Assert SECURITY DEFINER EXECUTE lockdown (V1)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/security_definer_invariants.sql
 
+      - name: Assert global chat spend hard-cap invariants (W3 closure)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/chat_global_spend_invariants.sql
+
   smoke:
     name: Playwright smoke (blocking since round 2 — green on 4+ consecutive runs)
     runs-on: ubuntu-latest

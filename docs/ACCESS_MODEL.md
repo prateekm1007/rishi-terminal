@@ -44,9 +44,13 @@ It is protection and abuse control, never a product level:
   truncated to its /64 prefix — one prefix, one quota). The digest is
   PSEUDONYMOUS, not anonymous: it is derived from the client IP and can
   be re-derived by the platform. The same atomic counter,
-  refund-on-failure and fail-cailed semantics apply to both (R12), plus
+  refund-on-failure and fail-closed semantics apply to both (R12), plus
   GLOBAL daily request and token caps and a `CHAT_DISABLED` kill switch
-  that bound total spend regardless of identity count (W3).
+  that bound total spend regardless of identity count (W3). The token
+  cap is a HARD bound at admission: each request atomically reserves its
+  worst-case completion budget and settles to the actual reported usage
+  afterward (migration 020). The switch disables chat for ANY non-empty
+  value except 0/false/off/no (ambiguous values fail closed).
 - `lib/auth/session.ts` resolves **authentication identity only**
   (`id`, `email`). It no longer resolves any product tier.
 - `GET /api/auth/me` returns `{ user: { id, email } }` or `{ user: null }` —

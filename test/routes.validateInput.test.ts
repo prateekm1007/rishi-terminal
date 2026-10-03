@@ -199,3 +199,32 @@ describe("R9-9 — validateInput registry exports", () => {
     expect(PRICE_REGISTRY_TOKENS.has("TCS")).toBe(false);
   });
 });
+
+// ── R11-05 (founder directive 15): the bare tenor spelling "10Y" is how
+// users say the home-market sovereign benchmark ("10Y yield"), but the
+// registry symbol is IN10YS. The alias must be DERIVED from the bond
+// registry (never hand-listed) and must fail closed on ambiguity: a tenor
+// maps only when EXACTLY ONE Indian G-Sec carries it. SDLs and corporate
+// bonds at the same tenor must never capture the alias (they are not the
+// sovereign benchmark).
+describe("R11-05 — derived bond-tenor aliases (directive 15)", () => {
+  it("the bare tenor '10Y' canonicalises to the home sovereign bond", () => {
+    expect(normalizeSymbolInput("10Y")).toBe("IN10YS");
+    expect(isValidSymbolInput("10Y")).toBe(true);
+  });
+
+  it("the alias token is a price-registry token (intent layer sees it)", () => {
+    expect(PRICE_REGISTRY_TOKENS.has("10Y")).toBe(true);
+  });
+
+  it("the canonical bond symbol keeps working unchanged", () => {
+    expect(normalizeSymbolInput("IN10YS")).toBe("IN10YS");
+    expect(normalizeSymbolInput("US10Y")).toBe("US10Y");
+  });
+
+  it("tenor aliases never collide with the stock master or other instruments", () => {
+    expect(isValidSymbolInput("RELIANCE")).toBe(true);
+    expect(normalizeSymbolInput("RELIANCE")).toBe("RELIANCE");
+    expect(isValidSymbolInput("11Y")).toBe(false); // no Indian G-Sec at 11Y -> no alias
+  });
+});

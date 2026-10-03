@@ -228,3 +228,61 @@ describe("R10-03 — standalone rate term closes the USD/INR rate gap", () => {
     expect(detectFinancialDataIntent("at what rate does compounding grow the mind?").financial).toBe(false);
   });
 });
+
+// ── R11-05 (founder directive 15): the five-case vocabulary-precision
+// matrix. The instrument-anchored rate branch must keep serving the real
+// asks ("USD/INR rate", "10Y yield") while ordinary prose carrying a
+// ticker ("rate my TCS analysis", educational sentences containing IDEA)
+// never seeds a tool. The bare tenor spelling resolves through the
+// derived bond-tenor alias (validateInput), not a new hand-listed regex.
+describe("R11-05 — directive-15 five-case matrix: rate/yield vocabulary precision", () => {
+  it("case 1: 'USD/INR rate' -> getPrices with the canonical pair", () => {
+    expect(intentSeedTool("What is the USD/INR rate?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USD/INR" },
+    });
+  });
+
+  it("case 2: '10Y yield' -> the correct price/yield path (home sovereign bond)", () => {
+    expect(intentSeedTool("10Y yield")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "IN10YS" },
+    });
+    expect(intentSeedTool("What is the 10Y yield today?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "IN10YS" },
+    });
+  });
+
+  it("case 2b: 'US10Y yield' keeps its own registry symbol", () => {
+    expect(intentSeedTool("US10Y yield")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "US10Y" },
+    });
+  });
+
+  it("case 3: 'growth rate' -> fundamentals, never a price lookup", () => {
+    expect(intentSeedTool("What is the TCS growth rate?")).toEqual({
+      tool: "getFinancials",
+      args: { symbol: "TCS" },
+    });
+  });
+
+  it("case 4: 'rate my TCS analysis' -> no forced price lookup at all", () => {
+    expect(detectFinancialDataIntent("rate my TCS analysis").financial).toBe(false);
+    expect(intentSeedTool("rate my TCS analysis")).toBeNull();
+    expect(intentSeedTool("Please rate my INFY research")).toBeNull();
+  });
+
+  it("case 5: educational/philosophical prose containing a ticker -> no accidental tool seed", () => {
+    const prose = [
+      "Patience is the hardest discipline, as IDEA taught me.",
+      "Every TITAN has its fall — pride precedes the decline.",
+      "The first principle is that you must not fool yourself.",
+      "Compounding works at the rate at which knowledge grows.",
+    ];
+    for (const p of prose) {
+      expect(intentSeedTool(p), `prose seeded a tool: ${p}`).toBeNull();
+    }
+  });
+});

@@ -76,10 +76,10 @@ describe("executeAiTool — boundaries (rule 9: validate at every trust boundary
     expect(r.status).toBe("invalid-args");
   });
 
-  it("a symbol outside the security master is an explicit unknown-symbol failure with no fabricated data", async () => {
+  it("a symbol outside the canonical registry is an explicit unknown-symbol failure with no fabricated data", async () => {
     const r = await executeAiTool({ tool: "getPrices", args: { symbol: "FAKECOIN" } }, FULLY_STUBBED_DEPS);
     expect(r.status).toBe("unknown-symbol");
-    expect(r.modelPayload).toContain("not in the security master");
+    expect(r.modelPayload).toContain("not in the canonical symbol registry");
     expect(r.modelPayload).not.toContain("price");
   });
 

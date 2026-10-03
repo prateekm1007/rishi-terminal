@@ -29,7 +29,9 @@ CANONICAL SNAPSHOT / RESOLVER (resolveStockMetrics() → getStockScore(), lib/sc
 PROVENANCE-AWARE EVIDENCE PACKAGE (buildAiEvidencePackage, lib/ai/evidence.ts)
       ↓
 SERVER TOOL LAYER             (lib/ai/tools.ts — getStock/getFinancials/getPrices/
-      ↓                        getScore/getPeers; allowlist + zod + security master)
+      ↓                        getScore/getPeers; allowlist + zod + the ONE
+      ↓                        canonical symbol registry — stock master ∪
+      ↓                        price registry: R9-12)
 MODEL ⇄ TOOLS (BOUNDED LOOP)  (lib/ai/router.ts — MAX_TOOL_ITERATIONS=4; results
       ↓                        are server-generated TOOL RESULT turns, never
       ↓                        client- or model-supplied)
@@ -53,9 +55,16 @@ PROVENANCE-AWARE UI           (provider · model · grounding mode · toolCalls 
 ## Tool layer (Commit L1)
 
 - Strict allowlist: `getStock`, `getFinancials`, `getPrices`, `getScore`,
-  `getPeers`. Zod argument validation and security-master checks at the
-  boundary; explicit failure states (`unknown-tool | invalid-args |
-  unknown-symbol | no-data | failed`) — never a plausible fallback.
+  `getPeers`. Zod argument validation and the ONE canonical symbol registry
+  check at the boundary (R9-12, Rule 14: the stock master UNION the
+  canonical price registry — indexes/commodities/crypto/forex/bonds);
+  explicit failure states (`unknown-tool | invalid-args | unknown-symbol |
+  no-data | failed`) — never a plausible fallback.
+- Symbol semantics inside the loop: a registry symbol that is not in the
+  stock master (WTI, USD/INR, BTC, bonds…) is KNOWN — `getPrices` serves
+  its observed price; the stock-only tools answer an explicit honest
+  `no-data` (known-but-out-of-scope is never reported as unknown).
+  Genuinely unknown symbols are `unknown-symbol` in every tool.
 - Tools resolve ONLY through the canonical surfaces (registry, resolver,
   consensus engine, price path) — no second source of truth, no AI-side
   score recomputation. Peer figures are typed `seed`.
@@ -75,7 +84,8 @@ no weakening of validation:
 - **Reactive canonical engagement** (`lib/ai/financialIntent.ts`
   `intentSeedTool`): when a no-initial-evidence request matches a registry
   symbol AND a closed OBSERVABLE-data term (prices, fundamentals, scores,
-  peers) and the model's first completion answers with ZERO tool calls, the
+  peers — plus the registry-adjacency rate/yield shapes, R10-08) and the
+  model's first completion answers with ZERO tool calls, the
   server executes the canonical tool for the detected ask through the REAL
   executor and re-asks once with the TOOL RESULT in the transcript. A
   well-behaved model that requests tools itself pays zero overhead.
@@ -156,8 +166,16 @@ similarity.
 - Conversation history remains client-supplied (validated shape, untrusted
   by contract); a server-owned conversation store is the follow-up
   architecture.
-- The general (non-symbol) chat path is context-only by design pending
-  FD-10; the tool loop engages only on the evidence-bound path.
+- The outer `/api/chat` `symbol` contract and the tool layer resolve
+  through the SAME canonical registry gate (R10-09): a stock symbol gets
+  the initial stock evidence package and the persona's stockPrompt; a
+  non-stock instrument (WTI, USD/INR, BTC, bonds) is accepted and enters
+  the SAME bounded loop WITHOUT initial stock evidence — the stock
+  evidence assembler cannot describe an instrument honestly, and the
+  reactive canonical seeding above engages `getPrices` for its asks.
+  (This bullet supersedes the removed "context-only pending FD-10" note:
+  since Commit M every request — with or without initial evidence — runs
+  the ONE bounded loop; the general path is no longer context-only.)
 
 ## Canonical tool-state consistency (Commit M7)
 

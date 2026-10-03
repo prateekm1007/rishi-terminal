@@ -172,7 +172,7 @@ export async function executeAiTool(
       symbol: rawSymbol,
       modelPayload: failPayload(tool, "unknown-symbol", {
         symbol: rawSymbol,
-        message: `Symbol ${rawSymbol} is not in the security master. Do not guess data for it.`,
+        message: `Symbol ${rawSymbol} is not in the canonical symbol registry. Do not guess data for it.`,
       }),
     };
   }

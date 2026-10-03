@@ -126,6 +126,10 @@
       "scripts/freeAccessInventory.mjs",
       "test/moduleTwins.test.ts",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "R12-04": [
+      "docs/evidence/round12/",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

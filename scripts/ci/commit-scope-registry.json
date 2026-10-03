@@ -107,6 +107,11 @@
       "lib/security.ts",
       "scripts/ci/commit-scope-registry.json",
       "docs/evidence/round11/"
+    ],
+    "R12-01": [
+      "test/chat.multitool.composition.test.ts",
+      "test/chat.provider401.refund.test.ts",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

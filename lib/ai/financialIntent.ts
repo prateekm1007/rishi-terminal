@@ -88,6 +88,35 @@ const DATA_TERM_RE =
  * instrument (see detectFinancialDataIntent). */
 const RATE_OR_YIELD_WORD_RE = /\b(rates?|yields?)\b/i;
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * R12-03 (founder directive 9, round 12): a bare rate/yield word names the
+ * instrument's observed price datum only when it is ATTACHED to it — the
+ * noun compound "<instrument> rate/yield" ("USD/INR rate", "gold rate",
+ * "10Y yield", "GOLD's rate") or the inverted compound "rate/yield
+ * of|for|on [the] <instrument>" ("yield on the 10Y", "rate for USDINR").
+ *
+ * Co-occurrence was the old rule and it over-triggered exactly where the
+ * directive draws the line: "How does a Fed rate cut affect GOLD?" and
+ * "Rate my GOLD investment strategy." forced a price lookup on a
+ * non-equity instrument because the word appeared anywhere in the
+ * sentence. Macro compounds ("rate cut", "rate decision", "interest
+ * rates") and verb usage are never anchors here. This narrows ONLY the
+ * bare-word branch; DATA_TERM_RE asks ("exchange rate", "yield" as a
+ * listed term) keep their own conjunction with a symbol.
+ */
+function rateAnchorsInstrument(text: string, instrument: string): boolean {
+  const inst = escapeRegExp(instrument);
+  // Pattern A — the noun compound, including the possessive spelling.
+  if (new RegExp(`\\b${inst}'?s?\\s+(?:rates?|yields?)\\b`, "i").test(text)) return true;
+  // Pattern B — the inverted compound; an optional article is allowed.
+  if (new RegExp(`\\b(?:rates?|yields?)\\s+(?:of|for|on)\\s+(?:the\\s+)?${inst}\\b`, "i").test(text)) return true;
+  return false;
+}
+
 export interface FinancialDataIntent {
   /** True when the request clearly asks for symbol-specific financial data. */
   financial: boolean;
@@ -95,6 +124,11 @@ export interface FinancialDataIntent {
   symbol?: string;
   /** The matched data term (when financial). */
   matchedTerm?: string;
+  /** R12-03: the raw text that named the instrument (the slashed pair or
+   * the typed token, e.g. "USD/INR", "10Y", "GOLD") — lets the seed
+   * re-verify the rate/yield adjacency on the ORIGINAL message even when
+   * `symbol` was canonicalised (10Y -> IN10YS). */
+  instrumentText?: string;
 }
 
 /**
@@ -128,8 +162,16 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   // so no generic data term is required for it.
   if (SLASHED_PAIR_RE) {
     const pair = SLASHED_PAIR_RE.exec(text);
-    if (pair && (termMatch || rateWord)) {
-      return { financial: true, symbol: pair[0].toUpperCase(), matchedTerm: (termMatch ?? rateWord)![0] };
+    // R12-03: a bare rate/yield word qualifies only when ADJACENT to the
+    // pair ("USD/INR rate") — "How does a Fed rate cut affect USD/INR?"
+    // is prose, not a price ask. A listed DATA_TERM keeps its own path.
+    if (pair && (termMatch || (rateWord && rateAnchorsInstrument(text, pair[0].toUpperCase())))) {
+      return {
+        financial: true,
+        symbol: pair[0].toUpperCase(),
+        matchedTerm: (termMatch ?? rateWord)![0],
+        instrumentText: pair[0].toUpperCase(),
+      };
     }
   }
 
@@ -143,6 +185,7 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
           financial: true,
           symbol: canonicalPriceRegistrySymbol(token) ?? token,
           matchedTerm: termMatch[0],
+          instrumentText: token,
         };
       }
     }
@@ -162,8 +205,17 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   if (rateWord) {
     for (const token of tokens) {
       const canonicalInstrument = canonicalPriceRegistrySymbol(token);
-      if (canonicalInstrument) {
-        return { financial: true, symbol: canonicalInstrument, matchedTerm: rateWord[0] };
+      // R12-03: adjacency required — the word prices the instrument only
+      // as "<instrument> rate/yield" or "rate/yield of|for|on <instrument>".
+      // Macro compounds and verb usage never anchor ("rate my GOLD picks",
+      // "Fed rate cut affecting GOLD", "rates are rising — does GOLD hedge?").
+      if (canonicalInstrument && rateAnchorsInstrument(text, token)) {
+        return {
+          financial: true,
+          symbol: canonicalInstrument,
+          matchedTerm: rateWord[0],
+          instrumentText: token,
+        };
       }
     }
   }
@@ -215,8 +267,20 @@ export function intentSeedTool(message: string): { tool: string; args: { symbol:
   // token set stores the unslashed spelling). Stock symbols never reach
   // this branch: the detector already rejected bare-rate prose there, so
   // "growth rate" falls through to the fundamentals seed below.
+  // R12-03: the bare rate/yield word seeds the price tool only when it is
+  // ADJACENT to the instrument on the ORIGINAL message (the detector's
+  // anchor, re-verified against the raw spelling — "10Y" stays "10Y" here
+  // even though `symbol` was canonicalised to IN10YS), or when the matched
+  // DATA TERM itself names a pair's rate datum ("exchange rate" — a listed
+  // DATA_TERM_RE term, restricted to non-equity symbols so "exchange rate
+  // impact on TCS" never prices a stock, exactly as before this change).
+  const rateAnchored =
+    !!intent.instrumentText && rateAnchorsInstrument(message, intent.instrumentText);
+  const pairRateTerm =
+    /\bexchange rates?\b/i.test(message) &&
+    (intent.symbol.includes('/') || PRICE_REGISTRY_TOKENS.has(intent.symbol));
   if (
-    RATE_OR_YIELD_WORD_RE.test(message) &&
+    (rateAnchored || pairRateTerm) &&
     (intent.symbol.includes('/') || PRICE_REGISTRY_TOKENS.has(intent.symbol))
   ) {
     return { tool: 'getPrices', args: { symbol: intent.symbol } };

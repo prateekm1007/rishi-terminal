@@ -105,8 +105,20 @@ test.describe("keyboard + semantics (a11y, audit F)", () => {
     await page.goto("/crypto", { waitUntil: "domcontentloaded" });
     const row = page.locator('tbody tr[role="link"]').first();
     await expect(row).toBeVisible({ timeout: 30_000 });
-    await row.press("Enter");
-    await page.waitForURL(/\/crypto\/[A-Z0-9]+/, { timeout: 15_000 });
+    // The rows are client-side router links: the SSR markup ships no key
+    // handler, so an Enter press that lands before React hydrates is a
+    // no-op (observed on a cold CI runner 2026-10-03: run 37130257157 —
+    // the same hydration lag the mobile drawer test above documents).
+    // Retry focus+press until the detail navigation lands instead of
+    // measuring hydration speed through an a11y assertion. Semantics stay
+    // strict: Enter MUST end on /crypto/<SYMBOL>.
+    await expect(async () => {
+      // A prior attempt may already be navigating/navigated — never re-press.
+      if (/\/crypto\/[A-Z0-9]+/.test(page.url())) return;
+      await row.focus();
+      await row.press("Enter");
+      await page.waitForURL(/\/crypto\/[A-Z0-9]+/, { timeout: 5_000 });
+    }).toPass({ timeout: 60_000, intervals: [1_000, 2_000, 5_000] });
   });
 
   test("global search exposes combobox semantics", async ({ page }) => {

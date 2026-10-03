@@ -6,7 +6,7 @@
 // Round-9 commit (cross-task leakage caught before push, but by hand).
 // This gate replaces the hand check: every commit in the audited range
 // must (a) carry a task token in its subject (R9-1..R9-n / V1..Vn (founder round 9) /
-// W1..Wn (founder round 10) / redeploy),
+// W1..Wn (founder round 10) / X1..Xn (founder round 11+) / redeploy),
 // (b) touch ONLY paths allowlisted for that task in
 // scripts/ci/commit-scope-registry.json, and (c) sit on a parent chain
 // that is fully contained in the range (no hidden splice). Merge commits
@@ -101,10 +101,12 @@ for (const sha of revs) {
     continue;
   }
 
-  // (a) task token in the subject.
-  const token = subject.match(/\b(R\d+-\d+|V\d+|W\d+|redeploy)\b/);
+  // (a) task token in the subject. X\d+ covers the founder round-11+ task
+  // family (mandated fix(X<n>): prefix); added additively — no existing
+  // token was loosened (rule 23).
+  const token = subject.match(/\b(R\d+-\d+|V\d+|W\d+|X\d+|redeploy)\b/);
   if (!token) {
-    failures.push({ short, subject, reason: "no task token (R-n / V-n / W-n / redeploy) in subject", offenders: [] });
+    failures.push({ short, subject, reason: "no task token (R-n / V-n / W-n / X-n / redeploy) in subject", offenders: [] });
     continue;
   }
   const taskId = token[1];

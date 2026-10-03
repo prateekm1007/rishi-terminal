@@ -3,7 +3,11 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./test/smoke",
   timeout: 60_000,
-  retries: 0,
+  // X2 (founder round 11): one retry in CI so a single hydration-timing
+  // flake on a cold shared runner cannot turn the blocking gate red; a
+  // real regression still fails (the retry re-runs the same strict
+  // assertions). Local runs keep retries at 0 so developers see flakes.
+  retries: process.env.CI ? 1 : 0,
   use: {
     baseURL: process.env.SMOKE_BASE_URL ?? "http://localhost:3000",
     headless: true,

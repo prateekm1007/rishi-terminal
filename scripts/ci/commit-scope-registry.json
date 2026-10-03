@@ -130,6 +130,11 @@
     "R12-04": [
       "docs/evidence/round12/",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "R12-06": [
+      "lib/ai/financialIntent.ts",
+      "test/financialIntent.test.ts",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

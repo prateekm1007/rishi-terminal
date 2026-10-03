@@ -8,6 +8,11 @@
         "proacl": "{postgres=X/postgres,service_role=X/postgres}"
       },
       {
+        "proname": "bump_rate_limit",
+        "args": "p_key text, p_increment integer, p_limit integer, p_window_seconds integer",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
         "proname": "consume_chat_quota",
         "args": "p_user_id uuid, p_limit integer",
         "proacl": "{postgres=X/postgres,service_role=X/postgres}"
@@ -46,11 +51,16 @@
         "proname": "repair_tier_grant",
         "args": "p_user_id uuid, p_tier text, p_paid_at timestamp with time zone",
         "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "try_quote_cache_refresh",
+        "args": "p_symbol text, p_claim_seconds integer",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
       }
     ]
   },
-  "try_quote_cache_refresh_present": false,
-  "quote_cache_exists": false,
+  "try_quote_cache_refresh_present": true,
+  "quote_cache_exists": true,
   "trigger_fn_privileges": {
     "http": 201,
     "anon_hnu": false,
@@ -70,8 +80,8 @@
     "trigger_revokes_hold": true,
     "invariant_pass": true,
     "anon_direct_call_denied": true,
-    "try_quote_cache_refresh_present": false,
-    "quote_cache_exists": false,
-    "OVERALL": "LIVE TRIGGER LOCKDOWN HOLDS (018's live-corrected subset); 016/017/018 NOT applied live (FOUNDER DECISION NEEDED stands)"
+    "try_quote_cache_refresh_present": true,
+    "quote_cache_exists": true,
+    "OVERALL": "LIVE LOCKDOWN HOLDS with 016/017/018 APPLIED (W2, 2026-10-03): trigger revokes hold, quote-cache RPC present with client roles denied"
   }
 }

@@ -1,0 +1,18 @@
+{
+  "base": "https://rishi-terminal.vercel.app",
+  "version": "96726c0671",
+  "http": 200,
+  "grounded": false,
+  "model": "agnes-2.5-flash",
+  "toolCalls": [],
+  "text_head": "WTI crude oil was observed at 91.11 usd per barrel on October 2, 2026, with a change of -1.895 percent. Now, I'll be honest with you \u2014 I don't really spend much",
+  "second_probe": {
+    "http": 200,
+    "grounded": false,
+    "groundingMode": "evidence-context",
+    "model": "agnes-2.5-flash",
+    "toolCalls": [],
+    "claimsVerified": false,
+    "text_head": "WTI crude oil is at $91.11 per barrel."
+  }
+}

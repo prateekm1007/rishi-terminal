@@ -1,0 +1,128 @@
+{
+  "version": {
+    "sha": "03ef7fe403789d16c2d94628a4d18b8e9ef00564",
+    "now": "2026-10-03T01:03:21.167Z",
+    "node": "v24.21.0"
+  },
+  "generatedAt": "2026-10-03T01:03:21.288Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "registryGets": {
+    "WTI": {
+      "status": 200,
+      "bodyHead": "{\"status\":\"LIVE\",\"price\":91.26,\"change\":-1.734,\"observedAt\":\"2026-10-02T20:59:59.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-02T20:59:59.000Z\"}",
+      "ms": 1143
+    },
+    "USD/INR": {
+      "status": 200,
+      "bodyHead": "{\"status\":\"LIVE\",\"price\":96.3,\"change\":-0.0104,\"observedAt\":\"2026-10-02T21:18:11.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-02T21:18:11.000Z\"}",
+      "ms": 352
+    }
+  },
+  "cases": [
+    {
+      "id": "wti-price",
+      "question": "What is the latest price of WTI?",
+      "summary": {
+        "status": 429,
+        "wallMs": 430,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "answerHeadU": "",
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "verdict": {
+          "pass": false,
+          "note": "getPrices(WTI) not engaged; tools=[]"
+        }
+      }
+    },
+    {
+      "id": "fx-alias",
+      "question": "What is the current USDINR rate?",
+      "summary": {
+        "status": 429,
+        "wallMs": 384,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "answerHeadU": "",
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "verdict": {
+          "pass": false,
+          "note": "getPrices not engaged; tools=[]"
+        }
+      }
+    },
+    {
+      "id": "wti-stock-only",
+      "question": "What are the financial fundamentals of WTI?",
+      "summary": {
+        "status": 429,
+        "wallMs": 437,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "answerHeadU": "",
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "verdict": {
+          "pass": false,
+          "note": "no honest no-data observed; tools=[]"
+        }
+      }
+    },
+    {
+      "id": "unknown-symbol",
+      "question": "What is the latest price of UNKLAR9X?",
+      "summary": {
+        "status": 429,
+        "wallMs": 387,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "answerHeadU": "",
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "verdict": {
+          "pass": false,
+          "note": "unknown-symbol not observed; tools=[] grounded=false"
+        }
+      }
+    }
+  ],
+  "allPass": false
+}

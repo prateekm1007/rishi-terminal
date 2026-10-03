@@ -82,6 +82,13 @@
       "scripts/ci/commit-scope-registry.json",
       "docs/evidence/v1/",
       "scripts/commitScopeAudit.mjs"
+    ],
+    "V2": [
+      "lib/scorers/greenblatt.ts",
+      "test/scorerHealth.test.ts",
+      "scripts/v2Repro.ts",
+      "docs/evidence/v2/",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

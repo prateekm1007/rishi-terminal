@@ -226,6 +226,10 @@
       "scripts/prodGroundedCanary.mjs",
       "scripts/prodUglyPathMatrix.mjs",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "X2": [
+      "test/smoke/shell.spec.ts",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

@@ -54,9 +54,16 @@ export default function PrivacyPage() {
             <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>4. Chat with the Rishis</h2>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
               When you send a chat message, the message (plus the stock context needed to answer) is sent to
-              our AI provider (Google Gemini) to generate the reply. We send only what is needed for that
-              request. Chat histories shown in the app are stored in your browser (localStorage), not on our
-              servers.
+              our AI provider (an OpenAI-compatible endpoint, with Google Gemini as fallback) to generate the
+              reply. We send only what is needed for that request. Chat histories shown in the app are stored
+              in your browser (localStorage), not on our servers.
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              For visitors who are not signed in, daily chat usage is bounded by a{' '}
+              <strong>pseudonymous</strong> quota identity: a keyed digest of your IP address (for IPv6, of
+              its first 64 bits). It is pseudonymous, not anonymous — it is derived from your network
+              address, and the platform can re-derive it. We use it only for abuse and cost control, never
+              to identify you across services.
             </p>
           </section>
 

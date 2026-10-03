@@ -34,6 +34,8 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
         rateHits[key] = (rateHits[key] ?? 0) + 1;
         return { data: { allowed: rateHits[key] <= BURST_LIMIT, count: rateHits[key] }, error: null };
       }
+      // W3: global spend caps (bump_rate_limit) — allowed by default here.
+      if (fn === "bump_rate_limit") return { data: { allowed: true, count: 0 }, error: null };
       throw new Error(`unexpected rpc: ${fn}`);
     },
   }),
@@ -51,6 +53,8 @@ beforeEach(() => {
   refundCalls = 0;
   rateHits = {};
   upstreamMode = "ok";
+  // W3: the anonymous-identity cases need the HMAC pepper (fail closed).
+  vi.stubEnv("ANON_ID_PEPPER", "test-pepper-limits-suite");
   vi.stubGlobal("fetch", vi.fn(async (url: unknown, init: { body?: string } | undefined) => {
     geminiCalls.push({ url: String(url), body: init?.body ? JSON.parse(init.body) : null });
     if (upstreamMode === "upstream-500") {

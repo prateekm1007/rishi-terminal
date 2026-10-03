@@ -3,7 +3,7 @@
  * header — never the URL.
  */
 
-import type { ChatTurn } from "./openaiCompatible";
+import type { ChatTurn, ProviderCompletion } from "./openaiCompatible";
 
 export async function callGemini(
   apiKey: string,
@@ -13,7 +13,7 @@ export async function callGemini(
   message: string,
   timeoutMs: number,
   loopTurns: ChatTurn[] = [],
-): Promise<string> {
+): Promise<ProviderCompletion> {
   const contents = [
     ...history.map(h => ({
       role: h.role === "user" ? "user" : "model",
@@ -61,5 +61,7 @@ export async function callGemini(
     console.error("[ai/gemini] empty completion:", JSON.stringify(data).slice(0, 500));
     throw new Error("gemini empty completion");
   }
-  return text;
+  // W3 (founder round-10): Gemini reports usageMetadata.totalTokenCount.
+  const usage = data?.usageMetadata?.totalTokenCount;
+  return { text, totalTokens: typeof usage === "number" && Number.isFinite(usage) ? usage : null };
 }

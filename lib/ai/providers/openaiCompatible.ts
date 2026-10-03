@@ -15,6 +15,14 @@ export interface ChatTurn {
   content: string;
 }
 
+/** W3 (founder round-10): the completion text plus the provider-reported
+ *  token usage (null when the provider did not report one — the global
+ *  token cap only counts observable usage). */
+export interface ProviderCompletion {
+  text: string;
+  totalTokens: number | null;
+}
+
 export async function callOpenAiCompatible(
   baseUrl: string,
   apiKey: string,
@@ -24,7 +32,7 @@ export async function callOpenAiCompatible(
   message: string,
   timeoutMs: number,
   loopTurns: ChatTurn[] = [],
-): Promise<string> {
+): Promise<ProviderCompletion> {
   const messages = [
     { role: "system" as const, content: systemPrompt },
     ...history.map(h => ({ role: h.role, content: h.content })),
@@ -62,5 +70,6 @@ export async function callOpenAiCompatible(
     console.error("[ai/openai] empty completion:", JSON.stringify(data).slice(0, 500));
     throw new Error("openai-compatible empty completion");
   }
-  return text;
+  const usage = data?.usage?.total_tokens;
+  return { text, totalTokens: typeof usage === "number" && Number.isFinite(usage) ? usage : null };
 }

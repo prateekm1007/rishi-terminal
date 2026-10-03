@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { STOCKS } from "@/data/stocks";
+import { CRYPTO_ASSETS } from "@/data/crypto";
+import { COMMODITIES } from "@/data/markets";
+import { FOREX_PAIRS } from "@/data/forex";
+import { BONDS } from "@/data/bonds";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// R11-06 (founder directive 11, Rule 14): every search candidate is
+// DERIVED from the canonical registries — the same data files the detail
+// pages themselves serve. The previous implementation hand-listed
+// crypto/commodity/forex arrays that had already drifted from the
+// registries (it advertised XRP/DOGE/SHIB and six commodities the
+// platform never served, and served zero bonds despite the Category type
+// promising them). A second ticker set is a loaded gun (rule 14): any
+// registry change used to silently leave dead search links to pages that
+// render notFound().
 
 type Category = "stock" | "crypto" | "commodity" | "forex" | "bond";
 
@@ -14,41 +28,39 @@ type SearchResult = {
   sector?: string;
 };
 
-const CRYPTOS: Array<{ symbol: string; name: string }> = [
-  { symbol: "BTC", name: "Bitcoin" },
-  { symbol: "ETH", name: "Ethereum" },
-  { symbol: "BNB", name: "BNB" },
-  { symbol: "SOL", name: "Solana" },
-  { symbol: "ADA", name: "Cardano" },
-  { symbol: "AVAX", name: "Avalanche" },
-  { symbol: "DOT", name: "Polkadot" },
-  { symbol: "POL", name: "Polygon" },
-  { symbol: "LINK", name: "Chainlink" },
-  { symbol: "XRP", name: "XRP" },
-  { symbol: "DOGE", name: "Dogecoin" },
-  { symbol: "SHIB", name: "Shiba Inu" },
-];
-
-const COMMODITIES: Array<{ symbol: string; name: string }> = [
-  { symbol: "GOLD", name: "Gold" },
-  { symbol: "SILVER", name: "Silver" },
-  { symbol: "CRUDEOIL", name: "Crude Oil" },
-  { symbol: "NATURALGAS", name: "Natural Gas" },
-  { symbol: "COPPER", name: "Copper" },
-  { symbol: "ALUMINIUM", name: "Aluminium" },
-  { symbol: "ZINC", name: "Zinc" },
-  { symbol: "NICKEL", name: "Nickel" },
-  { symbol: "LEAD", name: "Lead" },
-  { symbol: "BRENTCRUDE", name: "Brent Crude" },
-  { symbol: "PLATINUM", name: "Platinum" },
-];
-
-const FOREX: Array<{ symbol: string; name: string; urlPair: string }> = [
-  { symbol: "EURUSD", name: "EUR / USD", urlPair: "EURUSD" },
-  { symbol: "GBPUSD", name: "GBP / USD", urlPair: "GBPUSD" },
-  { symbol: "USDJPY", name: "USD / JPY", urlPair: "USDJPY" },
-  { symbol: "USDINR", name: "USD / INR", urlPair: "USDINR" },
-  { symbol: "AUDUSD", name: "AUD / USD", urlPair: "AUDUSD" },
+/** The searchable candidates, derived once from the registries. */
+const CANDIDATES: Array<{ symbol: string; name: string; category: Category; url: string; sector?: string }> = [
+  ...Object.values(STOCKS).map((s) => ({
+    symbol: s.symbol,
+    name: s.name,
+    category: "stock" as const,
+    url: `/stock/${s.symbol}`,
+    sector: s.sector,
+  })),
+  ...CRYPTO_ASSETS.map((a) => ({
+    symbol: a.symbol,
+    name: a.name,
+    category: "crypto" as const,
+    url: `/crypto/${a.symbol}`,
+  })),
+  ...COMMODITIES.map((c) => ({
+    symbol: c.symbol,
+    name: c.name,
+    category: "commodity" as const,
+    url: `/commodities/${c.symbol}`,
+  })),
+  ...FOREX_PAIRS.map((f) => ({
+    symbol: f.symbol,
+    name: f.name,
+    category: "forex" as const,
+    url: `/forex/${f.symbol}`,
+  })),
+  ...BONDS.map((b) => ({
+    symbol: b.symbol,
+    name: b.name,
+    category: "bond" as const,
+    url: `/bonds/${b.symbol}`,
+  })),
 ];
 
 function matchScore(sym: string, name: string, q: string) {
@@ -74,76 +86,34 @@ export async function GET(req: NextRequest) {
     const q = rawQ.toUpperCase();
     const limit = Math.min(Number(searchParams.get("limit") ?? "8") || 8, 15);
 
-    const results: SearchResult[] = [];
-
-    // Stocks first
-    for (const s of Object.values(STOCKS)) {
-      if (results.length >= limit) break;
-      const sym = (s.symbol || "").toUpperCase();
-      const name = s.name || "";
-      const score = matchScore(sym, name, q);
-      if (score !== 9) {
-        results.push({
-          symbol: s.symbol,
-          name: s.name,
-          category: "stock",
-          url: `/stock/${s.symbol}`,
-          sector: s.sector,
-        });
-      }
+    // R11-06: collect every registry match, THEN rank and slice. The old
+    // implementation truncated per hand-listed class before sorting, so a
+    // few stock name-substrings could crowd out an exact crypto/bond
+    // symbol match. With 900+ candidates this is still trivially cheap and
+    // exact-symbol matches always win.
+    const scored: Array<{ entry: (typeof CANDIDATES)[number]; score: number }> = [];
+    for (const entry of CANDIDATES) {
+      const score = matchScore(entry.symbol, entry.name, q);
+      if (score !== 9) scored.push({ entry, score });
     }
 
-    // Crypto
-    for (const c of CRYPTOS) {
-      if (results.length >= limit) break;
-      const score = matchScore(c.symbol, c.name, q);
-      if (score !== 9) {
-        results.push({
-          symbol: c.symbol,
-          name: c.name,
-          category: "crypto",
-          url: `/crypto/${c.symbol}`,
-        });
-      }
-    }
-
-    // Commodities
-    for (const c of COMMODITIES) {
-      if (results.length >= limit) break;
-      const score = matchScore(c.symbol, c.name, q);
-      if (score !== 9) {
-        results.push({
-          symbol: c.symbol,
-          name: c.name,
-          category: "commodity",
-          url: `/commodities/${c.symbol}`,
-        });
-      }
-    }
-
-    // Forex
-    for (const f of FOREX) {
-      if (results.length >= limit) break;
-      const score = matchScore(f.symbol, f.name, q);
-      if (score !== 9) {
-        results.push({
-          symbol: f.symbol,
-          name: f.name,
-          category: "forex",
-          url: `/forex/${f.urlPair}`,
-        });
-      }
-    }
-
-    // Sort best matches overall
-    results.sort((a, b) => {
-      const sa = matchScore(a.symbol, a.name, q);
-      const sb = matchScore(b.symbol, b.name, q);
-      return sa - sb;
+    scored.sort((a, b) => {
+      if (a.score !== b.score) return a.score - b.score;
+      // Deterministic tiebreak: registry order is stable (categories in
+      // service order, symbols within each registry's own order).
+      return 0;
     });
 
+    const results: SearchResult[] = scored.slice(0, limit).map(({ entry }) => ({
+      symbol: entry.symbol,
+      name: entry.name,
+      category: entry.category,
+      url: entry.url,
+      ...(entry.sector !== undefined ? { sector: entry.sector } : {}),
+    }));
+
     return NextResponse.json(
-      { results: results.slice(0, limit) },
+      { results },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   } catch (err) {

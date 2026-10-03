@@ -99,6 +99,14 @@
       "test/financialIntent.test.ts",
       "scripts/ci/commit-scope-registry.json",
       "docs/evidence/round11/"
+    ],
+    "R11-06": [
+      "app/api/search/route.ts",
+      "test/searchRoute.registry.test.ts",
+      "test/routes.validateInput.test.ts",
+      "lib/security.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "docs/evidence/round11/"
     ]
   }
 }

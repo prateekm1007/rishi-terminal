@@ -159,9 +159,11 @@ describe("R5 — source scan: every symbol-reading route imports the gate", () =
     expect(offenders).toEqual([]);
   });
 
-  it("the old split gate (lib/security isKnownSymbol) is no longer used by routes", () => {
-    // R5 unified the gates: lib/security still exists for non-route callers
-    // but app/api must not bypass validateInput.
+  it("the old split gate (lib/security isKnownSymbol) is gone — routes use validateInput", () => {
+    // R5 unified the gates onto lib/registry/validateInput. R11-06 deleted
+    // lib/security.ts outright (rule 17: zero importers anywhere — it was
+    // the last second-symbol-gate artifact). app/api must never grow a
+    // private symbol gate again.
     const offenders: string[] = [];
     for (const file of routeFiles(path.join(ROOT, "app", "api"))) {
       const src = readFileSync(file, "utf8");

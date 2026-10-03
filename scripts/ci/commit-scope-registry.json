@@ -88,7 +88,9 @@
       "test/scorerHealth.test.ts",
       "scripts/v2Repro.ts",
       "docs/evidence/v2/",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "lib/chat/registry.ts",
+      "test/chatPersonaGreenblattDisclosure.test.ts"
     ]
   }
 }

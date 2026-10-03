@@ -202,3 +202,42 @@ regression.
 - Directives 7–9: identity chain, health/env sweep, migration 021, the
   full production battery coverage list, and the AI AFTER battery with
   latency attribution — all on the deployed `e214b52` tree.
+
+## 11. Final deployment `751d5b6` — the pending §9.1 items closed
+
+PR #110 (this evidence PR) merged as
+`751d5b6507184244648f5a16fe1b508e5e658775` and the GitHub integration
+deployed it (`dpl_9aaa1Jtc61reToxVPSs9oZfWGFRN`, READY; identical app
+tree — the PR is docs + probe scripts only). On that final deployment:
+
+- **Identity chain re-proven**: origin/main = Vercel deployment =
+  `/api/version` = `751d5b6507184244648f5a16fe1b508e5e658775`; CI 4/4
+  green on the SHA. Receipt:
+  `docs/evidence/round12/production-receipt-751d5b6.json`
+  (`matchesVersionEndpointSha: true`, `allCompletedSuccess: true`).
+- **Deterministic gate (§9.1)**: run 1 — the positive contract failed on
+  the known model-quality coin flip (field-value-mismatch: the model
+  labeled the price 1167.7 as `change`; validator rejected it; one
+  bounded repair re-asked; still ungrounded → honest fail-closed. The
+  negative contract PASSED deterministically). Run 2 — **PASS**:
+  `positive-deterministic-grounded-loop` satisfied in ONE deterministic
+  run (seeded `getPrices` → real provider → structured claims →
+  `grounded=true` with the exact server-generated surface) and
+  `negative-deterministic-honest-failure` deterministic.
+  Artifact: `docs/evidence/round12/deterministic-ai-gate-751d5b6.json`.
+- **Grounded canary (§9.1)**: with the new `ATTEMPT_PACING_MS` pacing,
+  **PASS** — positive contract satisfied on attempt 1/5 (grounded=true,
+  exact server surface, after a real `getPrices` call); negative contract
+  demonstrated within 3 tries (unknown symbol, zero numbers, zero
+  verified facts, no false grounding).
+  Artifact: `docs/evidence/round12/grounded-canary-751d5b6.json`.
+
+Round-12 production closure is COMPLETE on the final tree: exact-SHA
+chain + receipt + CI on both the code merge (`e214b52`) and the final
+deployment (`751d5b6`), full battery coverage, AI AFTER battery with
+latency attribution, migration 021 live with invariants, deterministic
+gate + grounded canary on the final deployment. Remaining open items are
+the honest §9.2–§9.5 record (snapshot ingest pipeline = founder/T14;
+search slashed-FX UX = backlog; E-1..E-4 entropy backlog per directives
+15–17; NF-5 provider capacity = founder-gated) and the broader product
+roadmap (explicitly NOT closed by this round).

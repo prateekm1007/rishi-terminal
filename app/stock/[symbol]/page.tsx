@@ -5,6 +5,8 @@ import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/sco
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
+import { peekCachedQuote } from '@/lib/quoteCache'; // X3: read-only cache peek
+import { cachedQuoteToEntry } from '@/lib/dashboardSnapshot'; // X3: cache row → wire entry
 import { generateStockDetail } from '../../../data/stockDetails';
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
@@ -49,13 +51,20 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   };
 }
 
-export async function generateStaticParams() {
-  return Object.keys(STOCKS).map((symbol) => ({ symbol }));
-}
-
 interface StockPageProps {
   params: Promise<{ symbol: string }>;
 }
+
+// X3 (founder round 11): the stock page renders PER REQUEST so the first
+// byte carries the last cached quote from the shared quote_cache — a cheap
+// read-only peek (no refresh claim, no upstream fetch). Previously the page
+// was statically prerendered and the price tile baked "⟳ FETCHING —" into
+// every one of the 916 first bytes; the price only appeared after the
+// client's fetch round-trip. Cache infrastructure failure or a cold row
+// renders the honest unavailable state — never a placeholder, never a
+// fabricated number (Rules 3/16). The build stays hermetic: dynamic pages
+// render nothing at build time.
+export const dynamic = 'force-dynamic';
 
 export default async function StockPage({ params }: StockPageProps) {
   const { symbol } = await params;
@@ -97,6 +106,14 @@ export default async function StockPage({ params }: StockPageProps) {
   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
 
+  // X3: the last cached quote (read-only peek) rides into the RSC payload so
+  // the price tile's FIRST BYTE shows a real observation with its honest
+  // CACHED/DELAYED label — or nothing at all when the cache cannot serve
+  // one (the tile then renders the honest unavailable state, never
+  // "FETCHING"). The client still revalidates on mount through the normal
+  // API path.
+  const initialEntry = cachedQuoteToEntry(await peekCachedQuote(key));
+
   return (
     <StockPageClient
       stock={stock}
@@ -105,6 +122,7 @@ export default async function StockPage({ params }: StockPageProps) {
       resolved={resolved}
       qvpsDual={qvpsDual}
       eliteGraph={eliteGraph}
+      initialPrice={initialEntry}
     />
   );
 }

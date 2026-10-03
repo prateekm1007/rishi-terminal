@@ -58,18 +58,21 @@ const ARTIFACT_PATH = path.join(ARTIFACT_DIR, "T59_PRODUCTION_MEASUREMENT.json")
 const COMMIT = process.env.VERCEL_COMMIT ?? "unknown-at-runtime";
 
 // ── homepage population (mirrors app/page.tsx allSyms) ───────────────────
-// TICKER_SYMS / TOP_CRYPTO / WORLD_MARKETS are module-local in app/page.tsx;
-// they are mirrored here verbatim (with a CI-guarded tolerance: scenario D
-// records the exact population sent, so drift is visible in the artifact).
+// X3 correction (rule 14): the lists used to be HAND-COPIED here and the
+// copy drifted — it still carried MATIC (rebranded to POL, round-5 finding
+// 15), which the /api/prices/batch registry gate rightly rejects (400), so
+// scenario D measured a rejected chunk instead of the dashboard's real
+// population. The lists are now IMPORTED from lib/dashboardSymbols — the
+// same module app/page.tsx uses — so this mirror can never drift again.
 // Rotating picks come from the same deterministic scoring imports the page
 // uses, so the reconstruction equals a fresh page load.
 
 import { STOCKS } from "@/data/stocks";
 import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from "@/lib/scoring/rankings";
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from "@/lib/dashboardSymbols";
 
-const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","SOL"];
-const TOP_CRYPTO = ["BTC","ETH","SOL","BNB","ADA","AVAX","DOT","MATIC","LINK"];
-const WORLD_MARKETS_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","N225","VIX"];
+const TOP_CRYPTO_SYMS = TOP_CRYPTO.map(c => c.symbol);
+const WORLD_MARKETS_SYMS = WORLD_MARKETS.map(m => m.sym);
 
 function homepagePopulation(): string[] {
   const rotating = rankTopBuy(6).map(s => s.symbol);
@@ -80,7 +83,7 @@ function homepagePopulation(): string[] {
     ...rotating,
     ...shorts,
     ...WORLD_MARKETS_SYMS,
-    ...TOP_CRYPTO,
+    ...TOP_CRYPTO_SYMS,
     sod,
   ];
   // de-dup, preserve order

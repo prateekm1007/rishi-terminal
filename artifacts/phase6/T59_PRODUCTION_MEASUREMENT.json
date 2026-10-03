@@ -1,14 +1,14 @@
 {
   "schema": "RISHI_PHASE6_T59_MEASUREMENT_V1",
-  "testTimestamp": "2026-10-01T00:43:02.358Z",
-  "deploymentCommit": "bbd5720",
-  "baseUrl": "https://rishi-terminal.vercel.app",
+  "testTimestamp": "2026-10-03T20:11:16.190Z",
+  "deploymentCommit": "unknown-at-runtime",
+  "baseUrl": "http://localhost:3100",
   "config": {
     "burstN": 10,
     "repeatN": 5,
     "repeatGapMs": 2000,
     "adminSnapshots": false,
-    "supabaseEvidence": true
+    "supabaseEvidence": false
   },
   "limitations": [
     "CRON_SECRET not provided: counter deltas (T59.4) and served-from reconciliation are UNAVAILABLE for this run."
@@ -18,12 +18,12 @@
     "symbol": "TCS",
     "cacheBusted": true,
     "httpStatus": 200,
-    "wallMs": 1366,
+    "wallMs": 41,
     "entry": {
-      "price": 2050.6,
+      "price": 2075,
       "source": "yahoo",
       "status": "LIVE",
-      "observedAt": "2026-10-01T00:43:03.606Z",
+      "observedAt": "2026-10-01T09:45:00.000Z",
       "checkedAt": null
     },
     "note": "'cold' = no in-process result within the 30 s reuse window and a fresh CDN key (cache-busted URL). Process-level coldness of the serverless instance is not controllable from outside and is NOT claimed."
@@ -38,60 +38,60 @@
       {
         "i": 0,
         "httpStatus": 200,
-        "wallMs": 475,
+        "wallMs": 7,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
-          "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "status": "LIVE",
+          "observedAt": "2026-10-01T09:45:00.000Z",
           "checkedAt": null
         }
       },
       {
         "i": 1,
         "httpStatus": 200,
-        "wallMs": 701,
+        "wallMs": 7,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
-          "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "status": "LIVE",
+          "observedAt": "2026-10-01T09:45:00.000Z",
           "checkedAt": null
         }
       },
       {
         "i": 2,
         "httpStatus": 200,
-        "wallMs": 474,
+        "wallMs": 6,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
-          "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "status": "LIVE",
+          "observedAt": "2026-10-01T09:45:00.000Z",
           "checkedAt": null
         }
       },
       {
         "i": 3,
         "httpStatus": 200,
-        "wallMs": 510,
+        "wallMs": 7,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
-          "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "status": "LIVE",
+          "observedAt": "2026-10-01T09:45:00.000Z",
           "checkedAt": null
         }
       },
       {
         "i": 4,
         "httpStatus": 200,
-        "wallMs": 484,
+        "wallMs": 6,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
-          "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "status": "LIVE",
+          "observedAt": "2026-10-01T09:45:00.000Z",
           "checkedAt": null
         }
       }
@@ -110,11 +110,11 @@
     },
     "observedAtConstant": true,
     "statusSequence": [
-      "CACHED",
-      "CACHED",
-      "CACHED",
-      "CACHED",
-      "CACHED"
+      "LIVE",
+      "LIVE",
+      "LIVE",
+      "LIVE",
+      "LIVE"
     ]
   },
   "scenarioC": {
@@ -137,27 +137,27 @@
         200
       ],
       "wallMs": [
-        532,
-        811,
-        531,
-        640,
-        1185,
-        642,
-        1302,
-        1372,
-        1152,
-        539
+        74,
+        74,
+        74,
+        75,
+        74,
+        74,
+        74,
+        75,
+        74,
+        74
       ],
       "wallP50": {
-        "value": 642,
+        "value": 74,
         "sampleSize": 10
       },
       "wallP95": {
-        "value": 1372,
+        "value": 75,
         "sampleSize": 10
       },
       "wallP99": {
-        "value": 1372,
+        "value": 75,
         "sampleSize": 10
       }
     },
@@ -177,27 +177,27 @@
         200
       ],
       "wallMs": [
-        387,
-        526,
-        459,
-        495,
-        380,
-        809,
-        392,
-        539,
-        610,
-        479
+        7,
+        11,
+        12,
+        15,
+        19,
+        21,
+        24,
+        28,
+        30,
+        33
       ],
       "wallP50": {
-        "value": 479,
+        "value": 19,
         "sampleSize": 10
       },
       "wallP95": {
-        "value": 809,
+        "value": 33,
         "sampleSize": 10
       },
       "wallP99": {
-        "value": 809,
+        "value": 33,
         "sampleSize": 10
       }
     }
@@ -205,7 +205,7 @@
   "scenarioD": {
     "name": "D-batch-production-path",
     "populationSource": "app/page.tsx allSyms (TICKER_SYMS + deterministic rotating picks + WORLD_MARKETS + TOP_CRYPTO + stockOfDay) — reconstructed from the same imports",
-    "stocksModuleSize": 944,
+    "stocksModuleSize": 916,
     "population": [
       "NIFTY50",
       "SENSEX",
@@ -222,68 +222,61 @@
       "SILVER",
       "WTI",
       "SOL",
+      "SANDUMANG",
       "SBIN",
+      "CANBK",
       "GUFICBIO",
+      "BANKBARODA",
       "ISEC",
-      "KWALITY",
-      "NESCO",
-      "FCL",
-      "ADANIGREEN",
       "DELHIVERY",
       "GMRAIRPORT",
-      "N225",
-      "VIX",
+      "NAZARA",
       "BNB",
-      "ADA",
-      "AVAX",
-      "DOT",
-      "MATIC",
-      "LINK"
+      "UNIONBANK"
     ],
     "chunking": [
-      32
+      26
     ],
     "results": [
       {
-        "symbolsRequested": 32,
-        "symbolsReturned": 32,
+        "symbolsRequested": 26,
+        "symbolsReturned": 26,
         "httpStatus": 200,
-        "wallMs": 1646,
-        "unavailableCount": 2,
+        "wallMs": 353,
+        "unavailableCount": 6,
         "sourceDistribution": {
-          "yahoo-bulk": 7,
-          "yahoo": 14,
-          "coingecko": 9,
-          "unknown": 2
+          "unknown": 6,
+          "yahoo-bulk": 8,
+          "yahoo": 12
         },
         "statusDistribution": {
-          "LIVE": 30,
-          "UNAVAILABLE": 2
+          "UNAVAILABLE": 6,
+          "LIVE": 20
         },
         "sampleEntries": [
           {
+            "symbol": "SANDUMANG",
+            "price": null,
+            "source": null,
+            "status": "UNAVAILABLE",
+            "observedAt": null,
+            "checkedAt": "2026-10-03T20:11:24.799Z"
+          },
+          {
             "symbol": "SBIN",
-            "price": 959.5,
+            "price": 954.1,
             "source": "yahoo-bulk",
             "status": "LIVE",
-            "observedAt": "2026-09-30T09:45:00.000Z",
-            "checkedAt": "2026-10-01T00:43:17.607Z"
+            "observedAt": "2026-10-01T09:45:00.000Z",
+            "checkedAt": null
           },
           {
-            "symbol": "GUFICBIO",
-            "price": 432,
+            "symbol": "CANBK",
+            "price": 118.36,
             "source": "yahoo-bulk",
             "status": "LIVE",
-            "observedAt": "2026-09-30T10:00:02.000Z",
-            "checkedAt": "2026-10-01T00:43:17.607Z"
-          },
-          {
-            "symbol": "NESCO",
-            "price": 1046.9,
-            "source": "yahoo-bulk",
-            "status": "LIVE",
-            "observedAt": "2026-09-30T09:59:46.000Z",
-            "checkedAt": "2026-10-01T00:43:17.607Z"
+            "observedAt": "2026-10-01T09:44:59.000Z",
+            "checkedAt": null
           }
         ]
       }
@@ -294,13 +287,13 @@
     "verdict": "counter evidence UNAVAILABLE (CRON_SECRET absent); observedAt equality across batches is consistent with cache replay but the serving layer (bulk cache vs T60 vs CDN) cannot be attributed without counters — NOT claimed",
     "first": {
       "httpStatus": 200,
-      "wallMs": 954
+      "wallMs": 210
     },
     "second": {
       "httpStatus": 200,
-      "wallMs": 1099
+      "wallMs": 212
     },
-    "secondMinusFirstWallMs": 145,
+    "secondMinusFirstWallMs": 2,
     "observedAtEqualAcrossBatches": true,
     "counterDelta": null
   },
@@ -316,9 +309,9 @@
     "routeExists": "verified in repo: app/api/ingest/observations/route.ts (code evidence)",
     "schedule": "vercel.json crons: /api/ingest/observations @ 45 13 * * 1-5 (code evidence)",
     "unauthenticatedProbe": {
-      "status": 401,
+      "status": 500,
       "expect": 401,
-      "pass": true
+      "pass": false
     },
     "authenticatedExecution": "not executed (CRON_SECRET absent — provide to run a live capture)"
   },
@@ -328,114 +321,28 @@
       "USD/INR": {
         "httpStatus": 200,
         "entry": {
-          "price": 95.82,
+          "price": 96.3,
           "source": "yahoo",
           "status": "LIVE",
-          "observedAt": "2026-10-01T00:43:21.286Z",
+          "observedAt": "2026-10-03T03:30:05.000Z",
           "checkedAt": null
         }
       },
       "US10Y": {
         "httpStatus": 200,
         "entry": {
-          "price": 5.26,
+          "price": 5.24,
           "source": "fred-csv",
-          "status": "LIVE",
-          "observedAt": "2026-10-01T00:43:21.949Z",
+          "status": "CACHED",
+          "observedAt": "2026-10-01",
           "checkedAt": null
         }
       }
     },
     "dbEvidence": {
-      "entitledRows": {
-        "ok": true,
-        "rows": [
-          {
-            "key": "quote:US10Y",
-            "provider_id": "fred-csv",
-            "payload": {
-              "price": 5.26,
-              "change": 0.019999999999999574
-            },
-            "observed_at": "2026-10-01 00:43:21.949+00",
-            "expires_at": "2026-10-08 00:43:21.95+00"
-          },
-          {
-            "key": "quote:USD/INR",
-            "provider_id": "exchangerate-api",
-            "payload": {
-              "price": 95.82,
-              "change": -0.15629884338856484
-            },
-            "observed_at": "2026-09-30 17:46:07.3+00",
-            "expires_at": "2026-10-01 17:46:07.3+00"
-          }
-        ],
-        "error": null
-      },
-      "distinctProvidersInCache": {
-        "ok": true,
-        "rows": [
-          {
-            "providers": [
-              "exchangerate-api",
-              "fred-csv"
-            ]
-          }
-        ],
-        "error": null
-      },
-      "nonEntitledRowCount": {
-        "ok": true,
-        "rows": [
-          {
-            "n": 0
-          }
-        ],
-        "error": null
-      },
-      "interpretation": "steps 1,2 (write occurs) + 5 (observedAt preserved) + 7 (non-entitled never persisted) proven when rows exist with matching observed_at and nonEntitledRowCount.n = 0"
+      "skipped": "SUPABASE_PAT not provided"
     },
-    "observationsCronDbEvidence": {
-      "observedPrices": {
-        "ok": true,
-        "rows": [
-          {
-            "total": 5,
-            "first_date": "2026-09-30",
-            "last_date": "2026-09-30",
-            "last_observed_at": "2026-09-30 18:13:15.338+00",
-            "sources": [
-              "fred-csv"
-            ]
-          }
-        ],
-        "error": null
-      },
-      "ingestionLog": {
-        "ok": true,
-        "rows": [
-          {
-            "job_name": "reference_observations",
-            "status": "success",
-            "records_out": 5,
-            "source": "PERSISTABLE_SOURCES",
-            "started_at": "2026-09-30 18:13:15.104+00"
-          }
-        ],
-        "error": null
-      },
-      "nonEntitledObserved": {
-        "ok": true,
-        "rows": [
-          {
-            "n": 0
-          }
-        ],
-        "error": null
-      },
-      "interpretation": "T61.1: production execution evidenced when ingestion_log shows reference_observations runs and observed_prices rows carry only allow-listed sources; row counts/timestamps are the raw evidence"
-    }
+    "blocked": "BLOCKED: persistent cache cannot be verified (DB evidence unavailable in this run)"
   },
   "trafficSplit": {
     "method": "per-process endpoint counters (this instance) from the admin measurement ledger",

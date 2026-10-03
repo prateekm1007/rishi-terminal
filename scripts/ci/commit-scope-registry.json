@@ -238,6 +238,26 @@
     "X2": [
       "test/smoke/shell.spec.ts",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "X3": [
+      "lib/quoteCache.ts",
+      "lib/dashboardSnapshot.ts",
+      "app/page.tsx",
+      "app/stock/[symbol]/page.tsx",
+      "components/stock/StockPageClient.tsx",
+      "components/stock/LivePriceWidget.tsx",
+      "components/dashboard/DashboardClient.tsx",
+      "messages/en.json",
+      "messages/hi.json",
+      "messages/bn.json",
+      "messages/mr.json",
+      "messages/ta.json",
+      "messages/gu.json",
+      "messages/te.json",
+      "test/x3.firstBytePrices.test.ts",
+      "scripts/phase6Battery.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "artifacts/phase6/T59_PRODUCTION_MEASUREMENT.json"
     ]
   }
 }

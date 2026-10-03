@@ -167,7 +167,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
   // replaces: a fetch is not a freshness claim.
   const tickerEntries = Object.values(prices);
   const marketState = aggregatePresentationState(tickerEntries);
-  const marketLabel = tickerEntries.length > 0 ? aggregateMarketLabel(tickerEntries) : null;
+  // X3: the badge always states the honest aggregate — when the server
+  // could not serve any quote the bar says UNAVAILABLE MARKET DATA, never
+  // "Connecting..." (a placeholder that describes neither the data nor
+  // the transport).
+  const marketLabel = aggregateMarketLabel(tickerEntries);
   // U4: no pick when rankings are off — the empty symbol skips the fetch.
   const { fundamentals: sodFund } = useFundamentals(stockOfDay?.symbol ?? "");
   const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
@@ -246,22 +250,17 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
             {/* Round 9 (directive 14): the badge state is DERIVED from the
                 entries' provenance statuses (aggregateMarketLabel —
                 conservative: the stalest usable tile sets the word, and a
-                delayed transport downgrades LIVE to DELAYED). It renders only
-                once quotes exist; before that the bar says what is true. */}
-            {marketLabel ? (
-              <>
-                <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:statusColor(marketState),boxShadow:`0 0 8px ${marketState === "live" ? "rgba(34,197,94,0.7)" : "rgba(100,116,139,0.5)"}` }} className={marketState === "live" ? "animate-pulse" : undefined} />
-                <span style={{ color:statusColor(marketState), fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{marketLabel}</span>
-              </>
-            ) : (
-              <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.connecting")}</span>
-            )}
+                delayed transport downgrades LIVE to DELAYED). X3: with no
+                usable entries at all it renders the honest UNAVAILABLE
+                aggregate — never a "Connecting..." placeholder. */}
+            <div style={{ width:"7px",height:"7px",borderRadius:"50%",background:statusColor(marketState),boxShadow:`0 0 8px ${marketState === "live" ? "rgba(34,197,94,0.7)" : "rgba(100,116,139,0.5)"}` }} className={marketState === "live" ? "animate-pulse" : undefined} />
+            <span style={{ color:statusColor(marketState), fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{marketLabel}</span>
           </div>
           <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
             {/* Round 9: the age keys off the SERVER observation time; no
                 disclosed observation → an honest dash, never a fabricated
-                "updated Ns" off the fetch clock. */}
-            {observedAt ? (t("dashboard.updatedPrefix") + timeAgo) : (marketLabel ? "—" : t("dashboard.connecting"))}
+                "updated Ns" off the fetch clock, never a placeholder. */}
+            {observedAt ? (t("dashboard.updatedPrefix") + timeAgo) : "—"}
           </span>
         </div>
       </div>
@@ -293,7 +292,16 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           </div>
 
           <p style={{ fontSize:"16px", color:C.textSec, maxWidth:"580px", lineHeight:1.8, marginBottom:"28px" }}>
-            {t("dashboard.heroWisdomPrefix")}<span style={{ color:C.gold }}>{t("dashboard.heroWisdomHighlight")}</span>{t("dashboard.heroWisdomSuffix")}
+            {/* X3: the hero claims live prices ONLY when a quote actually
+                rendered — the server snapshot has an entry on screen (or
+                the client hook has since filled one). An empty board renders
+                the sentence without the claim; it never advertises data the
+                visitor cannot see. */}
+            {t("dashboard.heroWisdomPrefix")}<span style={{ color:C.gold }}>{t("dashboard.heroWisdomHighlight")}</span>{
+              Object.values(prices).some(p => typeof p?.price === "number" && p.price > 0)
+                ? t("dashboard.heroWisdomSuffixLive")
+                : t("dashboard.heroWisdomSuffix")
+            }
           </p>
 
           <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>

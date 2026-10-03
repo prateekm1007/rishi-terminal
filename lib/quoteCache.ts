@@ -228,6 +228,46 @@ export interface QuoteCacheBatchDeps {
   nowMs?: () => number;
 }
 
+// ── X3 (founder round 11): the READ-ONLY peek surface ──────────────────────
+// The SSR render path (homepage, stock pages) must show the last cached
+// quote on EVERY request without depending on first-visitor ISR — but it
+// must also stay a CHEAP READ: no refresh claim, no upstream fetch, no
+// write. peekCachedQuote(s) return whatever real rows exist right now
+// (fresh or stale — the caller labels provenance honestly) and omit
+// everything else. Infrastructure failure degrades to an empty read (the
+// render path then shows the honest unavailable state), never a throw into
+// rendering and never a fabricated number.
+
+/** Pure read of real cached rows for the given symbols. Never claims a
+ *  refresh, never fetches upstream, never writes. */
+export async function peekCachedQuotes(symbols: string[]): Promise<Record<string, CachedQuote>> {
+  if (symbols.length === 0) return {};
+  try {
+    const rows = await readRows(symbols);
+    const out: Record<string, CachedQuote> = {};
+    for (const [symbol, q] of Object.entries(rows)) {
+      if (isRealQuote(q)) out[symbol] = q;
+    }
+    return out;
+  } catch (e) {
+    console.error("[quoteCache] peek read failed:", e instanceof Error ? e.message : e);
+    return {};
+  }
+}
+
+/** Pure read of ONE symbol's real cached row (null when absent or a
+ *  price-0 claim placeholder). Same no-claim/no-fetch contract as the
+ *  batch peek. */
+export async function peekCachedQuote(symbol: string): Promise<CachedQuote | null> {
+  try {
+    const row = await readRow(symbol);
+    return isRealQuote(row) ? row : null;
+  } catch (e) {
+    console.error("[quoteCache] peek read failed:", e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
 export interface QuoteCacheBatchResult {
   /** Per-symbol result for EVERY requested symbol (never silently absent). */
   quotes: Record<string, QuoteCacheResult>;

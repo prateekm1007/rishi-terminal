@@ -13,11 +13,11 @@ import {
 } from '../../lib/pricePresentation';
 
 interface LiveEntry {
-  price?: number;
-  change?: number;
-  changePercent24h?: number;
-  source?: string;
-  status?: string;
+  price?: number | null;
+  change?: number | null;
+  changePercent24h?: number | null;
+  source?: string | null;
+  status?: string | null;
   /** The server's upstream observation time (ISO) — null when the
    *  upstream disclosed none. Round 9: this, never `new Date()`, is the
    *  "Updated …" clock. */
@@ -27,6 +27,12 @@ interface LiveEntry {
 
 interface LivePriceWidgetProps {
   stock: Stock;
+  /** X3 (founder round 11): the server's read-only peek of the shared
+   *  quote cache — boots the tile with a real observation so the FIRST
+   *  BYTE carries a price and an honest label (never a fetch spinner
+   *  placeholder). The mount revalidation below still runs through the
+   *  normal API path. */
+  initialEntry?: LiveEntry | null;
 }
 
 /**
@@ -37,18 +43,34 @@ interface LivePriceWidgetProps {
  * labelled DELAYED). The previous behavior — seed price on screen with a
  * pulsing "LIVE" badge even when the API returned UNAVAILABLE — was a
  * provenance violation and is removed.
+ *
+ * X3: the tile no longer BOOTS as a fetch placeholder. With a server
+ * entry it starts settled on that observation (label CACHED/DELAYED per
+ * lib/pricePresentation); without one it starts on the honest
+ * unavailable state — the fetch flash is gone from the first byte.
  */
-export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
-  const [displayPrice, setDisplayPrice]       = useState<number | null>(null);
-  const [changePercent, setChangePercent]     = useState<number | null>(null);
-  const [changeAbs, setChangeAbs]             = useState<number | null>(null);
-  const [state, setState]                     = useState<PresentationState>('loading');
-  const [source, setSource]                   = useState<string | undefined>(undefined);
-  const [loading, setLoading]                 = useState(true);
-  const [lastUpdated, setLastUpdated]         = useState<Date | null>(null);
+export function LivePriceWidget({ stock, initialEntry }: LivePriceWidgetProps) {
+  const [displayPrice, setDisplayPrice]       = useState<number | null>(initialEntry && typeof initialEntry.price === 'number' ? initialEntry.price : null);
+  const [changePercent, setChangePercent]     = useState<number | null>(
+    initialEntry
+      ? (typeof initialEntry.changePercent24h === 'number' ? initialEntry.changePercent24h
+        : typeof initialEntry.change === 'number' ? initialEntry.change
+        : null)
+      : null,
+  );
+  const [changeAbs, setChangeAbs]             = useState<number | null>(
+    displayPrice !== null && changePercent !== null ? absChangeFromPercent(displayPrice, changePercent) : null,
+  );
+  const [state, setState]                     = useState<PresentationState>(presentationState(initialEntry));
+  const [source, setSource]                   = useState<string | undefined>(initialEntry?.source ?? undefined);
+  // X3: there is no fetch-spinner state anymore — the tile boots settled
+  // on the server's entry (or on the honest unavailable state when the
+  // cache could not serve one); mount revalidation updates in place,
+  // silently.
+  const [lastUpdated, setLastUpdated]         = useState<Date | null>(initialEntry ? observationDateFromEntry(initialEntry) : null);
   const [flashGreen, setFlashGreen]           = useState(false);
   const [flashRed, setFlashRed]               = useState(false);
-  const prevPriceRef                          = useRef<number | null>(null);
+  const prevPriceRef                          = useRef<number | null>(displayPrice);
 
   const fetchPrice = async () => {
     try {
@@ -66,7 +88,7 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
       }
 
       const next = presentationState(entry);
-      setSource(entry.source);
+      setSource(entry.source ?? undefined);
       setState(next);
 
       // Only a usable observation updates the displayed number. UNAVAILABLE
@@ -108,8 +130,6 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
     } catch (err) {
       console.error('[LivePriceWidget] fetch error:', err);
       setState('unavailable');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -151,32 +171,30 @@ export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
         <span style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2 }}>
           PRICE
         </span>
-        {loading ? (
-          <span style={{ fontSize: 9, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
-            ⟳ FETCHING
-          </span>
-        ) : (
-          <span style={{
-            fontSize:   9,
-            fontFamily: 'monospace',
-            color:      statusColor(state) === '#64748B' ? 'var(--text-muted)' : statusColor(state),
-            display:    'flex',
-            alignItems: 'center',
-            gap:        4,
-          }}>
-            {state === 'live' && (
-              <span style={{
-                width:        6,
-                height:       6,
-                borderRadius: '50%',
-                background:   statusColor(state),
-                display:      'inline-block',
-                animation:    'pulse 2s infinite',
-              }} />
-            )}
-            {statusLabel(state, source)}
-          </span>
-        )}
+        {/* X3: the honest label always — a settled observation renders its
+            provenance (LIVE/CACHED/DELAYED · source); a tile the server
+            could not fill renders UNAVAILABLE. The first byte never shows
+            a fetch placeholder. */}
+        <span style={{
+          fontSize:   9,
+          fontFamily: 'monospace',
+          color:      statusColor(state) === '#64748B' ? 'var(--text-muted)' : statusColor(state),
+          display:    'flex',
+          alignItems: 'center',
+          gap:        4,
+        }}>
+          {state === 'live' && (
+            <span style={{
+              width:        6,
+              height:       6,
+              borderRadius: '50%',
+              background:   statusColor(state),
+              display:      'inline-block',
+              animation:    'pulse 2s infinite',
+            }} />
+          )}
+          {statusLabel(state, source)}
+        </span>
       </div>
 
       {/* Main price — "—" until a real server observation exists (T57) */}

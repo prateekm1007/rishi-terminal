@@ -23,6 +23,7 @@ import {
   isEquitySymbol,
   serveQuote,
 } from "@/lib/quotePath";
+import { peekCachedQuotes, type CachedQuote } from "@/lib/quoteCache";
 import { fetchLivePrice } from "@/lib/livePrice";
 
 /** The wire shape hooks/useLivePrices already normalizes into PriceData. */
@@ -83,6 +84,52 @@ export function toPriceData(point: PriceDataLike | null | undefined): InitialPri
 /** True while `next build` prerenders — no upstream network in the build. */
 export function isBuildPhase(env: Record<string, string | undefined> = process.env): boolean {
   return env.NEXT_PHASE === "phase-production-build";
+}
+
+// ── X3 (founder round 11): the render path reads the shared cache ONLY ────
+// The per-request render must stay a CHEAP READ (direction X3: "render the
+// last cached quote on every request from quote_cache (a cheap read)") — so
+// the render path peeks the shared cache and NEVER claims a refresh or
+// fetches an upstream. A peeked row IS a cache serve, so its wire status is
+// honestly CACHED (the same label serveQuote gives fresh rows); the row
+// keeps its own upstream observation time; a missing/degenerate row is
+// OMITTED — the client hook's mount revalidation fills or the UI renders
+// the honest unavailable state. Never a zero, never a placeholder (Rules
+// 3/16).
+
+/** PURE mapper: a peeked cache row (or absence) → the client PriceData
+ *  contract. A missing/absent/degenerate row maps to null — the caller
+ *  omits the symbol (Rule 16: never a zero, never a placeholder). */
+export function cachedQuoteToEntry(q: CachedQuote | null | undefined): InitialPriceEntry | null {
+  if (!q || !Number.isFinite(q.price) || q.price <= 0) return null;
+  return {
+    price: q.price,
+    change: q.change ?? null,
+    changePercent24h: q.change ?? null,
+    volume24h: q.volume24h ?? null,
+    lastUpdated: q.observedAt ?? null,
+    status: "CACHED",
+    source: q.source ?? null,
+  };
+}
+
+/**
+ * Read-only snapshot for the per-request render path: whatever the shared
+ * cache holds right now for these symbols, mapped for the client hook;
+ * nothing else. No refresh claims, no upstream fetches, no writes — an
+ * upstream-cold symbol is simply omitted (honest gap the UI labels).
+ */
+export async function cachedPriceSnapshot(
+  symbols: string[],
+): Promise<Record<string, InitialPriceEntry>> {
+  if (symbols.length === 0) return {};
+  const rows = await peekCachedQuotes(symbols);
+  const snapshot: Record<string, InitialPriceEntry> = {};
+  for (const [symbol, q] of Object.entries(rows)) {
+    const mapped = cachedQuoteToEntry(q);
+    if (mapped) snapshot[symbol] = mapped;
+  }
+  return snapshot;
 }
 
 /**

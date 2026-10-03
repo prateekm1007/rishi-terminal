@@ -5,6 +5,7 @@ import { Stock, RishiScore } from '../../lib/types';
 import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
+import type { InitialPriceEntry } from '../../lib/dashboardSnapshot'; // X3: server peek shape
 import { ConsensusHero }          from './ConsensusHero';
 import { RishiGrid }              from './RishiGrid';
 import { BullBearBar }            from './BullBearBar';
@@ -35,9 +36,15 @@ interface Props {
   qvpsDual: { long: import('../../lib/scorers/types').RishiScoreResult; short: import('../../lib/scorers/types').RishiScoreResult } | null;
   /** N1: knowledge graph for the full verdict set. */
   eliteGraph: EliteKnowledgeGraph;
+  /** X3 (founder round 11): the server's read-only peek of the shared
+   *  quote cache for this symbol — the price tile's first byte shows a
+   *  real observation (or the honest unavailable state) instead of a
+   *  fetch placeholder. Shape: lib/dashboardSnapshot.InitialPriceEntry
+   *  (the same wire contract the /api/prices entries carry). */
+  initialPrice?: InitialPriceEntry | null;
 }
 
-export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph }: Props) {
+export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialPrice }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
@@ -222,7 +229,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 </span>
               </div>
             </div>
-            <LivePriceWidget stock={stock} />
+            <LivePriceWidget stock={stock} initialEntry={initialPrice} />
           </div>
         </div>
       </div>

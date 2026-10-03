@@ -35,6 +35,18 @@ import type { FullFundamentals } from '@/lib/liveFundamentals';
 import { fetchFullFundamentals } from '@/lib/liveFundamentals';
 import { fetchLivePrice } from '@/lib/livePrice';
 import type { PricePoint } from '@/lib/livePrice';
+import {
+  COINGECKO_IDS,
+  isBondSymbol,
+  YAHOO_COMMODITY_SYMBOLS,
+  YAHOO_INDEX_SYMBOLS,
+  YAHOO_SPECIAL,
+} from '@/lib/livePrice';
+import { COMMODITIES } from '@/data/markets';
+import { CRYPTO_ASSETS } from '@/data/crypto';
+import { INDIAN_INDEXES } from '@/data/indexes';
+import { FOREX_PAIRS } from '@/data/forex';
+import { isValidSymbolInput, PRICE_REGISTRY_TOKENS, SLASHED } from '@/lib/registry/validateInput';
 import type { AiEvidenceFact, AiEvidenceItem, AiSourceState } from './schemas';
 
 /**
@@ -207,6 +219,44 @@ export function buildProfileItem(resolved: ResolvedStockMetrics): AiEvidenceItem
   };
 }
 
+/** R11 (directive 9, Rule 3): the price fact's unit must describe what the
+ * number IS. The field table below hardcodes price -> "inr" for every
+ * instrument, which mislabels non-equity observations: a WTI or BTC quote
+ * is USD, an MCX contract is rupee-quoted, a bond observation is a YIELD
+ * in percent, and an index level is points. The derivation reads the SAME
+ * registry data files and price-layer tables that serve the number (one
+ * source of truth, Rule 14 — no hand-enumerated symbol lists):
+ *   - FX pairs: the pair's own quoteCurrency field;
+ *   - bond yield symbols: isBondSymbol (the price layer's own tables —
+ *     those numbers are percentages, never currencies);
+ *   - commodities: the data file's unit field discriminates $-quoted
+ *     global contracts from rupee-quoted MCX contracts; Yahoo futures
+ *     symbols are the $-quoted global set;
+ *   - crypto: USD-quoted (CoinGecko + the data file);
+ *   - index levels: points (Yahoo '^' tickers are index quotes);
+ *   - equities and everything unclassified: the platform default (inr).
+ */
+function priceFactUnit(symbol: string): string {
+  const sym = symbol.trim().toUpperCase();
+  const fx = FOREX_PAIRS.find(
+    (f) => (f.pair ?? f.symbol).toUpperCase() === sym || f.symbol.toUpperCase() === sym,
+  );
+  if (fx) return fx.quoteCurrency.toLowerCase();
+  if (isBondSymbol(sym)) return "percent";
+  const commodity = COMMODITIES.find((c) => c.symbol.toUpperCase() === sym);
+  if (commodity) return commodity.unit.includes("$") ? "usd" : "inr";
+  if (YAHOO_COMMODITY_SYMBOLS[sym]) return "usd";
+  if (CRYPTO_ASSETS.some((c) => c.symbol.toUpperCase() === sym) || COINGECKO_IDS[sym]) return "usd";
+  if (
+    INDIAN_INDEXES.some((i) => i.symbol === sym) ||
+    YAHOO_INDEX_SYMBOLS[sym] ||
+    (YAHOO_SPECIAL[sym] ?? "").startsWith("^")
+  ) {
+    return "points";
+  }
+  return FACT_UNIT_BY_FIELD.price;
+}
+
 /**
  * Price observation with provenance (single canonical path; the observation
  * time is the upstream's own — null stays null). A null/non-positive price
@@ -225,7 +275,7 @@ export function buildPriceItem(symbol: string, pricePoint: PricePoint | null): A
       status === "STATIC" ? "seed" : status === "DERIVED" ? "derived" : "live";
     const observedAt = priceSource === "live" ? pricePoint.observedAt ?? null : null;
     const priceFacts: AiEvidenceFact[] = [
-      { field: "price", value: pricePoint.price, unit: FACT_UNIT_BY_FIELD.price, source: priceSource, observedAt },
+      { field: "price", value: pricePoint.price, unit: priceFactUnit(symbol), source: priceSource, observedAt },
     ];
     // Commit O (Rule 16): change === null means the upstream disclosed no
     // change — the item then carries NO change fact and its text says so.
@@ -446,6 +496,21 @@ export function buildPeerItems(symbol: string, peers: readonly AiPeerRow[]): AiE
  * one, a fresh state is created — identical behavior for every other
  * caller, and the package itself remains internally consistent.
  */
+/** R11 (directive 9): non-equity registry instruments (WTI, USD/INR, BTC,
+ * IN10YS…) carry this explicit context item INSTEAD of equity
+ * fundamentals/score/peers — the honest "not applicable" state. It names
+ * what the instrument is and what the package does (and does not) carry,
+ * so the model never invents equity metrics for a commodity or a pair. */
+export function buildNonEquityInstrumentItem(symbol: string): AiEvidenceItem {
+  return {
+    id: `instrument:${symbol}:non-equity`,
+    text:
+      `${symbol} is a canonical price-registry instrument (not an equity security-master entry): ` +
+      `no fundamentals, Rishi score, or peer set exists for it. Its observed price, when available, ` +
+      `is the price item in this package — do not state or imply any equity metric for it.`,
+  };
+}
+
 export async function buildAiEvidencePackage(
   symbol: string,
   deps: EvidenceDeps = {},
@@ -455,6 +520,22 @@ export async function buildAiEvidencePackage(
   if (!sym) return null;
 
   const shared = state ?? createCanonicalStockState(deps);
+
+  // R11 (directive 9) fast path: an EXPLICIT non-equity registry token
+  // (WTI, USDINR, USD/INR, BTC, IN10YS…) needs no equity resolution and
+  // no fundamentals fetch at all — the price observation is the package's
+  // datum. Membership in PRICE_REGISTRY_TOKENS/SLASHED is registry truth
+  // (stocks and legacy aliases are absent by construction), so this can
+  // never misclassify a stock or an alias.
+  if (PRICE_REGISTRY_TOKENS.has(sym) || SLASHED.has(sym)) {
+    const instrumentPrice = await shared.price(sym).catch(() => null);
+    return {
+      symbol: sym,
+      items: [buildPriceItem(sym, instrumentPrice), buildNonEquityInstrumentItem(sym)],
+      hasLiveFundamentals: false,
+      engineVersion: SCORE_ENGINE_VERSION,
+    };
+  }
 
   // Live surfaces, in parallel, each individually non-fatal: a failed fetch
   // degrades to seed-labelled provenance, never to a fabricated value.
@@ -468,7 +549,28 @@ export async function buildAiEvidencePackage(
   ]);
 
   const resolved = await shared.resolve(sym);
-  if (!resolved) return null;
+  if (!resolved) {
+    // R11 (directive 9): a canonical NON-EQUITY price instrument
+    // previously collapsed to null here, so the chat route's symbol
+    // context silently behaved as "no symbol" even though the price
+    // layer serves the instrument (and getPrices returned it inside the
+    // same loop). Build the honest instrument package instead: the
+    // canonical price observation — built by the SAME builder the
+    // getPrices tool uses, so ids and facts are byte-identical — plus an
+    // explicit non-equity note. Fundamentals/score/peers items are
+    // absent because they require an equity security-master record; null
+    // is a real value (Constitution art. 16), never a fabricated metric.
+    // A symbol outside the canonical registry entirely still returns
+    // null (the caller's own gate decides what reaches this function).
+    if (!isValidSymbolInput(sym)) return null;
+    const instrumentPrice = await shared.price(sym).catch(() => null);
+    return {
+      symbol: sym,
+      items: [buildPriceItem(sym, instrumentPrice), buildNonEquityInstrumentItem(sym)],
+      hasLiveFundamentals: false,
+      engineVersion: SCORE_ENGINE_VERSION,
+    };
+  }
 
   const vendorName = live?.source && live.source !== "static" ? live.source : undefined;
 
@@ -664,6 +766,12 @@ const UNIT_ALIASES: Record<string, string> = {
   rupee: "inr",
   rs: "inr",
   "₹": "inr",
+  // R11 (directive 9): commodity and crypto observations are USD-quoted —
+  // aliases so a model asserting "$"/"dollars" grounds against the fact.
+  usd: "usd",
+  $: "usd",
+  dollar: "usd",
+  dollars: "usd",
   inr_crore: "inr_crore",
   crore: "inr_crore",
   cr: "inr_crore",

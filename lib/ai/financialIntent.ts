@@ -67,15 +67,22 @@ const SLASHED_PAIR_RE: RegExp | null =
 // showed were dodging the backstop: "What is WTI trading at?", "USD/INR
 // exchange rate?", "10Y yield level?". Each names a datum the canonical
 // price layer serves; the Signal-1 conjunction still gates every trigger.
-// R10-03 adds standalone "rate(s)": the Round-10 baseline battery measured
-// "What is the current USD/INR rate?" dodging the backstop entirely (Signal
-// 2 failed on the missing term before the slashed-pair branch could run)
-// while /api/prices served live USD/INR on the same runtime. "rate" names a
-// datum the price layer serves (FX rate, yield, commodity quote); the
-// conjunction still requires a registry symbol, so ordinary speech
-// ("rate my discipline") never triggers.
+// R11 (directive 8) REMOVES the R10-03 standalone "rate(s)" term: it
+// matched ordinary prose on stock symbols ("rate my TCS research") and
+// shadowed the fundamentals seed for metric compounds ("growth rate").
+// The rate/yield datum is still reachable through the instrument-anchored
+// branch below: a NON-EQUITY price-registry instrument (FX pair, commodity,
+// crypto, index, bond) plus the bare word IS a price ask ("USD/INR rate",
+// "gold rate", "IN10YS yield") — the registry membership is the
+// discriminator, so stock-symbol prose can never reach the price backstop
+// through the bare word.
 const DATA_TERM_RE =
-  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|trading|levels?|yields?|exchange rates?)\b/i;
+  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|trading|levels?|yields?|exchange rates?)\b/i;
+
+/** R11 (directive 8): the bare rate/yield word. NOT a data term on its
+ * own — it only qualifies when anchored to a non-equity price-registry
+ * instrument (see detectFinancialDataIntent). */
+const RATE_OR_YIELD_WORD_RE = /\b(rates?|yields?)\b/i;
 
 export interface FinancialDataIntent {
   /** True when the request clearly asks for symbol-specific financial data. */
@@ -96,17 +103,11 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   if (text.length === 0) return { financial: false };
 
   const termMatch = DATA_TERM_RE.exec(text);
-  if (!termMatch) return { financial: false };
-
-  // R9-9: slashed FX pairs first — tokenization would split "USD/INR"
-  // into USD + INR and lose the pair. The slashed spelling is exactly
-  // what the price layer consumes, so it is the symbol we report.
-  if (SLASHED_PAIR_RE) {
-    const pair = SLASHED_PAIR_RE.exec(text);
-    if (pair) {
-      return { financial: true, symbol: pair[0].toUpperCase(), matchedTerm: termMatch[0] };
-    }
-  }
+  // R11 (directive 8): the bare rate/yield word is tracked separately —
+  // it is not a standalone data term ("rate my TCS research" is prose;
+  // "growth rate" is a fundamentals compound already covered above). It
+  // names a datum only when anchored to a non-equity price instrument.
+  const rateWord = RATE_OR_YIELD_WORD_RE.exec(text);
 
   // Standalone tokens: split on everything that is not part of a symbol
   // (letters, digits, '&' for M&M-style symbols).
@@ -115,9 +116,40 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
     .split(/[^A-Z0-9&]+/)
     .filter((t) => t.length >= 2);
 
-  for (const token of tokens) {
-    if (SYMBOL_TOKENS.has(token)) {
-      return { financial: true, symbol: token, matchedTerm: termMatch[0] };
+  // R9-9: slashed FX pairs first — tokenization would split "USD/INR"
+  // into USD + INR and lose the pair. The slashed spelling is exactly
+  // what the price layer consumes, so it is the symbol we report.
+  // R11: a pair plus the bare rate/yield word is a price ask ("What is
+  // the current USD/INR rate?") — the pair itself anchors the instrument,
+  // so no generic data term is required for it.
+  if (SLASHED_PAIR_RE) {
+    const pair = SLASHED_PAIR_RE.exec(text);
+    if (pair && (termMatch || rateWord)) {
+      return { financial: true, symbol: pair[0].toUpperCase(), matchedTerm: (termMatch ?? rateWord)![0] };
+    }
+  }
+
+  if (termMatch) {
+    for (const token of tokens) {
+      if (SYMBOL_TOKENS.has(token)) {
+        return { financial: true, symbol: token, matchedTerm: termMatch[0] };
+      }
+    }
+    return { financial: false };
+  }
+
+  // R11 (directive 8): no generic data term — the only remaining
+  // qualifier is the rate/yield word anchored to a NON-EQUITY
+  // price-registry instrument. For FX, commodities, crypto, indexes and
+  // bonds the word names the observed price datum ("USDINR rate", "gold
+  // rate", "IN10YS yield"); PRICE_REGISTRY_TOKENS deliberately excludes
+  // the stock master, so stock-symbol prose ("rate my TCS research") can
+  // never qualify through this branch.
+  if (rateWord) {
+    for (const token of tokens) {
+      if (PRICE_REGISTRY_TOKENS.has(token)) {
+        return { financial: true, symbol: token, matchedTerm: rateWord[0] };
+      }
     }
   }
   return { financial: false };
@@ -137,9 +169,13 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
  * advice question (Rule 4: nothing fabricated; advice stays a discussion).
  */
 const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinancials" | "getScore" | "getPeers" }> = [
-  // R10-03: "rate(s)" seeds getPrices — a rate ask names a datum the
-  // canonical price layer observes and serves (see DATA_TERM_RE note).
-  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote|rates?)\b/i, tool: "getPrices" },
+  // R11 (directive 8): the standalone "rate(s)" entry is GONE from this
+  // map — it seeded getPrices for fundamentals compounds ("growth rate")
+  // and verb usage ("rate my research") on stock symbols. Rate/yield
+  // asks seed getPrices ONLY through the instrument-anchored branch in
+  // intentSeedTool below (non-equity registry instruments and slashed
+  // pairs, where the rate IS the observed price datum).
+  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote)\b/i, tool: "getPrices" },
   {
     re: /\b(fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|revenues?|profits?|earnings|eps|dividends?|book value|margins?|growth rates?)\b/i,
     tool: "getFinancials",
@@ -157,6 +193,19 @@ const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinanci
 export function intentSeedTool(message: string): { tool: string; args: { symbol: string } } | null {
   const intent = detectFinancialDataIntent(message);
   if (!intent.financial || !intent.symbol) return null;
+  // R11 (directive 8): a rate/yield ask anchored to a NON-EQUITY price
+  // instrument seeds getPrices — for FX, commodities, crypto, indexes and
+  // bonds the rate IS the observed price datum ("USD/INR rate", "gold
+  // rate", "IN10YS yield"). Slashed pairs are recognized by shape (the
+  // token set stores the unslashed spelling). Stock symbols never reach
+  // this branch: the detector already rejected bare-rate prose there, so
+  // "growth rate" falls through to the fundamentals seed below.
+  if (
+    RATE_OR_YIELD_WORD_RE.test(message) &&
+    (intent.symbol.includes('/') || PRICE_REGISTRY_TOKENS.has(intent.symbol))
+  ) {
+    return { tool: 'getPrices', args: { symbol: intent.symbol } };
+  }
   for (const { re, tool } of SEED_TERM_RES) {
     if (re.test(message)) return { tool, args: { symbol: intent.symbol } };
   }

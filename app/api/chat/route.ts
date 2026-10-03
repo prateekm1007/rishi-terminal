@@ -4,6 +4,7 @@ import { anonQuotaId } from '@/lib/auth/anonIdentity';
 import { resolvePersonaId } from '@/lib/chat/personas';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { STOCKS } from '@/data/stocks';
+import { normalizeSymbolInput } from '@/lib/registry/validateInput';
 import { checkRateLimit } from '@/lib/rateLimit';
 // Phase 5 T49–T52: application code calls the AI abstraction, never a
 // provider SDK/URL directly. Provenance rides on every response (T50).
@@ -26,7 +27,14 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  *   (Commit M3, founder decision 2026-10-02 — every feature free): an
  *   unknown persona id is rejected 400; every canonical persona is
  *   available to every caller. There is no tier gate and no sign-in gate.
- * - symbol is validated against the stock seed registry before use.
+ * - symbol is validated and canonicalised through the ONE canonical
+ *   registry gate (lib/registry/validateInput — R11, directive 9): the
+ *   same validator every API route and the AI tool layer use. Until this
+ *   fix the route kept a second, stock-master-only boundary here, so
+ *   WTI/USDINR/BTC were rejected by the outer chat contract while the
+ *   getPrices tool served them (Rule 14 duplicate-registry defect).
+ *   Non-equity instruments receive the canonical price observation plus
+ *   an explicit non-equity note from the evidence assembler.
  * - Limits: message <= 2000 chars; history <= 20 turns and <= 8000 chars
  *   total; roles restricted to user|assistant.
  * - Quotas: per-IDENTITY daily quota (Supabase chat_usage — account id,
@@ -199,21 +207,34 @@ export async function POST(req: NextRequest) {
     if (typeof body.symbol !== 'string') {
       return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
     }
-    const candidate = body.symbol.trim().toUpperCase();
-    if (!/^[A-Z0-9&_-]{1,25}$/.test(candidate)) {
+    const candidate = body.symbol.trim();
+    // Fast-fail format gate (malformed input must never consume quota):
+    // registry-legal spellings are alphanumerics plus & - _ / = (slashed
+    // FX pairs, M&M-style tickers, the =X yahoo suffix) up to 20 chars.
+    if (!/^[A-Za-z0-9&_/=-]{1,20}$/.test(candidate)) {
       return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
     }
-    if (!STOCKS[candidate]) {
+    // R11 (directive 9): the ONE canonical registry gate (Rule 14) —
+    // validates AND canonicalises (USDINR -> USD/INR, legacy aliases ->
+    // NSE symbols) exactly like the AI tool layer, so the outer contract
+    // accepts every instrument getPrices serves and rejects the same
+    // unknowns it rejects. No second symbol boundary.
+    const resolved = normalizeSymbolInput(candidate);
+    if (!resolved) {
       return NextResponse.json({ error: 'Unknown symbol' }, { status: 400 });
     }
-    symbol = candidate;
+    symbol = resolved;
   }
 
-  // Prompt selection from the canonical registry: the concise stock-page
-  // variant when a symbol is in scope, the full persona prompt otherwise.
-  // (The old code keyed prompts by the RAW input string, so 'Buffett' and
-  // 'buffett' reached two different prompts for the same persona.)
-  const systemPrompt = symbol !== null && persona.stockPrompt ? persona.stockPrompt : persona.systemPrompt;
+  // Prompt selection: the concise stock-page variant is EQUITY-analysis
+  // wording ("analyzing a stock") and is therefore used for stock symbols
+  // only — a documented stock-only decision (directive 10 audit), not a
+  // second symbol registry: non-equity instruments (WTI, USD/INR, BTC…)
+  // get the full persona prompt. (The old code keyed prompts by the RAW
+  // input string, so 'Buffett' and 'buffett' reached two different
+  // prompts for the same persona.)
+  const symbolIsStock = symbol !== null && Object.prototype.hasOwnProperty.call(STOCKS, symbol);
+  const systemPrompt = symbolIsStock && persona.stockPrompt ? persona.stockPrompt : persona.systemPrompt;
 
   const rawHistory = Array.isArray(body.history) ? body.history : [];
   if (rawHistory.length > MAX_HISTORY_TURNS) {

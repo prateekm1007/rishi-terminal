@@ -44,12 +44,16 @@ It is protection and abuse control, never a product level:
   truncated to its /64 prefix — one prefix, one quota). The digest is
   PSEUDONYMOUS, not anonymous: it is derived from the client IP and can
   be re-derived by the platform. The same atomic counter,
-  refund-on-failure and fail-cailed semantics apply to both (R12), plus
+  refund-on-failure and fail-closed semantics apply to both (R12), plus
   GLOBAL daily request and token caps and a `CHAT_DISABLED` kill switch
   that bound total spend regardless of identity count (W3). The token
-  cap is a hard bound: each request reserves a mechanically derived
-  single-request ceiling before the provider call and settles to the
-  reported usage after; the IST day boundary is computed once, in the
+  cap is reservation-bounded at admission: each request reserves a
+  mechanically derived single-request ceiling before the provider call
+  (concurrency can never admit past the cap) and settles to the
+  reported usage afterward — settlement is a ledger, so the settled
+  total can pass the cap only by in-flight overage over the enforced
+  serialized-input bound (W3 closure; hard-cap semantics audit,
+  round 12). The IST day boundary is computed once, in the
   database RPCs (W3 closure). `CHAT_DISABLED` contract: unset, "", or
   0/false/no/off (case-insensitive) leaves chat enabled; every other
   non-empty value disables it — a typo fails toward OFF.

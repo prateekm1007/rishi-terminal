@@ -33,7 +33,7 @@ import { validateGrounding, extractNormalizedNumbers, canonicalNumber } from "./
 import type { CanonicalStockState } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
-import { executeAiTool, AI_TOOL_NAMES, type AiToolDeps } from "./tools";
+import { executeAiTool, AI_TOOL_NAMES, toolRequestTurn, type AiToolDeps } from "./tools";
 import { detectFinancialDataIntent, intentSeedTool } from "./financialIntent";
 import type { FinancialDataIntent } from "./financialIntent";
 
@@ -572,8 +572,11 @@ async function runGroundedLoop(
       ...("symbol" in outcome ? { symbol: outcome.symbol } : {}),
     });
     // Server-generated transcript turns: the model's request is normalized
-    // to its canonical JSON; the result is ONLY executeAiTool's payload.
-    transcript.push({ role: "assistant", content: JSON.stringify({ tool: toolReq.tool, args: toolReq.args }) });
+    // to its canonical JSON (W3 hard-cap audit: via toolRequestTurn — the
+    // echo is canonical validated args, or a bounded truncation when the
+    // args are invalid; raw model JSON never rides the transcript);
+    // the result is ONLY executeAiTool's payload.
+    transcript.push({ role: "assistant", content: toolRequestTurn(toolReq.tool, toolReq.args) });
     transcript.push({
       role: "user",
       content: (outcome.status === "ok" ? "TOOL RESULT: " : "TOOL ERROR: ") + outcome.modelPayload,

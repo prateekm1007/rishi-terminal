@@ -8,7 +8,14 @@
  * exclusively by executeAiTool — a client or the model can never inject a
  * tool result (the router builds them; the request contract has no field
  * that reaches here).
+ *
+ * W3 hard-cap audit (round-12): the exact serialized request body is
+ * checked against the shared input bound (./serializedInputBound) BEFORE
+ * the fetch — an oversized payload is refused fail-closed (it can never
+ * silently spend input tokens the global reservation did not cover).
  */
+
+import { assertSerializedInputWithinBound } from "./serializedInputBound";
 
 export interface ChatTurn {
   role: "user" | "assistant";
@@ -46,19 +53,24 @@ export async function callOpenAiCompatible(
     ...loopTurns.map(h => ({ role: h.role, content: h.content })),
   ];
 
+  const body = JSON.stringify({
+    model,
+    messages,
+    temperature: 0.9,
+    top_p: 0.95,
+    max_tokens: PROVIDER_MAX_OUTPUT_TOKENS,
+  });
+  // W3 hard-cap audit: refuse an oversized request BEFORE the provider
+  // call — the attempt fails (failover/502), it never overspends.
+  assertSerializedInputWithinBound(body);
+
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.9,
-      top_p: 0.95,
-      max_tokens: PROVIDER_MAX_OUTPUT_TOKENS,
-    }),
+    body,
     signal: AbortSignal.timeout(timeoutMs),
   });
 

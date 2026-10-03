@@ -1,9 +1,15 @@
 /**
  * Gemini chat provider (T49 fallback). Key travels via the x-goog-api-key
  * header — never the URL.
+ *
+ * W3 hard-cap audit (round-12): the exact serialized request body is
+ * checked against the shared input bound (./serializedInputBound) BEFORE
+ * the fetch — an oversized payload is refused fail-closed (it can never
+ * silently spend input tokens the global reservation did not cover).
  */
 
 import type { ChatTurn, ProviderCompletion } from "./openaiCompatible";
+import { assertSerializedInputWithinBound } from "./serializedInputBound";
 
 /** The per-attempt output cap sent as maxOutputTokens. W3-A: a factor
  *  of the global token reservation ceiling (lib/chat/globalSpend.ts),
@@ -44,6 +50,10 @@ export async function callGemini(
       maxOutputTokens: PROVIDER_MAX_OUTPUT_TOKENS,
     },
   };
+  // W3 hard-cap audit: refuse an oversized request BEFORE the provider
+  // call — the attempt fails (failover/502), it never overspends.
+  const serialized = JSON.stringify(body);
+  assertSerializedInputWithinBound(serialized);
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent`, {
     method: "POST",
@@ -51,7 +61,7 @@ export async function callGemini(
       "Content-Type": "application/json",
       "x-goog-api-key": apiKey,
     },
-    body: JSON.stringify(body),
+    body: serialized,
     signal: AbortSignal.timeout(timeoutMs),
   });
 

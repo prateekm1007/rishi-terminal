@@ -286,3 +286,94 @@ describe("R11-05 — directive-15 five-case matrix: rate/yield vocabulary precis
     }
   });
 });
+
+// ── R12-03 (founder directive 9, round 12): the instrument-anchored
+// rate/yield branch anchors on CO-OCCURRENCE — a price-registry token
+// anywhere in the sentence plus the bare word "rate(s)" anywhere else.
+// On non-equity instruments that is exactly the false positive the
+// directive names ("ordinary prose with a ticker + rate -> no forced
+// price tool"): "How does a Fed rate cut affect GOLD?" forces
+// getPrices(GOLD) today, and "Rate my GOLD investment strategy." seeds a
+// price lookup. Stock symbols are already safe (PRICE_REGISTRY_TOKENS
+// excludes the stock master) — the hole is asymmetric. The fix makes the
+// anchor SEMANTIC and closed: the bare word prices the instrument only
+// when it is ADJACENT to it — "<instrument> rate/yield" (the noun
+// compound, including possessive) or "rate/yield of|for|on
+// <instrument>". Macro compounds ("rate cut", "rate decision", "rate of
+// return", "interest rates") and verb usage are never anchors. The
+// DATA_TERM_RE paths (exchange rate, yield as a listed term) are
+// untouched — this hardens only the bare-word branch and the seed's
+// raw rate-word test.
+describe("R12-03 — directive-9 hardening: a bare rate/yield word prices an instrument only when ADJACENT to it", () => {
+  it("macro rate compounds + a non-equity instrument -> NOT financial, no forced price tool", () => {
+    const prose = [
+      "How does a Fed rate cut affect GOLD?",
+      "Does the RBI rate decision change your SILVER view?",
+      "Interest rates are up — does that hurt CRUDEOILMCX positions?",
+      "What rate of return can I expect on BTC?",
+      "How does a Fed rate cut affect USD/INR?",
+    ];
+    for (const q of prose) {
+      expect(detectFinancialDataIntent(q).financial, `detector forced financial: ${q}`).toBe(false);
+      expect(intentSeedTool(q), `seed forced a tool: ${q}`).toBeNull();
+    }
+  });
+
+  it("verb usage ('rate my/you rate X') on a non-equity instrument -> NOT financial", () => {
+    const prose = [
+      "Rate my GOLD investment strategy.",
+      "How would you rate SILVER as a hedge?",
+      "rate my BTC accumulation plan",
+    ];
+    for (const q of prose) {
+      expect(detectFinancialDataIntent(q).financial, `detector forced financial: ${q}`).toBe(false);
+      expect(intentSeedTool(q), `seed forced a tool: ${q}`).toBeNull();
+    }
+  });
+
+  it("the noun compound stays a PRICE ask: '<instrument> rate/yield' (pattern A)", () => {
+    expect(intentSeedTool("What is the current USD/INR rate?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USD/INR" },
+    });
+    expect(intentSeedTool("gold rate today?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "GOLD" },
+    });
+    expect(intentSeedTool("10Y yield")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "IN10YS" },
+    });
+    expect(intentSeedTool("GOLD's rate this evening?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "GOLD" },
+    });
+  });
+
+  it("the inverted compound stays a PRICE ask: 'rate/yield of|for|on <instrument>' (pattern B)", () => {
+    expect(intentSeedTool("What is the yield on the 10Y?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "IN10YS" },
+    });
+    expect(intentSeedTool("rate for USDINR")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USDINR" },
+    });
+    expect(intentSeedTool("What is the yield of IN10YS?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "IN10YS" },
+    });
+  });
+
+  it("'USD/INR exchange rate' still seeds the price tool (a listed data term, not the bare word)", () => {
+    expect(intentSeedTool("USD/INR exchange rate")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USD/INR" },
+    });
+  });
+
+  it("a free-standing macro 'rates' far from the instrument never prices it", () => {
+    expect(detectFinancialDataIntent("rates are rising — does GOLD still hedge?").financial).toBe(false);
+    expect(intentSeedTool("rates are rising — does GOLD still hedge?")).toBeNull();
+  });
+});

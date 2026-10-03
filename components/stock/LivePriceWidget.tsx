@@ -27,6 +27,11 @@ interface LiveEntry {
 
 interface LivePriceWidgetProps {
   stock: Stock;
+  /** X3 (Round 11): the SSR initial observation — a read-only peek at the
+   *  shared quote cache taken on the server. Null when nothing is cached;
+   *  the first paint then shows the honest UNAVAILABLE state (never
+   *  "FETCHING") and the client fetch on mount fills the tile. */
+  initialEntry?: LiveEntry | null;
 }
 
 /**
@@ -38,19 +43,46 @@ interface LivePriceWidgetProps {
  * pulsing "LIVE" badge even when the API returned UNAVAILABLE — was a
  * provenance violation and is removed.
  */
-export function LivePriceWidget({ stock }: LivePriceWidgetProps) {
-  const [displayPrice, setDisplayPrice]       = useState<number | null>(null);
-  const [changePercent, setChangePercent]     = useState<number | null>(null);
-  const [changeAbs, setChangeAbs]             = useState<number | null>(null);
-  const [state, setState]                     = useState<PresentationState>('loading');
-  const [source, setSource]                   = useState<string | undefined>(undefined);
-  const [loading, setLoading]                 = useState(true);
-  const [lastUpdated, setLastUpdated]         = useState<Date | null>(null);
+export function LivePriceWidget({ stock, initialEntry = null }: LivePriceWidgetProps) {
+  // X3: the first paint renders the SSR observation verbatim (or the
+  // honest UNAVAILABLE state) — hydration and the server render produce
+  // identical output, and "⟳ FETCHING" only ever appears for
+  // post-hydration REfetches (an already-rendered tile refreshing), never
+  // in the first byte. All values derive from the server-disclosed
+  // observation (deterministic — Rule 18); nothing here reads the clock.
+  const initialPrice =
+    initialEntry != null &&
+    typeof initialEntry.price === 'number' &&
+    Number.isFinite(initialEntry.price) &&
+    initialEntry.price > 0
+      ? initialEntry.price
+      : null;
+  const initialUsable = initialPrice !== null;
+  const initialPct =
+    initialUsable && initialEntry != null
+      ? (typeof initialEntry.changePercent24h === 'number'
+          ? initialEntry.changePercent24h
+          : typeof initialEntry.change === 'number'
+            ? initialEntry.change
+            : null)
+      : null;
+  const [displayPrice, setDisplayPrice]       = useState<number | null>(initialPrice);
+  const [changePercent, setChangePercent]     = useState<number | null>(initialPct);
+  const [changeAbs, setChangeAbs]             = useState<number | null>(initialPct !== null && initialPrice !== null ? absChangeFromPercent(initialPrice, initialPct) : null);
+  const [state, setState]                     = useState<PresentationState>(presentationState(initialEntry));
+  const [source, setSource]                   = useState<string | undefined>(initialEntry?.source);
+  const [loading, setLoading]                 = useState(false);
+  const [lastUpdated, setLastUpdated]         = useState<Date | null>(initialUsable && initialEntry != null ? observationDateFromEntry(initialEntry) : null);
   const [flashGreen, setFlashGreen]           = useState(false);
   const [flashRed, setFlashRed]               = useState(false);
-  const prevPriceRef                          = useRef<number | null>(null);
+  const prevPriceRef                          = useRef<number | null>(initialPrice);
 
   const fetchPrice = async () => {
+    // X3: the ⟳ FETCHING badge only ever appears for REfetches — a tile
+    // that already renders an observation refreshing itself, post-hydration.
+    // It must never appear in the first byte (SSR renders the cached
+    // observation or the honest UNAVAILABLE state instead).
+    if (prevPriceRef.current !== null) setLoading(true);
     try {
       const res = await fetch('/api/prices/batch', {
         method:  'POST',

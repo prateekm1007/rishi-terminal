@@ -1,21 +1,25 @@
-// N1 (round 3): the home page is a SERVER component (hourly ISR).
+// N1 (round 3): the home page is a SERVER component.
 //
-// All ranking calls run here, once per revalidation window, on the single
-// engine: Top Buys, the Short Radar, and the deterministic IST-date Stock
-// of the Day. The interactive half (ticker, live prices, hydration)
-// lives in components/dashboard/DashboardClient.tsx and receives these
-// results as RSC props — the 944-record seed dataset and the scoring
-// engine never enter the client bundle.
+// All ranking calls run here, on the single engine: Top Buys, the Short
+// Radar, and the deterministic IST-date Stock of the Day. The interactive
+// half (ticker, live prices, hydration) lives in
+// components/dashboard/DashboardClient.tsx and receives these results as
+// RSC props — the 944-record seed dataset and the scoring engine never
+// enter the client bundle.
 //
-// `revalidate = 3600` keeps the IST-date daily pick correct (it rotates
-// within an hour after IST midnight) without making the page dynamic.
+// X3 (Round 11): the page renders DYNAMICALLY — the W5 defect was the
+// hourly-ISR bake: the build-time prerender carried an EMPTY price
+// snapshot (builds fetch nothing, hermetically) yet served as "fresh"
+// for up to an hour after every deploy, so users saw "Connecting…"/
+// "——" until a first visitor's revalidation landed. Now every request
+// takes ONE cheap batch read of the shared quote cache (never a vendor
+// fetch) for the symbols it renders; the IST-date daily pick stays exact
+// (deterministic, Rule 18), and rankings only run when the flag is on.
 //
-// U2 (founder round 7): the page also fetches ONE initial-price snapshot
-// per revalidation through the SAME price path the client endpoints use
-// (lib/dashboardSnapshot → serveQuote / fetchLivePrice — the shared quote
-// cache for equities). The client hook hydrates from it and revalidates on
-// mount. Every value keeps its own observation-time label; the build-phase
-// prerender fetches nothing (hermetic CI builds).
+// U2 (founder round 7): the initial-price snapshot rides the SAME price
+// path the client endpoints use (lib/dashboardSnapshot → the shared quote
+// cache). The client hook hydrates from it and revalidates on mount.
+// Every value keeps its own observation-time label.
 //
 // U4 (founder round 7): the ranked widgets (Top Buy Signals, Short Radar,
 // Stock of the Day) are gated behind RANKINGS_ENABLED (lib/featureFlags,
@@ -29,7 +33,7 @@ import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   // U4: the flag decides whether the ranking engine runs at all. Off → no

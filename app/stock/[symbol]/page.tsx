@@ -6,8 +6,17 @@ import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
+import { serveCachedQuote } from '@/lib/quotePath'; // X3: SSR peek — the last cached quote, read-only
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
+
+// X3 (Round 11): stock pages render DYNAMICALLY. The 916-page SSG bake
+// carried a "⟳ FETCHING" price tile for every symbol (builds fetch
+// nothing, hermetically) until a visitor's client fetch filled it. Now
+// every request PEEKS the shared quote cache for this one symbol — a
+// single cheap read, never a vendor fetch — and the tile renders the
+// cached observation with its own "as of" time, or the honest
+// "price unavailable" state. The client hook still refreshes on mount.
 
 
 // Round-5 audit (finding 18): every stock page shared the site-default
@@ -49,9 +58,7 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   };
 }
 
-export async function generateStaticParams() {
-  return Object.keys(STOCKS).map((symbol) => ({ symbol }));
-}
+export const dynamic = 'force-dynamic';
 
 interface StockPageProps {
   params: Promise<{ symbol: string }>;
@@ -84,8 +91,7 @@ export default async function StockPage({ params }: StockPageProps) {
 
   // Commit M3 (free access): the RSC payload carries the FULL verdict set
   // for every visitor — the seeker slice and the paid upgrade path are
-  // gone. The page is statically prerendered; the embedded set is the
-  // complete council, publicly, for everyone.
+  // gone. The embedded set is the complete council, publicly, for everyone.
   const sanitized = sanitizeConsensus(consensus);
   const stockDetail = generateStockDetail(stock);
 
@@ -97,6 +103,11 @@ export default async function StockPage({ params }: StockPageProps) {
   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
 
+  // X3: the SSR price — a read-only peek at the shared quote cache. Miss →
+  // null → the tile renders the honest "price unavailable" state and the
+  // client hook fills it (its /api/prices call also warms the cache).
+  const initialQuote = await serveCachedQuote(key);
+
   return (
     <StockPageClient
       stock={stock}
@@ -105,6 +116,7 @@ export default async function StockPage({ params }: StockPageProps) {
       resolved={resolved}
       qvpsDual={qvpsDual}
       eliteGraph={eliteGraph}
+      initialQuote={initialQuote}
     />
   );
 }

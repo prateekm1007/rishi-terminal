@@ -124,7 +124,9 @@ trigger (this PR, if merged after the window frees, serves exactly that
 purpose). Window state probed via this branch's own preview deploy
 attempts: still rate-limited at 04:44Z, 05:05Z, 05:22Z and 05:25Z (the freed
 slot at ~05:23Z was consumed by this branch's own preview build before
-the merge attempt).
+the merge attempt); at ~05:47Z the staging project's preview deploy
+SUCCEEDED (slots flowing) while the production project's attempt was
+still limited.
 
 ## 7. Pending final-SHA proofs (directive 28 conditions 2/6)
 

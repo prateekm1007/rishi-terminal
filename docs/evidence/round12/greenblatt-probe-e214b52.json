@@ -1,0 +1,57 @@
+{
+ "base": "https://rishi-terminal.vercel.app",
+ "version": "e214b52cf5d99cf5aac4427486cbb3026ba7d3d0",
+ "symbols": {
+  "RELIANCE": {
+   "symbol": "RELIANCE",
+   "http": 200,
+   "greenblatt_present": true,
+   "roc_detail_pct": 5.9,
+   "ey_detail_pct": 3.5,
+   "proxy_disclosure": true,
+   "ebit_ev_claim": false,
+   "ok": true
+  },
+  "TCS": {
+   "symbol": "TCS",
+   "http": 200,
+   "greenblatt_present": true,
+   "roc_detail_pct": 5.4,
+   "ey_detail_pct": 3.2,
+   "proxy_disclosure": true,
+   "ebit_ev_claim": false,
+   "ok": true
+  },
+  "HDFCBANK": {
+   "symbol": "HDFCBANK",
+   "http": 200,
+   "greenblatt_present": true,
+   "roc_detail_pct": 6.1,
+   "ey_detail_pct": 3.6,
+   "proxy_disclosure": true,
+   "ebit_ev_claim": false,
+   "ok": true
+  },
+  "ITC": {
+   "symbol": "ITC",
+   "http": 200,
+   "greenblatt_present": true,
+   "roc_detail_pct": 5.1,
+   "ey_detail_pct": 3.1,
+   "proxy_disclosure": true,
+   "ebit_ev_claim": false,
+   "ok": true
+  },
+  "KTKBANK": {
+   "symbol": "KTKBANK",
+   "http": 200,
+   "greenblatt_present": true,
+   "roc_detail_pct": 14.6,
+   "ey_detail_pct": 8.8,
+   "proxy_disclosure": true,
+   "ebit_ev_claim": false,
+   "ok": true
+  }
+ },
+ "verdict": "PASS"
+}

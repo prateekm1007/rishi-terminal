@@ -1,0 +1,158 @@
+{
+  "version": {
+    "sha": "e214b52cf5d99cf5aac4427486cbb3026ba7d3d0",
+    "now": "2026-10-03T13:48:20.280Z",
+    "node": "v24.21.0"
+  },
+  "generatedAt": "2026-10-03T13:48:20.403Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "registryGets": {
+    "WTI": {
+      "status": 200,
+      "bodyHead": "{\"status\":\"LIVE\",\"price\":91.11,\"change\":-1.895,\"observedAt\":\"2026-10-02T21:00:00.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-02T21:00:00.000Z\"}",
+      "ms": 1706
+    },
+    "USD/INR": {
+      "status": 200,
+      "bodyHead": "{\"status\":\"LIVE\",\"price\":96.3,\"change\":-0.0104,\"observedAt\":\"2026-10-03T03:30:05.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-03T03:30:05.000Z\"}",
+      "ms": 655
+    }
+  },
+  "cases": [
+    {
+      "id": "wti-price",
+      "question": "What is the latest price of WTI?",
+      "summary": {
+        "status": 200,
+        "wallMs": 5424,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "WTI",
+            "status": "ok",
+            "ms": 50
+          }
+        ],
+        "repairs": [],
+        "answerHeadU": "price = 91.11 usd — live (observed/as-of 2026-10-02T21:00:00.000Z)\nchange = -1.895 percent — live (observed/as-of 2026-10-02T21:00:00.000Z)",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": true,
+          "note": "getPrices(WTI)=ok, grounded"
+        }
+      }
+    },
+    {
+      "id": "fx-alias",
+      "question": "What is the current USDINR rate?",
+      "summary": {
+        "status": 200,
+        "wallMs": 7328,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "USD/INR",
+            "status": "ok",
+            "ms": 53
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "zero-tool-engagement",
+            "feedback": "this request clearly asks for specific market data; the server has now executed the canonical tool for it — every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "answerHeadU": "price = 96.3 inr — live (observed/as-of 2026-10-03T03:30:05.000Z)\nchange = -0.0104 percent — live (observed/as-of 2026-10-03T03:30:05.000Z)",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": true,
+          "note": "USDINR resolved to canonical USD/INR, grounded"
+        }
+      }
+    },
+    {
+      "id": "wti-stock-only",
+      "question": "What are the financial fundamentals of WTI?",
+      "summary": {
+        "status": 200,
+        "wallMs": 9248,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "WTI",
+            "status": "no-data",
+            "ms": 0
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "answerHeadU": "WTI, or West Texas Intermediate, is a benchmark price for crude oil rather than an equity security. It tracks the spot price of a specific grade of light sweet crude but does not have traditional financial fundamentals like revenue, earning",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": true,
+          "note": "honest no-data for WTI stock-only ask (not unknown-symbol)"
+        }
+      }
+    },
+    {
+      "id": "unknown-symbol",
+      "question": "What is the latest price of UNKLAR9X?",
+      "summary": {
+        "status": 200,
+        "wallMs": 10064,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "UNKLAR9X",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [],
+        "answerHeadU": "I'm not familiar with that ticker. If I can't explain it simply, I don't invest. I focus on businesses I understand well, like DMart and VST Industries.",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": true,
+          "note": "unknown-symbol surfaced honestly, no fabricated grounded price"
+        }
+      }
+    }
+  ],
+  "allPass": true
+}

@@ -55,6 +55,13 @@ const NEGATIVE_QUESTION = "What is the latest price of ZZZZNOPE?";
 // pass or fail, WITH its machine-readable rejection reasons.
 const MAX_POSITIVE_ATTEMPTS = 5;
 const MAX_NEGATIVE_ATTEMPTS = 3;
+// Round-12 production evidence: the Agnes free tier degrades under
+// back-to-back load (measured 2026-10-03: paced 6s requests at 100%,
+// unpaced bursts 502 within 4 requests — see
+// docs/evidence/round12/production-closure-e214b52.md). Pace the attempts
+// like the battery (aiLatencyBattery.mjs) so the canary measures the
+// contract, not the vendor's burst tolerance.
+const ATTEMPT_PACING_MS = Number(process.env.CANARY_PACING_MS ?? 6000);
 
 // §6: EXACT attested identity — the registry-approved provider id and the
 // attested model for it (lib/registry/providerRegistry.ts is the
@@ -112,6 +119,7 @@ row("version-binding", vResp.status === 200 && shaOk,
 
 // ── 1. positive canary: grounded=true after a REAL tool call ─────────────
 for (let i = 1; i <= MAX_POSITIVE_ATTEMPTS; i++) {
+  if (i > 1) await new Promise(r => setTimeout(r, ATTEMPT_PACING_MS));
   console.log(`\n— positive attempt ${i}/${MAX_POSITIVE_ATTEMPTS}: "${POSITIVE_QUESTION}" (anonymous, no symbol)`);
   let attempt;
   try {
@@ -163,6 +171,7 @@ row("positive-canary-grounded-tool-loop", receipt.positive.passed,
 // demonstrating the explicit-failure path, so retry until the model
 // actually requests the unknown symbol (every attempt is logged).
 for (let i = 1; i <= MAX_NEGATIVE_ATTEMPTS; i++) {
+  if (i > 1) await new Promise(r => setTimeout(r, ATTEMPT_PACING_MS));
   console.log(`\n— negative attempt ${i}/${MAX_NEGATIVE_ATTEMPTS}: "${NEGATIVE_QUESTION}"`);
   try {
     const neg = await chat(NEGATIVE_QUESTION);

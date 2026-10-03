@@ -1,0 +1,80 @@
+{
+ "base": "https://rishi-terminal.vercel.app",
+ "probedAt": "2026-10-03T13:07:26.486Z",
+ "checks": {
+  "health": {
+   "http": 200,
+   "ms": 1850,
+   "ok": true,
+   "status": "degraded",
+   "db": true,
+   "lastPriceIngestAt": null,
+   "lastFundamentalsIngestAt": null,
+   "engineVersion": "rishi-merit-v1",
+   "reasons": [
+    "prices: no ingestion recorded yet",
+    "fundamentals: no ingestion recorded yet"
+   ]
+  },
+  "version": {
+   "http": 200,
+   "ok": true,
+   "sha": "e214b52cf5d99cf5aac4427486cbb3026ba7d3d0"
+  },
+  "price_equity_RELIANCE": {
+   "http": 200,
+   "ms": 1489,
+   "ok": true,
+   "status": "CACHED",
+   "source": "yahoo-bulk",
+   "observedAt": "2026-10-01T09:45:00+00:00",
+   "unit": null,
+   "price": 1167.7
+  },
+  "price_commodity_WTI": {
+   "http": 200,
+   "ms": 615,
+   "ok": true,
+   "status": "LIVE",
+   "source": "yahoo",
+   "observedAt": "2026-10-02T21:00:00.000Z",
+   "unit": null,
+   "price": 91.11
+  },
+  "price_fx_USDINR_slashed": {
+   "http": 200,
+   "ms": 617,
+   "ok": true,
+   "status": "LIVE",
+   "source": "yahoo",
+   "observedAt": "2026-10-03T03:30:05.000Z",
+   "unit": null,
+   "price": 96.3
+  },
+  "price_crypto_BTC": {
+   "http": 200,
+   "ms": 678,
+   "ok": true,
+   "status": "LIVE",
+   "source": "coingecko",
+   "observedAt": "2026-10-03T13:06:10.000Z",
+   "unit": null,
+   "price": 84840
+  },
+  "fundamentals_RELIANCE": {
+   "http": 200,
+   "ms": 1749,
+   "ok": true,
+   "source": "screener",
+   "marketCap": 1580194,
+   "lastUpdated": null
+  },
+  "search_RELIA": {
+   "http": 200,
+   "ms": 616,
+   "ok": true,
+   "resultCount": 4
+  }
+ },
+ "verdict": "PASS"
+}

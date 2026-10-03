@@ -1,0 +1,183 @@
+{
+ "base": "https://rishi-terminal.vercel.app",
+ "probedAt": "2026-10-03T13:56:37.842Z",
+ "probeClass": "behavioral (production chat route)",
+ "rows": [
+  {
+   "id": "fx-rate-adjacent",
+   "message": "What is the USD/INR rate right now?",
+   "expect": "must_price",
+   "unit": "INR (quote currency)",
+   "http": 200,
+   "wallMs": 23646,
+   "blocked": false,
+   "grounded": true,
+   "groundingMode": "structured-claims",
+   "structuredResponse": "valid",
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash",
+   "toolCalls": [
+    {
+     "tool": "getPrices",
+     "status": "ok"
+    }
+   ],
+   "claimCount": 2,
+   "verdict": "PASS"
+  },
+  {
+   "id": "commodity-rate",
+   "message": "What is the gold rate today?",
+   "expect": "must_price",
+   "unit": "USD",
+   "http": 502,
+   "wallMs": 32772,
+   "blocked": false,
+   "grounded": null,
+   "groundingMode": null,
+   "structuredResponse": null,
+   "provider": null,
+   "model": null,
+   "toolCalls": [],
+   "claimCount": null,
+   "outcome": "http-502",
+   "verdict": "OBSERVED-NON200"
+  },
+  {
+   "id": "bond-yield",
+   "message": "What is the IN10YS yield today?",
+   "expect": "must_price",
+   "unit": "percent (yield observation)",
+   "http": 200,
+   "wallMs": 23041,
+   "blocked": false,
+   "grounded": false,
+   "groundingMode": "evidence-context",
+   "structuredResponse": "valid",
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash",
+   "toolCalls": [
+    {
+     "tool": "getPrices",
+     "status": "ok"
+    }
+   ],
+   "claimCount": 0,
+   "verdict": "PASS"
+  },
+  {
+   "id": "growth-rate-fundamentals",
+   "message": "What is the revenue growth rate of TCS?",
+   "expect": "must_not_price",
+   "note": "growth rate -> fundamentals",
+   "http": 200,
+   "wallMs": 8171,
+   "blocked": false,
+   "grounded": true,
+   "groundingMode": "structured-claims",
+   "structuredResponse": "valid",
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash",
+   "toolCalls": [
+    {
+     "tool": "getFinancials",
+     "status": "ok"
+    }
+   ],
+   "claimCount": 3,
+   "verdict": "PASS"
+  },
+  {
+   "id": "verb-usage",
+   "message": "Please rate my TCS analysis - I think it is a great compounder with strong cash flows.",
+   "expect": "must_not_price",
+   "note": "verb usage, advice-shaped",
+   "http": 200,
+   "wallMs": 29566,
+   "blocked": false,
+   "grounded": false,
+   "groundingMode": "context-only",
+   "structuredResponse": "valid",
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash",
+   "toolCalls": [],
+   "claimCount": 0,
+   "verdict": "PASS"
+  },
+  {
+   "id": "dividend-yield",
+   "message": "What is the dividend yield of ITC?",
+   "expect": "must_not_price",
+   "note": "dividend yield -> fundamentals",
+   "http": 200,
+   "wallMs": 32469,
+   "blocked": false,
+   "grounded": true,
+   "groundingMode": "structured-claims",
+   "structuredResponse": "valid",
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash",
+   "toolCalls": [
+    {
+     "tool": "getFinancials",
+     "status": "ok"
+    }
+   ],
+   "claimCount": 2,
+   "verdict": "PASS"
+  },
+  {
+   "id": "wti-price-plain",
+   "message": "What is the WTI price today?",
+   "expect": "must_price",
+   "unit": "USD",
+   "http": 200,
+   "wallMs": 12682,
+   "blocked": false,
+   "grounded": false,
+   "groundingMode": "evidence-context",
+   "structuredResponse": "valid",
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash",
+   "toolCalls": [
+    {
+     "tool": "getPrices",
+     "status": "ok"
+    }
+   ],
+   "claimCount": 0,
+   "verdict": "PASS"
+  },
+  {
+   "id": "margin-rate",
+   "message": "What is the operating margin rate of RELIANCE?",
+   "expect": "must_not_price",
+   "note": "margin rate -> fundamentals",
+   "http": 200,
+   "wallMs": 30110,
+   "blocked": false,
+   "grounded": false,
+   "groundingMode": "evidence-context",
+   "structuredResponse": "valid",
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash",
+   "toolCalls": [
+    {
+     "tool": "getFinancials",
+     "status": "ok"
+    }
+   ],
+   "claimCount": 0,
+   "verdict": "PASS"
+  }
+ ],
+ "summary": {
+  "total": 8,
+  "pass": 7,
+  "fail": 0,
+  "observedNon200": 1,
+  "observedBlocked": 0,
+  "error": 0
+ },
+ "verdict": "PASS"
+}

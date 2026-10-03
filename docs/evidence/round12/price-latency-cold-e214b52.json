@@ -1,0 +1,76 @@
+{
+  "probe": "price-latency-attribution",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "at": "2026-10-03T13:52:43.618Z",
+  "rounds": 5,
+  "ledgerDeltasAvailable": false,
+  "singleSymbol": [
+    {
+      "symbol": "RELIANCE",
+      "wallMs": 843,
+      "httpStatus": 200,
+      "source": "yahoo-bulk",
+      "provStatus": "CACHED",
+      "observedAt": "2026-10-01T09:45:00+00:00",
+      "change": -1.626
+    },
+    {
+      "symbol": "TCS",
+      "wallMs": 1255,
+      "httpStatus": 200,
+      "source": "yahoo",
+      "provStatus": "LIVE",
+      "observedAt": "2026-10-01T09:45:00.000Z",
+      "change": 1.19
+    },
+    {
+      "symbol": "HDFCBANK",
+      "wallMs": 788,
+      "httpStatus": 200,
+      "source": "yahoo",
+      "provStatus": "LIVE",
+      "observedAt": "2026-10-01T09:45:00.000Z",
+      "change": 1.764
+    },
+    {
+      "symbol": "INFY",
+      "wallMs": 1354,
+      "httpStatus": 200,
+      "source": "yahoo",
+      "provStatus": "LIVE",
+      "observedAt": "2026-10-01T09:44:59.000Z",
+      "change": 4.114
+    },
+    {
+      "symbol": "ICICIBANK",
+      "wallMs": 789,
+      "httpStatus": 200,
+      "source": "yahoo",
+      "provStatus": "LIVE",
+      "observedAt": "2026-10-01T09:45:02.000Z",
+      "change": -0.84
+    }
+  ],
+  "batch": [
+    {
+      "symbols": 10,
+      "wallMs": 2431,
+      "httpStatus": 200,
+      "unavailable": 0,
+      "perSource": {
+        "yahoo-bulk": 7,
+        "yahoo": 3
+      }
+    }
+  ],
+  "chat": [],
+  "providerDeltas": {
+    "singlePhase": null,
+    "batchPhase": null
+  },
+  "summary": {
+    "singleP50Ms": 843,
+    "singleP95Ms": 1354,
+    "batchWallMs": 2431
+  }
+}

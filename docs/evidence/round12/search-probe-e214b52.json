@@ -1,0 +1,105 @@
+{
+ "base": "https://rishi-terminal.vercel.app",
+ "probedAt": "2026-10-03T13:07:47.869Z",
+ "rows": [
+  {
+   "id": "equity_prefix",
+   "q": "RELIA",
+   "http": 200,
+   "ms": 349,
+   "resultCount": 4,
+   "top": [
+    "RELIANCE:stock",
+    "RELIANCE_CORP:bond",
+    "RELINFRA:stock"
+   ],
+   "verdict": "PASS"
+  },
+  {
+   "id": "commodity_wti",
+   "q": "WTI",
+   "http": 200,
+   "ms": 305,
+   "resultCount": 1,
+   "top": [
+    "WTI:commodity"
+   ],
+   "verdict": "PASS"
+  },
+  {
+   "id": "fx_usdinr",
+   "q": "USDINR",
+   "http": 200,
+   "ms": 297,
+   "resultCount": 1,
+   "top": [
+    "USDINR:forex"
+   ],
+   "verdict": "PASS"
+  },
+  {
+   "id": "fx_slashed_observed",
+   "q": "USD/INR",
+   "note": "OBSERVATION: slashed pair in the search box is a known UX gap (stored symbol is USDINR; the canonical registry DOES accept slashed spellings at the price/chat/validation boundaries) — recorded for the backlog, not a battery failure",
+   "http": 200,
+   "ms": 278,
+   "resultCount": 0,
+   "top": [],
+   "verdict": "PASS"
+  },
+  {
+   "id": "crypto_btc",
+   "q": "BTC",
+   "http": 200,
+   "ms": 284,
+   "resultCount": 1,
+   "top": [
+    "BTC:crypto"
+   ],
+   "verdict": "PASS"
+  },
+  {
+   "id": "bond_in10y",
+   "q": "IN10Y",
+   "http": 200,
+   "ms": 280,
+   "resultCount": 1,
+   "top": [
+    "IN10YS:bond"
+   ],
+   "verdict": "PASS"
+  },
+  {
+   "id": "unknown_symbol",
+   "q": "ZZZZNOPE",
+   "http": 200,
+   "ms": 273,
+   "resultCount": 0,
+   "top": [],
+   "verdict": "PASS"
+  },
+  {
+   "id": "empty_q",
+   "q": "",
+   "http": 200,
+   "ms": 308,
+   "resultCount": 0,
+   "top": [],
+   "verdict": "PASS"
+  },
+  {
+   "id": "case_fold",
+   "q": "reliance",
+   "http": 200,
+   "ms": 280,
+   "resultCount": 4,
+   "top": [
+    "RELIANCE:stock",
+    "RELIANCE_CORP:bond",
+    "RELINFRA:stock"
+   ],
+   "verdict": "PASS"
+  }
+ ],
+ "verdict": "PASS"
+}

@@ -216,6 +216,16 @@
       "scripts/w4Audit.ts",
       "docs/evidence/w4-audit-2026-10-03.md",
       "docs/evidence/entropy-audit-post-w4-2026-10-03.md"
+    ],
+    "R12-07": [
+      "docs/evidence/round12/",
+      "scripts/prodHealthEnvSweep.mjs",
+      "scripts/prodIntentMatrix.mjs",
+      "scripts/prodSearchProbe.mjs",
+      "scripts/prodGreenblattProbe.mjs",
+      "scripts/prodGroundedCanary.mjs",
+      "scripts/prodUglyPathMatrix.mjs",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

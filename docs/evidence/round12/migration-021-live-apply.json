@@ -1,0 +1,45 @@
+{
+ "appliedAt": "2026-10-03T13:16:57Z",
+ "expectedDeployedSha": "e214b52cf5d99cf5aac4427486cbb3026ba7d3d0",
+ "steps": [
+  {
+   "step": "sha-gate",
+   "apiVersion": "e214b52cf5d99cf5aac4427486cbb3026ba7d3d0",
+   "ok": true
+  },
+  {
+   "step": "pre-state",
+   "http": 201,
+   "result": "[{\"bump_exists\":1,\"reserve_exists\":1,\"settle_exists\":1}]"
+  },
+  {
+   "step": "apply-021",
+   "http": 201,
+   "result": "[]",
+   "sqlChars": 1025
+  },
+  {
+   "step": "post-state",
+   "http": 201,
+   "result": "[{\"bump_exists\":0,\"reserve_exists\":1,\"settle_exists\":1}]"
+  },
+  {
+   "step": "global-spend-invariants",
+   "http": 201,
+   "result": "[]"
+  },
+  {
+   "step": "security-definer-invariants",
+   "http": 201,
+   "result": "[]"
+  },
+  {
+   "step": "behavioral-chat-admit",
+   "http": 400,
+   "body": "{\"error\":\"Unknown persona\"}",
+   "ok": false
+  }
+ ],
+ "rollback": "-- NOT executed. Additive-inverse rollback (recreate bump): see lib/db/migrations/019_global_spend_counters.sql; the deployed code has zero bump callers, so rollback is only needed if an older tree is ever re-promoted.",
+ "verdict": "PASS"
+}

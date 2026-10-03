@@ -1,0 +1,1670 @@
+{
+  "base": "https://rishi-terminal.vercel.app",
+  "generatedAt": "2026-10-03T13:14:42.204Z",
+  "note": "raw capture; rows NOT externally forcible (provider 500/timeout, provider-emitted malformed structured reply, wrong evidence id/field/value/unit inside a structured reply) are pinned by test/aiRouter.test.ts + test/chat.grounding.g3.test.ts + test/chat.grounding.semantic.test.ts + test/chat.route.personaAuth.test.ts (vitest 57 files / 482 tests green at 37a3ef4)",
+  "rows": [
+    {
+      "tier": "anonymous",
+      "id": "personas",
+      "method": "GET",
+      "path": "/api/chat/personas",
+      "status": 200,
+      "ms": 318,
+      "body": {
+        "personas": [
+          {
+            "id": "jhunjhunwala",
+            "name": "Jhunjhunwala",
+            "fullName": "Rakesh Jhunjhunwala",
+            "emoji": "🦁",
+            "color": "#F59E0B",
+            "rank": "Legend",
+            "philosophy": "Bold conviction betting on India growth. Comfortable with volatility for multibagger potential."
+          },
+          {
+            "id": "damani",
+            "name": "Damani",
+            "fullName": "Radhakishan Damani",
+            "emoji": "🧘",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Conservative compounder. Fortress balance sheets. Margin of safety in every position."
+          },
+          {
+            "id": "kacholia",
+            "name": "Kacholia",
+            "fullName": "Ashish Kacholia",
+            "emoji": "🦋",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "High promoter ownership plus accelerating FCF equals real wealth creation."
+          },
+          {
+            "id": "kedia",
+            "name": "Kedia",
+            "fullName": "Vijay Kedia",
+            "emoji": "😊",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Small, Manageable, Innovative, Listed, Emerging - the perfect multibagger."
+          },
+          {
+            "id": "porinju",
+            "name": "Veliyath",
+            "fullName": "Porinju Veliyath",
+            "emoji": "🔥",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when there is maximum pessimism. Contrarian investing creates real alpha."
+          },
+          {
+            "id": "raamdeo",
+            "name": "Agrawal",
+            "fullName": "Raamdeo Agrawal",
+            "emoji": "⚖️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Quality, Growth, Longevity, Price - the four pillars of wealth creation."
+          },
+          {
+            "id": "nemish",
+            "name": "Shah",
+            "fullName": "Nemish Shah",
+            "emoji": "📈",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Consistency beats excitement. Boring businesses compound into fortunes."
+          },
+          {
+            "id": "basant",
+            "name": "Maheshwari",
+            "fullName": "Basant Maheshwari",
+            "emoji": "🛒",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "India is consuming more every year. Invest in this unstoppable wave."
+          },
+          {
+            "id": "buffett",
+            "name": "Buffett",
+            "fullName": "Warren Buffett",
+            "emoji": "🎩",
+            "color": "#22C55E",
+            "rank": "Legend",
+            "philosophy": "Economic moats. Owner earnings. Business quality trumps market timing."
+          },
+          {
+            "id": "graham",
+            "name": "Graham",
+            "fullName": "Benjamin Graham",
+            "emoji": "📚",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Buy at a significant discount to intrinsic value. Mr. Market is your servant, not master."
+          },
+          {
+            "id": "lynch",
+            "name": "Lynch",
+            "fullName": "Peter Lynch",
+            "emoji": "🚀",
+            "color": "#06B6D4",
+            "rank": "Legend",
+            "philosophy": "GARP (Growth at Reasonable Price). Accessible investments. Sector specialist knowledge."
+          },
+          {
+            "id": "munger",
+            "name": "Munger",
+            "fullName": "Charlie Munger",
+            "emoji": "🦉",
+            "color": "#8B5CF6",
+            "rank": "Legend",
+            "philosophy": "Inversion thinking. Avoid stupidity. Multidisciplinary approach."
+          },
+          {
+            "id": "greenblatt",
+            "name": "Greenblatt",
+            "fullName": "Joel Greenblatt",
+            "emoji": "✨",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Good businesses at cheap prices. Be systematic and trust the process."
+          },
+          {
+            "id": "pabrai",
+            "name": "Pabrai",
+            "fullName": "Mohnish Pabrai",
+            "emoji": "🎯",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Heads I win, tails I do not lose much. Clone shamelessly from the best."
+          },
+          {
+            "id": "philipfisher",
+            "name": "Fisher",
+            "fullName": "Philip Fisher",
+            "emoji": "🔬",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Outstanding companies with outstanding management. Hold forever."
+          },
+          {
+            "id": "howardmarks",
+            "name": "Marks",
+            "fullName": "Howard Marks",
+            "emoji": "🔄",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when others are scared, sell when others are greedy. Most important thing is risk."
+          },
+          {
+            "id": "sethklarman",
+            "name": "Klarman",
+            "fullName": "Seth Klarman",
+            "emoji": "🛡️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Protect the downside and the upside takes care of itself."
+          },
+          {
+            "id": "templeton",
+            "name": "Templeton",
+            "fullName": "John Templeton",
+            "emoji": "🌏",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "The best time to invest is at maximum pessimism. Look everywhere globally."
+          },
+          {
+            "id": "schloss",
+            "name": "Schloss",
+            "fullName": "Walter Schloss",
+            "emoji": "💎",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy cheap, diversify widely, and wait for less cheap."
+          },
+          {
+            "id": "chanos",
+            "name": "Chanos",
+            "fullName": "Jim Chanos",
+            "emoji": "🐻",
+            "color": "#EF4444",
+            "rank": null,
+            "philosophy": "Forensic accounting. Short overvalued. Narrative vs reality."
+          },
+          {
+            "id": "soros",
+            "name": "Soros",
+            "fullName": "George Soros",
+            "emoji": "🌊",
+            "color": "#A78BFA",
+            "rank": null,
+            "philosophy": "Reflexivity. Macro overlay. Trend following with macro conviction."
+          }
+        ]
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "fail-closed 401"
+    },
+    {
+      "tier": "anonymous",
+      "id": "chat valid persona",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 2495,
+      "body": {
+        "text": "Hello! How can I help you today?",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:13:56.858Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 874,
+            "providerAttempts": 1,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 874,
+                "outcome": "final-response",
+                "stage": "initial"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 1949,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "401, no quota, no provider call"
+    },
+    {
+      "tier": "anonymous",
+      "id": "chat forged disciple persona",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 4737,
+      "body": {
+        "text": "I'm not sure what you mean by 'x.' Could you clarify if you're asking about a specific stock, commodity, currency, or topic?",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:13:59.036Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [
+            {
+              "tool": "getStock",
+              "status": "unknown-symbol",
+              "symbol": "X"
+            }
+          ],
+          "timings": {
+            "totalMs": 3563,
+            "providerAttempts": 2,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 1258,
+                "outcome": "tool-request",
+                "stage": "initial"
+              },
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 2304,
+                "outcome": "final-response",
+                "stage": "post-tool"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [
+              {
+                "tool": "getStock",
+                "symbol": "X",
+                "status": "unknown-symbol",
+                "ms": 1
+              }
+            ],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 4321,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "401"
+    },
+    {
+      "tier": "seeker",
+      "id": "personas (roster)",
+      "method": "GET",
+      "path": "/api/chat/personas",
+      "status": 200,
+      "ms": 548,
+      "body": {
+        "personas": [
+          {
+            "id": "jhunjhunwala",
+            "name": "Jhunjhunwala",
+            "fullName": "Rakesh Jhunjhunwala",
+            "emoji": "🦁",
+            "color": "#F59E0B",
+            "rank": "Legend",
+            "philosophy": "Bold conviction betting on India growth. Comfortable with volatility for multibagger potential."
+          },
+          {
+            "id": "damani",
+            "name": "Damani",
+            "fullName": "Radhakishan Damani",
+            "emoji": "🧘",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Conservative compounder. Fortress balance sheets. Margin of safety in every position."
+          },
+          {
+            "id": "kacholia",
+            "name": "Kacholia",
+            "fullName": "Ashish Kacholia",
+            "emoji": "🦋",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "High promoter ownership plus accelerating FCF equals real wealth creation."
+          },
+          {
+            "id": "kedia",
+            "name": "Kedia",
+            "fullName": "Vijay Kedia",
+            "emoji": "😊",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Small, Manageable, Innovative, Listed, Emerging - the perfect multibagger."
+          },
+          {
+            "id": "porinju",
+            "name": "Veliyath",
+            "fullName": "Porinju Veliyath",
+            "emoji": "🔥",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when there is maximum pessimism. Contrarian investing creates real alpha."
+          },
+          {
+            "id": "raamdeo",
+            "name": "Agrawal",
+            "fullName": "Raamdeo Agrawal",
+            "emoji": "⚖️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Quality, Growth, Longevity, Price - the four pillars of wealth creation."
+          },
+          {
+            "id": "nemish",
+            "name": "Shah",
+            "fullName": "Nemish Shah",
+            "emoji": "📈",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Consistency beats excitement. Boring businesses compound into fortunes."
+          },
+          {
+            "id": "basant",
+            "name": "Maheshwari",
+            "fullName": "Basant Maheshwari",
+            "emoji": "🛒",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "India is consuming more every year. Invest in this unstoppable wave."
+          },
+          {
+            "id": "buffett",
+            "name": "Buffett",
+            "fullName": "Warren Buffett",
+            "emoji": "🎩",
+            "color": "#22C55E",
+            "rank": "Legend",
+            "philosophy": "Economic moats. Owner earnings. Business quality trumps market timing."
+          },
+          {
+            "id": "graham",
+            "name": "Graham",
+            "fullName": "Benjamin Graham",
+            "emoji": "📚",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Buy at a significant discount to intrinsic value. Mr. Market is your servant, not master."
+          },
+          {
+            "id": "lynch",
+            "name": "Lynch",
+            "fullName": "Peter Lynch",
+            "emoji": "🚀",
+            "color": "#06B6D4",
+            "rank": "Legend",
+            "philosophy": "GARP (Growth at Reasonable Price). Accessible investments. Sector specialist knowledge."
+          },
+          {
+            "id": "munger",
+            "name": "Munger",
+            "fullName": "Charlie Munger",
+            "emoji": "🦉",
+            "color": "#8B5CF6",
+            "rank": "Legend",
+            "philosophy": "Inversion thinking. Avoid stupidity. Multidisciplinary approach."
+          },
+          {
+            "id": "greenblatt",
+            "name": "Greenblatt",
+            "fullName": "Joel Greenblatt",
+            "emoji": "✨",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Good businesses at cheap prices. Be systematic and trust the process."
+          },
+          {
+            "id": "pabrai",
+            "name": "Pabrai",
+            "fullName": "Mohnish Pabrai",
+            "emoji": "🎯",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Heads I win, tails I do not lose much. Clone shamelessly from the best."
+          },
+          {
+            "id": "philipfisher",
+            "name": "Fisher",
+            "fullName": "Philip Fisher",
+            "emoji": "🔬",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Outstanding companies with outstanding management. Hold forever."
+          },
+          {
+            "id": "howardmarks",
+            "name": "Marks",
+            "fullName": "Howard Marks",
+            "emoji": "🔄",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when others are scared, sell when others are greedy. Most important thing is risk."
+          },
+          {
+            "id": "sethklarman",
+            "name": "Klarman",
+            "fullName": "Seth Klarman",
+            "emoji": "🛡️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Protect the downside and the upside takes care of itself."
+          },
+          {
+            "id": "templeton",
+            "name": "Templeton",
+            "fullName": "John Templeton",
+            "emoji": "🌏",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "The best time to invest is at maximum pessimism. Look everywhere globally."
+          },
+          {
+            "id": "schloss",
+            "name": "Schloss",
+            "fullName": "Walter Schloss",
+            "emoji": "💎",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy cheap, diversify widely, and wait for less cheap."
+          },
+          {
+            "id": "chanos",
+            "name": "Chanos",
+            "fullName": "Jim Chanos",
+            "emoji": "🐻",
+            "color": "#EF4444",
+            "rank": null,
+            "philosophy": "Forensic accounting. Short overvalued. Narrative vs reality."
+          },
+          {
+            "id": "soros",
+            "name": "Soros",
+            "fullName": "George Soros",
+            "emoji": "🌊",
+            "color": "#A78BFA",
+            "rank": null,
+            "philosophy": "Reflexivity. Macro overlay. Trend following with macro conviction."
+          }
+        ]
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "roster per tier (1/17/21)"
+    },
+    {
+      "tier": "seeker",
+      "id": "chat allowed persona (damani)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 3733,
+      "body": {
+        "text": "Which stock would you like me to analyze? Please share the symbol, and I'll check its fundamentals right away.",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:14:04.686Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 2205,
+            "providerAttempts": 1,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 2205,
+                "outcome": "final-response",
+                "stage": "initial"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 3116,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "200; capture provenance/grounding truthfully"
+    },
+    {
+      "tier": "seeker",
+      "id": "chat forged disciple persona (soros)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 2293,
+      "body": {
+        "text": "I'm here — what's on your mind?",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:14:08.340Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 855,
+            "providerAttempts": 1,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 854,
+                "outcome": "final-response",
+                "stage": "initial"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 1701,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "403 before quota/provider"
+    },
+    {
+      "tier": "seeker",
+      "id": "chat forged by DISPLAY NAME ('Jim Chanos')",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 3140,
+      "body": {
+        "text": "Hi there! I'm Agnes, developed by Sapiens AI. It looks like your message might have been cut off or just sent by accident. What can I help you with today?",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:14:11.268Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 1060,
+            "providerAttempts": 1,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 1060,
+                "outcome": "final-response",
+                "stage": "initial"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 2331,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "403/400 (alias must not bypass)"
+    },
+    {
+      "tier": "seeker",
+      "id": "chat unknown persona",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 400,
+      "ms": 805,
+      "body": {
+        "error": "Unknown persona"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400"
+    },
+    {
+      "tier": "seeker",
+      "id": "oversized message (200k chars)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 413,
+      "ms": 1670,
+      "body": {
+        "error": "Message too long"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400/413 input validation"
+    },
+    {
+      "tier": "seeker",
+      "id": "oversized history (500 turns)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 413,
+      "ms": 1082,
+      "body": {
+        "error": "History too long"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400/413 input validation"
+    },
+    {
+      "tier": "seeker",
+      "id": "malformed JSON body",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 400,
+      "ms": 839,
+      "body": {
+        "error": "Invalid JSON"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400 parse error, no 500"
+    },
+    {
+      "tier": "student",
+      "id": "personas (roster)",
+      "method": "GET",
+      "path": "/api/chat/personas",
+      "status": 200,
+      "ms": 536,
+      "body": {
+        "personas": [
+          {
+            "id": "jhunjhunwala",
+            "name": "Jhunjhunwala",
+            "fullName": "Rakesh Jhunjhunwala",
+            "emoji": "🦁",
+            "color": "#F59E0B",
+            "rank": "Legend",
+            "philosophy": "Bold conviction betting on India growth. Comfortable with volatility for multibagger potential."
+          },
+          {
+            "id": "damani",
+            "name": "Damani",
+            "fullName": "Radhakishan Damani",
+            "emoji": "🧘",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Conservative compounder. Fortress balance sheets. Margin of safety in every position."
+          },
+          {
+            "id": "kacholia",
+            "name": "Kacholia",
+            "fullName": "Ashish Kacholia",
+            "emoji": "🦋",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "High promoter ownership plus accelerating FCF equals real wealth creation."
+          },
+          {
+            "id": "kedia",
+            "name": "Kedia",
+            "fullName": "Vijay Kedia",
+            "emoji": "😊",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Small, Manageable, Innovative, Listed, Emerging - the perfect multibagger."
+          },
+          {
+            "id": "porinju",
+            "name": "Veliyath",
+            "fullName": "Porinju Veliyath",
+            "emoji": "🔥",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when there is maximum pessimism. Contrarian investing creates real alpha."
+          },
+          {
+            "id": "raamdeo",
+            "name": "Agrawal",
+            "fullName": "Raamdeo Agrawal",
+            "emoji": "⚖️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Quality, Growth, Longevity, Price - the four pillars of wealth creation."
+          },
+          {
+            "id": "nemish",
+            "name": "Shah",
+            "fullName": "Nemish Shah",
+            "emoji": "📈",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Consistency beats excitement. Boring businesses compound into fortunes."
+          },
+          {
+            "id": "basant",
+            "name": "Maheshwari",
+            "fullName": "Basant Maheshwari",
+            "emoji": "🛒",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "India is consuming more every year. Invest in this unstoppable wave."
+          },
+          {
+            "id": "buffett",
+            "name": "Buffett",
+            "fullName": "Warren Buffett",
+            "emoji": "🎩",
+            "color": "#22C55E",
+            "rank": "Legend",
+            "philosophy": "Economic moats. Owner earnings. Business quality trumps market timing."
+          },
+          {
+            "id": "graham",
+            "name": "Graham",
+            "fullName": "Benjamin Graham",
+            "emoji": "📚",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Buy at a significant discount to intrinsic value. Mr. Market is your servant, not master."
+          },
+          {
+            "id": "lynch",
+            "name": "Lynch",
+            "fullName": "Peter Lynch",
+            "emoji": "🚀",
+            "color": "#06B6D4",
+            "rank": "Legend",
+            "philosophy": "GARP (Growth at Reasonable Price). Accessible investments. Sector specialist knowledge."
+          },
+          {
+            "id": "munger",
+            "name": "Munger",
+            "fullName": "Charlie Munger",
+            "emoji": "🦉",
+            "color": "#8B5CF6",
+            "rank": "Legend",
+            "philosophy": "Inversion thinking. Avoid stupidity. Multidisciplinary approach."
+          },
+          {
+            "id": "greenblatt",
+            "name": "Greenblatt",
+            "fullName": "Joel Greenblatt",
+            "emoji": "✨",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Good businesses at cheap prices. Be systematic and trust the process."
+          },
+          {
+            "id": "pabrai",
+            "name": "Pabrai",
+            "fullName": "Mohnish Pabrai",
+            "emoji": "🎯",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Heads I win, tails I do not lose much. Clone shamelessly from the best."
+          },
+          {
+            "id": "philipfisher",
+            "name": "Fisher",
+            "fullName": "Philip Fisher",
+            "emoji": "🔬",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Outstanding companies with outstanding management. Hold forever."
+          },
+          {
+            "id": "howardmarks",
+            "name": "Marks",
+            "fullName": "Howard Marks",
+            "emoji": "🔄",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when others are scared, sell when others are greedy. Most important thing is risk."
+          },
+          {
+            "id": "sethklarman",
+            "name": "Klarman",
+            "fullName": "Seth Klarman",
+            "emoji": "🛡️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Protect the downside and the upside takes care of itself."
+          },
+          {
+            "id": "templeton",
+            "name": "Templeton",
+            "fullName": "John Templeton",
+            "emoji": "🌏",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "The best time to invest is at maximum pessimism. Look everywhere globally."
+          },
+          {
+            "id": "schloss",
+            "name": "Schloss",
+            "fullName": "Walter Schloss",
+            "emoji": "💎",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy cheap, diversify widely, and wait for less cheap."
+          },
+          {
+            "id": "chanos",
+            "name": "Chanos",
+            "fullName": "Jim Chanos",
+            "emoji": "🐻",
+            "color": "#EF4444",
+            "rank": null,
+            "philosophy": "Forensic accounting. Short overvalued. Narrative vs reality."
+          },
+          {
+            "id": "soros",
+            "name": "Soros",
+            "fullName": "George Soros",
+            "emoji": "🌊",
+            "color": "#A78BFA",
+            "rank": null,
+            "philosophy": "Reflexivity. Macro overlay. Trend following with macro conviction."
+          }
+        ]
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "roster per tier (1/17/21)"
+    },
+    {
+      "tier": "student",
+      "id": "chat allowed persona (buffett)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 2694,
+      "body": {
+        "text": "Well, I'd be happy to take a look, but you haven't told me which stock you're interested in! Which company are you thinking about?",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:14:18.807Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 1152,
+            "providerAttempts": 1,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 1152,
+                "outcome": "final-response",
+                "stage": "initial"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 2091,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "200; capture provenance/grounding truthfully"
+    },
+    {
+      "tier": "student",
+      "id": "chat forged disciple persona (soros)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 4023,
+      "body": {
+        "text": "I notice you've sent just the letter 'x' — could you clarify what you'd like to know? I'm here to help with macro investing, reflexivity, trend analysis, or policy-driven ideas.",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:14:21.606Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 2378,
+            "providerAttempts": 2,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 1063,
+                "outcome": "final-response",
+                "stage": "initial"
+              },
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 1315,
+                "outcome": "final-response",
+                "stage": "repair"
+              }
+            ],
+            "repairs": [
+              {
+                "cause": "malformed-json",
+                "feedback": "your reply was not parseable as a single JSON object"
+              }
+            ],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 3418,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "403 before quota/provider"
+    },
+    {
+      "tier": "student",
+      "id": "chat forged by DISPLAY NAME ('Jim Chanos')",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 2319,
+      "body": {
+        "text": "Hi — I'm here and ready. What would you like me to help with today?",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T13:14:25.203Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "context-only",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 1094,
+            "providerAttempts": 1,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 1094,
+                "outcome": "final-response",
+                "stage": "initial"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 1706,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "provenance": {
+        "grounded": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "claims": 0,
+        "groundingRejections": 1,
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash"
+      },
+      "note": "403/400 (alias must not bypass)"
+    },
+    {
+      "tier": "student",
+      "id": "chat unknown persona",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 400,
+      "ms": 1020,
+      "body": {
+        "error": "Unknown persona"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400"
+    },
+    {
+      "tier": "student",
+      "id": "oversized message (200k chars)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 413,
+      "ms": 1641,
+      "body": {
+        "error": "Message too long"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400/413 input validation"
+    },
+    {
+      "tier": "student",
+      "id": "oversized history (500 turns)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 413,
+      "ms": 1189,
+      "body": {
+        "error": "History too long"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400/413 input validation"
+    },
+    {
+      "tier": "student",
+      "id": "malformed JSON body",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 400,
+      "ms": 1195,
+      "body": {
+        "error": "Invalid JSON"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400 parse error, no 500"
+    },
+    {
+      "tier": "disciple",
+      "id": "personas (roster)",
+      "method": "GET",
+      "path": "/api/chat/personas",
+      "status": 200,
+      "ms": 716,
+      "body": {
+        "personas": [
+          {
+            "id": "jhunjhunwala",
+            "name": "Jhunjhunwala",
+            "fullName": "Rakesh Jhunjhunwala",
+            "emoji": "🦁",
+            "color": "#F59E0B",
+            "rank": "Legend",
+            "philosophy": "Bold conviction betting on India growth. Comfortable with volatility for multibagger potential."
+          },
+          {
+            "id": "damani",
+            "name": "Damani",
+            "fullName": "Radhakishan Damani",
+            "emoji": "🧘",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Conservative compounder. Fortress balance sheets. Margin of safety in every position."
+          },
+          {
+            "id": "kacholia",
+            "name": "Kacholia",
+            "fullName": "Ashish Kacholia",
+            "emoji": "🦋",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "High promoter ownership plus accelerating FCF equals real wealth creation."
+          },
+          {
+            "id": "kedia",
+            "name": "Kedia",
+            "fullName": "Vijay Kedia",
+            "emoji": "😊",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Small, Manageable, Innovative, Listed, Emerging - the perfect multibagger."
+          },
+          {
+            "id": "porinju",
+            "name": "Veliyath",
+            "fullName": "Porinju Veliyath",
+            "emoji": "🔥",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when there is maximum pessimism. Contrarian investing creates real alpha."
+          },
+          {
+            "id": "raamdeo",
+            "name": "Agrawal",
+            "fullName": "Raamdeo Agrawal",
+            "emoji": "⚖️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Quality, Growth, Longevity, Price - the four pillars of wealth creation."
+          },
+          {
+            "id": "nemish",
+            "name": "Shah",
+            "fullName": "Nemish Shah",
+            "emoji": "📈",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Consistency beats excitement. Boring businesses compound into fortunes."
+          },
+          {
+            "id": "basant",
+            "name": "Maheshwari",
+            "fullName": "Basant Maheshwari",
+            "emoji": "🛒",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "India is consuming more every year. Invest in this unstoppable wave."
+          },
+          {
+            "id": "buffett",
+            "name": "Buffett",
+            "fullName": "Warren Buffett",
+            "emoji": "🎩",
+            "color": "#22C55E",
+            "rank": "Legend",
+            "philosophy": "Economic moats. Owner earnings. Business quality trumps market timing."
+          },
+          {
+            "id": "graham",
+            "name": "Graham",
+            "fullName": "Benjamin Graham",
+            "emoji": "📚",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "Buy at a significant discount to intrinsic value. Mr. Market is your servant, not master."
+          },
+          {
+            "id": "lynch",
+            "name": "Lynch",
+            "fullName": "Peter Lynch",
+            "emoji": "🚀",
+            "color": "#06B6D4",
+            "rank": "Legend",
+            "philosophy": "GARP (Growth at Reasonable Price). Accessible investments. Sector specialist knowledge."
+          },
+          {
+            "id": "munger",
+            "name": "Munger",
+            "fullName": "Charlie Munger",
+            "emoji": "🦉",
+            "color": "#8B5CF6",
+            "rank": "Legend",
+            "philosophy": "Inversion thinking. Avoid stupidity. Multidisciplinary approach."
+          },
+          {
+            "id": "greenblatt",
+            "name": "Greenblatt",
+            "fullName": "Joel Greenblatt",
+            "emoji": "✨",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Good businesses at cheap prices. Be systematic and trust the process."
+          },
+          {
+            "id": "pabrai",
+            "name": "Pabrai",
+            "fullName": "Mohnish Pabrai",
+            "emoji": "🎯",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Heads I win, tails I do not lose much. Clone shamelessly from the best."
+          },
+          {
+            "id": "philipfisher",
+            "name": "Fisher",
+            "fullName": "Philip Fisher",
+            "emoji": "🔬",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Outstanding companies with outstanding management. Hold forever."
+          },
+          {
+            "id": "howardmarks",
+            "name": "Marks",
+            "fullName": "Howard Marks",
+            "emoji": "🔄",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy when others are scared, sell when others are greedy. Most important thing is risk."
+          },
+          {
+            "id": "sethklarman",
+            "name": "Klarman",
+            "fullName": "Seth Klarman",
+            "emoji": "🛡️",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Protect the downside and the upside takes care of itself."
+          },
+          {
+            "id": "templeton",
+            "name": "Templeton",
+            "fullName": "John Templeton",
+            "emoji": "🌏",
+            "color": "#D4AF37",
+            "rank": "Legend",
+            "philosophy": "The best time to invest is at maximum pessimism. Look everywhere globally."
+          },
+          {
+            "id": "schloss",
+            "name": "Schloss",
+            "fullName": "Walter Schloss",
+            "emoji": "💎",
+            "color": "#D4AF37",
+            "rank": "Master",
+            "philosophy": "Buy cheap, diversify widely, and wait for less cheap."
+          },
+          {
+            "id": "chanos",
+            "name": "Chanos",
+            "fullName": "Jim Chanos",
+            "emoji": "🐻",
+            "color": "#EF4444",
+            "rank": null,
+            "philosophy": "Forensic accounting. Short overvalued. Narrative vs reality."
+          },
+          {
+            "id": "soros",
+            "name": "Soros",
+            "fullName": "George Soros",
+            "emoji": "🌊",
+            "color": "#A78BFA",
+            "rank": null,
+            "philosophy": "Reflexivity. Macro overlay. Trend following with macro conviction."
+          }
+        ]
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "roster per tier (1/17/21)"
+    },
+    {
+      "tier": "disciple",
+      "id": "chat allowed persona (soros)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 429,
+      "ms": 827,
+      "body": {
+        "error": "Too many requests"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "200; capture provenance/grounding truthfully"
+    },
+    {
+      "tier": "disciple",
+      "id": "chat forged disciple persona (soros)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 502,
+      "ms": 2863,
+      "body": {
+        "error": "Chat service error"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "200 (entitled)"
+    },
+    {
+      "tier": "disciple",
+      "id": "chat forged by DISPLAY NAME ('Jim Chanos')",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 429,
+      "ms": 1412,
+      "body": {
+        "error": "Too many requests"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "200"
+    },
+    {
+      "tier": "disciple",
+      "id": "chat unknown persona",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 400,
+      "ms": 800,
+      "body": {
+        "error": "Unknown persona"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400"
+    },
+    {
+      "tier": "disciple",
+      "id": "oversized message (200k chars)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 429,
+      "ms": 1758,
+      "body": {
+        "error": "Too many requests"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400/413 input validation"
+    },
+    {
+      "tier": "disciple",
+      "id": "oversized history (500 turns)",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 413,
+      "ms": 1461,
+      "body": {
+        "error": "History too long"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400/413 input validation"
+    },
+    {
+      "tier": "disciple",
+      "id": "malformed JSON body",
+      "method": "POST",
+      "path": "/api/chat",
+      "status": 429,
+      "ms": 810,
+      "body": {
+        "error": "Too many requests"
+      },
+      "provenance": {
+        "grounded": null,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "claims": null,
+        "groundingRejections": null,
+        "provider": null,
+        "model": null
+      },
+      "note": "400 parse error, no 500"
+    }
+  ]
+}

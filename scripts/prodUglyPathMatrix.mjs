@@ -157,17 +157,21 @@ const BIG_HISTORY = Array.from({ length: 500 }, (_, i) => ({
   role: i % 2 ? "assistant" : "user", content: `turn ${i} lorem ipsum dolor sit amet`,
 }));
 
-// anonymous
-await row("anonymous", "personas", "GET", "/api/chat/personas", {}, "fail-closed 401");
-await row("anonymous", "chat valid persona", "POST", "/api/chat", { body: { personaId: "damani", message: "hello" } }, "401, no quota, no provider call");
-await row("anonymous", "chat forged disciple persona", "POST", "/api/chat", { body: { personaId: "soros", message: "x" } }, "401");
+// anonymous — Commit M5 (free access): anonymous callers ARE the design:
+// one common 150/day quota keyed to the HMAC anonymous identity, bounded
+// by the per-IP burst limiter (12/60s). 200 + wire provenance is the
+// contract (see docs/evidence/round10/prod-ai-ugly-path-anonymous-r10.json
+// expectHint) — NOT 401.
+await row("anonymous", "personas", "GET", "/api/chat/personas", {}, "200 roster (free access; M5)");
+await row("anonymous", "chat valid persona", "POST", "/api/chat", { body: { personaId: "damani", message: "hello" } }, "200, quota + burst bounded (M5)");
+await row("anonymous", "chat any canonical persona", "POST", "/api/chat", { body: { personaId: "soros", message: "x" } }, "200 (M3: no tier gates personas)");
 
 for (const [tier, cookie] of Object.entries(tierCookie)) {
   await row(tier, "personas (roster)", "GET", "/api/chat/personas", { cookie }, `roster per tier (1/17/21)`);
   const allowed = tier === "seeker" ? "damani" : tier === "student" ? "buffett" : "soros";
   await row(tier, `chat allowed persona (${allowed})`, "POST", "/api/chat", { cookie, body: { personaId: allowed, message: "One short question about this stock's fundamentals." } }, "200; capture provenance/grounding truthfully");
-  await row(tier, "chat forged disciple persona (soros)", "POST", "/api/chat", { cookie, body: { personaId: "soros", message: "x" } }, tier === "disciple" ? "200 (entitled)" : "403 before quota/provider");
-  await row(tier, "chat forged by DISPLAY NAME ('Jim Chanos')", "POST", "/api/chat", { cookie, body: { personaId: "Jim Chanos", message: "x" } }, tier === "disciple" ? "200" : "403/400 (alias must not bypass)");
+  await row(tier, "chat any canonical persona (soros)", "POST", "/api/chat", { cookie, body: { personaId: "soros", message: "x" } }, "200 (M3 founder decision 2026-10-02: no tier may gate any feature; session identity + quota still apply)");
+  await row(tier, "chat by DISPLAY NAME ('Jim Chanos')", "POST", "/api/chat", { cookie, body: { personaId: "Jim Chanos", message: "x" } }, "200 when the display name resolves through the canonical alias map (M3: alias resolution IS the gate; a bogus name must 400)");
   await row(tier, "chat unknown persona", "POST", "/api/chat", { cookie, body: { personaId: "does-not-exist-xyz", message: "x" } }, "400");
   await row(tier, "oversized message (200k chars)", "POST", "/api/chat", { cookie, body: { personaId: allowed, message: OVERSIZED } }, "400/413 input validation");
   await row(tier, "oversized history (500 turns)", "POST", "/api/chat", { cookie, body: { personaId: allowed, message: "hi", history: BIG_HISTORY } }, "400/413 input validation");

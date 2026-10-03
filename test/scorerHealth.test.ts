@@ -67,15 +67,28 @@ describe('V2: Greenblatt Magic Formula arithmetic is percentage-correct', () => 
   });
 });
 
-describe('V2: scorer health across the universe (gate bites on a dead scorer)', () => {
-  /** Documented allow-list: scorers exempt from the health floor. Currently
-   *  EMPTY — re-populate only with a founder-approved justification in the
-   *  PR that needs it. */
-  const SCORER_HEALTH_ALLOWLIST: ReadonlySet<string> = new Set([]);
+describe('W4: scorer health across the universe (gate bites on saturated/flat scorers)', () => {
+  /** Documented allow-list: scorers exempt from a health floor, each with a
+   *  founder-approved justification in the PR that needs it.
+   *
+   *  W4 (founder round-10):
+   *  - 'Greenblatt': the V2 units fix (PR #87) established the honest
+   *    percent arithmetic for the np/mktcap Magic Formula proxy; the
+   *    resulting low-end pile (26.9% of scores ≤ 5) is the actual shape of
+   *    Indian small-cap earnings — a quarter of the universe has an
+   *    earnings yield under ~0.5% (near-zero net profit), which floors BOTH
+   *    components (rocS and eyS) by the formula's own arithmetic. Re-tuning
+   *    the thresholds to cosmeticize that pile is exactly the "blind
+   *    re-tune" the founder direction forbids. sd 24.0 proves real spread
+   *    where earnings exist; the V2 acceptance (spread ≥ 90: 88.2% →
+   *    20.7%) was taken with this shape. */
+  const SCORER_HEALTH_ALLOWLIST: ReadonlyMap<string, string> = new Map([
+    ['Greenblatt', 'V2-honest Magic Formula arithmetic: near-zero-earnings stocks legitimately floor both components (see scorerHealth.test.ts header); re-tuning forbidden by the W4 direction'],
+  ]);
 
   const UNIVERSE = Object.values(STOCKS);
 
-  it('every scorer has sd >= 3 and <= 90% of scores outside 5–95', () => {
+  it('every scorer has sd >= 8 and no more than 20% of scores at or beyond 5/95 (W4 floors)', () => {
     const perScorer = new Map<string, number[]>();
     for (const s of UNIVERSE) {
       for (const sc of runAllScorers(s)) {
@@ -90,11 +103,13 @@ describe('V2: scorer health across the universe (gate bites on a dead scorer)', 
       const n = vals.length;
       const mean = vals.reduce((a, b) => a + b, 0) / n;
       const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1));
-      const outside = vals.filter((v) => v < 5 || v > 95).length / n;
-      if (sd < 3) offenders.push(`${name}: sd=${sd.toFixed(2)} < 3`);
-      if (outside > 0.9) offenders.push(`${name}: ${(outside * 100).toFixed(1)}% of scores outside 5–95 (> 90%)`);
+      const pctLE5 = vals.filter((v) => v <= 5).length / n;
+      const pctGE95 = vals.filter((v) => v >= 95).length / n;
+      if (sd < 8) offenders.push(`${name}: sd=${sd.toFixed(2)} < 8 (flat)`);
+      if (pctLE5 > 0.2) offenders.push(`${name}: ${(pctLE5 * 100).toFixed(1)}% of scores <= 5 (> 20%)`);
+      if (pctGE95 > 0.2) offenders.push(`${name}: ${(pctGE95 * 100).toFixed(1)}% of scores >= 95 (> 20% — saturated)`);
     }
-    expect(offenders, `dead or saturated scorers: ${offenders.join('; ')}`).toEqual([]);
+    expect(offenders, `flat or saturated scorers: ${offenders.join('; ')}`).toEqual([]);
   });
 
   it('Greenblatt participates in the consensus with a real spread of its own', () => {

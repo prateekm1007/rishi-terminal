@@ -74,6 +74,14 @@
       "lib/ai/tools.ts",
       "test/aiToolLoop.test.ts",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "V1": [
+      "lib/db/migrations/018_security_definer_rpc_lockdown.sql",
+      "scripts/ci/security_definer_invariants.sql",
+      ".github/workflows/ci.yml",
+      "scripts/ci/commit-scope-registry.json",
+      "docs/evidence/v1/",
+      "scripts/commitScopeAudit.mjs"
     ]
   }
 }

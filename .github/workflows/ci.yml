@@ -147,6 +147,9 @@ jobs:
       - name: Assert security master invariants (D1-02)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/security_master_invariants.sql
 
+      - name: Assert SECURITY DEFINER EXECUTE lockdown (V1)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/security_definer_invariants.sql
+
   smoke:
     name: Playwright smoke (blocking since round 2 — green on 4+ consecutive runs)
     runs-on: ubuntu-latest

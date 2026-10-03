@@ -128,6 +128,70 @@ describe("R9-9 — price-registry intent coverage", () => {
   });
 });
 
+// ── R11 (directive 8): the standalone rate/yield word is scoped to the
+// instruments it actually names. The R10-03 standalone "rate(s)" term was
+// measured as a Rule-22 false-trigger risk: "rate my TCS research" and
+// "what growth rate should TCS achieve?" both collided with the generic
+// rate branch (verb usage; fundamentals metric). The discriminator is the
+// registry itself: for NON-EQUITY price instruments (FX pairs, commodities,
+// crypto, indexes, bonds) the word "rate"/"yield" names the observed price
+// datum ("USD/INR rate", "gold rate", "IN10YS yield"); on STOCK symbols it
+// is ordinary prose or a fundamentals compound and must NOT force the price
+// backstop or seed getPrices.
+describe("R11 — rate/yield scope: instrument-anchored, never stock-prose", () => {
+  it("'rate' as a VERB on a stock symbol -> NOT financial (no forced price tool)", () => {
+    expect(detectFinancialDataIntent("rate my TCS research").financial).toBe(false);
+    expect(detectFinancialDataIntent("How would you rate TCS as a business?").financial).toBe(false);
+    expect(detectFinancialDataIntent("Rate my DLF analysis please").financial).toBe(false);
+  });
+
+  it("'growth rate' / 'margin rate' are FUNDAMENTALS asks, not price asks", () => {
+    const g = detectFinancialDataIntent("What growth rate should TCS achieve?");
+    expect(g.financial).toBe(true);
+    expect(g.symbol).toBe("TCS");
+    expect(intentSeedTool("What growth rate should TCS achieve?")?.tool).toBe("getFinancials");
+
+    const m = detectFinancialDataIntent("What margin rate does INFY run at?");
+    expect(m.financial).toBe(true);
+    expect(m.symbol).toBe("INFY");
+    expect(intentSeedTool("What margin rate does INFY run at?")?.tool).toBe("getFinancials");
+  });
+
+  it("rate/yield on NON-EQUITY registry instruments stays a PRICE ask", () => {
+    expect(intentSeedTool("What is the current USD/INR rate?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USD/INR" },
+    });
+    expect(intentSeedTool("current USDINR rate please")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USDINR" },
+    });
+    const gold = detectFinancialDataIntent("gold rate today?");
+    expect(gold.financial).toBe(true);
+    expect(gold.symbol).toBe("GOLD");
+    expect(intentSeedTool("gold rate today?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "GOLD" },
+    });
+  });
+
+  it("yield asks on bond instruments seed the price/fixed-income surface", () => {
+    expect(intentSeedTool("What is the IN10YS yield level?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "IN10YS" },
+    });
+  });
+
+  it("dividend yield on a stock stays fundamentals", () => {
+    expect(intentSeedTool("What is the TCS dividend yield?")?.tool).toBe("getFinancials");
+  });
+
+  it("ordinary rate/yield prose without a registry symbol still never triggers", () => {
+    expect(detectFinancialDataIntent("at what rate does compounding grow the mind?").financial).toBe(false);
+    expect(detectFinancialDataIntent("patience is the yield of a settled mind").financial).toBe(false);
+  });
+});
+
 // ── R10-03: the "rate" term gap measured by the Round-10 baseline battery ──
 // The baseline battery (docs/evidence/round10/ai-latency-battery-r10-baseline.json,
 // production 6798f62) recorded the row "What is the current USD/INR rate?"
@@ -136,6 +200,8 @@ describe("R9-9 — price-registry intent coverage", () => {
 // rates?" but not standalone "rate(s)", so Signal 2 failed before the
 // slashed-pair branch ever ran. The ask must be financial (backstop) AND
 // seed the canonical getPrices tool (reactive engagement, R9-9 design).
+// R11 keeps these green via the instrument-anchored branch (the slashed
+// pair names the instrument; the rate word names the datum).
 describe("R10-03 — standalone rate term closes the USD/INR rate gap", () => {
   it("slashed pair + standalone 'rate' -> financial with the canonical symbol", () => {
     const r = detectFinancialDataIntent("What is the current USD/INR rate?");

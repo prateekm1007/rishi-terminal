@@ -162,3 +162,64 @@ describe("R10-03 — standalone rate term closes the USD/INR rate gap", () => {
     expect(detectFinancialDataIntent("at what rate does compounding grow the mind?").financial).toBe(false);
   });
 });
+
+// ── R10-08 (Coder Directions 2026-10-03, directive 8): the standalone ──────
+// "rate(s)" term added in R10-03 is BROAD — it matches "rate" as an English
+// verb and shadows the more specific fundamental compounds in the seed
+// dispatch (the prices entry is scanned FIRST, so "growth rate" seeded
+// getPrices). Rule-15 root-cause fix: narrow the vocabulary and the
+// dispatch instead of removing intent enforcement.
+//   - "rate my <ticker> <noun>" is prose, not a price ask -> no intent,
+//     no seed (Rule-22 false-trigger class);
+//   - "growth rate / margin rate of <ticker>" are FUNDAMENTAL metrics ->
+//     the getFinancials seed, never the price tool;
+//   - FX-pair and bond instruments keep the rate ask -> getPrices
+//     (R10-03 behavior preserved: "USD/INR rate" still seeds getPrices);
+//   - a bond YIELD ask seeds the canonical price/fixed-income surface.
+describe("R10-08 — standalone rate term narrowed (false triggers + dispatch)", () => {
+  it("'rate' as a VERB before a ticker + noun is prose, not a data ask", () => {
+    const r = detectFinancialDataIntent("rate my TCS research");
+    expect(r.financial).toBe(false);
+    expect(intentSeedTool("rate my TCS research")).toBeNull();
+  });
+
+  it("'growth rate' of a ticker is a FUNDAMENTAL metric, not a price ask", () => {
+    const r = detectFinancialDataIntent("what growth rate should TCS achieve?");
+    expect(r.financial).toBe(true);
+    expect(r.symbol).toBe("TCS");
+    expect(intentSeedTool("what growth rate should TCS achieve?")).toEqual({
+      tool: "getFinancials",
+      args: { symbol: "TCS" },
+    });
+  });
+
+  it("'margin rate' of a ticker routes to fundamentals too", () => {
+    expect(intentSeedTool("What margin rate does TCS maintain?")).toEqual({
+      tool: "getFinancials",
+      args: { symbol: "TCS" },
+    });
+  });
+
+  it("a bond YIELD ask seeds the canonical price/fixed-income surface", () => {
+    expect(intentSeedTool("What is the IN10YS yield level?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "IN10YS" },
+    });
+  });
+
+  it("'rate of <fx pair>' (reverse phrasing) still seeds the price tool", () => {
+    const r = detectFinancialDataIntent("What is the rate of USD/INR?");
+    expect(r.financial).toBe(true);
+    expect(r.symbol).toBe("USD/INR");
+    expect(intentSeedTool("What is the rate of USD/INR?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USD/INR" },
+    });
+  });
+
+  it("fundamental 'rate' compounds never force a price tool on prose guards", () => {
+    // Conjunction still required: no registry symbol -> prose even with
+    // a fundamental rate compound present.
+    expect(detectFinancialDataIntent("what growth rate is healthy for a company?").financial).toBe(false);
+  });
+});

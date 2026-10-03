@@ -34,6 +34,8 @@ import 'server-only';
 
 import { STOCKS } from '@/data/stocks';
 import { PRICE_REGISTRY_TOKENS, SLASHED } from '@/lib/registry/validateInput';
+import { FOREX_PAIRS } from '@/data/forex';
+import { BONDS } from '@/data/bonds';
 
 /** Registry symbol tokens (R9-9, Rule 14): the security master UNION the
  * canonical price registry (indexes/commodities/crypto/forex/bonds — the
@@ -67,15 +69,51 @@ const SLASHED_PAIR_RE: RegExp | null =
 // showed were dodging the backstop: "What is WTI trading at?", "USD/INR
 // exchange rate?", "10Y yield level?". Each names a datum the canonical
 // price layer serves; the Signal-1 conjunction still gates every trigger.
-// R10-03 adds standalone "rate(s)": the Round-10 baseline battery measured
-// "What is the current USD/INR rate?" dodging the backstop entirely (Signal
-// 2 failed on the missing term before the slashed-pair branch could run)
-// while /api/prices served live USD/INR on the same runtime. "rate" names a
-// datum the price layer serves (FX rate, yield, commodity quote); the
-// conjunction still requires a registry symbol, so ordinary speech
-// ("rate my discipline") never triggers.
+// R10-03 added standalone "rate(s)" to close the measured "What is the
+// current USD/INR rate?" backstop dodge — but a bare "rate" also matches
+// "rate" as an English VERB ("rate my TCS research", R10-08 Rule-22
+// false-trigger class), so R10-08 REMOVED it here. The rate ask is now
+// covered by RATE_DATA_RE below: "rate(s)" is a data term only when it is
+// in an adjacency relation with a canonical FX/bond INSTRUMENT token
+// ("USD/INR rate", "rate of USD/INR", "IN10YS yield"), never free-standing
+// next to a stock ticker. Fundamental compounds ("growth rates?",
+// "margins?") stay here so the conjunction still fires for them.
 const DATA_TERM_RE =
-  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|trading|levels?|yields?|exchange rates?)\b/i;
+  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|trading|levels?|yields?|exchange rates?)\b/i;
+
+/** R10-08 (Coder Directions directive 8, Rule 15 root cause): the rate/yield
+ * DATA-TERM pattern for canonical RATE INSTRUMENTS — FX pairs and bonds,
+ * the asset classes whose observable is literally a rate or a yield. Built
+ * once from the SAME data files the price layer serves (data/forex.ts,
+ * data/bonds.ts via validateInput's SLASHED set) — no re-enumeration
+ * (Rule 14). Three conservative adjacency shapes, each requiring an
+ * instrument token, so "rate my TCS research" and free-standing "rate"
+ * prose can never match:
+ *   1. "<pair|bond> rate(s)" / "<pair|bond> exchange rate(s)"   (forward)
+ *   2. "rate(s) of|for <pair|bond>"                              (reverse)
+ *   3. "<bond> yield(s)"                                         (yield)
+ * Capture group 1/2 carries the bare term so `matchedTerm` stays the
+ * data word ("rate"/"yield"), matching the R10-03 contract. */
+const RATE_INSTRUMENT_ALT: string = Array.from(
+  new Set([
+    ...Array.from(SLASHED),
+    ...FOREX_PAIRS.map((f) => f.symbol.toUpperCase()),
+    ...BONDS.map((b) => b.symbol.toUpperCase()),
+  ]),
+)
+  .map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .sort((a, b) => b.length - a.length)
+  .join('|');
+
+const RATE_DATA_RE: RegExp | null =
+  RATE_INSTRUMENT_ALT.length > 0
+    ? new RegExp(
+        `\\b(?:${RATE_INSTRUMENT_ALT})\\s+(?:exchange\\s+)?(rates?)\\b` +
+          `|\\b(rates?)\\s+(?:of|for)\\s+(?:${RATE_INSTRUMENT_ALT})\\b` +
+          `|\\b(?:${RATE_INSTRUMENT_ALT})\\s+(yields?)\\b`,
+        'i',
+      )
+    : null;
 
 export interface FinancialDataIntent {
   /** True when the request clearly asks for symbol-specific financial data. */
@@ -95,8 +133,19 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   const text = message ?? '';
   if (text.length === 0) return { financial: false };
 
-  const termMatch = DATA_TERM_RE.exec(text);
+  // R10-08: Signal 2 is the static financial vocabulary OR the instrument
+  // rate/yield adjacency pattern. The bare "rate(s)" verb reading is gone
+  // from the static set — only an FX/bond instrument adjacency can supply
+  // it now, so "rate my TCS research" never reaches the conjunction.
+  const staticTerm = DATA_TERM_RE.exec(text);
+  const rateTerm = staticTerm ? null : RATE_DATA_RE?.exec(text) ?? null;
+  const termMatch = staticTerm ?? rateTerm;
   if (!termMatch) return { financial: false };
+  const matchedTermText = staticTerm
+    ? staticTerm[0]
+    : (rateTerm as RegExpExecArray)[1] ??
+      (rateTerm as RegExpExecArray)[2] ??
+      (rateTerm as RegExpExecArray)[3];
 
   // R9-9: slashed FX pairs first — tokenization would split "USD/INR"
   // into USD + INR and lose the pair. The slashed spelling is exactly
@@ -104,7 +153,7 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   if (SLASHED_PAIR_RE) {
     const pair = SLASHED_PAIR_RE.exec(text);
     if (pair) {
-      return { financial: true, symbol: pair[0].toUpperCase(), matchedTerm: termMatch[0] };
+      return { financial: true, symbol: pair[0].toUpperCase(), matchedTerm: matchedTermText };
     }
   }
 
@@ -117,7 +166,7 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
 
   for (const token of tokens) {
     if (SYMBOL_TOKENS.has(token)) {
-      return { financial: true, symbol: token, matchedTerm: termMatch[0] };
+      return { financial: true, symbol: token, matchedTerm: matchedTermText };
     }
   }
   return { financial: false };
@@ -137,13 +186,24 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
  * advice question (Rule 4: nothing fabricated; advice stays a discussion).
  */
 const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinancials" | "getScore" | "getPeers" }> = [
-  // R10-03: "rate(s)" seeds getPrices — a rate ask names a datum the
-  // canonical price layer observes and serves (see DATA_TERM_RE note).
-  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote|rates?)\b/i, tool: "getPrices" },
+  // R10-08: the bare "rates?" term is REMOVED from the prices entry — it
+  // scanned before the fundamentals entry, so "growth rate"/"margin rate"
+  // asks seeded getPrices (the measured R10-08 dispatch defect). Instrument
+  // rate/yield asks are seeded by the dedicated RATE_DATA_RE entry BELOW
+  // the fundamentals entry, so the more specific fundamental compounds win.
+  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote)\b/i, tool: "getPrices" },
   {
     re: /\b(fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|revenues?|profits?|earnings|eps|dividends?|book value|margins?|growth rates?)\b/i,
     tool: "getFinancials",
   },
+  // R10-08: FX-pair/bond rate and bond-yield asks seed getPrices — the
+  // canonical price/fixed-income surface (R10-03 behavior preserved for
+  // "USD/INR rate", now registry-adjacency-narrowed instead of bare).
+  // Scanned AFTER the fundamentals entry: fundamental compounds are the
+  // more specific terms and must win the dispatch.
+  ...(RATE_DATA_RE
+    ? [{ re: RATE_DATA_RE, tool: "getPrices" as const }]
+    : []),
   { re: /\b(scores?|rishi scores?|consensus|verdicts?)\b/i, tool: "getScore" },
   { re: /\b(peers?|competitors?)\b/i, tool: "getPeers" },
 ];

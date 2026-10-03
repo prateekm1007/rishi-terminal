@@ -135,6 +135,22 @@
       "lib/ai/financialIntent.ts",
       "test/financialIntent.test.ts",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "R12-05": [
+      "docs/evidence/round12/ci-event-stall-2026-10-03.md",
+      "app/fno/page.tsx",
+      "app/fno/options/page.tsx",
+      "app/fno/backtester/page.tsx",
+      "components/ui/LegalDisclaimer.tsx",
+      "messages/en.json",
+      "messages/hi.json",
+      "messages/bn.json",
+      "messages/mr.json",
+      "messages/ta.json",
+      "messages/te.json",
+      "messages/gu.json",
+      "test/fnoStrategyEduLocale.test.ts",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

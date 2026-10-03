@@ -133,6 +133,9 @@ export default function FnOHubPage() {
           }}>
             Strategy Library
           </h2>
+          <p style={{ fontSize: 12, color: "#64748B", marginBottom: 16, marginTop: -8 }}>
+            {t('fno.strategyEdu')}
+          </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "12px" }}>
             {STRATEGIES.map(s => (
               <Link key={s.name} href="/fno/backtester" style={{ textDecoration: "none" }}>

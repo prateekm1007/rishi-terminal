@@ -237,6 +237,9 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "item counts or ids in your claims or answer: every number you write " +
     "must be one of your own assertion values, or validation will reject " +
     "the whole response (a date like 2026-09-30 in the answer fails it). " +
+    "When you state a fact's number, copy it digit-for-digit from the fact " +
+    "annotation — never round it and never reformat it (write 1741.05, not " +
+    "1,741.1 or roughly 1741). " +
     // Round-5 (Q4): the parser now reads number words ("fifty percent"),
     // South-Asian scale forms ("1.2 lakh crore") and metric-name mentions.
     "(5) Number WORDS count as numbers: \"fifty percent\" is validated like " +
@@ -593,6 +596,31 @@ async function runGroundedLoop(
   let lastFinalCandidate = "";
   const CITE_FEEDBACK =
     "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it";
+  /** R10-03 (Coder Directions 2026-10-03, directives 7 + 8): the numeric
+   *  failure classes (field-value-mismatch, unsupported-numeric-prose,
+   *  evidence-path missing-claims) measured as the dominant financial repair
+   *  mass in the Round-10 baseline battery — with 6 rows ending in the
+   *  honest no-answer fallback because the generic feedback never told the
+   *  model WHICH number the validator rejected or WHAT the matched value
+   *  was. The repair stays ONE bounded re-ask with the SAME validation; only
+   *  the feedback gains specificity: the validator's own rejection lines
+   *  (they name the exact field/value mismatches), the matched assertion
+   *  values it may state, and the verbatim-echo rule. Rejections are
+   *  platform-generated validation strings (field names and numbers only —
+   *  no upstream bodies, no URLs, no stacks; Rule 10 safe). */
+  const buildGroundingRepairFeedback = (
+    rejections: readonly string[],
+    matchedAssertionValues: readonly string[],
+  ): string =>
+    (rejections.length > 0
+      ? "the validator rejected: " + rejections.slice(0, 4).join(" | ") + ". "
+      : "") +
+    "every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number" +
+    (matchedAssertionValues.length > 0
+      ? " (matched assertion values you may state: " + matchedAssertionValues.slice(0, 8).join(", ") + ")"
+      : "") +
+    "; " +
+    CITE_FEEDBACK;
   const repairFeedback = (cause: RepairCause, feedback: string): boolean => {
     if (repairsUsed >= MAX_FINAL_REPAIRS || !lastFinalCandidate) return false;
     repairsUsed += 1;
@@ -797,7 +825,7 @@ async function runGroundedLoop(
             repairFeedback(
               classifyGroundingRejections(grounding.rejections)[0] ??
                 (ungroundedNumbers.length > 0 ? "unsupported-numeric-prose" : "missing-claims"),
-              CITE_FEEDBACK,
+              buildGroundingRepairFeedback(grounding.rejections, [...matchedValues]),
             )
           )
             continue;
@@ -827,11 +855,12 @@ async function runGroundedLoop(
         // Evidence path (stock pages): some claims failed grounding — ONE
         // repair re-ask before the reply is served as unverified context
         // (round 3, §7; the fallback below is unchanged). R9 §7: the cause
-        // is classified from the validator's own rejections.
+        // is classified from the validator's own rejections. R10-03: the
+        // feedback carries those rejections + the matched value pool.
         if (
           repairFeedback(
             classifyGroundingRejections(grounding.rejections)[0] ?? "missing-claims",
-            CITE_FEEDBACK,
+            buildGroundingRepairFeedback(grounding.rejections, [...matchedValues]),
           )
         )
           continue;

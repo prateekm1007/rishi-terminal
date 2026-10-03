@@ -121,7 +121,8 @@ free as 24h-old events age out. Production currently serves `faa2348`
 (the R11-02 tree — chat healthy, R11-03's symbol/units fixes NOT live
 until the next deploy). The next merge after slots free is the deploy
 trigger (this PR, if merged after the window frees, serves exactly that
-purpose).
+purpose). Window state probed via this branch's own preview deploy
+attempts: still rate-limited at 04:44Z, 05:05Z and 05:22Z.
 
 ## 7. Pending final-SHA proofs (directive 28 conditions 2/6)
 

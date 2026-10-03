@@ -44,6 +44,8 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
       rpcCalls.push({ fn, args });
       if (fn === "consume_chat_quota") return { data: { ok: true, count: 1 }, error: null };
       if (fn === "refund_chat_quota") return { data: { ok: true, refunded: true }, error: null };
+      // W3: global spend caps (bump_rate_limit) — allowed by default here.
+      if (fn === "bump_rate_limit") return { data: { allowed: true, count: 0 }, error: null };
       return { data: null, error: null };
     },
     from: (table: string) => {
@@ -112,6 +114,8 @@ beforeEach(() => {
   stubProvider();
   vi.stubEnv("CHAT_API_BASE_URL", "https://apihub.agnes-ai.com/v1");
   vi.stubEnv("CHAT_API_KEY", "sk-test-key");
+  // W3: anonymous cases need the HMAC pepper (fail-closed identity).
+  vi.stubEnv("ANON_ID_PEPPER", "test-pepper-suite");
 });
 afterEach(() => {
   (globalThis as { fetch: unknown }).fetch = REAL_FETCH;

@@ -414,9 +414,15 @@ export async function generateEvidenceGroundedAnswer(args: GenerateArgs): Promis
     repairs: [],
   };
   const t0 = Date.now();
-  const answer = await runGroundedLoop(args, candidates, timings);
+  // W3 (founder round-10): token-usage collector, threaded like `timings`
+  // — the loop accumulates every completion's provider-reported usage;
+  // null while no completion reported one (the request cap still bounds
+  // that traffic).
+  const usage: { totalTokens: number | null } = { totalTokens: null };
+  const answer = await runGroundedLoop(args, candidates, timings, usage);
   if (answer) {
     const stateTimings = args.stockState?.timings();
+    answer.usage = { totalTokens: usage.totalTokens };
     answer.timings = {
       totalMs: Date.now() - t0,
       providerAttempts: timings.providerAttempts,
@@ -439,6 +445,7 @@ async function runGroundedLoop(
   args: GenerateArgs,
   candidates: AiProvider[],
   timings: LoopTimings,
+  usage: { totalTokens: number | null },
 ): Promise<AiAnswer | null> {
   const evidence = args.evidence ?? [];
   const hasInitialEvidence = evidence.length > 0;
@@ -503,8 +510,12 @@ async function runGroundedLoop(
             : await withProviderHealth(provider.id, () =>
                 callGemini(provider.apiKey, provider.model, system, args.history, args.message, TIMEOUT_MS, loopTurns),
               );
+        // W3: accumulate the provider-reported token usage for the global cap.
+        if (typeof t.totalTokens === "number" && Number.isFinite(t.totalTokens)) {
+          usage.totalTokens = (usage.totalTokens ?? 0) + t.totalTokens;
+        }
         entry.ms = Date.now() - attemptStart;
-        return { text: t, provider };
+        return { text: t.text, provider };
       } catch (err) {
         entry.ms = Date.now() - attemptStart;
         entry.outcome = "failed";

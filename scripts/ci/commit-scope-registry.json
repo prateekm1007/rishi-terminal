@@ -164,6 +164,36 @@
       "docs/evidence/round12/wti-chat-probe-96726c6.json",
       "scripts/prodPriceProvenanceSweep.mjs",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "W3": [
+      "lib/db/migrations/019_global_spend_counters.sql",
+      "lib/auth/anonIdentity.ts",
+      "lib/chat/globalSpend.ts",
+      "app/api/chat/route.ts",
+      "lib/ai/providers/openaiCompatible.ts",
+      "lib/ai/providers/gemini.ts",
+      "lib/ai/router.ts",
+      "lib/ai/schemas.ts",
+      ".env.example",
+      "docs/ACCESS_MODEL.md",
+      "app/privacy/page.tsx",
+      "docs/evidence/w3-019-live-2026-10-03.md",
+      "test/anonIdentity.test.ts",
+      "test/chat.globalSpend.test.ts",
+      "test/chat.anonymous.test.ts",
+      "test/chat.limits.test.ts",
+      "test/chat.quota.order.test.ts",
+      "test/chat.quota.assembly.test.ts",
+      "test/chat.provider.test.ts",
+      "test/chat.route.registrySymbol.test.ts",
+      "test/chat.route.personaAuth.test.ts",
+      "test/chat.route.canonicalEvidence.test.ts",
+      "test/chat.provider401.refund.test.ts",
+      "test/chat.multitool.composition.test.ts",
+      "test/evalChat.golden.test.ts",
+      "test/anonymous.access.test.ts",
+      "test/freeAccess.contract.test.ts",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

@@ -46,6 +46,8 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
         rateHits[key] = (rateHits[key] ?? 0) + 1;
         return { data: { allowed: rateHits[key] <= BURST_LIMIT, count: rateHits[key] }, error: null };
       }
+      // W3: global spend caps (bump_rate_limit) — allowed by default here.
+      if (fn === "bump_rate_limit") return { data: { allowed: true, count: 0 }, error: null };
       throw new Error(`unexpected rpc: ${fn}`);
     },
   }),
@@ -71,7 +73,7 @@ function makeGetReq(url: string): never {
   return { headers: { get: () => null }, url, nextUrl: { searchParams: new URL(url).searchParams } } as never;
 }
 
-const UUID_V5_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 beforeEach(() => {
   consumeCalls.length = 0;
@@ -85,6 +87,8 @@ beforeEach(() => {
   ) as unknown as typeof fetch;
   vi.stubEnv("CHAT_API_BASE_URL", "https://apihub.agnes-ai.com/v1");
   vi.stubEnv("CHAT_API_KEY", "sk-test-key");
+  // W3: the anonymous identity requires the HMAC pepper (fail closed).
+  vi.stubEnv("ANON_ID_PEPPER", "test-pepper-anonymous-suite");
 });
 
 afterEach(() => {
@@ -99,14 +103,14 @@ describe("anonymous chat (founder 2026-10-02: no sign-in required)", () => {
     expect(res.status).toBe(200);
   });
 
-  it("same IP twice -> ONE deterministic quota identity (a uuidv5, never the raw IP)", async () => {
+  it("same IP twice -> ONE deterministic quota identity (a pseudonymous digest, never the raw IP)", async () => {
     await POST(makeReq({ personaId: "buffett", history: [], message: "hi" }, "10.0.0.5"));
     await POST(makeReq({ personaId: "buffett", history: [], message: "hi" }, "10.0.0.5"));
     expect(consumeCalls.length).toBe(2);
     const a = consumeCalls[0].p_user_id as string;
     const b = consumeCalls[1].p_user_id as string;
     expect(a).toBe(b);
-    expect(a).toMatch(UUID_V5_RE);
+    expect(a).toMatch(UUID_RE);
     expect(a).not.toBe("10.0.0.5");
     expect(a).not.toContain("10.0.0.5");
   });
@@ -151,9 +155,13 @@ describe("anonymous chat (founder 2026-10-02: no sign-in required)", () => {
     );
   });
 
-  it("anonQuotaId is a pure deterministic uuidv5 of the ip string", () => {
-    expect(anonQuotaId("203.0.113.9")).toBe(anonQuotaId("203.0.113.9"));
-    expect(anonQuotaId("203.0.113.9")).not.toBe(anonQuotaId("203.0.113.10"));
-    expect(anonQuotaId("203.0.113.9")).toMatch(UUID_V5_RE);
+  it("anonQuotaId is a deterministic pepper-keyed uuid of the ip (W3: HMAC identity, superseding the uuidv5 form)", () => {
+    // W3 contract change (founder round-10): the identity is an HMAC under
+    // ANON_ID_PEPPER over the normalized (/64 or IPv4) address — the old
+    // pepperless uuidv5 was reversible by IP enumeration. Determinism,
+    // per-address distinction and the uuid shape carry over.
+    expect(anonQuotaId("203.0.113.9", "pepper")).toBe(anonQuotaId("203.0.113.9", "pepper"));
+    expect(anonQuotaId("203.0.113.9", "pepper")).not.toBe(anonQuotaId("203.0.113.10", "pepper"));
+    expect(anonQuotaId("203.0.113.9", "pepper")).toMatch(UUID_RE);
   });
 });

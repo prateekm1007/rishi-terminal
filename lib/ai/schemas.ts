@@ -208,6 +208,11 @@ export const AiAnswerSchema = z.object({
    *  budget was exhausted before a verifiable answer was produced — the
    *  honest BLOCKED termination, never a plausible fallback. */
   structuredResponse: z.enum(["valid", "invalid", "blocked"]).optional(),
+  /** W3 (founder round-10): provider-reported token usage for the GLOBAL
+   *  daily token cap — the sum across every completion of this request's
+   *  loop (initial + post-tool + repair). null when no completion
+   *  reported usage (the request cap still bounds that traffic). */
+  usage: z.object({ totalTokens: z.number().nullable() }).optional(),
   /** Commit L1: the bounded tool loop's audit trail — every tool the model
    *  requested with its explicit outcome status (ok | unknown-tool |
    *  invalid-args | unknown-symbol | no-data | failed). Machine-readable

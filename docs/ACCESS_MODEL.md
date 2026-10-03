@@ -39,9 +39,14 @@ It is protection and abuse control, never a product level:
 
 - Chat spend is bounded WITHOUT auth: a signed-in session contributes its
   account id as the quota identity; an anonymous caller is keyed to a
-  **deterministic per-IP uuidv5** (`lib/auth/anonIdentity.ts` — the raw IP
-  is never stored). The same atomic counter, refund-on-failure and
-  fail-closed semantics apply to both (R12).
+  **pseudonymous per-IP digest** (`lib/auth/anonIdentity.ts`, W3: an HMAC
+  under the `ANON_ID_PEPPER` server secret over the address, with IPv6
+  truncated to its /64 prefix — one prefix, one quota). The digest is
+  PSEUDONYMOUS, not anonymous: it is derived from the client IP and can
+  be re-derived by the platform. The same atomic counter,
+  refund-on-failure and fail-cailed semantics apply to both (R12), plus
+  GLOBAL daily request and token caps and a `CHAT_DISABLED` kill switch
+  that bound total spend regardless of identity count (W3).
 - `lib/auth/session.ts` resolves **authentication identity only**
   (`id`, `email`). It no longer resolves any product tier.
 - `GET /api/auth/me` returns `{ user: { id, email } }` or `{ user: null }` —

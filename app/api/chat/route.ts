@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/auth/session';
-import { anonQuotaId } from '@/lib/auth/anonIdentity';
+import { anonQuotaIdFromEnv } from '@/lib/auth/anonIdentity';
+import {
+  chatDisabled,
+  globalRequestCapExceeded,
+  globalTokenCapExceeded,
+  recordGlobalTokens,
+} from '@/lib/chat/globalSpend';
 import { resolvePersonaId } from '@/lib/chat/personas';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { STOCKS } from '@/data/stocks';
@@ -152,13 +158,31 @@ export async function POST(req: NextRequest) {
   // end, on the successful wire; error paths return without it — the
   // router timings are the attribution surface that matters there).
   const routeStart = Date.now();
+  // 0. W3 (founder round-10): the kill switch — before ANY identity,
+  //  quota, evidence or upstream work. The canned honest fallback.
+  if (chatDisabled()) {
+    return NextResponse.json(
+      { error: 'Chat temporarily unavailable', fallback: true },
+      { status: 503 },
+    );
+  }
   // 1. Identity (T5 sessions, now OPTIONAL — founder decision 2026-10-02):
   //    a signed-in session supplies the account id; an anonymous caller is
-  //    quota-keyed to a deterministic per-IP uuidv5. Neither path is a
+  //    quota-keyed to a PSEUDONYMOUS per-IP identity (W3: HMAC under
+  //    ANON_ID_PEPPER over the /64-truncated IP). Neither path is a
   //    feature gate — every caller gets the same pipeline, evidence loop,
   //    grounding and ONE common free quota (R12 spend control retained).
   const user = await getSessionUser();
-  const quotaIdentity = user?.id ?? anonQuotaId(clientIp(req));
+  let quotaIdentity: string;
+  try {
+    quotaIdentity = user?.id ?? anonQuotaIdFromEnv(clientIp(req));
+  } catch {
+    // W3: no pepper configured — the anonymous identity REFUSES to degrade
+    // to a pepperless digest (Constitution rule 6: fail closed, never a
+    // silently weaker scheme).
+    console.error('[chat] anonymous identity unavailable: ANON_ID_PEPPER is not configured');
+    return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
+  }
 
   // 2. Burst limit per IP.
   if (await ipBurstExceeded(clientIp(req))) {
@@ -257,8 +281,27 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
+  // 4.5 W3 (founder round-10): GLOBAL spend caps — bound TOTAL daily
+  //     spend regardless of how many identities ask (the per-identity
+  //     quota cannot bound a distributed abuser). Checked AFTER validation
+  //     (a 400/413 costs nothing) and BEFORE per-identity consumption (a
+  //     globally-capped request must not burn the caller's unit). Both
+  //     fail closed on infrastructure errors, matching consume_chat_quota.
+  if (await globalRequestCapExceeded()) {
+    return NextResponse.json(
+      { error: 'Chat temporarily unavailable', fallback: true },
+      { status: 503 },
+    );
+  }
+  if (await globalTokenCapExceeded()) {
+    return NextResponse.json(
+      { error: 'Chat temporarily unavailable', fallback: true },
+      { status: 503 },
+    );
+  }
+
   // 5. Daily quota — ONE common free quota for every caller (identity is
-  //    the server-resolved account id or the deterministic per-IP uuid —
+  //    the server-resolved account id or the pseudonymous per-IP digest —
   //    never a client-supplied value). N4: consumed only after the request
   //    validated — 400/413 paths above leave the counter untouched, and
   //    upstream failures below refund.
@@ -334,5 +377,9 @@ export async function POST(req: NextRequest) {
       evidenceMs,
     };
   }
+  // W3: record the provider-reported token usage against the global daily
+  // token cap (best-effort after the response is composed — see
+  // lib/chat/globalSpend for the failure semantics).
+  await recordGlobalTokens(answer.usage?.totalTokens);
   return NextResponse.json(wire);
 }

@@ -39,6 +39,11 @@ describe('W3 — normalizeIpForIdentity (truncation)', () => {
     expect(normalizeIpForIdentity('::ffff:203.0.113.7')).toBe('203.0.113.7');
   });
 
+  it('IPv4-mapped in HEX spelling collapses to the SAME IPv4 identity (equivalent addresses)', () => {
+    // ::ffff:203.0.113.7 and ::ffff:cb00:7107 are the same address.
+    expect(normalizeIpForIdentity('::ffff:cb00:7107')).toBe('203.0.113.7');
+  });
+
   it('IPv6 truncates to the /64 prefix (compressed and expanded spellings agree)', () => {
     expect(normalizeIpForIdentity('2001:db8:1:2:3:4:5:6')).toBe('2001:db8:1:2::/64');
     expect(normalizeIpForIdentity('2001:db8:1:2::dead:beef')).toBe('2001:db8:1:2::/64');
@@ -53,14 +58,95 @@ describe('W3 — normalizeIpForIdentity (truncation)', () => {
   it('IPv4 and IPv6 never collide after normalization', () => {
     expect(normalizeIpForIdentity('203.0.113.7')).not.toBe(normalizeIpForIdentity('203.0.113.7::'));
   });
+
+  it('embedded IPv4 tail inside general IPv6 counts as the last two groups', () => {
+    // 64:ff9b::1.2.3.4 -> /64 of 64:ff9b:0:0
+    expect(normalizeIpForIdentity('64:ff9b::1.2.3.4')).toBe('64:ff9b:0:0::/64');
+  });
+
+  it('zone indices are stripped before truncation', () => {
+    expect(normalizeIpForIdentity('fe80::1%eth0')).toBe('fe80:0:0:0::/64');
+    expect(normalizeIpForIdentity('fe80::1%25eth0')).toBe('fe80:0:0:0::/64');
+    expect(normalizeIpForIdentity('fe80::1%eth0')).toBe(normalizeIpForIdentity('fe80::1'));
+  });
+
+  it('zero/edge addresses', () => {
+    expect(normalizeIpForIdentity('::')).toBe('0:0:0:0::/64');
+    expect(normalizeIpForIdentity('::1')).toBe('0:0:0:0::/64');
+    expect(normalizeIpForIdentity('0.0.0.0')).toBe('0.0.0.0');
+    expect(normalizeIpForIdentity('255.255.255.255')).toBe('255.255.255.255');
+    expect(normalizeIpForIdentity('::')).toBe(normalizeIpForIdentity('::1'));
+  });
+
+  it('leading/trailing whitespace and case are normalized before validation', () => {
+    expect(normalizeIpForIdentity('  203.0.113.7 ')).toBe('203.0.113.7');
+    expect(normalizeIpForIdentity('2001:DB8:1:2::1')).toBe('2001:db8:1:2::/64');
+  });
+});
+
+describe('W3-D — malformed IPs map to ONE fail-closed shared identity', () => {
+  const MALFORMED: string[] = [
+    // malformed IPv4
+    '999.999.999.999',
+    '1.2.3',
+    '1.2.3.4.5',
+    '01.2.3.4', // leading-zero octet
+    '1.2.3.256',
+    '1.2.3.-4',
+    '1..2.3',
+    '300.1.1.1',
+    // malformed IPv6
+    '::::',
+    '1:2:3:4:5:6:7:8:9', // 9 groups
+    '12345::', // 5-digit group
+    'g:h:i::j', // non-hex
+    '1::2::3', // two ::
+    ':1:2:3:4:5:6:7', // stray leading colon
+    '1:2:3:4:5:6:7:', // stray trailing colon
+    '2001:db8::1.2.3.4.5', // bad embedded IPv4
+    '2001:db8:::ffff:1.2.3.4',
+    // neither IPv4 nor IPv6
+    'example.com',
+    'not:an:ip',
+    'garbage',
+    '-1',
+    '0',
+    '0x1.2.3.4',
+  ];
+
+  it.each(MALFORMED)('malformed input %j -> the shared fail-closed state', (input) => {
+    expect(normalizeIpForIdentity(input)).toBe('malformed-ip');
+  });
+
+  it('ALL malformed inputs share ONE quota identity (garbage cannot mint identities)', () => {
+    const ids = new Set(MALFORMED.map((ip) => anonQuotaId(ip, PEPPER)));
+    expect(ids.size).toBe(1);
+  });
+
+  it('the malformed identity is distinct from the no-header identity and from every valid one', () => {
+    expect(normalizeIpForIdentity('')).toBe('unknown');
+    expect(anonQuotaId('garbage', PEPPER)).not.toBe(anonQuotaId('203.0.113.7', PEPPER));
+    expect(anonQuotaId('garbage', PEPPER)).not.toBe(anonQuotaId('2001:db8:1:2::1', PEPPER));
+  });
+
+  it('valid inputs never map to the fail-closed state', () => {
+    expect(normalizeIpForIdentity('203.0.113.7')).not.toBe('malformed-ip');
+    expect(normalizeIpForIdentity('::ffff:203.0.113.7')).not.toBe('malformed-ip');
+    expect(normalizeIpForIdentity('2001:db8:1:2:3:4:5:6')).not.toBe('malformed-ip');
+    expect(normalizeIpForIdentity('::')).not.toBe('malformed-ip');
+  });
 });
 
 describe('W3 — anonQuotaId (HMAC pepper)', () => {
   it('100 IPv6 addresses in one /64 share ONE quota identity', () => {
     const ids = new Set<string>();
     for (let i = 0; i < 100; i++) {
-      const host = (i * 0x01010101 + 0x1234).toString(16).padStart(4, '0');
-      const ip = `2001:db8:42:1:${host}::${(i + 1).toString(16)}`;
+      // Valid 16-bit host groups (the original generator produced 7-hex-
+      // digit groups past i=14 — invalid literals the old tolerant parser
+      // silently accepted; the strict parser rejects them by design).
+      const g5 = (i * 4099 + 7) % 0x10000;
+      const g7 = (i * 8191 + 11) % 0x10000;
+      const ip = `2001:db8:42:1:${g5.toString(16)}:${g7.toString(16)}:${(i + 1).toString(16)}:a`;
       ids.add(anonQuotaId(ip, PEPPER));
     }
     expect(ids.size).toBe(1);

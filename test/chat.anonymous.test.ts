@@ -46,8 +46,9 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
         rateHits[key] = (rateHits[key] ?? 0) + 1;
         return { data: { allowed: rateHits[key] <= BURST_LIMIT, count: rateHits[key] }, error: null };
       }
-      // W3: global spend caps (bump_rate_limit) — allowed by default here.
-      if (fn === "bump_rate_limit") return { data: { allowed: true, count: 0 }, error: null };
+      // W3 closure: global spend caps (reserve/settle) — allowed by default here.
+      if (fn === "reserve_rate_limit") return { data: { allowed: true, count: 0 }, error: null };
+      if (fn === "settle_rate_limit") return { data: { ok: true, count: 0 }, error: null };
       throw new Error(`unexpected rpc: ${fn}`);
     },
   }),

@@ -193,7 +193,14 @@
       "test/evalChat.golden.test.ts",
       "test/anonymous.access.test.ts",
       "test/freeAccess.contract.test.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "lib/db/migrations/020_global_spend_reservation.sql",
+      "lib/db/migrations/021_drop_bump_rate_limit.sql",
+      "app/api/probe/ai-loop/route.ts",
+      ".github/workflows/ci.yml",
+      "scripts/ci/global_spend_invariants.sql",
+      "scripts/ci/security_definer_invariants.sql",
+      "test/globalSpendReservation.test.ts"
     ]
   }
 }

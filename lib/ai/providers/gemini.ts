@@ -5,6 +5,12 @@
 
 import type { ChatTurn, ProviderCompletion } from "./openaiCompatible";
 
+/** The per-attempt output cap sent as maxOutputTokens. W3-A: a factor
+ *  of the global token reservation ceiling (lib/chat/globalSpend.ts),
+ *  pinned by test/globalSpendReservation.test.ts — changing it requires
+ *  revisiting the ceiling. */
+export const PROVIDER_MAX_OUTPUT_TOKENS = 2048;
+
 export async function callGemini(
   apiKey: string,
   model: string,
@@ -35,7 +41,7 @@ export async function callGemini(
       temperature: 0.9,
       topK: 40,
       topP: 0.95,
-      maxOutputTokens: 2048,
+      maxOutputTokens: PROVIDER_MAX_OUTPUT_TOKENS,
     },
   };
 

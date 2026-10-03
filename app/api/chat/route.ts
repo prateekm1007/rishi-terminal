@@ -4,8 +4,9 @@ import { anonQuotaIdFromEnv } from '@/lib/auth/anonIdentity';
 import {
   chatDisabled,
   globalRequestCapExceeded,
-  globalTokenCapExceeded,
-  recordGlobalTokens,
+  releaseGlobalTokens,
+  reserveGlobalTokens,
+  settleGlobalTokens,
 } from '@/lib/chat/globalSpend';
 import { resolvePersonaId } from '@/lib/chat/personas';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
@@ -23,7 +24,8 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  * - NO authentication required (founder decision 2026-10-02): anonymous
  *   callers run the SAME bounded pipeline as signed-in callers. A signed-in
  *   session (if present) is used as the quota identity; an anonymous caller
- *   is quota-keyed to a DETERMINISTIC per-IP uuidv5 (lib/auth/anonIdentity)
+ *   is quota-keyed to a PSEUDONYMOUS per-IP identity (W3: an HMAC under
+ *   ANON_ID_PEPPER over the /64-truncated IP, lib/auth/anonIdentity)
  *   so the persistent atomic counter below keeps bounding the spend (R12).
  *   Authentication here is an identity convenience, not a feature gate.
  * - The system prompt is built SERVER-SIDE from the canonical persona
@@ -281,19 +283,25 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
-  // 4.5 W3 (founder round-10): GLOBAL spend caps — bound TOTAL daily
-  //     spend regardless of how many identities ask (the per-identity
-  //     quota cannot bound a distributed abuser). Checked AFTER validation
-  //     (a 400/413 costs nothing) and BEFORE per-identity consumption (a
-  //     globally-capped request must not burn the caller's unit). Both
-  //     fail closed on infrastructure errors, matching consume_chat_quota.
+  // 4.5 W3 (founder round-10, closed 2026-10-03): GLOBAL spend caps —
+  //     bound TOTAL daily spend regardless of how many identities ask
+  //     (the per-identity quota cannot bound a distributed abuser).
+  //     Checked AFTER validation (a 400/413 costs nothing) and BEFORE
+  //     per-identity consumption (a globally-capped request must not
+  //     burn the caller's unit). The token cap is a HARD bound: the
+  //     single-request ceiling is RESERVED here (refused when it does
+  //     not fit) and SETTLED to the reported usage after the response —
+  //     concurrent requests can never admit past the cap, and paths
+  //     that never deliver an answer RELEASE the reservation (mirroring
+  //     the per-identity refund). Both fail closed on infrastructure
+  //     errors, matching consume_chat_quota.
   if (await globalRequestCapExceeded()) {
     return NextResponse.json(
       { error: 'Chat temporarily unavailable', fallback: true },
       { status: 503 },
     );
   }
-  if (await globalTokenCapExceeded()) {
+  if (!(await reserveGlobalTokens())) {
     return NextResponse.json(
       { error: 'Chat temporarily unavailable', fallback: true },
       { status: 503 },
@@ -306,6 +314,9 @@ export async function POST(req: NextRequest) {
   //    validated — 400/413 paths above leave the counter untouched, and
   //    upstream failures below refund.
   if (!(await consumeQuota(quotaIdentity))) {
+    // W3-A: the request never reaches the provider — release the global
+    // token reservation so a quota-denied caller cannot leak budget.
+    await releaseGlobalTokens();
     return NextResponse.json(
       { error: 'Daily chat quota exhausted', fallback: true },
       { status: 429 },
@@ -334,6 +345,8 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
     await refundQuota(quotaIdentity);
+    // W3-A: no provider call happened — release the reservation.
+    await releaseGlobalTokens();
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
 
@@ -351,9 +364,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     // Upstream broke (timeout/5xx/empty) — 502 with generic body, quota
-    // refunded (R6.2). Details logged server-side only.
+    // refunded (R6.2) and the global token reservation RELEASED (W3-A:
+    // a request that delivered no answer must not hold the daily budget
+    // either — a transient provider incident must not brick the day).
+    // Details logged server-side only.
     console.error('[chat] upstream failed:', e instanceof Error ? e.message : e);
     await refundQuota(quotaIdentity);
+    await releaseGlobalTokens();
     return NextResponse.json({ error: 'Chat service error' }, { status: 502 });
   }
   if (!answer) {
@@ -362,6 +379,7 @@ export async function POST(req: NextRequest) {
       '[chat] no approved chat provider configured: set CHAT_API_BASE_URL + CHAT_API_KEY (OpenAI-compatible) or GEMINI_API_KEY',
     );
     await refundQuota(quotaIdentity); // R6.2: unanswerable request must not burn quota
+    await releaseGlobalTokens(); // W3-A: nothing was spent upstream
     return NextResponse.json({ error: 'Chat unavailable' }, { status: 503 });
   }
 
@@ -377,9 +395,11 @@ export async function POST(req: NextRequest) {
       evidenceMs,
     };
   }
-  // W3: record the provider-reported token usage against the global daily
-  // token cap (best-effort after the response is composed — see
+  // W3-A: settle the reservation to the provider-reported usage (the
+  // multi-completion total the router accumulated). Unreported usage
+  // keeps the full reservation — unknown spend is charged at the
+  // ceiling. Best-effort after the response is composed (see
   // lib/chat/globalSpend for the failure semantics).
-  await recordGlobalTokens(answer.usage?.totalTokens);
+  await settleGlobalTokens(answer.usage?.totalTokens);
   return NextResponse.json(wire);
 }

@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { checkRateLimit } from '@/lib/rateLimit';
+import {
+  globalRequestCapExceeded,
+  releaseGlobalTokens,
+  reserveGlobalTokens,
+  settleGlobalTokens,
+} from '@/lib/chat/globalSpend';
 import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
 import { createCanonicalStockState } from '@/lib/ai/evidence';
 
@@ -15,7 +21,10 @@ import { createCanonicalStockState } from '@/lib/ai/evidence';
  *     SHA-256 digests, so the check leaks nothing about the secret);
  *   - no daily-quota consumption (it is not a chat feature) but the SAME
  *     per-IP burst bound as chat, so a leaked secret cannot become an
- *     unbounded free-chat oracle;
+ *     unbounded free-chat oracle; W3 closure: the probe spends the SAME
+ *     provider budget as chat, so it also passes through the global
+ *     request cap and the token RESERVATION/SETTLEMENT (a probe can
+ *     never be a spend path outside the global caps);
  *   - fixed persona, fixed message shape, fixed seed symbol/tool — the
  *     probe answers exactly one question shape, and `mode=negative` seeds
  *     a deliberately unknown symbol through the SAME executor (the honest
@@ -80,6 +89,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Probe unavailable' }, { status: 503 });
   }
 
+  // W3 closure: the global spend caps cover EVERY provider-spend path —
+  // the probe reserves the same single-request token ceiling as chat and
+  // settles to its reported usage (fail closed on counter failure).
+  if (await globalRequestCapExceeded()) {
+    return NextResponse.json({ error: 'Probe temporarily unavailable', fallback: true }, { status: 503 });
+  }
+  if (!(await reserveGlobalTokens())) {
+    return NextResponse.json({ error: 'Probe temporarily unavailable', fallback: true }, { status: 503 });
+  }
+
   const message = `What is the latest price of ${symbol}?`;
   const stockState = createCanonicalStockState();
   const probeStart = Date.now();
@@ -94,8 +113,10 @@ export async function GET(req: NextRequest) {
     });
     if (!answer) {
       console.error('[probe/ai-loop] no approved chat provider configured');
+      await releaseGlobalTokens();
       return NextResponse.json({ error: 'Probe unavailable' }, { status: 503 });
     }
+    await settleGlobalTokens(answer.usage?.totalTokens);
     const wire = toChatWire(answer);
     return NextResponse.json({
       ...wire,
@@ -109,6 +130,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (e) {
     console.error('[probe/ai-loop] failed:', e instanceof Error ? e.message : e);
+    await releaseGlobalTokens();
     return NextResponse.json({ error: 'Probe failed' }, { status: 502 });
   }
 }

@@ -46,7 +46,13 @@ It is protection and abuse control, never a product level:
   be re-derived by the platform. The same atomic counter,
   refund-on-failure and fail-cailed semantics apply to both (R12), plus
   GLOBAL daily request and token caps and a `CHAT_DISABLED` kill switch
-  that bound total spend regardless of identity count (W3).
+  that bound total spend regardless of identity count (W3). The token
+  cap is a hard bound: each request reserves a mechanically derived
+  single-request ceiling before the provider call and settles to the
+  reported usage after; the IST day boundary is computed once, in the
+  database RPCs (W3 closure). `CHAT_DISABLED` contract: unset, "", or
+  0/false/no/off (case-insensitive) leaves chat enabled; every other
+  non-empty value disables it — a typo fails toward OFF.
 - `lib/auth/session.ts` resolves **authentication identity only**
   (`id`, `email`). It no longer resolves any product tier.
 - `GET /api/auth/me` returns `{ user: { id, email } }` or `{ user: null }` —

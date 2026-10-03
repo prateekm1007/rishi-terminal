@@ -23,6 +23,12 @@ export interface ProviderCompletion {
   totalTokens: number | null;
 }
 
+/** The per-attempt output cap sent as max_tokens. W3-A: a factor of the
+ *  global token reservation ceiling (lib/chat/globalSpend.ts), pinned by
+ *  test/globalSpendReservation.test.ts — changing it requires revisiting
+ *  the ceiling. */
+export const PROVIDER_MAX_OUTPUT_TOKENS = 2048;
+
 export async function callOpenAiCompatible(
   baseUrl: string,
   apiKey: string,
@@ -51,7 +57,7 @@ export async function callOpenAiCompatible(
       messages,
       temperature: 0.9,
       top_p: 0.95,
-      max_tokens: 2048,
+      max_tokens: PROVIDER_MAX_OUTPUT_TOKENS,
     }),
     signal: AbortSignal.timeout(timeoutMs),
   });

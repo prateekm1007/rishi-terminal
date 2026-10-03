@@ -3,11 +3,16 @@ import { getSessionUser } from '@/lib/auth/session';
 import { anonQuotaId } from '@/lib/auth/anonIdentity';
 import { resolvePersonaId } from '@/lib/chat/personas';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
-import { STOCKS } from '@/data/stocks';
 import { checkRateLimit } from '@/lib/rateLimit';
+// R10-09 (directives 9 + 10, Rule 14): the outer symbol contract resolves
+// through the ONE canonical registry gate — the previous STOCKS[]-only
+// lookup + local shape regex was a duplicate registry that rejected WTI /
+// USD/INR while the AI tool path served them.
+import { normalizeSymbolInput } from '@/lib/registry/validateInput';
 // Phase 5 T49–T52: application code calls the AI abstraction, never a
 // provider SDK/URL directly. Provenance rides on every response (T50).
 import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
+import { buildAiEvidencePackage, createCanonicalStockState, isStockEvidenceSymbol } from '@/lib/ai/evidence';
 
 /**
  * POST /api/chat — hardened LLM proxy (remediation T7; provider-extended).
@@ -26,7 +31,14 @@ import { generateEvidenceGroundedAnswer, toChatWire } from '@/lib/ai/router';
  *   (Commit M3, founder decision 2026-10-02 — every feature free): an
  *   unknown persona id is rejected 400; every canonical persona is
  *   available to every caller. There is no tier gate and no sign-in gate.
- * - symbol is validated against the stock seed registry before use.
+ * - symbol is validated through the ONE canonical registry gate
+ *   (lib/registry/validateInput: the stock master UNION the canonical
+ *   price registry — indexes/commodities/crypto/forex/bonds) and
+ *   canonicalised (USDINR -> USD/INR, legacy aliases -> canonical).
+ *   Evidence semantics stay stock-scoped: only a stock-master symbol gets
+ *   the canonical stock evidence package and the persona's stockPrompt; a
+ *   non-stock instrument enters the bounded loop without initial stock
+ *   evidence and with the GENERAL persona prompt (R10-09).
  * - Limits: message <= 2000 chars; history <= 20 turns and <= 8000 chars
  *   total; roles restricted to user|assistant.
  * - Quotas: per-IDENTITY daily quota (Supabase chat_usage — account id,
@@ -132,7 +144,8 @@ async function refundQuota(userId: string): Promise<void> {
 // a single memoized live-fundamentals fetch + price observation per
 // symbol per request — so getScore/getStock/getFinancials answer from the
 // SAME data state as the initial evidence (byte-identical items/ids).
-import { buildAiEvidencePackage, createCanonicalStockState } from '@/lib/ai/evidence';
+// (buildAiEvidencePackage / createCanonicalStockState / isStockEvidenceSymbol
+// are imported at the top of this file.)
 
 interface HistoryTurn {
   role: 'user' | 'assistant';
@@ -199,21 +212,32 @@ export async function POST(req: NextRequest) {
     if (typeof body.symbol !== 'string') {
       return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
     }
-    const candidate = body.symbol.trim().toUpperCase();
-    if (!/^[A-Z0-9&_-]{1,25}$/.test(candidate)) {
-      return NextResponse.json({ error: 'Invalid symbol' }, { status: 400 });
-    }
-    if (!STOCKS[candidate]) {
+    // R10-09 (Rule 14): ONE canonical gate for the outer contract —
+    // normalizeSymbolInput validates against the full registry (stock
+    // master ∪ price registry) and canonicalises the accepted spellings
+    // (USDINR -> USD/INR, legacy aliases -> canonical). The previous
+    // stock-only STOCKS[] lookup + local shape regex rejected WTI while
+    // the AI tool path served it (a Rule-14 duplicate registry).
+    const normalized = normalizeSymbolInput(body.symbol);
+    if (!normalized) {
       return NextResponse.json({ error: 'Unknown symbol' }, { status: 400 });
     }
-    symbol = candidate;
+    symbol = normalized;
   }
 
+  // R10-09: evidence semantics stay STOCK-scoped — the canonical stock
+  // evidence package and the persona's stockPrompt exist only for a
+  // stock-master symbol. A non-stock registry instrument enters the
+  // bounded loop WITHOUT initial stock evidence (the stock assembler
+  // cannot describe it honestly) and with the GENERAL persona prompt.
+  const isStockContext = symbol !== null && isStockEvidenceSymbol(symbol);
+
   // Prompt selection from the canonical registry: the concise stock-page
-  // variant when a symbol is in scope, the full persona prompt otherwise.
+  // variant when a STOCK context is in scope, the full persona prompt
+  // otherwise (R10-09: instruments never get the stock-scoped prompt).
   // (The old code keyed prompts by the RAW input string, so 'Buffett' and
   // 'buffett' reached two different prompts for the same persona.)
-  const systemPrompt = symbol !== null && persona.stockPrompt ? persona.stockPrompt : persona.systemPrompt;
+  const systemPrompt = isStockContext && persona.stockPrompt ? persona.stockPrompt : persona.systemPrompt;
 
   const rawHistory = Array.isArray(body.history) ? body.history : [];
   if (rawHistory.length > MAX_HISTORY_TURNS) {
@@ -264,7 +288,15 @@ export async function POST(req: NextRequest) {
     // every tool call inside generateEvidenceGroundedAnswer reuse it.
     stockState = createCanonicalStockState();
     const evidenceStart = Date.now();
-    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol, {}, stockState) : null;
+    // R10-09: the stock evidence package is assembled only for a STOCK
+    // context. A non-stock instrument skips it — the assembler would
+    // null-resolve anyway (resolve() requires the stock master), and
+    // skipping avoids a doomed bounded fundamentals fetch per instrument
+    // request (latency + upstream quota). The loop's no-initial-evidence
+    // path (intent detection + reactive canonical seeding) engages tools
+    // for instruments — the same production-proven path as an instrument
+    // ask in the message body.
+    const evidencePackage = symbol && isStockContext ? await buildAiEvidencePackage(symbol, {}, stockState) : null;
     evidenceMs = Date.now() - evidenceStart;
     evidence = evidencePackage?.items ?? [];
   } catch (e) {

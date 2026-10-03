@@ -35,7 +35,22 @@ import type { FullFundamentals } from '@/lib/liveFundamentals';
 import { fetchFullFundamentals } from '@/lib/liveFundamentals';
 import { fetchLivePrice } from '@/lib/livePrice';
 import type { PricePoint } from '@/lib/livePrice';
+import { STOCKS } from '@/data/stocks';
 import type { AiEvidenceFact, AiEvidenceItem, AiSourceState } from './schemas';
+
+/** R10-09 (Coder Directions directives 9 + 10, Rule 14): the STOCK-MASTER
+ *  branch for EVIDENCE SEMANTICS — buildAiEvidencePackage is the canonical
+ *  STOCK evidence assembler (profile/fundamental/score items are stock
+ *  concepts), so consumers use this predicate to decide whether an explicit
+ *  symbol gets that package and the persona's stockPrompt. This is NOT an
+ *  input-validation decision: every symbol must still enter through
+ *  lib/registry/validateInput (the one registry gate); registry instruments
+ *  outside the stock master (WTI, USD/INR, BTC, bonds) are valid contexts
+ *  that enter the bounded loop WITHOUT initial stock evidence. */
+export function isStockEvidenceSymbol(symbol: string): boolean {
+  const sym = symbol?.trim().toUpperCase();
+  return !!sym && Object.prototype.hasOwnProperty.call(STOCKS, sym);
+}
 
 /**
  * resolveStockMetrics (the canonical resolver) types its live input via the

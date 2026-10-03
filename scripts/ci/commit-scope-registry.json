@@ -156,6 +156,14 @@
       "docs/evidence/p0-02-live-2026-10-03.md",
       "scripts/ci/commit-scope-registry.json",
       "scripts/commitScopeAudit.mjs"
+    ],
+    "W1": [
+      "docs/evidence/round12/r912-registry-production-proof-96726c6.json",
+      "docs/evidence/round12/price-provenance-sweep-96726c6.json",
+      "docs/evidence/round12/greenblatt-production-probe-96726c6.json",
+      "docs/evidence/round12/wti-chat-probe-96726c6.json",
+      "scripts/prodPriceProvenanceSweep.mjs",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

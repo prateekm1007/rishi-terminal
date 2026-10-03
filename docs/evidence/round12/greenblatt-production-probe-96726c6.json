@@ -1,0 +1,47 @@
+{
+  "base": "https://rishi-terminal.vercel.app",
+  "version": "96726c06716f3040d76eb1ad341a14dcfa93f961",
+  "symbols": {
+    "RELIANCE": {
+      "http": 200,
+      "roc_detail_pct": 5.9,
+      "ey_detail_pct": 3.5,
+      "ebit_ev_claim": false,
+      "greenblatt_present": true,
+      "ok": true
+    },
+    "TCS": {
+      "http": 200,
+      "roc_detail_pct": 5.4,
+      "ey_detail_pct": 3.2,
+      "ebit_ev_claim": false,
+      "greenblatt_present": true,
+      "ok": true
+    },
+    "HDFCBANK": {
+      "http": 200,
+      "roc_detail_pct": 6.1,
+      "ey_detail_pct": 3.6,
+      "ebit_ev_claim": false,
+      "greenblatt_present": true,
+      "ok": true
+    },
+    "ITC": {
+      "http": 200,
+      "roc_detail_pct": 5.1,
+      "ey_detail_pct": 3.1,
+      "ebit_ev_claim": false,
+      "greenblatt_present": true,
+      "ok": true
+    },
+    "KTKBANK": {
+      "http": 200,
+      "roc_detail_pct": 14.6,
+      "ey_detail_pct": 8.8,
+      "ebit_ev_claim": false,
+      "greenblatt_present": true,
+      "ok": true
+    }
+  },
+  "verdict": "PASS"
+}

@@ -1,0 +1,179 @@
+{
+  "version": {
+    "sha": "96726c06716f3040d76eb1ad341a14dcfa93f961",
+    "now": "2026-10-03T09:03:44.643Z",
+    "node": "v24.21.0"
+  },
+  "at": "2026-10-03T09:03:44.758Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "single": [
+    {
+      "symbol": "RELIANCE",
+      "state": "CACHED",
+      "observedAt": "2026-10-01T09:45:00+00:00",
+      "change": -1.626,
+      "source": "yahoo-bulk",
+      "issues": [],
+      "httpStatus": 200,
+      "rawHead": "{\"symbol\":\"RELIANCE\",\"price\":1167.7,\"change\":-1.626,\"volume24h\":16667234,\"source\":\"yahoo-bulk\",\"status\":\"CACHED\",\"observedAt\":\"2026-10-01T09:45:00+00:00\",\"lastUpdated\":\"2026-10-01T09:45:00+00:00\",\"marketOpen\":false,\"marketFreshness\":\"close\""
+    },
+    {
+      "symbol": "NIFTY50",
+      "state": "LIVE",
+      "observedAt": "2026-10-01T10:01:12.000Z",
+      "change": -0.878,
+      "source": "yahoo",
+      "issues": [],
+      "httpStatus": 200,
+      "rawHead": "{\"status\":\"LIVE\",\"price\":22421.95,\"change\":-0.878,\"observedAt\":\"2026-10-01T10:01:12.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-01T10:01:12.000Z\"}"
+    },
+    {
+      "symbol": "WTI",
+      "state": "LIVE",
+      "observedAt": "2026-10-02T20:59:59.000Z",
+      "change": -1.895,
+      "source": "yahoo",
+      "issues": [],
+      "httpStatus": 200,
+      "rawHead": "{\"status\":\"LIVE\",\"price\":91.11,\"change\":-1.895,\"observedAt\":\"2026-10-02T20:59:59.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-02T20:59:59.000Z\"}"
+    },
+    {
+      "symbol": "USD/INR",
+      "state": "LIVE",
+      "observedAt": "2026-10-03T03:30:05.000Z",
+      "change": -0.0104,
+      "source": "yahoo",
+      "issues": [],
+      "httpStatus": 200,
+      "rawHead": "{\"status\":\"LIVE\",\"price\":96.3,\"change\":-0.0104,\"observedAt\":\"2026-10-03T03:30:05.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-03T03:30:05.000Z\"}"
+    },
+    {
+      "symbol": "BTC",
+      "state": "LIVE",
+      "observedAt": "2026-10-03T09:02:10.000Z",
+      "change": -1.8025033312229135,
+      "source": "coingecko",
+      "issues": [],
+      "httpStatus": 200,
+      "rawHead": "{\"status\":\"LIVE\",\"price\":84613,\"change\":-1.8025033312229135,\"volume24h\":34702469197.29991,\"observedAt\":\"2026-10-03T09:02:10.000Z\",\"source\":\"coingecko\",\"lastUpdated\":\"2026-10-03T09:02:10.000Z\"}"
+    },
+    {
+      "symbol": "GOLD",
+      "state": "LIVE",
+      "observedAt": "2026-10-02T20:59:58.000Z",
+      "change": -0.952,
+      "source": "yahoo",
+      "issues": [],
+      "httpStatus": 200,
+      "rawHead": "{\"status\":\"LIVE\",\"price\":4162.3,\"change\":-0.952,\"observedAt\":\"2026-10-02T20:59:58.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-02T20:59:58.000Z\"}"
+    },
+    {
+      "symbol": "IN91DTB",
+      "state": "STATIC",
+      "observedAt": null,
+      "change": null,
+      "source": "static-yields-in",
+      "issues": [],
+      "httpStatus": 200,
+      "rawHead": "{\"status\":\"STATIC\",\"price\":6.8,\"change\":null,\"source\":\"static-yields-in\",\"observedAt\":null,\"lastUpdated\":null}"
+    }
+  ],
+  "batch": {
+    "status": 200,
+    "bodyHead": "{\"prices\":{\"RELIANCE\":{\"price\":1167.7,\"change\":-1.626,\"changePercent24h\":-1.626,\"volume24h\":16667234,\"source\":\"yahoo-bulk\",\"status\":\"CACHED\",\"lastUpdated\":\"2026-10-01T09:45:00+00:00\",\"observedAt\":\"2026-10-01T09:45:00+00:00\"},\"NIFTY50\":{\"status\":\"LIVE\",\"price\":22421.95,\"change\":-0.878,\"observedAt\":\"2026-10-01T10:01:12.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-01T10:01:12.000Z\",\"changePercent24h"
+  },
+  "parity": [
+    {
+      "symbol": "RELIANCE",
+      "single": {
+        "state": "CACHED",
+        "observedAt": "2026-10-01T09:45:00+00:00"
+      },
+      "batch": {
+        "state": "CACHED",
+        "observedAt": "2026-10-01T09:45:00+00:00"
+      },
+      "agree": true,
+      "observationParity": true
+    },
+    {
+      "symbol": "NIFTY50",
+      "single": {
+        "state": "LIVE",
+        "observedAt": "2026-10-01T10:01:12.000Z"
+      },
+      "batch": {
+        "state": "LIVE",
+        "observedAt": "2026-10-01T10:01:12.000Z"
+      },
+      "agree": true,
+      "observationParity": true
+    },
+    {
+      "symbol": "WTI",
+      "single": {
+        "state": "LIVE",
+        "observedAt": "2026-10-02T20:59:59.000Z"
+      },
+      "batch": {
+        "state": "LIVE",
+        "observedAt": "2026-10-02T20:59:59.000Z"
+      },
+      "agree": true,
+      "observationParity": true
+    },
+    {
+      "symbol": "USD/INR",
+      "single": {
+        "state": "LIVE",
+        "observedAt": "2026-10-03T03:30:05.000Z"
+      },
+      "batch": {
+        "state": "LIVE",
+        "observedAt": "2026-10-03T03:30:05.000Z"
+      },
+      "agree": true,
+      "observationParity": true
+    },
+    {
+      "symbol": "BTC",
+      "single": {
+        "state": "LIVE",
+        "observedAt": "2026-10-03T09:02:10.000Z"
+      },
+      "batch": {
+        "state": "LIVE",
+        "observedAt": "2026-10-03T09:02:10.000Z"
+      },
+      "agree": true,
+      "observationParity": true
+    },
+    {
+      "symbol": "GOLD",
+      "single": {
+        "state": "LIVE",
+        "observedAt": "2026-10-02T20:59:58.000Z"
+      },
+      "batch": {
+        "state": "LIVE",
+        "observedAt": "2026-10-02T20:59:58.000Z"
+      },
+      "agree": true,
+      "observationParity": true
+    },
+    {
+      "symbol": "IN91DTB",
+      "single": {
+        "state": "STATIC",
+        "observedAt": null
+      },
+      "batch": {
+        "state": "STATIC",
+        "observedAt": null
+      },
+      "agree": true,
+      "observationParity": true
+    }
+  ],
+  "allHonest": true
+}

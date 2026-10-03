@@ -97,15 +97,30 @@ for (const sym of SYMBOLS) {
   results.single.push(audit);
   console.log(`${sym.padEnd(9)} HTTP ${String(single.status).padEnd(3)} state=${String(audit.state).padEnd(11)} observedAt=${JSON.stringify(audit.observedAt)} change=${JSON.stringify(audit.change)} ${audit.issues.length ? "ISSUES: " + audit.issues.join("; ") : "OK"}`);
 
-  // R9-5 parity: single vs batch for the same symbol.
+  // R9-5 parity: single vs batch for the same symbol. The CONTRACT is
+  // observation-time parity: both surfaces must expose the SAME upstream
+  // observedAt (the honesty invariant — a price without a matching
+  // observation identity must not pass). The transport STATE label may
+  // legitimately differ between LIVE (fresh provider fetch) and CACHED
+  // (the same observation served from the shared quote cache, migrations
+  // 016/017/018 + lib/quoteCache stale-while-revalidate) — W2 activated
+  // that architecture live on 2026-10-03. A LIVE/CACHED pair with the
+  // same observedAt is therefore an AGREE; a mismatch against STATIC /
+  // UNAVAILABLE / DERIVED (different observation classes) is still a
+  // disagreement, and any observedAt difference is always a failure.
   const bRow = bRows?.[sym] ?? bRows?.[sym.replace("/", "-")] ?? null;
   if (bRow) {
     const bState = bRow?.status ?? bRow?.provStatus ?? null;
     const bObs = bRow?.observedAt ?? null;
-    const same = bState === audit.state && (bObs ?? null) === (audit.observedAt ?? null);
-    results.parity.push({ symbol: sym, single: { state: audit.state, observedAt: audit.observedAt }, batch: { state: bState, observedAt: bObs }, agree: same });
+    const obsSame = (bObs ?? null) === (audit.observedAt ?? null);
+    const providerBacked = new Set(["LIVE", "CACHED"]);
+    const stateCompatible =
+      (providerBacked.has(String(audit.state)) && providerBacked.has(String(bState))) ||
+      audit.state === bState;
+    const same = obsSame && stateCompatible;
+    results.parity.push({ symbol: sym, single: { state: audit.state, observedAt: audit.observedAt }, batch: { state: bState, observedAt: bObs }, agree: same, observationParity: obsSame });
     if (!same) allHonest = false;
-    console.log(`   parity vs batch: single=${audit.state}@${audit.observedAt} batch=${bState}@${bObs} → ${same ? "agree" : "DISAGREE"}`);
+    console.log(`   parity vs batch: single=${audit.state}@${audit.observedAt} batch=${bState}@${bObs} → ${same ? "agree" : "DISAGREE"}${obsSame ? "" : " (OBSERVED TIME MISMATCH)"}`);
   }
   await new Promise((r) => setTimeout(r, 1200));
 }

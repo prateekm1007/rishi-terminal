@@ -201,6 +201,15 @@
       "scripts/ci/global_spend_invariants.sql",
       "scripts/ci/security_definer_invariants.sql",
       "test/globalSpendReservation.test.ts"
+    ],
+    "W4": [
+      "lib/scorers/pabrai.ts",
+      "lib/scorers/porinju.ts",
+      "lib/scorers/soros.ts",
+      "test/scorerHealth.test.ts",
+      "test/scorerBoundaries.test.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/w4Audit.ts"
     ]
   }
 }

@@ -200,7 +200,8 @@
       ".github/workflows/ci.yml",
       "scripts/ci/global_spend_invariants.sql",
       "scripts/ci/security_definer_invariants.sql",
-      "test/globalSpendReservation.test.ts"
+      "test/globalSpendReservation.test.ts",
+      "docs/evidence/w3-020-live-2026-10-03.md"
     ],
     "W4": [
       "lib/scorers/pabrai.ts",

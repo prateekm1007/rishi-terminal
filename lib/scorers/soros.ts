@@ -14,9 +14,8 @@ import { clamp } from '../utils';
  * flattest scorer) and carried almost no ranking information. The
  * ladders are now CONTINUOUS ramps over the same fields and thresholds:
  *
- *   - Reflexivity: graded from deep NCAV discount (100) through fair
- *     price toward disconnection (0 at price/NCAV 6.5x) — real NCAV
- *     discounts stay rare and keep their full signal.
+ *   - Reflexivity: 100 through price/NCAV 1.5x, graded down to 0 at
+ *     6.5x — real NCAV discounts stay rare and keep their full signal.
  *   - Macro tailwind: revenue CAGR scaled 0 → 100 at 20% (was 4 steps).
  *   - Momentum: EPS CAGR scaled 0 → 100 at 25% (was 4 steps).
  *   - Leverage tolerance: full marks only with little debt (D/E 0.5 →
@@ -29,11 +28,13 @@ export function scoreSoros(s: Stock): RishiScore {
   // Reflexivity: the component measures the discount to a POSITIVE net
   // current asset value. NCAV <= 0 means no asset-backed anchor exists —
   // the premise is unavailable, so the component scores 0 and the detail
-  // SAYS so (rule 3; the pre-W4 ladder scored such rows 100 — rewarding
-  // insolvent balance sheets against the deep-value lens — and the W4
-  // Math.max(1, ncav) floor displayed "Price/NCAV <price>x", a
-  // fabricated ratio). Measured on the 916 seed: 37 rows (4.0%) hit this
-  // branch. Pinned by test/scorerBoundaries.test.ts.
+  // SAYS so (rule 3). The pre-W4 code masked this case behind
+  // Math.max(1, ncav): the component silently scored 0 (ptn = price/1
+  // >= 3 for every real stock — verified on the 37 affected seed rows)
+  // while the DETAIL displayed a fabricated "Price/NCAV <price>x" ratio
+  // as if a positive NCAV existed; the W4 first commit kept the floor
+  // and kept fabricating the ratio. Measured on the 916 seed: 37 rows
+  // (4.0%) hit this branch. Pinned by test/scorerBoundaries.test.ts.
   let reflexS: number;
   let reflexDetail: string;
   if (ncav <= 0) {
@@ -54,12 +55,12 @@ export function scoreSoros(s: Stock): RishiScore {
   // Momentum proxy: EPS growth as trend confirmation (0 → 100 at 25%)
   const momS = clamp(s.epscagr * 4);
 
-  // Liquidity: current assets vs liabilities (1.0 → 50, 2.0 → 100)
   // Liquidity: the current ratio needs POSITIVE liabilities. tl <= 0 is
   // nonsensical balance-sheet data — the ratio is not computable, the
   // component scores 0 and the detail SAYS so (rule 3; the W4
   // Math.max(1, tl) floor fabricated "Current ratio <ca>x"). Measured
   // incidence on the 916 seed: 0 rows — correctness-by-construction.
+  // Ramp with real liabilities: current ratio 1.0 → 50, 2.0 → 100.
   let liqS: number;
   let liqDetail: string;
   if (s.tl <= 0) {
@@ -83,7 +84,7 @@ export function scoreSoros(s: Stock): RishiScore {
       { label: 'Reflexivity Signal',  v: Math.round(reflexS), wt: 30, detail: reflexDetail },
       { label: 'Macro Tailwind',      v: Math.round(macroS),  wt: 25, detail: `Rev CAGR ${s.revcagr}% — macro confirms` },
       { label: 'Momentum Confirm',    v: Math.round(momS),  wt: 20, detail: `EPS CAGR ${s.epscagr}% — trend in place` },
-      { label: 'Leverage Tolerance',  v: Math.round(deS),   wt: 15, detail: `D/E ${s.de} — Soros tolerates leverage` },
+      { label: 'Leverage Tolerance',  v: Math.round(deS),   wt: 15, detail: `D/E ${s.de} — low debt rewarded` },
       { label: 'Liquidity Buffer',    v: Math.round(liqS),  wt: 10, detail: liqDetail },
     ],
     insight: `Soros sees ${reflexS > 70 ? 'a market misconception worth exploiting' : 'insufficient reflexive opportunity'}. Rev CAGR ${s.revcagr}% ${macroS > 70 ? 'confirms macro tailwind' : 'shows weak macro'}. ${total >= 70 ? 'The alchemy of finance favors this position.' : 'Soros would wait for a clearer dislocation.'}`,

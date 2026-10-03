@@ -208,7 +208,8 @@
       "lib/scorers/soros.ts",
       "test/scorerHealth.test.ts",
       "test/scorerBoundaries.test.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/w4Audit.ts"
     ]
   }
 }

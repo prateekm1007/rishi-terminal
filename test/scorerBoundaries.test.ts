@@ -19,8 +19,10 @@ import { describe, it, expect } from 'vitest';
  *    because the component's premise (a discount to asset value) does
  *    not exist. Universe incidence measured on the 916 seed:
  *    bvps <= 0: 0 rows; tl <= 0: 0 rows; ncav <= 0: 37 rows (the old
- *    ladder scored ALL of them 100 — rewarding insolvent balance
- *    sheets against the documented deep-value lens).
+ *    code's Math.max(1, ncav) masked them — the component scored 0
+ *    while the detail fabricated "Price/NCAV <price>x" as if a
+ *    positive NCAV existed; verified by scripts/w4Audit.ts on all 37
+ *    rows).
  *  - weights still sum to 100; scores stay 0-100 and finite;
  *  - detail strings describe the formula actually used (rule 2).
  */
@@ -43,12 +45,14 @@ function stock(overrides: Partial<Stock>): Stock {
 const weightsSum = (comps: Array<{ wt: number }>) => comps.reduce((a, c) => a + c.wt, 0);
 
 describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
-  it('Clone ramp: 0 at promoter 0%, 35 at 35%, 100 from 70% (code is the truth, docstring corrected)', () => {
+  it('Clone ramp: 0 at promoter 0%, 35 at 35%, 100 from exactly 57.75% (code is the truth, docstring corrected)', () => {
     const at = (promo: number) =>
       scorePabrai(stock({ promo })).comps.find((c) => c.label === 'Clone Score')!.v;
     expect(at(0)).toBe(0);
     expect(at(35)).toBe(35);   // the documented contradiction: 35, NOT 0
-    expect(at(70)).toBe(100);
+    expect(at(50)).toBe(78);   // 35 + 15 x 100/35 = 77.86 -> 78 (still ramping)
+    expect(at(57.75)).toBe(100); // the EXACT clamp point: 35 + 22.75 x 100/35
+    expect(at(60)).toBe(100);
     expect(at(90)).toBe(100);  // clamped above the ramp top
     expect(at(20)).toBe(0);    // 35 + (20-35)*100/35 = -7.86 -> clamped to 0
   });

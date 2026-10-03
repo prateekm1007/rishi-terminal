@@ -234,6 +234,10 @@
       "scripts/commitScopeAudit.mjs",
       "test/vercelIgnore.test.ts",
       "vercel.json"
+    ],
+    "X2": [
+      "test/smoke/shell.spec.ts",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

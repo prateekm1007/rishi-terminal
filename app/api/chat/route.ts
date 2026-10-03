@@ -288,13 +288,16 @@ export async function POST(req: NextRequest) {
   //     (the per-identity quota cannot bound a distributed abuser).
   //     Checked AFTER validation (a 400/413 costs nothing) and BEFORE
   //     per-identity consumption (a globally-capped request must not
-  //     burn the caller's unit). The token cap is a HARD bound: the
-  //     single-request ceiling is RESERVED here (refused when it does
-  //     not fit) and SETTLED to the reported usage after the response —
-  //     concurrent requests can never admit past the cap, and paths
-  //     that never deliver an answer RELEASE the reservation (mirroring
-  //     the per-identity refund). Both fail closed on infrastructure
-  //     errors, matching consume_chat_quota.
+  //     burn the caller's unit). The token cap is hard AT ADMISSION
+  //     (reservation/settlement): the single-request ceiling is
+  //     RESERVED here (refused when it does not fit) and SETTLED to the
+  //     reported usage after the response — concurrent requests can
+  //     never admit past the cap; settlement records the provider-
+  //     reported usage honestly (an above-ceiling report passes the
+  //     day's settled total over the cap only by in-flight overage),
+  //     and paths that never deliver an answer RELEASE the reservation
+  //     (mirroring the per-identity refund). Both fail closed on
+  //     infrastructure errors, matching consume_chat_quota.
   if (await globalRequestCapExceeded()) {
     return NextResponse.json(
       { error: 'Chat temporarily unavailable', fallback: true },

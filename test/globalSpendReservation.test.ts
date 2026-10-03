@@ -18,22 +18,16 @@ import { GLOBAL_TOKEN_RESERVATION_CEILING } from '@/lib/chat/globalSpend';
 import { MAX_TOOL_ITERATIONS, MAX_PROVIDER_CANDIDATES, resolveAiProviderCandidates } from '@/lib/ai/router';
 import { PROVIDER_MAX_OUTPUT_TOKENS as OPENAI_MAX_OUTPUT } from '@/lib/ai/providers/openaiCompatible';
 import { PROVIDER_MAX_OUTPUT_TOKENS as GEMINI_MAX_OUTPUT } from '@/lib/ai/providers/gemini';
+import { MAX_SERIALIZED_INPUT_CHARS } from '@/lib/ai/providers/serializedInputBound';
 
-/** Worst-case input tokens per provider attempt. Derivation (measured
- *  2026-10-03, scripts committed with the W3 closure evidence):
- *    server-built system context  ~4,000 chars (persona prompt max 1,524
- *      across the canonical registry + UNTRUSTED_HISTORY_BLOCK 1,283 +
- *      tool protocol 767 + block framing)
- *  + evidence block               16,000 chars (16-item live package
- *      measured 4,731; merged tool evidence carries the same item shapes)
- *  + history                       8,000 chars (route contract)
- *  + message                       2,000 chars (route contract)
- *  + loop turns                   25,000 chars (5 tool request/result
- *      pairs at the measured per-payload worst)
- *  + repair turns                  9,000 chars (discarded candidate +
- *      validator feedback)
- *  = 64,000 chars at the conservative 3 chars/token -> 21,334 -> 22,000.
- */
+/** Worst-case input tokens per provider attempt. Derivation (ENFORCED,
+ *  not measured — founder round-12 audit): the serialized wire body of
+ *  every provider attempt is refused beyond 64,000 chars by BOTH
+ *  providers (lib/ai/providers/serializedInputBound.ts; behavioral proof
+ *  in test/w3.inputBound.test.ts). 64,000 chars at the calibrated
+ *  3 chars/token -> 21,334 -> 22,000. The residual (pathological Unicode
+ *  tokenizing a legal-size payload above the calibration) is documented
+ *  in lib/chat/globalSpend.ts and covered by the settlement ledger. */
 const MAX_INPUT_TOKENS_PER_ATTEMPT = 22_000;
 
 const MAX_FINAL_REPAIRS = 1;
@@ -45,6 +39,12 @@ describe('W3-A — GLOBAL_TOKEN_RESERVATION_CEILING derivation', () => {
     expect(MAX_PROVIDER_CANDIDATES).toBe(2);
     expect(OPENAI_MAX_OUTPUT).toBe(2048);
     expect(GEMINI_MAX_OUTPUT).toBe(2048);
+    // The 22,000-token input estimate derives from the ENFORCED
+    // serialized-input bound (founder round-12 audit): both providers
+    // refuse wire bodies beyond 64,000 chars, so the calibration
+    // 64,000/3 must always fit inside the estimate.
+    expect(MAX_SERIALIZED_INPUT_CHARS).toBe(64_000);
+    expect(Math.ceil(MAX_SERIALIZED_INPUT_CHARS / 3)).toBeLessThanOrEqual(MAX_INPUT_TOKENS_PER_ATTEMPT);
     expect(GLOBAL_TOKEN_RESERVATION_CEILING).toBe(
       completions * MAX_PROVIDER_CANDIDATES * (MAX_INPUT_TOKENS_PER_ATTEMPT + OPENAI_MAX_OUTPUT),
     );

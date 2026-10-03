@@ -276,6 +276,36 @@ function canonicalPeers(symbol: string, sector: string, limit: number): AiPeerRo
     .map(s => ({ symbol: s.symbol, name: s.name, sector: s.sector, price: s.price, mktcap: s.mktcap, pe: s.pe, roe: s.roe }));
 }
 
+/**
+ * W3 hard-cap audit (round-12, directive 11): the tool-request echo the
+ * loop injects into the transcript. The model's args are model-controlled
+ * JSON bounded only by the provider's output cap — echoing them RAW parked
+ * up to ~16k chars per tool turn in every subsequent attempt's input (the
+ * exact hole test/w3.inputBound.test.ts pins RED on the pre-fix tree).
+ * The echo is therefore normalized through the SAME zod schemas the
+ * executor uses (one validation source — this module):
+ *   - valid args  -> the canonical validated form (~60 chars);
+ *   - invalid args-> the raw JSON truncated to a bounded string, so the
+ *     model keeps enough context to correct a typo without bloating the
+ *     loop. Truncation is deterministic; the marker states the original
+ *     size. These turns are transcript-only context — never evidence, and
+ *     nothing here can execute (the executor validates independently).
+ */
+export function toolRequestTurn(tool: string, args: unknown): string {
+  const schema = tool === "getPeers" ? PeersArgsSchema : SymbolArgsSchema;
+  const parsed = schema.safeParse(args ?? {});
+  if (parsed.success) {
+    return JSON.stringify({ tool, args: parsed.data });
+  }
+  const raw = JSON.stringify(args ?? null) ?? "null";
+  const MAX_ECHO_CHARS = 256;
+  const bounded =
+    raw.length > MAX_ECHO_CHARS
+      ? `${raw.slice(0, MAX_ECHO_CHARS)}...(truncated, ${raw.length} chars total)`
+      : raw;
+  return JSON.stringify({ tool, args: bounded });
+}
+
 /** The model-facing rendering of an ok outcome: ids + item text only. */
 function okPayload(tool: AiToolName, symbol: string, evidence: AiEvidenceItem[]): string {
   return JSON.stringify({

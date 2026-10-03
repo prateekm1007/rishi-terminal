@@ -4,12 +4,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  * W3 closure (founder round-10 review, 2026-10-03) — the three review
  * defects, each pinned here:
  *
- *  A. The token cap is a HARD spend bound: the route RESERVES the
- *     single-request ceiling before the provider call (denied when it
- *     does not fit) and SETTLES to the provider-reported usage afterward
- *     (reservation kept in full when usage is unavailable). Failure
- *     paths RELEASE the reservation exactly like the per-identity quota
- *     refund.
+ *  A. The token cap is hard AT ADMISSION (reservation/settlement): the
+ *     route RESERVES the single-request ceiling before the provider call
+ *     (denied when it does not fit) and SETTLES to the provider-reported
+ *     usage afterward (reservation kept in full when usage is
+ *     unavailable; an above-ceiling report is recorded honestly —
+ *     settlement is a ledger, not an admission). Failure paths RELEASE
+ *     the reservation exactly like the per-identity quota refund.
  *  B. CHAT_DISABLED has ONE contract, identical in code, .env.example,
  *     docs/ACCESS_MODEL.md and this file: unset/"" or the explicit
  *     false-y spellings 0/false/no/off (case-insensitive) leave chat

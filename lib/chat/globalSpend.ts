@@ -20,15 +20,25 @@ import 'server-only';
  *     upstream work.
  *   - CHAT_GLOBAL_DAILY_REQUESTS (default 2000): atomic global daily
  *     request admission (reserve_rate_limit +1 per admitted request).
- *   - CHAT_GLOBAL_DAILY_TOKENS (default 2,000,000): a HARD spend bound.
- *     Before the provider call the request RESERVES the single-request
- *     ceiling below (refused when it does not fit under the cap); after
- *     the response the reservation is SETTLED to the provider-reported
- *     usage. Concurrency can therefore never push the counter past the
- *     cap at admission time, and requests whose usage goes unreported
- *     still pay their full reservation (defect A of the W3 review: the
- *     old check-then-record scheme admitted concurrent requests past the
- *     nominal ceiling and counted nothing for unreported usage).
+ *   - CHAT_GLOBAL_DAILY_TOKENS (default 2,000,000): reservation-bounded
+ *     admission — HARD AT ADMISSION, honest at settlement. Before the
+ *     provider call the request RESERVES the single-request ceiling below
+ *     (refused when it does not fit under the cap): concurrent requests
+ *     can never push the counter past the cap at admission time, and
+ *     requests whose usage goes unreported still pay their full
+ *     reservation (defect A of the W3 review: the old check-then-record
+ *     scheme admitted concurrent requests past the nominal ceiling and
+ *     counted nothing for unreported usage). After the response the
+ *     reservation is SETTLED to the provider-reported usage — settlement
+ *     is a ledger, not an admission: usage reported ABOVE the ceiling is
+ *     recorded honestly, so the day's settled total can pass the cap only
+ *     by in-flight settlement overage, bounded by ceil(cap / ceiling)
+ *     in-flight requests x (the provider's tokenization of the ENFORCED
+ *     <=64,000-char serialized input — lib/ai/providers/serializedInputBound.ts
+ *     refuses larger payloads before any fetch — plus the 2,048-token
+ *     output cap). Names describe behavior (rule 2): this is a hard
+ *     ADMISSION bound with honest settlement, not a claim that the
+ *     settled total can never exceed the cap.
  *
  * Failure semantics: FAIL CLOSED, matching consume_chat_quota — when the
  * counter infrastructure is unreachable the request is refused; spend is
@@ -68,18 +78,29 @@ const TOK_KEY_PREFIX = 'chat:global:tok';
  *                  failover pair is fully covered
  *   output      <= 2,048 tokens per attempt (the providers' max_tokens /
  *                  maxOutputTokens request caps)
- *   input       <= 22,000 tokens per attempt: 64,000 chars at the
- *                  conservative 3 chars/token, composed of the measured
- *                  worst cases — server-built system context ~4,000
- *                  (persona prompt max 1,524 across the canonical
- *                  registry + UNTRUSTED_HISTORY_BLOCK 1,283 + tool
- *                  protocol 767) + evidence block 16,000 (16-item live
- *                  package measured 4,731 chars; merged tool evidence
- *                  carries the same item shapes) + history 8,000 (route
+ *   input       <= 22,000 tokens per attempt: the ENFORCED
+ *                  serialized-input bound of 64,000 chars
+ *                  (lib/ai/providers/serializedInputBound.ts — BOTH
+ *                  providers refuse a larger wire body before the
+ *                  fetch) at the calibrated 3 chars/token, composed of
+ *                  mechanically bounded components — server-built
+ *                  system context ~4,000 (persona prompt max 1,524
+ *                  across the canonical registry +
+ *                  UNTRUSTED_HISTORY_BLOCK 1,283 + tool protocol 767)
+ *                  + evidence block 16,000 (16-item live package
+ *                  measured 4,731 chars; merged tool evidence carries
+ *                  the same item shapes) + history 8,000 (route
  *                  contract) + message 2,000 (route contract) + loop
- *                  turns 25,000 (5 tool request/result pairs) + repair
- *                  turns 9,000 (discarded candidate + validator
- *                  feedback)
+ *                  turns 25,000 (5 tool request/result pairs — the
+ *                  request echo is the CANONICAL validated args, or a
+ *                  256-char truncation when invalid:
+ *                  toolRequestTurn in lib/ai/tools.ts) + repair turns
+ *                  9,000 (discarded candidate + validator feedback).
+ *                  Residual (documented, accepted): chars are not
+ *                  tokens — pathological Unicode can tokenize a
+ *                  legal-size payload above this estimate; the
+ *                  settlement ledger records that honestly (see the
+ *                  CHAT_GLOBAL_DAILY_TOKENS bullet).
  *
  * R = (1 + 4 + 1) x 2 x (22,000 + 2,048) = 288,576.
  *

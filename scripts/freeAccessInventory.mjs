@@ -204,7 +204,6 @@ const CLASSIFY = {
   'data/glossary.ts': { cat: 'legitimate-concept', note: 'glossary definitions (pricing power)' },
   'data/news/index.ts': { cat: 'legitimate-concept', note: 'seed news copy (rating upgrades)' },
   'data/rishi-portfolios/global-plays.ts': { cat: 'legitimate-concept', note: 'investment thesis copy (pricing power)' },
-  'data/stockDetails/index.ts': { cat: 'legitimate-concept', note: 'stock commentary (premium as valuation concept)' },
   'data/stocks/index.ts': { cat: 'legitimate-concept', note: 'comment describing the N1 boundary + Zaggle PREPAID company name' },
   'lib/adapters/stockAdapter.ts': { cat: 'legitimate-concept', note: 'Core pricing field-group comment' },
   'lib/livePrice.ts': { cat: 'legitimate-concept', note: 'live pricing module comment' },

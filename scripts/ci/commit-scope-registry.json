@@ -117,6 +117,15 @@
       "docs/evidence/round12/",
       "docs/evidence/v1/live-recheck-2026-10-03.json",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "R12-03": [
+      "data/markets/index.ts",
+      "data/crypto/index.ts",
+      "data/stockDetails/index.ts",
+      "data/forex/index.ts",
+      "scripts/freeAccessInventory.mjs",
+      "test/moduleTwins.test.ts",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

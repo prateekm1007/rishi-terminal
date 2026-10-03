@@ -127,6 +127,7 @@
       "test/moduleTwins.test.ts",
       "scripts/ci/commit-scope-registry.json"
     ],
+<<<<<<< HEAD
     "R12-04": [
       "docs/evidence/round12/",
       "scripts/ci/commit-scope-registry.json"
@@ -134,6 +135,21 @@
     "R12-06": [
       "lib/ai/financialIntent.ts",
       "test/financialIntent.test.ts",
+=======
+    "R12-05": [
+      "app/fno/page.tsx",
+      "app/fno/options/page.tsx",
+      "app/fno/backtester/page.tsx",
+      "components/ui/LegalDisclaimer.tsx",
+      "messages/en.json",
+      "messages/hi.json",
+      "messages/bn.json",
+      "messages/mr.json",
+      "messages/ta.json",
+      "messages/te.json",
+      "messages/gu.json",
+      "test/fnoStrategyEduLocale.test.ts",
+>>>>>>> cfb4a92 (fix(R12-05): /fno honest-copy fixes — educational-reference labeling (audit round-1 low observations))
       "scripts/ci/commit-scope-registry.json"
     ]
   }

@@ -739,7 +739,8 @@
     "noLegs": "No legs yet",
     "wisdomDesc1": "Build options strategies with",
     "wisdomDesc2": "Rishi wisdom",
-    "wisdomDesc3": "Understand your payoff, Greeks, and risk before you execute."
+    "wisdomDesc3": "Understand your payoff, Greeks, and risk before you execute.",
+    "strategyEdu": "Educational reference: standard strategy definitions with illustrative persona tags. Not live data, not advice."
   },
   "forex": {
     "breadcrumb": "FOREX",

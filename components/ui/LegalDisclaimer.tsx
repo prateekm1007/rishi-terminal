@@ -17,6 +17,8 @@ function dataSourceLine(pathname: string): string {
     return 'Bond yields: static reference dataset — live only where a LIVE label is shown.';
   if (pathname.startsWith('/commodities'))
     return 'Commodities: static reference dataset — illustrative, not current.';
+  if (pathname.startsWith('/fno'))
+    return 'F&O: strategy definitions are educational reference; analytics require licensed NSE derivatives data (not available yet).';
   if (pathname.startsWith('/pulse'))
     return 'Macro indicators: static reference — as-of dates shown per row; live FX where labelled.';
   return 'Equity data: NSE India / Yahoo Finance / Screener.in (live where labelled); fundamentals seeded illustratively where marked.';

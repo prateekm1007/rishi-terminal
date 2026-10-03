@@ -20,7 +20,7 @@ export default function OptionsChainPage() {
             📋 Options Chain
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            Live OI · IV Rank · Max Pain · PCR Analysis
+            Options chain analytics — pending licensed NSE derivatives data
           </p>
         </div>
 

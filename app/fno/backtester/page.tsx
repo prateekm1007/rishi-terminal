@@ -22,7 +22,7 @@ export default function FnoBacktesterPage() {
             📊 F&amp;O Strategy Backtester
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            Strategy backtesting on historical derivatives data
+            Payoff and backtest analytics — pending licensed NSE derivatives data
           </p>
         </div>
 

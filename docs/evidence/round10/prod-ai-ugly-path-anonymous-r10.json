@@ -1,0 +1,197 @@
+{
+  "base": "https://rishi-terminal.vercel.app",
+  "note": "re-run on production 6798f62 for the Round-10 error-path sweep (D18)",
+  "rows": [
+    {
+      "name": "anonymous chat (no cookie)",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 10226,
+      "body": {
+        "text": "roe = 8.91 percent — live (no disclosed observation time)",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T00:25:01.455Z",
+          "grounded": true,
+          "claimsVerified": true,
+          "groundingMode": "structured-claims",
+          "structuredResponse": "valid",
+          "claims": [
+            {
+              "claim": "Reliance Industries reports an ROE of 8.91 percent.",
+              "evidenceIds": [
+                "fundamental:RELIANCE:roe:no-disclosed-observation-time"
+              ],
+              "assertions": [
+                {
+                  "field": "roe",
+                  "value": 8.91,
+                  "unit": "percent"
+                }
+              ],
+              "verifiedFacts": [
+                {
+                  "field": "roe",
+                  "value": 8.91,
+                  "unit": "percent",
+                  "sourceState": "live-undated",
+                  "observedAt": null,
+                  "statement": "roe = 8.91 percent — live (no disclosed observation time)"
+                }
+              ]
+            }
+          ],
+          "commentary": "The return on equity for Reliance Industries is 8.91 percent. It’s not a screaming figure, but in a capital-intensive business like energy, you’ve got to look at the whole enterprise—management, moats, and whether the returns justify the capital employed.",
+          "groundingRejections": [],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 7457,
+            "providerAttempts": 1,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 7447,
+                "outcome": "final-response",
+                "stage": "initial"
+              }
+            ],
+            "repairs": [],
+            "toolExecutions": [],
+            "validationMs": 5,
+            "priceFetches": [
+              {
+                "symbol": "RELIANCE",
+                "ms": 77
+              }
+            ],
+            "fundamentalsFetches": [
+              {
+                "symbol": "RELIANCE",
+                "ms": 800
+              }
+            ],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 1
+            },
+            "wallMs": 9682,
+            "evidenceMs": 805
+          }
+        }
+      },
+      "expectHint": "200 + wire provenance (anonymous allowed; quota/burst still bound)"
+    },
+    {
+      "name": "canonical persona, anonymous",
+      "path": "/api/chat",
+      "status": 200,
+      "ms": 4839,
+      "body": {
+        "text": "The AI reply could not be verified against platform evidence and was not shown.",
+        "provenance": {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "generatedAt": "2026-10-03T00:25:10.196Z",
+          "grounded": false,
+          "claimsVerified": false,
+          "groundingMode": "evidence-context",
+          "structuredResponse": "valid",
+          "claims": [],
+          "groundingRejections": [
+            "model produced no claims — context injection only"
+          ],
+          "toolCalls": [],
+          "timings": {
+            "totalMs": 3571,
+            "providerAttempts": 2,
+            "completions": [
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 1401,
+                "outcome": "final-response",
+                "stage": "initial"
+              },
+              {
+                "provider": "chat-api",
+                "model": "agnes-2.5-flash",
+                "ms": 2167,
+                "outcome": "final-response",
+                "stage": "repair"
+              }
+            ],
+            "repairs": [
+              {
+                "cause": "missing-claims",
+                "feedback": "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+              }
+            ],
+            "toolExecutions": [],
+            "validationMs": 0,
+            "priceFetches": [],
+            "fundamentalsFetches": [],
+            "memoHits": {
+              "price": 0,
+              "fundamentals": 0
+            },
+            "wallMs": 4214,
+            "evidenceMs": 0
+          }
+        }
+      },
+      "expectHint": "200 (no tier gate, no sign-in gate)"
+    },
+    {
+      "name": "unknown persona, anonymous",
+      "path": "/api/chat",
+      "status": 400,
+      "ms": 616,
+      "body": {
+        "error": "Unknown persona"
+      },
+      "expectHint": "400"
+    },
+    {
+      "name": "oversized message, anonymous",
+      "path": "/api/chat",
+      "status": 413,
+      "ms": 581,
+      "body": {
+        "error": "Message too long"
+      },
+      "expectHint": "413"
+    },
+    {
+      "name": "malformed JSON, anonymous",
+      "path": "/api/chat",
+      "status": 400,
+      "ms": 606,
+      "body": {
+        "error": "Unknown persona"
+      },
+      "expectHint": "400"
+    },
+    {
+      "name": "personas projection leak scan",
+      "path": "/api/chat/personas",
+      "status": 200,
+      "ms": 648,
+      "body": "{\"personas\":[{\"id\":\"jhunjhunwala\",\"name\":\"Jhunjhunwala\",\"fullName\":\"Rakesh Jhunjhunwala\",\"emoji\":\"🦁\",\"color\":\"#F59E0B\",\"rank\":\"Legend\",\"philosophy\":\"Bold convi",
+      "expectHint": "200, full public roster, no server prompt fields in client projection",
+      "leakFound": false
+    },
+    {
+      "name": "version binding",
+      "path": "/api/version",
+      "status": 200,
+      "body": {
+        "sha": "6798f62bff1e7b91f787de1a90cfc420b527ffdb",
+        "now": "2026-10-03T00:25:16.517Z",
+        "node": "v24.21.0"
+      },
+      "expectHint": "sha = deployed commit"
+    }
+  ]
+}

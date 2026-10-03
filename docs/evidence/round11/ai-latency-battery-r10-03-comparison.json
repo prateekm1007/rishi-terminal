@@ -1,0 +1,213 @@
+{
+ "baseline": {
+  "version": "6798f62bff1e7b91f787de1a90cfc420b527ffdb",
+  "generatedAt": "2026-10-02T23:57:09.552Z",
+  "identity": {
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash"
+  }
+ },
+ "after": {
+  "version": "7dbe1e88c11f0f9472599379d54844eba4a21aea",
+  "generatedAt": "2026-10-03T03:58:53.928Z",
+  "identity": {
+   "provider": "chat-api",
+   "model": "agnes-2.5-flash"
+  }
+ },
+ "sameProviderModel": true,
+ "afterEffectiveRows": 44,
+ "afterStatusCounts": {
+  "200": 44
+ },
+ "sampleSufficient": true,
+ "overall": {
+  "before": {
+   "n": 44,
+   "firstPassGrounded": 8,
+   "grounded": 12,
+   "repaired": 20,
+   "blocked": 2,
+   "invalid": 2,
+   "wallP50": 6401,
+   "wallP95": 17992,
+   "wallAvg": 8309,
+   "repairCauses": {
+    "unsupported-numeric-prose": 5,
+    "field-value-mismatch": 5,
+    "missing-claims": 6,
+    "schema-mismatch": 1,
+    "malformed-json": 3
+   },
+   "providerAttemptsTotal": 95,
+   "totalToolExecutions": 31
+  },
+  "after": {
+   "n": 44,
+   "firstPassGrounded": 9,
+   "grounded": 15,
+   "repaired": 19,
+   "blocked": 1,
+   "invalid": 1,
+   "wallP50": 7814,
+   "wallP95": 21643,
+   "wallAvg": 10048,
+   "repairCauses": {
+    "field-value-mismatch": 7,
+    "forecast-advice-wording": 1,
+    "missing-claims": 7,
+    "unsupported-numeric-prose": 3,
+    "zero-tool-engagement": 1
+   },
+   "providerAttemptsTotal": 95,
+   "totalToolExecutions": 33
+  }
+ },
+ "byClass": {
+  "financial": {
+   "before": {
+    "n": 22,
+    "firstPassGrounded": 8,
+    "firstPassGroundedFromRows": 8,
+    "grounded": 12,
+    "repaired": 13,
+    "blocked": 2,
+    "invalid": 1,
+    "wallP50": 10495,
+    "wallP95": 19596,
+    "wallAvg": 10566,
+    "repairCauses": {
+     "unsupported-numeric-prose": 5,
+     "field-value-mismatch": 5,
+     "missing-claims": 1,
+     "schema-mismatch": 1,
+     "malformed-json": 1
+    },
+    "noAnswerDespiteOkTools": 6
+   },
+   "after": {
+    "n": 22,
+    "firstPassGrounded": 9,
+    "firstPassGroundedFromRows": 9,
+    "grounded": 15,
+    "repaired": 13,
+    "blocked": 1,
+    "invalid": 0,
+    "wallP50": 11780,
+    "wallP95": 24698,
+    "wallAvg": 13393,
+    "repairCauses": {
+     "field-value-mismatch": 7,
+     "forecast-advice-wording": 1,
+     "missing-claims": 1,
+     "unsupported-numeric-prose": 3,
+     "zero-tool-engagement": 1
+    },
+    "noAnswerDespiteOkTools": 6
+   }
+  },
+  "philosophy": {
+   "before": {
+    "n": 11,
+    "firstPassGrounded": 0,
+    "firstPassGroundedFromRows": 0,
+    "grounded": 0,
+    "repaired": 4,
+    "blocked": 0,
+    "invalid": 0,
+    "wallP50": 3919,
+    "wallP95": 13038,
+    "wallAvg": 5513,
+    "repairCauses": {
+     "missing-claims": 2,
+     "malformed-json": 2
+    },
+    "noAnswerDespiteOkTools": 0
+   },
+   "after": {
+    "n": 11,
+    "firstPassGrounded": 0,
+    "firstPassGroundedFromRows": 0,
+    "grounded": 0,
+    "repaired": 1,
+    "blocked": 0,
+    "invalid": 0,
+    "wallP50": 4121,
+    "wallP95": 13807,
+    "wallAvg": 5965,
+    "repairCauses": {
+     "missing-claims": 1
+    },
+    "noAnswerDespiteOkTools": 0
+   }
+  },
+  "invalid": {
+   "before": {
+    "n": 11,
+    "firstPassGrounded": 0,
+    "firstPassGroundedFromRows": 0,
+    "grounded": 0,
+    "repaired": 3,
+    "blocked": 0,
+    "invalid": 1,
+    "wallP50": 3630,
+    "wallP95": 17992,
+    "wallAvg": 6590,
+    "repairCauses": {
+     "missing-claims": 3
+    },
+    "noAnswerDespiteOkTools": 0
+   },
+   "after": {
+    "n": 11,
+    "firstPassGrounded": 0,
+    "firstPassGroundedFromRows": 0,
+    "grounded": 0,
+    "repaired": 5,
+    "blocked": 0,
+    "invalid": 1,
+    "wallP50": 6878,
+    "wallP95": 13387,
+    "wallAvg": 7442,
+    "repairCauses": {
+     "missing-claims": 5
+    },
+    "noAnswerDespiteOkTools": 0
+   }
+  }
+ },
+ "firstPassGroundedRate": {
+  "before": 0.182,
+  "after": 0.205
+ },
+ "repairCauseDelta": {
+  "field-value-mismatch": {
+   "before": 5,
+   "after": 7
+  },
+  "forecast-advice-wording": {
+   "before": 0,
+   "after": 1
+  },
+  "malformed-json": {
+   "before": 3,
+   "after": 0
+  },
+  "missing-claims": {
+   "before": 6,
+   "after": 7
+  },
+  "schema-mismatch": {
+   "before": 1,
+   "after": 0
+  },
+  "unsupported-numeric-prose": {
+   "before": 5,
+   "after": 3
+  },
+  "zero-tool-engagement": {
+   "before": 0,
+   "after": 1
+  }
+ }
+}

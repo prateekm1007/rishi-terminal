@@ -1,0 +1,268 @@
+{
+  "directive": "R11 directive 14 — multi-tool composition measurement",
+  "base": "https://rishi-terminal.vercel.app",
+  "version": "faa234808fa9753ef762385a34ef4036da39c904",
+  "generatedAt": "2026-10-03T05:09:52.686Z",
+  "rows": [
+    {
+      "id": "profile-price-score",
+      "question": "Give me TCS's live price, its Rishi score, and a quick profile of the business.",
+      "expectTools": [
+        "getStock",
+        "getPrices",
+        "getScore"
+      ],
+      "httpStatus": 200,
+      "wallMs": 5304,
+      "grounded": false,
+      "groundingMode": "evidence-context",
+      "toolCalls": [],
+      "toolCount": 0,
+      "distinctTools": [],
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "completions": [
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 1170,
+          "outcome": "final-response",
+          "stage": "initial"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 1825,
+          "outcome": "final-response",
+          "stage": "repair"
+        }
+      ],
+      "repairs": [
+        {
+          "cause": "malformed-json",
+          "feedback": "your reply was not parseable as a single JSON object"
+        }
+      ],
+      "memoHits": {
+        "price": 0,
+        "fundamentals": 0
+      },
+      "withinFourCallBound": true,
+      "answerHead": "The AI response could not be verified against the supplied financial evidence."
+    },
+    {
+      "id": "fundamentals-score",
+      "question": "How do INFY's fundamentals line up with its Rishi score?",
+      "expectTools": [
+        "getFinancials",
+        "getScore"
+      ],
+      "httpStatus": 200,
+      "wallMs": 21506,
+      "grounded": false,
+      "groundingMode": "evidence-context",
+      "toolCalls": [
+        {
+          "tool": "getScore",
+          "status": "ok",
+          "symbol": "INFY"
+        },
+        {
+          "tool": "getFinancials",
+          "status": "ok",
+          "symbol": "INFY"
+        }
+      ],
+      "toolCount": 2,
+      "distinctTools": [
+        "getScore",
+        "getFinancials"
+      ],
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "completions": [
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 995,
+          "outcome": "final-response",
+          "stage": "initial"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 2350,
+          "outcome": "tool-request",
+          "stage": "repair"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 801,
+          "outcome": "tool-request",
+          "stage": "post-tool"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 15680,
+          "outcome": "final-response",
+          "stage": "post-tool"
+        }
+      ],
+      "repairs": [
+        {
+          "cause": "malformed-json",
+          "feedback": "your reply was not parseable as a single JSON object"
+        }
+      ],
+      "memoHits": {
+        "price": 0,
+        "fundamentals": 1
+      },
+      "withinFourCallBound": true,
+      "answerHead": "The AI response could not be verified against the supplied financial evidence."
+    },
+    {
+      "id": "stock-peers",
+      "question": "How does TCS compare to its peers?",
+      "expectTools": [
+        "getStock",
+        "getPeers"
+      ],
+      "httpStatus": 200,
+      "wallMs": 29107,
+      "grounded": true,
+      "groundingMode": "structured-claims",
+      "toolCalls": [
+        {
+          "tool": "getPeers",
+          "status": "ok",
+          "symbol": "TCS"
+        },
+        {
+          "tool": "getStock",
+          "status": "ok",
+          "symbol": "TCS"
+        }
+      ],
+      "toolCount": 2,
+      "distinctTools": [
+        "getPeers",
+        "getStock"
+      ],
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "completions": [
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 1529,
+          "outcome": "tool-request",
+          "stage": "initial"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 1048,
+          "outcome": "tool-request",
+          "stage": "post-tool"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 12969,
+          "outcome": "final-response",
+          "stage": "post-tool"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 11783,
+          "outcome": "final-response",
+          "stage": "repair"
+        }
+      ],
+      "repairs": [
+        {
+          "cause": "provenance-wording",
+          "feedback": "the validator rejected: answer: labels seed/derived data as live/current/latest — provenance upgrade rejected (Commit L2). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number; every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+        }
+      ],
+      "memoHits": {
+        "price": 0,
+        "fundamentals": 0
+      },
+      "withinFourCallBound": true,
+      "answerHead": "price = 11850 inr — seed/reference (may be stale)\nmktcap = 11850000 inr_crore — seed/reference (may be stale)\npe = 32 multiple — seed/reference (may be stale)\nroe = 18 percent — seed/reference (may be stale)\nprice = 5285"
+    },
+    {
+      "id": "price-provenance",
+      "question": "What is RELIANCE's live price and how fresh is that data?",
+      "expectTools": [
+        "getPrices"
+      ],
+      "httpStatus": 200,
+      "wallMs": 11655,
+      "grounded": true,
+      "groundingMode": "structured-claims",
+      "toolCalls": [
+        {
+          "tool": "getPrices",
+          "status": "ok",
+          "symbol": "RELIANCE"
+        }
+      ],
+      "toolCount": 1,
+      "distinctTools": [
+        "getPrices"
+      ],
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "completions": [
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 1711,
+          "outcome": "tool-request",
+          "stage": "initial"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 4293,
+          "outcome": "final-response",
+          "stage": "post-tool"
+        },
+        {
+          "provider": "chat-api",
+          "model": "agnes-2.5-flash",
+          "ms": 4167,
+          "outcome": "final-response",
+          "stage": "repair"
+        }
+      ],
+      "repairs": [
+        {
+          "cause": "field-value-mismatch",
+          "feedback": "the validator rejected: claim 1: claims change=\"1\" but the matched change assertion is -1.626 — rejected (audit 2026-10-02) | claim 1: claims change=\"2026\" but the matched change assertion is -1.626 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number; every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+        }
+      ],
+      "memoHits": {
+        "price": 0,
+        "fundamentals": 0
+      },
+      "withinFourCallBound": true,
+      "answerHead": "price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\nchange = -1.626 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)"
+    }
+  ],
+  "summary": {
+    "n": 4,
+    "http200": 4,
+    "multiToolRows": 2,
+    "allWithinFourCallBound": true,
+    "groundedRows": 2,
+    "avgToolCount": 1.25,
+    "wallP50": 21506
+  }
+}

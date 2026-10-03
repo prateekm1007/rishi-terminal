@@ -100,3 +100,17 @@ BEGIN
   END;
 END
 $$;
+
+-- ── V1.4 positive control (W3 closure): service_role retains EXECUTE on
+--      the global-spend RPCs — the app's cost gates depend on them; a
+--      lost grant fail-closes ALL chat, so it must bite in CI first ──
+DO $$
+BEGIN
+  IF NOT has_function_privilege('service_role', 'public.reserve_rate_limit(text, integer, integer, integer)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'V1.4 FAILED: service_role lost EXECUTE on reserve_rate_limit — the global spend cap is broken';
+  END IF;
+  IF NOT has_function_privilege('service_role', 'public.settle_rate_limit(text, integer)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'V1.4 FAILED: service_role lost EXECUTE on settle_rate_limit — the global spend ledger is broken';
+  END IF;
+END
+$$;

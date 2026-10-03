@@ -44,6 +44,14 @@ const TIMEOUT_MS = 20_000;
  *  request BLOCKED — honestly, never with a plausible fallback answer. */
 export const MAX_TOOL_ITERATIONS = 4;
 
+/** The failover chain length: at most the OpenAI-compatible primary plus
+ *  the Gemini fallback. resolveAiProviderCandidates never returns more.
+ *  W3-A: this bound is a factor of the global token reservation ceiling
+ *  (lib/chat/globalSpend.ts) — pinned by
+ *  test/globalSpendReservation.test.ts; changing it requires revisiting
+ *  the ceiling. */
+export const MAX_PROVIDER_CANDIDATES = 2;
+
 export type AiProvider =
   | { kind: "openai"; id: string; baseUrl: string; apiKey: string; model: string }
   | { kind: "gemini"; id: string; apiKey: string; model: string };
@@ -188,7 +196,9 @@ export function resolveAiProviderCandidates(): AiProvider[] {
       );
     }
   }
-  return candidates;
+  // Mechanical bound (W3-A): the reservation ceiling derives from this
+  // length — enforce it here so the constant cannot silently rot.
+  return candidates.slice(0, MAX_PROVIDER_CANDIDATES);
 }
 
 /**

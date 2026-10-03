@@ -150,6 +150,24 @@ jobs:
       - name: Assert SECURITY DEFINER EXECUTE lockdown (V1)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/security_definer_invariants.sql
 
+      - name: Assert global spend reservation invariants (W3-A — boundary and settlement arithmetic)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/global_spend_invariants.sql
+
+      - name: Prove the reservation hard bound under real concurrency (W3-A)
+        run: |
+          # 24 PARALLEL sessions each try to reserve 10 against a limit of
+          # 100 on the same key. The WHERE-guarded upsert must admit
+          # EXACTLY 10 (the limit divides cleanly) and refuse the other
+          # 14 — 240 requested, 100 admitted, the counter never exceeds
+          # the cap. Deterministic: the first 10 serialize on the row
+          # lock and fit; every later session sees count=100.
+          for i in $(seq 1 24); do
+            psql -q -At -c "SELECT reserve_rate_limit('w3a:storm', 10, 100, 90000);" &
+          done
+          wait
+          psql -v ON_ERROR_STOP=1 -c "DO \$\$ DECLARE c int; BEGIN SELECT count INTO c FROM rate_limits WHERE key LIKE 'w3a:storm:%'; IF c IS DISTINCT FROM 100 THEN RAISE EXCEPTION 'CONCURRENCY FAILED: storm count must be exactly 100, got %', c; END IF; END \$\$;"
+          psql -q -v ON_ERROR_STOP=1 -c "DELETE FROM rate_limits WHERE key LIKE 'w3a:storm:%';"
+
   smoke:
     name: Playwright smoke (blocking since round 2 — green on 4+ consecutive runs)
     runs-on: ubuntu-latest

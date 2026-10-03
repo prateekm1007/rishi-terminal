@@ -44,44 +44,113 @@ export class MissingPepperError extends Error {
 }
 
 /**
+ * The ONE fail-closed identity state for malformed client IPs (W3
+ * closure, review defect D): every input that is neither a well-formed
+ * IPv4 literal nor a well-formed IPv6 literal maps here. All malformed
+ * callers therefore SHARE one daily quota bucket — garbage cannot mint
+ * fresh identities by varying a malformed string (the old code returned
+ * the raw string, one identity per distinct junk value).
+ */
+export const MALFORMED_IP_IDENTITY = 'malformed-ip';
+
+/** Strict IPv4: exactly four decimal octets 0-255, no leading zeros. */
+function parseIPv4(s: string): string | null {
+  const m = s.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!m) return null;
+  for (const octet of m.slice(1)) {
+    if (octet.length > 1 && octet[0] === '0') return null; // "01" is malformed
+    if (Number(octet) > 255) return null;
+  }
+  return s;
+}
+
+/**
+ * Strict IPv6 parse -> the eight 16-bit groups as numbers, or null when
+ * malformed. Accepts one "::" compression (standing for one or more
+ * zero groups, RFC 4291), 1-4 hex digits per group, and an embedded
+ * IPv4 tail (legal only as the last group, counting as two groups).
+ */
+function parseIPv6Groups(raw: string): number[] | null {
+  const dbl = raw.indexOf('::');
+  if (dbl !== -1 && raw.indexOf('::', dbl + 1) !== -1) return null; // two "::"
+  const head = dbl === -1 ? raw : raw.slice(0, dbl);
+  const tail = dbl === -1 ? '' : raw.slice(dbl + 2);
+  // A stray single leading/trailing colon (not part of "::") is malformed.
+  if (head.startsWith(':') || head.endsWith(':')) return null;
+  if (tail.startsWith(':') || tail.endsWith(':')) return null;
+
+  const parseGroups = (s: string): number[] | null => {
+    if (s === '') return [];
+    const parts = s.split(':');
+    const out: number[] = [];
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      if (p.includes('.')) {
+        // Embedded IPv4 — legal ONLY as the final group.
+        if (i !== parts.length - 1) return null;
+        const v4 = parseIPv4(p);
+        if (!v4) return null;
+        const o = v4.split('.').map(Number);
+        out.push((o[0] << 8) | o[1], (o[2] << 8) | o[3]);
+      } else {
+        if (!/^[0-9a-f]{1,4}$/.test(p)) return null;
+        out.push(Number.parseInt(p, 16));
+      }
+    }
+    return out;
+  };
+
+  const hg = parseGroups(head);
+  if (hg === null) return null;
+  const tg = parseGroups(tail);
+  if (tg === null) return null;
+
+  const total = hg.length + tg.length;
+  if (dbl === -1) {
+    return total === 8 ? [...hg, ...tg] : null; // uncompressed: exactly 8
+  }
+  if (total > 7) return null; // "::" stands for >= 1 zero group
+  return [...hg, ...Array<number>(8 - total).fill(0), ...tg];
+}
+
+/**
  * Collapse a client IP to its quota-normalized form: IPv4 as-is,
- * IPv4-mapped IPv6 unwrapped, IPv6 truncated to the /64 prefix.
+ * IPv4-mapped IPv6 unwrapped (in EITHER spelling — the dotted
+ * "::ffff:203.0.113.7" and the hex "::ffff:cb00:7107" forms are the
+ * same address and must share one identity), IPv6 truncated to the /64
+ * prefix. Zone indices are stripped. Malformed input maps to
+ * MALFORMED_IP_IDENTITY (one shared fail-closed state — see above).
  * Exported for its own tests (the truncation contract is the abuse
  * boundary, not a display concern).
  */
 export function normalizeIpForIdentity(ip: string): string {
+  if (typeof ip !== 'string') return MALFORMED_IP_IDENTITY;
+  // Zone indices (fe80::1%eth0, also %25-encoded) never affect identity.
   const raw = ip.trim().split('%')[0].toLowerCase();
-  if (raw === '') return 'unknown';
+  if (raw === '' || raw === 'unknown') return 'unknown'; // the route's documented no-header fallback
 
-  // IPv4-mapped IPv6 (::ffff:203.0.113.7) is the same client as the IPv4.
-  const v4mapped = raw.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
-  if (v4mapped) return v4mapped[1];
+  const v4 = parseIPv4(raw);
+  if (v4 !== null) return v4;
 
-  if (!raw.includes(':')) return raw; // plain IPv4
+  if (!raw.includes(':')) return MALFORMED_IP_IDENTITY; // neither IPv4 nor IPv6
 
-  // IPv6: expand the :: compression, then keep the first four groups
-  // (the /64 prefix). Zone indices were stripped above.
-  const doubleColon = raw.indexOf('::');
-  let groups: string[];
-  if (doubleColon === -1) {
-    groups = raw.split(':');
-  } else {
-    const head = raw.slice(0, doubleColon);
-    const tail = raw.slice(doubleColon + 2);
-    const headGroups = head ? head.split(':') : [];
-    const tailGroups = tail ? tail.split(':') : [];
-    const missing = 8 - headGroups.length - tailGroups.length;
-    if (missing < 0) return raw; // malformed: fall back to the raw string
-    groups = [...headGroups, ...Array<string>(missing).fill('0'), ...tailGroups];
+  const groups = parseIPv6Groups(raw);
+  if (groups === null) return MALFORMED_IP_IDENTITY;
+
+  // IPv4-mapped (::ffff:0:0/96, either spelling) is the same client as
+  // the IPv4 form.
+  if (
+    groups.slice(0, 5).every((g) => g === 0) &&
+    groups[5] === 0xffff
+  ) {
+    const hi = groups[6];
+    const lo = groups[7];
+    return `${hi >> 8}.${hi & 0xff}.${lo >> 8}.${lo & 0xff}`;
   }
-  if (groups.length < 4) return raw; // malformed: fall back to the raw string
-  // Canonicalize each kept group to its minimal hex spelling so
-  // compressed and expanded inputs of the same address agree.
-  const canonical = groups.slice(0, 4).map((g) => {
-    const n = Number.parseInt(g, 16);
-    return Number.isFinite(n) ? n.toString(16) : g;
-  });
-  return `${canonical.join(':')}::/64`;
+
+  // /64 prefix, each group canonicalized to minimal hex so compressed
+  // and expanded spellings of the same address agree.
+  return `${groups.slice(0, 4).map((g) => g.toString(16)).join(':')}::/64`;
 }
 
 /**

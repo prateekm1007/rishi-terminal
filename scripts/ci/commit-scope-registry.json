@@ -210,7 +210,9 @@
       "test/scorerHealth.test.ts",
       "test/scorerBoundaries.test.ts",
       "scripts/ci/commit-scope-registry.json",
-      "scripts/w4Audit.ts"
+      "scripts/w4Audit.ts",
+      "docs/evidence/w4-audit-2026-10-03.md",
+      "docs/evidence/entropy-audit-post-w4-2026-10-03.md"
     ]
   }
 }

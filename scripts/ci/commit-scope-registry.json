@@ -127,7 +127,6 @@
       "test/moduleTwins.test.ts",
       "scripts/ci/commit-scope-registry.json"
     ],
-<<<<<<< HEAD
     "R12-04": [
       "docs/evidence/round12/",
       "scripts/ci/commit-scope-registry.json"
@@ -135,8 +134,10 @@
     "R12-06": [
       "lib/ai/financialIntent.ts",
       "test/financialIntent.test.ts",
-=======
+      "scripts/ci/commit-scope-registry.json"
+    ],
     "R12-05": [
+      "docs/evidence/round12/ci-event-stall-2026-10-03.md",
       "app/fno/page.tsx",
       "app/fno/options/page.tsx",
       "app/fno/backtester/page.tsx",
@@ -149,7 +150,6 @@
       "messages/te.json",
       "messages/gu.json",
       "test/fnoStrategyEduLocale.test.ts",
->>>>>>> cfb4a92 (fix(R12-05): /fno honest-copy fixes — educational-reference labeling (audit round-1 low observations))
       "scripts/ci/commit-scope-registry.json"
     ]
   }

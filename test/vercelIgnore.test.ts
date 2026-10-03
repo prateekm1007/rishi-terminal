@@ -46,13 +46,13 @@ function makeRepo(): string {
   return cwd;
 }
 
-function runScript(cwd: string, env: NodeJS.ProcessEnv = {}): number {
+function runScript(cwd: string, env: Record<string, string | undefined> = {}): number {
   try {
     execFileSync("bash", [SCRIPT], {
       cwd,
       encoding: "utf-8",
       stdio: ["ignore", "pipe", "pipe"],
-      env: { ...process.env, ...env },
+      env: { ...process.env, ...env } as NodeJS.ProcessEnv,
     });
     return 0;
   } catch (err) {

@@ -26,8 +26,24 @@ import { clamp } from '../utils';
 export function scoreSoros(s: Stock): RishiScore {
   // Reflexivity: is price disconnected from value? (contrarian signal)
   const ncav = (s.ca - s.tl) / s.sh;
-  const priceToNcav = s.price / Math.max(1, ncav);
-  const reflexS = clamp(130 - priceToNcav * 20);
+  // Reflexivity: the component measures the discount to a POSITIVE net
+  // current asset value. NCAV <= 0 means no asset-backed anchor exists —
+  // the premise is unavailable, so the component scores 0 and the detail
+  // SAYS so (rule 3; the pre-W4 ladder scored such rows 100 — rewarding
+  // insolvent balance sheets against the deep-value lens — and the W4
+  // Math.max(1, ncav) floor displayed "Price/NCAV <price>x", a
+  // fabricated ratio). Measured on the 916 seed: 37 rows (4.0%) hit this
+  // branch. Pinned by test/scorerBoundaries.test.ts.
+  let reflexS: number;
+  let reflexDetail: string;
+  if (ncav <= 0) {
+    reflexS = 0;
+    reflexDetail = 'NCAV <= 0 — no asset-backed anchor (crowd not wrong about value)';
+  } else {
+    const priceToNcav = s.price / ncav;
+    reflexS = clamp(130 - priceToNcav * 20);
+    reflexDetail = `Price/NCAV ${priceToNcav.toFixed(2)}x — crowd wrong?`;
+  }
 
   // Macro trend: revenue growth signals macro tailwind (0 → 100 at 20%)
   const macroS = clamp(s.revcagr * 5);
@@ -39,8 +55,21 @@ export function scoreSoros(s: Stock): RishiScore {
   const momS = clamp(s.epscagr * 4);
 
   // Liquidity: current assets vs liabilities (1.0 → 50, 2.0 → 100)
-  const cr = s.ca / Math.max(1, s.tl);
-  const liqS = clamp(50 + (cr - 1) * 50);
+  // Liquidity: the current ratio needs POSITIVE liabilities. tl <= 0 is
+  // nonsensical balance-sheet data — the ratio is not computable, the
+  // component scores 0 and the detail SAYS so (rule 3; the W4
+  // Math.max(1, tl) floor fabricated "Current ratio <ca>x"). Measured
+  // incidence on the 916 seed: 0 rows — correctness-by-construction.
+  let liqS: number;
+  let liqDetail: string;
+  if (s.tl <= 0) {
+    liqS = 0;
+    liqDetail = 'Total liabilities <= 0 — current ratio not computable';
+  } else {
+    const cr = s.ca / s.tl;
+    liqS = clamp(50 + (cr - 1) * 50);
+    liqDetail = `Current ratio ${cr.toFixed(2)}`;
+  }
 
   const total = reflexS * 0.30 + macroS * 0.25 + deS * 0.15 + momS * 0.20 + liqS * 0.10;
 
@@ -51,11 +80,11 @@ export function scoreSoros(s: Stock): RishiScore {
     score: Math.round(total),
     origin: 'Global',
     comps: [
-      { label: 'Reflexivity Signal',  v: Math.round(reflexS), wt: 30, detail: `Price/NCAV ${priceToNcav.toFixed(2)}x — crowd wrong?` },
+      { label: 'Reflexivity Signal',  v: Math.round(reflexS), wt: 30, detail: reflexDetail },
       { label: 'Macro Tailwind',      v: Math.round(macroS),  wt: 25, detail: `Rev CAGR ${s.revcagr}% — macro confirms` },
       { label: 'Momentum Confirm',    v: Math.round(momS),  wt: 20, detail: `EPS CAGR ${s.epscagr}% — trend in place` },
       { label: 'Leverage Tolerance',  v: Math.round(deS),   wt: 15, detail: `D/E ${s.de} — Soros tolerates leverage` },
-      { label: 'Liquidity Buffer',    v: Math.round(liqS),  wt: 10, detail: `Current ratio ${cr.toFixed(2)}` },
+      { label: 'Liquidity Buffer',    v: Math.round(liqS),  wt: 10, detail: liqDetail },
     ],
     insight: `Soros sees ${reflexS > 70 ? 'a market misconception worth exploiting' : 'insufficient reflexive opportunity'}. Rev CAGR ${s.revcagr}% ${macroS > 70 ? 'confirms macro tailwind' : 'shows weak macro'}. ${total >= 70 ? 'The alchemy of finance favors this position.' : 'Soros would wait for a clearer dislocation.'}`,
   };

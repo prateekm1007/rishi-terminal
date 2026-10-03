@@ -15,9 +15,12 @@ import { clamp } from '../utils';
  * uncertainty is priced in) — each component is now a GRADED ramp over
  * the same field, positioned at the data's quantiles so the pass region
  * itself discriminates:
- *   - Clone: 0 at promoter 35% → 100 at 70% (was flat 100 for >= 50%)
+ *   - Clone: 35 at promoter 35%, 0 at 0%, 100 from 70% (was flat 100
+ *     for >= 50%) — the ramp endpoint is the CODE's (pinned by
+ *     test/scorerBoundaries.test.ts), not the review draft's "0 at 35%".
  *   - Owner: 0 at 20% → 100 at 60% (was flat 100 for >= 30% — 91%!)
- *   - Low risk: 100 at D/E 0 declining to 0 at 2.2, x0.6 without FCF
+ *   - Low risk: 100 at D/E 0 declining to 0 at D/E 100/45 (~2.22),
+ *     x0.6 without FCF
  *   - Uncertainty discount: 100 at P/E 10 → 0 at 40 (was flat 100 <= 20)
  */
 export function scorePabrai(s: Stock): RishiScore {

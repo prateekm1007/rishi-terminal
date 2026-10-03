@@ -46,9 +46,14 @@ function makeRepo(): string {
   return cwd;
 }
 
-function runScript(cwd: string): number {
+function runScript(cwd: string, env: NodeJS.ProcessEnv = {}): number {
   try {
-    execFileSync("bash", [SCRIPT], { cwd, encoding: "utf-8", stdio: ["ignore", "pipe", "pipe"] });
+    execFileSync("bash", [SCRIPT], {
+      cwd,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env, ...env },
+    });
     return 0;
   } catch (err) {
     const e = err as { status?: number };
@@ -140,5 +145,33 @@ describe("vercel-ignore.sh (X1 ignored-build-step gate)", () => {
     const cwd = mkdtempSync(path.join(tmpdir(), "vercel-ignore-nogit-"));
     repos.push(cwd);
     expect(runScript(cwd)).not.toBe(0);
+  });
+
+  it("skips (exit 0) ANY staging-project deployment, even a code change (git integration suspended)", () => {
+    const cwd = makeRepo();
+    write(cwd, "app/api/chat/route.ts", "export {};\n");
+    commitAll(cwd, "code change on staging");
+    expect(runScript(cwd, { VERCEL_PROJECT_NAME: "rishi-terminal-staging" })).toBe(0);
+  });
+
+  it("skips (exit 0) staging by project id, not just by name", () => {
+    const cwd = makeRepo();
+    write(cwd, "lib/livePrice.ts", "export {};\n");
+    commitAll(cwd, "code change on staging by id");
+    expect(
+      runScript(cwd, { VERCEL_PROJECT_ID: "prj_7B1N3qceJOAh5jVAI32RhF84Zygm" }),
+    ).toBe(0);
+  });
+
+  it("builds (exit non-zero) the PRODUCTION project on a code change (only staging is suspended)", () => {
+    const cwd = makeRepo();
+    write(cwd, "app/api/chat/route.ts", "export {};\n");
+    commitAll(cwd, "code change on production");
+    expect(
+      runScript(cwd, {
+        VERCEL_PROJECT_NAME: "rishi-terminal",
+        VERCEL_PROJECT_ID: "prj_vsOQe05nMx2OlmK70AII3MpfPT3Y",
+      }),
+    ).not.toBe(0);
   });
 });

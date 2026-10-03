@@ -19,8 +19,25 @@
 # every changed path is inside docs/**, matches *.md at any depth, or is
 # inside scripts/ci/**. Anything else — app code, config (including
 # vercel.json itself), data, tooling outside scripts/ci — builds.
+#
+# Staging suspension (Round-11 X1, "suspend that project's git integration"):
+# every deployment of the rishi-terminal-staging project is skipped. That
+# project is a quota-only mirror — it has never carried Supabase variables
+# (docs/RELEASE.md), so its deployments served no integration purpose.
+# Verified live 2026-10-03: the Vercel project setting
+# gitProviderOptions.createDeployments="disabled" does NOT stop deployment
+# creation (staging still built a preview after it was set), so the
+# suspension is implemented here, repo-tracked and reversible. Fail-safe:
+# when neither identifier is present (local/non-Vercel runs) we do NOT skip.
 
 set -uo pipefail
+
+# Staging project suspension — checked FIRST (needs no git history).
+if [ "${VERCEL_PROJECT_NAME:-}" = "rishi-terminal-staging" ] ||
+   [ "${VERCEL_PROJECT_ID:-}" = "prj_7B1N3qceJOAh5jVAI32RhF84Zygm" ]; then
+  echo "vercel-ignore: staging project deployment — skipping (suspended; docs/RELEASE.md, Deployment budget #3)." >&2
+  exit 0
+fi
 
 if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
   echo "vercel-ignore: not a git checkout — building (fail-safe)." >&2

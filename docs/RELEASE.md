@@ -5,7 +5,7 @@
 | | Development | Staging | Production |
 |---|---|---|---|
 | Supabase project | local / any scratch | **none** — `BLOCKED: staging Supabase project` (founder dashboard task; see status below) | `mwkreqcbgpjqcpctwllf` |
-| Vercel | `vercel dev` | `rishi-terminal-staging` project — **git-created deployments suspended** (`gitProviderOptions.createDeployments: "disabled"`, 2026-10-03; see Deployment budget below) | `rishi-terminal.vercel.app` |
+| Vercel | `vercel dev` | `rishi-terminal-staging` project — **git-created deployments suspended repo-side** (`scripts/ci/vercel-ignore.sh`; see Deployment budget below) | `rishi-terminal.vercel.app` |
 | Payments | none | none until Razorpay staging keys exist | live Razorpay keys |
 | Cron | not fired | ingest crons remain configured on the staging host (13:30/13:45 UTC weekdays); endpoints fail closed — staging has no Supabase env | `/api/ingest/snapshot` 13:30 UTC Mon–Fri |
 | Purpose | iterate freely, seed data is fine | integration + auth testing, no real users, **no database until the staging Supabase project exists** | real users, real data |
@@ -100,13 +100,19 @@ Policy (X1):
    the code tree is identical. Reconciliation conventions compare code
    trees, not SHAs, for such deltas. A deployment-affecting change
    (including `vercel.json` itself) always builds.
-3. **Staging no longer mirrors.** The `rishi-terminal-staging` project's
-   git-created deployments are suspended
-   (`gitProviderOptions.createDeployments: "disabled"`, observed set
-   2026-10-03T14:38Z). Staging carries no Supabase variables (see status
-   below), so the mirror served no integration purpose; it only consumed
-   quota. Its two ingest crons remain configured and fail closed
-   (missing env), costing nothing against the deployment budget.
+3. **Staging no longer deploys.** The `rishi-terminal-staging` project is
+   a quota-only mirror — it has never carried Supabase variables (see
+   status below), so its deployments served no integration purpose. Its
+   git-created deployments are suspended **repo-side**:
+   `scripts/ci/vercel-ignore.sh` skips every deployment whose
+   `VERCEL_PROJECT_NAME`/`VERCEL_PROJECT_ID` matches the staging project.
+   The Vercel project setting
+   `gitProviderOptions.createDeployments: "disabled"` (observed on the
+   staging project 2026-10-03T14:38Z) does **not** stop deployment
+   creation — verified live: staging still built a preview for the X1
+   branch after that setting was in place. Staging therefore freezes at
+   its last deployment; its two ingest crons remain configured and fail
+   closed (missing env), costing nothing against the deployment budget.
 4. **Batch merges.** Documentation/evidence commits accumulate in one
    docs-only PR per round (skipped by rule 1); code changes stay
    one-task-per-PR. Do not create manual deployments from the dashboard;

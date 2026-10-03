@@ -53,9 +53,14 @@ PROVENANCE-AWARE UI           (provider · model · grounding mode · toolCalls 
 ## Tool layer (Commit L1)
 
 - Strict allowlist: `getStock`, `getFinancials`, `getPrices`, `getScore`,
-  `getPeers`. Zod argument validation and security-master checks at the
-  boundary; explicit failure states (`unknown-tool | invalid-args |
-  unknown-symbol | no-data | failed`) — never a plausible fallback.
+  `getPeers`. Zod argument validation and the ONE canonical registry gate
+  (`lib/registry/validateInput`) at the boundary; explicit failure states
+  (`unknown-tool | invalid-args | unknown-symbol | no-data | failed`) —
+  never a plausible fallback. Since R9-12 the boundary is the canonical
+  price registry (not the stock master alone): genuinely unknown symbols
+  answer `unknown-symbol`, while a registry instrument without an equity
+  security-master record (WTI, USD/INR, BTC, IN10YS…) answers honest
+  `no-data` from the stock-only tools and is served by `getPrices`.
 - Tools resolve ONLY through the canonical surfaces (registry, resolver,
   consensus engine, price path) — no second source of truth, no AI-side
   score recomputation. Peer figures are typed `seed`.
@@ -127,10 +132,11 @@ Every tool call rides the wire as `provenance.toolCalls` for audit.
 | Id class | Example | Source surface |
 |---|---|---|
 | `stock:<sym>:profile` | `stock:RELIANCE:profile` | seed registry (name/sector/status) |
-| `price:<sym>:<observedAt>` | `price:RELIANCE:2025-10-31T08:40:00.000Z` | `fetchLivePrice` (observation time = upstream's own; `:no-disclosed-observation-time` / `:unavailable` variants when absent/unavailable; STATIC status → seed-typed fact, DERIVED → derived-typed fact) |
+| `price:<sym>:<observedAt>` | `price:RELIANCE:2025-10-31T08:40:00.000Z` | `fetchLivePrice` (observation time = upstream's own; `:no-disclosed-observation-time` / `:unavailable` variants when absent/unavailable; STATIC status → seed-typed fact, DERIVED → derived-typed fact). R11: the price fact's UNIT derives from the instrument (FX → the pair's quote currency, bonds → `percent` — the observation is a yield, global commodities/crypto → `usd`, MCX contracts → `inr`, index levels → `points`, equities → `inr`) |
 | `fundamental:<sym>:<field>:<asOf>` | `fundamental:RELIANCE:pe:2026-09-30T10:00:00.000Z` (seed fields end `:seed`) | `resolveStockMetrics` — per-field `source`/`asOf` preserved verbatim |
 | `score:<sym>:<engine>:<asOf>` | `score:RELIANCE:rishi-merit-v1:2026-09-30T10:00:00.000Z` | `getStockScore` — consumed, NEVER recomputed by the AI |
 | `peer:<sym>:<peerSym>:seed` | `peer:RELIANCE:TCS:seed` | same-sector registry rows (all figures seed-typed) |
+| `instrument:<sym>:non-equity` | `instrument:WTI:non-equity` | R11 (directive 9): non-equity registry instruments — the honest "not an equity security" note that replaces fundamentals/score/peers items in the instrument package |
 | `news:<stable-id>` | `news:et-991` | class supported; per-symbol news surface not wired → explicit `news:<sym>:unavailable` note is emitted instead (no invented headlines) |
 
 Ids are deterministic: the same evidence state yields the same ids, so an
@@ -156,8 +162,20 @@ similarity.
 - Conversation history remains client-supplied (validated shape, untrusted
   by contract); a server-owned conversation store is the follow-up
   architecture.
-- The general (non-symbol) chat path is context-only by design pending
-  FD-10; the tool loop engages only on the evidence-bound path.
+
+RECONCILED (R11, directive 11 — this section previously said the general
+non-symbol path was context-only and the tool loop engaged only on the
+evidence-bound path; that described the pre-Commit-M architecture and
+contradicted the runtime): EVERY request — with or without initial
+symbol evidence — runs the SAME bounded tool loop
+(`lib/ai/router.ts`). A no-evidence request whose message matches a
+registry symbol plus a closed data term gets reactive canonical tool
+seeding (`intentSeedTool`, §"Server-enforced canonical engagement"), and
+a detected financial ask that still engages zero tools is repaired then
+BLOCKED — never silently downgraded to context-only. The chat route's
+`symbol` parameter accepts the full canonical registry since R11
+(directive 9): non-equity instruments seed the instrument package
+(price observation + non-equity note) instead of the equity package.
 
 ## Canonical tool-state consistency (Commit M7)
 

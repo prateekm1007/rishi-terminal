@@ -229,8 +229,9 @@
     ],
     "X1": [
       "docs/RELEASE.md",
-      "scripts/ci/vercel-ignore.sh",
+      "docs/evidence/round11/",
       "scripts/ci/commit-scope-registry.json",
+      "scripts/ci/vercel-ignore.sh",
       "scripts/commitScopeAudit.mjs",
       "test/vercelIgnore.test.ts",
       "vercel.json"

@@ -243,16 +243,19 @@
     "X3": [
       "app/page.tsx",
       "app/stock/[symbol]/page.tsx",
+      "artifacts/phase6/",
       "components/dashboard/DashboardClient.tsx",
       "components/stock/LivePriceWidget.tsx",
       "components/stock/StockPageClient.tsx",
+      "docs/evidence/round11/",
       "lib/dashboardSnapshot.ts",
       "lib/quoteCache.ts",
       "lib/quotePath.ts",
       "messages/",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/phase6Battery.ts",
       "test/dashboardSnapshot.test.ts",
-      "test/smoke/smoke.spec.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "test/smoke/smoke.spec.ts"
     ]
   }
 }

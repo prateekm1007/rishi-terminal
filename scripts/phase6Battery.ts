@@ -58,18 +58,21 @@ const ARTIFACT_PATH = path.join(ARTIFACT_DIR, "T59_PRODUCTION_MEASUREMENT.json")
 const COMMIT = process.env.VERCEL_COMMIT ?? "unknown-at-runtime";
 
 // ── homepage population (mirrors app/page.tsx allSyms) ───────────────────
-// TICKER_SYMS / TOP_CRYPTO / WORLD_MARKETS are module-local in app/page.tsx;
-// they are mirrored here verbatim (with a CI-guarded tolerance: scenario D
-// records the exact population sent, so drift is visible in the artifact).
-// Rotating picks come from the same deterministic scoring imports the page
-// uses, so the reconstruction equals a fresh page load.
+// X3 follow-up (Round 11): the app's symbol surface lives in
+// lib/dashboardSymbols (one source of truth — R9-1). The previous
+// hand-mirrored constants here had DRIFTED from the app's real lists
+// (they still carried removed crypto/index symbols like MATIC/N225/VIX),
+// so scenario D requested symbols the registry rejects and the batch
+// route correctly answered 400. Import the real lists instead of
+// maintaining a second copy (Rule 14); rotating picks come from the same
+// deterministic scoring imports the page uses, so the reconstruction
+// equals a fresh page load.
 
 import { STOCKS } from "@/data/stocks";
 import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from "@/lib/scoring/rankings";
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from "@/lib/dashboardSymbols";
 
-const TICKER_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","BTC","ETH","GOLD","SILVER","WTI","SOL"];
-const TOP_CRYPTO = ["BTC","ETH","SOL","BNB","ADA","AVAX","DOT","MATIC","LINK"];
-const WORLD_MARKETS_SYMS = ["NIFTY50","SENSEX","BANK_NIFTY","SPX","DJI","IXIC","DAX","FTSE","HSI","N225","VIX"];
+const WORLD_MARKETS_SYMS = WORLD_MARKETS.map(m => m.sym);
 
 function homepagePopulation(): string[] {
   const rotating = rankTopBuy(6).map(s => s.symbol);
@@ -80,7 +83,7 @@ function homepagePopulation(): string[] {
     ...rotating,
     ...shorts,
     ...WORLD_MARKETS_SYMS,
-    ...TOP_CRYPTO,
+    ...TOP_CRYPTO.map(c => c.symbol),
     sod,
   ];
   // de-dup, preserve order

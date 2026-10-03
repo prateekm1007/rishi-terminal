@@ -226,6 +226,14 @@
       "scripts/prodGroundedCanary.mjs",
       "scripts/prodUglyPathMatrix.mjs",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "X1": [
+      "docs/RELEASE.md",
+      "scripts/ci/vercel-ignore.sh",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/commitScopeAudit.mjs",
+      "test/vercelIgnore.test.ts",
+      "vercel.json"
     ]
   }
 }

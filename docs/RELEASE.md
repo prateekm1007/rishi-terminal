@@ -5,9 +5,9 @@
 | | Development | Staging | Production |
 |---|---|---|---|
 | Supabase project | local / any scratch | **none** — `BLOCKED: staging Supabase project` (founder dashboard task; see status below) | `mwkreqcbgpjqcpctwllf` |
-| Vercel | `vercel dev` | `rishi-terminal-staging` project + per-PR previews, both behind Deployment Protection | `rishi-terminal.vercel.app` |
+| Vercel | `vercel dev` | `rishi-terminal-staging` project — **git-created deployments suspended repo-side** (`scripts/ci/vercel-ignore.sh`; see Deployment budget below) | `rishi-terminal.vercel.app` |
 | Payments | none | none until Razorpay staging keys exist | live Razorpay keys |
-| Cron | not fired | not fired | `/api/ingest/snapshot` 13:30 UTC Mon–Fri |
+| Cron | not fired | ingest crons remain configured on the staging host (13:30/13:45 UTC weekdays); endpoints fail closed — staging has no Supabase env | `/api/ingest/snapshot` 13:30 UTC Mon–Fri |
 | Purpose | iterate freely, seed data is fine | integration + auth testing, no real users, **no database until the staging Supabase project exists** | real users, real data |
 
 Rules that hold across all environments:
@@ -68,6 +68,60 @@ Rules that hold across all environments:
 - **Code:** Vercel instant rollback to the previous deployment.
 - **Schema:** migrations are append-only and additive; rollbacks do not
   revert DDL. A schema bug is fixed forward with a new migration.
+
+## Deployment budget (X1 — added 2026-10-03)
+
+The account runs on the **Vercel Hobby plan**. Observed limits and behavior
+(all verified on 2026-10-03, raw evidence in the Round-10/12 worklog and
+GitHub statuses on `34353d3`, `c3e5e83`, `8a8d9dd`, `362baed`, `66f5835`):
+
+- The plan allows **100 deployment creations per rolling 24-hour window,
+  team-wide** (all projects). The v13 API returns
+  `402 api-deployments-free-per-day, limit {total: 100, remaining: 0}` when
+  exhausted; the GitHub status reads "Deployment rate limited — retry in 24
+  hours.".
+- The counter counts **every deployment-creation event**: production
+  deploys, per-PR previews, the staging project's mirror deploys, and events
+  for deployments that were later deleted (verified: `remaining: 0` with
+  only 18 visible deployments in the trailing 24h).
+- Before X1, every merge to `main` cost up to 4 events (production project
+  deploy + staging mirror + 2 per-PR previews), which is what exhausted the
+  window repeatedly on 2026-10-02/03.
+
+Policy (X1):
+
+1. **Docs-only changes do not deploy.** `vercel.json` `ignoreCommand`
+   (`scripts/ci/vercel-ignore.sh`) skips any deployment whose change set is
+   limited to `docs/**`, `*.md` (any depth) or `scripts/ci/**`. The script
+   fails safe: if the diff cannot be determined it always builds. Its skip
+   rule is unit-pinned in both directions (`test/vercelIgnore.test.ts`).
+2. **Consequence (accepted):** after a docs-only merge, production serves
+   the previous SHA and `main` sits one or more docs-only commits ahead —
+   the code tree is identical. Reconciliation conventions compare code
+   trees, not SHAs, for such deltas. A deployment-affecting change
+   (including `vercel.json` itself) always builds.
+3. **Staging no longer deploys.** The `rishi-terminal-staging` project is
+   a quota-only mirror — it has never carried Supabase variables (see
+   status below), so its deployments served no integration purpose. Its
+   git-created deployments are suspended **repo-side**:
+   `scripts/ci/vercel-ignore.sh` skips every deployment whose
+   `VERCEL_PROJECT_NAME`/`VERCEL_PROJECT_ID` matches the staging project.
+   The Vercel project setting
+   `gitProviderOptions.createDeployments: "disabled"` (observed on the
+   staging project 2026-10-03T14:38Z) does **not** stop deployment
+   creation — verified live: staging still built a preview for the X1
+   branch after that setting was in place. Staging therefore freezes at
+   its last deployment; its two ingest crons remain configured and fail
+   closed (missing env), costing nothing against the deployment budget.
+4. **Batch merges.** Documentation/evidence commits accumulate in one
+   docs-only PR per round (skipped by rule 1); code changes stay
+   one-task-per-PR. Do not create manual deployments from the dashboard;
+   the merge to `main` is the deploy trigger, plus the documented API
+   retry (`scripts/r9_trigger_deploy_env.py`) only when a merge was
+   rate-limited.
+5. **FOUNDER DECISION NEEDED:** upgrade the Vercel plan (removes the
+   100/day team cap) vs. keep batching under this policy. Until decided,
+   this policy is the operating constraint.
 
 ## Environment variables
 

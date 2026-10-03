@@ -33,7 +33,11 @@
 import 'server-only';
 
 import { STOCKS } from '@/data/stocks';
-import { PRICE_REGISTRY_TOKENS, SLASHED } from '@/lib/registry/validateInput';
+import {
+  PRICE_REGISTRY_TOKENS,
+  SLASHED,
+  canonicalPriceRegistrySymbol,
+} from '@/lib/registry/validateInput';
 
 /** Registry symbol tokens (R9-9, Rule 14): the security master UNION the
  * canonical price registry (indexes/commodities/crypto/forex/bonds — the
@@ -132,7 +136,14 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   if (termMatch) {
     for (const token of tokens) {
       if (SYMBOL_TOKENS.has(token)) {
-        return { financial: true, symbol: token, matchedTerm: termMatch[0] };
+        // R11-05 (directive 15): report the CANONICAL registry symbol —
+        // the derived tenor alias "10Y" reports as IN10YS; stock symbols
+        // and plain registry members pass through unchanged.
+        return {
+          financial: true,
+          symbol: canonicalPriceRegistrySymbol(token) ?? token,
+          matchedTerm: termMatch[0],
+        };
       }
     }
     return { financial: false };
@@ -144,11 +155,15 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
   // bonds the word names the observed price datum ("USDINR rate", "gold
   // rate", "IN10YS yield"); PRICE_REGISTRY_TOKENS deliberately excludes
   // the stock master, so stock-symbol prose ("rate my TCS research") can
-  // never qualify through this branch.
+  // never qualify through this branch. R11-05 (directive 15): the token
+  // resolves through the registry's ONE canonicaliser, so the derived
+  // bare-tenor alias ("10Y" -> IN10YS) reaches this path too — the symbol
+  // reported here is always the CANONICAL registry symbol.
   if (rateWord) {
     for (const token of tokens) {
-      if (PRICE_REGISTRY_TOKENS.has(token)) {
-        return { financial: true, symbol: token, matchedTerm: rateWord[0] };
+      const canonicalInstrument = canonicalPriceRegistrySymbol(token);
+      if (canonicalInstrument) {
+        return { financial: true, symbol: canonicalInstrument, matchedTerm: rateWord[0] };
       }
     }
   }

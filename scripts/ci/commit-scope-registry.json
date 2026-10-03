@@ -91,6 +91,14 @@
       "scripts/ci/commit-scope-registry.json",
       "lib/chat/registry.ts",
       "test/chatPersonaGreenblattDisclosure.test.ts"
+    ],
+    "R11-05": [
+      "lib/registry/validateInput.ts",
+      "lib/ai/financialIntent.ts",
+      "test/routes.validateInput.test.ts",
+      "test/financialIntent.test.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "docs/evidence/round11/"
     ]
   }
 }

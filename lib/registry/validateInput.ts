@@ -47,6 +47,30 @@ const ALLOWED = new Set<string>([
   ...BONDS.map((b) => b.symbol),
 ]);
 
+/** R11-05 (founder directive 15): bare-tenor aliases for the sovereign
+ * benchmark, DERIVED from the bond registry — never hand-listed.
+ *
+ * "10Y yield" is how users say the home-market government bond, but the
+ * registry symbol is IN10YS. A tenor maps ONLY when exactly one Indian
+ * G-Sec carries it: SDLs and corporate bonds at the same maturity never
+ * capture the alias (they are not the sovereign benchmark), and an
+ * ambiguous tenor stays unmapped (fail closed — no silent instrument
+ * pick). With the current registry this derives exactly {"10Y": IN10YS}. */
+const BOND_TENOR_ALIASES: ReadonlyMap<string, string> = (() => {
+  const indianGSecByTenor = new Map<number, string[]>();
+  for (const b of BONDS) {
+    if (b.country !== "India" || b.type !== "G-Sec") continue;
+    const list = indianGSecByTenor.get(b.maturityYears) ?? [];
+    list.push(b.symbol);
+    indianGSecByTenor.set(b.maturityYears, list);
+  }
+  const map = new Map<string, string>();
+  for (const [tenor, symbols] of indianGSecByTenor) {
+    if (symbols.length === 1) map.set(`${tenor}Y`, symbols[0]);
+  }
+  return map;
+})();
+
 /** R9-9 (Rule 14: one source of truth): the price-registry token set —
  * every index/commodity/crypto/forex/bond ticker the price layer itself
  * serves, DERIVED from the same data files as ALLOWED above (never
@@ -66,6 +90,10 @@ export const PRICE_REGISTRY_TOKENS: ReadonlySet<string> = new Set(
     ...CRYPTO_ASSETS.map((c) => c.symbol),
     ...FOREX_PAIRS.map((f) => f.symbol.toUpperCase()),
     ...BONDS.map((b) => b.symbol),
+    // R11-05 (directive 15): derived bare-tenor aliases ("10Y" -> IN10YS)
+    // join the token set so the AI intent layer sees the same universe as
+    // the routes. See BOND_TENOR_ALIASES above for the derivation rules.
+    ...BOND_TENOR_ALIASES.keys(),
   ].filter((s) => s.length >= 2),
 );
 
@@ -75,6 +103,20 @@ export const PRICE_REGISTRY_TOKENS: ReadonlySet<string> = new Set(
 export const SLASHED: ReadonlySet<string> = new Set(
   FOREX_PAIRS.map((f) => (f.pair ?? f.symbol).toUpperCase()),
 );
+
+/** R11-05: the canonical price-registry symbol for a bare token, or null.
+ * Derived tenor aliases are checked FIRST (their keys are also members of
+ * PRICE_REGISTRY_TOKENS, and the alias is the more canonical spelling);
+ * plain registry members map to themselves; everything else is null.
+ * Used by the AI intent layer so it cannot drift from the registry
+ * (Rule 14: one canonicalisation). */
+export function canonicalPriceRegistrySymbol(token: string): string | null {
+  const s = token.trim().toUpperCase();
+  const alias = BOND_TENOR_ALIASES.get(s);
+  if (alias) return alias;
+  if (PRICE_REGISTRY_TOKENS.has(s)) return s;
+  return null;
+}
 
 /** The price layer (lib/livePrice) and history expect forex pairs in the
  * slashed "BASE/QUOTE" spelling; data/forex.ts stores them unslashed. Map
@@ -91,6 +133,9 @@ function canonicalise(raw: string): string {
   const noSlash = noSuffix.includes('/') ? noSlashReplace(noSuffix) : noSuffix;
   const forex = FOREX_CANONICAL.get(noSlash);
   if (forex) return forex;
+  // R11-05: derived bare-tenor bond aliases ("10Y" -> IN10YS).
+  const tenor = BOND_TENOR_ALIASES.get(noSlash);
+  if (tenor) return tenor;
   return s;
 }
 

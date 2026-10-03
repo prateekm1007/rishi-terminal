@@ -67,8 +67,15 @@ const SLASHED_PAIR_RE: RegExp | null =
 // showed were dodging the backstop: "What is WTI trading at?", "USD/INR
 // exchange rate?", "10Y yield level?". Each names a datum the canonical
 // price layer serves; the Signal-1 conjunction still gates every trigger.
+// R10-03 adds standalone "rate(s)": the Round-10 baseline battery measured
+// "What is the current USD/INR rate?" dodging the backstop entirely (Signal
+// 2 failed on the missing term before the slashed-pair branch could run)
+// while /api/prices served live USD/INR on the same runtime. "rate" names a
+// datum the price layer serves (FX rate, yield, commodity quote); the
+// conjunction still requires a registry symbol, so ordinary speech
+// ("rate my discipline") never triggers.
 const DATA_TERM_RE =
-  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|trading|levels?|yields?|exchange rates?)\b/i;
+  /\b(prices?|share price|stock price|current price|latest price|cmp|quote|scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|trading|levels?|yields?|exchange rates?)\b/i;
 
 export interface FinancialDataIntent {
   /** True when the request clearly asks for symbol-specific financial data. */
@@ -130,7 +137,9 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
  * advice question (Rule 4: nothing fabricated; advice stays a discussion).
  */
 const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinancials" | "getScore" | "getPeers" }> = [
-  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote)\b/i, tool: "getPrices" },
+  // R10-03: "rate(s)" seeds getPrices — a rate ask names a datum the
+  // canonical price layer observes and serves (see DATA_TERM_RE note).
+  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote|rates?)\b/i, tool: "getPrices" },
   {
     re: /\b(fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|revenues?|profits?|earnings|eps|dividends?|book value|margins?|growth rates?)\b/i,
     tool: "getFinancials",

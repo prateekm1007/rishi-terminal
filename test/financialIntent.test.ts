@@ -14,7 +14,7 @@
  * for symbol-specific market data — it never classifies anything else.
  */
 import { describe, it, expect } from "vitest";
-import { detectFinancialDataIntent } from "@/lib/ai/financialIntent";
+import { detectFinancialDataIntent, intentSeedTool } from "@/lib/ai/financialIntent";
 
 describe("financial-data intent detector — the conjunction rule", () => {
   it("symbol + price term -> financial (the canonical case)", () => {
@@ -125,5 +125,40 @@ describe("R9-9 — price-registry intent coverage", () => {
     expect(detectFinancialDataIntent("hold your temper at the boiling level").financial).toBe(false);
     expect(detectFinancialDataIntent("the exchange rate between effort and luck is a myth").financial).toBe(false);
     expect(detectFinancialDataIntent("patience is the yield of a settled mind").financial).toBe(false);
+  });
+});
+
+// ── R10-03: the "rate" term gap measured by the Round-10 baseline battery ──
+// The baseline battery (docs/evidence/round10/ai-latency-battery-r10-baseline.json,
+// production 6798f62) recorded the row "What is the current USD/INR rate?"
+// answered context-only with ZERO tool engagement while /api/prices served
+// live USD/INR on the same runtime: the vocabulary contained "exchange
+// rates?" but not standalone "rate(s)", so Signal 2 failed before the
+// slashed-pair branch ever ran. The ask must be financial (backstop) AND
+// seed the canonical getPrices tool (reactive engagement, R9-9 design).
+describe("R10-03 — standalone rate term closes the USD/INR rate gap", () => {
+  it("slashed pair + standalone 'rate' -> financial with the canonical symbol", () => {
+    const r = detectFinancialDataIntent("What is the current USD/INR rate?");
+    expect(r.financial).toBe(true);
+    expect(r.symbol).toBe("USD/INR");
+    expect(r.matchedTerm?.toLowerCase()).toBe("rate");
+  });
+
+  it("unslashed registry token + standalone 'rate' -> financial", () => {
+    const r = detectFinancialDataIntent("current USDINR rate please");
+    expect(r.financial).toBe(true);
+    expect(r.symbol).toBe("USDINR");
+  });
+
+  it("a rate ask seeds the canonical price tool (reactive engagement)", () => {
+    expect(intentSeedTool("What is the current USD/INR rate?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "USD/INR" },
+    });
+  });
+
+  it("'rate' as ordinary speech never triggers without a registry symbol", () => {
+    expect(detectFinancialDataIntent("Rate my discipline as a seeker.").financial).toBe(false);
+    expect(detectFinancialDataIntent("at what rate does compounding grow the mind?").financial).toBe(false);
   });
 });

@@ -331,3 +331,76 @@ describe("R9 — the latency chain is explicit in timings (directive 12)", () =>
     expect(typeof timings?.totalMs).toBe("number");
   });
 });
+
+// ── R10-03 (Coder Directions 2026-10-03, directives 7 + 8): the repair
+// feedback must carry the validator's OWN rejection lines and the verbatim-
+// echo contract. The Round-10 baseline battery (production 6798f62) measured
+// field-value-mismatch (5) + unsupported-numeric-prose (5) as the dominant
+// financial repair mass, with 6 rows ending in the honest no-answer
+// fallback because the generic feedback never told the model WHICH number
+// mismatched or WHAT the matched value was. The loop stays ONE bounded
+// repair with the SAME validation: only the feedback gains specificity.
+describe("R10-03 — repair feedback carries the validator's rejections verbatim", () => {
+  it("field-value-mismatch feedback includes the exact rejection and the digit-for-digit rule", async () => {
+    const { stockState } = SEEDED_ARGS();
+    mockProviderReplies([
+      TOOL_REQUEST,
+      JSON.stringify({
+        answer: "Reliance is trading at 9999 rupees.",
+        claims: [
+          {
+            claim: "The latest observed price of RELIANCE is 9999 inr.",
+            evidenceIds: [EVIDENCE_ID],
+            assertions: [{ field: "price", value: 9999, unit: "inr" }],
+          },
+        ],
+        uncertainties: [],
+      }),
+      GOOD_STRUCTURED,
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "What is the latest price of RELIANCE?",
+      evidence: [],
+      stockState,
+    });
+    expect(answer?.claimsVerified).toBe(true);
+    const feedback = answer?.timings?.repairs?.[0]?.feedback ?? "";
+    // The validator's own line names the mismatching assertion.
+    expect(feedback).toContain("has no matching field/value/unit fact");
+    // The verbatim-echo contract is spelled out.
+    expect(feedback).toContain("digit-for-digit");
+  });
+
+  it("unsupported-numeric-prose feedback includes the answer-floor rejection", async () => {
+    const { stockState } = SEEDED_ARGS();
+    mockProviderReplies([
+      TOOL_REQUEST,
+      JSON.stringify({
+        answer: "Reliance is trading at 1167.7 rupees, up 45 points on the day.",
+        claims: [
+          {
+            claim: "The latest observed price of RELIANCE is 1167.7 inr.",
+            evidenceIds: [EVIDENCE_ID],
+            assertions: [{ field: "price", value: 1167.7, unit: "inr" }],
+          },
+        ],
+        uncertainties: [],
+      }),
+      GOOD_STRUCTURED,
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "What is the latest price of RELIANCE?",
+      evidence: [],
+      stockState,
+    });
+    expect(answer?.claimsVerified).toBe(true);
+    const feedback = answer?.timings?.repairs?.[0]?.feedback ?? "";
+    expect(feedback).toContain("answer: number");
+    expect(feedback).toContain("is not a matched assertion value");
+    expect(feedback).toContain("digit-for-digit");
+  });
+});

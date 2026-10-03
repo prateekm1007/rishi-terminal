@@ -32,6 +32,25 @@ test.describe("smoke — core surfaces", () => {
     await expect(page.getByText(/RISHI CONSENSUS/i).first()).toBeVisible({ timeout: 20_000 });
   });
 
+  // X3 (Round 11): the FIRST BYTE must never carry the fetching states the
+  // W5 audit found live ("⟳ FETCHING" on stock tiles, "Connecting…" and the
+  // env-var banner on the dashboard). These assertions fetch the raw SSR
+  // HTML (page.request — no browser, no hydration), which is exactly what
+  // the founder's curl acceptance measures. The honest states are the
+  // cached observation (with its own observation time) or "UNAVAILABLE".
+  test("first byte honesty: no FETCHING / Connecting / env-var banner in SSR HTML", async ({ page }) => {
+    const stock = await page.request.get("/stock/RELIANCE");
+    expect(stock.status()).toBe(200);
+    const stockHtml = await stock.text();
+    expect(stockHtml).not.toContain("FETCHING");
+
+    const home = await page.request.get("/");
+    expect(home.status()).toBe(200);
+    const homeHtml = await home.text();
+    expect(homeHtml).not.toContain("Connecting");
+    expect(homeHtml).not.toContain("RANKINGS_ENABLED");
+  });
+
   // Audit M6/B.3: canonical + Open Graph were absent sitewide (0 occurrences
   // on every probed page) — parameterized URLs could split crawl equity and
   // link unfurls rendered bare.

@@ -19,6 +19,7 @@ import { ShareholdingChart }      from './ShareholdingChart';
 import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
+import type { ServedQuote } from '../../lib/quotePath'; // X3: type-only — erased at compile time, no runtime reachability into the server-only price path
 import RishiScoreDual             from '../score/RishiScoreDual';
 import SeedDataBanner             from '../shared/SeedDataBanner'; // N3: seed-derived numbers on this page
 
@@ -35,9 +36,14 @@ interface Props {
   qvpsDual: { long: import('../../lib/scorers/types').RishiScoreResult; short: import('../../lib/scorers/types').RishiScoreResult } | null;
   /** N1: knowledge graph for the full verdict set. */
   eliteGraph: EliteKnowledgeGraph;
+  /** X3 (Round 11): the SSR price — a read-only peek at the shared quote
+   *  cache taken on the server for THIS symbol. Null when nothing is
+   *  cached (the tile then renders the honest "price unavailable" state
+   *  and the client hook fills it on mount). */
+  initialQuote: ServedQuote | null;
 }
 
-export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph }: Props) {
+export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialQuote }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
@@ -222,7 +228,15 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 </span>
               </div>
             </div>
-            <LivePriceWidget stock={stock} />
+            <LivePriceWidget stock={stock} initialEntry={initialQuote ? {
+              price: initialQuote.price,
+              change: initialQuote.change ?? undefined,
+              changePercent24h: initialQuote.change ?? undefined,
+              source: initialQuote.source,
+              status: initialQuote.status,
+              observedAt: initialQuote.observedAt,
+              lastUpdated: initialQuote.lastUpdated,
+            } : null} />
           </div>
         </div>
       </div>

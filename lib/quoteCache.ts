@@ -228,6 +228,51 @@ export interface QuoteCacheBatchDeps {
   nowMs?: () => number;
 }
 
+/**
+ * X3 (Round 11): PEEK — a pure cache read for SSR first-byte rendering.
+ * It never claims a refresh, never fetches upstream, never writes: a miss
+ * is an honest null and the client hook fills the symbol on mount. This is
+ * the "cheap read" the dynamic homepage/stock pages render from, so the
+ * first byte can never block on a vendor roundtrip (and a cold or
+ * infrastructure-failing cache renders "price unavailable", never a
+ * fabricated number — Rules 1/16).
+ */
+export interface PeekQuoteResult {
+  quote: CachedQuote;
+  market: MarketState;
+}
+
+export async function peekCachedQuote(symbol: string): Promise<PeekQuoteResult | null> {
+  try {
+    const row = await readRow(symbol);
+    if (!isRealQuote(row)) return null;
+    return { quote: row, market: marketState(Date.now()) };
+  } catch (e) {
+    console.error("[quoteCache] peek failed:", e instanceof Error ? e.message : e);
+    return null; // honest miss — never fabricate, never block SSR
+  }
+}
+
+/** Batch peek (X3): ONE read for the whole SSR symbol list. Same contract
+ *  as peekCachedQuote per symbol; a symbol with no usable row is simply
+ *  absent from the record. */
+export async function peekCachedQuotes(symbols: string[]): Promise<Record<string, PeekQuoteResult>> {
+  const out: Record<string, PeekQuoteResult> = {};
+  if (symbols.length === 0) return out;
+  const market = marketState(Date.now());
+  try {
+    const rows = await readRows(symbols);
+    for (const [symbol, quote] of Object.entries(rows)) {
+      if (isRealQuote(quote)) out[symbol] = { quote, market };
+    }
+  } catch (e) {
+    console.error("[quoteCache] batch peek failed:", e instanceof Error ? e.message : e);
+    // honest total miss — an infrastructure failure must never block or
+    // fabricate the first byte
+  }
+  return out;
+}
+
 export interface QuoteCacheBatchResult {
   /** Per-symbol result for EVERY requested symbol (never silently absent). */
   quotes: Record<string, QuoteCacheResult>;

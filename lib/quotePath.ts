@@ -24,7 +24,8 @@
 //   symbols this request claimed (its 60 s instance cache + measurement
 //   ledger keep working unchanged).
 
-import { cachedQuote, cachedQuoteBatch, type CachedQuote, type QuoteCacheBatchResult } from "@/lib/quoteCache";
+import { cachedQuote, cachedQuoteBatch, peekCachedQuote, peekCachedQuotes, type CachedQuote, type QuoteCacheBatchResult } from "@/lib/quoteCache";
+import type { MarketState } from "@/lib/marketHours";
 import {
   fetchLivePrice,
   isBondSymbol,
@@ -110,6 +111,30 @@ async function fetchLivePriceAsCached(symbol: string): Promise<CachedQuote | nul
   };
 }
 
+/** Shared row→wire mapping for the serving surfaces (serveQuote and the
+ *  X3 peek below). The status is the CALLER's honest claim about how this
+ *  value was produced. */
+function toServedQuote(
+  symbol: string,
+  q: CachedQuote,
+  market: MarketState,
+  status: "LIVE" | "CACHED",
+): ServedQuote {
+  return {
+    symbol,
+    price: q.price,
+    change: q.change,
+    volume24h: q.volume24h,
+    source: q.source,
+    status,
+    observedAt: q.observedAt,
+    lastUpdated: q.observedAt,
+    marketOpen: market.open,
+    marketFreshness: market.freshness,
+    sessionDate: market.sessionDate,
+  };
+}
+
 export async function serveQuote(
   rawSymbol: string,
   deps: ServeQuoteDeps = {},
@@ -122,20 +147,33 @@ export async function serveQuote(
     ...(deps.nowMs ? { nowMs: deps.nowMs } : {}),
   });
   if (!r.quote) return null;
-  const q = r.quote;
-  return {
-    symbol,
-    price: q.price,
-    change: q.change,
-    volume24h: q.volume24h,
-    source: q.source,
-    status: r.state === "stale-revalidated" ? "LIVE" : "CACHED",
-    observedAt: q.observedAt,
-    lastUpdated: q.observedAt,
-    marketOpen: r.market.open,
-    marketFreshness: r.market.freshness,
-    sessionDate: r.market.sessionDate,
-  };
+  return toServedQuote(symbol, r.quote, r.market, r.state === "stale-revalidated" ? "LIVE" : "CACHED");
+}
+
+/**
+ * X3 (Round 11): the SSR PEEK — the last cached quote, read-only.
+ * No refresh claim, no upstream fetch, no write: the first byte renders
+ * whatever the shared cache already holds (with its own observation time)
+ * or nothing at all. The client hook's /api/prices call (the full
+ * serveQuote path) is what warms the cache.
+ */
+export async function serveCachedQuote(rawSymbol: string): Promise<ServedQuote | null> {
+  const symbol = STOCK_ALIASES[rawSymbol] ?? rawSymbol;
+  const r = await peekCachedQuote(symbol);
+  if (!r) return null;
+  return toServedQuote(symbol, r.quote, r.market, "CACHED");
+}
+
+/** Batch peek (X3): ONE cache read for the whole SSR symbol list. Only
+ *  symbols with a usable cached row are present in the result. */
+export async function serveCachedQuotes(rawSymbols: string[]): Promise<Record<string, ServedQuote>> {
+  const resolved = rawSymbols.map(s => STOCK_ALIASES[s] ?? s);
+  const rows = await peekCachedQuotes(resolved);
+  const out: Record<string, ServedQuote> = {};
+  for (const [symbol, r] of Object.entries(rows)) {
+    out[symbol] = toServedQuote(symbol, r.quote, r.market, "CACHED");
+  }
+  return out;
 }
 
 /** Batch refresher wired into cachedQuoteBatch (production wiring): the

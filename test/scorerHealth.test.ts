@@ -41,6 +41,17 @@ describe('V2: Greenblatt Magic Formula arithmetic is percentage-correct', () => 
     expect(g.comps.find((c) => c.label === 'Earnings Yield')!.detail).toContain('8.8%');
   });
 
+  it('detail strings disclose the net-profit/market-cap proxy (founder directive 9: no EBIT/EV representation)', () => {
+    const g = scoreGreenblatt(SMALL_CAP_QUALITY);
+    const roc = g.comps.find((c) => c.label === 'Return on Capital')!;
+    const ey = g.comps.find((c) => c.label === 'Earnings Yield')!;
+    // The displayed numbers come from the documented np/mktcap proxy, and the
+    // user-facing detail strings must say exactly which ratio was computed —
+    // the platform must never present them as the strict EBIT/EV formula.
+    expect(roc.detail).toContain('net profit / 0.6×market cap');
+    expect(ey.detail).toContain('net profit / market cap');
+  });
+
   it('hits the 25% ROC and 10% EY caps without exceeding 100', () => {
     const rich: Stock = { ...SMALL_CAP_QUALITY, np: 1000, mktcap: 3200 };
     // ROC = 1000/1920 = 52.1% >= 25 -> 100 ; EY = 1000/3200 = 31.25% >= 10 -> 100

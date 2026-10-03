@@ -17,9 +17,11 @@ import { clamp, safeDiv } from '../utils';
  * Honesty about the formula (rule 1): the strict Magic Formula divides EBIT
  * by (net working capital + net fixed assets) for ROC and by enterprise
  * value for EY. The seed dataset carries none of those fields, so this
- * scorer uses the documented np/mktcap proxy; the detail strings say
- * exactly which ratio was computed. Upgrading to EBIT/EV is blocked on the
- * FD-1 data-vendor decision — flagged FOUNDER DECISION NEEDED in the V2 PR.
+ * scorer uses the documented np/mktcap proxy, and the user-facing detail
+ * strings state exactly which ratio was computed (founder directive 9:
+ * the proxy is never represented as EBIT/EV). Upgrading to EBIT/EV is
+ * blocked on the FD-1 data-vendor decision — flagged FOUNDER DECISION
+ * NEEDED in the V2 PR.
  */
 export function scoreGreenblatt(s: Stock): RishiScore {
   const rocCap = s.mktcap > 0 ? s.mktcap * 0.6 : 0;
@@ -36,8 +38,8 @@ export function scoreGreenblatt(s: Stock): RishiScore {
     name: 'Greenblatt', full: 'Joel Greenblatt', label: 'Magic Formula',
     score: total === null ? null : Math.round(total), origin: 'Global',
     comps: [
-      { label: 'Return on Capital', v: rocS === null ? 0 : Math.round(rocS), wt: 50, detail: rocPct === null ? 'insufficient data (market cap is 0)' : `ROC ${rocPct.toFixed(1)}% target >25%` },
-      { label: 'Earnings Yield', v: eyS === null ? 0 : Math.round(eyS), wt: 50, detail: eyPct === null ? 'insufficient data (market cap is 0)' : `EY ${eyPct.toFixed(1)}% target >10%` },
+      { label: 'Return on Capital', v: rocS === null ? 0 : Math.round(rocS), wt: 50, detail: rocPct === null ? 'insufficient data (market cap is 0)' : `ROC ${rocPct.toFixed(1)}% (net profit / 0.6×market cap), target >25%` },
+      { label: 'Earnings Yield', v: eyS === null ? 0 : Math.round(eyS), wt: 50, detail: eyPct === null ? 'insufficient data (market cap is 0)' : `EY ${eyPct.toFixed(1)}% (net profit / market cap), target >10%` },
     ],
     insight: total === null
       ? 'Insufficient data \u2014 market cap missing, no Magic Formula verdict.'

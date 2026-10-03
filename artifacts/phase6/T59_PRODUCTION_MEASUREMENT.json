@@ -1,7 +1,7 @@
 {
   "schema": "RISHI_PHASE6_T59_MEASUREMENT_V1",
-  "testTimestamp": "2026-10-01T00:43:02.358Z",
-  "deploymentCommit": "bbd5720",
+  "testTimestamp": "2026-10-03T20:29:45.772Z",
+  "deploymentCommit": "unknown-at-runtime",
   "baseUrl": "https://rishi-terminal.vercel.app",
   "config": {
     "burstN": 10,
@@ -18,12 +18,12 @@
     "symbol": "TCS",
     "cacheBusted": true,
     "httpStatus": 200,
-    "wallMs": 1366,
+    "wallMs": 1403,
     "entry": {
-      "price": 2050.6,
+      "price": 2075,
       "source": "yahoo",
-      "status": "LIVE",
-      "observedAt": "2026-10-01T00:43:03.606Z",
+      "status": "CACHED",
+      "observedAt": "2026-10-01T09:45:00+00:00",
       "checkedAt": null
     },
     "note": "'cold' = no in-process result within the 30 s reuse window and a fresh CDN key (cache-busted URL). Process-level coldness of the serverless instance is not controllable from outside and is NOT claimed."
@@ -38,60 +38,60 @@
       {
         "i": 0,
         "httpStatus": 200,
-        "wallMs": 475,
+        "wallMs": 724,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
           "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "observedAt": "2026-10-01T09:45:00+00:00",
           "checkedAt": null
         }
       },
       {
         "i": 1,
         "httpStatus": 200,
-        "wallMs": 701,
+        "wallMs": 543,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
           "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "observedAt": "2026-10-01T09:45:00+00:00",
           "checkedAt": null
         }
       },
       {
         "i": 2,
         "httpStatus": 200,
-        "wallMs": 474,
+        "wallMs": 531,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
           "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "observedAt": "2026-10-01T09:45:00+00:00",
           "checkedAt": null
         }
       },
       {
         "i": 3,
         "httpStatus": 200,
-        "wallMs": 510,
+        "wallMs": 523,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
           "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "observedAt": "2026-10-01T09:45:00+00:00",
           "checkedAt": null
         }
       },
       {
         "i": 4,
         "httpStatus": 200,
-        "wallMs": 484,
+        "wallMs": 660,
         "entry": {
-          "price": 2050.6,
+          "price": 2075,
           "source": "yahoo",
           "status": "CACHED",
-          "observedAt": "2026-10-01T00:43:03.606Z",
+          "observedAt": "2026-10-01T09:45:00+00:00",
           "checkedAt": null
         }
       }
@@ -137,27 +137,27 @@
         200
       ],
       "wallMs": [
-        532,
-        811,
-        531,
-        640,
-        1185,
-        642,
-        1302,
-        1372,
-        1152,
-        539
+        543,
+        718,
+        1009,
+        861,
+        853,
+        892,
+        838,
+        773,
+        644,
+        1667
       ],
       "wallP50": {
-        "value": 642,
+        "value": 838,
         "sampleSize": 10
       },
       "wallP95": {
-        "value": 1372,
+        "value": 1667,
         "sampleSize": 10
       },
       "wallP99": {
-        "value": 1372,
+        "value": 1667,
         "sampleSize": 10
       }
     },
@@ -177,27 +177,27 @@
         200
       ],
       "wallMs": [
-        387,
-        526,
-        459,
-        495,
-        380,
-        809,
-        392,
-        539,
-        610,
-        479
+        544,
+        1360,
+        886,
+        721,
+        1281,
+        1457,
+        529,
+        808,
+        702,
+        870
       ],
       "wallP50": {
-        "value": 479,
+        "value": 808,
         "sampleSize": 10
       },
       "wallP95": {
-        "value": 809,
+        "value": 1457,
         "sampleSize": 10
       },
       "wallP99": {
-        "value": 809,
+        "value": 1457,
         "sampleSize": 10
       }
     }
@@ -205,7 +205,7 @@
   "scenarioD": {
     "name": "D-batch-production-path",
     "populationSource": "app/page.tsx allSyms (TICKER_SYMS + deterministic rotating picks + WORLD_MARKETS + TOP_CRYPTO + stockOfDay) — reconstructed from the same imports",
-    "stocksModuleSize": 944,
+    "stocksModuleSize": 916,
     "population": [
       "NIFTY50",
       "SENSEX",
@@ -222,68 +222,63 @@
       "SILVER",
       "WTI",
       "SOL",
+      "SANDUMANG",
       "SBIN",
+      "CANBK",
       "GUFICBIO",
+      "BANKBARODA",
       "ISEC",
-      "KWALITY",
-      "NESCO",
-      "FCL",
-      "ADANIGREEN",
       "DELHIVERY",
       "GMRAIRPORT",
-      "N225",
-      "VIX",
+      "NAZARA",
       "BNB",
-      "ADA",
-      "AVAX",
-      "DOT",
-      "MATIC",
-      "LINK"
+      "UNIONBANK"
     ],
     "chunking": [
-      32
+      26
     ],
     "results": [
       {
-        "symbolsRequested": 32,
-        "symbolsReturned": 32,
+        "symbolsRequested": 26,
+        "symbolsReturned": 26,
         "httpStatus": 200,
-        "wallMs": 1646,
+        "wallMs": 3208,
         "unavailableCount": 2,
         "sourceDistribution": {
-          "yahoo-bulk": 7,
-          "yahoo": 14,
-          "coingecko": 9,
-          "unknown": 2
+          "unknown": 2,
+          "yahoo-bulk": 8,
+          "yahoo": 12,
+          "coingecko": 4
         },
         "statusDistribution": {
-          "LIVE": 30,
-          "UNAVAILABLE": 2
+          "UNAVAILABLE": 2,
+          "CACHED": 3,
+          "LIVE": 21
         },
         "sampleEntries": [
           {
+            "symbol": "SANDUMANG",
+            "price": null,
+            "source": null,
+            "status": "UNAVAILABLE",
+            "observedAt": null,
+            "checkedAt": "2026-10-03T20:30:03.684Z"
+          },
+          {
             "symbol": "SBIN",
-            "price": 959.5,
+            "price": 954.1,
             "source": "yahoo-bulk",
-            "status": "LIVE",
-            "observedAt": "2026-09-30T09:45:00.000Z",
-            "checkedAt": "2026-10-01T00:43:17.607Z"
+            "status": "CACHED",
+            "observedAt": "2026-10-01T09:45:00+00:00",
+            "checkedAt": null
           },
           {
-            "symbol": "GUFICBIO",
-            "price": 432,
+            "symbol": "CANBK",
+            "price": 118.36,
             "source": "yahoo-bulk",
-            "status": "LIVE",
-            "observedAt": "2026-09-30T10:00:02.000Z",
-            "checkedAt": "2026-10-01T00:43:17.607Z"
-          },
-          {
-            "symbol": "NESCO",
-            "price": 1046.9,
-            "source": "yahoo-bulk",
-            "status": "LIVE",
-            "observedAt": "2026-09-30T09:59:46.000Z",
-            "checkedAt": "2026-10-01T00:43:17.607Z"
+            "status": "CACHED",
+            "observedAt": "2026-10-01T09:44:59+00:00",
+            "checkedAt": null
           }
         ]
       }
@@ -294,13 +289,13 @@
     "verdict": "counter evidence UNAVAILABLE (CRON_SECRET absent); observedAt equality across batches is consistent with cache replay but the serving layer (bulk cache vs T60 vs CDN) cannot be attributed without counters — NOT claimed",
     "first": {
       "httpStatus": 200,
-      "wallMs": 954
+      "wallMs": 1194
     },
     "second": {
       "httpStatus": 200,
-      "wallMs": 1099
+      "wallMs": 2042
     },
-    "secondMinusFirstWallMs": 145,
+    "secondMinusFirstWallMs": 848,
     "observedAtEqualAcrossBatches": true,
     "counterDelta": null
   },
@@ -328,20 +323,20 @@
       "USD/INR": {
         "httpStatus": 200,
         "entry": {
-          "price": 95.82,
+          "price": 96.3,
           "source": "yahoo",
           "status": "LIVE",
-          "observedAt": "2026-10-01T00:43:21.286Z",
+          "observedAt": "2026-10-03T03:30:05.000Z",
           "checkedAt": null
         }
       },
       "US10Y": {
         "httpStatus": 200,
         "entry": {
-          "price": 5.26,
+          "price": 5.24,
           "source": "fred-csv",
           "status": "LIVE",
-          "observedAt": "2026-10-01T00:43:21.949Z",
+          "observedAt": "2026-10-01",
           "checkedAt": null
         }
       }
@@ -354,11 +349,11 @@
             "key": "quote:US10Y",
             "provider_id": "fred-csv",
             "payload": {
-              "price": 5.26,
-              "change": 0.019999999999999574
+              "price": 5.24,
+              "change": -0.04999999999999982
             },
-            "observed_at": "2026-10-01 00:43:21.949+00",
-            "expires_at": "2026-10-08 00:43:21.95+00"
+            "observed_at": "2026-10-01 00:00:00+00",
+            "expires_at": "2026-10-10 20:30:09.446+00"
           },
           {
             "key": "quote:USD/INR",
@@ -401,9 +396,9 @@
         "ok": true,
         "rows": [
           {
-            "total": 5,
+            "total": 15,
             "first_date": "2026-09-30",
-            "last_date": "2026-09-30",
+            "last_date": "2026-10-02",
             "last_observed_at": "2026-09-30 18:13:15.338+00",
             "sources": [
               "fred-csv"
@@ -415,6 +410,20 @@
       "ingestionLog": {
         "ok": true,
         "rows": [
+          {
+            "job_name": "reference_observations",
+            "status": "success",
+            "records_out": 5,
+            "source": "PERSISTABLE_SOURCES",
+            "started_at": "2026-10-02 13:45:11.436+00"
+          },
+          {
+            "job_name": "reference_observations",
+            "status": "success",
+            "records_out": 5,
+            "source": "PERSISTABLE_SOURCES",
+            "started_at": "2026-10-01 13:45:11.15+00"
+          },
           {
             "job_name": "reference_observations",
             "status": "success",

@@ -1,0 +1,158 @@
+{
+  "version": {
+    "sha": "7dbe1e88c11f0f9472599379d54844eba4a21aea",
+    "now": "2026-10-03T03:40:22.132Z",
+    "node": "v24.21.0"
+  },
+  "generatedAt": "2026-10-03T03:40:22.249Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "registryGets": {
+    "WTI": {
+      "status": 200,
+      "bodyHead": "{\"status\":\"LIVE\",\"price\":91.26,\"change\":-1.734,\"observedAt\":\"2026-10-02T20:59:59.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-02T20:59:59.000Z\"}",
+      "ms": 1337
+    },
+    "USD/INR": {
+      "status": 200,
+      "bodyHead": "{\"status\":\"LIVE\",\"price\":96.3,\"change\":-0.0104,\"observedAt\":\"2026-10-03T03:30:05.000Z\",\"source\":\"yahoo\",\"lastUpdated\":\"2026-10-03T03:30:05.000Z\"}",
+      "ms": 657
+    }
+  },
+  "cases": [
+    {
+      "id": "wti-price",
+      "question": "What is the latest price of WTI?",
+      "summary": {
+        "status": 200,
+        "wallMs": 20786,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "WTI",
+            "status": "ok",
+            "ms": 95
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "forecast-advice-wording",
+            "feedback": "the validator rejected: answer: forecast/advice-superlative language (\"will\") — no platform fact can back a prediction (U6 atomic claims). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number; every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "answerHeadU": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": false,
+          "note": "getPrices(WTI) ran but statuses=ok grounded=false"
+        }
+      }
+    },
+    {
+      "id": "fx-alias",
+      "question": "What is the current USDINR rate?",
+      "summary": {
+        "status": 200,
+        "wallMs": 18197,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "USD/INR",
+            "status": "ok",
+            "ms": 43
+          }
+        ],
+        "repairs": [],
+        "answerHeadU": "price = 96.3 inr — live (observed/as-of 2026-10-03T03:30:05.000Z)\nchange = -0.0104 percent — live (observed/as-of 2026-10-03T03:30:05.000Z)",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": true,
+          "note": "USDINR resolved to canonical USD/INR, grounded"
+        }
+      }
+    },
+    {
+      "id": "wti-stock-only",
+      "question": "What are the financial fundamentals of WTI?",
+      "summary": {
+        "status": 200,
+        "wallMs": 4164,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "WTI",
+            "status": "no-data",
+            "ms": 1
+          }
+        ],
+        "repairs": [],
+        "answerHeadU": "WTI is a crude oil benchmark, not a publicly-traded company, so it has no balance sheet debt, ROCE, or cash flows to assess under my framework. I invest in businesses, not commodities.",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": true,
+          "note": "honest no-data for WTI stock-only ask (not unknown-symbol)"
+        }
+      }
+    },
+    {
+      "id": "unknown-symbol",
+      "question": "What is the latest price of UNKLAR9X?",
+      "summary": {
+        "status": 200,
+        "wallMs": 5838,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "UNKLAR9X",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "the validator rejected: model produced no claims — context injection only. every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number; every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "answerHeadU": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attemptStatuses": [
+          200
+        ],
+        "verdict": {
+          "pass": true,
+          "note": "unknown-symbol surfaced honestly, no fabricated grounded price"
+        }
+      }
+    }
+  ],
+  "allPass": false
+}

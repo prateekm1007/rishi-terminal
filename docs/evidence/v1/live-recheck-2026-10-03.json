@@ -1,0 +1,77 @@
+{
+  "security_definer_inventory": {
+    "http": 201,
+    "rows": [
+      {
+        "proname": "apply_tier_grant",
+        "args": "p_user_id uuid, p_tier text",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "consume_chat_quota",
+        "args": "p_user_id uuid, p_limit integer",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "enforce_tier_write_protection",
+        "args": "",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "grant_tier_for_payment",
+        "args": "p_order_id text, p_payment_id text, p_amount integer, p_currency text",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "handle_new_user",
+        "args": "",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "health_probe",
+        "args": "p_price_jobs text[], p_fundamentals_jobs text[]",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "hit_rate_limit",
+        "args": "p_key text, p_limit integer, p_window_seconds integer",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "refund_chat_quota",
+        "args": "p_user_id uuid",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "proname": "repair_tier_grant",
+        "args": "p_user_id uuid, p_tier text, p_paid_at timestamp with time zone",
+        "proacl": "{postgres=X/postgres,service_role=X/postgres}"
+      }
+    ]
+  },
+  "try_quote_cache_refresh_present": false,
+  "quote_cache_exists": false,
+  "trigger_fn_privileges": {
+    "http": 201,
+    "anon_hnu": false,
+    "auth_hnu": false,
+    "anon_etwp": false,
+    "auth_etwp": false
+  },
+  "v1_1_invariant_scan": "PASS",
+  "anon_direct_call": {
+    "http": 400,
+    "denied": true,
+    "body": {
+      "message": "Failed to run sql query: ERROR:  42501: permission denied for function handle_new_user\n"
+    }
+  },
+  "verdict": {
+    "trigger_revokes_hold": true,
+    "invariant_pass": true,
+    "anon_direct_call_denied": true,
+    "try_quote_cache_refresh_present": false,
+    "quote_cache_exists": false,
+    "OVERALL": "LIVE TRIGGER LOCKDOWN HOLDS (018's live-corrected subset); 016/017/018 NOT applied live (FOUNDER DECISION NEEDED stands)"
+  }
+}

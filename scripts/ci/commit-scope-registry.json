@@ -112,6 +112,11 @@
       "test/chat.multitool.composition.test.ts",
       "test/chat.provider401.refund.test.ts",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "R12-02": [
+      "docs/evidence/round12/",
+      "docs/evidence/v1/live-recheck-2026-10-03.json",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

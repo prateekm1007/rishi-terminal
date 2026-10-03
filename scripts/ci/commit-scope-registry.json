@@ -151,6 +151,11 @@
       "messages/gu.json",
       "test/fnoStrategyEduLocale.test.ts",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "W2": [
+      "docs/evidence/p0-02-live-2026-10-03.md",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/commitScopeAudit.mjs"
     ]
   }
 }

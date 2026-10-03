@@ -5,9 +5,13 @@
  *   1. lib/dashboardSnapshot.toPriceData — the PURE SSR→client mapper keeps
  *      Rule 16 (nulls preserved, unusable points dropped, no zero-filling).
  *   2. lib/dashboardSnapshot.initialPriceSnapshot — the build phase fetches
- *      NOTHING (hermetic prerender); runtime equities ride serveQuote and
- *      other classes ride fetchLivePrice (the same split as the routes);
- *      misses/rejections are omitted, never fabricated.
+ *      NOTHING (hermetic prerender); at runtime the snapshot is a CHEAP
+ *      CACHE READ ONLY (X3, Round 11): NSE equities peek the shared quote
+ *      cache (serveCachedQuote — no refresh claims, no upstream fetches, so
+ *      the first byte never blocks on a vendor), and every non-equity
+ *      class (indexes, crypto, commodities, FX) is omitted from SSR — those
+ *      are not in the equity cache and the client hook fills them on
+ *      mount; misses are omitted, never fabricated.
  *   3. hooks/useLivePrices.effectivePollInterval — the market-aware cadence
  *      contract: open (or unknown) → the caller's interval; NSE closed →
  *      slowed to ≥ 5 min (the batch may still carry 24/7 classes).
@@ -17,14 +21,14 @@
  */
 import { describe, expect, it, beforeEach, vi } from "vitest";
 
-const serveQuoteMock = vi.fn();
+const serveCachedQuotesMock = vi.fn();
 const fetchLivePriceMock = vi.fn();
 
 vi.mock("@/lib/quotePath", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/quotePath")>();
   return {
     ...actual,
-    serveQuote: (symbol: string) => serveQuoteMock(symbol),
+    serveCachedQuotes: (symbols: string[]) => serveCachedQuotesMock(symbols),
   };
 });
 
@@ -45,7 +49,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 beforeEach(() => {
-  serveQuoteMock.mockReset();
+  serveCachedQuotesMock.mockReset();
   fetchLivePriceMock.mockReset();
 });
 
@@ -90,32 +94,35 @@ describe("U2 — initialPriceSnapshot (SSR surface)", () => {
     const buildEnv = { NEXT_PHASE: "phase-production-build" };
     const snapshot = await initialPriceSnapshot(["TCS", "BTC"], buildEnv);
     expect(snapshot).toEqual({});
-    expect(serveQuoteMock).not.toHaveBeenCalled();
+    expect(serveCachedQuotesMock).not.toHaveBeenCalled();
     expect(fetchLivePriceMock).not.toHaveBeenCalled();
   });
 
-  it("runtime: equities ride the shared cache, others the direct path; misses omitted honestly", async () => {
-    serveQuoteMock.mockImplementation(async (symbol: string) =>
-      symbol === "TCS"
-        ? {
-            symbol, price: 3120.5, change: 0.62, volume24h: null, source: "yahoo-bulk",
-            status: "CACHED", observedAt: "2026-10-02T04:29:00.000Z", lastUpdated: "2026-10-02T04:29:00.000Z",
-            marketOpen: true, marketFreshness: "live-delayed", sessionDate: "2026-10-02",
-          }
-        : null, // WIPRO miss
-    );
-    fetchLivePriceMock.mockImplementation(async (symbol: string) =>
-      symbol === "BTC"
-        ? { price: 66000, change: 1.5, source: "coingecko", status: "LIVE", observedAt: null, lastUpdated: null }
-        : null, // USD/INR miss
-    );
+  it("runtime (X3): equities PEEK the shared cache in ONE batch read — no refresh claims, no upstream; misses omitted honestly", async () => {
+    serveCachedQuotesMock.mockImplementation(async (symbols: string[]) => {
+      expect(symbols).toEqual(["TCS", "WIPRO"]); // non-equities never reach the cache
+      return {
+        TCS: {
+          symbol: "TCS", price: 3120.5, change: 0.62, volume24h: null, source: "yahoo-bulk",
+          status: "CACHED", observedAt: "2026-10-02T04:29:00.000Z", lastUpdated: "2026-10-02T04:29:00.000Z",
+          marketOpen: true, marketFreshness: "live-delayed", sessionDate: "2026-10-02",
+        },
+        // WIPRO miss — omitted, never fabricated
+      };
+    });
 
-    const snapshot = await initialPriceSnapshot(["TCS", "WIPRO", "BTC", "USD/INR"]);
-    expect(Object.keys(snapshot).sort()).toEqual(["BTC", "TCS"]);
+    const snapshot = await initialPriceSnapshot(["TCS", "WIPRO"]);
+    expect(Object.keys(snapshot)).toEqual(["TCS"]);
     expect(snapshot["TCS"].lastUpdated).toBe("2026-10-02T04:29:00.000Z");
-    expect(snapshot["BTC"].lastUpdated).toBeNull();
-    expect(serveQuoteMock).toHaveBeenCalledTimes(2); // TCS + WIPRO
-    expect(fetchLivePriceMock).toHaveBeenCalledTimes(2); // BTC + USD/INR
+    expect(serveCachedQuotesMock).toHaveBeenCalledTimes(1); // ONE batch read
+    expect(fetchLivePriceMock).not.toHaveBeenCalled();
+  });
+
+  it("runtime (X3): non-equity classes (indexes/crypto/commodities/FX) are omitted from SSR — they are not in the equity cache; the client hook fills them", async () => {
+    const snapshot = await initialPriceSnapshot(["BTC", "NIFTY50", "GOLD", "USD/INR"]);
+    expect(snapshot).toEqual({});
+    expect(serveCachedQuotesMock).not.toHaveBeenCalled(); // no equity symbols → no cache read at all
+    expect(fetchLivePriceMock).not.toHaveBeenCalled(); // SSR NEVER fetches vendors (cheap first byte)
   });
 });
 

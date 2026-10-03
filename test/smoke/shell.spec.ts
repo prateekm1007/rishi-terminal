@@ -105,8 +105,27 @@ test.describe("keyboard + semantics (a11y, audit F)", () => {
     await page.goto("/crypto", { waitUntil: "domcontentloaded" });
     const row = page.locator('tbody tr[role="link"]').first();
     await expect(row).toBeVisible({ timeout: 30_000 });
-    await row.press("Enter");
-    await page.waitForURL(/\/crypto\/[A-Z0-9]+/, { timeout: 15_000 });
+    // X2 (Round 11): two CI-runner realities can drop a single keypress
+    // without being app defects — (a) the rows are server-rendered, so
+    // toBeVisible can pass BEFORE React hydration attaches the row's
+    // onKeyDown (a pre-hydration Enter is silently lost), and (b) an App
+    // Router soft navigation only commits once the server answers the
+    // RSC request, and on the 2-vCPU CI runner the smoke server can be
+    // busy for tens of seconds serving the fail-closed vendor chain
+    // (NSE/Yahoo/CoinGecko rejections + their ETIMEDOUTs — run
+    // 37130257157's WebServer log shows a minutes-long fetch storm while
+    // this test ran). Both are absorbed by re-pressing inside a bounded
+    // window; the assertion itself stays hard — the row MUST navigate to
+    // /crypto/[SYMBOL] within 30 s or this test fails (the deliberate-
+    // break RED proof is in the PR). Flaked once on 66f5835, a docs-only
+    // tree; passes locally in ~3 s with the same vendor failures.
+    await page.waitForLoadState("load");
+    await expect(async () => {
+      if (!/\/crypto\/[A-Z0-9]+/.test(page.url())) {
+        await row.press("Enter");
+      }
+      await expect(page).toHaveURL(/\/crypto\/[A-Z0-9]+/, { timeout: 3_000 });
+    }).toPass({ timeout: 30_000 });
   });
 
   test("global search exposes combobox semantics", async ({ page }) => {

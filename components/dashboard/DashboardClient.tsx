@@ -254,14 +254,16 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                 <span style={{ color:statusColor(marketState), fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{marketLabel}</span>
               </>
             ) : (
-              <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.connecting")}</span>
+              /* X3 (Round 11): before any quote exists the bar says what is
+                 true — no price is available yet — never "Connecting…". */
+              <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.priceUnavailable")}</span>
             )}
           </div>
           <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
             {/* Round 9: the age keys off the SERVER observation time; no
                 disclosed observation → an honest dash, never a fabricated
                 "updated Ns" off the fetch clock. */}
-            {observedAt ? (t("dashboard.updatedPrefix") + timeAgo) : (marketLabel ? "—" : t("dashboard.connecting"))}
+            {observedAt ? (t("dashboard.updatedPrefix") + timeAgo) : (marketLabel ? "—" : t("dashboard.priceUnavailable"))}
           </span>
         </div>
       </div>

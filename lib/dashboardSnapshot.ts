@@ -1,29 +1,31 @@
-// lib/dashboardSnapshot.ts — U2 (founder round 7): the SSR initial-price
-// snapshot for the dashboard.
+// lib/dashboardSnapshot.ts — U2 (founder round 7), reworked X3 (Round 11):
+// the SSR initial-price snapshot for the dashboard.
 //
-// The homepage is a server component on hourly ISR. At revalidation time it
-// fetches ONE snapshot of the dashboard's symbols through the SAME price
-// path the client endpoints use (serveQuote for NSE equities — the shared
-// quote cache; fetchLivePrice for the other classes) and passes it down as
-// RSC props. The client hook (useLivePrices) hydrates from this snapshot and
-// revalidates immediately on mount, so the first paint carries prices
-// without a fetch flash.
+// The homepage renders DYNAMICALLY (no ISR bake — the W5 defect was the
+// empty build-time prerender serving as "fresh" for a full hour after
+// every deploy). On every request it takes ONE cheap batch read of the
+// shared quote cache for the NSE-equity symbols it renders. The client
+// hook (useLivePrices) hydrates from this snapshot and revalidates on
+// mount, so any symbol the cache already holds reaches the first byte.
 //
 // Honesty contract (Rules 1/3/16):
 //   - every mapped value keeps its ORIGINAL upstream observation time
-//     (lastUpdated) — the ISR snapshot may be up to one revalidation window
-//     old, and the label travels with the value;
-//   - a symbol with no observation is OMITTED (the client hook's normal
-//     fetch fills it) — never a zero, never a placeholder;
-//   - the build phase fetches NOTHING: prerender must stay hermetic (CI has
-//     no upstream network guarantees). Runtime ISR revalidations populate
-//     the snapshot normally.
+//     (lastUpdated) — a cached quote may be minutes old and the label
+//     travels with the value;
+//   - a symbol with no cached observation is OMITTED — the page renders
+//     the honest "price unavailable" state and the client hook's fetch
+//     fills it (and warms the cache) — never a zero, never a placeholder;
+//   - the build phase fetches NOTHING: prerender stays hermetic (CI has
+//     no upstream network or database guarantees);
+//   - SSR NEVER fetches vendors: non-equity classes (indexes, crypto,
+//     commodities, FX) are not in the equity cache and are omitted from
+//     SSR — the first byte stays a cheap constant-time read; the client
+//     hook fills those live.
 
 import {
   isEquitySymbol,
-  serveQuote,
+  serveCachedQuotes,
 } from "@/lib/quotePath";
-import { fetchLivePrice } from "@/lib/livePrice";
 
 /** The wire shape hooks/useLivePrices already normalizes into PriceData. */
 export interface InitialPriceEntry {
@@ -86,10 +88,10 @@ export function isBuildPhase(env: Record<string, string | undefined> = process.e
 }
 
 /**
- * One snapshot for the dashboard's symbol list. Equities ride the shared
- * quote cache (serveQuote); everything else rides the direct multi-source
- * path — the SAME split the /api/prices routes use, so SSR and client
- * fetches can never disagree about where a number comes from.
+ * One snapshot for the dashboard's symbol list (X3: a cheap cache read).
+ * NSE equities peek the shared quote cache in ONE batch read; every other
+ * class is omitted (not in the equity cache — the client hook fills them
+ * and its /api/prices call is what warms this cache in the first place).
  */
 export async function initialPriceSnapshot(
   symbols: string[],
@@ -97,15 +99,14 @@ export async function initialPriceSnapshot(
 ): Promise<Record<string, InitialPriceEntry>> {
   if (symbols.length === 0 || isBuildPhase(env)) return {};
 
-  const results = await Promise.allSettled(
-    symbols.map(s => (isEquitySymbol(s) ? serveQuote(s) : fetchLivePrice(s))),
-  );
+  const equities = symbols.filter(isEquitySymbol);
+  if (equities.length === 0) return {};
 
+  const served = await serveCachedQuotes(equities);
   const snapshot: Record<string, InitialPriceEntry> = {};
-  results.forEach((r, i) => {
-    if (r.status !== "fulfilled") return; // rejected → omitted (honest gap)
-    const mapped = toPriceData(r.value);
-    if (mapped) snapshot[symbols[i]] = mapped;
-  });
+  for (const [symbol, quote] of Object.entries(served)) {
+    const mapped = toPriceData(quote);
+    if (mapped) snapshot[symbol] = mapped;
+  }
   return snapshot;
 }

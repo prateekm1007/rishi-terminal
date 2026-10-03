@@ -42,11 +42,11 @@
     "topBuySignals": "TOP BUY SIGNALS - RISHI CONSENSUS ABOVE 65",
     "fullScreener": "FULL SCREENER",
     "notInvestmentAdvice": "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE",
-    "heroWisdomSuffix": ". Live prices, dual-mode scoring, short thesis, philosophical insights.",
+    "heroWisdomSuffix": ". Dual-mode scoring, short thesis, philosophical insights.",
     "updatedPrefix": "Updated ",
     "timeAgoMinutesSuffix": "m ago",
     "timeAgoSecondsSuffix": "s ago",
-    "connecting": "Connecting...",
+    "priceUnavailable": "Price unavailable",
     "heroWisdomHighlight": "20 legendary investors",
     "heroWisdomPrefix": "Wisdom from ",
     "heroTagline": "SACRED INVESTMENT INTELLIGENCE · v4.4",
@@ -537,7 +537,7 @@
       "exploreBtn": "Explore All Rishis"
     },
     "rankingsDisabled": "Ranked picks are disabled",
-    "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Seed-derived rankings stay off until RANKINGS_ENABLED is turned on. Everything else — live prices, screeners, chat — keeps working."
+    "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Everything else — live prices, screeners, chat — keeps working."
   },
   "chat": {
     "header": "Chat with Rishis",

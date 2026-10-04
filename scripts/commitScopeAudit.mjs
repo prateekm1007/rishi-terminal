@@ -102,11 +102,12 @@ for (const sha of revs) {
   }
 
   // (a) task token in the subject. X-n tokens are the Round-11 task
-  // series; Y-n tokens are the Round-12 series (founder directions
+  // series; Y-n tokens are the Round-12 series; Z-n the Round-13 series
+  // (founder directions
   // mandate the fix(Y<n>): commit prefix).
-  const token = subject.match(/\b(R\d+-\d+|V\d+|W\d+|X\d+|Y\d+|redeploy)\b/);
+  const token = subject.match(/\b(R\d+-\d+|V\d+|W\d+|X\d+|Y\d+|Z\d+|redeploy)\b/);
   if (!token) {
-    failures.push({ short, subject, reason: "no task token (R-n / V-n / W-n / X-n / Y-n / redeploy) in subject", offenders: [] });
+    failures.push({ short, subject, reason: "no task token (R-n / V-n / W-n / X-n / Y-n / Z-n / redeploy) in subject", offenders: [] });
     continue;
   }
   const taskId = token[1];

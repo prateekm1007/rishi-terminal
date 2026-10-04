@@ -1,0 +1,13 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  4 failed | 7 passed (11)
+
+--- fetchable-force-push hardening (added on top of 207e10f) ---
+Pre-fix (script at 207e10f, no fetch of an unreachable PREVIOUS_SHA):
+$ npx vitest run test/z1.vercelIgnore.test.ts
+ Tests  1 failed | 12 passed (13)
+ × diffs against the FETCHED old tip: code removed by a force-push is
+   deployment-relevant   [a fresh single-branch clone via file:// lacks the
+   pre-rewrite tip; HEAD^ fallback saw docs-only and skipped]
+Post-fix (fetch added to the base resolver):
+$ npx vitest run test/z1.vercelIgnore.test.ts test/vercelIgnore.test.ts
+ Tests  26 passed (26)

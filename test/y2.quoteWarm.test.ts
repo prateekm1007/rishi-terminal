@@ -129,7 +129,7 @@ describe("Y2 — market-hours gate (endpoint gates precisely)", () => {
     const body = await res.json();
     expect(body.skipped).toBeUndefined();
     expect(body.forced).toBe(true);
-    expect(body.equities.refreshed).toBe(10);
+    expect(body.equities.served).toBe(10);
     expect(cachedQuoteBatchForEquitiesMock).toHaveBeenCalled();
   });
 
@@ -198,17 +198,49 @@ describe("Y2 — slice partitioning (deterministic, exhaustive, exclusive)", () 
 describe("Y2 — honesty of the warm report", () => {
   it("upstream misses are counted as misses, never as warmed", async () => {
     cachedQuoteBatchForEquitiesMock.mockResolvedValue({
-      quotes: { AAA: { quote: { price: 10 } }, BBB: { quote: null } },
+      quotes: { AAA: { quote: { price: 10 }, state: "stale-revalidated" }, BBB: { quote: null, state: "miss" } },
     });
     const res = await POST(warmReq("?slice=0&of=2"));
     const body = await res.json();
     // slice 0 of 2 = AAA, CCC, EEE, GGG, III; only AAA had a quote
-    expect(body.equities.refreshed).toBe(1);
+    expect(body.equities.upstreamWrites).toBe(1);
+    expect(body.equities.served).toBe(1);
     expect(body.equities.misses).toBe(4);
   });
 
+  // Rule 2 (names describe behavior): "refreshed" used to count every
+  // served quote, including closed-market cache serves that made NO
+  // upstream call. The report must distinguish an upstream WRITE from a
+  // cache SERVE or the intraday coverage evidence is uninterpretable.
+  it("closed-market serves are `served`, never counted as upstream writes (follow-up contract, written to fail first)", async () => {
+    cachedQuoteBatchForEquitiesMock.mockResolvedValue({
+      quotes: Object.fromEntries(
+        Object.keys(FAKE_STOCKS).map((s) => [s, { quote: { price: 1 }, state: "stale-served" }]),
+      ),
+    });
+    const res = await POST(warmReq("?force=1"));
+    const body = await res.json();
+    expect(body.equities.upstreamWrites).toBe(0); // zero upstream calls happened
+    expect(body.equities.served).toBe(10);
+  });
+
+  it("stale-revalidated rows (an upstream fetch + write this run) count as upstream writes", async () => {
+    cachedQuoteBatchForEquitiesMock.mockResolvedValue({
+      quotes: Object.fromEntries(
+        Object.keys(FAKE_STOCKS).map((s, i) => [
+          s,
+          { quote: { price: 1 }, state: i === 0 ? "stale-revalidated" : "fresh" },
+        ]),
+      ),
+    });
+    const res = await POST(warmReq("?force=1"));
+    const body = await res.json();
+    expect(body.equities.upstreamWrites).toBe(1);
+    expect(body.equities.served).toBe(10);
+  });
+
   it("tiles ride slice 0 only, through serveQuote, with the canonical tile set", async () => {
-    serveQuoteMock.mockResolvedValue({ price: 1 });
+    serveQuoteMock.mockResolvedValue({ price: 1, status: "CACHED" });
     await POST(warmReq("?slice=0&of=2"));
     const warmed = serveQuoteMock.mock.calls.map((c) => c[0]);
     expect(warmed.sort()).toEqual([...nonEquityTileSymbols()].sort());
@@ -223,8 +255,21 @@ describe("Y2 — honesty of the warm report", () => {
     serveQuoteMock.mockResolvedValue(null);
     const res = await POST(warmReq("?slice=0&of=2"));
     const body = await res.json();
-    expect(body.tiles.warmed).toBe(0);
+    expect(body.tiles.upstreamWrites).toBe(0);
+    expect(body.tiles.served).toBe(0);
     expect(body.tiles.misses).toBe(nonEquityTileSymbols().length);
+  });
+
+  it("tile serves count as upstream writes only when the row was revalidated (status LIVE)", async () => {
+    const tiles = nonEquityTileSymbols();
+    const firstTile = tiles[0];
+    serveQuoteMock.mockImplementation(async (sym: string) =>
+      sym === firstTile ? { price: 1, status: "LIVE" } : { price: 2, status: "CACHED" },
+    );
+    const res = await POST(warmReq("?slice=0&of=1")); // whole universe in slice 0; tiles ride slice 0
+    const body = await res.json();
+    expect(body.tiles.upstreamWrites).toBe(1);
+    expect(body.tiles.served).toBe(tiles.length);
   });
 });
 

@@ -69,29 +69,47 @@ export async function POST(req: NextRequest) {
 
   // Equity slice: the existing claim+bulk path, chunked so one slice's
   // wall time stays bounded even when the whole universe is stale.
+  //
+  // Y2 follow-up (Rule 2 — names describe behavior): the report now
+  // separates an UPSTREAM WRITE (the claim winner fetched + upserted a
+  // row: state "stale-revalidated" / tile status LIVE) from a cache SERVE
+  // ("fresh" / "stale-served" — the row existed and no upstream call was
+  // made, which is the correct closed-market behavior). Counting serves
+  // as "refreshed" made the intraday coverage evidence uninterpretable.
   const CHUNK = 60;
-  let refreshed = 0;
+  let upstreamWrites = 0;
+  let served = 0;
   let misses = 0;
   for (let i = 0; i < mine.length; i += CHUNK) {
     const chunk = mine.slice(i, i + CHUNK);
     const r = await cachedQuoteBatchForEquities(chunk);
     for (const sym of chunk) {
-      const q = r.quotes[sym];
-      if (q && q.quote) refreshed++;
-      else misses++;
+      const entry = r.quotes[sym];
+      if (entry && entry.quote) {
+        served++;
+        if (entry.state === "stale-revalidated") upstreamWrites++;
+      } else {
+        misses++;
+      }
     }
   }
 
   // Non-equity tiles ride slice 0 only (small fixed set, no partitioning).
   // The set itself is quotePath.nonEquityTileSymbols — the SAME derivation
   // /api/health counts as its coverage denominator (Rule 14).
-  let tiles = 0;
+  let tileWrites = 0;
+  let tilesServed = 0;
   let tileMisses = 0;
   if (slice === 0) {
     for (const sym of nonEquityTileSymbols()) {
       const q = await serveQuote(sym);
-      if (q) tiles++;
-      else tileMisses++;
+      if (q) {
+        tilesServed++;
+        // serveQuote maps a this-request revalidation to status LIVE.
+        if (q.status === "LIVE") tileWrites++;
+      } else {
+        tileMisses++;
+      }
     }
   }
 
@@ -100,8 +118,8 @@ export async function POST(req: NextRequest) {
     of,
     universe: universe.length,
     inSlice: mine.length,
-    equities: { refreshed, misses },
-    tiles: slice === 0 ? { warmed: tiles, misses: tileMisses } : { skipped: "non-zero slice" },
+    equities: { upstreamWrites, served, misses },
+    tiles: slice === 0 ? { upstreamWrites: tileWrites, served: tilesServed, misses: tileMisses } : { skipped: "non-zero slice" },
     market: ms,
     forced: force && !ms.open,
   });

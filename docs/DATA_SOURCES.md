@@ -208,6 +208,18 @@ seed-derived surface remains labelled as illustrative sample data.
    a data bug; it is whitelisted explicitly in `scripts/validateStocks.ts`.
    Any other `|ROE| > 150` fails the registry validation gate.
 
+**Z3 (Round 13) — the 7-day peek window.** The first-byte peek
+(`peekCachedQuote`/`peekCachedQuotes`) serves the LAST cached observation
+up to 7 days old — market state does not gate it (a weekend or NSE-holiday
+fetch of a stored Friday quote shows the price, labelled with its own date
+and the Y3 market-state wording). Only a symbol with NO observation in the
+window — or none at all — renders "price unavailable": a cache entry older
+than 7 days means the instrument stopped being observed (delisted,
+suspended, or the universe moved on) and serving it would dress a dead
+observation up as data. Rows with a NULL/unparseable `observed_at` serve as
+before (the price is real; the Y3 label omits the time line — fail-closed
+labeling). Peers ride the same batch peek (Y2).
+
 **Y4 (Round 12) — null, not zero.** A seed-sourced ZERO is the June
 placeholder for "unknown" — never an observation. Three enforcement
 points:

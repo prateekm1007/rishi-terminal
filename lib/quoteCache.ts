@@ -82,6 +82,22 @@ function isRealQuote(q: CachedQuote | null): q is CachedQuote & { price: number 
   return q != null && Number.isFinite(q.price) && q.price > 0;
 }
 
+/** Z3 (Round 13): the first-byte peek serves the last cached observation
+ *  up to SEVEN DAYS old. Older rows are honestly unavailable — a cache
+ *  entry that stale means the instrument stopped being observed (delisted,
+ *  suspended, or the universe moved on), and serving it would dress a dead
+ *  observation up as data. Rows with a NULL or unparseable observed_at
+ *  serve as before: the price is real, and the Y3 label already fails
+ *  closed (no observation line renders without a provable time). */
+const PEEK_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
+
+function peekWithinWindow(q: CachedQuote, nowMs: number): boolean {
+  if (q.observedAt == null) return true;
+  const observed = Date.parse(q.observedAt);
+  if (!Number.isFinite(observed)) return true; // unprovable age -> label omits the line
+  return nowMs - observed <= PEEK_MAX_AGE_MS;
+}
+
 const QUOTE_COLUMNS = "symbol, price, change, currency, source, observed_at, refreshed_at, volume24h";
 
 async function readRow(symbol: string): Promise<CachedQuote | null> {
@@ -242,11 +258,15 @@ export interface PeekQuoteResult {
   market: MarketState;
 }
 
-export async function peekCachedQuote(symbol: string): Promise<PeekQuoteResult | null> {
+export async function peekCachedQuote(
+  symbol: string,
+  nowMs: () => number = Date.now,
+): Promise<PeekQuoteResult | null> {
   try {
     const row = await readRow(symbol);
-    if (!isRealQuote(row)) return null;
-    return { quote: row, market: marketState(Date.now()) };
+    const now = nowMs();
+    if (!isRealQuote(row) || !peekWithinWindow(row, now)) return null;
+    return { quote: row, market: marketState(now) };
   } catch (e) {
     console.error("[quoteCache] peek failed:", e instanceof Error ? e.message : e);
     return null; // honest miss — never fabricate, never block SSR
@@ -254,16 +274,22 @@ export async function peekCachedQuote(symbol: string): Promise<PeekQuoteResult |
 }
 
 /** Batch peek (X3): ONE read for the whole SSR symbol list. Same contract
- *  as peekCachedQuote per symbol; a symbol with no usable row is simply
- *  absent from the record. */
-export async function peekCachedQuotes(symbols: string[]): Promise<Record<string, PeekQuoteResult>> {
+ *  as peekCachedQuote per symbol; a symbol with no usable row (or one older
+ *  than the Z3 7-day window) is simply absent from the record. */
+export async function peekCachedQuotes(
+  symbols: string[],
+  nowMs: () => number = Date.now,
+): Promise<Record<string, PeekQuoteResult>> {
   const out: Record<string, PeekQuoteResult> = {};
   if (symbols.length === 0) return out;
-  const market = marketState(Date.now());
+  const now = nowMs();
+  const market = marketState(now);
   try {
     const rows = await readRows(symbols);
     for (const [symbol, quote] of Object.entries(rows)) {
-      if (isRealQuote(quote)) out[symbol] = { quote, market };
+      if (isRealQuote(quote) && peekWithinWindow(quote, now)) {
+        out[symbol] = { quote, market };
+      }
     }
   } catch (e) {
     console.error("[quoteCache] batch peek failed:", e instanceof Error ? e.message : e);

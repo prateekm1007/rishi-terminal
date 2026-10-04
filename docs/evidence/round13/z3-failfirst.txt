@@ -1,0 +1,19 @@
+Z3 fail-first record (Rules 21/24) — test/z3.peekWindow.test.ts
+
+Pre-fix (lib/quoteCache.ts before the 7-day window; run 2026-10-04):
+$ npx vitest run test/z3.peekWindow.test.ts
+ Tests  2 failed | 8 passed (10)
+ × an 8-DAY-OLD quote does NOT serve (the 7-day bound) — unavailable is honest there
+ × serves the 2-day and 3-day peers, excludes the 8-day one and the placeholder
+(The 8 weekday/weekend/holiday/3-day/null-time/placeholder cases passed
+pre-fix — they pin the serving behavior the founder's acceptance names;
+the age BOUND was the missing behavior.)
+
+Post-fix:
+$ npx vitest run test/z3.peekWindow.test.ts
+ Tests  10 passed (10)
+
+Full suite on the Z3 branch:
+$ npx vitest run | tail -2
+ Test Files  122 passed (122)
+      Tests  1230 passed (1230)

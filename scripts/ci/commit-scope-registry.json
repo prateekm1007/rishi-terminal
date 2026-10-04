@@ -319,7 +319,14 @@
       "test/pricePresentation.test.ts",
       "test/y3.observationLabel.test.ts"
     ],
-    "Z2": [
+    "Z3": [
+   "docs/DATA_SOURCES.md",
+   "docs/evidence/round13/",
+   "lib/quoteCache.ts",
+   "scripts/ci/commit-scope-registry.json",
+   "test/z3.peekWindow.test.ts"
+  ],
+  "Z2": [
    ".github/workflows/quotes-warm.yml",
    "app/api/ingest/quotes-warm/",
    "docs/DATA_SOURCES.md",

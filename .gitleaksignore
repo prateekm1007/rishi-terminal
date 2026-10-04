@@ -1,0 +1,9 @@
+# Gitleaks allowlist — documented false positives (Constitution rule 23:
+# fixing the gate's accuracy is done HERE, in the open, never by hiding).
+#
+# docs/evidence/round14/a4-warmer-run.md documents the warmer's 401 probes
+# as raw curl commands. The Authorization header value is a SHELL VARIABLE
+# reference ($WARM), not a credential — the rule fires on the header SHAPE
+# (curl-auth-header), not on any real secret. No value was redacted from
+# this file because no value exists.
+93a8b168c3a49484f0f9fa391f0841aa28d4e57f:docs/evidence/round14/a4-warmer-run.md:curl-auth-header:6

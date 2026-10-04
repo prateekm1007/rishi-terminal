@@ -316,3 +316,136 @@ END
 $$;
 
 \echo '── X3-07 invariants: all passed'
+
+\echo '── B3: per-user row caps hold at the DATABASE (founder Round-15)'
+-- Behavioral proof of the founder's acceptance: "on the Postgres harness,
+-- the 51st screen insert as authenticated fails." Plus the two portfolio
+-- caps (<= 20 imports per user, <= 500 positions per import), the
+-- per-user scoping of the screens cap (user B is not affected by user
+-- A hitting it), and the upsert nuance (saving an EXISTING name at the
+-- cap must still work — that is an UPDATE, not growth).
+
+\echo '── B3.1: screens cap (50 per user)'
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  user_b uuid := gen_random_uuid();
+  seen int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'a-b3-screens@example.test'),
+    (user_b, 'b-b3-screens@example.test');
+
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+
+  -- 50 saves land cleanly (the cap boundary itself must not reject).
+  INSERT INTO public.screens (user_id, name, query)
+    SELECT user_a, 'cap-' || g, 'pe > ' || g FROM generate_series(1, 50) g;
+  SELECT count(*) INTO seen FROM public.screens WHERE user_id = user_a;
+  IF seen <> 50 THEN
+    RAISE EXCEPTION 'B3.1 FAILED: expected 50 screens for user A, found %', seen;
+  END IF;
+
+  -- The 51st (a NEW name) must FAIL with a cap violation.
+  BEGIN
+    INSERT INTO public.screens (user_id, name, query) VALUES (user_a, 'the-51st', 'pe > 0');
+    RAISE EXCEPTION 'B3.1 FAILED: the 51st screen insert as authenticated was ACCEPTED';
+  EXCEPTION
+    WHEN check_violation THEN
+      NULL; -- expected: the 026 cap trigger
+  END;
+
+  -- Upsert nuance: saving an EXISTING name at the cap is an UPDATE —
+  -- the trigger must not brick the user's ability to edit their screens.
+  UPDATE public.screens SET query = 'roe > 1' WHERE user_id = user_a AND name = 'cap-1';
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'B3.1 FAILED: same-name save at the cap did not update (% rows)', seen;
+  END IF;
+
+  -- Per-user scoping: user B is untouched by user A's 50.
+  PERFORM set_config('request.jwt.claim.sub', user_b::text, true);
+  INSERT INTO public.screens (user_id, name, query) VALUES (user_b, 'b-first', 'pe > 0');
+  SELECT count(*) INTO seen FROM public.screens WHERE user_id = user_b;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'B3.1 FAILED: user B insert blocked by user A''s cap (% rows)', seen;
+  END IF;
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── B3.2: portfolio imports cap (20 per user)'
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  seen int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'a-b3-imports@example.test');
+
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+
+  INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+    SELECT user_a, md5(g::text) || repeat('0', 32), 'holdings-csv', 'f-' || g || '.csv', 0, 0
+    FROM generate_series(1, 20) g;
+  SELECT count(*) INTO seen FROM public.portfolio_imports WHERE user_id = user_a;
+  IF seen <> 20 THEN
+    RAISE EXCEPTION 'B3.2 FAILED: expected 20 imports for user A, found %', seen;
+  END IF;
+
+  BEGIN
+    INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+      VALUES (user_a, md5('21') || repeat('0', 32), 'holdings-csv', 'f-21.csv', 0, 0);
+    RAISE EXCEPTION 'B3.2 FAILED: the 21st import was ACCEPTED';
+  EXCEPTION
+    WHEN check_violation THEN
+      NULL; -- expected: the 026 cap trigger
+  END;
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── B3.3: portfolio positions cap (500 per import)'
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  imp uuid;
+  seen int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'a-b3-positions@example.test');
+
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+
+  INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+    VALUES (user_a, md5('pos') || repeat('0', 32), 'holdings-csv', 'pos.csv', 0, 0)
+    RETURNING id INTO imp;
+
+  -- 500 positions in one multi-row statement: the boundary passes, and
+  -- the trigger's same-statement visibility is what trips row 501 later.
+  INSERT INTO public.portfolio_positions (user_id, import_id, symbol, quantity, avg_price)
+    SELECT user_a, imp, 'SYM' || g, 10, 100 FROM generate_series(1, 500) g;
+  SELECT count(*) INTO seen FROM public.portfolio_positions WHERE import_id = imp;
+  IF seen <> 500 THEN
+    RAISE EXCEPTION 'B3.3 FAILED: expected 500 positions, found %', seen;
+  END IF;
+
+  BEGIN
+    INSERT INTO public.portfolio_positions (user_id, import_id, symbol, quantity, avg_price)
+      VALUES (user_a, imp, 'SYM501', 10, 100);
+    RAISE EXCEPTION 'B3.3 FAILED: the 501st position was ACCEPTED';
+  EXCEPTION
+    WHEN check_violation THEN
+      NULL; -- expected: the 026 cap trigger
+  END;
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── B3 invariants: all passed'

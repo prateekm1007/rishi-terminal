@@ -207,3 +207,75 @@ PROPOSED until the founder confirms it (E6-09 / FD-7).
   previously listed `opnfelgxklfvurzozhms` as staging — that project has
   never existed in this account; the table was wrong and is fixed above
   (Constitution art. 1).
+
+## A3 (Round 14) — deployment pacing against the Vercel rate limit
+
+Vercel caps production deploys at 100 per rolling 24 h; the account hit that
+cap three times in prior rounds by merging production-relevant PRs as soon
+as their CI went green (ten-plus merges in six hours starved later deploys
+of budget — the auditor's Round 14 finding).
+
+The discipline from here on, recorded so it survives sessions:
+
+- **At most ONE production-relevant merge per hour** (a merge that deploys:
+  app code, migrations, workflow changes). Docs/evidence-only commits do
+  not deploy (the `vercel-ignore.sh` build step skips them) and are exempt.
+- Related PRs are STACKED and deployed by a single merge: their branches
+  build on each other, so the last merge carries all of them to production.
+- After the day's batch, `main` is deployed ONCE and the live SHA is
+  proven against `origin/main`:
+  `curl -s https://rishi-terminal.vercel.app/api/version` must equal the
+  main tip — pasted in the round's PR with the raw output.
+- All live-acceptance greps from earlier rounds are re-run against THAT
+  SHA before the round is reported green.
+
+### 2026-10-04 deployment log (Round 14, recorded honestly)
+
+- **The daily deployment quota IS exhausted.** The Vercel API's
+  authoritative limit counter (`api-deployments-free-per-day`) reads
+  `total=100, remaining=0, reset=2026-10-05T14:28:36Z` — every attempt
+  to create a deployment returns HTTP 402:
+  `"Resource is limited - try again in 24 hours (more than 100)"`.
+  Note the v6 deployment LISTS under-report the count (46 + 8 staging =
+  54 visible in the 24h window): the counter evidently includes
+  deployment creations the list endpoint does not surface. The 402 is
+  the ground truth; the list is not.
+- **The morning's starvation was cleared by ~12:30 UTC**; production
+  deployed A1 (12:42) and A2 (13:14).
+- **Git-integration stall**: A5 merged 13 seconds after A2 (13:14:49
+  UTC) and the merges after it (A4 13:46, R4-04 14:03, X3-05 14:17,
+  X3-07 14:24) produced NO automatic production deployment objects —
+  consistent with the quota having been exhausted mid-afternoon by
+  then. Production stays at `47d76c4` (A2) until the reset.
+- **Monday protocol (mechanical, after the 14:28 UTC reset)**: (1)
+  trigger ONE production deploy of `main` via the Vercel API
+  (`scripts/a3-deploy-main.py` — create-then-poll-by-id); (2) prove
+  `curl -s https://rishi-terminal.vercel.app/api/version` equals
+  `origin/main` (expected `a4a7486` + the A3 merge itself); (3) re-run
+  the A1 live greps with their positive controls against that SHA; (4)
+  append the raw outputs to `docs/evidence/round14/a3-deploy-proof.md`.
+- **Pacing violations this session, recorded not hidden**: A2+A5 merged
+  13 s apart; A4/R4-04/X3-05/X3-07 each merged within ~15 minutes of
+  their CI turning green rather than held to one-per-hour. This session
+  did not exhaust the quota alone (the visible 24h window is dominated
+  by the overnight session's burst — 10 creations in the 03:00 UTC hour
+  alone), but the one-per-hour rule above is now the standing
+  discipline, and this log is the baseline.
+- **A4's merge (docs/evidence only) deployed nothing** — the
+  `vercel-ignore.sh` docs-only rule skips it, as designed (no quota
+  consumed for doc-only ranges either).
+
+### A3 resolution (2026-10-04, evening — supersedes the "Monday protocol" above)
+
+The window drained EARLIER than the counter's reset claim: the sanctioned
+API retry (policy 4) CREATED a deployment at 14:48:02Z (HTTP 200,
+`dpl_CEjogr5gFhh7gb7hWke5eAwJBitZ`, READY 14:49:57Z) — so the 402s were
+transient saturation, not a wall until 2026-10-05T14:28:36Z. Production
+deployed the full catch-up (A5/R4-04/X3-05/X3-07) and was verified live the
+same afternoon (raw outputs: docs/evidence/round14/rate-limit-catchup.md).
+The #150 merge hit the cap a third time (~15:10Z) and #151 merged cleanly
+at 15:52:36Z (production READY at `c88bd1d`, proven via /api/version).
+Lesson recorded: the counter's `reset` field reports the worst-case expiry
+of the oldest event, not the earliest moment a deploy can succeed — retry
+sporadically instead of waiting out the claim. The one-merge-per-hour
+pacing discipline above remains the standing rule.

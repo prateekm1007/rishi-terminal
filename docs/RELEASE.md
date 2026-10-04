@@ -229,7 +229,12 @@ The discipline from here on, recorded so it survives sessions:
   `curl -s https://rishi-terminal.vercel.app/api/version` must equal the
   main tip — pasted in the round's PR with the raw output.
 - All live-acceptance greps from earlier rounds are re-run against THAT
-  SHA before the round is reported green.
+  SHA before the round is reported green. Since B1 (Round 15) the
+  `post-deploy-smoke` workflow does this automatically on every Production
+  deployment_status (occurrence-counted sections + version SHA + Y4
+  null-zero controls; `scripts/ci/postDeploySmoke.mjs`) — a red smoke run
+  on the Actions tab means production is serving a page that fails the
+  live contract, even though the merge itself was green.
 
 ### 2026-10-04 deployment log (Round 14, recorded honestly)
 

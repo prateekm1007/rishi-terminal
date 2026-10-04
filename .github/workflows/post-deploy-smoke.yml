@@ -1,0 +1,64 @@
+# B1 (founder Round-15): post-deploy production smoke.
+#
+# Why a deployment_status workflow: the Playwright smoke job gates a LOCAL
+# build in CI — it cannot catch the B-20/B-21 class ("merged" reported done
+# while production still served the pre-fix build). This workflow runs the
+# live probes against production exactly when a production deployment
+# finishes, and goes RED if the deployed HTML lacks the first-byte content
+# sections (Constitution v2 C6: done = merged + deployed + live).
+#
+# Triggers:
+#   deployment_status (success) — Vercel's GitHub integration fires this for
+#     every deployment; the job filters to environment "Production" so
+#     preview deployments do not spam runs.
+#   workflow_dispatch — manual/fail-first runs (rule 24: prove the gate
+#     bites by running it with a deliberately missing section or against a
+#     pre-fix local build).
+#
+# The expected SHA comes from the deployment itself (github.event.deployment.sha)
+# when present, so the version check proves the deployment that JUST finished
+# is the one serving traffic.
+
+name: post-deploy-smoke
+
+on:
+  deployment_status: {}
+  workflow_dispatch:
+    inputs:
+      expect_sha:
+        description: "Require /api/version to serve exactly this sha (optional)"
+        required: false
+        default: ""
+
+concurrency:
+  group: post-deploy-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: Live content smoke (production)
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The deployment's commit when triggered by deployment_status
+          # (the smoke script ships with the code it verifies); main for
+          # manual runs.
+          ref: ${{ github.event_name == 'deployment_status' && github.event.deployment.sha || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: "Live probes: A1 first-byte sections, version SHA, Y4 null-zero (B1; C6/C10)"
+        run: |
+          EXPECT="${{ github.event.inputs.expect_sha || github.event.deployment.sha || '' }}"
+          if [ -n "$EXPECT" ]; then
+            node scripts/ci/postDeploySmoke.mjs --expect-sha "$EXPECT"
+          else
+            node scripts/ci/postDeploySmoke.mjs
+          fi

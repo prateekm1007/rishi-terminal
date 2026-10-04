@@ -180,13 +180,39 @@ export async function globalRequestCapExceeded(): Promise<boolean> {
 }
 
 /**
+ * X7: the token LIMIT a request reserves against.
+ *
+ *   passedChallenge=false → TOTAL minus the reserved slice. The last
+ *   slice of the day's budget is NOT reachable by unchallenged traffic.
+ *   passedChallenge=true  → the FULL total: a caller who paid the
+ *   challenge cost (self-hosted PoW, lib/chat/challenge) can use the
+ *   reserved slice when the main pool is exhausted — "a reserved slice
+ *   of the global budget for requests that pass".
+ *
+ * Pure and exported for the X7 contract tests; the RPC wrapper below is
+ * the only production caller.
+ */
+export function tokenLimitFor(passedChallenge: boolean, totalLimit: number, reservedShare: number): number {
+  if (passedChallenge) return totalLimit;
+  const reserved = Math.floor(totalLimit * reservedShare);
+  return Math.max(0, totalLimit - reserved);
+}
+
+/**
  * Reserve the single-request token ceiling against the global daily
  * token cap. True when the reservation was granted — the caller may
  * reach the provider. False (denied or infrastructure failure) — fail
- * closed.
+ * closed. X7: `passedChallenge` widens the limit to the full total (the
+ * reserved slice); the default keeps TOTAL minus the slice.
  */
-export async function reserveGlobalTokens(): Promise<boolean> {
-  return reserve(TOK_KEY_PREFIX, GLOBAL_TOKEN_RESERVATION_CEILING, envInt('CHAT_GLOBAL_DAILY_TOKENS', CHAT_GLOBAL_DAILY_TOKENS_DEFAULT));
+export async function reserveGlobalTokens(passedChallenge = false): Promise<boolean> {
+  const total = envInt('CHAT_GLOBAL_DAILY_TOKENS', CHAT_GLOBAL_DAILY_TOKENS_DEFAULT);
+  const share = Number.parseFloat(process.env.CHAT_GLOBAL_RESERVED_SHARE ?? '');
+  // 0 is a legal spelling ("no reserved slice") — the fallback only covers
+  // unset/garbage, and the branch must stay fail-closed toward the
+  // conservative default (20%) otherwise.
+  const reservedShare = Number.isFinite(share) && share >= 0 && share < 1 ? share : 0.2;
+  return reserve(TOK_KEY_PREFIX, GLOBAL_TOKEN_RESERVATION_CEILING, tokenLimitFor(passedChallenge, total, reservedShare));
 }
 
 /**

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { solvePow } from './pow';
 import { Stock } from "@/lib/types";
 import { PERSONA_DISPLAY } from "@/lib/chat/registryDisplay";
 import { useLanguage } from '../../lib/language';
@@ -128,19 +129,47 @@ export default function RishiChat({ stock }: Props) {
     // never sent. The personaId is now an explicit parameter: the debate
     // branch used to send the SOLO selection while LABELING the reply with
     // the first debate persona (misattributed answers — fixed here).
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        personaId,
-        symbol: stock.symbol,
-        history: history.map(m => ({
-          role: m.role === 'user' ? 'user' : 'assistant',
-          content: m.text,
-        })),
-        message: prompt,
-      }),
-    });
+    const post = (challenge?: { token: string; nonce: string; issuedAt: number; challengeId: string }) =>
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personaId,
+          symbol: stock.symbol,
+          history: history.map(m => ({
+            role: m.role === 'user' ? 'user' : 'assistant',
+            content: m.text,
+          })),
+          message: prompt,
+          ...(challenge ? { challenge } : {}),
+        }),
+      });
+
+    let res = await post();
+
+    // X7 (Round 13): after N anonymous requests/day the server answers
+    // 429 + {challengeRequired, challenge}. Solve the proof-of-work
+    // (self-hosted — the cost is the requester's CPU, ~1-2 s) and retry
+    // ONCE with the solution. The server consumes the challenge
+    // atomically, so a replay can never help anyone else.
+    if (res.status === 429) {
+      const err = await res.json().catch(() => ({} as Record<string, unknown>));
+      if (
+        err &&
+        err.challengeRequired === true &&
+        err.challenge &&
+        typeof (err.challenge as Record<string, unknown>).token === 'string' &&
+        typeof (err.challenge as Record<string, unknown>).difficulty === 'number' &&
+        typeof (err.challenge as Record<string, unknown>).challengeId === 'string' &&
+        typeof (err.challenge as Record<string, unknown>).issuedAt === 'number'
+      ) {
+        const c = err.challenge as { token: string; difficulty: number; challengeId: string; issuedAt: number };
+        const solution = await solvePow(c.token, c.difficulty);
+        res = await post({ token: c.token, nonce: solution.nonce, issuedAt: c.issuedAt, challengeId: c.challengeId });
+      } else if (err && err.fallback) {
+        throw new Error('FALLBACK');
+      }
+    }
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

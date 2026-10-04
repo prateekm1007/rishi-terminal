@@ -257,3 +257,28 @@ render:
   `test/x6.consensusGates.test.ts` pins the config (20 rishis, tier
   counts 3/7/10, strict tier weight ordering) plus the consensus output
   distribution (sd >= 5, <= 5% at >= 90, <= 5% at <= 5).
+
+**X7 (Round 13) — self-hosted anonymous chat challenge (proof-of-work,
+no vendor).** After N consumed chat units per anonymous identity per IST
+day (default 5, `CHAT_CHALLENGE_AFTER`), `/api/chat` answers 429 with an
+HMAC-signed challenge bound to that identity
+(`lib/chat/challenge.ts`). The client solves a hashcash-style proof of
+work — SHA-256(token|nonce) with `CHAT_CHALLENGE_DIFFICULTY` (default
+20) leading zero bits, ~1-2 s of browser work via
+`components/chat/pow.ts` — and retries once with the solution. The
+server re-derives the signature over server-held inputs (pepper =
+`ANON_ID_PEPPER`, which the route already requires), checks binding,
+expiry (10 min) and the work, then consumes the challenge ATOMICALLY via
+`consume_chat_challenge` (migration 023): one guarded UPDATE, one
+winner, a replayed solution finds `consumed_at` set and is refused. The
+`chat_challenges` table stores only SHA-256 hashes of public tokens (a
+verifier, not a credential). Passing callers reserve against the FULL
+global token cap (`lib/chat/globalSpend.ts tokenLimitFor`); everyone
+else against TOTAL minus the reserved slice (`CHAT_GLOBAL_RESERVED_SHARE`,
+default 20%) — when the main pool is exhausted, the day's last slice is
+reachable only by callers who paid the challenge cost. Signed-in
+accounts skip the challenge entirely (the founder's spec: "anonymous
+chat"). The identity-counter read for the challenge gate fails OPEN for
+the READ only (an unreadable counter must not lock out every anonymous
+caller behind challenges); the quota consume and the global reservation
+keep failing closed independently.

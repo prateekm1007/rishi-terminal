@@ -327,20 +327,24 @@ describe('W3-A — global daily token cap as a hard reservation', () => {
     expect(counters.get('chat:global:tok')).toBe(0);
   });
 
-  it('the admission boundary is exact: cap - ceiling admits, one token more refuses', async () => {
+  it('the admission boundary is exact: limit - ceiling admits, one token more refuses', async () => {
     stubModelReply(1000);
     // The SQL-level TRUE concurrency proof is the CI storm (24 parallel
     // psql sessions) — a JS-side mock race would prove nothing about the
     // real row-lock semantics. Here we pin the boundary arithmetic the
     // guarded increment enforces: a request fits iff counter + ceiling
-    // <= cap.
+    // <= limit. X7: the DEFAULT limit is TOTAL minus the reserved slice
+    // (20%) — the boundary pins against that limit, and share=0 restores
+    // the historical TOTAL boundary; a challenge-passed caller reserves
+    // against the full TOTAL (the reserved slice is theirs).
     vi.stubEnv('CHAT_GLOBAL_DAILY_TOKENS', '2500000');
+    vi.stubEnv('CHAT_GLOBAL_RESERVED_SHARE', '0');
     const { reserveGlobalTokens, releaseGlobalTokens } = await import('@/lib/chat/globalSpend');
-    // counter = cap - ceiling: the last admissible request.
+    // counter = limit - ceiling: the last admissible request.
     counters.set('chat:global:tok', 2_500_000 - GLOBAL_TOKEN_RESERVATION_CEILING);
     expect(await reserveGlobalTokens()).toBe(true);
     await releaseGlobalTokens();
-    // counter = cap - ceiling + 1: one token over — refused.
+    // counter = limit - ceiling + 1: one token over — refused.
     counters.set('chat:global:tok', 2_500_000 - GLOBAL_TOKEN_RESERVATION_CEILING + 1);
     expect(await reserveGlobalTokens()).toBe(false);
     expect(counters.get('chat:global:tok')).toBe(2_500_000 - GLOBAL_TOKEN_RESERVATION_CEILING + 1);

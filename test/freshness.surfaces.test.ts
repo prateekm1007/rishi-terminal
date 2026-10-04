@@ -45,6 +45,8 @@ const EXEMPTED_SURFACES: Record<string, string> = {
     "server component; the banner renders in its client child components/stock/StockPageClient.tsx (covers hero, QVPS, metrics, verdicts, graph)",
   "components/screener/StockTable.tsx":
     "rendered inside ScreenerClient, which shows the banner directly above the table",
+  "components/screener/ScreenerQueryBar.tsx":
+    "rendered inside ScreenerClient above the same page-level banner; renders match COUNTS and the query input only — the matching rows themselves flow into StockTable under the banner (X3-05)",
   "components/lab/OverviewTab.tsx":
     "rendered inside LabContent, which shows the banner above the tab content",
   "components/lab/HoldingsTab.tsx":

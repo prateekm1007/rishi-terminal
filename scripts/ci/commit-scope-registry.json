@@ -497,6 +497,27 @@
       "docs/PROVENANCE.md",
       "scripts/ci/commit-scope-registry.json",
       "docs/DATA_SOURCES.md"
+    ],
+    "X3-05": [
+      "scripts/commitScopeAudit.mjs",
+      "app/api/screener/query/route.ts",
+      "app/api/screener/export/route.ts",
+      "app/api/screens/route.ts",
+      "app/api/screens/[id]/route.ts",
+      "components/screener/ScreenerQueryBar.tsx",
+      "components/screener/ScreenerClient.tsx",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round14/",
+      "lib/db/migrations/024_screens.sql",
+      "lib/screener/parser.ts",
+      "lib/screener/engine.ts",
+      "scripts/benchScreener.ts",
+      "scripts/benchScreenerImpl.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/ci/rls_invariants.sql",
+      "test/screener.parser.test.ts",
+      "test/rls.screens.test.ts",
+      "test/freshness.surfaces.test.ts"
     ]
   }
 }

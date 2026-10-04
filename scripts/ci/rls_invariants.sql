@@ -151,3 +151,77 @@ END
 $$;
 
 \echo '── Q1 invariants: all passed'
+
+\echo '── X3-05: saved screens are private to their owner'
+-- Behavioral proof of the roadmap acceptance: "user A cannot
+-- read/update/delete user B's screens." Two simulated users via
+-- SET ROLE authenticated + request.jwt.claim.sub (the pg_harness
+-- GoTrue stand-in). Every cross-user operation must see zero rows
+-- (RLS filters SELECT/UPDATE/DELETE) and same-user operations must
+-- work (the policies do not over-restrict).
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  user_b uuid := gen_random_uuid();
+  screen_a uuid;
+  seen int;
+BEGIN
+  -- Two auth users; the handle_new_user trigger (migration 002)
+  -- creates their public.users rows — inserting there again would
+  -- collide on the PK.
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'a-x305@example.test'),
+    (user_b, 'b-x305@example.test');
+
+  INSERT INTO public.screens (user_id, name, query)
+    VALUES (user_a, 'A screen', 'pe > 0')
+    RETURNING id INTO screen_a;
+
+  -- As user B: SELECT must not see A's screen.
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_b::text, true);
+  SELECT count(*) INTO seen FROM public.screens WHERE id = screen_a;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-05 FAILED: user B READ user A''s screen (% rows)', seen;
+  END IF;
+
+  -- As user B: UPDATE must not touch A's screen.
+  UPDATE public.screens SET name = 'stolen' WHERE id = screen_a;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-05 FAILED: user B UPDATED user A''s screen (% rows)', seen;
+  END IF;
+
+  -- As user B: DELETE must not remove A's screen.
+  DELETE FROM public.screens WHERE id = screen_a;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-05 FAILED: user B DELETED user A''s screen (% rows)', seen;
+  END IF;
+
+  -- As user B: INSERT for A's user_id must be rejected (WITH CHECK).
+  BEGIN
+    INSERT INTO public.screens (user_id, name, query) VALUES (user_a, 'forge', 'pe > 0');
+    RAISE EXCEPTION 'X3-05 FAILED: user B INSERTED a screen owned by user A';
+  EXCEPTION
+    WHEN insufficient_privilege OR check_violation THEN
+      NULL; -- expected: RLS WITH CHECK violation
+  END;
+
+  -- As user A: same rows ARE reachable (the policies scope, not block).
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+  SELECT count(*) INTO seen FROM public.screens WHERE id = screen_a;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'X3-05 FAILED: user A cannot READ own screen (% rows)', seen;
+  END IF;
+  UPDATE public.screens SET query = 'pe > 1' WHERE id = screen_a;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'X3-05 FAILED: user A cannot UPDATE own screen (% rows)', seen;
+  END IF;
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── X3-05 invariants: all passed'

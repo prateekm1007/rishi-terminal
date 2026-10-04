@@ -102,12 +102,15 @@ for (const sha of revs) {
   }
 
   // (a) task token in the subject. X-n tokens are the Round-11 task
-  // series; Y-n tokens are the Round-12 series; Z-n the Round-13 series
-  // (founder directions
-  // mandate the fix(Y<n>): commit prefix).
-  const token = subject.match(/\b(R\d+-\d+|V\d+|W\d+|X\d+|Y\d+|Z\d+|redeploy)\b/);
+  // series; Y-n tokens are the Round-12 series; Z-n the Round-13 series;
+  // A-n the Round-14 series (founder directions
+  // mandate the fix(A<n>): commit prefix). Roadmap task IDs may extend a
+  // series token with a sub-number (X3-05 = Round-11 X-series item 3,
+  // roadmap task 05) — the sub-number is part of the token so the
+  // registry can scope sub-tasks independently.
+  const token = subject.match(/\b(R\d+-\d+|V\d+|W\d+|X\d+(?:-\d+)?|Y\d+|Z\d+|A\d+|redeploy)\b/);
   if (!token) {
-    failures.push({ short, subject, reason: "no task token (R-n / V-n / W-n / X-n / Y-n / Z-n / redeploy) in subject", offenders: [] });
+    failures.push({ short, subject, reason: "no task token (R-n / V-n / W-n / X-n / Y-n / Z-n / A-n / redeploy) in subject", offenders: [] });
     continue;
   }
   const taskId = token[1];

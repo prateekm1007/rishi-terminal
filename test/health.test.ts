@@ -71,9 +71,11 @@ describe("computeHealth", () => {
     expect(body.status).toBe("down");
     expect(body.db).toBe(false);
     expect(body.lastPriceIngestAt).toBeNull();
+    // Y2: coverage is UNKNOWN when the DB is down — null, never zero
+    expect(body.quoteCache).toBeNull();
   });
 
-  it("never leaks row counts or secrets — payload keys are fixed", () => {
+  it("never leaks secrets — payload keys are fixed (quoteCache counts are the bounded quote_cache table's own coverage, Y2)", () => {
     const body = computeHealth({
       dbOk: true,
       now: NOW,
@@ -87,8 +89,41 @@ describe("computeHealth", () => {
         "engineVersion",
         "lastFundamentalsIngestAt",
         "lastPriceIngestAt",
+        "quoteCache",
         "status",
       ].sort(),
     );
+  });
+
+  it("Y2: quoteCache passes through verbatim when provided (telemetry, never severity)", () => {
+    const quoteCache = {
+      equities: { fresh: 870, total: 916, coverage: 870 / 916 },
+      tiles: { fresh: 0, total: 16, coverage: 0 },
+      windowSeconds: 1800,
+      asOf: "2026-10-05T04:00:00.000+00:00",
+    };
+    const body = computeHealth({
+      dbOk: true,
+      now: NOW,
+      ingestionRows: [row("ingestPrices", 1), row("ingestQuarterly", 1)],
+      engineVersion: ENGINE,
+      quoteCache,
+    });
+    expect(body.quoteCache).toEqual(quoteCache);
+    // zero tile coverage must NOT degrade the core verdict by itself
+    expect(body.status).toBe("ok");
+    expect(body.reasons).toBeUndefined();
+  });
+
+  it("Y2: quoteCache is null when the coverage probe could not run (unknown, not zero)", () => {
+    const body = computeHealth({
+      dbOk: true,
+      now: NOW,
+      ingestionRows: [row("ingestPrices", 1), row("ingestQuarterly", 1)],
+      engineVersion: ENGINE,
+      quoteCache: null,
+    });
+    expect(body.quoteCache).toBeNull();
+    expect(body.status).toBe("ok");
   });
 });

@@ -9,7 +9,13 @@
  *                 exceeds its SLO.
  *  - "ok"       → DB reachable and every freshness input within SLO.
  *
- * No secrets and no row counts are ever included in the payload.
+ * Y2 (Round 12): the payload also carries the quote-cache coverage
+ * telemetry (quoteCache) — fresh/total counts per class for the BOUNDED
+ * quote_cache table (the warmer's own universe + tile set), never any
+ * other table's row counts. It is TELEMETRY, never severity: a cold or
+ * uncovered cache reports low coverage and does NOT flip the verdict
+ * (the page renders honest "unavailable" states without it). null = the
+ * coverage probe could not run (unknown, not zero — Rule 16).
  */
 
 import {
@@ -21,6 +27,22 @@ import {
 
 export type HealthStatus = "ok" | "degraded" | "down";
 
+/** Y2: one class's quote-cache coverage — counts of the bounded
+ *  quote_cache rows (the warmer's own sweep sets), and the derived ratio. */
+export interface QuoteClassCoverage {
+  fresh: number;
+  total: number;
+  coverage: number;
+}
+
+/** Y2: the warmer's coverage telemetry, verbatim from the RPC. */
+export interface QuoteCacheCoverage {
+  equities: QuoteClassCoverage;
+  tiles: QuoteClassCoverage;
+  windowSeconds: number;
+  asOf: string;
+}
+
 export interface HealthBody {
   status: HealthStatus;
   db: boolean;
@@ -28,6 +50,9 @@ export interface HealthBody {
   lastFundamentalsIngestAt: string | null;
   engineVersion: string;
   asOf: string;
+  /** Y2: warmer coverage telemetry — null when the coverage probe could
+   *  not run (unknown, not zero). Never affects `status`. */
+  quoteCache: QuoteCacheCoverage | null;
   /** Present only when degraded — names the stale/missing input(s). */
   reasons?: string[];
 }
@@ -50,6 +75,9 @@ export function computeHealth(input: {
   now: Date;
   ingestionRows: Array<{ job_name: string | null; finished_at: string | null }>;
   engineVersion: string;
+  /** Y2: the coverage telemetry gathered in the same probe window, or
+   *  null when it could not be gathered. Passed through verbatim. */
+  quoteCache?: QuoteCacheCoverage | null;
 }): HealthBody {
   const asOf = input.now.toISOString();
 
@@ -61,6 +89,7 @@ export function computeHealth(input: {
       lastFundamentalsIngestAt: null,
       engineVersion: input.engineVersion,
       asOf,
+      quoteCache: null,
       reasons: ["db round-trip failed"],
     };
   }
@@ -93,6 +122,7 @@ export function computeHealth(input: {
     lastFundamentalsIngestAt,
     engineVersion: input.engineVersion,
     asOf,
+    quoteCache: input.quoteCache ?? null,
     ...(reasons.length > 0 ? { reasons } : {}),
   };
 }

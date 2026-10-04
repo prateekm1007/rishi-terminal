@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { Stock } from '@/lib/types';
-import { useLivePrices } from '@/hooks/useLivePrices';
+import { useLivePrices, type PriceData } from '@/hooks/useLivePrices';
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 
 interface PeerStock {
@@ -18,9 +18,15 @@ interface PeerStock {
 interface Props {
   stock: Stock;
   peers: PeerStock[];
+  /** Y2 (Round 12): the regen-time cache peek (mapped via
+   *  dashboardSnapshot.toPriceData on the server) — peer prices ride
+   *  the first byte with their own observation labels instead of "—".
+   *  Missing symbols are simply absent: the honest "—" renders and the
+   *  mount revalidation fills them (never a seed fallback). */
+  initialPrices?: Record<string, PriceData>;
 }
 
-export function PeerComparison({ stock, peers }: Props) {
+export function PeerComparison({ stock, peers, initialPrices }: Props) {
   // T18 fix: hooks were called after an early return — a real rules-of-hooks
   // bug. Compute with guarded defaults instead; the null render decision
   // happens at the end.
@@ -29,7 +35,9 @@ export function PeerComparison({ stock, peers }: Props) {
     [stock?.symbol, peers]
   );
 
-  const { prices } = useLivePrices(symbols);
+  // Y2: hydrate from the SSR peek — the mount revalidation still runs
+  // (useLivePrices revalidates on mount regardless of initialPrices).
+  const { prices } = useLivePrices(symbols, 60000, initialPrices);
   const { fundamentals: bulkFund } = useBulkFundamentals(symbols);
 
   if (!stock || !peers) return null;

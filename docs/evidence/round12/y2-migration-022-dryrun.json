@@ -1,0 +1,31 @@
+{
+ "dryRunAt": "2026-10-04T01:41:26Z",
+ "steps": [
+  {
+   "step": "create-dryrun",
+   "http": 201,
+   "result": "[]"
+  },
+  {
+   "step": "grants",
+   "http": 201,
+   "result": "[{\"svc\":true,\"anon\":false,\"auth\":false}]"
+  },
+  {
+   "step": "behavioral",
+   "http": 201,
+   "result": "[{\"cov\":{\"asOf\":\"2026-10-04 01:41:23.376624+00\",\"tiles\":{\"fresh\":1,\"total\":1},\"equities\":{\"fresh\":1,\"total\":4}}}]"
+  },
+  {
+   "step": "drop-dryrun",
+   "http": 201,
+   "result": "[]"
+  },
+  {
+   "step": "footprint",
+   "http": 201,
+   "result": "[{\"leftover\":0}]"
+  }
+ ],
+ "verdict": "PASS"
+}

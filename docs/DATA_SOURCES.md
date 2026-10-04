@@ -83,6 +83,30 @@ every user and instance for the TTL window:
 Non-equity classes (crypto/forex/bonds/commodities/indices) keep the direct
 multi-source path — the cache is NSE-session scoped by design.
 
+**Y2 (Round 12) warmer + coverage.** The shared cache is no longer populated
+only by visitor traffic: a scheduled **GitHub Actions** workflow
+(`.github/workflows/quotes-warm.yml`, every 15 min inside the NSE window;
+Vercel Hobby crons cannot run more than once a day) calls the authenticated
+`POST /api/ingest/quotes-warm?slice=k&of=n` endpoint (Bearer `CRON_SECRET`)
+which sweeps the 916-symbol universe in six slices through the SAME claim
+mechanism above — never a naked fetch — and, on slice 0, the non-equity tile
+set (world indexes, `TOP_CRYPTO`, gold — `quotePath.nonEquityTileSymbols`,
+one derivation shared with the health denominator). The endpoint gates NSE
+market hours itself (`marketState`) and no-ops honestly outside the session;
+`force=1` (same secret) exists for off-hours verification runs and is
+disclosed in the response. Consequences for the surfaces:
+
+- the stock page's regen-time peek covers the symbol AND its comparison
+  peers in ONE batch read, so peer prices ride the first byte (misses stay
+  "—", client fills);
+- the homepage snapshot peek is class-agnostic: warmer-written tile rows
+  (indexes/crypto/gold) ride the first byte with their own observation
+  labels; SSR still never fetches a vendor;
+- `/api/health` carries `quoteCache` coverage telemetry (migration 022's
+  `quote_cache_coverage` RPC, service-role-only): fresh/total counts per
+  class within a 30-minute observation window. Telemetry only — never
+  health severity; `null` when the probe could not run.
+
 - **`/api/ingest/snapshot`** — recomputes consensus scores for the whole
   registry and persists them to `rishi_snapshots` (with
   `SCORE_ENGINE_VERSION`, T10). Scheduled in `vercel.json`:

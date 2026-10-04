@@ -33,26 +33,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCronAuth } from "@/lib/auth/cron";
 import { marketState } from "@/lib/marketHours";
 import { STOCKS } from "@/data/stocks";
-import { cachedQuoteBatchForEquities, serveQuote } from "@/lib/quotePath";
-import { TOP_CRYPTO, WORLD_MARKETS } from "@/lib/dashboardSymbols";
-import { YAHOO_INDEX_SYMBOLS } from "@/lib/livePrice";
+import {
+  cachedQuoteBatchForEquities,
+  nonEquityTileSymbols,
+  serveQuote,
+} from "@/lib/quotePath";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
-
-/** The non-equity tile set: the dashboard's world-market + crypto symbols
- *  plus the index aliases the search/registry surfaces accept, and gold.
- *  Small and fixed — one point fetch each through the canonical price path. */
-function nonEquityWarmSet(): string[] {
-  const out = new Set<string>();
-  for (const m of WORLD_MARKETS) out.add(m.sym);
-  for (const c of TOP_CRYPTO) out.add(c.symbol);
-  for (const idx of Object.keys(YAHOO_INDEX_SYMBOLS)) out.add(idx);
-  // Gold explicitly (the founder's tile list): it lives in the commodity
-  // tables, not YAHOO_INDEX_SYMBOLS — add the canonical key.
-  out.add("GOLD");
-  return [...out];
-}
 
 function parseSlice(req: NextRequest): { slice: number; of: number } {
   const of = Math.max(1, Math.min(64, Number(req.nextUrl.searchParams.get("of")) || 1));
@@ -95,10 +83,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Non-equity tiles ride slice 0 only (small fixed set, no partitioning).
+  // The set itself is quotePath.nonEquityTileSymbols — the SAME derivation
+  // /api/health counts as its coverage denominator (Rule 14).
   let tiles = 0;
   let tileMisses = 0;
   if (slice === 0) {
-    for (const sym of nonEquityWarmSet()) {
+    for (const sym of nonEquityTileSymbols()) {
       const q = await serveQuote(sym);
       if (q) tiles++;
       else tileMisses++;

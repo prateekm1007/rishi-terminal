@@ -1,0 +1,12 @@
+# Y2 gate-bite proof (Rule 24) — the warmer suite can FAIL
+# mutation: route market-gate '!ms.open && !force' changed to '!ms.open' (force override removed), everything else untouched
+# command: npx vitest run test/y2.quoteWarm.test.ts
+# mutated-tree result:
+× force=1 (same secret) overrides the closed market and DISCLOSES the override 10ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+Test Files  1 failed (1)
+Tests  1 failed | 13 passed (14)
+
+# reverted-tree result:
+Test Files  1 passed (1)
+Tests  14 passed (14)

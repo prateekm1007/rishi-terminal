@@ -53,8 +53,11 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
       // Cr"); /api/fundamentals' static fallback now nulls seed market
       // caps, so a miss stays a miss.
       marketCap: bulkFund[stock.symbol]?.marketCap ?? null,
-      pe: bulkFund[stock.symbol]?.pe ?? stock.pe,
-      roe: bulkFund[stock.symbol]?.roe ?? stock.roe,
+      // R15-E: a placeholder-zero seed P/E (73 rows) is MISSING data — the
+      // live value wins when present, otherwise null renders "—", never
+      // "0.00x" (Y4 forbidden shape; rule 16).
+      pe: bulkFund[stock.symbol]?.pe ?? (stock.pe > 0 ? stock.pe : null),
+      roe: bulkFund[stock.symbol]?.roe ?? (stock.roe !== 0 ? stock.roe : null),
       isCurrent: true,
     },
     ...peers.map(p => ({
@@ -131,10 +134,11 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
                   {s.marketCap != null && s.marketCap > 0 ? `${safeFixed(s.marketCap / 1000)}K Cr` : '—'}
                 </td>
                 <td style={{ padding: '10px 12px', color: '#94A3B8', fontSize: 13 }}>
-                  {safeFixed(s.pe)}x
+                  {/* R15-E: missing/placeholder P/E renders "—" (rule 3/16) */}
+                  {s.pe == null ? '—' : `${safeFixed(s.pe)}x`}
                 </td>
                 <td style={{ padding: '10px 12px', color: '#94A3B8', fontSize: 13 }}>
-                  {safeFixed(s.roe)}%
+                  {s.roe == null ? '—' : `${safeFixed(s.roe)}%`}
                 </td>
               </tr>
             ))}

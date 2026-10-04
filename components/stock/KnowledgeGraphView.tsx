@@ -60,7 +60,7 @@ function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
       </div>
       {entry.example && (
         <div style={{
-          fontSize: 11, color: '#64748B', fontStyle: 'italic',
+          fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic',
           padding: '8px 10px', background: 'rgba(212,175,55,0.06)',
           borderRadius: 6, borderLeft: '2px solid #D4AF37', lineHeight: 1.5,
         }}>
@@ -147,7 +147,7 @@ function PlayCard({ play, relevanceNote }: {
           <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
             {play.rishi} → {play.stock}
           </div>
-          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             {play.yearBought} • {play.market}
           </div>
         </div>
@@ -248,21 +248,21 @@ function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
       {/* Metrics */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 10, color: "#64748B" }}>STOCK</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>STOCK</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: outperforming ? "#22C55E" : "#EF4444" }}>
             {stockVal.toFixed(2)}{comp.unit}
           </div>
         </div>
 
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 10, color: "#64748B" }}>SECTOR</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>SECTOR</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#94A3B8" }}>
             {sectorVal.toFixed(2)}{comp.unit}
           </div>
         </div>
 
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 10, color: "#64748B" }}>IMPLIED UPSIDE</div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>IMPLIED UPSIDE</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#D4AF37" }}>
             +{impliedUpside}%
           </div>
@@ -327,7 +327,7 @@ function TimelineCard({ event }: { event: any }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#F8FAFC' }}>{event.rishi}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <span style={{ fontSize: 11, color: '#64748B' }}>{event.year}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{event.year}</span>
             <span style={{ fontSize: 14, fontWeight: 800, color: scoreColor, fontFamily: 'JetBrains Mono, monospace' }}>
               {event.score}
             </span>
@@ -441,7 +441,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
 
   if (!graphData) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: '#64748B', fontSize: 13 }}>
+      <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
         {t("kg.building")}
       </div>
     );
@@ -478,7 +478,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
               background: activeView === v.id
                 ? 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(139,92,246,0.1))'
                 : 'transparent',
-              color: activeView === v.id ? '#D4AF37' : '#64748B',
+              color: activeView === v.id ? '#D4AF37' : 'var(--text-muted)',
               borderBottom: activeView === v.id ? '2px solid #D4AF37' : '2px solid transparent',
             }}
           >
@@ -530,7 +530,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
                           <span style={{ fontSize: 14, color: "#22C55E", fontWeight: 700, fontFamily: "monospace" }}>{debate.score}</span>
                         </div>
                         <div style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 8 }}>{debate.reasoning}</div>
-                        <div style={{ fontSize: 11, color: "#64748B", fontStyle: "italic", borderLeft: "2px solid #22C55E", paddingLeft: 10 }}>{debate.philosophy}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", borderLeft: "2px solid #22C55E", paddingLeft: 10 }}>{debate.philosophy}</div>
                       </div>
                     ))}
                   </div>
@@ -549,7 +549,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
                           <span style={{ fontSize: 14, color: "#EF4444", fontWeight: 700, fontFamily: "monospace" }}>{debate.score}</span>
                         </div>
                         <div style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 8 }}>{debate.reasoning}</div>
-                        <div style={{ fontSize: 11, color: "#64748B", fontStyle: "italic", borderLeft: "2px solid #EF4444", paddingLeft: 10 }}>{debate.philosophy}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", borderLeft: "2px solid #EF4444", paddingLeft: 10 }}>{debate.philosophy}</div>
                       </div>
                     ))}
                   </div>
@@ -568,7 +568,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
                           <span style={{ fontSize: 14, color: "#D4AF37", fontWeight: 700, fontFamily: "monospace" }}>{debate.score}</span>
                         </div>
                         <div style={{ fontSize: 12, color: "#94A3B8", lineHeight: 1.65, marginBottom: 8 }}>{debate.reasoning}</div>
-                        <div style={{ fontSize: 11, color: "#64748B", fontStyle: "italic", borderLeft: "2px solid #D4AF37", paddingLeft: 10 }}>{debate.philosophy}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", borderLeft: "2px solid #D4AF37", paddingLeft: 10 }}>{debate.philosophy}</div>
                       </div>
                     ))}
                   </div>
@@ -581,7 +581,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
         {/* HISTORICAL TAB */}
         {activeView === 'historical' && (
           <div>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
               Historical plays by legendary investors relevant to{' '}
               <strong style={{ color: '#F8FAFC' }}>{stock.name}</strong>.
               Study these to understand how the Rishis think.
@@ -601,7 +601,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
         {/* TECHNICAL TAB */}
         {activeView === 'technical' && (
           <div>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 16, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
               {stock.name} vs sector average on key Rishi metrics.
             </div>
             {graphData.technicalEdge && graphData.technicalEdge.length > 0 ? (
@@ -611,7 +611,7 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
                 ))}
               </div>
             ) : (
-              <div style={{ color: '#64748B', textAlign: 'center', padding: 40 }}>
+              <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>
                 Technical comparison data unavailable for this stock.
               </div>
             )}

@@ -240,7 +240,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', marginBottom: 12 }}>
                   {t("kg.bullCase")} ({bulls.length})
                 </div>
-                {bulls.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBulls")}</div>}
+                {bulls.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("kg.noBulls")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12, padding: 12, background: 'rgba(34,197,94,0.05)', borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -248,7 +248,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 14, color: '#22C55E', fontWeight: 700 }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 11, color: '#94A3B8' }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>
@@ -256,7 +256,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', marginBottom: 12 }}>
                   {t("kg.bearCase")} ({bears.length})
                 </div>
-                {bears.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBears")}</div>}
+                {bears.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("kg.noBears")}</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12, padding: 12, background: 'rgba(239,68,68,0.05)', borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -264,7 +264,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 14, color: '#EF4444', fontWeight: 700 }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 11, color: '#94A3B8' }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>
@@ -539,7 +539,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                     <span style={{ fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{scoreDisp(r.result.score)}/100</span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                  <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
                 </div>
               ))}
             </div>
@@ -709,7 +709,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#22C55E' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>
@@ -723,7 +723,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#EF4444' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>

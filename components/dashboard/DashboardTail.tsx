@@ -22,7 +22,7 @@ import SeedDataBanner from '@/components/shared/SeedDataBanner'; // R1: honest p
 const C = {
   text:      '#F8FAFC',
   textSec:   '#CBD5E1',
-  textMuted: '#64748B',
+  textMuted: 'var(--text-muted)',
   gold:      '#D4AF37',
   green:     '#22C55E',
   red:       '#EF4444',
@@ -244,7 +244,7 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
         {rotatingStocks.map((stock) => {
           const d  = prices[stock.symbol];
           const up = (d?.changePercent24h ?? 0) >= 0;
-          const sc = stock.consensus === null ? "#64748B" : scoreColor(stock.consensus); // T11: null = insufficient data
+          const sc = stock.consensus === null ? "var(--text-muted)" : scoreColor(stock.consensus); // T11: null = insufficient data
           return (
             <Link href={"/stock/" + stock.symbol} key={stock.symbol} style={{ textDecoration:"none" }}>
               <div style={{ ...card(), cursor:"pointer" }}

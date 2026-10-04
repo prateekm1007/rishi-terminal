@@ -151,7 +151,7 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
             {displayPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
           </div>
           <div style={{ fontSize: 13, fontFamily: 'monospace', marginTop: 4,
-            color: displayChange === null ? '#64748B' : displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
+            color: displayChange === null ? 'var(--text-muted)' : displayChange >= 0 ? '#22C55E' : '#EF4444' }}>
             {displayChange === null ? '— 24h change not observed' : `${displayChange >= 0 ? '+' : ''}${displayChange.toFixed(2)}%`}
           </div>
         </div>

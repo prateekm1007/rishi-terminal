@@ -257,7 +257,7 @@ export default function CommoditiesPage() {
                     fontSize: 11, fontWeight: 700,
                     padding: '4px 10px', borderRadius: 6,
                     background: (avgScore === null ? '#64748B' : scoreColor(avgScore)) + '20',
-                    color: avgScore === null ? '#64748B' : scoreColor(avgScore),
+                    color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore),
                     fontFamily: 'monospace',
                   }}>
                     {avgScore === null ? '—' : avgScore}
@@ -306,7 +306,7 @@ export default function CommoditiesPage() {
                       <div style={{ height: 3, borderRadius: 2, background: (r.result.score === null ? '#64748B' : scoreColor(r.result.score)) + '40' }}>
                         <div style={{ height: '100%', borderRadius: 2, width: (r.result.score === null ? 0 : r.result.score) + '%', background: r.result.score === null ? '#64748B' : scoreColor(r.result.score) }} />
                       </div>
-                      <div style={{ fontSize: 9, fontFamily: 'monospace', color: r.result.score === null ? '#64748B' : scoreColor(r.result.score), marginTop: 2 }}>
+                      <div style={{ fontSize: 9, fontFamily: 'monospace', color: r.result.score === null ? 'var(--text-muted)' : scoreColor(r.result.score), marginTop: 2 }}>
                         {r.result.score === null ? '\u2014' : r.result.score}
                       </div>
                     </div>

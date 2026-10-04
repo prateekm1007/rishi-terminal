@@ -12,7 +12,7 @@ function InfoTip({ text }: { text: string }) {
       <span
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
-        style={{ cursor: "help", color: "#64748b", fontSize: 13, marginLeft: 6, userSelect: "none" }}
+        style={{ cursor: "help", color: "var(--text-muted)", fontSize: 13, marginLeft: 6, userSelect: "none" }}
       >&#9432;</span>
       {show && (
         <span style={{
@@ -72,7 +72,7 @@ function ZoneGauge({ value, max, zones }: {
         {zones.map((z, i) => (
           <span key={i} style={{
             width: `${((z.to - z.from) / max) * 100}%`,
-            fontSize: 10, color: "#64748b",
+            fontSize: 10, color: "var(--text-muted)",
             textAlign: i === 0 ? "left" : i === zones.length - 1 ? "right" : "center"
           }}>{z.label}</span>
         ))}
@@ -159,7 +159,7 @@ export function TechnicalIndicators({ symbol }: Props) {
   if (error || !indicators) return (
     <div style={card}>
       <h3 style={{ color: "#f1f5f9", fontWeight: 600, marginBottom: 8 }}>Technical Indicators</h3>
-      <p style={{ color: "#64748b", fontSize: 13 }}>OFFLINE — price data unavailable</p>
+      <p style={{ color: "var(--text-muted)", fontSize: 13 }}>OFFLINE — price data unavailable</p>
     </div>
   );
 
@@ -262,7 +262,7 @@ export function TechnicalIndicators({ symbol }: Props) {
           </div>
           <span style={{ fontSize: 24, fontWeight: 800, color: macdColor }}>{macdHist.toFixed(2)}</span>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--text-muted)" }}>
           <span>Line: <span style={{ color: macdLine >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdLine.toFixed(2)}</span></span>
           <span>Signal: <span style={{ color: macdSig >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdSig.toFixed(2)}</span></span>
           <span>Histogram: <span style={{ color: macdHist >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{macdHist.toFixed(2)}</span></span>
@@ -288,20 +288,20 @@ export function TechnicalIndicators({ symbol }: Props) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <div>
-            <p style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>1 Day</p>
+            <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>1 Day</p>
             <p style={{ fontSize: 26, fontWeight: 800, color: p1d >= 0 ? "#22c55e" : "#ef4444", lineHeight: 1 }}>
               {p1d >= 0 ? "+" : ""}{p1d.toFixed(2)}%
             </p>
           </div>
           <div>
-            <p style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>5 Day</p>
+            <p style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>5 Day</p>
             <p style={{ fontSize: 26, fontWeight: 800, color: p5d >= 0 ? "#22c55e" : "#ef4444", lineHeight: 1 }}>
               {p5d >= 0 ? "+" : ""}{p5d.toFixed(2)}%
             </p>
           </div>
         </div>
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #1e293b", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 11, color: "#64748b" }}>Avg Volume (20d)</span>
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Avg Volume (20d)</span>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", fontFamily: "monospace" }}>{fmtVol(volSMA)}</span>
         </div>
       </div>

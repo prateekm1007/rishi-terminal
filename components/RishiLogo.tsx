@@ -283,7 +283,7 @@ export default function RishiLogo({
           <div style={{
             fontFamily: 'JetBrains Mono, monospace',
             fontSize: size * 0.16,
-            color: '#475569',
+            color: 'var(--text-ghost)',
             letterSpacing: '0.12em',
             lineHeight: 1,
           }}>

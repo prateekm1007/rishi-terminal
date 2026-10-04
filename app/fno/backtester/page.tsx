@@ -30,7 +30,7 @@ export default function FnoBacktesterPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           minHeight: '420px', flexDirection: 'column', gap: 16,
           background: 'rgba(17,24,39,0.5)', border: '1px solid rgba(30,41,59,0.8)',
-          borderRadius: 16, color: '#64748B', padding: '48px 24px', textAlign: 'center',
+          borderRadius: 16, color: 'var(--text-muted)', padding: '48px 24px', textAlign: 'center',
         }}>
           <div style={{ fontSize: 48 }}>📊</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#94A3B8', maxWidth: 560, lineHeight: 1.6 }}>

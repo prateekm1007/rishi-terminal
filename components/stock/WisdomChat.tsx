@@ -133,7 +133,7 @@ export function WisdomChat({ stock, scores }: Props) {
       {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: "center", color: "#475569", fontSize: "11px", marginTop: "20px" }}>
+          <div style={{ textAlign: "center", color: "var(--text-ghost)", fontSize: "11px", marginTop: "20px" }}>
             <div style={{ fontSize: "24px", marginBottom: "8px" }}>💬</div>
             <div>Ask {selectedRishi} about {stock.symbol}</div>
           </div>
@@ -148,7 +148,7 @@ export function WisdomChat({ stock, scores }: Props) {
             }}
           >
             {msg.role === "rishi" && (
-              <div style={{ fontSize: "10px", color: "#64748B", marginBottom: "3px" }}>
+              <div style={{ fontSize: "10px", color: "var(--text-muted)", marginBottom: "3px" }}>
                 {msg.rishiName}
               </div>
             )}
@@ -163,14 +163,14 @@ export function WisdomChat({ stock, scores }: Props) {
             </div>
             {msg.role === "rishi" && msg.provenance && (
               <div style={{
-                fontSize: "9px", color: "#64748B", marginTop: "3px", lineHeight: 1.5,
+                fontSize: "9px", color: "var(--text-muted)", marginTop: "3px", lineHeight: 1.5,
               }}>
                 {msg.provenance.provider}/{msg.provenance.model} ·{" "}
                 {msg.provenance.grounded
                   ? `cites ${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0)} evidence item${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0) === 1 ? "" : "s"} · numbers checked`
                   : "not grounded · context-only"}
                 {msg.provenance.grounded && msg.provenance.claims.length > 0 && (
-                  <div style={{ color: "#475569" }}>
+                  <div style={{ color: "var(--text-ghost)" }}>
                     {msg.provenance.claims.map((c, i) => (
                       <div key={i}>· {c.claim} [{c.evidenceIds.join(", ")}]</div>
                     ))}
@@ -183,7 +183,7 @@ export function WisdomChat({ stock, scores }: Props) {
 
         {isLoading && (
           <div style={{ alignSelf: "flex-start" }}>
-            <div style={{ fontSize: "10px", color: "#64748B", marginBottom: "3px" }}>
+            <div style={{ fontSize: "10px", color: "var(--text-muted)", marginBottom: "3px" }}>
               {selectedRishi}
             </div>
             <div style={{
@@ -225,7 +225,7 @@ export function WisdomChat({ stock, scores }: Props) {
               style={{
                 padding: "4px 8px", borderRadius: "6px",
                 background: "rgba(31,41,59,0.5)", border: "1px solid rgba(51,65,85,0.4)",
-                color: "#64748B", fontSize: "10px", cursor: isLoading ? "not-allowed" : "pointer",
+                color: "var(--text-muted)", fontSize: "10px", cursor: isLoading ? "not-allowed" : "pointer",
                 opacity: isLoading ? 0.5 : 1,
               }}
             >

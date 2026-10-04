@@ -130,7 +130,7 @@ const { price: livePriceData } = usePrice(forexSymbol);
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', marginBottom: 12 }}>{t("kg.bullishMacro")} ({bulls.length})</div>
-                {bulls.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBullishSignals")}</div>}
+                {bulls.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("kg.noBullishSignals")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -143,7 +143,7 @@ const { price: livePriceData } = usePrice(forexSymbol);
               </div>
               <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', marginBottom: 12 }}>{t("kg.bearishMacro")} ({bears.length})</div>
-                {bears.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>No bearish signals at current levels</div>}
+                {bears.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>No bearish signals at current levels</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -530,7 +530,7 @@ const { price: livePriceData } = usePrice(forexSymbol);
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#22C55E' }}>{r.result.score}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.reasoning}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>
@@ -544,7 +544,7 @@ const { price: livePriceData } = usePrice(forexSymbol);
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#EF4444' }}>{r.result.score}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.reasoning}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>

@@ -36,7 +36,7 @@ export default function NewsStory() {
     return (
       <div style={{ fontFamily:'JetBrains Mono, monospace', background:'#050508', color:'#E2E8F0', minHeight:'100vh', padding:40, textAlign:'center' }}>
         <div style={{ fontSize:40, marginBottom:16 }}>📭</div>
-        <div style={{ fontSize:16, color:'#475569', marginBottom:20 }}>Story not found</div>
+        <div style={{ fontSize:16, color:'var(--text-ghost)', marginBottom:20 }}>Story not found</div>
         <Link href="/news" style={{ color:'#F59E0B', textDecoration:'none', fontSize:12 }}>← Back to News</Link>
       </div>
     );
@@ -66,7 +66,7 @@ export default function NewsStory() {
           <span style={{ fontSize:9, color:regionColor(news.region), background:`${regionColor(news.region)}15`, border:`1px solid ${regionColor(news.region)}40`, borderRadius:4, padding:'3px 10px', fontWeight:700 }}>
             {regionFlag(news.region)} {news.region}
           </span>
-          <span style={{ fontSize:9, color:'#64748B', background:'#09090F', border:'1px solid #1E293B', borderRadius:4, padding:'3px 10px' }}>
+          <span style={{ fontSize:9, color:'var(--text-muted)', background:'#09090F', border:'1px solid #1E293B', borderRadius:4, padding:'3px 10px' }}>
             {news.category} · {news.subCategory}
           </span>
           <span style={{ fontSize:9, color:impactColor(news.impact), background:`${impactColor(news.impact)}15`, border:`1px solid ${impactColor(news.impact)}30`, borderRadius:4, padding:'3px 10px', fontWeight:700 }}>
@@ -91,7 +91,7 @@ export default function NewsStory() {
 
         {/* META */}
         <div style={{ display:'flex', gap:16, alignItems:'center', marginBottom:24, flexWrap:'wrap', paddingBottom:16, borderBottom:'1px solid #1E293B' }}>
-          <span style={{ fontSize:11, color:'#475569' }}>📡 {news.source}</span>
+          <span style={{ fontSize:11, color:'var(--text-ghost)' }}>📡 {news.source}</span>
           <span style={{ fontSize:11, color:'#334155' }}>🕐 {news.time} · {timeAgoLabel(news.minutesAgo)}</span>
         </div>
 
@@ -117,7 +117,7 @@ export default function NewsStory() {
 
           {/* EXTENDED ANALYSIS — built from summary context */}
           <div style={{ borderTop:'1px solid #1E293B', paddingTop:20, marginTop:4 }}>
-            <div style={{ fontSize:11, color:'#475569', letterSpacing:2, marginBottom:14, fontWeight:600 }}>RISHI TERMINAL ANALYSIS</div>
+            <div style={{ fontSize:11, color:'var(--text-ghost)', letterSpacing:2, marginBottom:14, fontWeight:600 }}>RISHI TERMINAL ANALYSIS</div>
 
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:12, marginBottom:20 }}>
               {[
@@ -125,8 +125,8 @@ export default function NewsStory() {
                 { label:'Sub-Topic',   value: news.subCategory,                               color:'#94A3B8' },
                 { label:'Market Impact', value: news.impact,                                  color: impactColor(news.impact) },
                 { label:'Region',      value: news.region,                                    color: regionColor(news.region) },
-                { label:'Story Age',   value: timeAgoLabel(news.minutesAgo),                  color:'#64748B' },
-                { label:'Source',      value: news.source,                                    color:'#64748B' },
+                { label:'Story Age',   value: timeAgoLabel(news.minutesAgo),                  color:'var(--text-muted)' },
+                { label:'Source',      value: news.source,                                    color:'var(--text-muted)' },
               ].map(m => (
                 <div key={m.label} style={{ background:'#050508', borderRadius:6, padding:'10px 12px' }}>
                   <div style={{ fontSize:8, color:'#334155', letterSpacing:1, marginBottom:4 }}>{m.label.toUpperCase()}</div>
@@ -135,7 +135,7 @@ export default function NewsStory() {
               ))}
             </div>
 
-            <div style={{ fontSize:11, color:'#475569', letterSpacing:2, marginBottom:10, fontWeight:600 }}>RELATED TAGS</div>
+            <div style={{ fontSize:11, color:'var(--text-ghost)', letterSpacing:2, marginBottom:10, fontWeight:600 }}>RELATED TAGS</div>
             <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
               {news.tags.map(tag => (
                 <span key={tag} style={{ fontSize:10, color:'#F59E0B', background:'#F59E0B10', border:'1px solid #F59E0B20', borderRadius:4, padding:'4px 10px' }}>
@@ -167,7 +167,7 @@ export default function NewsStory() {
         {/* RELATED NEWS */}
         {related.length > 0 && (
           <div>
-            <div style={{ fontSize:11, color:'#475569', letterSpacing:2, fontWeight:600, marginBottom:16 }}>📰 RELATED STORIES</div>
+            <div style={{ fontSize:11, color:'var(--text-ghost)', letterSpacing:2, fontWeight:600, marginBottom:16 }}>📰 RELATED STORIES</div>
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
               {related.map(r => (
                 <Link key={r.id} href={`/news/${r.id}`}
@@ -176,7 +176,7 @@ export default function NewsStory() {
                     <div style={{ flex:1 }}>
                       <div style={{ display:'flex', gap:6, marginBottom:8, flexWrap:'wrap' }}>
                         <span style={{ fontSize:8, color:regionColor(r.region), fontWeight:700 }}>{regionFlag(r.region)} {r.region}</span>
-                        <span style={{ fontSize:8, color:'#475569' }}>{r.category}</span>
+                        <span style={{ fontSize:8, color:'var(--text-ghost)' }}>{r.category}</span>
                         {r.isBreaking && <span style={{ fontSize:8, color:'#EF4444', fontWeight:700 }}>🚨 BREAKING</span>}
                       </div>
                       <div style={{ fontSize:12, color:'#E2E8F0', fontWeight:600, lineHeight:1.5, fontFamily:'Georgia, serif' }}>

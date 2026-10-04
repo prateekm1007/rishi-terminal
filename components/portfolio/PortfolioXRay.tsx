@@ -45,7 +45,7 @@ const SCENARIOS = [
 
 const SECTOR_COLORS: Record<string, string> = {
   IT: "#6366F1", Banking: "#22C55E", Energy: "#F59E0B", FMCG: "#EC4899",
-  Auto: "#14B8A6", Pharma: "#8B5CF6", Infra: "#F97316", Metals: "#64748B",
+  Auto: "#14B8A6", Pharma: "#8B5CF6", Infra: "#F97316", Metals: "var(--text-muted)",
   Consumer: "#06B6D4", Telecom: "#84CC16", NBFC: "#10B981", Insurance: "#A78BFA",
   Cement: "#FB923C", Other: "#475569",
 };
@@ -124,7 +124,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
     return (
       <div style={{
         textAlign: "center", padding: "60px 20px",
-        color: "#64748B", fontSize: "14px",
+        color: "var(--text-muted)", fontSize: "14px",
       }}>
         <div style={{ fontSize: "48px", marginBottom: "16px" }}>📊</div>
         <div>Add holdings to see your Portfolio X-Ray</div>
@@ -150,7 +150,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
 
   const sectionLabel = (text: string) => (
     <div style={{
-      fontSize: "11px", fontWeight: 700, color: "#64748B",
+      fontSize: "11px", fontWeight: 700, color: "var(--text-muted)",
       letterSpacing: "0.1em", marginBottom: "16px",
     }}>
       {text}
@@ -169,7 +169,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
             <div style={{ fontSize: "36px", fontWeight: 900, color: mosColor, fontFamily: "JetBrains Mono, monospace", marginBottom: "8px" }}>
               {analysis.marginOfSafety >= 0 ? "+" : ""}{analysis.marginOfSafety.toFixed(1)}%
             </div>
-            <div style={{ fontSize: "12px", color: "#64748B" }}>
+            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
               {analysis.marginOfSafety >= 30 ? "✅ Excellent — well below intrinsic value"
                 : analysis.marginOfSafety >= 15 ? "✓ Good — moderate safety margin"
                 : analysis.marginOfSafety >= 0 ? "⚠ Fair — limited margin of safety"
@@ -193,7 +193,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
             <div style={{ fontSize: "36px", fontWeight: 900, color: concColor, fontFamily: "JetBrains Mono, monospace", marginBottom: "8px" }}>
               {analysis.top3Pct.toFixed(1)}%
             </div>
-            <div style={{ fontSize: "12px", color: "#64748B" }}>
+            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
               Top 3 sectors · {analysis.top3Pct > 70 ? "⚠ High concentration risk"
                 : analysis.top3Pct > 50 ? "⚠ Moderate concentration"
                 : "✅ Well diversified"}
@@ -214,7 +214,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
             <div style={{ fontSize: "36px", fontWeight: 900, color: analysis.diversificationScore > 60 ? "#22C55E" : analysis.diversificationScore > 40 ? "#F59E0B" : "#EF4444", fontFamily: "JetBrains Mono, monospace", marginBottom: "8px" }}>
               {analysis.diversificationScore}/100
             </div>
-            <div style={{ fontSize: "12px", color: "#64748B" }}>
+            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
               {analysis.diversificationScore > 70 ? "Excellent diversification"
                 : analysis.diversificationScore > 50 ? "Moderate diversification"
                 : "Concentrated portfolio"}
@@ -250,7 +250,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
                   <div style={{ fontSize: "13px", fontWeight: 700, color: "#F8FAFC" }}>
                     {sa.sector}
                   </div>
-                  <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
+                  <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
                     {sa.count} stock{sa.count > 1 ? "s" : ""} · {sa.symbols.join(", ")}
                   </div>
                 </div>
@@ -266,7 +266,7 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
                 <div style={{ fontSize: "14px", fontWeight: 800, color: "#F8FAFC", fontFamily: "JetBrains Mono, monospace", minWidth: "52px", textAlign: "right" }}>
                   {sa.pct.toFixed(1)}%
                 </div>
-                <div style={{ fontSize: "12px", color: "#64748B", fontFamily: "JetBrains Mono, monospace", minWidth: "100px", textAlign: "right" }}>
+                <div style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", minWidth: "100px", textAlign: "right" }}>
                   {sa.value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                 </div>
               </div>
@@ -292,14 +292,14 @@ export default function PortfolioXRay({ holdings, prices }: Props) {
                 <div style={{ fontSize: "13px", color: "#94A3B8", marginBottom: "10px" }}>
                   Move: <span style={{ fontWeight: 700 }}>{(st as any).movePct >= 0 ? "+" : ""}{(st as any).movePct.toFixed(1)}%</span>
                 </div>
-                <div style={{ fontSize: "12px", color: "#64748B", marginBottom: "4px" }}>
+                <div style={{ fontSize: "12px", color: "var(--text-muted)", marginBottom: "4px" }}>
                   Portfolio value:
                 </div>
                 <div style={{ fontSize: "16px", fontWeight: 800, color: "#F8FAFC", fontFamily: "JetBrains Mono, monospace" }}>
                   {st.projectedValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                 </div>
                 <div style={{ fontSize: "13px", fontWeight: 700, color: st.color, fontFamily: "JetBrains Mono, monospace", marginTop: "4px" }}>
-                  Loss: {Math.abs(st.loss).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</div><div style={{ fontSize: "11px", color: "#64748B", marginTop: "6px" }}>Sectors: {(st as any).affectedSectors?.join(", ")}
+                  Loss: {Math.abs(st.loss).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</div><div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "6px" }}>Sectors: {(st as any).affectedSectors?.join(", ")}
                 </div>
               </div>
             ))}

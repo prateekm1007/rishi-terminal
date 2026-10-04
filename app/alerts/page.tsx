@@ -103,7 +103,7 @@ export default function AlertsPage() {
               Multi-condition alerts — price targets, % moves, Rishi score changes
             </p>
             {lastUpdated && (
-              <div style={{ fontSize: 11, color: '#64748B', marginTop: 8 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
                 <span style={{ color: statusColor(marketState), fontWeight: 700 }}>
                   {marketLabel ?? 'CONNECTING…'}
                 </span>
@@ -130,13 +130,13 @@ export default function AlertsPage() {
           {[
             { label: 'ACTIVE', count: activeAlerts.length, color: '#22C55E' },
             { label: 'TRIGGERED TODAY', count: triggeredToday.length, color: '#F59E0B' },
-            { label: 'PAUSED', count: pausedAlerts.length, color: '#64748B' },
+            { label: 'PAUSED', count: pausedAlerts.length, color: 'var(--text-muted)' },
           ].map(s => (
             <div key={s.label} style={{
               background: 'rgba(17,24,39,0.85)', border: '1px solid rgba(30,41,59,0.8)',
               borderRadius: 12, padding: '20px 24px',
             }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em', marginBottom: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>
                 {s.label}
               </div>
               <div style={{ fontSize: 32, fontWeight: 900, color: s.color, fontFamily: 'JetBrains Mono, monospace' }}>
@@ -169,7 +169,7 @@ export default function AlertsPage() {
         {alerts.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '60px 20px',
-            color: '#64748B', fontSize: 14,
+            color: 'var(--text-muted)', fontSize: 14,
           }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔔</div>
             <div>No alerts yet. Create one to get notified on price moves.</div>
@@ -214,7 +214,7 @@ export default function AlertsPage() {
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 11, color: '#64748B', display: 'flex', gap: 12 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', gap: 12 }}>
                       {livePrice && (
                         // Round 9: the per-row price label states the entry's
                         // ACTUAL provenance (LIVE/CACHED/…), not a hardcoded
@@ -249,7 +249,7 @@ export default function AlertsPage() {
                           cursor: 'pointer',
                           background: alert.isActive ? 'rgba(51,65,85,0.5)' : 'rgba(34,197,94,0.1)',
                           border: alert.isActive ? '1px solid rgba(51,65,85,0.5)' : '1px solid rgba(34,197,94,0.3)',
-                          color: alert.isActive ? '#64748B' : '#22C55E',
+                          color: alert.isActive ? 'var(--text-muted)' : '#22C55E',
                         }}
                       >
                         {alert.isActive ? 'Pause' : 'Resume'}
@@ -289,7 +289,7 @@ export default function AlertsPage() {
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
                 <div>
-                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.symbol")}</label>
+                  <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.symbol")}</label>
                   <input
                     type="text" placeholder="e.g., TCS, RELIANCE, BTC"
                     value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())}
@@ -301,7 +301,7 @@ export default function AlertsPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.alertType")}</label>
+                  <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.alertType")}</label>
                   <select
                     value={formType} onChange={e => setFormType(e.target.value as AlertType)}
                     style={{
@@ -316,7 +316,7 @@ export default function AlertsPage() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.targetValue")}</label>
+                  <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 6 }}>{t("alerts.targetValue")}</label>
                   <input
                     type="number" placeholder={formType.includes('rishi') ? "Score (0-100)" : formType.includes('percent') ? "% change" : "Price ()"}
                     value={formValue} onChange={e => setFormValue(e.target.value)}
@@ -328,7 +328,7 @@ export default function AlertsPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 11, color: '#64748B', fontWeight: 700, display: 'block', marginBottom: 6 }}>NOTE (OPTIONAL)</label>
+                  <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, display: 'block', marginBottom: 6 }}>NOTE (OPTIONAL)</label>
                   <input
                     type="text" placeholder="e.g., Support level, take profit"
                     value={formNote} onChange={e => setFormNote(e.target.value)}
@@ -356,7 +356,7 @@ export default function AlertsPage() {
                   style={{
                     flex: 1, padding: '12px', borderRadius: 8,
                     background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.4)',
-                    color: '#64748B', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+                    color: 'var(--text-muted)', fontWeight: 700, fontSize: 14, cursor: 'pointer',
                   }}
                 >
                   Cancel

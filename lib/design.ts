@@ -23,8 +23,8 @@ export const colors = {
   amber:        "#F59E0B",
   textPrimary:   "#F1F5F9",
   textSecondary: "#94A3B8",
-  textMuted:     "#475569",
-  textGhost:     "#334155",
+  textMuted:     "#8395AC",
+  textGhost:     "#7C8BA1",
   border:        "#1E293B",
   borderSubtle:  "rgba(51, 65, 85, 0.5)",
 } as const;

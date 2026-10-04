@@ -99,7 +99,7 @@ export function ScreenerClient({ rows }: Props) {
           </div>
 
           <div style={{ marginBottom: 28 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.12em', marginBottom: 10 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 10 }}>
               RISHI SCREENING MODES
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -109,7 +109,7 @@ export function ScreenerClient({ rows }: Props) {
                   padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
                   background: !activePreset ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
                   outline: !activePreset ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
-                  color: !activePreset ? '#D4AF37' : '#64748B',
+                  color: !activePreset ? '#D4AF37' : 'var(--text-muted)',
                   fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
                 }}
               >
@@ -123,7 +123,7 @@ export function ScreenerClient({ rows }: Props) {
                     padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
                     background: activePreset === preset.id ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
                     outline: activePreset === preset.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
-                    color: activePreset === preset.id ? '#D4AF37' : '#64748B',
+                    color: activePreset === preset.id ? '#D4AF37' : 'var(--text-muted)',
                     fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
                     display: 'flex', alignItems: 'center', gap: 5,
                   }}

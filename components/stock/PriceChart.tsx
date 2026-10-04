@@ -63,7 +63,6 @@ function LineChart({ points, positive }: { points: PricePoint[]; positive: boole
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
     const rawX = ((e.clientX - rect.left) / rect.width) * W;
-    const rawY = ((e.clientY - rect.top) / rect.height) * H;
 
     // Find closest point by X
     const tCursor = ((rawX - PAD.l) / cW) * tRange + tMin;
@@ -76,9 +75,6 @@ function LineChart({ points, positive }: { points: PricePoint[]; positive: boole
     const snapX = px(best.t);
     const snapY = py(best.v);
     const dateStr = new Date(best.t).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
-    const priceStr = best.v >= 1000
-      ? best.v.toLocaleString('en-IN',{maximumFractionDigits:2})
-      : best.v.toFixed(4);
 
     setTip({ x:snapX, y:snapY, price:best.v, date:dateStr, visible:true });
   }

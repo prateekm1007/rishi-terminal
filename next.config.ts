@@ -1,4 +1,14 @@
-/** @type {import("next").NextConfig} */
+import type { NextConfig } from "next";
+// Z5/Y6: @next/bundle-analyzer — off by default, enabled only with
+// ANALYZE=true, so CI/production builds are byte-identical to before.
+// Usage: ANALYZE=true npm run build  → .next/analyze/{nodejs,edge,nodejsclient}*.html
+// (Needs `next build --webpack` for a report — Turbopack prints none; the
+// webpack build currently fails a pre-existing route-type check, defect
+// ledger.) ESM import: the CJS require form trips the repo's
+// no-require-imports error (Rule 23 — no disables).
+import withBundleAnalyzer from "@next/bundle-analyzer";
+
+
 
 // Remediation T9 — baseline security headers.
 //
@@ -52,7 +62,7 @@ const securityHeaders = [
   },
 ];
 
-const nextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   typescript: {
     ignoreBuildErrors: false,
@@ -75,7 +85,7 @@ const nextConfig = {
       .filter(([oldSym]) => !oldSym.startsWith("$"))
       .map(([oldSym, canonical]) => ({
         source: `/stock/${oldSym}`,
-        destination: `/stock/${encodeURIComponent(canonical)}`,
+        destination: `/stock/${encodeURIComponent(String(canonical))}`,
         permanent: true,
       }));
     return [
@@ -119,4 +129,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default withBundleAnalyzer({ enabled: process.env.ANALYZE === "true" })(nextConfig);

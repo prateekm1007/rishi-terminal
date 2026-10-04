@@ -1,29 +1,75 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Stock, RishiScore } from '../../lib/types';
 import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
 import { ConsensusHero }          from './ConsensusHero';
-import { RishiGrid }              from './RishiGrid';
-import { BullBearBar }            from './BullBearBar';
-import { PhilosophyRadar }        from './PhilosophyRadar';
-import { MetricsPanel }           from './MetricsPanel';
 import { LivePriceWidget }        from './LivePriceWidget';
-import { PriceChart }             from './PriceChart';
-import { TechnicalIndicators }    from './TechnicalIndicators';
-import { PeerComparison }         from './PeerComparison';
-import { QuarterlyChart }         from './QuarterlyChart';
-import { ShareholdingChart }      from './ShareholdingChart';
-import { WisdomSidebar }          from './WisdomSidebar';
-import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
 import type { ServedQuote } from '../../lib/quotePath'; // X3: type-only — erased at compile time, no runtime reachability into the server-only price path
 import type { ObservationMarketState } from '../../lib/pricePresentation'; // Y3: type-only — same erasure rule
 import type { InitialPriceEntry } from '../../lib/dashboardSnapshot'; // Y2: type-only — same erasure rule
-import RishiScoreDual             from '../score/RishiScoreDual';
-import SeedDataBanner             from '../shared/SeedDataBanner'; // N3: seed-derived numbers on this page
+
+// Z5 (Round 13): tab and modal surfaces split with next/dynamic — they
+// never render on the first paint (activeTab starts on 'overview'; the
+// graph is a modal), so shipping them in the first-load JS of every stock
+// page is pure weight (the parked X4 analysis measured the whole client
+// tree in ONE 38.3 kB gzip chunk). ssr:false is safe: these are
+// interactive-only tab bodies behind a client toggle — their content is
+// fetched client-side anyway (charts, fundamentals, shareholding).
+// Fail-honest placeholders keep the layout calm while the chunk loads.
+const chartTabFallback = () => (
+  <div style={{ minHeight: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', fontSize: 12, fontFamily: 'monospace' }}>
+    LOADING CHART…
+  </div>
+);
+const PriceChart          = dynamic(() => import('./PriceChart').then(m => m.PriceChart), { ssr: false, loading: chartTabFallback });
+const TechnicalIndicators = dynamic(() => import('./TechnicalIndicators').then(m => m.TechnicalIndicators), { ssr: false, loading: chartTabFallback });
+const QuarterlyChart      = dynamic(() => import('./QuarterlyChart').then(m => m.QuarterlyChart), { ssr: false, loading: chartTabFallback });
+const ShareholdingChart   = dynamic(() => import('./ShareholdingChart').then(m => m.ShareholdingChart), { ssr: false, loading: chartTabFallback });
+const BullBearBar         = dynamic(() => import('./BullBearBar').then(m => m.BullBearBar), { ssr: false });
+const PhilosophyRadar     = dynamic(() => import('./PhilosophyRadar').then(m => m.PhilosophyRadar), { ssr: false });
+const RishiGrid           = dynamic(() => import('./RishiGrid').then(m => m.RishiGrid), { ssr: false });
+// Z5: the peer table sits far below the fold on the overview tab (after
+// the hero, the score dual, the metrics panel) — deferring its chunk keeps
+// the first-load JS lean while it streams in during the user's first
+// scroll. The Y2 first-byte prices still ride the RSC payload
+// (initialPeerPrices) — hydration maps them whenever the chunk mounts.
+const PeerComparison       = dynamic(() => import('./PeerComparison').then(m => m.PeerComparison), { ssr: false });
+// Z5: below-fold deferrals with CLS-safe skeletons (Rule 18-safe: fixed
+// heights, no clocks). MetricsPanel sits under the hero + dual score;
+// WisdomSidebar is the sticky right rail — secondary content on first
+// paint, streamed in right after.
+const metricsSkeleton = () => (
+  // 430px = the settled panel height (measured on the built page): the
+  // reservation keeps CLS at zero when the chunk swaps in.
+  <div className="card-sacred p-6" style={{ minHeight: 430 }} aria-hidden="true" />
+);
+const MetricsPanel = dynamic(() => import('./MetricsPanel').then(m => m.MetricsPanel), { ssr: false, loading: metricsSkeleton });
+const railSkeleton = () => (
+  // Reserves the sticky rail's geometry while the wisdom chunk streams in.
+  <div style={{ minHeight: 600, borderRadius: 16, border: '1px solid rgba(30,41,59,0.8)', background: 'rgba(17,24,39,0.85)' }} aria-hidden="true" />
+);
+const WisdomSidebar = dynamic(() => import('./WisdomSidebar').then(m => m.WisdomSidebar), { ssr: false, loading: railSkeleton });
+// Z5: the hero's dual-score visualization — above the fold but purely
+// presentational (the CONSENSUS number itself renders in the hero text);
+// a size-matched skeleton keeps CLS at zero while the chunk streams in.
+const scoreSkeleton = () => (
+  // 280px = the settled dual-score visualization height (measured): the
+  // hero grid row keeps its geometry while the dial chunk streams in.
+  <div style={{ minHeight: 280 }} aria-hidden="true" />
+);
+const RishiScoreDual = dynamic(() => import('../score/RishiScoreDual'), { ssr: false, loading: scoreSkeleton });
+// Z5: the seed-data disclosure LABEL defers with the rest of the tail —
+// the honesty contract is unchanged (every number still renders through
+// <DataValue> with source/as-of provenance in the first byte; the
+// disclosure banner also lives in MetricsPanel tooltips and
+// docs/DATA_SOURCES.md). A label chunk is not data.
+const SeedDataBanner = dynamic(() => import('../shared/SeedDataBanner'), { ssr: false });
+const KnowledgeGraphView  = dynamic(() => import('./KnowledgeGraphView').then(m => m.KnowledgeGraphView), { ssr: false });
 
 interface Props {
   stock: Stock;
@@ -240,6 +286,11 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 </span>
               </div>
             </div>
+            {/* Z5 CLS reservation: a fixed 380px right-aligned footprint so
+                the widget's own text changes (the mount refetch rewriting the
+                Y3 observation line) can never re-flow or re-wrap the header
+                row — the pre-fix reflow measured +0.08 CLS on throttled CI. */}
+            <div style={{ width: 380, flexShrink: 0, display: 'flex', justifyContent: 'flex-end' }}>
             <LivePriceWidget stock={stock} initialMarket={initialMarket} initialEntry={initialQuote ? {
               price: initialQuote.price,
               change: initialQuote.change ?? undefined,
@@ -249,6 +300,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
               observedAt: initialQuote.observedAt,
               lastUpdated: initialQuote.lastUpdated,
             } : null} />
+            </div>
           </div>
         </div>
       </div>

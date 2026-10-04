@@ -4,8 +4,18 @@
 // GET /api/stock/[symbol]. No dataset, no engine in the bundle.
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
 import { ChatClient } from '@/components/chat/ChatClient';
+import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
+import { chat } from '@/messages/en.json';
+
+// X4 (Round 11): the chat namespace arrives from the server as an RSC prop
+// (flight payload) instead of riding the client bundle — see the homepage's
+// note in app/page.tsx.
 
 export default function ChatPage() {
   const rows = getSlimIndex();
-  return <ChatClient rows={rows} />;
+  return (
+    <NamespaceProvider ns={{ chat }}>
+      <ChatClient rows={rows} />
+    </NamespaceProvider>
+  );
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import nextConfig from '../next.config.js';
+import nextConfig from '../next.config';
 
 /**
  * Audit retest 2026-10-02, finding A.1:
@@ -14,14 +14,20 @@ import nextConfig from '../next.config.js';
  * (the site is HTTPS-only with HSTS preload, so enforcing the upgrade is
  * belt-and-braces and cannot break anything).
  */
-const applied = await nextConfig.headers();
+// next.config.ts now exports through the bundle-analyzer wrapper whose
+// TS type is opaque at this boundary; at runtime (ANALYZE unset) it is the
+// plain NextConfig object. Narrow once here.
+const cfg = nextConfig as unknown as {
+  headers: () => Promise<Array<{ source: string; headers: Array<{ key: string; value: string }> }>>;
+};
+const applied = await cfg.headers();
 
 // next.config's inferred Header type unions in irrelevant shapes; at runtime
 // every entry is a flat { key, value: string } pair. Narrow once at the boundary.
 const headerPairs = (applied.find((e: { source: string }) => e.source === '/:path*')
   ?.headers ?? []) as { key: string; value: string }[];
 
-describe('next.config.js security headers', () => {
+describe('next.config.ts security headers', () => {
   it('applies a header set to every path', () => {
     expect(applied.some((e: { source: string }) => e.source === '/:path*')).toBe(true);
     expect(headerPairs.length).toBeGreaterThan(0);

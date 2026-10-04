@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
+import { news } from '@/messages/en.json';
 
 // Round-5 audit (finding 18): client pages cannot export metadata —
 // this server layout carries the per-route title/description.
@@ -10,5 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  // X4 (Round 11): this route's dictionary namespace arrives as an RSC
+  // prop (streamed flight payload) instead of riding the client page's
+  // first-load JS — see lib/languageShell.ts and app/page.tsx's note.
+  return <NamespaceProvider ns={{ news }}>{children}</NamespaceProvider>;
 }

@@ -85,6 +85,11 @@ for (const f of tracked) {
   // whole purpose) — that is not an embedding.
   if (f.startsWith("scripts/") || f.startsWith("docs/") || f.startsWith("test/")) continue; // tooling/evidence may name URLs
   if (f === "lib/registry/providerRegistry.ts") continue;
+  // next.config.ts names provider endpoints ONLY inside the CSP
+  // connect-src allowlist — a security-header listing, not an embedding
+  // (the pre-Z5 next.config.js was never scanned only because the scan
+  // matches .ts/.tsx/.mjs; the exemption documents the same reality).
+  if (f === "next.config.ts") continue;
   if (f.startsWith(".env")) continue;
   let src;
   try {

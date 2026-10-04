@@ -102,7 +102,7 @@ const CLASSIFY = {
   'proxy.ts': { cat: 'payment-surface', note: 'webhook matcher/routing comment' },
   'package.json': { cat: 'payment-surface', note: 'unused razorpay npm dependency (no importers; checkout loads via script tag)' },
   'package-lock.json': { cat: 'payment-surface', note: 'transitive lock entries — regenerated when the dependency is removed' },
-  'next.config.js': { cat: 'payment-surface', note: 'CSP allows checkout.razorpay.com / api.razorpay.com origins — obsolete once payments retire' },
+  'next.config.ts': { cat: 'payment-surface', note: 'CSP allows checkout.razorpay.com / api.razorpay.com origins — obsolete once payments retire' },
   'scripts/checkEnv.ts': { cat: 'payment-surface', note: 'env checker referencing RAZORPAY vars' },
 
   // ── UI copy / navigation ────────────────────────────────────────────────

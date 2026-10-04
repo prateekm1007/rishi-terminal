@@ -2,6 +2,12 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { CRYPTO_ASSETS } from '../../../data/crypto';
 import { CryptoDetailClient } from '../../../components/crypto/CryptoDetailClient';
+import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
+import { chart, kg } from '../../../messages/en.json';
+
+// X4 (Round 11): the crypto detail tree's namespaces (chart labels +
+// knowledge-graph strings) arrive as RSC props — see the homepage's note
+// in app/page.tsx.
 
 const SITE = 'https://rishi-terminal.vercel.app';
 
@@ -46,5 +52,9 @@ export default async function CryptoPage({ params }: PageProps) {
     notFound();
   }
 
-  return <CryptoDetailClient asset={asset} />;
+  return (
+    <NamespaceProvider ns={{ chart, kg }}>
+      <CryptoDetailClient asset={asset} />
+    </NamespaceProvider>
+  );
 }

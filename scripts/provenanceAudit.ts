@@ -85,7 +85,11 @@ function resolveSpec(fromAbs: string, spec: string): string | null {
 function importsOf(abs: string): string[] {
   const src = readFileSync(abs, "utf8");
   const specs: string[] = [];
-  const re = /from\s+['"]([^'"]+)['"]/g;
+  // Static imports AND dynamic import() edges — a next/dynamic component is
+  // part of the render tree (Z5: the dashboard tail and the stock page's
+  // deferred panels load this way), so the closure follows both or the
+  // banner audit false-negatives on real surfaces.
+  const re = /(?:from\s+|import\(\s*)['"]([^'"]+)['"]/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(src)) !== null) specs.push(m[1]);
   return specs;

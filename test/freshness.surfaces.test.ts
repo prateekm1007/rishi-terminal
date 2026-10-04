@@ -32,7 +32,9 @@ const REPO = path.resolve(__dirname, "..");
  */
 const EXEMPTED_SURFACES: Record<string, string> = {
   "app/page.tsx":
-    "server component; the three banners render in its client child components/dashboard/DashboardClient.tsx",
+    "server component; the three banners render in the dynamically loaded components/dashboard/DashboardTail.tsx",
+  "components/dashboard/DashboardClient.tsx":
+    "Z5 split: the ranked trio and their three banners moved to the dynamically loaded components/dashboard/DashboardTail.tsx; the client shell that remains renders no seed-derived numbers of its own (prices render through the honest unavailable/em-dash states)",
   "app/screener/page.tsx":
     "server component; the banner renders in its client child components/screener/ScreenerClient.tsx",
   "app/chat/page.tsx":
@@ -103,6 +105,7 @@ describe("N3 — every seed-derived surface carries the illustrative-data label"
       "app/page.tsx",
       "app/stock/[symbol]/page.tsx",
       "components/dashboard/DashboardClient.tsx",
+      "components/dashboard/DashboardTail.tsx", // Z5: the ranked trio + banners render here
       "components/screener/ScreenerClient.tsx",
       "components/chat/ChatClient.tsx",
       "components/lab/LabContent.tsx",

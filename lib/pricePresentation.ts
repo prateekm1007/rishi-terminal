@@ -8,6 +8,14 @@
 // Freshness wording is also honest here: Yahoo-transported quotes are
 // DELAYED data (docs/DATA_PROVIDER_MATRIX.md), so a freshly fetched Yahoo
 // quote renders "DELAYED", not "LIVE" — delayed is not realtime.
+//
+// Y3 (Round 12): observation labels carry the full honest stamp — IST date,
+// clock, timezone, and the server-disclosed market state with a session
+// qualifier ("market closed · last session quote") — and the transport chip
+// names its source in plain language ("Delayed · Yahoo Finance
+// (unofficial)"), never transport jargon like "YAHOO-BULK".
+
+import { istParts } from "./marketHours";
 
 export type PresentationState =
   | "loading"
@@ -77,11 +85,15 @@ export function statusLabel(state: PresentationState, source: string | null | un
     case "live":
       // Phase 5.1: Yahoo-transported observations are delayed data — a
       // freshly fetched delayed quote is not a realtime market tick.
-      return isDelayedSource(source) ? `DELAYED · ${src}` : `LIVE · ${src}`;
+      // Y3: the chip names the transport in plain language — the freshness
+      // detail (when, market state) lives on the observation line.
+      return isDelayedSource(source) ? `Delayed · ${sourceDisplayName(source)}` : `LIVE · ${src}`;
     case "cached":
-      return `CACHED · ${src}`;
+      // Y3: "CACHED · YAHOO-BULK" was jargon; a replayed Yahoo snapshot is
+      // still delayed unofficial data.
+      return isDelayedSource(source) ? `Delayed · ${sourceDisplayName(source)}` : `CACHED · ${src}`;
     case "derived":
-      return `DERIVED · ${src}`;
+      return isDelayedSource(source) ? `Derived · ${sourceDisplayName(source)}` : `DERIVED · ${src}`;
     case "static":
       return `STATIC · ${src}`;
     case "unavailable":
@@ -89,6 +101,22 @@ export function statusLabel(state: PresentationState, source: string | null | un
     default:
       return "LOADING…";
   }
+}
+
+/**
+ * Y3: plain-language display name for a transport source.
+ *
+ * Yahoo transports (bulk snapshot, chart, ETF proxy — any `yahoo*` id) are
+ * unofficial scraped/delayed data and say so in words a reader understands.
+ * Unknown sources keep the machine wording (uppercased), which is honest —
+ * it just is not Yahoo.
+ */
+export function sourceDisplayName(source: string | null | undefined): string {
+  const s = (source ?? "canonical").toLowerCase();
+  if (s === "yahoo" || s.startsWith("yahoo-") || s.startsWith("yahoo_")) {
+    return "Yahoo Finance (unofficial)";
+  }
+  return (source ?? "canonical").toUpperCase();
 }
 
 /** Label colour — muted for anything that is not a realtime observation. */
@@ -280,4 +308,76 @@ export function aggregateMarketLabel(
     return anyDelayed ? "DELAYED MARKET DATA" : "LIVE MARKET DATA";
   }
   return `${state.toUpperCase()} MARKET DATA`;
+}
+
+// ── Y3 (Round 12): honest observation stamps ────────────────────────────────
+// Founder defect 4: "Observed 9:44:59 am" carried no date and no timezone,
+// and on a weekend it presented a stale mid-session quote with no market
+// cue. The stamp and the session qualifier live HERE (Rule 14 — one owner
+// for presentation wording), derive ONLY from the observation timestamp and
+// the server-disclosed market state (Rule 18 — no client clock), and fail
+// closed to null when no honest stamp can be formed.
+
+const IST_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+const IST_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+] as const;
+
+/**
+ * Y3: the IST stamp for an observation — "Thu 1 Oct, 09:44 IST".
+ *
+ * Computed arithmetically from the timestamp (lib/marketHours istParts) so
+ * server render and browser hydration agree byte-for-byte regardless of the
+ * viewer's locale or system timezone (Rule 18).
+ */
+export function formatIstStamp(date: Date): string {
+  const p = istParts(date.getTime());
+  const hh = String(Math.floor(p.minutesFromMidnight / 60)).padStart(2, "0");
+  const mm = String(p.minutesFromMidnight % 60).padStart(2, "0");
+  return `${IST_WEEKDAYS[p.weekday]} ${p.day} ${IST_MONTHS[p.month - 1]}, ${hh}:${mm} IST`;
+}
+
+/** The server-disclosed market state the label needs (U2 wire shape). */
+export interface ObservationMarketState {
+  open: boolean;
+  /** IST date (YYYY-MM-DD) of the last — or current — session. */
+  sessionDate: string;
+}
+
+/**
+ * Y3: the full observation line — stamp + market state + session qualifier.
+ *
+ *   "Thu 1 Oct, 09:44 IST · market closed · last session quote"
+ *   "Thu 1 Oct, 09:44 IST · market open · intraday quote"
+ *   "Thu 1 Oct, 09:44 IST · market closed · stale — not from the last session"
+ *   "Thu 1 Oct, 09:44 IST"                    (no market state disclosed)
+ *
+ * Fail-closed (Rules 3/16): a missing or unparsable observation time
+ * returns null — the UI renders no clock at all, never a fabricated one.
+ * With no disclosed market state the stamp stands alone: the line makes no
+ * open/closed claim it cannot ground. The session qualifier compares the
+ * observation's IST calendar date with the server-disclosed sessionDate —
+ * an observation older than the last session says so explicitly.
+ */
+export function observationLabel(
+  observedIso: string | null | undefined,
+  market: ObservationMarketState | null | undefined,
+): string | null {
+  if (typeof observedIso !== "string" || !observedIso) return null;
+  const ms = Date.parse(observedIso);
+  if (!Number.isFinite(ms)) return null;
+
+  const stamp = formatIstStamp(new Date(ms));
+  if (!market) return stamp;
+
+  const obsDate = istParts(ms).isoDate;
+  if (market.open) {
+    return obsDate === market.sessionDate
+      ? `${stamp} · market open · intraday quote`
+      : `${stamp} · market open · stale — not from today's session`;
+  }
+  return obsDate === market.sessionDate
+    ? `${stamp} · market closed · last session quote`
+    : `${stamp} · market closed · stale — not from the last session`;
 }

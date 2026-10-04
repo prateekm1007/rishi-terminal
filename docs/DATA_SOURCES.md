@@ -72,9 +72,17 @@ every user and instance for the TTL window:
   a row served from the cache is `CACHED`; nothing is an explicit
   `UNAVAILABLE` (no zeros, no fabricated timestamps). `observedAt` stays
   the UPSTREAM's own time or null — never the fetch time;
-- the batch refresher is the Yahoo-bulk transport (source label
+- the batch refresher is the Yahoo-bulk transport (source id
   `yahoo-bulk`); the single-symbol refresher is the multi-source chain
-  (`yahoo`/`nse`/`bse` — provider labels unchanged);
+  (`yahoo`/`nse`/`bse` — provider ids unchanged). On screen (Y3, Round 12)
+  Yahoo transports render the plain-language chip "Delayed · Yahoo Finance
+  (unofficial)" — the raw ids stay internal;
+- observation lines (Y3, Round 12) carry the full stamp — IST date, clock,
+  timezone and the server-disclosed NSE state, e.g. "Thu 1 Oct, 09:44 IST
+  · market closed · last session quote". An observation older than the
+  last session says "stale — not from the last session" instead; the stamp
+  is computed from the upstream `observedAt` only (never the fetch time,
+  never the viewer's clock);
 - storage-rights note: `quote_cache` is a short-lived operational cache
   (60 s TTL while open), explicitly accepted by the founder for U2 — this
   supersedes the Phase-6 `isPersistableSource` restraint for THIS table

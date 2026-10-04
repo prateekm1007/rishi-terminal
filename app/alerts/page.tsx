@@ -11,6 +11,7 @@ import { useLivePrices } from '../../hooks/useLivePrices';
 import {
   aggregateMarketLabel,
   aggregatePresentationState,
+  formatIstStamp,
   presentationState,
   statusColor,
   statusLabel,
@@ -106,7 +107,7 @@ export default function AlertsPage() {
                 <span style={{ color: statusColor(marketState), fontWeight: 700 }}>
                   {marketLabel ?? 'CONNECTING…'}
                 </span>
-                {observedAt && ` · Observed ${observedAt.toLocaleTimeString('en-IN')}`}
+                {observedAt && ` · Observed ${formatIstStamp(observedAt)}`}
                 {' · Checked ' + lastUpdated.toLocaleTimeString('en-IN')}
               </div>
             )}

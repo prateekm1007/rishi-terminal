@@ -6,8 +6,8 @@ import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
-import { serveCachedQuote } from '@/lib/quotePath'; // X3+Y1: SSR peek — the last cached quote, read-only
-import { isBuildPhase } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically
+import { serveCachedQuotes } from '@/lib/quotePath'; // X3+Y1+Y2: SSR peek — the last cached quotes, read-only
+import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically; Y2: peer entries
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
 
@@ -20,9 +20,9 @@ import { InsufficientDataRecord } from '../../../components/stock/InsufficientDa
 //   - the build phase fetches NOTHING (CI has no database) — the bake
 //     carries the honest "price unavailable" state;
 //   - every ISR regeneration (at most 60 s apart, under traffic) re-peeks
-//     the shared quote cache for this one symbol — a single cheap,
-//     READ-ONLY read, never a vendor fetch — so the served HTML carries
-//     the last cached observation with its own "as of" label;
+//     the shared quote cache for this symbol AND its peers (Y2: ONE
+//     batch read, never a vendor fetch) so the served HTML carries the
+//     last cached observations with their own "as of" labels;
 //   - the client hook still refreshes on mount (its /api/prices call is
 //     what warms the cache).
 // A stale or missing observation is LABELLED as such by the tile (X3
@@ -117,12 +117,21 @@ export default async function StockPage({ params }: StockPageProps) {
   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
 
-  // X3+Y1: the SSR price — a read-only peek at the shared quote cache,
-  // executed at ISR REGENERATION (skipped in the build phase: builds
-  // fetch nothing, hermetically). Miss → null → the tile renders the
-  // honest "price unavailable" state and the client hook fills it (its
-  // /api/prices call also warms the cache).
-  const initialQuote = isBuildPhase() ? null : await serveCachedQuote(key);
+  // X3+Y1+Y2: the SSR price peek — ONE read-only batch read of the shared
+  // quote cache at ISR REGENERATION (skipped in the build phase: builds
+  // fetch nothing, hermetically) covering the symbol AND its comparison
+  // peers, so the peer table prices exist in the first byte instead of
+  // “—” (the founder's Y2 defect list). Misses are omitted and the client
+  // hook fills them (its /api/prices call also warms the cache).
+  const peerSymbols = stockDetail.peers.map((p) => p.symbol);
+  const peeked = isBuildPhase() ? {} : await serveCachedQuotes([key, ...peerSymbols]);
+  const initialQuote = peeked[key] ?? null;
+  const initialPeerPrices: Record<string, InitialPriceEntry> = {};
+  for (const [sym, q] of Object.entries(peeked)) {
+    if (sym === key) continue;
+    const mapped = toPriceData(q);
+    if (mapped) initialPeerPrices[sym] = mapped;
+  }
 
   return (
     <StockPageClient
@@ -133,6 +142,7 @@ export default async function StockPage({ params }: StockPageProps) {
       qvpsDual={qvpsDual}
       eliteGraph={eliteGraph}
       initialQuote={initialQuote}
+      initialPeerPrices={initialPeerPrices}
     />
   );
 }

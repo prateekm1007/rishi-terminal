@@ -20,6 +20,7 @@ import { WisdomSidebar }          from './WisdomSidebar';
 import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
 import type { ServedQuote } from '../../lib/quotePath'; // X3: type-only — erased at compile time, no runtime reachability into the server-only price path
+import type { InitialPriceEntry } from '../../lib/dashboardSnapshot'; // Y2: type-only — same erasure rule
 import RishiScoreDual             from '../score/RishiScoreDual';
 import SeedDataBanner             from '../shared/SeedDataBanner'; // N3: seed-derived numbers on this page
 
@@ -41,9 +42,15 @@ interface Props {
    *  cached (the tile then renders the honest "price unavailable" state
    *  and the client hook fills it on mount). */
   initialQuote: ServedQuote | null;
+  /** Y2 (Round 12): the regen-time cache peek for the PEER table — the
+   *  mapped entries (dashboardSnapshot.toPriceData) for every peer the
+   *  shared quote cache held, keyed by symbol. Empty when nothing is
+   *  cached: the peer prices render the honest "—" and the client hook
+   *  fills them on mount. */
+  initialPeerPrices: Record<string, InitialPriceEntry>;
 }
 
-export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialQuote }: Props) {
+export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialQuote, initialPeerPrices }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
@@ -396,7 +403,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 </div>
 
                 <div className="wisdom-reveal-delay-2">
-                  <PeerComparison stock={stock} peers={detail.peers} />
+                  <PeerComparison stock={stock} peers={detail.peers} initialPrices={initialPeerPrices} />
                 </div>
 </>
             )}

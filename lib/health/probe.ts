@@ -9,12 +9,20 @@
  *     the SQL holds no copy of them;
  *   - a 12 s server-side memo (per instance, globalThis-backed so dev
  *     HMR and warm serverless instances share it): 50 rapid requests
- *     cause at most 1 DB round-trip per window;
+ *     cause at most 1 round-trip per RPC per window;
  *   - a DB failure is NOT memoized as a cached body — failures re-probe
  *     on the next request (fail closed, and recoverable without waiting
  *     out a window);
  *   - `asOf` is the PROBE time (the moment the data was observed), not
  *     the response time — a cached response never claims fresh data.
+ *
+ * Y2 (Round 12): the same window also runs ONE `quote_cache_coverage`
+ * RPC (the warmer's telemetry — fresh/total counts of the bounded
+ * quote_cache rows, per class). It is BEST-EFFORT: any failure reports
+ * quoteCache: null and never touches the core verdict (the warmer is
+ * new infra; a cold cache must not page anyone). When the core probe
+ * fails, coverage is not attempted (the DB is down — coverage would
+ * fail identically, and the down body reports quoteCache: null).
  */
 
 import { getServiceSupabase } from "@/lib/db/supabase";
@@ -22,12 +30,18 @@ import {
   FUNDAMENTALS_INGEST_JOBS,
   PRICE_INGEST_JOBS,
 } from "./slo";
-import { computeHealth, type HealthBody } from "./compute";
+import { computeHealth, type HealthBody, type QuoteCacheCoverage } from "./compute";
 import { SCORE_ENGINE_VERSION } from "@/lib/consensus/version";
+import { STOCKS } from "@/data/stocks";
+import { nonEquityTileSymbols } from "@/lib/quotePath";
 
 /** Spec: 10–15 s. Short enough to bound staleness, long enough to absorb
  * bursts and monitoring polls. */
 export const HEALTH_MEMO_TTL_MS = 12_000;
+
+/** Y2: the coverage window the founder's acceptance reads — a row counts
+ * as covered when its UPSTREAM observation is no older than 30 minutes. */
+export const QUOTE_COVERAGE_WINDOW_S = 1800;
 
 interface ProbeResult {
   users_visible?: boolean;
@@ -61,7 +75,57 @@ function downBody(now: Date): HealthBody {
     now,
     ingestionRows: [],
     engineVersion: SCORE_ENGINE_VERSION,
+    quoteCache: null,
   });
+}
+
+/** Y2: the coverage RPC's row shape (migration 022). */
+interface CoverageRow {
+  equities?: { fresh?: unknown; total?: unknown };
+  tiles?: { fresh?: unknown; total?: unknown };
+  asOf?: unknown;
+}
+
+/** Y2: best-effort coverage telemetry — ONE RPC inside the probe window.
+ *  Every failure path returns null (unknown, never zero). */
+async function probeQuoteCoverage(): Promise<QuoteCacheCoverage | null> {
+  let res: { data: unknown; error: unknown };
+  try {
+    res = await getServiceSupabase().rpc("quote_cache_coverage", {
+      p_universe: Object.keys(STOCKS),
+      p_tiles: nonEquityTileSymbols(),
+      p_fresh_seconds: QUOTE_COVERAGE_WINDOW_S,
+    });
+  } catch {
+    // Transport-level failure — unknown, not zero.
+    return null;
+  }
+  if (res.error || !res.data) return null;
+
+  const r = res.data as CoverageRow;
+  const num = (v: unknown): number | null =>
+    typeof v === "number" && Number.isFinite(v) ? v : null;
+  const eqFresh = num(r.equities?.fresh);
+  const eqTotal = num(r.equities?.total);
+  const tiFresh = num(r.tiles?.fresh);
+  const tiTotal = num(r.tiles?.total);
+  if (eqFresh === null || eqTotal === null || tiFresh === null || tiTotal === null) {
+    return null; // malformed shape — unknown, never guessed
+  }
+  return {
+    equities: {
+      fresh: eqFresh,
+      total: eqTotal,
+      coverage: eqTotal > 0 ? eqFresh / eqTotal : 0,
+    },
+    tiles: {
+      fresh: tiFresh,
+      total: tiTotal,
+      coverage: tiTotal > 0 ? tiFresh / tiTotal : 0,
+    },
+    windowSeconds: QUOTE_COVERAGE_WINDOW_S,
+    asOf: typeof r.asOf === "string" ? r.asOf : new Date().toISOString(),
+  };
 }
 
 async function probeOnce(now: Date): Promise<HealthBody> {
@@ -99,11 +163,17 @@ async function probeOnce(now: Date): Promise<HealthBody> {
       finished_at: r.last_fundamentals_ingest_at ?? null,
     },
   ];
+
+  // Y2: the coverage telemetry rides the same window — but only when the
+  // core probe succeeded (a down DB fails both; no point paying the call).
+  const quoteCache = await probeQuoteCoverage();
+
   return computeHealth({
     dbOk: true,
     now,
     ingestionRows,
     engineVersion: SCORE_ENGINE_VERSION,
+    quoteCache,
   });
 }
 

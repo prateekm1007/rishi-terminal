@@ -17,7 +17,9 @@
  *   3. /stock/[symbol] exports generateStaticParams (the universe is
  *      pre-rendered — the build route table must list it as SSG/ISR);
  *   4. the stock page's quote peek is build-phase guarded (builds fetch
- *      nothing, hermetically — the peek runs at regeneration only).
+ *      nothing, hermetically — the peek runs at regeneration only). The
+ *      Y2 rework widened the peek to ONE serveCachedQuotes batch covering
+ *      the symbol AND its peers; the guard itself is unchanged.
  */
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
@@ -61,6 +63,8 @@ describe("Y1 — / and /stock/[symbol] are ISR (revalidate <= 60 s)", () => {
     // The peek must run at ISR regeneration, never during `next build`:
     // CI builds have no database, and a build-time bake of quote data
     // would reintroduce the W5 stale-bake defect the peek exists to avoid.
-    expect(STOCK).toMatch(/isBuildPhase\(\)\s*\?\s*null\s*:\s*await\s+serveCachedQuote/);
+    // Y2: the peek is now ONE serveCachedQuotes batch ([key, ...peers]) —
+    // the guard must cover the WHOLE batch, not just the symbol.
+    expect(STOCK).toMatch(/isBuildPhase\(\)\s*\?\s*\{\}\s*:\s*await\s+serveCachedQuotes/);
   });
 });

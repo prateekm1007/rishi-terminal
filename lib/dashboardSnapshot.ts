@@ -1,5 +1,5 @@
-// lib/dashboardSnapshot.ts — U2 (founder round 7), reworked X3, Y1 (Round 12):
-// the SSR initial-price snapshot for the dashboard.
+// lib/dashboardSnapshot.ts — U2 (founder round 7), reworked X3, Y1, Y2
+// (Round 12): the SSR initial-price snapshot for the dashboard.
 //
 // The homepage is ISR (revalidate 60 s, Y1). The W5 defect was the
 // hourly-ISR bake serving an EMPTY build-time price snapshot as "fresh"
@@ -7,7 +7,7 @@
 // Y1 restores ISR with the honest labels that were missing in W5. On
 // every REGENERATION (build excluded — see the build-phase guard below)
 // this takes ONE cheap batch read of the shared quote cache for the
-// NSE-equity symbols the page renders. The client hook (useLivePrices)
+// symbols the page renders. The client hook (useLivePrices)
 // hydrates from this snapshot and revalidates on mount, so any symbol
 // the cache already holds reaches the first byte.
 //
@@ -20,13 +20,14 @@
 //     fills it (and warms the cache) — never a zero, never a placeholder;
 //   - the build phase fetches NOTHING: prerender stays hermetic (CI has
 //     no upstream network or database guarantees);
-//   - SSR NEVER fetches vendors: non-equity classes (indexes, crypto,
-//     commodities, FX) are not in the equity cache and are omitted from
-//     SSR — the first byte stays a cheap constant-time read; the client
-//     hook fills those live.
+//   - SSR NEVER fetches vendors: the snapshot is a READ of the shared
+//     quote cache and nothing else. Y2 widened WHAT that cache may hold —
+//     the warmer keeps index/crypto/gold tile rows in it beside the NSE
+//     equities — so tile symbols ride the same ONE batch read and reach
+//     the first byte with their own observation labels. A tile the warmer
+//     has not written yet is a plain miss: omitted, client fills.
 
 import {
-  isEquitySymbol,
   serveCachedQuotes,
 } from "@/lib/quotePath";
 
@@ -91,10 +92,11 @@ export function isBuildPhase(env: Record<string, string | undefined> = process.e
 }
 
 /**
- * One snapshot for the dashboard's symbol list (X3: a cheap cache read).
- * NSE equities peek the shared quote cache in ONE batch read; every other
- * class is omitted (not in the equity cache — the client hook fills them
- * and its /api/prices call is what warms this cache in the first place).
+ * One snapshot for the dashboard's symbol list (X3: a cheap cache read;
+ * Y2: the read is class-agnostic — equities AND the warmer-kept tiles).
+ * ONE batch peek of the shared quote cache; every symbol without a usable
+ * cached row is omitted (the client hook fills them and its /api/prices
+ * call is what warms the cache for classes the warmer does not sweep).
  */
 export async function initialPriceSnapshot(
   symbols: string[],
@@ -102,10 +104,7 @@ export async function initialPriceSnapshot(
 ): Promise<Record<string, InitialPriceEntry>> {
   if (symbols.length === 0 || isBuildPhase(env)) return {};
 
-  const equities = symbols.filter(isEquitySymbol);
-  if (equities.length === 0) return {};
-
-  const served = await serveCachedQuotes(equities);
+  const served = await serveCachedQuotes(symbols);
   const snapshot: Record<string, InitialPriceEntry> = {};
   for (const [symbol, quote] of Object.entries(served)) {
     const mapped = toPriceData(quote);

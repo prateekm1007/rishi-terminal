@@ -6,12 +6,13 @@
  *      Rule 16 (nulls preserved, unusable points dropped, no zero-filling).
  *   2. lib/dashboardSnapshot.initialPriceSnapshot — the build phase fetches
  *      NOTHING (hermetic prerender); at runtime the snapshot is a CHEAP
- *      CACHE READ ONLY (X3, Round 11): NSE equities peek the shared quote
- *      cache (serveCachedQuote — no refresh claims, no upstream fetches, so
- *      the first byte never blocks on a vendor), and every non-equity
- *      class (indexes, crypto, commodities, FX) is omitted from SSR — those
- *      are not in the equity cache and the client hook fills them on
- *      mount; misses are omitted, never fabricated.
+ *      CACHE READ ONLY (X3, Round 11): ONE batch peek of the shared quote
+ *      cache — no refresh claims, no upstream fetches, so the first byte
+ *      never blocks on a vendor. Y2 (Round 12) widened the peek past NSE
+ *      equities: the warmer now keeps index/crypto/gold tile rows in the
+ *      SAME cache, so those ride the first byte too (with their own
+ *      observation labels); misses of every class stay omitted, never
+ *      fabricated, and the client hook still fills them on mount.
  *   3. hooks/useLivePrices.effectivePollInterval — the market-aware cadence
  *      contract: open (or unknown) → the caller's interval; NSE closed →
  *      slowed to ≥ 5 min (the batch may still carry 24/7 classes).
@@ -100,7 +101,7 @@ describe("U2 — initialPriceSnapshot (SSR surface)", () => {
 
   it("runtime (X3): equities PEEK the shared cache in ONE batch read — no refresh claims, no upstream; misses omitted honestly", async () => {
     serveCachedQuotesMock.mockImplementation(async (symbols: string[]) => {
-      expect(symbols).toEqual(["TCS", "WIPRO"]); // non-equities never reach the cache
+      expect(symbols).toEqual(["TCS", "WIPRO"]); // the whole list rides ONE read
       return {
         TCS: {
           symbol: "TCS", price: 3120.5, change: 0.62, volume24h: null, source: "yahoo-bulk",
@@ -118,11 +119,24 @@ describe("U2 — initialPriceSnapshot (SSR surface)", () => {
     expect(fetchLivePriceMock).not.toHaveBeenCalled();
   });
 
-  it("runtime (X3): non-equity classes (indexes/crypto/commodities/FX) are omitted from SSR — they are not in the equity cache; the client hook fills them", async () => {
-    const snapshot = await initialPriceSnapshot(["BTC", "NIFTY50", "GOLD", "USD/INR"]);
-    expect(snapshot).toEqual({});
-    expect(serveCachedQuotesMock).not.toHaveBeenCalled(); // no equity symbols → no cache read at all
-    expect(fetchLivePriceMock).not.toHaveBeenCalled(); // SSR NEVER fetches vendors (cheap first byte)
+  it("runtime (Y2): non-equity tile symbols ride the SAME peek — warmer-written rows reach SSR, misses omitted, vendors never fetched", async () => {
+    serveCachedQuotesMock.mockImplementation(async (symbols: string[]) => {
+      expect(symbols).toEqual(["NIFTY50", "BTC", "GOLD"]);
+      return {
+        NIFTY50: {
+          symbol: "NIFTY50", price: 25312.4, change: -0.31, volume24h: null, source: "yahoo-index",
+          status: "CACHED", observedAt: "2026-10-05T04:31:00.000Z", lastUpdated: "2026-10-05T04:31:00.000Z",
+          marketOpen: true, marketFreshness: "live-delayed", sessionDate: "2026-10-05",
+        },
+        // BTC + GOLD misses (warmer not run yet) — omitted, client fills
+      };
+    });
+
+    const snapshot = await initialPriceSnapshot(["NIFTY50", "BTC", "GOLD"]);
+    expect(Object.keys(snapshot)).toEqual(["NIFTY50"]);
+    expect(snapshot["NIFTY50"].lastUpdated).toBe("2026-10-05T04:31:00.000Z");
+    expect(serveCachedQuotesMock).toHaveBeenCalledTimes(1); // still ONE batch read
+    expect(fetchLivePriceMock).not.toHaveBeenCalled(); // SSR still never fetches vendors
   });
 });
 

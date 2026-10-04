@@ -26,6 +26,7 @@
 
 import { cachedQuote, cachedQuoteBatch, peekCachedQuote, peekCachedQuotes, type CachedQuote, type QuoteCacheBatchResult } from "@/lib/quoteCache";
 import type { MarketState } from "@/lib/marketHours";
+import { TOP_CRYPTO, WORLD_MARKETS } from "@/lib/dashboardSymbols";
 import {
   fetchLivePrice,
   isBondSymbol,
@@ -62,6 +63,24 @@ export function classifyPriceSymbols(symbols: string[]): {
     (isEquitySymbol(s) ? equities : others).push(s);
   }
   return { equities, others };
+}
+
+/** Y2 (Round 12): the NON-EQUITY tile set the warmer keeps fresh — the
+ *  dashboard's world-market + crypto tiles, the index aliases the search
+ *  and registry surfaces accept, and gold. ONE derivation (Rule 14): the
+ *  warmer sweeps exactly this set, and /api/health's coverage denominator
+ *  counts exactly this set — the two can never disagree. Derived from the
+ *  same routing sets isEquitySymbol reads, so a symbol can never be both
+ *  an equity and a tile. */
+export function nonEquityTileSymbols(): string[] {
+  const out = new Set<string>();
+  for (const m of WORLD_MARKETS) out.add(m.sym);
+  for (const c of TOP_CRYPTO) out.add(c.symbol);
+  for (const idx of Object.keys(YAHOO_INDEX_SYMBOLS)) out.add(idx);
+  // Gold explicitly (the founder's tile list): it lives in the commodity
+  // tables, not YAHOO_INDEX_SYMBOLS — add the canonical key.
+  out.add("GOLD");
+  return [...out];
 }
 
 export interface ServedQuote {

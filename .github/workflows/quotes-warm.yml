@@ -1,0 +1,53 @@
+# Y2 (Round 12): the quote-cache warmer schedule.
+#
+# Why a GitHub Actions workflow: Vercel Hobby crons run at most once a day;
+# the founder's Round-12 Y2 directions approve this free warmer. It calls
+# the authenticated ingest endpoint every 15 minutes inside the NSE trading
+# window (09:15-15:30 IST = 03:45-10:00 UTC) on weekdays.
+#
+# Schedule vs endpoint gating (defense in depth):
+#   - cron fires 03:00-10:45 UTC on weekdays (the :15-offset window cannot
+#     be expressed in cron's 5-field syntax, so the schedule is WIDER than
+#     the session and the ENDPOINT gates precisely via marketState).
+#   - each run partitions the universe into 6 slices (916/6 ≈ 153 symbols
+#     per request, well inside the function timeout) fired sequentially;
+#     slice 0 also warms the index/crypto/gold tiles.
+#   - the endpoint no-ops outside the session, so a misfired run is cheap.
+#
+# CRON_SECRET is a repo Actions secret holding the SAME value as the
+# Vercel project env (the endpoint compares with timingSafeEqual).
+
+name: quotes-warm
+
+on:
+  schedule:
+    - cron: "*/15 3-10 * * 1-5" # weekdays 03:00-10:45 UTC (covers the IST session)
+  workflow_dispatch: {} # manual runs for verification (endpoint gates market hours)
+
+concurrency:
+  group: quotes-warm
+  cancel-in-progress: false # overlapping runs are safe (claim mechanism) — serialize anyway
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Warm the quote cache (6 slices, sequential)
+        run: |
+          set -euo pipefail
+          BASE="https://rishi-terminal.vercel.app/api/ingest/quotes-warm"
+          SLICES=6
+          for k in $(seq 0 $((SLICES - 1))); do
+            echo "== slice $k/$SLICES =="
+            code=$(curl -s -o "/tmp/warm-$k.json" -w "%{http_code}" -X POST \
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              "$BASE?slice=$k&of=$SLICES")
+            echo "HTTP $code"
+            cat "/tmp/warm-$k.json"
+            echo
+            if [ "$code" != "200" ]; then
+              echo "warm slice $k failed with HTTP $code"
+              exit 1
+            fi
+          done
+          echo "== warmer run complete =="

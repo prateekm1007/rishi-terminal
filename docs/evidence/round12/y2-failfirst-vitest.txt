@@ -1,0 +1,29 @@
+# Y2 fail-first (Rule 21) — the new Y2 contracts run against the pre-fix tree (fix/y2-cache-warmer @ ae254c2)
+# command: npx vitest run test/y2.quoteWarm.test.ts test/y2.ssrPeek.test.ts test/health.memo.test.ts test/health.test.ts test/dashboardSnapshot.test.ts
+# result: Test Files 5 failed (5) / Tests 22 failed | 29 passed (51) — every FAIL below is a Y2 contract the pre-fix tree cannot satisfy;
+# the 29 passing are the pre-existing contracts (memo bounds, mapper honesty, warmer part-1 auth/gate/slice behavior) that must stay green.
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  test/dashboardSnapshot.test.ts > U2 — initialPriceSnapshot (SSR surface) > runtime (Y2): non-equity tile symbols ride the SAME peek — warmer-written rows reach SSR, misses omitted, vendors never fetched
+ FAIL  test/health.memo.test.ts > N8 — memoized health probe > 50 rapid requests cause exactly 1 round-trip per RPC (probe + coverage, Y2)
+ FAIL  test/health.memo.test.ts > N8 — memoized health probe > sequential rapid requests also hit the memo (no per-request probe)
+ FAIL  test/health.memo.test.ts > N8 — memoized health probe > after the window expires, the next request re-probes BOTH RPCs
+ FAIL  test/health.memo.test.ts > Y2 — quote-cache coverage telemetry (best-effort, never page-severity) > maps the RPC counts into fresh/total/coverage per class, with the window and asOf
+ FAIL  test/health.memo.test.ts > Y2 — quote-cache coverage telemetry (best-effort, never page-severity) > an RPC error reports quoteCache: null and leaves the core verdict intact
+ FAIL  test/health.memo.test.ts > Y2 — quote-cache coverage telemetry (best-effort, never page-severity) > a DB-wide failure reports down WITH quoteCache: null (unknown, not zero)
+ FAIL  test/health.test.ts > computeHealth > down when the db round-trip fails, regardless of rows
+ FAIL  test/health.test.ts > computeHealth > never leaks secrets — payload keys are fixed (quoteCache counts are the bounded quote_cache table's own coverage, Y2)
+ FAIL  test/health.test.ts > computeHealth > Y2: quoteCache passes through verbatim when provided (telemetry, never severity)
+ FAIL  test/health.test.ts > computeHealth > Y2: quoteCache is null when the coverage probe could not run (unknown, not zero)
+ FAIL  test/y2.quoteWarm.test.ts > Y2 — honesty of the warm report > tiles ride slice 0 only, through serveQuote, with the canonical tile set
+ FAIL  test/y2.quoteWarm.test.ts > Y2 — honesty of the warm report > tile misses are reported, not fabricated
+ FAIL  test/y2.quoteWarm.test.ts > Y2 — the canonical tile-set derivation (quotePath.nonEquityTileSymbols) > is exactly WORLD_MARKETS + TOP_CRYPTO + YAHOO_INDEX_SYMBOLS keys + GOLD
+ FAIL  test/y2.quoteWarm.test.ts > Y2 — the canonical tile-set derivation (quotePath.nonEquityTileSymbols) > contains no NSE equity (it must not partition into the equity sweep)
+ FAIL  test/y2.ssrPeek.test.ts > Y2 — stock page peers at the first byte (source pins) > peeks the symbol AND its peers in ONE serveCachedQuotes batch at regen
+ FAIL  test/y2.ssrPeek.test.ts > Y2 — stock page peers at the first byte (source pins) > keeps the hermetic build-phase guard (builds peek nothing)
+ FAIL  test/y2.ssrPeek.test.ts > Y2 — stock page peers at the first byte (source pins) > forwards the mapped peer entries into the RSC payload as initialPeerPrices
+ FAIL  test/y2.ssrPeek.test.ts > Y2 — stock page peers at the first byte (source pins) > StockPageClient receives and forwards initialPeerPrices to PeerComparison
+ FAIL  test/y2.ssrPeek.test.ts > Y2 — stock page peers at the first byte (source pins) > PeerComparison hydrates useLivePrices from the peeked entries
+ FAIL  test/y2.ssrPeek.test.ts > Y2 — home tiles at the first byte (initialPriceSnapshot) > peeks non-equity tile symbols in the SAME batch read — warmer-written rows ride the first byte
+ FAIL  test/y2.ssrPeek.test.ts > Y2 — home tiles at the first byte (initialPriceSnapshot) > a pure-tile list still peeks (the warmer may hold rows) — no equity filter remains
+ Test Files  5 failed (5)
+      Tests  22 failed | 29 passed (51)

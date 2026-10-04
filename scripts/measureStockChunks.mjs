@@ -6,9 +6,14 @@ import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 
 const html = readFileSync(".next/server/app/stock/SBIN.html", "utf8");
+// B4: exclude `noModule` script tags (legacy core-js polyfill chunk) —
+// module-capable browsers never download them; see bundleBudget.ts.
 const srcs = [
   ...new Set(
-    [...html.matchAll(/src="(\/_next\/static\/chunks\/[^"]+?\.js)"/g)].map(m => m[1]),
+    [...html.matchAll(/<script\b[^>]*>/g)]
+      .map(m => m[0])
+      .filter(tag => !/\bnomodule\b/i.test(tag))
+      .flatMap(tag => [...tag.matchAll(/src="(\/_next\/static\/chunks\/[^"]+?\.js)"/g)].map(m => m[1])),
   ),
 ];
 let total = 0;

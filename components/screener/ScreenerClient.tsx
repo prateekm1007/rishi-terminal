@@ -5,13 +5,20 @@
 // STOCKS, no engine. Preset filters, stat pills, search and sorting all
 // operate on the slim rows; per-Rishi verdicts stay behind the
 // tier-gated /api/rishis/[symbol] route.
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import { StockTable } from '@/components/screener/StockTable';
 import { useLanguage } from '@/lib/language';
 import { SCREENER_PRESETS, applyFilters } from '@/lib/screener/presets';
 import SeedDataBanner from '@/components/shared/SeedDataBanner';
 import Link from 'next/link';
+
+interface SavedScreen {
+  id: string;
+  name: string;
+  expression: string;
+  created_at?: string;
+}
 
 interface Props {
   rows: SlimStockRow[];
@@ -21,12 +28,128 @@ export function ScreenerClient({ rows }: Props) {
   const { t, locale } = useLanguage();
   const [activePreset, setActivePreset] = useState<string | null>(null);
 
+  // X3-05: the expression language runs SERVER-SIDE (POST /api/screener/
+  // query parses with the hand-written whitelist parser — no eval, no
+  // Function) so the client never receives the engine, only rows.
+  const [expression, setExpression] = useState('');
+  const [exprRows, setExprRows] = useState<SlimStockRow[] | null>(null);
+  const [exprCount, setExprCount] = useState<number | null>(null);
+  const [exprError, setExprError] = useState<string | null>(null);
+  const [exprBusy, setExprBusy] = useState(false);
+  const [screens, setScreens] = useState<SavedScreen[]>([]);
+  const [signedIn, setSignedIn] = useState(false);
+  const [saveName, setSaveName] = useState('');
+  const [screensNote, setScreensNote] = useState<string | null>(null);
+
+  // Mounted-signed-in check + list. The inline IIFE keeps every setState
+  // behind an await (the react-hooks purity rule rejects a helper whose
+  // sync body might setState during the effect pass).
+  const loadScreens = useCallback(async () => {
+    const res = await fetch('/api/screener/screens');
+    if (res.status === 401) {
+      setSignedIn(false);
+      return;
+    }
+    if (res.ok) {
+      setSignedIn(true);
+      const data = await res.json();
+      setScreens(data.screens ?? []);
+    }
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      await loadScreens();
+    })();
+  }, [loadScreens]);
+
+  async function runExpression() {
+    if (!expression.trim() || exprBusy) return;
+    setExprBusy(true);
+    setExprError(null);
+    try {
+      const res = await fetch('/api/screener/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expression }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setExprError(data.detail || data.error || 'query failed');
+        setExprRows(null);
+        setExprCount(null);
+        return;
+      }
+      setExprRows(data.rows ?? []);
+      setExprCount(data.matchedCount ?? 0);
+    } catch {
+      setExprError('query failed');
+    } finally {
+      setExprBusy(false);
+    }
+  }
+
+  async function saveScreen() {
+    if (!saveName.trim() || !expression.trim()) return;
+    setScreensNote(null);
+    const res = await fetch('/api/screener/screens', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: saveName.trim(), expression }),
+    });
+    if (res.status === 401) {
+      setScreensNote('Sign in to save screens.');
+      return;
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setScreensNote(data.detail || data.error || 'could not save');
+      return;
+    }
+    setSaveName('');
+    await loadScreens();
+  }
+
+  async function deleteScreen(id: string) {
+    await fetch(`/api/screener/screens?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    await loadScreens();
+  }
+
+  function applySaved(screen: SavedScreen) {
+    setExpression(screen.expression);
+    void runExpressionWith(screen.expression);
+  }
+
+  async function runExpressionWith(expr: string) {
+    setExprBusy(true);
+    setExprError(null);
+    try {
+      const res = await fetch('/api/screener/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expression: expr }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setExprError(data.detail || data.error || 'query failed');
+        setExprRows(null);
+        setExprCount(null);
+        return;
+      }
+      setExprRows(data.rows ?? []);
+      setExprCount(data.matchedCount ?? 0);
+    } finally {
+      setExprBusy(false);
+    }
+  }
+
   const filteredStocks = useMemo(() => {
+    if (exprRows) return exprRows;
     if (!activePreset) return rows;
     const preset = SCREENER_PRESETS.find(p => p.id === activePreset);
     if (!preset) return rows;
     return applyFilters(rows, preset.filters);
-  }, [rows, activePreset]);
+  }, [rows, activePreset, exprRows]);
 
   const activePresetData = SCREENER_PRESETS.find(p => p.id === activePreset);
 
@@ -125,6 +248,94 @@ export function ScreenerClient({ rows }: Props) {
                   <span>{preset.name}</span>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* X3-05: the expression language — parsed and evaluated SERVER-side
+              by the whitelist parser (lib/screener/parser.ts). Saved screens
+              are per-user (screens table, RLS by auth.uid(), migration 024);
+              CSV export replays the same parse over the same rows. */}
+          <div style={{ marginBottom: 28, background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.12em', marginBottom: 10 }}>
+              EXPRESSION QUERY
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <input
+                value={expression}
+                onChange={e => setExpression(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') void runExpression(); }}
+                placeholder="pe < 15 && roe > 20"
+                maxLength={400}
+                style={{
+                  flex: '1 1 320px', background: 'rgba(10,15,28,0.8)', border: '1px solid rgba(51,65,85,0.6)',
+                  borderRadius: 8, padding: '9px 12px', color: '#F8FAFC', fontSize: 13, fontFamily: 'monospace',
+                  outline: 'none',
+                }}
+              />
+              <button
+                onClick={() => void runExpression()}
+                disabled={exprBusy || !expression.trim()}
+                style={{
+                  padding: '9px 18px', borderRadius: 8, border: '1px solid rgba(212,175,55,0.4)', cursor: exprBusy ? 'wait' : 'pointer',
+                  background: 'rgba(212,175,55,0.12)', color: '#D4AF37', fontSize: 12, fontWeight: 700,
+                }}
+              >
+                {exprBusy ? 'RUNNING…' : 'RUN'}
+              </button>
+              <a
+                href={`/api/screener/export?expression=${encodeURIComponent(expression)}`}
+                style={{
+                  padding: '9px 14px', borderRadius: 8, border: '1px solid rgba(51,65,85,0.8)',
+                  color: '#94A3B8', fontSize: 12, textDecoration: 'none',
+                }}
+              >
+                CSV ↓
+              </a>
+            </div>
+            {exprError && (
+              <div style={{ marginTop: 8, fontSize: 11, color: '#F87171' }}>
+                ⚠ {exprError}
+              </div>
+            )}
+            {exprCount !== null && !exprError && (
+              <div style={{ marginTop: 8, fontSize: 11, color: '#64748B' }}>
+                {exprCount} stock{exprCount === 1 ? '' : 's'} match · showing the first {exprRows?.length ?? 0} · <button onClick={() => { setExprRows(null); setExprCount(null); }} style={{ background: 'none', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: 11, padding: 0 }}>clear</button>
+              </div>
+            )}
+            <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <input
+                value={saveName}
+                onChange={e => setSaveName(e.target.value)}
+                placeholder={signedIn ? 'name this screen…' : 'sign in to save screens'}
+                maxLength={80}
+                disabled={!signedIn}
+                style={{
+                  flex: '0 1 220px', background: 'rgba(10,15,28,0.8)', border: '1px solid rgba(51,65,85,0.6)',
+                  borderRadius: 8, padding: '8px 12px', color: '#F8FAFC', fontSize: 12,
+                  outline: 'none', opacity: signedIn ? 1 : 0.5,
+                }}
+              />
+              <button
+                onClick={() => void saveScreen()}
+                disabled={!signedIn || !saveName.trim() || !expression.trim()}
+                style={{
+                  padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(51,65,85,0.8)', cursor: 'pointer',
+                  background: 'rgba(31,41,59,0.6)', color: '#94A3B8', fontSize: 12,
+                }}
+              >
+                SAVE
+              </button>
+              {screens.length > 0 && screens.map(screen => (
+                <span key={screen.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(31,41,59,0.6)', border: '1px solid rgba(51,65,85,0.6)', borderRadius: 8, padding: '6px 10px' }}>
+                  <button onClick={() => applySaved(screen)} title={screen.expression} style={{ background: 'none', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: 11, padding: 0 }}>
+                    {screen.name}
+                  </button>
+                  <button onClick={() => void deleteScreen(screen.id)} title="delete" style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 11, padding: 0 }}>
+                    ×
+                  </button>
+                </span>
+              ))}
+              {screensNote && <span style={{ fontSize: 11, color: '#F87171' }}>{screensNote}</span>}
             </div>
           </div>
 

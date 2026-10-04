@@ -5,20 +5,31 @@ import { Stock, RishiScore } from '../../lib/types';
 import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
+import dynamic from 'next/dynamic';
 import { ConsensusHero }          from './ConsensusHero';
-import { RishiGrid }              from './RishiGrid';
-import { BullBearBar }            from './BullBearBar';
-import { PhilosophyRadar }        from './PhilosophyRadar';
 import { MetricsPanel }           from './MetricsPanel';
 import { LivePriceWidget }        from './LivePriceWidget';
-import { PriceChart }             from './PriceChart';
-import { TechnicalIndicators }    from './TechnicalIndicators';
 import { PeerComparison }         from './PeerComparison';
-import { QuarterlyChart }         from './QuarterlyChart';
-import { ShareholdingChart }      from './ShareholdingChart';
-import { WisdomSidebar }          from './WisdomSidebar';
-import { KnowledgeGraphView }     from './KnowledgeGraphView';
 import { useLanguage } from '../../lib/language';
+
+// Z5 (Round 13): the tab-gated and below-fold surfaces load on demand —
+// none of them renders in the first byte (the X3/Y2/Y4-pinned first-paint
+// surfaces — LivePriceWidget, PeerComparison, MetricsPanel, ConsensusHero —
+// stay static). Fallbacks are honest aria-busy skeletons, never fake data.
+const TAB_SKELETON = (
+  <div role="status" aria-busy="true" style={{ padding: 40, textAlign: 'center', color: '#64748B', fontFamily: 'monospace', fontSize: 12 }}>
+    Loading…
+  </div>
+);
+const RishiGrid = dynamic(() => import('./RishiGrid').then(m => m.RishiGrid), { ssr: false, loading: () => TAB_SKELETON });
+const BullBearBar = dynamic(() => import('./BullBearBar').then(m => m.BullBearBar), { ssr: false, loading: () => TAB_SKELETON });
+const PhilosophyRadar = dynamic(() => import('./PhilosophyRadar').then(m => m.PhilosophyRadar), { ssr: false, loading: () => TAB_SKELETON });
+const PriceChart = dynamic(() => import('./PriceChart').then(m => m.PriceChart), { ssr: false, loading: () => TAB_SKELETON });
+const TechnicalIndicators = dynamic(() => import('./TechnicalIndicators').then(m => m.TechnicalIndicators), { ssr: false, loading: () => TAB_SKELETON });
+const QuarterlyChart = dynamic(() => import('./QuarterlyChart').then(m => m.QuarterlyChart), { ssr: false, loading: () => TAB_SKELETON });
+const ShareholdingChart = dynamic(() => import('./ShareholdingChart').then(m => m.ShareholdingChart), { ssr: false, loading: () => TAB_SKELETON });
+const WisdomSidebar = dynamic(() => import('./WisdomSidebar').then(m => m.WisdomSidebar), { ssr: false, loading: () => TAB_SKELETON });
+const KnowledgeGraphView = dynamic(() => import('./KnowledgeGraphView').then(m => m.KnowledgeGraphView), { ssr: false, loading: () => TAB_SKELETON });
 import type { ServedQuote } from '../../lib/quotePath'; // X3: type-only — erased at compile time, no runtime reachability into the server-only price path
 import type { ObservationMarketState } from '../../lib/pricePresentation'; // Y3: type-only — same erasure rule
 import type { InitialPriceEntry } from '../../lib/dashboardSnapshot'; // Y2: type-only — same erasure rule

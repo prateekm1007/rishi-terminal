@@ -1,5 +1,14 @@
 /** @type {import("next").NextConfig} */
 
+// Y6 (Round 12): @next/bundle-analyzer — off by default, enabled only with
+// ANALYZE=true, so CI/production builds are byte-identical to before.
+// Usage: ANALYZE=true npm run build  → .next/analyze/{nodejs,edge,nodejsclient}*.html
+// Founder round-12 Y6 mandates running it before the ≤200 kB re-lock.
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
+
+
 // Remediation T9 — baseline security headers.
 //
 // CSP ships in Report-Only first so violations can be observed in devtools /
@@ -119,4 +128,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

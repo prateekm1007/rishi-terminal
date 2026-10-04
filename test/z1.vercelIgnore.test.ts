@@ -20,7 +20,7 @@ const SCRIPT = join(process.cwd(), "scripts", "ci", "vercel-ignore.sh");
 
 interface Repo {
   root: string;
-  run: (opts: { env?: Record<string, string> }) => { status: number };
+  run: (opts?: { env?: Record<string, string> }) => number;
   commitFile: (path: string, content: string, message: string) => string;
   checkoutBranch: (name: string, from?: string) => void;
   mergeNoFF: (branch: string, message: string) => string;
@@ -75,6 +75,7 @@ function makeRepo(): Repo {
 afterEach(() => {
   while (cleanup.length) {
     const dir = cleanup.pop();
+    if (dir === undefined) continue;
     try {
       rmSync(dir, { recursive: true, force: true });
     } catch {

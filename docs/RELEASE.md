@@ -123,6 +123,45 @@ Policy (X1):
    100/day team cap) vs. keep batching under this policy. Until decided,
    this policy is the operating constraint.
 
+### Z1 hardening (Round 13, 2026-10-04) — stop deploy starvation
+
+The quota was exhausted a SECOND time on 2026-10-04: ~12 merges in one day
+produced 20 deployment-creation events on the main project alone (raw
+count from the v6 API, 2026-10-04T04:5xZ): 8 production, 12 branch/preview
+builds, 1 canceled — including 5 builds of the SAME production SHA
+(`e0104fc`, one per re-run) and 2 of `6d9de4c`. Production sat
+rate-limited for 24 h while main was 4 code commits ahead.
+
+Additions to the policy:
+
+6. **Non-production Vercel builds never run.** `VERCEL_ENV` is
+   `preview`/`development` → the ignore command skips unconditionally
+   (GitHub CI already gates every branch: build, vitest, Playwright smoke
+   against a LOCAL build, Lighthouse against a LOCAL server — no GitHub
+   gate reads a Vercel preview). Fail-safe: `VERCEL_ENV` unset falls
+   through to the change-set rules (a non-Vercel invocation is not a
+   quota event to save). Acceptance evidence: after this change, a PR
+   branch produces NO Vercel deployment.
+7. **Production diff base is `VERCEL_GIT_PREVIOUS_SHA`** when present and
+   reachable, else `HEAD^`. This closes the multi-commit defect: a push
+   whose last commit is docs-only no longer hides earlier code commits
+   from the gate. An unreachable SHA (force-push, fresh repo) fails safe
+   to `HEAD^` and then to "build".
+8. **`artifacts/**` joins the skip scope.** PR #115 built because of
+   `artifacts/phase6/*.json` evidence files; evidence is not a deployment
+   reason. Mixed artifact+code changes still build.
+9. **Batch merges:** at most ONE production-relevant merge per hour
+   unless urgent (a hotfix or a founder-directed deploy). Re-run triggers
+   (`scripts/r9_trigger_deploy_env.py`) stay reserved for a rate-limited
+   merge, never for retrying a red gate.
+10. **Deployment ledger:** each round records the day's production
+    deployments in the table below.
+
+| Date (UTC) | production deploys | noted |
+|---|---|---|
+| 2026-10-03 | 3 (`d90557e`, `9a3e682`, `4bebbd5`) | X1 evidence day |
+| 2026-10-04 | 9 creation events on the main project: `4bebbd5` (00:39), `6b4f27a` canceled (00:44), `e0104fc` x5 (02:59-03:25, same-SHA re-runs), `6d9de4c` x2 (03:42 merge + API redeploy) — then rate-limited: `e18d6a9`/`1628ade` created NO deployment | quota exhausted ~03:55Z; window lifts ~2026-10-05 |
+
 ## Environment variables
 
 Canonical list: `.env.example` (the template `scripts/checkEnv.ts` checks

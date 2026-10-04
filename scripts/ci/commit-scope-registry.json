@@ -283,30 +283,30 @@
       "lib/db/migrations/022_quote_cache_coverage.sql",
       "lib/health/compute.ts",
       "lib/health/probe.ts",
-   "lib/livePrice.ts",
+      "lib/livePrice.ts",
       "lib/quotePath.ts",
       "scripts/ci/commit-scope-registry.json",
       "scripts/ci/quote_cache_invariants.sql",
       "test/dashboardSnapshot.test.ts",
       "test/health.memo.test.ts",
       "test/health.test.ts",
-   "test/y2.coinGeckoBackoff.test.ts",
+      "test/y2.coinGeckoBackoff.test.ts",
       "test/y2.quoteWarm.test.ts",
       "test/y2.ssrPeek.test.ts",
       "test/y1.isrSegmentConfig.test.ts"
     ],
     "Y4": [
-   "app/api/fundamentals/route.ts",
-   "components/stock/MetricsPanel.tsx",
-   "components/stock/PeerComparison.tsx",
-   "components/stock/WisdomSidebar.tsx",
-   "docs/DATA_SOURCES.md",
-   "lib/types/sourced.ts",
-   "lib/wisdom/parallels.ts",
-   "scripts/ci/commit-scope-registry.json",
-   "test/y4.nullNotZero.test.ts"
-  ],
-  "Y3": [
+      "app/api/fundamentals/route.ts",
+      "components/stock/MetricsPanel.tsx",
+      "components/stock/PeerComparison.tsx",
+      "components/stock/WisdomSidebar.tsx",
+      "docs/DATA_SOURCES.md",
+      "lib/types/sourced.ts",
+      "lib/wisdom/parallels.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "test/y4.nullNotZero.test.ts"
+    ],
+    "Y3": [
       "app/alerts/page.tsx",
       "app/stock/[symbol]/page.tsx",
       "components/stock/LivePriceWidget.tsx",
@@ -318,6 +318,16 @@
       "test/measurement.test.ts",
       "test/pricePresentation.test.ts",
       "test/y3.observationLabel.test.ts"
+    ],
+    "Z1": [
+      ".github/workflows/ci.yml",
+      "docs/RELEASE.md",
+      "docs/evidence/round13/",
+      "scripts/ci/vercel-ignore.sh",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/commitScopeAudit.mjs",
+      "test/vercelIgnore.test.ts",
+      "test/z1.vercelIgnore.test.ts"
     ]
   }
 }

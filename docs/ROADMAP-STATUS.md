@@ -84,17 +84,17 @@ R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 
 
 | Task | Status | Evidence / notes |
 |---|---|---|
-| E6-01 Lighthouse CI budgets | ⬜ | |
+| E6-01 Lighthouse CI budgets | ✅ | Lighthouse gate runs blocking in CI with measured-score floors + ratchet ("Lighthouse gate (U3)"), wired since U3 (round 5); green on every PR since. Register row was stale. |
 | E6-02 Bundle budgets | ✅ (ratchet half) | `scripts/bundleBudget.ts` wired into CI + ratchet; gate bite-proven (scratch PR #18, CI run 36801733290). The PROPOSED 200 kB budgets are still exceeded (274/273/310 kB) — tracked, needs founder confirmation of the number. |
 | E6-03 RSC + streaming /screener /lab | 🟡 | N1 moved pages to RSC with slim indexes; streaming + the `<tr` -in-initial-HTML acceptance remain. |
-| E6-04 ISR for stock pages | 🟡 | Stock pages are SSG (`generateStaticParams`); on-demand revalidation on ingestion remains. |
+| E6-04 ISR for stock pages | ✅ | Y1 (PR #118): ISR revalidate 60 s for / and /stock/[symbol] with quote peek at regeneration; warm TTFB p95 ≈ 0.15 s on production (round-14 evidence). On-demand revalidation on ingestion folds into the Y2 warmer's TTL design. |
 | E6-05 Observability | ⬜ | |
 | E6-06 SLOs + dashboards | ⬜ | |
 | E6-07 Blocking e2e, contract tests, drills | 🟡 | Playwright smoke is blocking (since round 2); contract tests + upstream-failure drills remain. |
-| E6-08 Accessibility (WCAG 2.2 AA) | ⬜ | |
+| E6-08 Accessibility (WCAG 2.2 AA) | ✅ (automatable subset) | PR #150: axe-core gate (wcag2a/2aa/21a/21aa/22aa) over /, /screener, /stock/RELIANCE, /methodology, /lab, /rishis rides the blocking Playwright job; fail-first (all six routes red pre-fix), then 0 violations. Token-level contrast fixes (--text-muted #8395AC, --text-ghost #7C8BA1, ~270 literal hexes swept) + /rishis keyboard access. Honest scope note in PR: axe automates ~⅓ of WCAG; manual audit items remain. |
 | E6-09 Flags, migrations in CI, rollback drill | 🟡 | Migrations 001–014 run in CI (PG16 job, since N2; populates + validates the security master; Q1/Q3 invariants live). Feature flags + documented rollback drill remain. |
 | E6-10 Type safety everywhere | 🟡 | `no-explicit-any` is ERROR in `hooks/**` + `scripts/**` (N9); repo-wide promotion remains (318 warnings baseline). |
-| E6-11 Load + abuse testing | ⬜ | |
+| E6-11 Load + abuse testing | ✅ (scoped, deviations recorded) | PR #151: k6 profile (scripts/load/api.js; admitted p95 3.6 ms on the local build's fail-fast path — caveats recorded, budget stays PROPOSED); limiter 429 proven on the LIVE deployment (60×200 then 15×429, exactly the 60/60 s bound); "chat quota holds under 50 parallel" proven at the SQL level — W3-A storm extended 24→50 parallel, CI-gated. Staging-vs-local and no-synthetic-chat deviations documented. |
 
 ## Phase 7 — Growth (only after G-A and G-B)
 
@@ -331,3 +331,15 @@ because the Hobby deployment quota exhausted a second time (13:14:49Z; see
 `docs/RELEASE.md` ledger). The sanctioned API retry loop is running; the
 production acceptance greps for A5/R4-04/X3-05/X3-07 run on the deployed SHA
 the moment the window lifts.
+
+### Deployment state at this register's last update (2026-10-04, rev 2)
+Production serves `c88bd1d` — main is fully deployed and includes the
+rate-limited catch-up (A5/R4-04/X3-05/X3-07 verified live), the E6-08
+accessibility gate, and the E6-11 storm extension. The second quota
+exhaustion (13:14:49Z) was remedied by the sanctioned API retry at
+14:48:02Z; the #150 merge hit the cap a THIRD time (~15:10Z) and drained
+naturally before #151 merged cleanly at 15:52:36Z. Full ledger:
+docs/RELEASE.md. Next founder-independent items: E6-03 (streaming
+acceptance), E6-05/06 (observability/SLOs), E6-07 (contract tests + drills),
+E6-10 (repo-wide type promotion), X3-09 (PWA), L5-02/05/06, R4-03/05/06/07
+data-independent parts.

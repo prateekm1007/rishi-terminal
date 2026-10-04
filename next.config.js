@@ -4,6 +4,7 @@
 // ANALYZE=true, so CI/production builds are byte-identical to before.
 // Usage: ANALYZE=true npm run build  → .next/analyze/{nodejs,edge,nodejsclient}*.html
 // Founder round-12 Y6 mandates running it before the ≤200 kB re-lock.
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- next.config is CommonJS by design (same carve-out as the aliases require below)
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });

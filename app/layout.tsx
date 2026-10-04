@@ -5,9 +5,11 @@ import TopBar from "@/components/TopBar";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { LanguageProvider } from "@/lib/language";
 import AuthProvider from "@/components/auth/AuthProvider";
-import { GlobalSearchBar } from "@/components/ui/GlobalSearchBar";
+import LazyGlobalSearchBar from "@/components/ui/LazyGlobalSearchBar";
 import { LegalDisclaimer } from "@/components/ui/LegalDisclaimer";
 import { SITE_URL, SITE_NAME } from "@/lib/seo/site";
+import enDictionary from "@/messages/en.json";
+import { pickShell } from "@/lib/languageShell";
 
 // Audit M6/B.3 (retest 2026-10-02): canonical + Open Graph + twitter were
 // absent sitewide — parameterized URLs could split crawl equity and link
@@ -53,7 +55,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })();
         `}} />
         <AuthProvider>
-          <LanguageProvider>
+          {/* X4 (Round 11): the shell subset of the dictionary arrives as an
+              RSC prop — the full en.json stays on the server, so every
+              route's first-load JS no longer carries every other route's
+              strings. Page namespaces arrive via <NamespaceProvider>. */}
+          <LanguageProvider shell={pickShell(enDictionary as Record<string, object>)}>
             <div style={{ display: "flex", minHeight: "100vh", position: "relative" }}>
 
               {/* Audit 2026-10-02 (F): the shell offsets live in CSS classes
@@ -74,7 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   position: "relative",
                   zIndex: 50,
                 }}>
-                  <GlobalSearchBar />
+                  <LazyGlobalSearchBar />
                 </div>
                 {children}
                               <LegalDisclaimer />

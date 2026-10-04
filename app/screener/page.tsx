@@ -6,6 +6,11 @@
 // preset filters and stat pills run on the slim rows instead.
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
 import { ScreenerClient } from '@/components/screener/ScreenerClient';
+import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
+import { screener } from '@/messages/en.json';
+
+// X4 (Round 11): the screener's namespace arrives from the server (see the
+// homepage's note) — the page carries only its own strings.
 
 // Round-5 audit (finding 18): per-page title/description.
 export const metadata = {
@@ -17,5 +22,9 @@ export const metadata = {
 
 export default function ScreenerPage() {
   const rows = getSlimIndex();
-  return <ScreenerClient rows={rows} />;
+  return (
+    <NamespaceProvider ns={{ screener }}>
+      <ScreenerClient rows={rows} />
+    </NamespaceProvider>
+  );
 }

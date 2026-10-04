@@ -11,6 +11,15 @@ import { marketState } from '@/lib/marketHours'; // Y3: server-disclosed NSE sta
 import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically; Y2: peer entries
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
+import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
+// `stock as stockNs`: this page's OWN `stock` binding (the resolved Stock
+// record) shadows the namespace identifier inside the component scope —
+// the alias keeps the two apart.
+import { stock as stockNs, chart, kg, rishiGrid } from '../../../messages/en.json';
+
+// X4 (Round 11): the stock page's dictionary namespaces arrive from the
+// server via <NamespaceProvider> (see the homepage's note) — the heaviest
+// route keeps only its own strings in the flight payload.
 
 // Y1 (Round 12): stock pages are ISR again (revalidate 60 s). The X3
 // force-dynamic render answered the W5 stale-bake defect by making every
@@ -144,16 +153,18 @@ export default async function StockPage({ params }: StockPageProps) {
   const initialMarket = marketState();
 
   return (
-    <StockPageClient
-      stock={stock}
-      consensus={sanitized}
-      detail={stockDetail}
-      resolved={resolved}
-      qvpsDual={qvpsDual}
-      eliteGraph={eliteGraph}
-      initialQuote={initialQuote}
-      initialPeerPrices={initialPeerPrices}
-      initialMarket={initialMarket}
-    />
+    <NamespaceProvider ns={{ stock: stockNs, chart, kg, rishiGrid }}>
+      <StockPageClient
+        stock={stock}
+        consensus={sanitized}
+        detail={stockDetail}
+        resolved={resolved}
+        qvpsDual={qvpsDual}
+        eliteGraph={eliteGraph}
+        initialQuote={initialQuote}
+        initialPeerPrices={initialPeerPrices}
+        initialMarket={initialMarket}
+      />
+    </NamespaceProvider>
   );
 }

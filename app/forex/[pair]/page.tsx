@@ -2,6 +2,12 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { FOREX_PAIRS } from '../../../data/forex';
 import { ForexDetailClient } from '../../../components/forex/ForexDetailClient';
+import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
+import { chart, kg } from '../../../messages/en.json';
+
+// X4 (Round 11): the forex detail tree's namespaces (chart labels +
+// knowledge-graph strings) arrive as RSC props — see the homepage's note
+// in app/page.tsx.
 
 const SITE = 'https://rishi-terminal.vercel.app';
 
@@ -45,5 +51,9 @@ export default async function ForexDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  return <ForexDetailClient pair={forexPair} />;
+  return (
+    <NamespaceProvider ns={{ chart, kg }}>
+      <ForexDetailClient pair={forexPair} />
+    </NamespaceProvider>
+  );
 }

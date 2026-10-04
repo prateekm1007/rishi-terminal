@@ -34,9 +34,16 @@ import { createHash, createHmac, randomUUID } from 'crypto';
  *  abuse. */
 export const CHALLENGE_AFTER_ANON_REQUESTS_DEFAULT = 5;
 
-/** Leading zero bits the nonce's SHA-256 must carry. 2^20 expected hashes
- *  ≈ 1-2 s of browser JS; ~50 ms of server verification. */
-export const CHALLENGE_DIFFICULTY_BITS_DEFAULT = 20;
+/** Leading zero bits the nonce's SHA-256 must carry. A2 (Round 14): 15
+ *  (was 20). The founder's audit measured the old async browser loop at
+ *  ~79k hashes/s — median 10.7 s at 20 bits — while a native bot solves
+ *  it in milliseconds: the old setting taxed humans and barely slowed
+ *  attackers. 15 bits ≈ 2^15 expected hashes (32× less work than 20) and
+ *  is the A2 acceptance band's middle (14–16). Env-tunable via
+ *  CHAT_CHALLENGE_DIFFICULTY; measured medians are pinned by
+ *  test/x7.powBenchmark.test.ts and docs/evidence/round14/. Server
+ *  verification cost is unchanged. */
+export const CHALLENGE_DIFFICULTY_BITS_DEFAULT = 15;
 
 /** Challenge token lifetime (minutes from issue). Short by design: the
  *  client solves immediately after receiving the challenge. */

@@ -183,34 +183,8 @@ export function computeBeta(portLevels: number[], benchLevels: number[]): number
   return varB === 0 ? 1 : cov / varB;
 }
 
-// Simple XIRR (bisection). Returns %.
-export function calcXIRR(cashflows: { date: Date; amount: number }[]): number | null {
-  if (!Array.isArray(cashflows) || cashflows.length < 2) return null;
-  const base = cashflows[0]?.date;
-  if (!(base instanceof Date) || !Number.isFinite(base.getTime())) return null;
-
-  const npvAt = (rate: number) => {
-    let npv = 0;
-    for (const cf of cashflows) {
-      const d = cf?.date;
-      const amt = cf?.amount;
-      if (!(d instanceof Date) || !Number.isFinite(d.getTime())) continue;
-      if (!Number.isFinite(amt)) continue;
-      const years = (d.getTime() - base.getTime()) / (1000 * 60 * 60 * 24 * 365);
-      npv += amt / Math.pow(1 + rate, years);
-    }
-    return npv;
-  };
-
-  let lo = -0.999;
-  let hi = 10;
-  let mid = 0;
-
-  for (let i = 0; i < 90; i++) {
-    mid = (lo + hi) / 2;
-    const v = npvAt(mid);
-    if (v > 0) lo = mid;
-    else hi = mid;
-  }
-  return mid * 100;
-}
+// XIRR — DELEGATED to lib/portfolio/xirr.ts (X3-07, rule 14): the import
+// pipeline and the lab share ONE derivation, pinned to 1e-6 against an
+// independent Newton reference on 10 fixtures (test/portfolio.xirr.test.ts).
+// This adapter keeps the lab's percent-shape signature unchanged.
+export { calcXIRR } from "../../lib/portfolio/xirr";

@@ -161,6 +161,9 @@ jobs:
       - name: Assert saved-screens RLS invariants (X3-05 — cross-user isolation)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/screens_rls_invariants.sql
 
+      - name: Assert portfolio RLS invariants (X3-07 — cross-user isolation + import idempotency)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/portfolio_rls_invariants.sql
+
       - name: Prove the reservation hard bound under real concurrency (W3-A)
         run: |
           # 24 PARALLEL sessions each try to reserve 10 against a limit of

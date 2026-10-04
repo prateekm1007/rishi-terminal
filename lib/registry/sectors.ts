@@ -97,3 +97,23 @@ export function getSectorBenchmark(sectorInput?: string) {
   const sector = normalizeSector(sectorInput);
   return SECTOR_BENCHMARKS[sector];
 }
+/**
+ * Y4 (Round 12): the one predicate for "does this sector report bank-style
+ * financials" — banks do not carry operating-margin or D/E the way
+ * operating companies do (deposits are not debt in the industrial sense;
+ * the seed's bank rows carry opm/de placeholders that must never render
+ * as observations). Normalised through normalizeSector so aliases
+ * ("Banks", "Financials", "Private Bank") land on the same answer.
+ *
+ * NBFC and Fintech are deliberately NOT banking here: they legitimately
+ * report D/E and operating margins.
+ */
+export function isBankingSector(sectorInput?: string | null): boolean {
+  if (!sectorInput) return false;
+  const s = sectorInput.trim();
+  // A bank-adjacent raw string ("Private Bank", "Small Finance Bank")
+  // normalises to Banking; unknown strings would become "Utilities", so
+  // check the bank substring BEFORE the fallback, then the normal form.
+  if (/bank/i.test(s)) return true;
+  return normalizeSector(s) === "Banking";
+}

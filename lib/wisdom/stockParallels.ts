@@ -509,3 +509,51 @@ export function getStockParallel(asset: UniversalAsset, consensusScore: number):
   // 4. Score-based fallback  always returns something
   return getScoreBasedParallel(consensusScore, asset.symbol);
 }
+
+/**
+ * Y4 (Round 12): the analog selector for the stock page's wisdom sidebar.
+ *
+ * The sidebar's old archetype matcher keyed on SEED metrics and returned
+ * hardcoded story cards — SBIN (sector "Banking", seed de < 1) matched a
+ * "quality growth" archetype and rendered the "India Services Export Boom"
+ * IT-era analog on a bank page. The founder's Y4: select the analog by
+ * SECTOR and metrics, or show none.
+ *
+ * This selector reuses the SAME sector table as the AI surface above (one
+ * source of truth, Rule 14): exact sector → partial sector → metric
+ * pattern. The score-based "always returns something" fallback is
+ * deliberately absent — with no sector match and no metric match the
+ * honest answer is NO analog (null), never an invented one (Rule 4).
+ */
+export function getSectorOrMetricParallel(
+  sector: string | null | undefined,
+  metrics?: { roe?: number | null; pe?: number | null; de?: number | null; roce?: number | null; revcagr?: number | null; promo?: number | null; opm?: number | null; fcf?: number | null },
+): StockParallel | null {
+  const s = (sector ?? '').trim();
+  if (s) {
+    const exact = SECTOR_PARALLELS[s];
+    if (exact) return exact;
+
+    const keys = Object.keys(SECTOR_PARALLELS);
+    const partial = keys.find(
+      k => s.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(s.toLowerCase()),
+    );
+    if (partial) return SECTOR_PARALLELS[partial];
+  }
+
+  if (metrics) {
+    const m = getMetricBasedParallel({
+      roe: metrics.roe ?? 0,
+      pe: metrics.pe ?? 0,
+      de: metrics.de ?? 0,
+      roce: metrics.roce ?? 0,
+      revcagr: metrics.revcagr ?? 0,
+      promo: metrics.promo ?? 0,
+      opm: metrics.opm ?? 0,
+      fcf: metrics.fcf ?? 0,
+    });
+    if (m) return m;
+  }
+
+  return null;
+}

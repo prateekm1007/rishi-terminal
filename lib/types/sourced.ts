@@ -137,3 +137,32 @@ export function overlaySourced(
   }
   return baseline;
 }
+
+/**
+ * Y4 (Round 12): a SEED-sourced 0 for fields where 0 is not a plausible
+ * observation is a PLACEHOLDER, not data — it renders as missing ("—"),
+ * exactly like a null. The June seed carries promo: 0 and de: 0 for many
+ * symbols (Bandhan Bank's "Promoter Hold 0.0%" was rendering live); a
+ * listed bank's promoter stake is never 0, and a 0.0x D/E from the
+ * placeholder sweep is a capture gap, not a debt-free claim (Rule 3: label
+ * data by what it is; Rule 16: degenerate inputs are missing).
+ *
+ * Scope is deliberately narrow: LIVE zeros are observations (G5) and stay
+ * untouched, and only the named fields participate. Everything else
+ * returns the input unchanged.
+ */
+const PLACEHOLDER_ZERO_FIELDS: ReadonlySet<string> = new Set(["promo", "de"]);
+
+export function suppressPlaceholderZero(
+  sourced: Sourced<number>,
+  field: string,
+): Sourced<number> {
+  if (
+    !PLACEHOLDER_ZERO_FIELDS.has(field) ||
+    sourced.source !== "seed" ||
+    sourced.value !== 0
+  ) {
+    return sourced;
+  }
+  return { ...sourced, value: null };
+}

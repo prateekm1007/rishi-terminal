@@ -307,6 +307,20 @@
       "test/measurement.test.ts",
       "test/pricePresentation.test.ts",
       "test/y3.observationLabel.test.ts"
+    ],
+    "Y4": [
+      "app/stock/[symbol]/page.tsx",
+      "components/DataValue.tsx",
+      "components/stock/MetricsPanel.tsx",
+      "components/stock/PeerComparison.tsx",
+      "components/stock/WisdomSidebar.tsx",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round12/",
+      "lib/registry/sectors.ts",
+      "lib/types/sourced.ts",
+      "lib/wisdom/stockParallels.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "test/y4.nullNotZero.test.ts"
     ]
   }
 }

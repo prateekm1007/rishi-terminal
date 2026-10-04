@@ -48,7 +48,12 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
       name: stock.name,
       // T14: no seed fallback — em dash rendered when the live feed is down
       price: prices[stock.symbol]?.price ?? null,
-      marketCap: bulkFund[stock.symbol]?.marketCap ?? stock.mktcap,
+      // Y4: the placeholder seed market caps are NOT observations — every
+      // cap in this table renders from the live fundamentals fetch only
+      // (screener/yahoo), and "—" until it lands. The old seed fallback
+      // put "300.0K Cr" (the AUBANK placeholder) into the raw HTML as if
+      // it were a real cap.
+      marketCap: bulkFund[stock.symbol]?.marketCap ?? null,
       pe: bulkFund[stock.symbol]?.pe ?? stock.pe,
       roe: bulkFund[stock.symbol]?.roe ?? stock.roe,
       isCurrent: true,
@@ -56,6 +61,9 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
     ...peers.map(p => ({
       ...p,
       price: prices[p.symbol]?.price ?? null,
+      // Y4: same live-or-blank rule for peer rows (the `p.marketCap`
+      // spread is overridden — it came from the placeholder seed).
+      marketCap: bulkFund[p.symbol]?.marketCap ?? null,
       isCurrent: false,
     })),
   ];
@@ -123,7 +131,11 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
                   </span>
                 </td>
                 <td style={{ padding: '10px 12px', color: '#94A3B8', fontSize: 13 }}>
-                  {s.marketCap > 0 ? `${safeFixed(s.marketCap / 1000)}K Cr` : 'N/A'}
+                  {/* Y4: live-or-blank — a placeholder seed cap never renders;
+                      "—" until the live fundamentals fetch supplies one. */}
+                  <span title={s.marketCap == null ? 'Live market cap unavailable \u2014 placeholder values are never shown as current' : 'Live market cap'}>
+                    {s.marketCap != null && s.marketCap > 0 ? `${safeFixed(s.marketCap / 1000)}K Cr` : '\u2014'}
+                  </span>
                 </td>
                 <td style={{ padding: '10px 12px', color: '#94A3B8', fontSize: 13 }}>
                   {safeFixed(s.pe)}x

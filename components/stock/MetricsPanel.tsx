@@ -4,7 +4,8 @@ import { useFundamentals } from '@/hooks/useFundamentals';
 import { MetricCard, StatGroup } from './StyleGuide';
 import { DataValue } from '@/components/DataValue';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
-import { derivedSourced, overlaySourced, type Sourced } from '@/lib/types/sourced';
+import { derivedSourced, overlaySourced, suppressPlaceholderZero, type Sourced } from '@/lib/types/sourced';
+import { isBankingSector } from '@/lib/registry/sectors';
 
 interface Props {
   /**
@@ -54,7 +55,11 @@ export function MetricsPanel({ resolved }: Props) {
     pe:      o(resolved.sourced.pe,      live?.pe,          'pe'),
     roe:     o(resolved.sourced.roe,     live?.roe,         'roe'),
     roce:    o(resolved.sourced.roce,    live?.roce,        'roce'),
-    de:      o(resolved.sourced.de,      live?.debtToEquity,'de'),
+    // Y4: a SEED 0 for promo/de is a placeholder, not a debt-free or
+    // zero-stake observation — it renders "—" like any missing value.
+    // (A LIVE 0 stays 0 — G5: a live zero is an observation.)
+    de:      suppressPlaceholderZero(
+               o(resolved.sourced.de,      live?.debtToEquity,'de'), 'de'),
     opm:     o(resolved.sourced.opm,     live?.opm,         'opm'),
     revcagr: o(resolved.sourced.revcagr, live?.revCagr3y,   'revcagr'),
     epscagr: o(resolved.sourced.epscagr, live?.epsCagr,     'epscagr'),
@@ -63,10 +68,19 @@ export function MetricsPanel({ resolved }: Props) {
     // replaced a valid 1.7M Cr baseline and exploded FCF yield to 28M %.
     mktcap:  o(resolved.sourced.mktcap,  live?.marketCap,   'mktcap'),
     bvps:    o(resolved.sourced.bvps,    live?.bookValue,   'bvps'),
-    promo:   o(resolved.sourced.promo,   live?.promoterHolding, 'promo'),
+    promo:   suppressPlaceholderZero(
+               o(resolved.sourced.promo,   live?.promoterHolding, 'promo'), 'promo'),
     pb:      resolved.sourced.pb,
     fcfMargin: resolved.sourced.fcfMargin,
   };
+
+  // Y4 (founder defect 5): banks do not carry operating-company D/E, OPM
+  // or FCF yield — the seed placeholders rendered "D/E 0.0x" and "OPM
+  // 35%" on bank pages. For a banking sector the panel drops those cards
+  // and shows the bank-meaningful ones (P/B, ROE — both already present).
+  // NIM and GNPA stay blocked on FD-16 (no sourced data yet) and are NOT
+  // added here.
+  const banking = isBankingSector(resolved.stock?.sector);
 
   const asOfOf = (...parts: Sourced<number>[]) =>
     parts.every(p => p.asOf) ? (parts.find(p => p.asOf) as Sourced<number>).asOf : null;
@@ -90,8 +104,11 @@ export function MetricsPanel({ resolved }: Props) {
     { label: 'P/E Ratio',    sourced: s.pe,      unit: 'x',    threshold: 20,  inverse: true  },
     { label: 'ROE',          sourced: s.roe,     unit: '%',    threshold: 15,  inverse: false },
     { label: 'ROCE',         sourced: s.roce,    unit: '%',    threshold: 15,  inverse: false },
-    { label: 'D/E Ratio',    sourced: s.de,      unit: 'x',    threshold: 1,   inverse: true  },
-    { label: 'OPM',          sourced: s.opm,     unit: '%',    threshold: 10,  inverse: false },
+    // Y4: hidden for banking (D/E and OPM are not bank metrics).
+    ...(banking ? [] : [
+      { label: 'D/E Ratio',    sourced: s.de,      unit: 'x',    threshold: 1,   inverse: true  },
+      { label: 'OPM',          sourced: s.opm,     unit: '%',    threshold: 10,  inverse: false },
+    ]),
     { label: 'Revenue CAGR', sourced: s.revcagr, unit: '%',    threshold: 15,  inverse: false },
     { label: 'EPS CAGR',     sourced: s.epscagr, unit: '%',    threshold: 15,  inverse: false },
     { label: 'Mkt Cap',      sourced: s.mktcap,  unit: 'K Cr', threshold: 100, inverse: false, scale: 1000 },
@@ -147,9 +164,13 @@ export function MetricsPanel({ resolved }: Props) {
           <StatGroup title="PEG Ratio" stats={[
             { label: 'P/E / Growth', value: <DataValue sourced={peg} digits={2} /> }
           ]} />
-          <StatGroup title="FCF Yield" stats={[
-            { label: 'FCF / Mkt Cap', value: <DataValue sourced={fcfYield} digits={2} unit="%" /> }
-          ]} />
+          {/* Y4: FCF yield is hidden for banking (deposit-funded balance
+              sheets make the operating-company FCF yield misleading). */}
+          {!banking && (
+            <StatGroup title="FCF Yield" stats={[
+              { label: 'FCF / Mkt Cap', value: <DataValue sourced={fcfYield} digits={2} unit="%" /> }
+            ]} />
+          )}
           <StatGroup title="Promoter" stats={[
             { label: 'Promoter Hold', value: <DataValue sourced={s.promo} unit="%" /> }
           ]} />

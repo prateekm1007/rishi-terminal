@@ -264,3 +264,18 @@ The discipline from here on, recorded so it survives sessions:
 - **A4's merge (docs/evidence only) deployed nothing** — the
   `vercel-ignore.sh` docs-only rule skips it, as designed (no quota
   consumed for doc-only ranges either).
+
+### A3 resolution (2026-10-04, evening — supersedes the "Monday protocol" above)
+
+The window drained EARLIER than the counter's reset claim: the sanctioned
+API retry (policy 4) CREATED a deployment at 14:48:02Z (HTTP 200,
+`dpl_CEjogr5gFhh7gb7hWke5eAwJBitZ`, READY 14:49:57Z) — so the 402s were
+transient saturation, not a wall until 2026-10-05T14:28:36Z. Production
+deployed the full catch-up (A5/R4-04/X3-05/X3-07) and was verified live the
+same afternoon (raw outputs: docs/evidence/round14/rate-limit-catchup.md).
+The #150 merge hit the cap a third time (~15:10Z) and #151 merged cleanly
+at 15:52:36Z (production READY at `c88bd1d`, proven via /api/version).
+Lesson recorded: the counter's `reset` field reports the worst-case expiry
+of the oldest event, not the earliest moment a deploy can succeed — retry
+sporadically instead of waiting out the claim. The one-merge-per-hour
+pacing discipline above remains the standing rule.

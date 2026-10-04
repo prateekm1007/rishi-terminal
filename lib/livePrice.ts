@@ -495,11 +495,30 @@ async function fetchAllCoinGecko(): Promise<void> {
       // part of the provenance contract (the single-route gap: crypto
       // served observedAt null because it was never requested).
       const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_last_updated_at=true`;
-      const res = await fetch(url, {
-        headers: { Accept: 'application/json' },
-        signal: (() => { const ac = new AbortController(); setTimeout(() => ac.abort(), 8000); return ac.signal; })(),
-      });
-      if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`);
+      // Y2 follow-up (2026-10-04): the free tier throttles per IP (live
+      // proof: the warmer's sweep hit "CoinGecko HTTP 429" on every crypto
+      // tile while the direct path succeeded in the same minute). One 429
+      // previously poisoned the whole batch. Bounded retry: 2 extra
+      // attempts across rate-limit responses (429/503) with a short
+      // backoff, under ONE shared 8 s abort budget so the worst case
+      // (persistent throttle or a hanging attempt) still returns fast.
+      // A non-throttle status or a 200 returns immediately — parse
+      // honesty downstream is unchanged.
+      const ac = new AbortController();
+      setTimeout(() => ac.abort(), 8000);
+      const BACKOFF_MS = [500, 1500];
+      let res: Response | null = null;
+      for (let attempt = 0; attempt <= BACKOFF_MS.length; attempt++) {
+        if (attempt > 0) {
+          await new Promise((r) => setTimeout(r, BACKOFF_MS[attempt - 1]));
+        }
+        res = await fetch(url, {
+          headers: { Accept: 'application/json' },
+          signal: ac.signal,
+        });
+        if (res.status !== 429 && res.status !== 503) break;
+      }
+      if (!res || !res.ok) throw new Error(`CoinGecko HTTP ${res ? res.status : 'none'}`);
 
       const data = await res.json();
       for (const [symbol, geckoId] of Object.entries(COINGECKO_IDS)) {

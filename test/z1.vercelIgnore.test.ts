@@ -176,3 +176,75 @@ describe("Z1 — production diff scope", () => {
     expect(r.run({ env: PROD })).toBe(0);
   });
 });
+
+describe("Z1 — force-push with a FETCHABLE previous SHA (hardening on top of 207e10f)", () => {
+  // Vercel checks out the PUSHED sha; after a force-push the checkout has
+  // no reason to contain the pre-rewrite tip, so `git cat-file -e` fails
+  // locally and the only way to honor VERCEL_GIT_PREVIOUS_SHA is to fetch
+  // it from the remote (which often still holds it via a side ref). These
+  // fixtures use a FRESH single-branch clone of the rewritten history so
+  // the old tip is genuinely absent locally.
+  function runIn(dir: string, env: Record<string, string>): number {
+    return (
+      spawnSync("bash", [SCRIPT], {
+        cwd: dir,
+        env: { ...process.env, ...env },
+      }).status ?? -1
+    );
+  }
+
+  it("diffs against the FETCHED old tip: code removed by a force-push is deployment-relevant", () => {
+    const bare = mkdtempSync(join(tmpdir(), "z1-bare-"));
+    cleanup.push(bare);
+    execFileSync("git", ["init", "--quiet", "--bare", "--initial-branch=main", bare]);
+    execFileSync("git", ["-C", bare, "config", "uploadpack.allowAnySHA1InWant", "true"]);
+
+    const r = makeRepo();
+    execFileSync("git", ["-C", r.root, "remote", "add", "origin", bare]);
+    const oldTip = r.commitFile("app/api/chat/route.ts", "export {};\n", "code that will be rewritten away");
+    execFileSync("git", ["-C", r.root, "push", "--quiet", "origin", "HEAD:main"]);
+    // Side ref keeps the old tip on the remote; rewrite local history.
+    execFileSync("git", ["-C", r.root, "push", "--quiet", "origin", `HEAD:keep-${oldTip.slice(0, 7)}`]);
+    execFileSync("git", ["-C", r.root, "reset", "--quiet", "--hard", "HEAD~1"]);
+    r.commitFile("docs/rewritten.md", "# docs only after rewrite\n", "docs on rewritten history");
+    execFileSync("git", ["-C", r.root, "push", "--quiet", "--force", "origin", "HEAD:main"]);
+
+    // Fresh single-branch clone of the REWRITTEN history: oldTip absent.
+    const fresh = mkdtempSync(join(tmpdir(), "z1-fresh-"));
+    cleanup.push(fresh);
+    // file:// forces the real transport: a local-path clone hardlinks the
+    // WHOLE object store, which would smuggle the old tip into the clone
+    // and hide the very case this fixture exists to prove.
+    execFileSync("git", ["clone", "--quiet", "--single-branch", "--branch", "main", `file://${bare}`, fresh]);
+
+    expect(
+      runIn(fresh, { ...PROD, VERCEL_GIT_PREVIOUS_SHA: oldTip }),
+    ).toBe(1);
+  });
+
+  it("a docs-only rewrite against the FETCHED old tip still SKIPS (no over-building)", () => {
+    const bare = mkdtempSync(join(tmpdir(), "z1-bare-"));
+    cleanup.push(bare);
+    execFileSync("git", ["init", "--quiet", "--bare", "--initial-branch=main", bare]);
+
+    const r = makeRepo();
+    execFileSync("git", ["-C", r.root, "remote", "add", "origin", bare]);
+    const oldTip = r.commitFile("docs/original.md", "# original\n", "docs tip");
+    execFileSync("git", ["-C", r.root, "push", "--quiet", "origin", "HEAD:main"]);
+    execFileSync("git", ["-C", r.root, "push", "--quiet", "origin", `HEAD:keep-${oldTip.slice(0, 7)}`]);
+    execFileSync("git", ["-C", r.root, "reset", "--quiet", "--hard", "HEAD~1"]);
+    r.commitFile("docs/rewritten.md", "# rewritten docs\n", "docs rewrite");
+    execFileSync("git", ["-C", r.root, "push", "--quiet", "--force", "origin", "HEAD:main"]);
+
+    const fresh = mkdtempSync(join(tmpdir(), "z1-fresh-"));
+    cleanup.push(fresh);
+    // file:// forces the real transport: a local-path clone hardlinks the
+    // WHOLE object store, which would smuggle the old tip into the clone
+    // and hide the very case this fixture exists to prove.
+    execFileSync("git", ["clone", "--quiet", "--single-branch", "--branch", "main", `file://${bare}`, fresh]);
+
+    expect(
+      runIn(fresh, { ...PROD, VERCEL_GIT_PREVIOUS_SHA: oldTip }),
+    ).toBe(0);
+  });
+});

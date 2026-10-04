@@ -68,21 +68,36 @@ if [ -n "${VERCEL_GIT_PREVIOUS_SHA:-}" ] &&
   echo "vercel-ignore: diff base = VERCEL_GIT_PREVIOUS_SHA (${BASE:0:12})." >&2
 else
   if [ -n "${VERCEL_GIT_PREVIOUS_SHA:-}" ]; then
-    echo "vercel-ignore: VERCEL_GIT_PREVIOUS_SHA not reachable (force-push or fresh repo) — falling back." >&2
-  fi
-  if ! git rev-parse --verify HEAD^ >/dev/null 2>&1; then
-    # Shallow checkout: best-effort deepen on the Vercel build image
-    # (origin and network exist there). Anything else fails safe below.
-    if [ "${VERCEL:-}" = "1" ] && [ -n "${VERCEL_GIT_COMMIT_SHA:-}" ]; then
-      git fetch --quiet --depth=2 origin "${VERCEL_GIT_COMMIT_SHA}" >/dev/null 2>&1 || true
+    # Hardening (on top of 207e10f): after a force-push the checkout has no
+    # reason to contain the pre-rewrite tip, but the REMOTE often still
+    # holds it (side refs, unreferenced-but-present objects). One
+    # best-effort fetch before giving up on it — a force-push that removed
+    # code then diffs honestly against the deployed tree and BUILDS instead
+    # of silently skipping. No VERCEL=1 guard: a remote-less repo fails
+    # fast and falls through to the HEAD^ fallback below.
+    if git fetch --quiet --depth=1 origin "${VERCEL_GIT_PREVIOUS_SHA}" >/dev/null 2>&1 &&
+       git cat-file -e "${VERCEL_GIT_PREVIOUS_SHA}" 2>/dev/null; then
+      BASE="${VERCEL_GIT_PREVIOUS_SHA}"
+      echo "vercel-ignore: diff base = VERCEL_GIT_PREVIOUS_SHA (${BASE:0:12}, recovered via fetch)." >&2
+    else
+      echo "vercel-ignore: VERCEL_GIT_PREVIOUS_SHA not reachable even after fetch — falling back." >&2
     fi
+  fi
+  if [ -z "$BASE" ]; then
     if ! git rev-parse --verify HEAD^ >/dev/null 2>&1; then
-      echo "vercel-ignore: parent commit not reachable — building (fail-safe)." >&2
-      exit 1
+      # Shallow checkout: best-effort deepen on the Vercel build image
+      # (origin and network exist there). Anything else fails safe below.
+      if [ "${VERCEL:-}" = "1" ] && [ -n "${VERCEL_GIT_COMMIT_SHA:-}" ]; then
+        git fetch --quiet --depth=2 origin "${VERCEL_GIT_COMMIT_SHA}" >/dev/null 2>&1 || true
+      fi
+      if ! git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+        echo "vercel-ignore: parent commit not reachable — building (fail-safe)." >&2
+        exit 1
+      fi
     fi
+    BASE="HEAD^"
+    echo "vercel-ignore: diff base = HEAD^." >&2
   fi
-  BASE="HEAD^"
-  echo "vercel-ignore: diff base = HEAD^." >&2
 fi
 
 # 3. Docs-only range check (Z1 adds artifacts/** to the skip scope).

@@ -44,10 +44,10 @@ export function scoreGreenblatt(s: Stock): RishiScore {
     : rocS * 0.50 + eyS * 0.50;
   return {
     name: 'Greenblatt', full: 'Joel Greenblatt', label: 'Magic Formula',
-    score: total === null ? null : Math.round(total), origin: 'Global',
+    score: total === null ? null : Math.round(total), scoreRaw: total, origin: 'Global',
     comps: [
-      { label: 'Return on Capital', v: rocS === null ? 0 : Math.round(rocS), wt: 50, detail: rocPct === null ? 'insufficient data (market cap is 0)' : `ROC ${rocPct.toFixed(1)}% (net profit / 0.6×market cap), target >25%` },
-      { label: 'Earnings Yield', v: eyS === null ? 0 : Math.round(eyS), wt: 50, detail: eyPct === null ? 'insufficient data (market cap is 0)' : `EY ${eyPct.toFixed(1)}% (net profit / market cap), target >10%` },
+      { label: 'Return on Capital', v: rocS === null ? 0 : rocS, wt: 50, detail: rocPct === null ? 'insufficient data (market cap is 0)' : `ROC ${rocPct.toFixed(1)}% (net profit / 0.6×market cap), target >25%` },
+      { label: 'Earnings Yield', v: eyS === null ? 0 : eyS, wt: 50, detail: eyPct === null ? 'insufficient data (market cap is 0)' : `EY ${eyPct.toFixed(1)}% (net profit / market cap), target >10%` },
     ],
     insight: total === null
       ? 'Insufficient data \u2014 market cap missing, no Magic Formula verdict.'

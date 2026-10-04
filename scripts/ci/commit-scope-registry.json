@@ -445,6 +445,36 @@
       "lib/db/migrations/023_chat_challenges.sql",
       "scripts/ci/commit-scope-registry.json",
       "test/x7.challenge.test.ts"
+    ],
+    "S2-05": [
+      "lib/types.ts",
+      "lib/scorers/basant.ts",
+      "lib/scorers/buffett.ts",
+      "lib/scorers/damani.ts",
+      "lib/scorers/greenblatt.ts",
+      "lib/scorers/graham.ts",
+      "lib/scorers/howardmarks.ts",
+      "lib/scorers/jhunjhunwala.ts",
+      "lib/scorers/kacholia.ts",
+      "lib/scorers/kedia.ts",
+      "lib/scorers/lynch.ts",
+      "lib/scorers/nemish.ts",
+      "lib/scorers/pabrai.ts",
+      "lib/scorers/philipfisher.ts",
+      "lib/scorers/porinju.ts",
+      "lib/scorers/raamdeo.ts",
+      "lib/scorers/schloss.ts",
+      "lib/scorers/sethklarman.ts",
+      "lib/scorers/soros.ts",
+      "lib/scorers/templeton.ts",
+      "components/stock/RishiGrid.tsx",
+      "components/stock/LensInsights.tsx",
+      "test/scoring.explain.test.ts",
+      "test/scorerBoundaries.test.ts",
+      "test/scorerHealth.test.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round13/"
     ]
   }
 }

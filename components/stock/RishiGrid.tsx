@@ -166,7 +166,7 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
                         />
                       </div>
                       <span className={`font-mono w-6 text-right ${getScoreColor(comp.v)}`}>
-                        {comp.v}
+                        {Math.round(comp.v)}
                       </span>
                     </div>
                   </div>
@@ -190,6 +190,14 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
                       </div>
                     ))}
                   </div>
+
+                  {/* S2-05: the published arithmetic — the breakdown above is
+                      the ACTUAL scoring math, not a decoration. */}
+                  {rishi.score !== null && rishi.scoreRaw != null && (
+                    <div className="text-muted text-xs font-mono">
+                      Σ pillar × weight = {rishi.scoreRaw.toFixed(2)} → score {rishi.score}
+                    </div>
+                  )}
 
                   {/* Insight */}
                   <div className="rishi-insight text-xs">

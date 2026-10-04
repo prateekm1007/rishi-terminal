@@ -11,12 +11,12 @@ export function scoreMunger(s: Stock): RishiScore {
   const total = circleS * 0.30 + inversionS * 0.25 + lollaS * 0.25 + patienceS * 0.20;
   return {
     name: 'Munger', full: 'Charlie Munger', label: 'Mental Models',
-    score: Math.round(total), origin: 'Global',
+    score: Math.round(total), scoreRaw: total, origin: 'Global',
     comps: [
-      { label: 'Circle of Competence', v: Math.round(circleS), wt: 30, detail: `ROCE ${s.roce}% · D/E ${s.de.toFixed(2)}` },
-      { label: 'Inversion Check', v: Math.round(inversionS), wt: 25, detail: `${s.de > 2 ? 'FAIL: High debt' : s.fcf < 0 ? 'FAIL: Negative FCF' : 'PASS: No red flags'}` },
-      { label: 'Lollapalooza Effect', v: Math.round(lollaS), wt: 25, detail: `ROE ${s.roe}% + ROCE ${s.roce}% convergence` },
-      { label: 'Patience Filter', v: Math.round(patienceS), wt: 20, detail: `Promoter ${s.promo}% commitment` },
+      { label: 'Circle of Competence', v: circleS, wt: 30, detail: `ROCE ${s.roce}% · D/E ${s.de.toFixed(2)}` },
+      { label: 'Inversion Check', v: inversionS, wt: 25, detail: `${s.de > 2 ? 'FAIL: High debt' : s.fcf < 0 ? 'FAIL: Negative FCF' : 'PASS: No red flags'}` },
+      { label: 'Lollapalooza Effect', v: lollaS, wt: 25, detail: `ROE ${s.roe}% + ROCE ${s.roce}% convergence` },
+      { label: 'Patience Filter', v: patienceS, wt: 20, detail: `Promoter ${s.promo}% commitment` },
     ],
     insight: `ROCE ${s.roce}% · ROE ${s.roe}% · D/E ${s.de.toFixed(2)}. ${inversionS === 0 ? 'Munger would avoid — fails inversion test.' : total >= 75 ? 'Wonderful business to own forever.' : 'Too complex or mediocre.'}`
   };

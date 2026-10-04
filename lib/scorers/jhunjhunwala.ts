@@ -38,12 +38,13 @@ export function scoreJhunjhunwala(s: Stock): RishiScore {
 
   return {
     name: 'Jhunjhunwala', full: 'Rakesh Jhunjhunwala', label: 'Conviction Multibagger',
-    score: total === null ? null : Math.round(total), origin: 'Bharat',
+    score: total === null ? null : Math.round(total), scoreRaw: total, origin: 'Bharat',
     comps: [
-      { label: 'P/CF Ratio', v: pcfS === null ? 0 : Math.round(pcfS), wt: 25, detail: pcf === null ? 'insufficient data (OCF is 0)' : `${pcf.toFixed(1)}x (ideal 25-35x)` },
-      { label: 'Growth Composite', v: gS === null ? 0 : Math.round(gS), wt: 25, detail: `Rev ${s.revcagr}% EPS ${s.epscagr}% OPM ${s.opm}%` },
-      { label: 'Quality ROCE/Debt/FCF', v: qS === null ? 0 : Math.round(qS), wt: 20, detail: `ROCE ${s.roce}% D/E ${s.de} FCF ${fcfM === null ? 'n/a' : fcfM.toFixed(1) + '%'}` },
-      { label: 'Promoter Conviction', v: cvS === null ? 0 : Math.round(cvS), wt: 20, detail: `${s.promo}% holding target >45%` },
+      { label: 'P/CF Ratio', v: pcfS === null ? 0 : pcfS, wt: 25, detail: pcf === null ? 'insufficient data (OCF is 0)' : `${pcf.toFixed(1)}x (ideal 25-35x)` },
+      { label: 'Growth Composite', v: gS === null ? 0 : gS, wt: 25, detail: `Rev ${s.revcagr}% EPS ${s.epscagr}% OPM ${s.opm}%` },
+      { label: 'Quality ROCE/Debt/FCF', v: qS === null ? 0 : qS, wt: 20, detail: `ROCE ${s.roce}% D/E ${s.de} FCF ${fcfM === null ? 'n/a' : fcfM.toFixed(1) + '%'}` },
+      { label: 'Promoter Conviction', v: cvS === null ? 0 : cvS, wt: 20, detail: `${s.promo}% holding target >45%` },
+      { label: 'Neutral Base', v: 50, wt: 10, detail: 'design constant — the scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)' },
     ],
     insight: insufficient
       ? 'Insufficient data — core fundamentals missing or zero, no Jhunjhunwala verdict.'

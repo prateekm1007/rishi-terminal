@@ -240,6 +240,20 @@
       "test/smoke/shell.spec.ts",
       "scripts/ci/commit-scope-registry.json"
     ],
+    "Y1": [
+      ".github/workflows/ci.yml",
+      "app/page.tsx",
+      "app/stock/[symbol]/page.tsx",
+      "docs/PROVENANCE.md",
+      "docs/evidence/round12/",
+      "lib/dashboardSnapshot.ts",
+      "package.json",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/ci/verifyIsrManifest.ts",
+      "scripts/commitScopeAudit.mjs",
+      "scripts/measureTtfb.sh",
+      "test/y1.isrSegmentConfig.test.ts"
+    ],
     "X3": [
       "app/page.tsx",
       "app/stock/[symbol]/page.tsx",

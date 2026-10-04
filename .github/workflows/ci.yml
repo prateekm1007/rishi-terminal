@@ -9,6 +9,8 @@
 # N6 (round 3): the hygiene regex now matches timestamped backup names
 # (foo.tsx.bak-20260515-1200) — the old '\.(bak|backup|tmp)$' missed them
 # (verified by running it) — and the bundle budget runs after the build.
+# Y1 (round 12): the ISR manifest gate runs after the production build —
+# / and /stock/[symbol] must be baked with revalidate <= 60 s, never ƒ.
 
 name: CI
 
@@ -92,6 +94,9 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: ISR manifest gate (Y1 — / and /stock/[symbol] baked with revalidate <= 60 s)
+        run: npm run verify:isr
 
       - name: Bundle budget (E6-02 ratchet; PROPOSED budgets reported)
         run: npm run bundle:budget

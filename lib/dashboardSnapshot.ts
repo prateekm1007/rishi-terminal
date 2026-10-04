@@ -1,12 +1,15 @@
-// lib/dashboardSnapshot.ts — U2 (founder round 7), reworked X3 (Round 11):
+// lib/dashboardSnapshot.ts — U2 (founder round 7), reworked X3, Y1 (Round 12):
 // the SSR initial-price snapshot for the dashboard.
 //
-// The homepage renders DYNAMICALLY (no ISR bake — the W5 defect was the
-// empty build-time prerender serving as "fresh" for a full hour after
-// every deploy). On every request it takes ONE cheap batch read of the
-// shared quote cache for the NSE-equity symbols it renders. The client
-// hook (useLivePrices) hydrates from this snapshot and revalidates on
-// mount, so any symbol the cache already holds reaches the first byte.
+// The homepage is ISR (revalidate 60 s, Y1). The W5 defect was the
+// hourly-ISR bake serving an EMPTY build-time price snapshot as "fresh"
+// for up to an hour after every deploy; X3 made every render dynamic and
+// Y1 restores ISR with the honest labels that were missing in W5. On
+// every REGENERATION (build excluded — see the build-phase guard below)
+// this takes ONE cheap batch read of the shared quote cache for the
+// NSE-equity symbols the page renders. The client hook (useLivePrices)
+// hydrates from this snapshot and revalidates on mount, so any symbol
+// the cache already holds reaches the first byte.
 //
 // Honesty contract (Rules 1/3/16):
 //   - every mapped value keeps its ORIGINAL upstream observation time

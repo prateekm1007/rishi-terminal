@@ -14,7 +14,7 @@
 #     slice 0 also warms the index/crypto/gold tiles.
 #   - the endpoint no-ops outside the session, so a misfired run is cheap.
 #
-# CRON_SECRET is a repo Actions secret holding the SAME value as the
+# QUOTES_WARM_SECRET is a repo Actions secret holding the SAME value as the
 # Vercel project env (the endpoint compares with timingSafeEqual).
 
 name: quotes-warm
@@ -46,7 +46,7 @@ jobs:
             if [ "$k" -gt 0 ]; then sleep 75; fi
             echo "== slice $k/$SLICES =="
             code=$(curl -s -o "/tmp/warm-$k.json" -w "%{http_code}" -X POST \
-              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              -H "Authorization: Bearer ${{ secrets.QUOTES_WARM_SECRET }}" \
               "$BASE?slice=$k&of=$SLICES")
             echo "HTTP $code"
             cat "/tmp/warm-$k.json"

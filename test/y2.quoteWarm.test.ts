@@ -78,16 +78,16 @@ beforeEach(() => {
   marketStateMock.mockReset();
   cachedQuoteBatchForEquitiesMock.mockReset();
   serveQuoteMock.mockReset();
-  process.env.CRON_SECRET = SECRET;
+  process.env.QUOTES_WARM_SECRET = SECRET; // Z2: the warm endpoint's dedicated secret
   marketStateMock.mockReturnValue(openMarket());
   cachedQuoteBatchForEquitiesMock.mockResolvedValue({ quotes: {} });
   serveQuoteMock.mockResolvedValue(null);
 });
 
 describe("Y2 — warmer auth (fail closed at the route level)", () => {
-  it("missing CRON_SECRET env -> 500, never an open endpoint", async () => {
-    const saved = process.env.CRON_SECRET;
-    delete process.env.CRON_SECRET;
+  it("missing QUOTES_WARM_SECRET env -> 500, never an open endpoint (Z2: dedicated secret)", async () => {
+    const saved = process.env.QUOTES_WARM_SECRET;
+    delete process.env.QUOTES_WARM_SECRET;
     try {
       const res = await POST(warmReq("", "Bearer anything"));
       expect(res.status).toBe(500);

@@ -20,11 +20,18 @@ import { NextRequest, NextResponse } from 'next/server';
  *   const denied = requireCronAuth(req);
  *   if (denied) return denied;
  */
-export function requireCronAuth(req: NextRequest): NextResponse | null {
-  const secret = process.env.CRON_SECRET;
+/** Shared fail-closed bearer gate (Z2): one implementation, two named
+ *  entry points. `envName` is the ONLY accepted secret for that route —
+ *  a dedicated secret per endpoint ends the shared-credential class:
+ *  rotating or mis-provisioning one route's secret can never 401 another
+ *  (the quotes-warm warmer never ran because its shared secret never
+ *  reached the runtime). Missing env -> 500; wrong/missing bearer -> 401.
+ *  Comparison uses crypto.timingSafeEqual with equal-length buffers. */
+function requireBearerSecret(req: NextRequest, envName: string, label: string): NextResponse | null {
+  const secret = process.env[envName];
 
   if (!secret) {
-    console.error('[cron] CRON_SECRET is not configured — refusing request');
+    console.error(`[cron] ${envName} is not configured — refusing request`);
     return NextResponse.json(
       { error: 'Cron authentication is not configured' },
       { status: 500 },
@@ -47,4 +54,18 @@ export function requireCronAuth(req: NextRequest): NextResponse | null {
   }
 
   return null;
+}
+
+/** The ingest routes' shared secret (Vercel crons: snapshot, observations,
+ *  financials). Untouched by Z2. */
+export function requireCronAuth(req: NextRequest): NextResponse | null {
+  return requireBearerSecret(req, 'CRON_SECRET', 'cron');
+}
+
+/** Z2 (Round 13): the quotes-warm warmer's DEDICATED secret. Accepted only
+ *  by /api/ingest/quotes-warm — CRON_SECRET never authenticates this
+ *  route. Provisioned per Constitution rule 32 (vault + HF mirror), set
+ *  as a GitHub Actions secret and a Vercel production env var. */
+export function requireQuotesWarmAuth(req: NextRequest): NextResponse | null {
+  return requireBearerSecret(req, 'QUOTES_WARM_SECRET', 'quotes-warm');
 }

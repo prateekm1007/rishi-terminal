@@ -328,6 +328,17 @@
       "scripts/commitScopeAudit.mjs",
       "test/vercelIgnore.test.ts",
       "test/z1.vercelIgnore.test.ts"
+    ],
+    "Z2": [
+      ".env.example",
+      ".github/workflows/quotes-warm.yml",
+      "app/api/ingest/quotes-warm/route.ts",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round13/",
+      "lib/auth/cron.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "test/y2.quoteWarm.test.ts",
+      "test/z2.quotesWarmAuth.test.ts"
     ]
   }
 }

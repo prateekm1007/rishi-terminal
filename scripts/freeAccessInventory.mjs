@@ -193,8 +193,9 @@ const CLASSIFY = {
   'lib/scorers/pillars/moat.ts': { cat: 'legitimate-concept', note: 'pricing-power pillar (13 mentions — the moat concept)' },
   'lib/wisdom/graph.ts': { cat: 'legitimate-concept', note: 'wisdom graph copy' },
   'lib/wisdom/parallels.ts': { cat: 'legitimate-concept', note: 'wisdom parallels copy' },
-  'lib/wisdom/stockParallels.ts': { cat: 'legitimate-concept', note: 'wisdom parallels copy' },
-  'lib/wisdom/universalParallels.ts': { cat: 'legitimate-concept', note: 'wisdom parallels copy' },
+  // lib/wisdom/stockParallels.ts and lib/wisdom/universalParallels.ts were
+  // DELETED in R15-C (zero importers — rule 17); their inventory entries
+  // went with them.
   'lib/gurus/crypto.ts': { cat: 'legitimate-concept', note: 'comment describing the (now removed) paid-verdict boundary — comment updated in M3' },
   'data/economyPlus/macroData.ts': { cat: 'legitimate-concept', note: 'macro glossary (pricing power, risk premium)' },
   'data/economyPlus/macroData.bn.ts': { cat: 'legitimate-concept', note: 'macro glossary (locale)' },

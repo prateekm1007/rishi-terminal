@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-01T22:50:37.249Z",
-  "scannedModules": 245,
+  "generatedAt": "2026-10-04T17:43:52.937Z",
+  "scannedModules": 270,
   "zeroImporterCount": 39,
   "zeroImporterModules": [
     {
@@ -52,10 +52,6 @@
       "fabricationHint": false
     },
     {
-      "file": "lib/security.ts",
-      "fabricationHint": false
-    },
-    {
       "file": "lib/stockApi.ts",
       "fabricationHint": false
     },
@@ -100,14 +96,6 @@
       "fabricationHint": false
     },
     {
-      "file": "lib/wisdom/stockParallels.ts",
-      "fabricationHint": false
-    },
-    {
-      "file": "lib/wisdom/universalParallels.ts",
-      "fabricationHint": false
-    },
-    {
       "file": "lib/wisdom/wisdom-of-day.ts",
       "fabricationHint": false
     },
@@ -121,6 +109,14 @@
     },
     {
       "file": "components/fno/PayoffChart.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/gamification/DailyRitual.tsx",
+      "fabricationHint": false
+    },
+    {
+      "file": "components/gamification/ProgressBar.tsx",
       "fabricationHint": false
     },
     {
@@ -157,6 +153,10 @@
     },
     {
       "file": "hooks/useLivePrice.ts",
+      "fabricationHint": false
+    },
+    {
+      "file": "hooks/useSession.ts",
       "fabricationHint": false
     }
   ],

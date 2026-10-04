@@ -35,6 +35,21 @@ export function ConsensusHero({ consensus }: Props) {
             <span style={{ color: '#64748B' }}>
               Spread: <span style={{ color: '#F8FAFC', fontFamily: 'monospace' }}><DataValue sourced={{ value: consensus.tensionSpread, source: 'seed', asOf: null }} digits={0} /> pts</span>
             </span>
+            <span style={{ color: 'rgba(51,65,85,0.5)' }}>•</span>
+            {/* S2-06: the whole-panel disagreement metric (docs/methodology/dispersion.md).
+                null = fewer than 2 valid verdicts — one voice is not agreement, and
+                showing σ 0 would pretend it is. */}
+            <span style={{ color: '#64748B' }}>
+              Disagreement σ:{' '}
+              <span style={{ color: '#F8FAFC', fontFamily: 'monospace' }}>
+                {consensus.dispersion === null ? '\u2014' : consensus.dispersion.toFixed(1)}
+              </span>
+              {consensus.dispersion !== null && (
+                <span style={{ color: consensus.dispersion < 8 ? '#00BA7C' : consensus.dispersion < 18 ? '#f59e0b' : '#F4212E' }}>
+                  {consensus.dispersion < 8 ? ' · aligned' : consensus.dispersion < 18 ? ' · split' : ' · divided'}
+                </span>
+              )}
+            </span>
           </div>
         </div>
 

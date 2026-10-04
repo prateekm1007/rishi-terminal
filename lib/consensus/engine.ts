@@ -3,6 +3,7 @@ import 'server-only';
 import { Stock, ConsensusResult, RishiScore } from "./types";
 import { runAllScorers, type ScoringContext }   from "./orchestrator";
 import { weightedAverage } from "./weights";
+import { dispersion } from "./dispersion";
 
 /**
  * Core-fundamental fields that must be finite and not all-zero for a record
@@ -73,6 +74,10 @@ export function buildConsensus(stock: Stock, ctx?: ScoringContext): ConsensusRes
   const consensus = weightedAverage(scores);
   const { label: tension, spread: tensionSpread } = analyzeTension(scores);
   const finiteScores = scores.filter(s => s.score !== null);
+  // S2-06: the whole-panel disagreement metric (docs/methodology/
+  // dispersion.md) — population σ over the valid verdicts, null below
+  // 2 valid (one voice is not agreement).
+  const panelDispersion = dispersion(scores.map(s => s.score));
 
   return {
     asset:         stock,
@@ -82,6 +87,7 @@ export function buildConsensus(stock: Stock, ctx?: ScoringContext): ConsensusRes
     dataQuality:   assessDataQuality(stock),
     tension,
     tensionSpread,
+    dispersion:    panelDispersion,
     weightedBy:    "Rishi Merit System v1",
     topBull:       finiteScores[0] ?? scores[0],
     topBear:       finiteScores[finiteScores.length - 1] ?? scores[scores.length - 1],

@@ -35,6 +35,10 @@ export interface SanitizedConsensus {
   dataQuality: 'OK' | 'INCOMPLETE';
   tension: string;
   tensionSpread: number;
+  /** S2-06: the disagreement metric — population σ of the valid verdicts
+   *  (docs/methodology/dispersion.md). null when fewer than 2 verdicts
+   *  are valid. */
+  dispersion: number | null;
   weightedBy: string;
   /** How many Rishi verdicts exist in total. */
   scoresCount: number;
@@ -58,6 +62,7 @@ export function sanitizeConsensus(consensus: ConsensusResult): SanitizedConsensu
     dataQuality: consensus.dataQuality,
     tension: consensus.tension,
     tensionSpread: consensus.tensionSpread,
+    dispersion: consensus.dispersion,
     weightedBy: consensus.weightedBy,
     scoresCount: consensus.scores.length,
     topBull: trim(consensus.topBull),

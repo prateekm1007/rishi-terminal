@@ -842,9 +842,13 @@ const FIELD_MENTIONS: Array<{ field: string; re: RegExp }> = [
   { field: "change", re: /\bchange(?:d|s)?\b/gi },
 ];
 
-/** Unit tokens that may trail a stated number ("12%", "21x", "3.2 Cr"). */
+/** Unit tokens that may trail a stated number ("12%", "21x", "3.2 Cr").
+ *  R15: "%" is a NON-word character, so "%\b" never matches ("%." — two
+ *  non-word chars, no boundary) and a percent-suffixed number silently
+ *  carried unit=null; the lookahead form matches "%" before punctuation,
+ *  whitespace or end-of-string. Word tokens keep \b. */
 const UNIT_TOKENS: Array<{ unit: string; re: RegExp }> = [
-  { unit: "percent", re: /^(?:%|percent|pct)\b/i },
+  { unit: "percent", re: /^(?:%(?![0-9A-Za-z])|percent\b|pct\b)/i },
   { unit: "multiple", re: /^(?:x|times)\b/i },
   { unit: "inr_crore", re: /^(?:cr|crore)s?\b/i },
   { unit: "points", re: /^(?:pts?|points)\b/i },
@@ -864,6 +868,13 @@ interface StatedNumber {
 
 const ATTR_WINDOW_BEFORE = 40;
 const ATTR_WINDOW_AFTER = 15;
+
+// ── R15: movement language — words that frame a number as the session's
+// CHANGE (up/down moves), not as a static metric value. Used with the
+// percent/points-unit guard inside statedNumbers() (see the attribution
+// correction there). A closed vocabulary, like FIELD_MENTIONS.
+const MOVEMENT_LANGUAGE_RE =
+  /\b(?:up|down|rose|fell|gained|lost|dropped|declined|advanced|slipped|jumped|rallied|soared|surged)\b/i;
 
 // ── Round-5 audit (Q4 carried over): number WORDS and South-Asian scale ──
 // forms are stated numbers too. "Return on equity is fifty percent" used to
@@ -1004,6 +1015,26 @@ function statedNumbers(text: string): StatedNumber[] {
       for (const ut of UNIT_TOKENS) {
         if (ut.re.test(after)) { unit = ut.unit; break; }
       }
+    }
+    // ── R15 (Coder Directions 2026-10-04, §4): movement-language
+    // attribution correction. "The price is 1167.7 inr, up 1.2%" used to
+    // attribute 1.2 to PRICE (the only field mention in the window — "up"
+    // was not one), so the validator compared 1.2 against the price fact
+    // and rejected a reply whose change assertion was correct. The R15
+    // baseline battery measured this mis-attribution as the dominant
+    // financial repair cause (field-value-mismatch, 7 of 22 rows). A
+    // percent- or points-suffixed number inside movement language is the
+    // day's CHANGE, never the price: re-attribute to change when a
+    // movement word sits within the attribution window. Surgical by
+    // design — numbers without percent/points units ("PE of 12, up versus
+    // peers") keep their original attribution, and every grounded-value
+    // gate is untouched (a mis-attribution still fails closed).
+    if (
+      field !== null && field !== "change" &&
+      (unit === "percent" || unit === "points")
+    ) {
+      const windowText = collapsed.slice(Math.max(0, start - ATTR_WINDOW_BEFORE), end + ATTR_WINDOW_AFTER);
+      if (MOVEMENT_LANGUAGE_RE.test(windowText)) field = "change";
     }
     out.push({ key: canonicalNumber(scaled), field, unit, raw: collapsed.slice(Math.max(0, start), end + (lakhCr ? 16 : (lakhOnly ? 8 : 0))).trim() });
   }

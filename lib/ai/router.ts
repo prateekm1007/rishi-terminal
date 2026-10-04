@@ -243,6 +243,18 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "(3) Never compute new numbers from the facts (no averages, midpoints, " +
     "percent changes you derive yourself) — state only numbers the evidence " +
     "carries. " +
+    "(2a) FIELD DISCIPLINE: each assertion's value must come from the fact " +
+    "annotation of THAT SAME field — a price assertion copies the price " +
+    "annotation's number, a change assertion copies the change annotation's " +
+    "number; a number placed in a field whose annotation carries a different " +
+    "number is rejected. Prefer ONE field per claim: state the price in one " +
+    "claim and the change in another. When one claim does state both, carry " +
+    "BOTH assertions and put each number in its own field's assertion — " +
+    "example: the cited item carries 'fact: price=1741.05 inr (live)' and " +
+    "'fact: change=-0.905 % (live)'; the claim 'trades at 1741.05, down " +
+    "0.905%' must carry assertions [{\"field\": \"price\", \"value\": 1741.05, " +
+    "\"unit\": \"inr\"}, {\"field\": \"change\", \"value\": -0.905, \"unit\": " +
+    "\"%\"}] — 1741.05 in the change field is REJECTED. " +
     "(4) Do NOT include any other numbers anywhere — no dates, timestamps, " +
     "item counts or ids in your claims or answer: every number you write " +
     "must be one of your own assertion values, or validation will reject " +
@@ -639,7 +651,7 @@ async function runGroundedLoop(
     (rejections.length > 0
       ? "the validator rejected: " + rejections.slice(0, 4).join(" | ") + ". "
       : "") +
-    "every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number" +
+    "every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion)" +
     (matchedAssertionValues.length > 0
       ? " (matched assertion values you may state: " + matchedAssertionValues.slice(0, 8).join(", ") + ")"
       : "") +

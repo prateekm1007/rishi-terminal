@@ -46,3 +46,24 @@ EXIT=0
 Files that mention the registry (e.g. `docs/evidence/round9/*`,
 `docs/evidence/round12/y1-fast-pages.md`) are historical records and were not
 edited, per Constitution v2 Appendix B ("Historical entries are never rewritten").
+
+## 5. Deployed and live (C6, Constitution v2)
+
+PR #153 merged as 618002b; the merge read "Deployment rate limited — retry in 24
+hours" on GitHub (fourth exhaustion); the sanctioned API retry (RELEASE.md policy 4)
+CREATED the deployment at 17:03:02Z on the first attempt and it reached READY.
+
+```
+$ curl -s https://rishi-terminal.vercel.app/api/version | jq -r .sha
+618002bf6acf...        (= origin/main tip — deployed)
+$ curl -s 'https://rishi-terminal.vercel.app/?cb=...' | grep -c 'href="/methodology"'
+1                      (positive control, CI-pinned A5)
+$ curl -s 'https://rishi-terminal.vercel.app/stock/SBIN?cb=...' | grep -c 'Peer Comparison'
+2                      (positive control, CI-pinned SSR sections)
+$ curl -s '.../?cb=...' | grep -c 'Connecting'; grep -c 'RANKINGS_ENABLED'
+0 / 0                  (negative controls)
+```
+
+Process note (amendment 6 working as intended): the first live probe grepped
+"Top Rishi Scores" — a stock-page marker, not a homepage string — returned 0, and
+was replaced with the CI-pinned markers before any conclusion was drawn.

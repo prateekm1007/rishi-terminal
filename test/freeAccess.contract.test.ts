@@ -130,7 +130,7 @@ describe("free access: /api/chat/personas returns the FULL roster for every sess
   for (const tier of LEGACY_TIERS) {
     it(`${tier}-equivalent session -> all ${CANONICAL_PERSONAS.length} canonical personas`, async () => {
       asUser({ id: "u1", tier });
-      const res = await personasGET(makeGetReq("http://x/api/chat/personas"));
+      const res = await personasGET();
       expect(res.status).toBe(200);
       const body = (await res.json()) as { personas: Array<{ id: string }> };
       expect(body.personas.length).toBe(CANONICAL_PERSONAS.length);
@@ -144,7 +144,7 @@ describe("free access: /api/chat/personas returns the FULL roster for every sess
     const rosters: string[][] = [];
     for (const tier of LEGACY_TIERS) {
       asUser({ id: "u1", tier });
-      const res = await personasGET(makeGetReq("http://x/api/chat/personas"));
+      const res = await personasGET();
       const body = (await res.json()) as { personas: Array<{ id: string }> };
       rosters.push(body.personas.map((p) => p.id).sort());
     }
@@ -194,7 +194,7 @@ describe("free access: POST /api/chat has NO tier-based persona 403", () => {
 describe("free access: forged client tier cannot alter the server decision", () => {
   it("client body claiming tier=disciple changes nothing for a seeker session (roster)", async () => {
     asUser({ id: "u1", tier: "seeker" });
-    const res = await personasGET(makeGetReq("http://x/api/chat/personas"));
+    const res = await personasGET();
     const body = (await res.json()) as { personas: Array<{ id: string }> };
     // The server answers from the SESSION, and under free access that means
     // the full roster — the client cannot widen or narrow it.

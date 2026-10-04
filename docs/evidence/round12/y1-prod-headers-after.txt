@@ -1,0 +1,16 @@
+== headers: / (post-deploy) ==
+age: 0
+cache-control: public, max-age=0, must-revalidate
+x-vercel-cache: PRERENDER
+x-vercel-id: hkg1::fxzr6-1791074500888-0e4877002860
+== headers: /stock/SBIN (post-deploy) ==
+age: 0
+cache-control: public, max-age=0, must-revalidate
+x-vercel-cache: PRERENDER
+x-vercel-id: hkg1::6lp76-1791074502268-c7f9b3fa7f86
+== X3 non-regression: /stock/SBIN FETCHING count ==
+0
+== X3 non-regression: / Connecting|RANKINGS_ENABLED|—— count ==
+0
+== version ==
+{"sha":"4bebbd517fe5bcc1ccd6d6ba2f387b36b623f45d","now":"2026-10-04T00:41:44.022Z","node":"v24.21.0"}

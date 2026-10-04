@@ -5,7 +5,7 @@
 //
 // Contract:
 //   POST /api/ingest/quotes-warm?slice=k&of=n[&force=1]
-//   Authorization: Bearer <CRON_SECRET>          (lib/auth/cron — fail-closed)
+//   Authorization: Bearer <QUOTES_WARM_SECRET>  (lib/auth/cron — fail-closed)
 //
 //   - `slice`/`of` partition the 916-symbol universe deterministically
 //     (STOCKS key order): the caller (the workflow) fires one request per
@@ -30,7 +30,7 @@
 // infra path, not a user surface).
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireCronAuth } from "@/lib/auth/cron";
+import { requireQuotesWarmAuth } from "@/lib/auth/cron";
 import { marketState } from "@/lib/marketHours";
 import { STOCKS } from "@/data/stocks";
 import {
@@ -49,7 +49,7 @@ function parseSlice(req: NextRequest): { slice: number; of: number } {
 }
 
 export async function POST(req: NextRequest) {
-  const denied = requireCronAuth(req);
+  const denied = requireQuotesWarmAuth(req);
   if (denied) return denied;
 
   const force = req.nextUrl.searchParams.get("force") === "1";

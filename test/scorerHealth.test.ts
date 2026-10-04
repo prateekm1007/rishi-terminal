@@ -71,19 +71,34 @@ describe('W4: scorer health across the universe (gate bites on saturated/flat sc
   /** Documented allow-list: scorers exempt from a health floor, each with a
    *  founder-approved justification in the PR that needs it.
    *
-   *  W4 (founder round-10):
-   *  - 'Greenblatt': the V2 units fix (PR #87) established the honest
-   *    percent arithmetic for the np/mktcap Magic Formula proxy; the
-   *    resulting low-end pile (26.9% of scores ≤ 5) is the actual shape of
-   *    Indian small-cap earnings — a quarter of the universe has an
-   *    earnings yield under ~0.5% (near-zero net profit), which floors BOTH
-   *    components (rocS and eyS) by the formula's own arithmetic. Re-tuning
-   *    the thresholds to cosmeticize that pile is exactly the "blind
-   *    re-tune" the founder direction forbids. sd 24.0 proves real spread
-   *    where earnings exist; the V2 acceptance (spread ≥ 90: 88.2% →
-   *    20.7%) was taken with this shape. */
+   *  W4 (founder round-10), record rewritten for honesty in X6 (Round 13):
+   *  - 'Greenblatt': the V2 units fix (PR #87) established honest PERCENT
+   *    arithmetic for the np/mktcap Magic Formula proxy — that arithmetic is
+   *    real, re-verified on this tree (mean 26.0, sd 24.0 over 916 stocks).
+   *    The low-end pile (26.9% of scores <= 5) is the honest result of that
+   *    arithmetic on THIS DATASET — which is the placeholder seed
+   *    (SEED_STATUS = 'placeholder', SEED_CAPTURED_AT = null, many
+   *    deliberately-round June values, and zeros that are the documented
+   *    placeholder for "unknown" per Y4). It is NOT a verified claim about
+   *    the actual shape of Indian small-cap earnings: 21.3% of the seed
+   *    universe (195 stocks) carries an earnings yield under 0.5% in the
+   *    SEED, and 7 of the 246 low-end stocks have np = 0 — the June
+   *    placeholder for unknown net profit, which still scores 0 here
+   *    (mktcap > 0, so the safeDiv zero-guard does not fire). Attributing
+   *    the pile to the real market would be Rule 1/3 laundering of
+   *    placeholder data; re-tuning thresholds to cosmeticize it is the
+   *    "blind re-tune" the founder direction forbids. The honest statement:
+   *    the V2 arithmetic is correct, the spread it produces on the
+   *    placeholder seed is real spread (sd 24.0), and the pile's
+   *    composition must be re-examined when real fundamentals land (FD-1).
+   *    Known asymmetry, recorded for triage: X6 gave Nemish a
+   *    provenance-aware insufficient path for placeholder zeros;
+   *    Greenblatt keeps scoring np=0 placeholders as 0 (7 stocks) because
+   *    this item was scoped to the record and the V2 acceptance numbers
+   *    (spread >= 90: 88.2% -> 20.7% on the V2 tree) were taken with this
+   *    shape. */
   const SCORER_HEALTH_ALLOWLIST: ReadonlyMap<string, string> = new Map([
-    ['Greenblatt', 'V2-honest Magic Formula arithmetic: near-zero-earnings stocks legitimately floor both components (see scorerHealth.test.ts header); re-tuning forbidden by the W4 direction'],
+    ['Greenblatt', 'V2-honest Magic Formula arithmetic on the placeholder seed: the 26.9% low-end pile is the shape of the SEED dataset (no capture date, zeros = unknown per Y4), not a verified claim about the market; re-tuning forbidden by the W4 direction; re-examine on real fundamentals (FD-1)'],
   ]);
 
   const UNIVERSE = Object.values(STOCKS);

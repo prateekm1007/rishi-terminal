@@ -518,6 +518,11 @@
       "test/screener.parser.test.ts",
       "test/rls.screens.test.ts",
       "test/freshness.surfaces.test.ts"
+    ],
+    "A3": [
+      "docs/RELEASE.md",
+      "docs/evidence/round14/",
+      "scripts/ci/commit-scope-registry.json"
     ]
   }
 }

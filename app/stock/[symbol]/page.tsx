@@ -7,6 +7,9 @@ import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 // server per regeneration — the dataset and detector no longer ship in
 // the client bundle.
 import { detectArchetype, HISTORICAL_PARALLELS } from '@/lib/wisdom/historicalParallels';
+// R4-04: consensus + dissent + verified levers, computed once per regeneration
+import { buildCouncil } from '@/lib/consensus/council';
+import { RishiCouncil } from '@/components/stock/RishiCouncil';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
@@ -121,6 +124,10 @@ export default async function StockPage({ params }: StockPageProps) {
   // for every visitor — the seeker slice and the paid upgrade path are
   // gone. The embedded set is the complete council, publicly, for everyone.
   const sanitized = sanitizeConsensus(consensus);
+  // R4-04: the council is server-computed once per regeneration — the
+  // lever paths were verified by re-running the scorers (council.ts) and
+  // re-verified by the acceptance test over the whole universe.
+  const council = buildCouncil(stock, sanitized.verdicts);
   const stockDetail = generateStockDetail(stock);
 
   // N1 (round 3): every engine call happens here, on the server. The
@@ -174,6 +181,7 @@ export default async function StockPage({ params }: StockPageProps) {
         initialMarket={initialMarket}
         parallel={parallel}
       />
+      <RishiCouncil council={council} />
     </NamespaceProvider>
   );
 }

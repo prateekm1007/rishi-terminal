@@ -8,6 +8,7 @@
 import { useState, useMemo } from 'react';
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import { StockTable } from '@/components/screener/StockTable';
+import { ScreenerQueryBar } from '@/components/screener/ScreenerQueryBar';
 import { useLanguage } from '@/lib/language';
 import { SCREENER_PRESETS, applyFilters } from '@/lib/screener/presets';
 import SeedDataBanner from '@/components/shared/SeedDataBanner';
@@ -20,13 +21,19 @@ interface Props {
 export function ScreenerClient({ rows }: Props) {
   const { t, locale } = useLanguage();
   const [activePreset, setActivePreset] = useState<string | null>(null);
+  // X3-05: custom-expression results (server-evaluated). Null = the
+  // expression mode is off; a custom query takes precedence over the
+  // presets until cleared, because the user's explicit query is the
+  // most recent intent.
+  const [queryRows, setQueryRows] = useState<SlimStockRow[] | null>(null);
 
   const filteredStocks = useMemo(() => {
+    if (queryRows) return queryRows;
     if (!activePreset) return rows;
     const preset = SCREENER_PRESETS.find(p => p.id === activePreset);
     if (!preset) return rows;
     return applyFilters(rows, preset.filters);
-  }, [rows, activePreset]);
+  }, [rows, activePreset, queryRows]);
 
   const activePresetData = SCREENER_PRESETS.find(p => p.id === activePreset);
 
@@ -80,7 +87,7 @@ export function ScreenerClient({ rows }: Props) {
 
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160, textAlign: 'center' }}>
               <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
-                {activePreset ? 'FILTERED' : 'TOTAL COVERAGE'}
+                {activePreset || queryRows ? 'FILTERED' : 'TOTAL COVERAGE'}
               </div>
               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
                 {filteredStocks.length}
@@ -127,6 +134,13 @@ export function ScreenerClient({ rows }: Props) {
               ))}
             </div>
           </div>
+
+          <ScreenerQueryBar
+            onQueryResult={(resultRows) => {
+              setQueryRows(resultRows);
+              if (resultRows) setActivePreset(null);
+            }}
+          />
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
             {STAT_PILLS.map(stat => (

@@ -432,6 +432,19 @@
       "test/x6.consensusGates.test.ts",
       "test/x6.nemishPlaceholders.test.ts",
       "components/stock/RishiGrid.tsx"
+    ],
+    "X7": [
+      ".env.example",
+      "app/api/chat/route.ts",
+      "components/chat/RishiChat.tsx",
+      "components/chat/pow.ts",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round13/",
+      "lib/chat/challenge.ts",
+      "lib/chat/globalSpend.ts",
+      "lib/db/migrations/023_chat_challenges.sql",
+      "scripts/ci/commit-scope-registry.json",
+      "test/x7.challenge.test.ts"
     ]
   }
 }

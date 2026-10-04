@@ -1,0 +1,18 @@
+# X7 fail-first (Rule 21/24) — re-verified 2026-10-04 on fix/x7 branch tree
+
+## Without lib/chat/challenge.ts (module removed): the suite cannot even load
+```
+$ mv lib/chat/challenge.ts /tmp/ && npx vitest run test/x7.challenge.test.ts; echo exit=$?
+ ❯ test/x7.challenge.test.ts (0 test)
+   Test Files  1 failed (1)
+        Tests  no tests
+ exit=1
+```
+
+## With the module present:
+```
+$ npx vitest run test/x7.challenge.test.ts; echo exit=$?
+   Test Files  1 passed (1)
+        Tests  15 passed (15)
+ exit=0
+```

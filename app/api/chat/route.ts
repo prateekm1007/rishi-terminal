@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { getSessionUser } from '@/lib/auth/session';
 import { anonQuotaIdFromEnv } from '@/lib/auth/anonIdentity';
 import {
@@ -8,6 +9,7 @@ import {
   reserveGlobalTokens,
   settleGlobalTokens,
 } from '@/lib/chat/globalSpend';
+import { shouldChallenge, issueChallenge, verifyChallengeSolution } from '@/lib/chat/challenge';
 import { resolvePersonaId } from '@/lib/chat/personas';
 import { resolveCanonicalPersona } from '@/lib/chat/registry';
 import { STOCKS } from '@/data/stocks';
@@ -101,6 +103,67 @@ function clientIp(req: NextRequest): string {
 async function ipBurstExceeded(ip: string): Promise<boolean> {
   const r = await checkRateLimit(`chat:ip:${ip}`, BURST_MAX_REQUESTS, BURST_WINDOW_SECONDS);
   return !r.allowed;
+}
+
+// ── X7: challenge persistence (single-use consume; migration 023) ──
+// token_hash = SHA-256 of the public challenge token: the table stores a
+// VERIFIER, never a credential (rule 8).
+
+function sha256Hex(v: string): string {
+  return createHash('sha256').update(v).digest('hex');
+}
+
+async function anonUsageToday(quotaIdentity: string): Promise<number> {
+  try {
+    const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
+    const { data, error } = await getAdminSupabase().rpc('chat_usage_today', {
+      p_user_id: quotaIdentity,
+    });
+    if (error) throw new Error(error.message);
+    const n = typeof data === 'number' ? data : Number(data);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  } catch (e) {
+    // Fail OPEN for the READ only: an unreadable counter must not lock
+    // every anonymous caller out behind challenges (the consume path and
+    // the quota path still fail closed independently). Logged.
+    console.error('[chat] anon usage read failed (challenge skipped):', e instanceof Error ? e.message : e);
+    return 0;
+  }
+}
+
+async function storeChatChallenge(
+  challenge: ReturnType<typeof issueChallenge>,
+  identityHash: string,
+): Promise<void> {
+  try {
+    const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
+    const { error } = await getAdminSupabase()
+      .from('chat_challenges')
+      .insert({ token_hash: sha256Hex(challenge.token), identity_hash: identityHash });
+    if (error) throw new Error(error.message);
+  } catch (e) {
+    // Best effort: a lost row only means the solution cannot be consumed
+    // (the retry then issues a fresh challenge) — never a wrong admission.
+    console.error('[chat] challenge store failed:', e instanceof Error ? e.message : e);
+  }
+}
+
+async function consumeChatChallengeOnce(args: {
+  token: string;
+  identityHash: string;
+}): Promise<boolean> {
+  try {
+    const { getAdminSupabase } = await import('@/lib/services/supabaseAdmin');
+    const { data, error } = await getAdminSupabase().rpc('consume_chat_challenge', {
+      p_token_hash: sha256Hex(args.token),
+      p_identity_hash: args.identityHash,
+    });
+    if (error) throw new Error(error.message);
+    return data === true;
+  } catch (e) {
+    console.error('[chat] challenge consume failed (fail closed):', e instanceof Error ? e.message : e);
+    return false;
+  }
 }
 
 // ── per-user daily quota: ATOMIC RPC (R6) ──────────────────────
@@ -200,6 +263,7 @@ export async function POST(req: NextRequest) {
     symbol?: unknown;
     history?: unknown;
     message?: unknown;
+    challenge?: unknown;
   };
   try {
     body = await req.json();
@@ -283,6 +347,77 @@ export async function POST(req: NextRequest) {
     history.push({ role: t.role, content: t.content });
   }
 
+  // 4.4 X7 (Round 13, Z6b): the SELF-HOSTED anonymous chat challenge.
+  //     After N consumed units today (default 5, env
+  //     CHAT_CHALLENGE_AFTER), an ANONYMOUS caller must pay a proof-of-work
+  //     cost (lib/chat/challenge) before admission: the server issues an
+  //     HMAC-signed challenge bound to the identity; the client solves it
+  //     (~1-2 s of browser work) and retries with {challenge: {token,
+  //     nonce, issuedAt, challengeId}}. Signed-in accounts skip the
+  //     challenge entirely (the founder's spec: "anonymous chat").
+  //     Placement: AFTER validation (a 400/413 costs nothing, issues
+  //     nothing), BEFORE the global reservation and the per-identity quota
+  //     (a challenged or failing-solution request burns nothing).
+  //     Single-use: consume_chat_challenge (migration 023) is one atomic
+  //     UPDATE — a replayed solution finds consumed_at set and is refused.
+  //     Passing callers reserve against the FULL global token cap (the
+  //     reserved slice — lib/chat/globalSpend#tokenLimitFor); everyone
+  //     else against TOTAL minus the slice.
+  let passedChallenge = false;
+  if (!user) {
+    const anonUsage = await anonUsageToday(quotaIdentity);
+    if (shouldChallenge(anonUsage)) {
+      const c = body.challenge as
+        | { token?: unknown; nonce?: unknown; issuedAt?: unknown; challengeId?: unknown }
+        | undefined;
+      const usable =
+        c &&
+        typeof c.token === 'string' &&
+        typeof c.nonce === 'string' &&
+        typeof c.challengeId === 'string' &&
+        typeof c.issuedAt === 'number' &&
+        Number.isFinite(c.issuedAt);
+      const verified =
+        usable &&
+        verifyChallengeSolution({
+          identityHash: quotaIdentity,
+          issuedAt: (c as { issuedAt: number }).issuedAt,
+          challengeId: (c as { challengeId: string }).challengeId,
+          token: (c as { token: string }).token,
+          nonce: (c as { nonce: string }).nonce,
+          pepper: process.env.ANON_ID_PEPPER ?? '',
+          nowMs: Date.now(),
+        });
+      const consumedOnce =
+        verified &&
+        (await consumeChatChallengeOnce({
+          token: (c as { token: string }).token,
+          identityHash: quotaIdentity,
+        }));
+      if (verified && consumedOnce) {
+        passedChallenge = true;
+      } else {
+        // No solution / bad solution / replayed solution: issue a FRESH
+        // challenge and stop. Nothing is consumed anywhere.
+        const fresh = issueChallenge(quotaIdentity, process.env.ANON_ID_PEPPER ?? '', Date.now());
+        await storeChatChallenge(fresh, quotaIdentity);
+        return NextResponse.json(
+          {
+            challengeRequired: true,
+            challenge: {
+              token: fresh.token,
+              difficulty: fresh.difficulty,
+              challengeId: fresh.challengeId,
+              issuedAt: fresh.issuedAt,
+              expiresAt: fresh.expiresAt,
+            },
+          },
+          { status: 429 },
+        );
+      }
+    }
+  }
+
   // 4.5 W3 (founder round-10, closed 2026-10-03): GLOBAL spend caps —
   //     bound TOTAL daily spend regardless of how many identities ask
   //     (the per-identity quota cannot bound a distributed abuser).
@@ -304,7 +439,7 @@ export async function POST(req: NextRequest) {
       { status: 503 },
     );
   }
-  if (!(await reserveGlobalTokens())) {
+  if (!(await reserveGlobalTokens(passedChallenge))) {
     return NextResponse.json(
       { error: 'Chat temporarily unavailable', fallback: true },
       { status: 503 },

@@ -40,7 +40,6 @@ import { STOCKS } from "@/data/stocks";
 import { isValidSymbolInput, normalizeSymbolInput } from "@/lib/registry/validateInput";
 import type { ResolvedStockMetrics } from "@/lib/scoring";
 import { fetchLivePrice } from "@/lib/livePrice";
-import { fetchFullFundamentals } from "@/lib/liveFundamentals";
 import type { FullFundamentals } from "@/lib/liveFundamentals";
 import {
   buildProfileItem,

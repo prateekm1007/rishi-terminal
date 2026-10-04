@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useLanguage } from '../../lib/language';
 import { useFundamentals } from '@/hooks/useFundamentals';
 import { Stock } from '../../lib/types';
@@ -10,7 +10,6 @@ import type { TrimmedVerdict } from '../../lib/consensus/sanitize';
 // graph via RSC props; tier-aware graph via /api/rishis/[symbol] for paid
 // tiers). The engine builder is server-only.
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
-import { INVESTMENT_GLOSSARY } from '../../data/glossary';
 import { GLOBAL_RISHI_PLAYS, RishiPlay } from '../../data/rishi-portfolios/global-plays';
 
 interface Props {
@@ -20,67 +19,6 @@ interface Props {
   topBear?: TrimmedVerdict;
   /** N1: server-computed knowledge graph. */
   graph?: EliteKnowledgeGraph | null;
-}
-
-interface TooltipState {
-  term: string;
-  x: number;
-  y: number;
-}
-
-/* -- Glossary Tooltip ----------------------------------------- */
-function GlossaryTooltip({ tooltip }: { tooltip: TooltipState | null }) {
-  if (!tooltip) return null;
-  const entry = INVESTMENT_GLOSSARY[tooltip.term.toLowerCase()];
-  if (!entry) return null;
-
-  return (
-    <div style={{
-      position: 'fixed',
-      left: Math.min(tooltip.x, (typeof window !== 'undefined' ? window.innerWidth : 1200) - 420),
-      top: tooltip.y + 8,
-      maxWidth: 400,
-      background: '#0A0F1C',
-      border: '2px solid #D4AF37',
-      borderRadius: 12,
-      padding: '16px 18px',
-      boxShadow: '0 12px 40px rgba(0,0,0,0.7)',
-      zIndex: 99999,
-      pointerEvents: 'none',
-    }}>
-      <div style={{
-        fontSize: 11, fontWeight: 700, color: '#D4AF37',
-        marginBottom: 6, fontFamily: 'Cinzel, serif',
-        letterSpacing: 1, textTransform: 'uppercase' as const,
-      }}>
-        {entry.term}
-      </div>
-      <div style={{ fontSize: 12, color: '#F8FAFC', lineHeight: 1.65, marginBottom: entry.example ? 10 : 0 }}>
-        {entry.definition}
-      </div>
-      {entry.example && (
-        <div style={{
-          fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic',
-          padding: '8px 10px', background: 'rgba(212,175,55,0.06)',
-          borderRadius: 6, borderLeft: '2px solid #D4AF37', lineHeight: 1.5,
-        }}>
-          {entry.example}
-        </div>
-      )}
-      {entry.relatedTerms && entry.relatedTerms.length > 0 && (
-        <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {entry.relatedTerms.map((rt: string) => (
-            <span key={rt} style={{
-              fontSize: 10, padding: '2px 8px',
-              background: 'rgba(212,175,55,0.08)',
-              border: '1px solid rgba(212,175,55,0.2)',
-              borderRadius: 4, color: '#D4AF37',
-            }}>{rt}</span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
 
 /* -- Debate Card ----------------------------------------------- */
@@ -303,42 +241,6 @@ function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
   );
 }
 
-/* -- Timeline Card --------------------------------------------- */
-function TimelineCard({ event }: { event: any }) {
-  const scoreColor = event.score >= 75 ? '#22C55E' : event.score >= 55 ? '#D4AF37' : '#EF4444';
-  return (
-    <div style={{
-      display: 'flex', gap: 16, marginBottom: 16,
-      paddingLeft: 20, position: 'relative',
-    }}>
-      <div style={{
-        position: 'absolute', left: 0, top: 6,
-        width: 14, height: 14, borderRadius: '50%',
-        background: scoreColor,
-        boxShadow: `0 0 8px ${scoreColor}88`,
-        border: '2px solid #0A0F1C',
-        flexShrink: 0,
-      }} />
-      <div style={{
-        background: 'rgba(17,24,39,0.6)',
-        border: '1px solid rgba(51,65,85,0.4)',
-        borderRadius: 10, padding: '10px 14px', flex: 1,
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#F8FAFC' }}>{event.rishi}</div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{event.year}</span>
-            <span style={{ fontSize: 14, fontWeight: 800, color: scoreColor, fontFamily: 'JetBrains Mono, monospace' }}>
-              {event.score}
-            </span>
-          </div>
-        </div>
-        <div style={{ fontSize: 12, color: '#94A3B8', lineHeight: 1.6 }}>{event.signal}</div>
-      </div>
-    </div>
-  );
-}
-
 // Smart matching algorithm for historical plays
 function getRelevantPlays(stock: Stock): RishiPlay[] {
   const SECTOR_KEYWORDS: Record<string, string[]> = {
@@ -423,21 +325,14 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
 }
 
 /* -- Main KnowledgeGraphView ------------------------------------ */
-export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }: Props) {
+export function KnowledgeGraphView({ stock, topBull, topBear, graph }: Props) {
   const { fundamentals } = useFundamentals(stock.symbol);
   const liveStock: Stock = { ...stock, pe: fundamentals?.pe ?? stock.pe, roe: fundamentals?.roe ?? stock.roe };
   const { t } = useLanguage();
   const [activeView, setActiveView] = useState<'debate' | 'historical' | 'technical' | 'timeline'>('debate');
-  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   // N1: server-computed graph (free set by default; paid tiers upgrade it
   // through /api/rishis/[symbol]).
   const graphData: EliteKnowledgeGraph | null = graph ?? null;
-
-  const handleHover = useCallback((term: string, e: React.MouseEvent) => {
-    setTooltip({ term, x: e.clientX, y: e.clientY });
-  }, []);
-
-  const handleLeave = useCallback(() => setTooltip(null), []);
 
   if (!graphData) {
     return (
@@ -457,7 +352,6 @@ export function KnowledgeGraphView({ stock, verdicts, topBull, topBear, graph }:
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <GlossaryTooltip tooltip={tooltip} />
 
       {/* Tab Bar */}
       <div style={{

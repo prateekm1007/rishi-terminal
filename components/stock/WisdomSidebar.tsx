@@ -93,7 +93,11 @@ function detectArchetype(stock: Stock): string | null {
   if (['FMCG', 'Consumer', 'Retail'].includes(sector) && roe > 20) return 'consumer_moat';
   if (['Metals', 'Energy'].includes(sector) && pe < 10 && pe > 0) return 'cyclical_value';
   if (pe > 50 && np < 0) return 'growth_premium';
-  if (['IT', 'Banking'].includes(sector) && roe > 15 && de < 1) return 'quality_growth';
+  // Y4 (Round 12): Banking removed — a bank is not an IT-services
+  // compounder, and the seed's bank D/E 0 (placeholder) made the old
+  // IT-plus-Banking rule match on fabricated cleanliness. Banks (and
+  // anything else unmatched) show NO analog rather than a wrong one.
+  if (sector === 'IT' && roe > 15 && de < 1) return 'quality_growth';
   if (roe < 0 || de > 3) return 'turnaround';
   if (mktcap < 10000 && revcagr > 20 && roe > 15) return 'smallcap_gem';
   return null;

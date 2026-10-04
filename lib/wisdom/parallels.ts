@@ -222,8 +222,15 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
   },
 };
 
-// Detect archetype based on stock characteristics
-export function detectArchetype(stock: Stock): string {
+// Detect archetype based on stock characteristics.
+// Y4 (Round 12): NO default fall-through. The old `return 'quality_compound'`
+// classified every unmatched profile — every bank, most financials and
+// industrials — into the IT/Pharma "quality compounder" analog (the
+// founder's live finding: SBIN showed "India Services Export Boom").
+// A stock that matches no archetype gets null -> the UI shows "No
+// historical parallels detected" (Rule 3: no wrong analog beats none).
+// Callers already guard on null (graph.ts `if (archetype)`).
+export function detectArchetype(stock: Stock): string | null {
   const { sector, pe, roe, de, np, epscagr, opm, mktcap } = stock;
 
   // Consumer moat: FMCG/Consumer + high ROE + strong margins
@@ -256,7 +263,7 @@ export function detectArchetype(stock: Stock): string {
     return 'smallcap_gem';
   }
 
-  return 'quality_compound'; // Default
+  return null;
 }
 
 // Map archetype to parallel
@@ -271,6 +278,7 @@ const ARCHETYPE_TO_PARALLEL: Record<string, string> = {
 
 export function getHistoricalParallel(stock: Stock): HistoricalParallel | null {
   const archetype = detectArchetype(stock);
+  if (!archetype) return null;
   const parallelId = ARCHETYPE_TO_PARALLEL[archetype];
   return HISTORICAL_PARALLELS[parallelId] || null;
 }

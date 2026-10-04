@@ -295,7 +295,18 @@
       "test/y2.ssrPeek.test.ts",
       "test/y1.isrSegmentConfig.test.ts"
     ],
-    "Y3": [
+    "Y4": [
+   "app/api/fundamentals/route.ts",
+   "components/stock/MetricsPanel.tsx",
+   "components/stock/PeerComparison.tsx",
+   "components/stock/WisdomSidebar.tsx",
+   "docs/DATA_SOURCES.md",
+   "lib/types/sourced.ts",
+   "lib/wisdom/parallels.ts",
+   "scripts/ci/commit-scope-registry.json",
+   "test/y4.nullNotZero.test.ts"
+  ],
+  "Y3": [
       "app/alerts/page.tsx",
       "app/stock/[symbol]/page.tsx",
       "components/stock/LivePriceWidget.tsx",

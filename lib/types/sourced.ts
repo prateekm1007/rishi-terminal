@@ -117,6 +117,12 @@ export function overlaySourced(
   liveAsOf: string | null | undefined,
   field?: string,
 ): Sourced<number> {
+  // Y4 (Round 12): the "static" fundamentals fallback is the seed dataset
+  // relabeled server-side — it is NOT a live observation. Overlaying it
+  // would launder seed numbers (including placeholder zeros) into the
+  // UI as `vendor:live-fundamentals`. Keep the baseline: same numbers,
+  // honest label ("Reference dataset (illustrative)").
+  if (vendorName === "static") return baseline;
   const admissible =
     typeof liveValue === "number" &&
     (field ? isAdmissibleLive(field, liveValue) : Number.isFinite(liveValue) && liveValue > 0);
@@ -136,4 +142,17 @@ export function overlaySourced(
     }
   }
   return baseline;
+}
+
+/**
+ * Y4 (Round 12): a seed-sourced ZERO is the June placeholder for
+ * "unknown" — the seed generator wrote 0 where a value was missing — and
+ * must never render as an observation. A vendor/filing/derived 0 is a
+ * REAL observation (a debt-free D/E, a legitimately flat promoter stake)
+ * and MUST render as 0 (Rule 16 cuts both ways). This lifts placeholder
+ * zeros to null at the UI boundary so <DataValue> renders "—" (Rule 3)
+ * without touching the engine's resolution semantics.
+ */
+export function dropSeedPlaceholderZero(s: Sourced<number>): Sourced<number> {
+  return s.value === 0 && s.source === "seed" ? { ...s, value: null } : s;
 }

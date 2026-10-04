@@ -4,6 +4,14 @@
 import { Suspense } from 'react';
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
 import { LabContent } from '@/components/lab/LabContent';
+import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
+import { compare, holdings, intel, overview } from '@/messages/en.json';
+
+// X4 (Round 11): the lab tab namespaces arrive from the server as RSC
+// props (flight payload) instead of riding the client bundle — see the
+// homepage's note in app/page.tsx. (`lab.*` keys used by WatchlistTab have
+// never existed in en.json — they render via the humanize fallback today;
+// recorded in test/bundleBoundary.language.test.ts's known-missing list.)
 
 // Round-5 audit (finding 18): per-page title/description.
 export const metadata = {
@@ -14,14 +22,16 @@ export const metadata = {
 export default function PortfolioLabPage() {
   const rows = getSlimIndex();
   return (
-    <Suspense
-      fallback={
-        <div className="page-bg" style={{ padding: 48, textAlign: 'center' }}>
-          <p style={{ color: '#D4AF37' }}>Loading Lab...</p>
-        </div>
-      }
-    >
-      <LabContent rows={rows} />
-    </Suspense>
+    <NamespaceProvider ns={{ compare, holdings, intel, overview }}>
+      <Suspense
+        fallback={
+          <div className="page-bg" style={{ padding: 48, textAlign: 'center' }}>
+            <p style={{ color: '#D4AF37' }}>Loading Lab...</p>
+          </div>
+        }
+      >
+        <LabContent rows={rows} />
+      </Suspense>
+    </NamespaceProvider>
   );
 }

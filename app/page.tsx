@@ -32,6 +32,14 @@ import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
 import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
+import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
+import { dashboard, dashboard2 } from '@/messages/en.json';
+
+// X4 (Round 11): this page's dictionary namespaces are imported on the
+// server and handed to the client tree via <NamespaceProvider> — they ride
+// the streamed flight payload instead of the blocking JS chunks, and the
+// dashboard carries only its own strings (the shell namespaces every route
+// needs come from the root layout's shell prop).
 
 export const dynamic = 'force-dynamic';
 
@@ -71,13 +79,15 @@ export default async function Page() {
   ]);
 
   return (
-    <DashboardClient
-      rankingsEnabled={rankings}
-      rotatingStocks={rotatingStocks}
-      rotatingShorts={rotatingShorts}
-      stockOfDay={stockOfDay}
-      sodCommentary={sodCommentary}
-      initialPrices={initialPrices}
-    />
+    <NamespaceProvider ns={{ dashboard, dashboard2 }}>
+      <DashboardClient
+        rankingsEnabled={rankings}
+        rotatingStocks={rotatingStocks}
+        rotatingShorts={rotatingShorts}
+        stockOfDay={stockOfDay}
+        sodCommentary={sodCommentary}
+        initialPrices={initialPrices}
+      />
+    </NamespaceProvider>
   );
 }

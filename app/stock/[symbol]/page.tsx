@@ -9,6 +9,15 @@ import { generateStockDetail } from '../../../data/stockDetails';
 import { serveCachedQuote } from '@/lib/quotePath'; // X3: SSR peek — the last cached quote, read-only
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
+import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
+// `stock as stockNs`: this page's OWN `stock` binding (the resolved Stock
+// record) shadows the namespace identifier inside the component scope —
+// the alias keeps the two apart.
+import { stock as stockNs, chart, kg, rishiGrid } from '../../../messages/en.json';
+
+// X4 (Round 11): the stock page's dictionary namespaces arrive from the
+// server via <NamespaceProvider> (see the homepage's note) — the heaviest
+// route keeps only its own strings in the flight payload.
 
 // X3 (Round 11): stock pages render DYNAMICALLY. The 916-page SSG bake
 // carried a "⟳ FETCHING" price tile for every symbol (builds fetch
@@ -109,14 +118,16 @@ export default async function StockPage({ params }: StockPageProps) {
   const initialQuote = await serveCachedQuote(key);
 
   return (
-    <StockPageClient
-      stock={stock}
-      consensus={sanitized}
-      detail={stockDetail}
-      resolved={resolved}
-      qvpsDual={qvpsDual}
-      eliteGraph={eliteGraph}
-      initialQuote={initialQuote}
-    />
+    <NamespaceProvider ns={{ stock: stockNs, chart, kg, rishiGrid }}>
+      <StockPageClient
+        stock={stock}
+        consensus={sanitized}
+        detail={stockDetail}
+        resolved={resolved}
+        qvpsDual={qvpsDual}
+        eliteGraph={eliteGraph}
+        initialQuote={initialQuote}
+      />
+    </NamespaceProvider>
   );
 }

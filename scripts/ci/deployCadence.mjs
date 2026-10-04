@@ -45,11 +45,6 @@ function git(...args) {
   return execFileSync("git", args, { encoding: "utf8" });
 }
 
-function die(msg, code = 2) {
-  console.error(`deploy-cadence: ${msg}`);
-  process.exit(code);
-}
-
 /** First-parent merge commits reachable from `ref`, newest first:
  *  [{sha, ts (epoch ms), subject}]. */
 export function mergeHistory(ref) {

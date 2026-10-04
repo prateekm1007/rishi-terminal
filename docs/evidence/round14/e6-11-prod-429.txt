@@ -1,0 +1,31 @@
+== E6-11 production limiter probe: POST /api/prices/batch, ONE keep-alive connection, 75 requests ==
+
+Purpose: acceptance clause 2 — "rate limiter returns 429 above the limit".
+The R6 per-IP limiter is 60 requests / 60 s (route constant), backed by the
+SQL RPC hit_rate_limit (persistent, shared across instances).
+
+Method note: the first two probes (75 spaced requests) saw ALL-200 responses
+because this sandbox's egress IP ROTATES per connection — each request landed
+on a different rate-limit key (verified: rate_limits rows show many distinct
+data:ip:* keys, each with small counts — this is the limiter working as
+designed against rotated clients, not a defect). Re-run on ONE keep-alive
+connection (single egress IP = single limiter key):
+
+$ curl -s -o /dev/null -w "%{http_code} " -X POST \
+    -H "Content-Type: application/json" \
+    -d '{"symbols":["RELIANCE","TCS","HDFCBANK","INFY","SBIN"]}' \
+    $(for i in $(seq 1 75); do echo -n "https://rishi-terminal.vercel.app/api/prices/batch "; done) \
+  | tr ' ' '\n' | uniq -c | tr '\n' ' '
+
+Tally (uniq -c of the status sequence):
+
+     60 200      <- admitted: full CACHED payloads served from the quote
+                    cache (Z3 peek-age contract; zero upstream calls)
+     15 429      <- refused: {"error":"Too many requests"}
+
+Exactly the documented bound: 60 admitted within the window, every request
+past it refused. Verdict: clause 2 GREEN on the live deployment
+(2026-10-04T15:4xZ).
+
+The admitted payloads carry honest provenance, e.g.:
+  RELIANCE price=1167.7 source=yahoo-bulk status=CACHED observedAt=2026-10-01T09:45:00+00:00

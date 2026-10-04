@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Stock, RishiScore } from '../../lib/types';
 import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
@@ -507,6 +508,32 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
             </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* A5 (Round 14): the methodology page was unreachable from the
+          product (FD-15) — every stock page carries a footer link so the
+          scoring methods behind the numbers above are one click away. */}
+      <div className="content-wrapper" style={{ paddingBottom: 40 }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          flexWrap: 'wrap', gap: 12, paddingTop: 16,
+          borderTop: '1px solid rgba(30,41,59,0.8)',
+        }}>
+          <span style={{ fontSize: 11, color: '#64748B', letterSpacing: 0.5 }}>
+            {stock.name} · {stock.symbol} · {t('stock.topRishiScores')}: {consensus.scoresCount} Rishis
+          </span>
+          <Link
+            href="/methodology"
+            style={{
+              fontSize: 11, fontFamily: 'monospace', letterSpacing: 1,
+              color: '#D4AF37', textDecoration: 'none',
+              border: '1px solid rgba(255,215,0,0.25)', borderRadius: 6,
+              padding: '5px 12px', background: 'rgba(255,215,0,0.06)',
+            }}
+          >
+            {t('nav.methodology')} →
+          </Link>
         </div>
       </div>
     </div>

@@ -37,7 +37,7 @@ function dirname(p) { return p.slice(0, Math.max(p.lastIndexOf("/"), p.lastIndex
 
 // ── 1. what is PRODUCT CODE (scanned) ─────────────────────────────────────
 const PRODUCT_SCOPES = ["app", "lib", "components", "hooks", "messages", "data"];
-const PRODUCT_FILES = ["proxy.ts", "next.config.js", "package.json"];
+const PRODUCT_FILES = ["proxy.ts", "next.config.ts", "next.config.js", "package.json"]; // .ts is canonical (Z5); .js kept for safety if reverted
 const PRODUCT_EXTS = /\.(ts|tsx|js|mjs|mts|json)$/;
 
 // ── 2. forbidden patterns (matched against COMMENT-STRIPPED code) ────────

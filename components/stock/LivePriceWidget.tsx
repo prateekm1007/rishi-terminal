@@ -193,7 +193,12 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
       border:        '1px solid var(--border-primary)',
       borderRadius:  12,
       padding:       '20px 24px',
-      minWidth:      220,
+      // Z5 CLS reservation: a FIXED footprint (not minWidth) — the widget's
+      // own content updates (mount refetch rewriting the Y3 observation
+      // line) must re-flow INSIDE a stable box, never the header row
+      // (the auto-width box measured +0.058 CLS on a throttled load).
+      width:         380,
+      boxSizing:     'border-box',
       transition:    'background 0.3s ease',
     }}>
       {/* Label row */}

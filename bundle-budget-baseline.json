@@ -2,8 +2,8 @@
  "note": "bundle ratchet baseline (E6-02). Values are gzip kB of first-load JS measured from the HTML script tags of a production build. The PROPOSED 200 kB budgets are NOT yet founder-confirmed; until then the gate fails on any increase beyond +2 kB build jitter. Shrink the numbers, then re-lock with --update-baseline.",
  "toleranceKb": 2,
  "measuredKb": {
-  "/": 210.06640625,
-  "/screener": 208.63671875,
-  "/stock/[symbol]": 244.333984375
+  "/": 197.6904296875,
+  "/screener": 199.2529296875,
+  "/stock/[symbol]": 199.736328125
  }
 }

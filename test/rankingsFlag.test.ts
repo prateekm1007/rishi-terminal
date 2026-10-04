@@ -78,7 +78,14 @@ describe("U4 — source pins (the gate must sit on the server page)", () => {
       "utf8",
     );
     expect(client).toContain("rankingsEnabled");
-    expect(client).toMatch(/stockOfDay:\s*StockOfTheDay\s*\|\s*null/);
-    expect(client).toContain("rankingsDisabled");
+    // Z5: the ranked trio (and its disabled panel) renders in the
+    // dynamically loaded tail; the flag PROP still flows from the server
+    // page through DashboardClient.
+    const tail = readFileSync(
+      path.join(REPO, "components", "dashboard", "DashboardTail.tsx"),
+      "utf8",
+    );
+    expect(tail).toMatch(/stockOfDay:\s*StockOfTheDay\s*\|\s*null/);
+    expect(tail).toContain("rankingsDisabled");
   });
 });

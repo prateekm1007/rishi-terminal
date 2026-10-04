@@ -94,7 +94,7 @@ describe("R1 — UI surfaces show the banner and no seed as-of claims", () => {
   // renders in their client children. (N3 replaces this hand-written list
   // with an auto-discovered surface test.)
   const SURFACES: Array<{ file: string; minBanners: number }> = [
-    { file: "components/dashboard/DashboardClient.tsx", minBanners: 3 }, // Stock of the Day, Top Buy, Short radar
+    { file: "components/dashboard/DashboardTail.tsx", minBanners: 3 }, // Stock of the Day, Top Buy, Short radar (Z5: the ranked trio moved to the below-fold tail)
     { file: "components/screener/ScreenerClient.tsx", minBanners: 1 }, // screener table
   ];
 

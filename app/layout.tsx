@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
-import { HamburgerMenu } from "@/components/HamburgerMenu";
+import { MobileNavGate } from "@/components/MobileNavGate"; // Z5: hamburger chunk loads only on mobile viewports
 import { LanguageProvider } from "@/lib/language";
 import AuthProvider from "@/components/auth/AuthProvider";
 import LazyGlobalSearchBar from "@/components/ui/LazyGlobalSearchBar";
@@ -68,7 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   media queries. The hamburger drawer serves mobile nav. */}
               <Sidebar />
 
-              <HamburgerMenu />
+              <MobileNavGate />
 
               <TopBar />
 

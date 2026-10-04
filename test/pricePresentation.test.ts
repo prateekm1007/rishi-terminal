@@ -54,7 +54,8 @@ describe("presentationState — server status drives the tile", () => {
 describe("statusLabel — honest freshness wording", () => {
   it("yahoo-sourced LIVE observations are DELAYED, not LIVE", () => {
     const s = presentationState({ price: 100, status: "LIVE", source: "yahoo" });
-    expect(statusLabel(s, "yahoo")).toBe("DELAYED · YAHOO");
+    // Y3 (Round 12): plain-language transport label replaces the jargon form.
+    expect(statusLabel(s, "yahoo")).toBe("Delayed · Yahoo Finance (unofficial)");
   });
 
   it("yahoo-bulk is also a delayed transport", () => {
@@ -71,7 +72,7 @@ describe("statusLabel — honest freshness wording", () => {
 
   it("each state carries its own label", () => {
     expect(statusLabel("cached", "fred-csv")).toBe("CACHED · FRED-CSV");
-    expect(statusLabel("derived", "yahoo-etf-proxy")).toBe("DERIVED · YAHOO-ETF-PROXY");
+    expect(statusLabel("derived", "yahoo-etf-proxy")).toBe("Derived · Yahoo Finance (unofficial)");
     expect(statusLabel("static", "static-commodities")).toBe("STATIC · STATIC-COMMODITIES");
     expect(statusLabel("unavailable", undefined)).toBe("UNAVAILABLE");
     expect(statusLabel("loading", undefined)).toBe("LOADING…");

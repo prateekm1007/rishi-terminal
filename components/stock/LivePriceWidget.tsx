@@ -8,7 +8,8 @@ import {
   statusColor,
   absChangeFromPercent,
   formatChangePair,
-  observationDateFromEntry,
+  observationLabel,
+  type ObservationMarketState,
   type PresentationState,
 } from '../../lib/pricePresentation';
 
@@ -32,6 +33,11 @@ interface LivePriceWidgetProps {
    *  the first paint then shows the honest UNAVAILABLE state (never
    *  "FETCHING") and the client fetch on mount fills the tile. */
   initialEntry?: LiveEntry | null;
+  /** Y3: the server-disclosed NSE market state at the first byte (page
+   *  regeneration time, frozen into the ISR HTML). The refresh path
+   *  replaces it with the state the batch payload discloses — the label
+   *  never derives a market claim from the viewer's clock (Rule 18). */
+  initialMarket?: ObservationMarketState | null;
 }
 
 /**
@@ -43,7 +49,7 @@ interface LivePriceWidgetProps {
  * pulsing "LIVE" badge even when the API returned UNAVAILABLE — was a
  * provenance violation and is removed.
  */
-export function LivePriceWidget({ stock, initialEntry = null }: LivePriceWidgetProps) {
+export function LivePriceWidget({ stock, initialEntry = null, initialMarket = null }: LivePriceWidgetProps) {
   // X3: the first paint renders the SSR observation verbatim (or the
   // honest UNAVAILABLE state) — hydration and the server render produce
   // identical output, and "⟳ FETCHING" only ever appears for
@@ -72,7 +78,14 @@ export function LivePriceWidget({ stock, initialEntry = null }: LivePriceWidgetP
   const [state, setState]                     = useState<PresentationState>(presentationState(initialEntry));
   const [source, setSource]                   = useState<string | undefined>(initialEntry?.source);
   const [loading, setLoading]                 = useState(false);
-  const [lastUpdated, setLastUpdated]         = useState<Date | null>(initialUsable && initialEntry != null ? observationDateFromEntry(initialEntry) : null);
+  // Y3: the observed-at ISO string is kept so the observation line renders
+  // from the shared label builder (date + tz + market state), and the
+  // market state itself is server-disclosed (initialMarket, then the batch
+  // payload's top-level `market`) — never the viewer's clock (Rule 18).
+  // (The legacy `lastUpdated` Date state is gone — the label no longer
+  // renders a bare toLocaleTimeString clock.)
+  const [observedIso, setObservedIso]         = useState<string | null>(initialUsable && initialEntry != null ? (initialEntry.observedAt ?? initialEntry.lastUpdated ?? null) : null);
+  const [market, setMarket]                   = useState<ObservationMarketState | null>(initialMarket);
   const [flashGreen, setFlashGreen]           = useState(false);
   const [flashRed, setFlashRed]               = useState(false);
   const prevPriceRef                          = useRef<number | null>(initialPrice);
@@ -91,6 +104,11 @@ export function LivePriceWidget({ stock, initialEntry = null }: LivePriceWidgetP
       });
       if (!res.ok) throw new Error('API error');
       const data = await res.json();
+      // Y3: the batch payload discloses the NSE market state top-level (U2)
+      // — the server decides, the label only repeats it (Rule 7).
+      if (data?.market && typeof data.market.open === 'boolean' && typeof data.market.sessionDate === 'string') {
+        setMarket({ open: data.market.open, sessionDate: data.market.sessionDate });
+      }
       const entry = data?.[stock.symbol] as LiveEntry | undefined;
       if (!entry) {
         setState('unavailable');
@@ -132,10 +150,10 @@ export function LivePriceWidget({ stock, initialEntry = null }: LivePriceWidgetP
           typeof entry.change           === 'number' ? entry.change           : null;
         setChangePercent(pct);
         setChangeAbs(pct !== null ? absChangeFromPercent(newPrice, pct) : null);
-        // Round 9: the clock is the UPSTREAM observation time when the
-        // server disclosed one — never the browser fetch time. No disclosed
-        // time → the "Updated" line does not render at all.
-        setLastUpdated(observationDateFromEntry(entry));
+        // Y3: keep the disclosed ISO so the stamp + market-state label can
+        // re-render from the shared builder (the legacy lastUpdated Date
+        // state is gone — no bare clock is rendered anywhere).
+        setObservedIso(entry.observedAt ?? entry.lastUpdated ?? null);
       }
     } catch (err) {
       console.error('[LivePriceWidget] fetch error:', err);
@@ -250,13 +268,19 @@ export function LivePriceWidget({ stock, initialEntry = null }: LivePriceWidgetP
       </div>
 
       {/* Last updated — the UPSTREAM observation time when disclosed
-          (Round 9); absent a disclosed time, the line does not render —
+          (Round 9), stamped Y3-style: IST date + clock + timezone + the
+          server-disclosed market state ("… · market closed · last session
+          quote"). Absent a disclosed time, the line does not render —
           there is no honest clock to show. */}
-      {lastUpdated && (
-        <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 10 }}>
-          Observed {lastUpdated.toLocaleTimeString('en-IN')}
-        </div>
-      )}
+      {(() => {
+        const obsLabel = observationLabel(observedIso, market);
+        if (!obsLabel) return null;
+        return (
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 10 }}>
+            {obsLabel}
+          </div>
+        );
+      })()}
 
       {/* 52W range bar — only meaningful once a server observation exists */}
       {displayPrice !== null && (stock as any).metadata?.high52w && (stock as any).metadata?.low52w && (

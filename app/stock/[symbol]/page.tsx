@@ -7,6 +7,7 @@ import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
 import { serveCachedQuotes } from '@/lib/quotePath'; // X3+Y1+Y2: SSR peek — the last cached quotes, read-only
+import { marketState } from '@/lib/marketHours'; // Y3: server-disclosed NSE state for the observation label
 import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically; Y2: peer entries
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
@@ -133,6 +134,12 @@ export default async function StockPage({ params }: StockPageProps) {
     if (mapped) initialPeerPrices[sym] = mapped;
   }
 
+  // Y3: the NSE session state at regeneration, frozen into the ISR HTML
+  // and refreshed on the next regen (same lifecycle as the quote peek).
+  // Pure computation (no I/O) — safe in the build phase, where it bakes
+  // the build-time state until the first regeneration replaces it.
+  const initialMarket = marketState();
+
   return (
     <StockPageClient
       stock={stock}
@@ -143,6 +150,7 @@ export default async function StockPage({ params }: StockPageProps) {
       eliteGraph={eliteGraph}
       initialQuote={initialQuote}
       initialPeerPrices={initialPeerPrices}
+      initialMarket={initialMarket}
     />
   );
 }

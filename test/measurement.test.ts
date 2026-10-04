@@ -243,13 +243,14 @@ describe("T60.1 — provenance semantics survive replay", () => {
     const entry = { price: 1500, change: 0.4, source: "yahoo-bulk", status: "LIVE" };
     // raw state is 'live' (a fresh observation) BUT the label discloses DELAYED
     expect(presentationState(entry)).toBe("live");
-    expect(statusLabel("live", "yahoo-bulk")).toBe("DELAYED · YAHOO-BULK");
+    // Y3 (Round 12): the jargon chip became the plain transport label.
+    expect(statusLabel("live", "yahoo-bulk")).toBe("Delayed · Yahoo Finance (unofficial)");
     expect(statusLabel("live", "yahoo-bulk")).not.toContain("LIVE ·");
 
     // replay semantics are intrinsic and survive: CACHED stays CACHED,
     // STATIC stays STATIC, DERIVED stays DERIVED — never promoted to live.
     expect(presentationState({ price: 1500, source: "yahoo-bulk", status: "CACHED" })).toBe("cached");
-    expect(statusLabel("cached", "yahoo-bulk")).toBe("CACHED · YAHOO-BULK");
+    expect(statusLabel("cached", "yahoo-bulk")).toBe("Delayed · Yahoo Finance (unofficial)");
     expect(presentationState({ price: 7.2, source: "static-yields-us", status: "STATIC" })).toBe("static");
     expect(presentationState({ price: 7.2, source: "yahoo-etf-proxy", status: "DERIVED" })).toBe("derived");
   });

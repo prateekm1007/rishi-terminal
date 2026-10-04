@@ -227,3 +227,33 @@ points:
   defaulting every stock into the IT-services "quality compounder"
   story; peer market caps render live-or-blank (`—`), never the seed
   artifact.
+
+**X6 (Round 13) — the placeholder-zero contract reaches scoring.** The
+same Y4 rule now applies where verdicts are made, not only where numbers
+render:
+
+- `lib/consensus/orchestrator.ts ScoringContext` carries, per field,
+  whether the value is a placeholder unknown. The resolver
+  (`getStockScore` on a `ResolvedStockMetrics`) builds it from per-field
+  provenance: a SEED-sourced 0 is unknown; a LIVE-sourced 0 is a real
+  observation (G5: a genuinely debt-free D/E, a stagnant EPS CAGR) and
+  scores. A bare `Stock` input (seed record) defaults to seed semantics
+  — every zero field is a placeholder unknown.
+- `scoreNemish` is the first consumer: a pillar whose input is a
+  placeholder unknown is insufficient, and a four-pillar verdict with a
+  missing pillar is null (T11 semantics, like Damani/Jhunjhunwala). On
+  the current seed this nulls 259 of 916 Nemish verdicts (epscagr=0 ∪
+  de=0 ∪ promo=0 ∪ pe=0 — including the bank D/E placeholders); the
+  consensus quorum (12 of 20) holds everywhere with 19 valid scorers.
+  P/E <= 0 is always insufficient (a live P/E must be strictly positive
+  to be admissible; a seed 0 is the placeholder): no input set makes a
+  zero P/E a valuation observation.
+- Consensus weights are repaired and gated: RISHI_WEIGHT_CONFIG entries
+  `'Howard Marks'` and `'Seth Klarman'` (Masters, weight 2.0) previously
+  missed the engine's scorer names and silently scored at the 1.0
+  fallback — every consensus ever computed under-weighted them while the
+  stock page badged them Specialists. `getWeight` is now fail-closed
+  (throws on an unconfigured scorer), and
+  `test/x6.consensusGates.test.ts` pins the config (20 rishis, tier
+  counts 3/7/10, strict tier weight ordering) plus the consensus output
+  distribution (sd >= 5, <= 5% at >= 90, <= 5% at <= 5).

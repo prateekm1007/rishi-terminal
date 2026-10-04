@@ -19,16 +19,22 @@ interface Props {
   totalRishis: number;
 }
 
-function getTierLabel(weight: number): string {
-  if (weight >= 3.0) return 'Legend';
-  if (weight >= 2.0) return 'Master';
-  return 'Specialist';
-}
-
-function getTierColor(weight: number): string {
-  if (weight >= 3.0) return 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10';
-  if (weight >= 2.0) return 'text-blue-400 border-blue-400/40 bg-blue-400/10';
-  return 'text-zinc-400 border-zinc-600/40 bg-zinc-800/40';
+/** X6 (Round 13): the tier comes FROM the published methodology config
+ *  (RISHI_WEIGHT_CONFIG.tier — S2-01), never re-derived from the weight.
+ *  The old weight-threshold derivation contradicted the config it sat
+ *  next to: Graham and Lynch are configured Legend at weight 2.5, but the
+ *  threshold (>= 3.0 = Legend) badged them Master on every stock page
+ *  while test/x6.consensusGates.test.ts pinned the config at 3/7/10. One
+ *  source of truth (Rule 14): the config. An unconfigured name can no
+ *  longer happen silently — the engine's getWeight throws and the gate
+ *  fails — but the render still fails honest (dashes, no invented tier). */
+function getTierForRishi(name: string): { label: string; color: string } {
+  const config = RISHI_WEIGHT_CONFIG.find(w => w.name === name);
+  const tier = config?.tier;
+  if (tier === 'Legend') return { label: 'Legend', color: 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10' };
+  if (tier === 'Master') return { label: 'Master', color: 'text-blue-400 border-blue-400/40 bg-blue-400/10' };
+  if (tier === 'Specialist') return { label: 'Specialist', color: 'text-zinc-400 border-zinc-600/40 bg-zinc-800/40' };
+  return { label: '—', color: 'text-zinc-400 border-zinc-600/40 bg-zinc-800/40' };
 }
 
 function getScoreColor(score: number): string {
@@ -92,8 +98,7 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {visibleScores.map((rishi, idx) => {
           const weight = getWeightForRishi(rishi.name);
-          const tierLabel = getTierLabel(weight);
-          const tierColor = getTierColor(weight);
+          const { label: tierLabel, color: tierColor } = getTierForRishi(rishi.name);
           const scoreColor = rishi.score === null ? '#64748B' : getScoreColor(rishi.score);
           const barColor = rishi.score === null ? 'rgba(100,116,139,0.3)' : getScoreBarColor(rishi.score);
           const isExpanded = expandedRishi === rishi.name;

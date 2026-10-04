@@ -417,6 +417,21 @@
       "scripts/ci/commit-scope-registry.json",
       "scripts/w4Audit.ts",
       "test/x6.boundsGate.test.ts"
+    ],
+    "Z6": [
+      "docs/DATA_SOURCES.md",
+      "lib/consensus/engine.ts",
+      "lib/consensus/orchestrator.ts",
+      "lib/consensus/weights.ts",
+      "lib/gurus/weights.ts",
+      "lib/scorers/nemish.ts",
+      "lib/scoring/index.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "test/scorerHealth.test.ts",
+      "test/scoring.finite.test.ts",
+      "test/x6.consensusGates.test.ts",
+      "test/x6.nemishPlaceholders.test.ts",
+      "components/stock/RishiGrid.tsx"
     ]
   }
 }

@@ -239,8 +239,24 @@ export function resolveStockMetrics(
  * competing number as "the Rishi Score".
  */
 export function getStockScore(input: Stock | ResolvedStockMetrics): ConsensusResult {
-  const stock: Stock = isResolved(input) ? input.stock : input;
-  return buildConsensus(stock);
+  if (isResolved(input)) {
+    // X6 (Round 13): the Y4 placeholder-zero contract at the scoring
+    // boundary. `resolved.stock` merges seed and live values, and
+    // `resolved.fields` records WHICH — so the scoring context marks a
+    // field unknown exactly when its value is a SEED-sourced zero (the
+    // June placeholder). A live-sourced zero (G5: genuinely debt-free D/E,
+    // stagnant EPS CAGR) is an observation and scores normally.
+    const unknownFields = new Set(
+      Object.entries(input.fields)
+        .filter(([, f]) => f.source === "seed" && f.value === 0)
+        .map(([name]) => name),
+    );
+    return buildConsensus(input.stock, { unknownFields });
+  }
+  // A bare Stock is a seed record (every current caller passes one):
+  // seed semantics apply inside runAllScorers — zero fields are
+  // placeholder unknowns.
+  return buildConsensus(input);
 }
 
 /** Quality-Value Pillar Score (QVPS) — the demoted former "v2" engine. */

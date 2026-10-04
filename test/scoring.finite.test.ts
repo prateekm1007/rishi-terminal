@@ -60,7 +60,12 @@ describe("T11 — every scorer is null-safe, never NaN", () => {
   it("weightedAverage ignores null scores but still works above the quorum", () => {
     const scores = runAllScorers(allZeroStock());
     const validCount = scores.filter(s => s.score !== null).length;
-    expect(validCount).toBe(16); // Damani/Jhunjhunwala/Buffett/Greenblatt null on zero data
+    // X6 (Round 13): 15 — Nemish joins the documented-null set on
+    // all-zero data (a fully-placeholder record has no Steady Compounder
+    // verdict; previously it returned a finite 45 built on two
+    // placeholder-perfect pillars). Damani/Jhunjhunwala/Buffett/Greenblatt
+    // were already null.
+    expect(validCount).toBe(15);
     const c = weightedAverage(scores);
     expect(c).not.toBeNull();
   });

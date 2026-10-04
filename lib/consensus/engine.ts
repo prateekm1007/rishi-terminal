@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { Stock, ConsensusResult, RishiScore } from "./types";
-import { runAllScorers }   from "./orchestrator";
+import { runAllScorers, type ScoringContext }   from "./orchestrator";
 import { weightedAverage } from "./weights";
 
 /**
@@ -68,8 +68,8 @@ function analyzeTension(scores: RishiScore[]): { label: string; spread: number }
  * MIN_VALID_SCORERS returned finite scores — the UI renders "—" and every
  * ranking sorts nulls last. Never NaN, never coerced to 0.
  */
-export function buildConsensus(stock: Stock): ConsensusResult {
-  const scores    = runAllScorers(stock);
+export function buildConsensus(stock: Stock, ctx?: ScoringContext): ConsensusResult {
+  const scores    = runAllScorers(stock, ctx);
   const consensus = weightedAverage(scores);
   const { label: tension, spread: tensionSpread } = analyzeTension(scores);
   const finiteScores = scores.filter(s => s.score !== null);

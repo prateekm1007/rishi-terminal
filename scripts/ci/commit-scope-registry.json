@@ -320,16 +320,16 @@
       "test/y3.observationLabel.test.ts"
     ],
     "Z2": [
-   ".github/workflows/quotes-warm.yml",
-   "app/api/ingest/quotes-warm/",
-   "docs/DATA_SOURCES.md",
-   "docs/evidence/round13/",
-   "lib/auth/cron.ts",
-   "scripts/ci/commit-scope-registry.json",
-   "test/cron.auth.test.ts",
-   "test/y2.quoteWarm.test.ts"
-  ],
-  "Z1": [
+      ".github/workflows/quotes-warm.yml",
+      "app/api/ingest/quotes-warm/",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round13/",
+      "lib/auth/cron.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "test/cron.auth.test.ts",
+      "test/y2.quoteWarm.test.ts"
+    ],
+    "Z1": [
       ".github/workflows/ci.yml",
       "docs/RELEASE.md",
       "docs/evidence/round13/",
@@ -338,6 +338,16 @@
       "scripts/commitScopeAudit.mjs",
       "test/vercelIgnore.test.ts",
       "test/z1.vercelIgnore.test.ts"
+    ],
+    "Z3": [
+      "app/stock/[symbol]/page.tsx",
+      "components/stock/PeerComparison.tsx",
+      "docs/evidence/round13/",
+      "lib/quoteCache.ts",
+      "lib/quotePath.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "test/quoteCache.test.ts",
+      "test/z3.peekAge.test.ts"
     ]
   }
 }

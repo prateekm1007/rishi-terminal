@@ -256,14 +256,38 @@ export async function peekCachedQuote(symbol: string): Promise<PeekQuoteResult |
 /** Batch peek (X3): ONE read for the whole SSR symbol list. Same contract
  *  as peekCachedQuote per symbol; a symbol with no usable row is simply
  *  absent from the record. */
-export async function peekCachedQuotes(symbols: string[]): Promise<Record<string, PeekQuoteResult>> {
+/** Z3 (Round 13): the first-byte peek serves the last cached observation
+ *  up to 7 DAYS old (founder contract — a closed-market page must show the
+ *  last close, not "unavailable"), and drops anything older: a two-month-
+ *  old price in a live table is a provenance hazard even when the label
+ *  names its date. The age anchors ONLY on observed_at (the UPSTREAM's own
+ *  time): a row the upstream never stamped cannot back the honest
+ *  observation line the UI renders (Y3), so it is not served (Rules
+ *  3/16 — fail closed). */
+const MAX_PEEK_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function withinPeekWindow(quote: CachedQuote, nowMs: number): boolean {
+  const anchorIso = quote.observedAt;
+  if (!anchorIso) return false;
+  const anchor = Date.parse(anchorIso);
+  if (!Number.isFinite(anchor)) return false;
+  return nowMs - anchor >= 0 && nowMs - anchor <= MAX_PEEK_AGE_MS;
+}
+
+export async function peekCachedQuotes(
+  symbols: string[],
+  nowMs: () => number = Date.now,
+): Promise<Record<string, PeekQuoteResult>> {
   const out: Record<string, PeekQuoteResult> = {};
   if (symbols.length === 0) return out;
-  const market = marketState(Date.now());
+  const now = nowMs();
+  const market = marketState(now);
   try {
     const rows = await readRows(symbols);
     for (const [symbol, quote] of Object.entries(rows)) {
-      if (isRealQuote(quote)) out[symbol] = { quote, market };
+      if (isRealQuote(quote) && withinPeekWindow(quote, now)) {
+        out[symbol] = { quote, market };
+      }
     }
   } catch (e) {
     console.error("[quoteCache] batch peek failed:", e instanceof Error ? e.message : e);

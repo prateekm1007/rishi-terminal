@@ -60,7 +60,7 @@ export default function ProgressBar() {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
           <span style={{ fontSize: "13px", fontWeight: 700, color: levelColor }}>{level}</span>
-          <span style={{ fontSize: "11px", color: "#64748B", fontFamily: "JetBrains Mono, monospace" }}>
+          <span style={{ fontSize: "11px", color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>
             {xp.toLocaleString()} / {nextLevelXP.toLocaleString()} XP
           </span>
         </div>
@@ -82,7 +82,7 @@ export default function ProgressBar() {
         }}>
           <span style={{ fontSize: "16px" }}>🔥</span>
           <div>
-            <div style={{ fontSize: "10px", color: "#64748B" }}>{t("common.streak")}</div>
+            <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>{t("common.streak")}</div>
             <div style={{ fontSize: "14px", fontWeight: 800, color: "#EF4444", fontFamily: "JetBrains Mono, monospace" }}>
               {streak}
             </div>

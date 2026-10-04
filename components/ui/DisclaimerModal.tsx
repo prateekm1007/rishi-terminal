@@ -118,7 +118,7 @@ export function DisclaimerModal({ onAccept, sourceLine }: Props) {
 
       <p style={{
         margin: '12px 0 0',
-        color: '#475569',
+        color: 'var(--text-ghost)',
         fontSize: '10px',
         textAlign: 'center',
         fontFamily: 'monospace',

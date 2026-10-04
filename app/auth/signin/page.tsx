@@ -81,7 +81,7 @@ export default function SignInPage() {
           <h1 style={{ fontFamily: 'Cinzel, serif', fontSize: 24, color: '#D4AF37', marginBottom: 8 }}>
             Rishi Terminal
           </h1>
-          <p style={{ fontSize: 13, color: '#64748B' }}>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             Sign in to access your portfolio, watchlist &amp; alerts
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function SignInPage() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ flex: 1, height: 1, background: 'rgba(51,65,85,0.5)' }} />
-              <span style={{ fontSize: 11, color: '#64748B' }}>or</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>or</span>
               <div style={{ flex: 1, height: 1, background: 'rgba(51,65,85,0.5)' }} />
             </div>
 
@@ -168,7 +168,7 @@ export default function SignInPage() {
             no policy behind it, and "never sold" was an unverifiable
             privacy claim with no policy to define it. Both now link real
             pages that state exactly what the product does today. */}
-        <p style={{ textAlign: 'center', fontSize: 11, color: '#475569', marginTop: 24, lineHeight: 1.6 }}>
+        <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-ghost)', marginTop: 24, lineHeight: 1.6 }}>
           By signing in, you agree to our{' '}
           <a href="/terms" style={{ color: 'var(--accent-gold, #D4AF37)', textDecoration: 'underline' }}>Terms of Service</a>{' '}
           and{' '}

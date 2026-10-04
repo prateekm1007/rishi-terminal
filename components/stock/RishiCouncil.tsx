@@ -19,7 +19,7 @@ interface Props {
 const STATUS: Record<CouncilReport['rows'][number]['status'], { glyph: string; color: string; word: string }> = {
   pass: { glyph: '✓', color: '#00BA7C', word: 'pass' },
   fail: { glyph: '✗', color: '#F4212E', word: 'fail' },
-  'no-verdict': { glyph: '—', color: '#64748B', word: 'no verdict' },
+  'no-verdict': { glyph: '—', color: 'var(--text-muted)', word: 'no verdict' },
 };
 
 export function RishiCouncil({ council }: Props) {
@@ -29,11 +29,11 @@ export function RishiCouncil({ council }: Props) {
         <h2 className="philosophy-heading" style={{ fontSize: 20, margin: 0 }}>
           Rishi Council — Consensus &amp; Dissent
         </h2>
-        <span style={{ fontSize: 11, color: '#64748B', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
           pass {council.passCount} · fail {council.failCount} · no verdict {council.noVerdictCount} · bar ≥ {council.passBar}
         </span>
       </div>
-      <p style={{ fontSize: 12, color: '#64748B', marginTop: 6, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.6 }}>
         Where the panel disagrees, this says who and why — and, for every dissenting Rishi, what would
         have to change for the verdict to flip (computed from each framework&apos;s own thresholds and
         verified by re-running it). Educational simulation — not the real people, not investment advice.
@@ -65,13 +65,13 @@ export function RishiCouncil({ council }: Props) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
                   <span style={{ fontSize: 13, color: '#F8FAFC' }}>
                     {row.full}{' '}
-                    <span style={{ fontSize: 11, color: '#64748B' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                       {row.label} · {st.word}
                     </span>
                   </span>
-                  <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: row.score === null ? '#64748B' : '#F8FAFC' }}>
+                  <span style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: row.score === null ? 'var(--text-muted)' : '#F8FAFC' }}>
                     {row.score === null ? '—' : row.score}
-                    <span style={{ color: '#64748B' }}> /100</span>
+                    <span style={{ color: 'var(--text-muted)' }}> /100</span>
                   </span>
                 </div>
 
@@ -85,13 +85,13 @@ export function RishiCouncil({ council }: Props) {
 
                 {row.status === 'fail' && row.change && row.change.steps.length > 0 && (
                   <p style={{ fontSize: 12, color: '#F59E0B', margin: '8px 0 0', lineHeight: 1.6 }}>
-                    <span style={{ color: '#64748B' }}>to pass → </span>
+                    <span style={{ color: 'var(--text-muted)' }}>to pass → </span>
                     {row.change.steps.join('; ')}
-                    <span style={{ color: '#64748B' }}> (verified by re-running the scorer)</span>
+                    <span style={{ color: 'var(--text-muted)' }}> (verified by re-running the scorer)</span>
                   </p>
                 )}
                 {row.status === 'fail' && row.change === null && (
-                  <p style={{ fontSize: 12, color: '#64748B', margin: '8px 0 0' }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '8px 0 0' }}>
                     no single-input path to a pass — the dissent is structural
                   </p>
                 )}

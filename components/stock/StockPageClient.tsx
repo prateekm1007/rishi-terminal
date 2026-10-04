@@ -38,7 +38,7 @@ import type { InitialPriceEntry } from '../../lib/dashboardSnapshot'; // Y2: typ
 //   - fail-honest placeholders keep the layout calm while a chunk
 //     streams in on the client.
 const chartTabFallback = () => (
-  <div style={{ minHeight: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', fontSize: 12, fontFamily: 'monospace' }}>
+  <div style={{ minHeight: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 12, fontFamily: 'monospace' }}>
     LOADING CHART…
   </div>
 );
@@ -205,7 +205,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 <h2 className="philosophy-heading" style={{ fontSize: 20, color: '#D4AF37', marginBottom: 4 }}>
                   {t('stock.knowledgeGraph')}
                 </h2>
-                <p style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1 }}>
                   {stock.name}  —  {t('stock.graphSubtitle')}
                 </p>
               </div>
@@ -267,12 +267,12 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                   {stock.symbol}
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: 16, fontSize: 12, color: '#64748B', letterSpacing: 1, fontFamily: 'monospace' }}>
+              <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', letterSpacing: 1, fontFamily: 'monospace' }}>
                 <span>{stock.sector}</span>
                 <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
                 <span>{stock.exchange}</span>
                 <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
-                <span style={{ color: consensus.consensus === null ? '#64748B' : scoreColor(consensus.consensus), fontWeight: 600 }}>
+                <span style={{ color: consensus.consensus === null ? 'var(--text-muted)' : scoreColor(consensus.consensus), fontWeight: 600 }}>
                   {t('stock.consensus')}: {consensus.consensus === null ? '\u2014' : consensus.consensus + '/100'}
                 </span>
               </div>
@@ -316,7 +316,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                   background: 'transparent',
                   border: 'none',
                   borderBottom: activeTab === tab.id ? '2px solid #D4AF37' : '2px solid transparent',
-                  color: activeTab === tab.id ? '#D4AF37' : '#64748B',
+                  color: activeTab === tab.id ? '#D4AF37' : 'var(--text-muted)',
                   cursor: 'pointer',
                   letterSpacing: activeTab === tab.id ? '1px' : '0.5px',
                   transition: 'all 0.2s ease',
@@ -366,10 +366,10 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                     <div>
-                      <div className="philosophy-heading" style={{ fontSize: 13, color: '#64748B', letterSpacing: 2 }}>
+                      <div className="philosophy-heading" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: 2 }}>
                         {t('stock.topRishiScores')}
                       </div>
-                      <div style={{ fontSize: 11, color: '#64748B', marginTop: 4, opacity: 0.7 }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, opacity: 0.7 }}>
                         {t('stock.topRishiSubtitle')}
                       </div>
                     </div>
@@ -405,7 +405,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                       }}>
                         <div style={{
                           fontSize: 11,
-                          color: '#64748B',
+                          color: 'var(--text-muted)',
                           fontFamily: 'monospace',
                           width: 20,
                           flexShrink: 0,
@@ -417,7 +417,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                           <div style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>
                             {r.full}
                           </div>
-                          <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
                             {r.label}
                           </div>
                         </div>
@@ -438,7 +438,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                           fontSize: 22,
                           fontWeight: 700,
                           fontFamily: 'monospace',
-                          color: r.score === null ? '#64748B' : scoreColor(r.score),
+                          color: r.score === null ? 'var(--text-muted)' : scoreColor(r.score),
                           width: 40,
                           textAlign: 'right',
                           flexShrink: 0,
@@ -520,7 +520,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
           flexWrap: 'wrap', gap: 12, paddingTop: 16,
           borderTop: '1px solid rgba(30,41,59,0.8)',
         }}>
-          <span style={{ fontSize: 11, color: '#64748B', letterSpacing: 0.5 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 0.5 }}>
             {stock.name} · {stock.symbol} · {t('stock.topRishiScores')}: {consensus.scoresCount} Rishis
           </span>
           <Link

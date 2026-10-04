@@ -1,0 +1,28 @@
+
+=== /: 1 violation kinds ===
+  color-contrast [serious] x6 — Elements must meet minimum color contrast ratio thresholds
+      first target: aside > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)
+
+=== /screener: 1 violation kinds ===
+  color-contrast [serious] x6 — Elements must meet minimum color contrast ratio thresholds
+      first target: aside > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)
+
+=== /stock/RELIANCE: 1 violation kinds ===
+  color-contrast [serious] x6 — Elements must meet minimum color contrast ratio thresholds
+      first target: aside > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)
+
+=== /methodology: 1 violation kinds ===
+  color-contrast [serious] x28 — Elements must meet minimum color contrast ratio thresholds
+      first target: div:nth-child(2) > div:nth-child(2)
+
+=== /lab: 1 violation kinds ===
+  color-contrast [serious] x6 — Elements must meet minimum color contrast ratio thresholds
+      first target: div:nth-child(2) > div:nth-child(2)
+
+=== /rishis: 3 violation kinds ===
+  color-contrast [serious] x22 — Elements must meet minimum color contrast ratio thresholds
+      first target: aside > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(2)
+  link-in-text-block [serious] x1 — Links must be distinguishable without relying on color
+      first target: div:nth-child(1) > div:nth-child(1) > a[href="/"]
+  scrollable-region-focusable [serious] x1 — Scrollable region must have keyboard access
+      first target: main > div:nth-child(2) > div:nth-child(1) > div:nth-child(2)

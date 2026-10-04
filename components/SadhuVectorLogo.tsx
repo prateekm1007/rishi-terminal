@@ -156,7 +156,7 @@ export default function SadhuVectorLogo({
             fontFamily: "JetBrains Mono, monospace",
             fontSize: 9,
             fontWeight: 700,
-            color: "#475569",
+            color: "var(--text-ghost)",
             letterSpacing: "0.14em",
             marginTop: 4,
           }}>

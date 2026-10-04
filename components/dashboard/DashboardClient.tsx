@@ -60,7 +60,7 @@ const C = {
   amber:    "#F59E0B",
   text:     "#F8FAFC",
   textSec:  "#94A3B8",
-  textMuted:"#64748B",
+  textMuted:"var(--text-muted)",
   border:   "rgba(30,41,59,0.8)",
   borderGold:"rgba(212,175,55,0.2)",
 };

@@ -92,7 +92,7 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
             <tr>
               {['Company', 'Price', 'Market Cap', 'P/E', 'ROE'].map(h => (
                 <th key={h} style={{
-                  fontSize: 11, fontWeight: 700, color: '#64748B',
+                  fontSize: 11, fontWeight: 700, color: 'var(--text-muted)',
                   textTransform: 'uppercase' as const, letterSpacing: '0.08em',
                   padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid rgba(30,41,59,0.8)',
                 }}>{h}</th>
@@ -119,7 +119,7 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
                     >
                       {s.name}
                     </div>
-                    <div style={{ fontSize: 11, color: '#64748B' }}>{s.symbol}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.symbol}</div>
                   </Link>
                 </td>
                 <td style={{ padding: '10px 12px', color: '#F8FAFC', fontSize: 13, fontWeight: 500 }}>

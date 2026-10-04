@@ -5,18 +5,18 @@
       "app/alerts/page.tsx",
       "components/dashboard/DashboardClient.tsx",
       "components/stock/LivePriceWidget.tsx",
+      "docs/evidence/round9/",
       "hooks/useLivePrices.ts",
       "lib/dashboardSnapshot.ts",
       "lib/pricePresentation.ts",
       "test/dashboardSnapshot.test.ts",
       "test/livePrices.null.test.ts",
-      "test/uiProvenance.round9.test.ts",
-      "docs/evidence/round9/"
+      "test/uiProvenance.round9.test.ts"
     ],
     "R9-2": [
+      "docs/DATA_SOURCES.md",
       "lib/livePrice.ts",
-      "test/fxStaticYieldNullChange.round9.test.ts",
-      "docs/DATA_SOURCES.md"
+      "test/fxStaticYieldNullChange.round9.test.ts"
     ],
     "R9-3": [
       "app/api/pulse/",
@@ -25,9 +25,9 @@
       "test/pulseNullSemantics.round9.test.ts"
     ],
     "R9-4": [
+      "lib/ai/repairTaxonomy.ts",
       "lib/ai/router.ts",
       "lib/ai/schemas.ts",
-      "lib/ai/repairTaxonomy.ts",
       "test/aiRepairCause.round9.test.ts"
     ],
     "R9-5": [
@@ -44,8 +44,8 @@
       "app/api/news/route.ts",
       "app/api/pulse/blocks/route.ts",
       "app/api/pulse/breadth/route.ts",
-      "test/rule10ErrorHygiene.round9.test.ts",
-      "eslint-ratchet.json"
+      "eslint-ratchet.json",
+      "test/rule10ErrorHygiene.round9.test.ts"
     ],
     "R9-8": [
       "docs/evidence/round9/",
@@ -53,65 +53,65 @@
       "scripts/priceLatencyAttribution.mjs"
     ],
     "R9-9": [
-      "lib/registry/validateInput.ts",
       "lib/ai/financialIntent.ts",
+      "lib/registry/validateInput.ts",
+      "test/chat.route.canonicalEvidence.test.ts",
       "test/financialIntent.test.ts",
-      "test/routes.validateInput.test.ts",
-      "test/chat.route.canonicalEvidence.test.ts"
+      "test/routes.validateInput.test.ts"
     ],
     "R9-10": [
-      "scripts/commitScopeAudit.mjs",
+      "package.json",
       "scripts/ci/",
-      "package.json"
+      "scripts/commitScopeAudit.mjs"
     ],
     "R9-11": [
-      "scripts/aiLatencyBattery.mjs",
       "docs/evidence/round9/",
+      "scripts/aiLatencyBattery.mjs",
       "scripts/ci/commit-scope-registry.json"
     ],
     "redeploy": [],
     "R9-12": [
       "lib/ai/tools.ts",
-      "test/aiToolLoop.test.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "test/aiToolLoop.test.ts"
     ],
     "V1": [
-      "lib/db/migrations/018_security_definer_rpc_lockdown.sql",
-      "scripts/ci/security_definer_invariants.sql",
       ".github/workflows/ci.yml",
-      "scripts/ci/commit-scope-registry.json",
       "docs/evidence/v1/",
+      "lib/db/migrations/018_security_definer_rpc_lockdown.sql",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/ci/security_definer_invariants.sql",
       "scripts/commitScopeAudit.mjs"
     ],
     "V2": [
-      "lib/scorers/greenblatt.ts",
-      "test/scorerHealth.test.ts",
-      "scripts/v2Repro.ts",
       "docs/evidence/v2/",
-      "scripts/ci/commit-scope-registry.json",
       "lib/chat/registry.ts",
-      "test/chatPersonaGreenblattDisclosure.test.ts"
+      "lib/scorers/greenblatt.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/v2Repro.ts",
+      "test/chatPersonaGreenblattDisclosure.test.ts",
+      "test/scorerHealth.test.ts"
     ],
     "R11-05": [
-      "lib/registry/validateInput.ts",
+      "docs/evidence/round11/",
       "lib/ai/financialIntent.ts",
-      "test/routes.validateInput.test.ts",
-      "test/financialIntent.test.ts",
+      "lib/registry/validateInput.ts",
       "scripts/ci/commit-scope-registry.json",
-      "docs/evidence/round11/"
+      "test/financialIntent.test.ts",
+      "test/routes.validateInput.test.ts"
     ],
     "R11-06": [
       "app/api/search/route.ts",
-      "test/searchRoute.registry.test.ts",
-      "test/routes.validateInput.test.ts",
+      "docs/evidence/round11/",
       "lib/security.ts",
       "scripts/ci/commit-scope-registry.json",
-      "docs/evidence/round11/"
+      "test/routes.validateInput.test.ts",
+      "test/searchRoute.registry.test.ts"
     ],
     "R12-01": [
+      "scripts/ci/commit-scope-registry.json",
       "test/chat.multitool.composition.test.ts",
-      "test/chat.provider401.refund.test.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "test/chat.provider401.refund.test.ts"
     ],
     "R12-02": [
       "docs/evidence/round12/",
@@ -119,13 +119,13 @@
       "scripts/ci/commit-scope-registry.json"
     ],
     "R12-03": [
-      "data/markets/index.ts",
       "data/crypto/index.ts",
-      "data/stockDetails/index.ts",
       "data/forex/index.ts",
+      "data/markets/index.ts",
+      "data/stockDetails/index.ts",
+      "scripts/ci/commit-scope-registry.json",
       "scripts/freeAccessInventory.mjs",
-      "test/moduleTwins.test.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "test/moduleTwins.test.ts"
     ],
     "R12-04": [
       "docs/evidence/round12/",
@@ -133,24 +133,24 @@
     ],
     "R12-06": [
       "lib/ai/financialIntent.ts",
-      "test/financialIntent.test.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "test/financialIntent.test.ts"
     ],
     "R12-05": [
-      "docs/evidence/round12/ci-event-stall-2026-10-03.md",
-      "app/fno/page.tsx",
-      "app/fno/options/page.tsx",
       "app/fno/backtester/page.tsx",
+      "app/fno/options/page.tsx",
+      "app/fno/page.tsx",
       "components/ui/LegalDisclaimer.tsx",
-      "messages/en.json",
-      "messages/hi.json",
+      "docs/evidence/round12/ci-event-stall-2026-10-03.md",
       "messages/bn.json",
+      "messages/en.json",
+      "messages/gu.json",
+      "messages/hi.json",
       "messages/mr.json",
       "messages/ta.json",
       "messages/te.json",
-      "messages/gu.json",
-      "test/fnoStrategyEduLocale.test.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "test/fnoStrategyEduLocale.test.ts"
     ],
     "W2": [
       "docs/evidence/p0-02-live-2026-10-03.md",
@@ -158,12 +158,12 @@
       "scripts/commitScopeAudit.mjs"
     ],
     "W1": [
-      "docs/evidence/round12/r912-registry-production-proof-96726c6.json",
-      "docs/evidence/round12/price-provenance-sweep-96726c6.json",
       "docs/evidence/round12/greenblatt-production-probe-96726c6.json",
+      "docs/evidence/round12/price-provenance-sweep-96726c6.json",
+      "docs/evidence/round12/r912-registry-production-proof-96726c6.json",
       "docs/evidence/round12/wti-chat-probe-96726c6.json",
-      "scripts/prodPriceProvenanceSweep.mjs",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/prodPriceProvenanceSweep.mjs"
     ],
     "W3": [
       ".env.example",
@@ -207,25 +207,25 @@
       "test/w3.inputBound.test.ts"
     ],
     "W4": [
+      "docs/evidence/entropy-audit-post-w4-2026-10-03.md",
+      "docs/evidence/w4-audit-2026-10-03.md",
       "lib/scorers/pabrai.ts",
       "lib/scorers/porinju.ts",
       "lib/scorers/soros.ts",
-      "test/scorerHealth.test.ts",
-      "test/scorerBoundaries.test.ts",
       "scripts/ci/commit-scope-registry.json",
       "scripts/w4Audit.ts",
-      "docs/evidence/w4-audit-2026-10-03.md",
-      "docs/evidence/entropy-audit-post-w4-2026-10-03.md"
+      "test/scorerBoundaries.test.ts",
+      "test/scorerHealth.test.ts"
     ],
     "R12-07": [
       "docs/evidence/round12/",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/prodGreenblattProbe.mjs",
+      "scripts/prodGroundedCanary.mjs",
       "scripts/prodHealthEnvSweep.mjs",
       "scripts/prodIntentMatrix.mjs",
       "scripts/prodSearchProbe.mjs",
-      "scripts/prodGreenblattProbe.mjs",
-      "scripts/prodGroundedCanary.mjs",
-      "scripts/prodUglyPathMatrix.mjs",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/prodUglyPathMatrix.mjs"
     ],
     "X1": [
       "docs/RELEASE.md",
@@ -237,8 +237,8 @@
       "vercel.json"
     ],
     "X2": [
-      "test/smoke/shell.spec.ts",
-      "scripts/ci/commit-scope-registry.json"
+      "scripts/ci/commit-scope-registry.json",
+      "test/smoke/shell.spec.ts"
     ],
     "Y1": [
       ".github/workflows/ci.yml",
@@ -260,7 +260,6 @@
       "artifacts/phase6/",
       "components/dashboard/DashboardClient.tsx",
       "components/stock/LivePriceWidget.tsx",
-      "components/stock/LivePriceWidget.tsx",
       "components/stock/StockPageClient.tsx",
       "docs/evidence/round11/",
       "lib/dashboardSnapshot.ts",
@@ -273,12 +272,12 @@
       "test/smoke/smoke.spec.ts"
     ],
     "Y2": [
+      ".github/workflows/quotes-warm.yml",
       "app/api/ingest/quotes-warm/",
       "app/stock/[symbol]/page.tsx",
-      "components/stock/PeerComparison.tsx",
       "components/stock/LivePriceWidget.tsx",
+      "components/stock/PeerComparison.tsx",
       "components/stock/StockPageClient.tsx",
-      ".github/workflows/quotes-warm.yml",
       "docs/DATA_SOURCES.md",
       "docs/evidence/round12/",
       "lib/dashboardSnapshot.ts",
@@ -292,10 +291,10 @@
       "test/dashboardSnapshot.test.ts",
       "test/health.memo.test.ts",
       "test/health.test.ts",
+      "test/y1.isrSegmentConfig.test.ts",
       "test/y2.coinGeckoBackoff.test.ts",
       "test/y2.quoteWarm.test.ts",
-      "test/y2.ssrPeek.test.ts",
-      "test/y1.isrSegmentConfig.test.ts"
+      "test/y2.ssrPeek.test.ts"
     ],
     "Y4": [
       "app/api/fundamentals/route.ts",
@@ -311,7 +310,6 @@
     "Y3": [
       "app/alerts/page.tsx",
       "app/stock/[symbol]/page.tsx",
-      "components/stock/LivePriceWidget.tsx",
       "components/stock/LivePriceWidget.tsx",
       "components/stock/StockPageClient.tsx",
       "docs/DATA_SOURCES.md",
@@ -336,8 +334,8 @@
       ".github/workflows/ci.yml",
       "docs/RELEASE.md",
       "docs/evidence/round13/",
-      "scripts/ci/vercel-ignore.sh",
       "scripts/ci/commit-scope-registry.json",
+      "scripts/ci/vercel-ignore.sh",
       "scripts/commitScopeAudit.mjs",
       "test/vercelIgnore.test.ts",
       "test/z1.vercelIgnore.test.ts"
@@ -366,17 +364,15 @@
       "components/ui/LazyGlobalSearchBar.tsx",
       "lib/language.tsx",
       "lib/languageShell.ts",
-      "next.config.ts",
       "next.config.js",
-      "package.json",
+      "next.config.ts",
       "package-lock.json",
+      "package.json",
       "scripts/ci/commit-scope-registry.json",
       "test/bundleBoundary.language.test.ts"
     ],
     "Z5": [
       "app/layout.tsx",
-      "next.config.ts",
-      "next.config.js",
       "bundle-budget-baseline.json",
       "components/MobileNavGate.tsx",
       "components/dashboard/DashboardClient.tsx",
@@ -388,6 +384,8 @@
       "components/ui/DisclaimerModal.tsx",
       "components/ui/LegalDisclaimer.tsx",
       "eslint-ratchet.json",
+      "next.config.js",
+      "next.config.ts",
       "scripts/aiLoopAudit.mjs",
       "scripts/ci/commit-scope-registry.json",
       "scripts/freeAccessAudit.mjs",
@@ -419,6 +417,7 @@
       "test/x6.boundsGate.test.ts"
     ],
     "Z6": [
+      "components/stock/RishiGrid.tsx",
       "docs/DATA_SOURCES.md",
       "lib/consensus/engine.ts",
       "lib/consensus/orchestrator.ts",
@@ -430,8 +429,7 @@
       "test/scorerHealth.test.ts",
       "test/scoring.finite.test.ts",
       "test/x6.consensusGates.test.ts",
-      "test/x6.nemishPlaceholders.test.ts",
-      "components/stock/RishiGrid.tsx"
+      "test/x6.nemishPlaceholders.test.ts"
     ],
     "X7": [
       ".env.example",
@@ -447,12 +445,15 @@
       "test/x7.challenge.test.ts"
     ],
     "S2-05": [
-      "lib/types.ts",
+      "components/stock/LensInsights.tsx",
+      "components/stock/RishiGrid.tsx",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round13/",
       "lib/scorers/basant.ts",
       "lib/scorers/buffett.ts",
       "lib/scorers/damani.ts",
-      "lib/scorers/greenblatt.ts",
       "lib/scorers/graham.ts",
+      "lib/scorers/greenblatt.ts",
       "lib/scorers/howardmarks.ts",
       "lib/scorers/jhunjhunwala.ts",
       "lib/scorers/kacholia.ts",
@@ -467,36 +468,33 @@
       "lib/scorers/sethklarman.ts",
       "lib/scorers/soros.ts",
       "lib/scorers/templeton.ts",
-      "components/stock/RishiGrid.tsx",
-      "components/stock/LensInsights.tsx",
-      "test/scoring.explain.test.ts",
+      "lib/types.ts",
+      "scripts/ci/commit-scope-registry.json",
       "test/scorerBoundaries.test.ts",
       "test/scorerHealth.test.ts",
-      "scripts/ci/commit-scope-registry.json",
-      "docs/DATA_SOURCES.md",
-      "docs/evidence/round13/"
+      "test/scoring.explain.test.ts"
     ],
     "S2-06": [
+      "components/stock/ConsensusHero.tsx",
+      "docs/DATA_SOURCES.md",
+      "docs/methodology/dispersion.md",
       "lib/consensus/dispersion.ts",
       "lib/consensus/engine.ts",
-      "lib/consensus/types.ts",
       "lib/consensus/sanitize.ts",
+      "lib/consensus/types.ts",
       "lib/types.ts",
-      "components/stock/ConsensusHero.tsx",
-      "docs/methodology/dispersion.md",
-      "test/consensus.dispersion.test.ts",
       "scripts/ci/commit-scope-registry.json",
-      "docs/DATA_SOURCES.md"
+      "test/consensus.dispersion.test.ts"
     ],
     "S2-01": [
+      "app/methodology/",
+      "docs/DATA_SOURCES.md",
+      "docs/PROVENANCE.md",
       "docs/methodology/",
       "lib/methodology/",
-      "app/methodology/",
-      "test/methodology.coverage.test.ts",
-      "test/methodology.markdown.test.ts",
-      "docs/PROVENANCE.md",
       "scripts/ci/commit-scope-registry.json",
-      "docs/DATA_SOURCES.md"
+      "test/methodology.coverage.test.ts",
+      "test/methodology.markdown.test.ts"
     ],
     "X3-05": [
       "scripts/commitScopeAudit.mjs",
@@ -523,6 +521,23 @@
       "docs/RELEASE.md",
       "docs/evidence/round14/",
       "scripts/ci/commit-scope-registry.json"
+    ],
+    "X3-07": [
+      "app/api/portfolio/import/route.ts",
+      "app/api/portfolio/summary/route.ts",
+      "docs/DATA_SOURCES.md",
+      "docs/evidence/round14/",
+      "lib/db/migrations/025_portfolio_import.sql",
+      "lib/portfolio/analytics.ts",
+      "lib/portfolio/csvImport.ts",
+      "lib/portfolio/xirr.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/ci/rls_invariants.sql",
+      "test/portfolio.import.test.ts",
+      "test/portfolio.xirr.test.ts",
+      "test/rls.portfolio.test.ts",
+      "components/lab/helpers.ts",
+      "scripts/commitScopeAudit.mjs"
     ]
   }
 }

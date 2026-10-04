@@ -187,7 +187,7 @@ export function PhilosophyRadar({ scores }: Props) {
               <text x={cx} y={cy - 4} textAnchor="middle" fontSize={16} fontWeight={900} fill="#D4AF37" fontFamily="JetBrains Mono, monospace">
                 {Math.round(data.reduce((s, d) => s + d.value, 0) / data.length)}
               </text>
-              <text x={cx} y={cy + 10} textAnchor="middle" fontSize={8} fill="#64748B" fontFamily="JetBrains Mono, monospace">
+              <text x={cx} y={cy + 10} textAnchor="middle" fontSize={8} fill="var(--text-muted)" fontFamily="JetBrains Mono, monospace">
                 AVG
               </text>
             </>
@@ -218,7 +218,7 @@ export function PhilosophyRadar({ scores }: Props) {
         ))}
       </div>
 
-      <div style={{ fontSize: 11, color: '#475569', textAlign: 'center', marginTop: 14 }}>
+      <div style={{ fontSize: 11, color: 'var(--text-ghost)', textAlign: 'center', marginTop: 14 }}>
         Top 8 Rishis · Distance from center = conviction strength
       </div>
     </div>

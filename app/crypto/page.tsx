@@ -339,7 +339,7 @@ export default function CryptoPage() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 48, fontWeight: 900, fontFamily: 'monospace', color: result.score === null ? '#64748B' : scoreColor(result.score), lineHeight: 1 }}>
+                      <div style={{ fontSize: 48, fontWeight: 900, fontFamily: 'monospace', color: result.score === null ? 'var(--text-muted)' : scoreColor(result.score), lineHeight: 1 }}>
                         {result.score === null ? '\u2014' : result.score}
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>

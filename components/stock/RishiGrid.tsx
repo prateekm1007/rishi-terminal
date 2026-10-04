@@ -99,7 +99,7 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
         {visibleScores.map((rishi, idx) => {
           const weight = getWeightForRishi(rishi.name);
           const { label: tierLabel, color: tierColor } = getTierForRishi(rishi.name);
-          const scoreColor = rishi.score === null ? '#64748B' : getScoreColor(rishi.score);
+          const scoreColor = rishi.score === null ? 'var(--text-muted)' : getScoreColor(rishi.score);
           const barColor = rishi.score === null ? 'rgba(100,116,139,0.3)' : getScoreBarColor(rishi.score);
           const isExpanded = expandedRishi === rishi.name;
 

@@ -84,17 +84,17 @@ R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 
 
 | Task | Status | Evidence / notes |
 |---|---|---|
-| E6-01 Lighthouse CI budgets | ⬜ | |
+| E6-01 Lighthouse CI budgets | ✅ | Lighthouse gate runs blocking in CI with measured-score floors + ratchet ("Lighthouse gate (U3)"), wired since U3 (round 5); green on every PR since. Register row was stale. |
 | E6-02 Bundle budgets | ✅ (ratchet half) | `scripts/bundleBudget.ts` wired into CI + ratchet; gate bite-proven (scratch PR #18, CI run 36801733290). The PROPOSED 200 kB budgets are still exceeded (274/273/310 kB) — tracked, needs founder confirmation of the number. |
 | E6-03 RSC + streaming /screener /lab | 🟡 | N1 moved pages to RSC with slim indexes; streaming + the `<tr` -in-initial-HTML acceptance remain. |
-| E6-04 ISR for stock pages | 🟡 | Stock pages are SSG (`generateStaticParams`); on-demand revalidation on ingestion remains. |
+| E6-04 ISR for stock pages | ✅ | Y1 (PR #118): ISR revalidate 60 s for / and /stock/[symbol] with quote peek at regeneration; warm TTFB p95 ≈ 0.15 s on production (round-14 evidence). On-demand revalidation on ingestion folds into the Y2 warmer's TTL design. |
 | E6-05 Observability | ⬜ | |
 | E6-06 SLOs + dashboards | ⬜ | |
 | E6-07 Blocking e2e, contract tests, drills | 🟡 | Playwright smoke is blocking (since round 2); contract tests + upstream-failure drills remain. |
-| E6-08 Accessibility (WCAG 2.2 AA) | ⬜ | |
+| E6-08 Accessibility (WCAG 2.2 AA) | ✅ (automatable subset) | PR #150: axe-core gate (wcag2a/2aa/21a/21aa/22aa) over /, /screener, /stock/RELIANCE, /methodology, /lab, /rishis rides the blocking Playwright job; fail-first (all six routes red pre-fix), then 0 violations. Token-level contrast fixes (--text-muted #8395AC, --text-ghost #7C8BA1, ~270 literal hexes swept) + /rishis keyboard access. Honest scope note in PR: axe automates ~⅓ of WCAG; manual audit items remain. |
 | E6-09 Flags, migrations in CI, rollback drill | 🟡 | Migrations 001–014 run in CI (PG16 job, since N2; populates + validates the security master; Q1/Q3 invariants live). Feature flags + documented rollback drill remain. |
 | E6-10 Type safety everywhere | 🟡 | `no-explicit-any` is ERROR in `hooks/**` + `scripts/**` (N9); repo-wide promotion remains (318 warnings baseline). |
-| E6-11 Load + abuse testing | ⬜ | |
+| E6-11 Load + abuse testing | ✅ (scoped, deviations recorded) | PR #151: k6 profile (scripts/load/api.js; admitted p95 3.6 ms on the local build's fail-fast path — caveats recorded, budget stays PROPOSED); limiter 429 proven on the LIVE deployment (60×200 then 15×429, exactly the 60/60 s bound); "chat quota holds under 50 parallel" proven at the SQL level — W3-A storm extended 24→50 parallel, CI-gated. Staging-vs-local and no-synthetic-chat deviations documented. |
 
 ## Phase 7 — Growth (only after G-A and G-B)
 
@@ -260,3 +260,86 @@ tool engagement preserved (no unconditional pre-seeding — directive 11);
 `/rishis` context-only contract unchanged pending FD-10; no fabricated
 bond issues (FD-11 stands: IN91DTB class is filtered, never replaced);
 RESEARCH_ONLY providers unreachable through the routing primitive.
+
+## Rounds 10–14 (2026-10-03 → 2026-10-04) — the X/Y/Z/W/V/S/A defect-map campaigns
+
+**Provenance of this section (Rule 28):** reconstructed from the merged-PR
+record and `docs/evidence/round10..round14/`; every row cites its PR (CI-gated,
+full battery) and its evidence file. Rounds 10–14 ran the founder's
+audit-driven defect maps: each round = one founder audit → scoped PRs, each
+with fail-first proof (rule 21/24) and raw command output in the PR.
+
+### Round 10 — production receipt + battery baselines (PRs #76–#81)
+| Item | PR | Evidence |
+|---|---|---|
+| R10-01 battery pacing under the 12/min limiter + bounded provider-failure retries | #77 | `evidence/round10/ai-latency-battery-r10-baseline.json` |
+| R10-03 specific repair feedback + verbatim-echo contract | #78 | battery artifacts |
+| R10-04/05 production surface sweeps (price provenance, anonymous AI) | #79, #80 | `price-provenance-surface-sweep.json`, `production-receipt-03ef7fe.json` |
+| R10-06 deployment closure on `03ef7fe` (three-way identity, env-attach record) | #81 | round-10 receipt set |
+
+### Round 11 — X1 deploy budget + X3 first-byte prices + registry hygiene (PRs #82–#92, #112–#115)
+| Item | PR | Evidence |
+|---|---|---|
+| R11-01 env decrypt-envelope incident record (root cause + deploy-path ruling) | #82 | `env-decrypt-incident-2026-10-03.md` |
+| V1 SECURITY DEFINER privilege revocation + CI invariant | #85 | `scripts/ci/rls_invariants.sql` CI block |
+| R11-02/03 rate/yield intent scoping + chat symbol via canonical registry | #84, #86 | round-11 evidence |
+| V2 Greenblatt units fix (~100× too small) + net-profit proxy disclosure | #87, #89 | `greenblatt-probe-*.json` |
+| R11-04/05/06 AI_LOOP reconciliation + registry-derived search + entropy audit | #88, #90, #91, #92 | `one-registry-audit-and-docs-reconciliation.md` |
+| X1 ignored-build-step for docs-only changesets (quota defense) | #112, #115 | `x1-deploy-budget.md` |
+| X2 crypto keyboard smoke CI-hermetic | #113 | CI job |
+| X3 prices in the first byte (SSR + read-only quote-cache peek) | #117 | `x3-first-byte-prices.md` |
+
+### Round 12 — Y1–Y7 (fast pages, cache warming, honest labels, nulls) + W/V closure (PRs #93–#111)
+| Item | PR | Evidence |
+|---|---|---|
+| R12-01..07 multi-tool composition proof, state reconciliation, twin deletion, feature-depth audit, /fno honest copy, adjacent-instrument intent, production closure | #93–#96, #98, #100, #109, #110, #111 | `feature-depth-audit-round1.md`, `state-reconciliation-and-live-recheck.md`, `production-closure-e214b52.md` |
+| W1–W4 anonymous-chat cost safety (global caps, kill switch, peppered /64 identity, token reservation/settlement) + scorer health gate | #101–#107, #108 | `w4-audit-2026-10-03.md`, `entropy-audit-post-w4-2026-10-03.md` |
+| Y1 ISR restore for `/` and `/stock/[symbol]` (revalidate 60 s, quote peek at regeneration) | #118 | `y1-fast-pages.md`, `y1-ttfb-before/after-prod.txt`, `y1-prod-headers-after.txt` |
+| Y2 quote-cache warmer (coverage telemetry, peers + tiles at the first byte, dedicated `QUOTES_WARM_SECRET`) | #119, #121, #122, #127, #128 | `y2-*.md/txt/json`, warmer run evidence |
+| Y3 honest price labels (date/timezone/market state + plain source chip) | #120 | `y3-failfirst-vitest.txt` |
+| Y4 null-not-zero (placeholder zeros → em dash, banking metrics honesty, sector-correct comparisons) | #124 | `y4` fail-first in PR |
+
+### Round 13 — Z1–Z6 + X6/X7 (deploy starvation, CLS, bundles, scorer honesty, PoW) (PRs #125, #130–#136)
+| Item | PR | Evidence |
+|---|---|---|
+| Z1 stop deploy starvation (skip non-prod builds, `VERCEL_GIT_PREVIOUS_SHA` diff base, `artifacts/**` in skip scope) | #125 | `z1-failfirst.txt`, `test/z1.vercelIgnore.test.ts` |
+| Z2 dedicated `QUOTES_WARM_SECRET` (CRON_SECRET untouched) + checkEnv template | #127, #128 | warmer 401 probes |
+| Z3 CLS gate repair + peek age contract (last observation up to 7 days) | #130, #131 | `z3-failfirst.txt` |
+| Z5 every audited route under 200 kB gzip (dictionary diet + dynamic splits) | #132 | bundle gate on CI |
+| X6 Greenblatt allow-list reason corrected + 15% own-bounds gate (Nemish named) | #134, #135 | `x6-failfirst.txt`, `x6-audit-output.txt` |
+| Z6 Greenblatt honest record + Nemish placeholder-zero root cause | #135 | `greenblatt-production-probe-96726c6.json` |
+| X7 self-hosted PoW challenge for anonymous chat (single-use consume, replay-locked) | #136 | `x7-failfirst.txt` |
+
+### Round 14 — A1–A6 (first-byte content, human-solvable challenge, warmer run, methodology, feature depth) (PRs #137–#148)
+| Item | PR | Evidence |
+|---|---|---|
+| S2-05 published breakdown IS the arithmetic (unrounded pillars) | #137 | PR raw outputs |
+| S2-06 disagreement metric (population sigma of valid verdicts) | #138 | PR raw outputs |
+| S2-01 methodology docs for every scorer + public `/methodology` page | #139 | `/methodology` (production after deploy catch-up) |
+| A1 stock-page content back in the first byte (static imports, server-resolved parallels; bundle ratchet re-anchored — FOUNDER DECISION NEEDED on the 200 kB hard budget vs ~207 kB measured floor) | #140 | `a1-bundle-accounting.md`, `a1-fail-first-smoke.md` |
+| A2 chat challenge human-solvable (Web Worker PoW at 15 bits, progress + timeout) | #141 | `a2-failfirst-and-benchmarks.md` |
+| A5 `/methodology` linked from nav + stock-page footer | #142 | smoke suite pin |
+| A4 warmer run (workflow_dispatch + forced verification, all six slices) | #143 | `a4-warmer-run.md` |
+| R4-04 Rishi Council view (consensus + dissent, verified lever paths, honest-null count) | #144 | PR raw outputs |
+| X3-05 screener v2 (safe server-side expression parser, saved screens RLS, CSV export) | #146 | PR raw outputs |
+| X3-07 portfolio import + analytics (shared XIRR, CSV grammar, RLS + idempotent re-import, GREEN+RED×2 Postgres proofs) | #148 | PR raw outputs |
+
+### Deployment state at this register's last update (2026-10-04)
+Production serves `47d76c4` (A2). Main `a4a7486` is 4 code commits ahead
+(`e678e49` A5, `67f153d` R4-04, `5fc16c7` X3-05, `a4a7486` X3-07) solely
+because the Hobby deployment quota exhausted a second time (13:14:49Z; see
+`docs/RELEASE.md` ledger). The sanctioned API retry loop is running; the
+production acceptance greps for A5/R4-04/X3-05/X3-07 run on the deployed SHA
+the moment the window lifts.
+
+### Deployment state at this register's last update (2026-10-04, rev 2)
+Production serves `c88bd1d` — main is fully deployed and includes the
+rate-limited catch-up (A5/R4-04/X3-05/X3-07 verified live), the E6-08
+accessibility gate, and the E6-11 storm extension. The second quota
+exhaustion (13:14:49Z) was remedied by the sanctioned API retry at
+14:48:02Z; the #150 merge hit the cap a THIRD time (~15:10Z) and drained
+naturally before #151 merged cleanly at 15:52:36Z. Full ledger:
+docs/RELEASE.md. Next founder-independent items: E6-03 (streaming
+acceptance), E6-05/06 (observability/SLOs), E6-07 (contract tests + drills),
+E6-10 (repo-wide type promotion), X3-09 (PWA), L5-02/05/06, R4-03/05/06/07
+data-independent parts.

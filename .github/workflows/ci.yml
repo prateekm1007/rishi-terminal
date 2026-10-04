@@ -160,13 +160,17 @@ jobs:
 
       - name: Prove the reservation hard bound under real concurrency (W3-A)
         run: |
-          # 24 PARALLEL sessions each try to reserve 10 against a limit of
+          # 50 PARALLEL sessions each try to reserve 10 against a limit of
           # 100 on the same key. The WHERE-guarded upsert must admit
           # EXACTLY 10 (the limit divides cleanly) and refuse the other
-          # 14 — 240 requested, 100 admitted, the counter never exceeds
+          # 40 — 500 requested, 100 admitted, the counter never exceeds
           # the cap. Deterministic: the first 10 serialize on the row
           # lock and fit; every later session sees count=100.
-          for i in $(seq 1 24); do
+          # E6-11 (raised from 24): this is the SQL-level form of the
+          # roadmap acceptance "chat quota holds under 50 parallel
+          # requests" — reserve_rate_limit is the same atomic upsert the
+          # chat quota and the per-IP burst limiter ride.
+          for i in $(seq 1 50); do
             psql -q -At -c "SELECT reserve_rate_limit('w3a:storm', 10, 100, 90000);" &
           done
           wait

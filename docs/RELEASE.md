@@ -161,6 +161,7 @@ Additions to the policy:
 |---|---|---|
 | 2026-10-03 | 3 (`d90557e`, `9a3e682`, `4bebbd5`) | X1 evidence day |
 | 2026-10-04 | 9 creation events on the main project: `4bebbd5` (00:39), `6b4f27a` canceled (00:44), `e0104fc` x5 (02:59-03:25, same-SHA re-runs), `6d9de4c` x2 (03:42 merge + API redeploy) — then rate-limited: `e18d6a9`/`1628ade` created NO deployment | quota exhausted ~03:55Z; window lifts ~2026-10-05 |
+| 2026-10-04 (continued) | production READY: `e6ed222` (A1, 12:42Z), `47d76c4` (A2, 13:14Z); then rate-limited again: `e678e49` (A5), `9baa92a` (A4 evidence-only, would have been skipped anyway), `67f153d` (R4-04), `5fc16c7` (X3-05), `a4a7486` (X3-07) all read "Deployment rate limited — retry in 24 hours" on GitHub; v13 API retry returned `402 api-deployments-free-per-day` at 14:32Z (a rejected creation consumes no event) | second exhaustion 13:14:49Z; main sits 4 code commits ahead (`e678e49`, `67f153d`, `5fc16c7`, `a4a7486`); sanctioned API retry loop (`POST /v13/deployments` every 20 min, max 20 h) started 14:32Z per policy 4 — production catch-up runs the moment the window lifts; both this event and the 03:55Z event were made possible by ~51 visible creation events since 00:00Z (30 canceled previews/ignored steps + 21 builds), so the Z1 rules ARE holding — the volume driver was the day's legitimate merge density (19 merges), not a policy bypass |
 
 ## Environment variables
 

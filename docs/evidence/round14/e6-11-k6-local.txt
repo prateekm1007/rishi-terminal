@@ -1,0 +1,30 @@
+    ✓ 'p(95)<800' p(95)=3.555346
+
+
+  █ TOTAL RESULTS 
+
+    CUSTOM
+    batch_admitted_ms..............: avg=4.927589 min=1.949666 med=2.479189 max=475.617983 p(90)=3.212808 p(95)=3.555346
+
+    HTTP
+    http_req_duration..............: avg=4.73ms   min=1.94ms   med=2.52ms   max=475.61ms   p(90)=3.46ms   p(95)=3.77ms  
+      { expected_response:true }...: avg=4.73ms   min=1.94ms   med=2.52ms   max=475.61ms   p(90)=3.46ms   p(95)=3.77ms  
+    http_req_failed................: 0.00%  0 out of 3451
+    http_reqs......................: 3451   31.372425/s
+
+    EXECUTION
+    iteration_duration.............: avg=4.89ms   min=2.07ms   med=2.67ms   max=476ms      p(90)=3.66ms   p(95)=3.97ms  
+    iterations.....................: 3451   31.372425/s
+    vus............................: 0      min=0         max=1 
+    vus_max........................: 60     min=60        max=60
+
+    NETWORK
+    data_received..................: 40 MB  364 kB/s
+    data_sent......................: 614 kB 5.6 kB/s
+
+
+
+
+running (1m50.0s), 000/060 VUs, 3451 complete and 0 interrupted iterations
+homepage     ✓ [ 100% ] 00/20 VUs    45s   10.00 iters/s
+prices_batch ✓ [ 100% ] 000/040 VUs  1m0s  50.00 iters/s

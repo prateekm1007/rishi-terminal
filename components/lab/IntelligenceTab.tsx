@@ -251,7 +251,7 @@ export default function IntelligenceTab({ rows }: Props) {
 
   const sectionLabel: React.CSSProperties = {
     fontSize: 10,
-    color: '#64748B',
+    color: 'var(--text-muted)',
     letterSpacing: 1,
     marginBottom: 12,
     textTransform: 'uppercase' as const,
@@ -265,7 +265,7 @@ export default function IntelligenceTab({ rows }: Props) {
         <h2 style={{ color: '#D4AF37', fontFamily: 'monospace', fontSize: 20, marginBottom: 12 }}>
           No Portfolio to Analyse
         </h2>
-        <p style={{ color: '#64748B', marginBottom: 24, lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.6 }}>
           Add holdings to get portfolio-level Rishi debate, disagreement index, and philosophy alignment.
         </p>
         <Link
@@ -296,24 +296,24 @@ export default function IntelligenceTab({ rows }: Props) {
         <div style={sectionLabel}>{t("intel.portfolioDebate")}</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 16 }}>
           <div style={{ padding: 16, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}>{t("intel.mostBullish")}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>{t("intel.mostBullish")}</div>
             <div style={{ color: '#22C55E', fontWeight: 900, fontSize: 15 }}>{portfolioBull?.full ?? '—'}</div>
             <div style={{ fontFamily: 'monospace', color: '#22C55E', marginTop: 6 }}>Avg: {portfolioBull?.avg ?? 0}</div>
-            <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>{portfolioBull?.origin ?? ''}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{portfolioBull?.origin ?? ''}</div>
           </div>
 
           <div style={{ padding: 16, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}><InfoTip term="Disagreement Index" icon={true}>{t("intel.disagreementIndex")}</InfoTip></div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}><InfoTip term="Disagreement Index" icon={true}>{t("intel.disagreementIndex")}</InfoTip></div>
             <div style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 28, color: spreadColor(avgSpread) }}>{avgSpread}</div>
             <div style={{ fontSize: 12, color: spreadColor(avgSpread), marginTop: 6 }}>{spreadLabel(avgSpread)}</div>
-            <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>Avg spread across {enriched.length} holding{enriched.length !== 1 ? 's' : ''}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>Avg spread across {enriched.length} holding{enriched.length !== 1 ? 's' : ''}</div>
           </div>
 
           <div style={{ padding: 16, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8 }}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 8 }}>{t("intel.mostBearish")}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>{t("intel.mostBearish")}</div>
             <div style={{ color: '#EF4444', fontWeight: 900, fontSize: 15 }}>{portfolioBear?.full ?? '—'}</div>
             <div style={{ fontFamily: 'monospace', color: '#EF4444', marginTop: 6 }}>Avg: {portfolioBear?.avg ?? 0}</div>
-            <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>{portfolioBear?.origin ?? ''}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{portfolioBear?.origin ?? ''}</div>
           </div>
         </div>
       </div>
@@ -324,12 +324,12 @@ export default function IntelligenceTab({ rows }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 10 }}>
           {rishiAverages.map((r, idx) => (
             <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid rgba(30,41,59,0.4)' }}>
-              <div style={{ width: 24, fontFamily: 'monospace', fontSize: 11, color: '#64748B', textAlign: 'right' }}>
+              <div style={{ width: 24, fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)', textAlign: 'right' }}>
                 #{idx + 1}
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, color: '#E2E8F0', fontWeight: 700 }}>{r.full}</div>
-                <div style={{ fontSize: 10, color: '#64748B' }}>{r.origin}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{r.origin}</div>
               </div>
               <div style={{ width: 100 }}>
                 <div style={{ height: 4, background: 'rgba(30,41,59,0.8)', borderRadius: 2, marginBottom: 4 }}>
@@ -350,13 +350,13 @@ export default function IntelligenceTab({ rows }: Props) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: 10, color: '#64748B', fontWeight: 600 }}>{t("intel.symbol")}</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'left', fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{t("intel.symbol")}</th>
                   {heatmapRishis.map(r => (
-                    <th key={r} style={{ padding: '8px 6px', textAlign: 'center', fontSize: 9, color: '#64748B', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                    <th key={r} style={{ padding: '8px 6px', textAlign: 'center', fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, whiteSpace: 'nowrap' }}>
                       {r.slice(0, 8)}
                     </th>
                   ))}
-                  <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: 10, color: '#64748B', fontWeight: 600 }}>{t("intel.spread")}</th>
+                  <th style={{ padding: '8px 10px', textAlign: 'center', fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{t("intel.spread")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -420,7 +420,7 @@ export default function IntelligenceTab({ rows }: Props) {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 11, color: '#EF4444' }}>{g.issue}</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: 11, color: '#64748B', marginTop: 2 }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                     Score: {g.score} | Spread: {g.spread}
                   </div>
                 </div>
@@ -442,14 +442,14 @@ export default function IntelligenceTab({ rows }: Props) {
                 </Link>
                 <span style={{ fontFamily: 'monospace', fontWeight: 900, color: scoreColor(h.score) }}>{h.score}</span>
               </div>
-              <div style={{ fontSize: 11, color: '#64748B', marginBottom: 8 }}>{h.category}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{h.category}</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <div style={{ fontSize: 11 }}>
-                  <span style={{ color: '#64748B' }}>Bull: </span>
+                  <span style={{ color: 'var(--text-muted)' }}>Bull: </span>
                   <span style={{ color: '#22C55E', fontWeight: 700 }}>{h.topBull?.full ?? '—'}</span>
                 </div>
                 <div style={{ fontSize: 11 }}>
-                  <span style={{ color: '#64748B' }}>Bear: </span>
+                  <span style={{ color: 'var(--text-muted)' }}>Bear: </span>
                   <span style={{ color: '#EF4444', fontWeight: 700 }}>{h.topBear?.full ?? '—'}</span>
                 </div>
               </div>
@@ -491,7 +491,7 @@ export default function IntelligenceTab({ rows }: Props) {
                   <Link href={`/stock/${c.symbol}`} style={{ color: '#D4AF37', fontFamily: 'monospace', fontWeight: 900, fontSize: 14, textDecoration: 'none' }}>
                     {c.symbol}
                   </Link>
-                  <span style={{ fontSize: 11, color: '#64748B' }}>{c.name}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{c.name}</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 12, alignItems: 'center' }}>
                   <div style={{ textAlign: 'left' }}>
@@ -522,20 +522,20 @@ export default function IntelligenceTab({ rows }: Props) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div>
-              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>{t("intel.cyclicalExposure")}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>{t("intel.cyclicalExposure")}</div>
               <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 900, color: '#F97316' }}>
                 {macroRegimeFit.cyclical}%
               </div>
-              <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
                 Energy, Banking, Infra, Metals, Auto, Realty
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6 }}>{t("intel.defensiveExposure")}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6 }}>{t("intel.defensiveExposure")}</div>
               <div style={{ fontSize: 24, fontFamily: 'monospace', fontWeight: 900, color: '#22C55E' }}>
                 {macroRegimeFit.defensive}%
               </div>
-              <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
                 IT, Pharma, FMCG, Healthcare, Staples
               </div>
             </div>
@@ -548,14 +548,14 @@ export default function IntelligenceTab({ rows }: Props) {
         <div style={{ ...card, background: 'linear-gradient(135deg, rgba(212,175,55,0.1), rgba(15,23,42,0.6))' }}>
           <div style={sectionLabel}>◌ Your Portfolio&apos;s Rishi Affinity</div>
           <div style={{ padding: 16 }}>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 6 }}>THIS PORTFOLIO MATCHES:</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>THIS PORTFOLIO MATCHES:</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: '#D4AF37', marginBottom: 10 }}>
               {rishiAffinity.rishi}
             </div>
             <div style={{ fontSize: 14, color: '#CBD5E1', lineHeight: 1.7, marginBottom: 12 }}>
               Philosophy: <span style={{ color: '#E2E8F0', fontWeight: 600 }}>{rishiAffinity.philosophy}</span>
             </div>
-            <div style={{ fontSize: 11, color: '#64748B' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
               Alignment Score: <span style={{ fontFamily: 'monospace', fontWeight: 900, color: scoreColor(rishiAffinity.score) }}>{rishiAffinity.score}/100</span>
             </div>
           </div>

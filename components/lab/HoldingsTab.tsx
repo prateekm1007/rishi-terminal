@@ -21,7 +21,7 @@ function formatCurrency(n: number): string {
 }
 
 function plColor(pl: number): string {
-  return pl > 0 ? '#22C55E' : pl < 0 ? '#EF4444' : '#64748B';
+  return pl > 0 ? '#22C55E' : pl < 0 ? '#EF4444' : 'var(--text-muted)';
 }
 
 function scoreColor(s: number): string {
@@ -152,7 +152,7 @@ export default function HoldingsTab({ rows }: Props) {
               background: 'transparent',
               border: 'none',
               borderBottom: innerTab === t ? '2px solid #D4AF37' : '2px solid transparent',
-              color: innerTab === t ? '#D4AF37' : '#64748B',
+              color: innerTab === t ? '#D4AF37' : 'var(--text-muted)',
               cursor: 'pointer',
               textTransform: 'uppercase',
               letterSpacing: 1,
@@ -175,7 +175,7 @@ export default function HoldingsTab({ rows }: Props) {
                 { label: 'Return', value: totals.totalPLPct.toFixed(2) + '%', color: plColor(totals.totalPLPct), tip: 'CAGR' },
               ].map(m => (
                 <div key={m.label} style={{ padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 8, border: '1px solid rgba(30,41,59,0.8)' }}>
-                  <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 6 }}>{(m as any).tip ? <InfoTip term={(m as any).tip} icon={true}>{m.label}</InfoTip> : m.label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 6 }}>{(m as any).tip ? <InfoTip term={(m as any).tip} icon={true}>{m.label}</InfoTip> : m.label}</div>
                   <div style={{ fontSize: 18, fontWeight: 700, color: (m as any).color ?? '#E2E8F0', fontFamily: 'monospace' }}>
                     {m.value}
                   </div>
@@ -186,7 +186,7 @@ export default function HoldingsTab({ rows }: Props) {
 
           {/* Add button */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 13, color: '#64748B' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
               {loading ? 'Fetching live prices...' : `${holdings.length} position${holdings.length !== 1 ? 's' : ''}`}
             </div>
             <button onClick={() => setShowAdd(!showAdd)} style={btnGold}>
@@ -199,7 +199,7 @@ export default function HoldingsTab({ rows }: Props) {
             <div style={{ padding: 20, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, marginBottom: 20 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.symbol")}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.symbol")}</div>
                   <input value={formSymbol} onChange={e => setFormSymbol(e.target.value.toUpperCase())} placeholder="e.g. TCS" list="holdings-stocks-list" autoComplete="off" style={inputStyle} />
                   <datalist id="holdings-stocks-list">
                     {rows.map(s => (
@@ -208,15 +208,15 @@ export default function HoldingsTab({ rows }: Props) {
                   </datalist>
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.shares")}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.shares")}</div>
                   <input value={formShares} onChange={e => setFormShares(e.target.value)} placeholder="10" type="number" style={inputStyle} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.avgPrice")}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.avgPrice")}</div>
                   <input value={formAvgPrice} onChange={e => setFormAvgPrice(e.target.value)} placeholder="3500" type="number" style={inputStyle} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.purchaseDate")}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>{t("holdings.purchaseDate")}</div>
                   <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} style={inputStyle} />
                 </div>
                 <button onClick={handleAdd} style={{ ...btnGold, whiteSpace: 'nowrap' }}>Add</button>
@@ -229,7 +229,7 @@ export default function HoldingsTab({ rows }: Props) {
           {holdings.length === 0 && (
             <div style={{ padding: 48, textAlign: 'center', border: '1px dashed rgba(212,175,55,0.2)', borderRadius: 8 }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>▣</div>
-              <div style={{ color: '#64748B', marginBottom: 16 }}>No positions yet. Add your first holding.</div>
+              <div style={{ color: 'var(--text-muted)', marginBottom: 16 }}>No positions yet. Add your first holding.</div>
               <button onClick={() => setShowAdd(true)} style={btnGold}>+ Add First Position</button>
             </div>
           )}
@@ -241,7 +241,7 @@ export default function HoldingsTab({ rows }: Props) {
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(30,41,59,0.8)' }}>
                     {['Symbol', 'Shares', 'Avg Price', 'LTP', 'Invested', 'Current', 'P&L', 'P&L %', 'Score', ''].map(h => (
-                      <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: '#64748B', letterSpacing: 1, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, fontWeight: 600, whiteSpace: 'nowrap' }}>
                         {h}
                       </th>
                     ))}
@@ -254,7 +254,7 @@ export default function HoldingsTab({ rows }: Props) {
                         <Link href={`/stock/${h.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 700, fontFamily: 'monospace' }}>
                           {h.symbol}
                         </Link>
-                        <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{h.row?.name ?? '—'}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{h.row?.name ?? '—'}</div>
                       </td>
                       <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0' }}>{h.shares.toLocaleString()}</td>
                       <td style={{ padding: '12px 12px', fontFamily: 'monospace', color: '#E2E8F0' }}>{h.avgPrice.toLocaleString('en-IN')}</td>
@@ -267,7 +267,7 @@ export default function HoldingsTab({ rows }: Props) {
                         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: scoreColor(h.score) }}>{h.score}</span>
                       </td>
                       <td style={{ padding: '12px 12px' }}>
-                        <button onClick={() => handleRemove(h.symbol)} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 14 }} title="Remove">✕</button>
+                        <button onClick={() => handleRemove(h.symbol)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 14 }} title="Remove">✕</button>
                       </td>
                     </tr>
                   ))}

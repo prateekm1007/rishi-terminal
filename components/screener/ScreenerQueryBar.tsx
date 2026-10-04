@@ -133,7 +133,7 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
   }
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 10, fontWeight: 700, color: '#64748B', letterSpacing: '0.12em', marginBottom: 10,
+    fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 10,
   };
 
   return (
@@ -183,7 +183,7 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
               onClick={clearQuery}
               style={{
                 padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                background: 'rgba(31,41,59,0.6)', color: '#64748B', fontSize: 12, fontWeight: 700,
+                background: 'rgba(31,41,59,0.6)', color: 'var(--text-muted)', fontSize: 12, fontWeight: 700,
               }}
             >
               CLEAR
@@ -297,7 +297,7 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
                   onClick={() => deleteScreen(s.id)}
                   title="delete screen"
                   style={{
-                    border: 'none', background: 'none', cursor: 'pointer', color: '#64748B',
+                    border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)',
                     fontSize: 12, lineHeight: 1,
                   }}
                 >

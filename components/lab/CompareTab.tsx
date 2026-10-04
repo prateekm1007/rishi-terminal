@@ -65,7 +65,7 @@ function scoreColor(s: number): string {
 }
 
 function changeColor(v: number): string {
-  return v > 0 ? '#22C55E' : v < 0 ? '#EF4444' : '#64748B';
+  return v > 0 ? '#22C55E' : v < 0 ? '#EF4444' : 'var(--text-muted)';
 }
 
 function metricColor(val: number, lo: number, hi: number): string {
@@ -457,7 +457,7 @@ export default function CompareTab({ rows }: Props) {
     background: 'transparent',
     border: '1px solid rgba(100,116,139,0.3)',
     borderRadius: 6,
-    color: '#64748B',
+    color: 'var(--text-muted)',
     fontSize: 11,
     cursor: 'pointer',
   };
@@ -477,7 +477,7 @@ export default function CompareTab({ rows }: Props) {
     padding: '10px 8px',
     textAlign: 'right' as const,
     fontSize: 9,
-    color: '#64748B',
+    color: 'var(--text-muted)',
     letterSpacing: 0.8,
     fontWeight: 600,
     whiteSpace: 'nowrap',
@@ -528,7 +528,7 @@ export default function CompareTab({ rows }: Props) {
       <div style={cardStyle}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ flex: '1 1 280px', position: 'relative' }}>
-            <div style={{ fontSize: 10, color: '#64748B', marginBottom: 6, letterSpacing: 1 }}>ADD STOCK (MAX {MAX_STOCKS})</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>ADD STOCK (MAX {MAX_STOCKS})</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
               <div style={{ position: 'relative' }}>
                 <input
@@ -578,7 +578,7 @@ export default function CompareTab({ rows }: Props) {
                         }}
                       >
                         <span style={{ color: '#D4AF37', fontWeight: 700 }}>{sym}</span>
-                        <span style={{ color: '#64748B', marginLeft: 8 }}>{rowMap.get(sym)?.name}</span>
+                        <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>{rowMap.get(sym)?.name}</span>
                       </div>
                     ))}
                   </div>
@@ -592,7 +592,7 @@ export default function CompareTab({ rows }: Props) {
           </div>
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, color: '#64748B' }}>{loading ? '⟳ Loading...' : `${symbols.length}/${MAX_STOCKS}`}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{loading ? '⟳ Loading...' : `${symbols.length}/${MAX_STOCKS}`}</span>
             {symbols.length > 0 && (
               <>
                 <button onClick={() => setShowRivalry(v => !v)} style={btnGhost}>
@@ -623,7 +623,7 @@ export default function CompareTab({ rows }: Props) {
 
         {peerSuggestions.length > 0 && symbols.length > 0 && symbols.length < MAX_STOCKS && (
           <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: 10, color: '#64748B', letterSpacing: 1 }}>PEERS:</span>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1 }}>PEERS:</span>
             {peerSuggestions.map(sym => (
               <button key={sym} onClick={() => addStock(sym)} style={{ ...btnGhost, fontSize: 10, padding: '4px 8px' }}>
                 + {sym}
@@ -636,7 +636,7 @@ export default function CompareTab({ rows }: Props) {
       {/* RIVALRIES */}
       {rivalries.length > 0 && (
         <div style={cardStyle}>
-          <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 10 }}>⚔️ SAVED RIVALRIES</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 10 }}>⚔️ SAVED RIVALRIES</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {rivalries.map(r => (
               <div
@@ -654,7 +654,7 @@ export default function CompareTab({ rows }: Props) {
                 <button onClick={() => loadRivalry(r)} style={{ background: 'none', border: 'none', color: '#D4AF37', cursor: 'pointer', fontSize: 12, fontFamily: 'monospace', padding: 0 }}>
                   {r.name}
                 </button>
-                <button onClick={() => deleteRivalry(r.id)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 11, padding: 0 }}>
+                <button onClick={() => deleteRivalry(r.id)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 11, padding: 0 }}>
                   ✕
                 </button>
               </div>
@@ -688,7 +688,7 @@ export default function CompareTab({ rows }: Props) {
                 {e.changePct >= 0 ? '+' : ''}
                 {e.changePct.toFixed(1)}%
               </span>
-              <button onClick={() => removeStock(e.symbol)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 13, padding: 0, lineHeight: 1 }}>
+              <button onClick={() => removeStock(e.symbol)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 13, padding: 0, lineHeight: 1 }}>
                 ✕
               </button>
             </div>
@@ -714,7 +714,7 @@ export default function CompareTab({ rows }: Props) {
                 fontWeight: viewMode === vm.id ? 700 : 400,
                 background: viewMode === vm.id ? 'rgba(212,175,55,0.15)' : 'transparent',
                 border: viewMode === vm.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(30,41,59,0.6)',
-                color: viewMode === vm.id ? '#D4AF37' : '#64748B',
+                color: viewMode === vm.id ? '#D4AF37' : 'var(--text-muted)',
               }}
             >
               {vm.icon} {vm.label}
@@ -728,7 +728,7 @@ export default function CompareTab({ rows }: Props) {
         <div style={{ ...cardStyle, padding: 64, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>⚔️</div>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#D4AF37', marginBottom: 8 }}>{t("compare.arenaEmpty")}</div>
-          <div style={{ color: '#64748B', marginBottom: 20, fontSize: 14 }}>Add 2–10 stocks to begin the battle.</div>
+          <div style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: 14 }}>Add 2–10 stocks to begin the battle.</div>
         </div>
       )}
 
@@ -775,7 +775,7 @@ export default function CompareTab({ rows }: Props) {
                           <Link href={`/stock/${e.symbol}`} style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 800, fontSize: 12 }}>
                             {e.symbol}
                           </Link>
-                          <div style={{ fontSize: 9, color: '#64748B', marginTop: 1 }}>{e.sector}</div>
+                          <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>{e.sector}</div>
                         </div>
                       </div>
                     </td>
@@ -788,19 +788,19 @@ export default function CompareTab({ rows }: Props) {
                     <td style={{ ...tdStyle, textAlign: 'center' }}>
                       <span style={{ fontWeight: 900, fontSize: 14, color: scoreColor(e.consensus) }}>{e.consensus}</span>
                     </td>
-                    <td style={{ ...tdStyle, color: e.pe > 0 ? metricColor(e.pe, 15, 30) : '#64748B' }}>{fmt(e.pe, 1)}</td>
-                    <td style={{ ...tdStyle, color: e.pb > 0 ? metricColor(e.pb, 1.5, 4) : '#64748B' }}>{fmt(e.pb, 1)}</td>
+                    <td style={{ ...tdStyle, color: e.pe > 0 ? metricColor(e.pe, 15, 30) : 'var(--text-muted)' }}>{fmt(e.pe, 1)}</td>
+                    <td style={{ ...tdStyle, color: e.pb > 0 ? metricColor(e.pb, 1.5, 4) : 'var(--text-muted)' }}>{fmt(e.pb, 1)}</td>
                     <td style={{ ...tdStyle, color: metricColor(e.roe, 12, 20) }}>{fmt(e.roe, 1)}</td>
                     <td style={{ ...tdStyle, color: metricColor(e.roce, 15, 25) }}>{fmt(e.roce, 1)}</td>
                     <td style={{ ...tdStyle, color: e.de > 1 ? '#EF4444' : e.de > 0 ? '#D4AF37' : '#22C55E' }}>{fmt(e.de, 2)}</td>
                     <td style={{ ...tdStyle, color: metricColor(e.fcfYield, 2, 5) }}>{fmt(e.fcfYield, 1)}</td>
-                    <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: e.tensionSpread > 40 ? '#EF4444' : '#64748B' }}>
-                      {e.tension.split(' ')[0]} <span style={{ color: '#475569' }}>({e.tensionSpread})</span>
+                    <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: e.tensionSpread > 40 ? '#EF4444' : 'var(--text-muted)' }}>
+                      {e.tension.split(' ')[0]} <span style={{ color: 'var(--text-ghost)' }}>({e.tensionSpread})</span>
                     </td>
                     <td style={{ ...tdStyle, textAlign: 'center', fontSize: 9, color: '#22C55E' }}>{e.topBull.split(' ')[0]}</td>
                     <td style={{ ...tdStyle, textAlign: 'center', fontSize: 9, color: '#EF4444' }}>{e.topBear.split(' ')[0]}</td>
                     <td style={{ ...tdStyle, textAlign: 'center' }}>
-                      <button onClick={() => removeStock(e.symbol)} style={{ background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 14 }}>
+                      <button onClick={() => removeStock(e.symbol)} style={{ background: 'none', border: 'none', color: 'var(--text-ghost)', cursor: 'pointer', fontSize: 14 }}>
                         ✕
                       </button>
                     </td>
@@ -809,7 +809,7 @@ export default function CompareTab({ rows }: Props) {
               </tbody>
             </table>
           </div>
-          <div style={{ marginTop: 10, fontSize: 10, color: '#475569' }}>{enriched.length} stocks × 15 cols · Disagreement: {disagreementIndex}</div>
+          <div style={{ marginTop: 10, fontSize: 10, color: 'var(--text-ghost)' }}>{enriched.length} stocks × 15 cols · Disagreement: {disagreementIndex}</div>
         </div>
       )}
 
@@ -818,7 +818,7 @@ export default function CompareTab({ rows }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* CROWNS */}
           <div style={cardStyle}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>👑 PHILOSOPHY KINGS</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12 }}>👑 PHILOSOPHY KINGS</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
               {Object.entries(crowns).slice(0, 12).map(([rishi, sym]) => (
                 <div
@@ -830,7 +830,7 @@ export default function CompareTab({ rows }: Props) {
                     padding: '8px 12px',
                   }}
                 >
-                  <div style={{ fontSize: 9, color: '#64748B', marginBottom: 4 }}>{rishi.toUpperCase()}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 4 }}>{rishi.toUpperCase()}</div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: '#D4AF37', fontFamily: 'monospace' }}>👑 {sym}</div>
                 </div>
               ))}
@@ -839,7 +839,7 @@ export default function CompareTab({ rows }: Props) {
 
           {/* RISHI × STOCK MATRIX */}
           <div style={cardStyle}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>⚔️ RISHI × STOCK SCORE MATRIX ({allRishis.length} Rishis)</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12 }}>⚔️ RISHI × STOCK SCORE MATRIX ({allRishis.length} Rishis)</div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
                 <thead>
@@ -923,7 +923,7 @@ export default function CompareTab({ rows }: Props) {
 
           {/* CONSENSUS VS OUTLIER */}
           <div style={cardStyle}>
-            <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>🧠 CONSENSUS vs OUTLIER</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12 }}>🧠 CONSENSUS vs OUTLIER</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {enriched.map((e: any) => (
                 <div
@@ -940,7 +940,7 @@ export default function CompareTab({ rows }: Props) {
                   }}
                 >
                   <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#D4AF37', minWidth: 80 }}>{e.symbol}</span>
-                  <span style={{ fontSize: 11, color: '#64748B' }}>{e.tension}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{e.tension}</span>
                   <div style={{ flex: 1, height: 6, background: 'rgba(30,41,59,0.6)', borderRadius: 3, minWidth: 80 }}>
                     <div
                       style={{
@@ -951,8 +951,8 @@ export default function CompareTab({ rows }: Props) {
                       }}
                     />
                   </div>
-                  <span style={{ fontSize: 11, color: e.tensionSpread > 60 ? '#EF4444' : '#64748B', fontFamily: 'monospace' }}>Spread: {e.tensionSpread}</span>
-                  <span style={{ fontSize: 10, color: '#475569' }}>
+                  <span style={{ fontSize: 11, color: e.tensionSpread > 60 ? '#EF4444' : 'var(--text-muted)', fontFamily: 'monospace' }}>Spread: {e.tensionSpread}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-ghost)' }}>
                     {e.tensionSpread < 20 ? '✅ Unanimous' : e.tensionSpread < 40 ? '🟡 Minor' : e.tensionSpread < 60 ? '🟠 Notable' : '🔴 Sharp'}
                   </span>
                 </div>
@@ -965,7 +965,7 @@ export default function CompareTab({ rows }: Props) {
       {/* VIEW: HEATMAP (ONLY NON-ZERO METRICS) */}
       {symbols.length > 0 && viewMode === 'heatmap' && (
         <div style={cardStyle}>
-          <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 12 }}>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12 }}>
             🔥 HEATMAP — color intensity = quality
           </div>
           <div style={{ overflowX: 'auto' }}>
@@ -1029,7 +1029,7 @@ export default function CompareTab({ rows }: Props) {
               </tbody>
             </table>
           </div>
-          <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: 10, color: '#475569' }}>
+          <div style={{ marginTop: 10, display: 'flex', gap: 16, fontSize: 10, color: 'var(--text-ghost)' }}>
             <span>🟥 Low</span>
             <span>🟨 Medium</span>
             <span>🟩 High</span>
@@ -1041,8 +1041,8 @@ export default function CompareTab({ rows }: Props) {
       {/* VIEW: RADAR CHART (6 PILLAR OVERLAY) */}
       {symbols.length > 0 && viewMode === 'radar' && (
         <div style={cardStyle}>
-          <div style={{ fontSize: 10, color: '#64748B', letterSpacing: 1, marginBottom: 16 }}>
-          <div style={{ fontSize: 10, color: "#64748B", letterSpacing: 1, marginBottom: 16 }}>📡 RADAR — 6 Pillar Score Table</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 16 }}>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: 1, marginBottom: 16 }}>📡 RADAR — 6 Pillar Score Table</div>
           </div>
 
           {/* Pillar table */}
@@ -1089,7 +1089,7 @@ export default function CompareTab({ rows }: Props) {
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#64748B', letterSpacing: 1 }}>{t("compare.historicalPerformanceAnalysis")}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1 }}>{t("compare.historicalPerformanceAnalysis")}</div>
                 <div style={{ fontSize: 13, color: '#D4AF37' }}>Normalized Total Return — {histTF} Period</div>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -1104,7 +1104,7 @@ export default function CompareTab({ rows }: Props) {
                       fontWeight: histTF === tf ? 700 : 400,
                       background: histTF === tf ? 'rgba(212,175,55,0.15)' : 'transparent',
                       border: histTF === tf ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(30,41,59,0.6)',
-                      color: histTF === tf ? '#D4AF37' : '#64748B',
+                      color: histTF === tf ? '#D4AF37' : 'var(--text-muted)',
                       cursor: 'pointer'
                     }}
                   >{tf}</button>
@@ -1114,9 +1114,9 @@ export default function CompareTab({ rows }: Props) {
           </div>
           <div style={cardStyle}>
             {histLoading ? (
-              <div style={{ textAlign: 'center', padding: 60, color: '#64748B' }}>Analyzing historical price series...</div>
+              <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Analyzing historical price series...</div>
             ) : normalizedHistData.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 60, color: '#64748B' }}>
+              <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
                 Historical data not available for the selected symbols and timeframe.
               </div>
             ) : (
@@ -1145,7 +1145,7 @@ export default function CompareTab({ rows }: Props) {
                           <tr key={e.symbol} style={{ borderBottom: '1px solid rgba(30,41,59,0.4)' }}>
                             <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 700, color: '#D4AF37' }}>{idx + 1}</td>
                             <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 700, color: STOCK_COLORS[enriched.indexOf(e) % STOCK_COLORS.length] }}>{e.symbol}</td>
-                            <td style={{ ...tdStyle, textAlign: 'left', color: '#64748B', fontSize: 11 }}>{e.sector}</td>
+                            <td style={{ ...tdStyle, textAlign: 'left', color: 'var(--text-muted)', fontSize: 11 }}>{e.sector}</td>
                             <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 700, color: changeColor(e.ret) }}>{e.ret >= 0 ? '+' : ''}{e.ret.toFixed(1)}%</td>
                             <td style={{ ...tdStyle, textAlign: 'right', color: scoreColor(e.consensus) }}>{e.consensus}</td>
                             <td style={{ ...tdStyle, textAlign: 'center', fontSize: 10, color: '#94A3B8' }}>{e.category}</td>
@@ -1162,10 +1162,10 @@ export default function CompareTab({ rows }: Props) {
       {symbols.length > 1 && (
         <div style={{ ...cardStyle, display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 9, color: '#64748B', letterSpacing: 1 }}>{t("compare.disagreementIndex")}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 1 }}>{t("compare.disagreementIndex")}</div>
             <div style={{ fontSize: 22, fontWeight: 900, fontFamily: 'monospace', color: disagreementIndex > 60 ? '#EF4444' : disagreementIndex > 30 ? '#D4AF37' : '#22C55E' }}>
               {disagreementIndex}
-              <span style={{ fontSize: 11, color: '#64748B', marginLeft: 4 }}>/100</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 4 }}>/100</span>
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>

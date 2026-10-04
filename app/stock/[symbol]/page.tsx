@@ -3,6 +3,10 @@ import type { Metadata } from 'next';
 import { STOCKS } from '../../../data/stocks';
 import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
 import { sanitizeConsensus } from '@/lib/consensus/sanitize';
+// A1 (Round 14): the wisdom rail's historical parallel is resolved on the
+// server per regeneration — the dataset and detector no longer ship in
+// the client bundle.
+import { detectArchetype, HISTORICAL_PARALLELS } from '@/lib/wisdom/historicalParallels';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
@@ -126,6 +130,10 @@ export default async function StockPage({ params }: StockPageProps) {
   const resolved = resolveStockMetrics(key);
   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
+  // A1: the historical parallel for the wisdom rail — server-resolved;
+  // null renders the honest "no parallels detected" state.
+  const archetypeKey = detectArchetype(stock);
+  const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
 
   // X3+Y1+Y2: the SSR price peek — ONE read-only batch read of the shared
   // quote cache at ISR REGENERATION (skipped in the build phase: builds
@@ -164,6 +172,7 @@ export default async function StockPage({ params }: StockPageProps) {
         initialQuote={initialQuote}
         initialPeerPrices={initialPeerPrices}
         initialMarket={initialMarket}
+        parallel={parallel}
       />
     </NamespaceProvider>
   );

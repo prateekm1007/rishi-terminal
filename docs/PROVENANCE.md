@@ -15,7 +15,7 @@ decision on "India equities only until G-C". Hiding them from nav and
 returning a "not available yet" state is BLOCKED: FD-3 — not the
 coder's call (Constitution art. 31).
 
-Snapshot: 2026-10-04 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 14
+Snapshot: 2026-10-04 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 16
 
 | Route | Classification | Seed label | Notes |
 |---|---|---|---|
@@ -47,6 +47,8 @@ Snapshot: 2026-10-04 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 1
 | /forex/pairs | none | — | FD-3 scope |
 | /forex/rishis | none | — | FD-3 scope |
 | /index/* | none | — |  |
+| /methodology | none | — |  |
+| /methodology/* | none | — |  |
 | /news/* | none | — |  |
 | /pricing | none | — |  |
 | /privacy | none | — |  |

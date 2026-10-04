@@ -309,3 +309,16 @@ one voice is not agreement, and σ = 0 would pretend it is. Computed in
 stock page's consensus hero ("Disagreement σ") with honest em-dash when
 null. Constructed-case and monotonicity contracts:
 `test/consensus.dispersion.test.ts`.
+
+**S2-01 (Round 13) — the methodology docs and page.** One document per
+registered scorer in `docs/methodology/<slug>.md` (slug = kebab-case of the
+canonical name), each carrying the six required sections (Inputs, Formula,
+Thresholds, Rationale, Known failure modes, Sectors where it does not
+apply), plus `dispersion.md` (S2-06). The docs describe what the CODE
+computes — constants, ramp shapes, provenance contracts — not what the
+real investors would do. Public render: `/methodology` +
+`/methodology/<slug>` (static, generated from the .md files by
+`lib/methodology/index.ts` through a tested markdown-SUBSET renderer that
+emits React text nodes only — no HTML generation anywhere). Coverage and
+orphan-docs gates: `test/methodology.coverage.test.ts`; renderer gates:
+`test/methodology.markdown.test.ts`.

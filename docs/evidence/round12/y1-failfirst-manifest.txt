@@ -1,0 +1,5 @@
+
+> rishi-terminal@0.1.0 verify:isr
+> tsx scripts/ci/verifyIsrManifest.ts
+
+ISR manifest gate: FAIL — / is absent from the prerender manifest (route is dynamic?)

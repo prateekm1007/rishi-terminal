@@ -7,14 +7,23 @@
 // RSC props — the 944-record seed dataset and the scoring engine never
 // enter the client bundle.
 //
-// X3 (Round 11): the page renders DYNAMICALLY — the W5 defect was the
-// hourly-ISR bake: the build-time prerender carried an EMPTY price
-// snapshot (builds fetch nothing, hermetically) yet served as "fresh"
-// for up to an hour after every deploy, so users saw "Connecting…"/
-// "——" until a first visitor's revalidation landed. Now every request
-// takes ONE cheap batch read of the shared quote cache (never a vendor
-// fetch) for the symbols it renders; the IST-date daily pick stays exact
-// (deterministic, Rule 18), and rankings only run when the flag is on.
+// Y1 (Round 12): the homepage is ISR again (revalidate 60 s). The W5
+// defect was the hourly-ISR bake serving an EMPTY build-time price
+// snapshot as "fresh" for up to an hour after every deploy; X3 answered
+// with per-request dynamic rendering, which measured on production as
+// warm page TTFB p95 ~0.36 s (cache-control: no-store on every hit) —
+// the opposite of the latency goal. The Y1 contract keeps both honest:
+//   - the build phase fetches NOTHING (initialPriceSnapshot returns {}
+//     while NEXT_PHASE marks a build — CI has no database);
+//   - every ISR regeneration (at most 60 s apart, under traffic) takes
+//     ONE cheap batch read of the shared quote cache (never a vendor
+//     fetch) for the symbols the page renders;
+//   - every value keeps its own observation-time label, and a symbol
+//     with no cached observation renders the honest "price unavailable"
+//     state — never "Connecting…", never a fabricated number.
+//   - the IST-date daily pick stays exact (deterministic, Rule 18): a
+//     60 s revalidate rotates it within a minute of IST midnight.
+//   - rankings only run when the flag is on (below).
 //
 // U2 (founder round 7): the initial-price snapshot rides the SAME price
 // path the client endpoints use (lib/dashboardSnapshot → the shared quote
@@ -33,7 +42,7 @@ import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default async function Page() {
   // U4: the flag decides whether the ranking engine runs at all. Off → no

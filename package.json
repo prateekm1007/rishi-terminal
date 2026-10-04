@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "verify:isr": "tsx scripts/ci/verifyIsrManifest.ts",
     "fix:encoding": "npx tsx scripts/fixEncoding.ts",
     "validate:encoding": "npx tsx scripts/validateEncoding.ts",
     "start": "next start",

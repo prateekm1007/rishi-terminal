@@ -1,0 +1,508 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/repo
+
+ ❯ test/y1.isrSegmentConfig.test.ts (5 tests | 4 failed) 9ms
+   ❯ Y1 — / and /stock/[symbol] are ISR (revalidate <= 60 s) (5)
+     × neither page is force-dynamic 5ms
+     × both pages export the literal revalidate = 60 1ms
+     ✓ no page revalidates slower than the 60 s cap 0ms
+     × /stock/[symbol] pre-renders the universe (generateStaticParams) 1ms
+     × the stock page quote peek is build-phase guarded (hermetic build) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/y1.isrSegmentConfig.test.ts > Y1 — / and /stock/[symbol] are ISR (revalidate <= 60 s) > neither page is force-dynamic
+AssertionError: expected '// N1 (round 3): the home page is a S…' not to match /export\s+const\s+dynamic\s*=\s*['"]fo…/
+
+- Expected:
+/export\s+const\s+dynamic\s*=\s*['"]force-dynamic['"]/
+
++ Received:
+"// N1 (round 3): the home page is a SERVER component.
+//
+// All ranking calls run here, on the single engine: Top Buys, the Short
+// Radar, and the deterministic IST-date Stock of the Day. The interactive
+// half (ticker, live prices, hydration) lives in
+// components/dashboard/DashboardClient.tsx and receives these results as
+// RSC props — the 944-record seed dataset and the scoring engine never
+// enter the client bundle.
+//
+// X3 (Round 11): the page renders DYNAMICALLY — the W5 defect was the
+// hourly-ISR bake: the build-time prerender carried an EMPTY price
+// snapshot (builds fetch nothing, hermetically) yet served as \"fresh\"
+// for up to an hour after every deploy, so users saw \"Connecting…\"/
+// \"——\" until a first visitor's revalidation landed. Now every request
+// takes ONE cheap batch read of the shared quote cache (never a vendor
+// fetch) for the symbols it renders; the IST-date daily pick stays exact
+// (deterministic, Rule 18), and rankings only run when the flag is on.
+//
+// U2 (founder round 7): the initial-price snapshot rides the SAME price
+// path the client endpoints use (lib/dashboardSnapshot → the shared quote
+// cache). The client hook hydrates from it and revalidates on mount.
+// Every value keeps its own observation-time label.
+//
+// U4 (founder round 7): the ranked widgets (Top Buy Signals, Short Radar,
+// Stock of the Day) are gated behind RANKINGS_ENABLED (lib/featureFlags,
+// fail-closed). When the flag is off the ranking calls DO NOT RUN — the
+// dashboard renders an honest disabled state instead of seed-derived
+// rankings. FD-22.
+import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from '@/lib/scoring/rankings'; // T13: real rankings
+import { resolveStockMetrics, getQvps } from '@/lib/scoring'; // T10: single scoring surface
+import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
+import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
+import DashboardClient from '@/components/dashboard/DashboardClient';
+
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  // U4: the flag decides whether the ranking engine runs at all. Off → no
+  // ranked picks are computed and the dashboard shows the disabled state.
+  const rankings = rankingsEnabled();
+
+  // T13: Top Buy = top-N by consensus among dataQuality==='OK' stocks,
+  // deterministic tie-breaks. Shorts = actual trigger flags with reasons
+  // derived from those flags, ranked by the (unvalidated) QVPS short model.
+  // Stock of the Day = deterministic IST-date pick from the ranked pool.
+  const rotatingStocks = rankings ? rankTopBuy(6) : [];
+  const rotatingShorts = rankings ? computeShortRadar(3) : [];
+  const stockOfDay = rankings ? pickStockOfTheDay() : null;
+
+  // N1: QVPS commentary for the daily pick, computed server-side from the
+  // seed baseline (labelled as the QVPS model, never \"the Rishi Score\").
+  // Live fundamentals still hydrate the display cards client-side.
+  const sodCommentary = stockOfDay
+    ? (() => {
+        const resolved = resolveStockMetrics(stockOfDay.symbol);
+        return resolved ? getQvps(resolved, 'LONG').commentary : stockOfDay.why;
+      })()
+    : null;
+
+  // U2: the SSR snapshot covers exactly the symbols the dashboard renders —
+  // the list lives in lib/dashboardSymbols (one source of truth with the
+  // client component), plus the rotating rankings symbols below.
+  const initialPrices = await initialPriceSnapshot([
+    ...TICKER_SYMS,
+    ...rotatingStocks.map(s => s.symbol),
+    ...rotatingShorts.map(s => s.symbol),
+    ...WORLD_MARKETS.map(m => m.sym),
+    ...TOP_CRYPTO.map(c => c.symbol),
+    ...(stockOfDay ? [stockOfDay.symbol] : []),
+  ]);
+
+  return (
+    <DashboardClient
+      rankingsEnabled={rankings}
+      rotatingStocks={rotatingStocks}
+      rotatingShorts={rotatingShorts}
+      stockOfDay={stockOfDay}
+      sodCommentary={sodCommentary}
+      initialPrices={initialPrices}
+    />
+  );
+}
+"
+
+ ❯ test/y1.isrSegmentConfig.test.ts:36:22
+     34| describe("Y1 — / and /stock/[symbol] are ISR (revalidate <= 60 s)", ()…
+     35|   it("neither page is force-dynamic", () => {
+     36|     expect(HOME).not.toMatch(/export\s+const\s+dynamic\s*=\s*['"]force…
+       |                      ^
+     37|     expect(STOCK).not.toMatch(/export\s+const\s+dynamic\s*=\s*['"]forc…
+     38|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/y1.isrSegmentConfig.test.ts > Y1 — / and /stock/[symbol] are ISR (revalidate <= 60 s) > both pages export the literal revalidate = 60
+AssertionError: expected '// N1 (round 3): the home page is a S…' to match /export\s+const\s+revalidate\s*=\s*60\…/
+
+- Expected:
+/export\s+const\s+revalidate\s*=\s*60\s*;/
+
++ Received:
+"// N1 (round 3): the home page is a SERVER component.
+//
+// All ranking calls run here, on the single engine: Top Buys, the Short
+// Radar, and the deterministic IST-date Stock of the Day. The interactive
+// half (ticker, live prices, hydration) lives in
+// components/dashboard/DashboardClient.tsx and receives these results as
+// RSC props — the 944-record seed dataset and the scoring engine never
+// enter the client bundle.
+//
+// X3 (Round 11): the page renders DYNAMICALLY — the W5 defect was the
+// hourly-ISR bake: the build-time prerender carried an EMPTY price
+// snapshot (builds fetch nothing, hermetically) yet served as \"fresh\"
+// for up to an hour after every deploy, so users saw \"Connecting…\"/
+// \"——\" until a first visitor's revalidation landed. Now every request
+// takes ONE cheap batch read of the shared quote cache (never a vendor
+// fetch) for the symbols it renders; the IST-date daily pick stays exact
+// (deterministic, Rule 18), and rankings only run when the flag is on.
+//
+// U2 (founder round 7): the initial-price snapshot rides the SAME price
+// path the client endpoints use (lib/dashboardSnapshot → the shared quote
+// cache). The client hook hydrates from it and revalidates on mount.
+// Every value keeps its own observation-time label.
+//
+// U4 (founder round 7): the ranked widgets (Top Buy Signals, Short Radar,
+// Stock of the Day) are gated behind RANKINGS_ENABLED (lib/featureFlags,
+// fail-closed). When the flag is off the ranking calls DO NOT RUN — the
+// dashboard renders an honest disabled state instead of seed-derived
+// rankings. FD-22.
+import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from '@/lib/scoring/rankings'; // T13: real rankings
+import { resolveStockMetrics, getQvps } from '@/lib/scoring'; // T10: single scoring surface
+import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
+import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
+import DashboardClient from '@/components/dashboard/DashboardClient';
+
+export const dynamic = 'force-dynamic';
+
+export default async function Page() {
+  // U4: the flag decides whether the ranking engine runs at all. Off → no
+  // ranked picks are computed and the dashboard shows the disabled state.
+  const rankings = rankingsEnabled();
+
+  // T13: Top Buy = top-N by consensus among dataQuality==='OK' stocks,
+  // deterministic tie-breaks. Shorts = actual trigger flags with reasons
+  // derived from those flags, ranked by the (unvalidated) QVPS short model.
+  // Stock of the Day = deterministic IST-date pick from the ranked pool.
+  const rotatingStocks = rankings ? rankTopBuy(6) : [];
+  const rotatingShorts = rankings ? computeShortRadar(3) : [];
+  const stockOfDay = rankings ? pickStockOfTheDay() : null;
+
+  // N1: QVPS commentary for the daily pick, computed server-side from the
+  // seed baseline (labelled as the QVPS model, never \"the Rishi Score\").
+  // Live fundamentals still hydrate the display cards client-side.
+  const sodCommentary = stockOfDay
+    ? (() => {
+        const resolved = resolveStockMetrics(stockOfDay.symbol);
+        return resolved ? getQvps(resolved, 'LONG').commentary : stockOfDay.why;
+      })()
+    : null;
+
+  // U2: the SSR snapshot covers exactly the symbols the dashboard renders —
+  // the list lives in lib/dashboardSymbols (one source of truth with the
+  // client component), plus the rotating rankings symbols below.
+  const initialPrices = await initialPriceSnapshot([
+    ...TICKER_SYMS,
+    ...rotatingStocks.map(s => s.symbol),
+    ...rotatingShorts.map(s => s.symbol),
+    ...WORLD_MARKETS.map(m => m.sym),
+    ...TOP_CRYPTO.map(c => c.symbol),
+    ...(stockOfDay ? [stockOfDay.symbol] : []),
+  ]);
+
+  return (
+    <DashboardClient
+      rankingsEnabled={rankings}
+      rotatingStocks={rotatingStocks}
+      rotatingShorts={rotatingShorts}
+      stockOfDay={stockOfDay}
+      sodCommentary={sodCommentary}
+      initialPrices={initialPrices}
+    />
+  );
+}
+"
+
+ ❯ test/y1.isrSegmentConfig.test.ts:43:18
+     41|     // Literal only: Next requires a statically analyzable value, and …
+     42|     // Y1 cap is <= 60 s. `revalidate = 60 * 1` would NOT be analyzabl…
+     43|     expect(HOME).toMatch(/export\s+const\s+revalidate\s*=\s*60\s*;/);
+       |                  ^
+     44|     expect(STOCK).toMatch(/export\s+const\s+revalidate\s*=\s*60\s*;/);
+     45|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/y1.isrSegmentConfig.test.ts > Y1 — / and /stock/[symbol] are ISR (revalidate <= 60 s) > /stock/[symbol] pre-renders the universe (generateStaticParams)
+AssertionError: expected 'import { notFound, permanentRedirect …' to match /export\s+async\s+function\s+generateS…/
+
+- Expected:
+/export\s+async\s+function\s+generateStaticParams\s*\(/
+
++ Received:
+"import { notFound, permanentRedirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import { STOCKS } from '../../../data/stocks';
+import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
+import { sanitizeConsensus } from '@/lib/consensus/sanitize';
+import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
+import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
+import { generateStockDetail } from '../../../data/stockDetails';
+import { serveCachedQuote } from '@/lib/quotePath'; // X3: SSR peek — the last cached quote, read-only
+import { StockPageClient } from '../../../components/stock/StockPageClient';
+import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
+
+// X3 (Round 11): stock pages render DYNAMICALLY. The 916-page SSG bake
+// carried a \"⟳ FETCHING\" price tile for every symbol (builds fetch
+// nothing, hermetically) until a visitor's client fetch filled it. Now
+// every request PEEKS the shared quote cache for this one symbol — a
+// single cheap read, never a vendor fetch — and the tile renders the
+// cached observation with its own \"as of\" time, or the honest
+// \"price unavailable\" state. The client hook still refreshes on mount.
+
+
+// Round-5 audit (finding 18): every stock page shared the site-default
+// <title> — 916 pages of duplicated metadata. Each page now names its
+// stock, sector and headline scores. Follow-up: INCOMPLETE records get a
+// title/description that matches the insufficient-data page they render —
+// the metadata must not promise scores the page no longer shows.
+// Audit M6/B.3 (retest 2026-10-02): per-symbol canonical + Open Graph —
+// aliases 308 to the canonical symbol, and the canonical link makes each
+// company exactly one indexable URL; og gives WhatsApp/X/LinkedIn unfurls.
+export async function generateMetadata({ params }: StockPageProps): Promise<Metadata> {
+  const { symbol } = await params;
+  const key = symbol.toUpperCase();
+  const canonicalSym = resolveTickerSymbol(key) ?? key;
+  const stock = STOCKS[canonicalSym];
+  if (!stock) {
+    return { title: `Stock not found | Rishi Terminal` };
+  }
+  // Percent-encode: J&KBANK/M&M/M&MFIN carry & — the encoded canonical
+  // matches the sitemap URL form exactly (both forms serve the same page).
+  const ogUrl = `/stock/${encodeURIComponent(canonicalSym)}`;
+  if (getStockScore(stock).dataQuality === \"INCOMPLETE\") {
+    const title = `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`;
+    const description = `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`;
+    return {
+      title,
+      description,
+      alternates: { canonical: ogUrl },
+      openGraph: { title, description, url: ogUrl, type: \"article\" },
+    };
+  }
+  const title = `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`;
+  const description = `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: ogUrl },
+    openGraph: { title, description, url: ogUrl, type: \"article\" },
+  };
+}
+
+export const dynamic = 'force-dynamic';
+
+interface StockPageProps {
+  params: Promise<{ symbol: string }>;
+}
+
+export default async function StockPage({ params }: StockPageProps) {
+  const { symbol } = await params;
+  const key = symbol.toUpperCase();
+
+  // T12: renamed/legacy symbols get a permanent (308) redirect to the
+  // canonical NSE symbol so saved links and share URLs keep working.
+  const canonical = resolveTickerSymbol(key);
+  if (canonical && canonical !== key) {
+    permanentRedirect(`/stock/${encodeURIComponent(canonical)}`);
+  }
+
+  const stock = STOCKS[key];
+
+  if (!stock) notFound();
+
+  const consensus = getStockScore(stock);
+
+  // Round-5 audit (findings 1, 8): an internally inconsistent record
+  // (impossible P/E-0-with-profit etc.) renders NO scored surface — no
+  // verdicts, no QVPS, no debate graph, no technical-edge signals.
+  // Rankings were gated in this same round; this gates the page itself.
+  if (consensus.dataQuality === 'INCOMPLETE') {
+    return <InsufficientDataRecord stock={stock} />;
+  }
+
+  // Commit M3 (free access): the RSC payload carries the FULL verdict set
+  // for every visitor — the seeker slice and the paid upgrade path are
+  // gone. The embedded set is the complete council, publicly, for everyone.
+  const sanitized = sanitizeConsensus(consensus);
+  const stockDetail = generateStockDetail(stock);
+
+  // N1 (round 3): every engine call happens here, on the server. The
+  // client components below receive RESULTS — the resolved seed-baseline
+  // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
+  // both QVPS modes, and the knowledge graph for the FULL verdict set.
+  const resolved = resolveStockMetrics(key);
+  const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
+  const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
+
+  // X3: the SSR price — a read-only peek at the shared quote cache. Miss →
+  // null → the tile renders the honest \"price unavailable\" state and the
+  // client hook fills it (its /api/prices call also warms the cache).
+  const initialQuote = await serveCachedQuote(key);
+
+  return (
+    <StockPageClient
+      stock={stock}
+      consensus={sanitized}
+      detail={stockDetail}
+      resolved={resolved}
+      qvpsDual={qvpsDual}
+      eliteGraph={eliteGraph}
+      initialQuote={initialQuote}
+    />
+  );
+}
+"
+
+ ❯ test/y1.isrSegmentConfig.test.ts:57:19
+     55|
+     56|   it("/stock/[symbol] pre-renders the universe (generateStaticParams)"…
+     57|     expect(STOCK).toMatch(/export\s+async\s+function\s+generateStaticP…
+       |                   ^
+     58|   });
+     59|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/y1.isrSegmentConfig.test.ts > Y1 — / and /stock/[symbol] are ISR (revalidate <= 60 s) > the stock page quote peek is build-phase guarded (hermetic build)
+AssertionError: expected 'import { notFound, permanentRedirect …' to match /isBuildPhase\(\)\s*\?\s*null\s*:\s*aw…/
+
+- Expected:
+/isBuildPhase\(\)\s*\?\s*null\s*:\s*await\s+serveCachedQuote/
+
++ Received:
+"import { notFound, permanentRedirect } from 'next/navigation';
+import type { Metadata } from 'next';
+import { STOCKS } from '../../../data/stocks';
+import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
+import { sanitizeConsensus } from '@/lib/consensus/sanitize';
+import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
+import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
+import { generateStockDetail } from '../../../data/stockDetails';
+import { serveCachedQuote } from '@/lib/quotePath'; // X3: SSR peek — the last cached quote, read-only
+import { StockPageClient } from '../../../components/stock/StockPageClient';
+import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
+
+// X3 (Round 11): stock pages render DYNAMICALLY. The 916-page SSG bake
+// carried a \"⟳ FETCHING\" price tile for every symbol (builds fetch
+// nothing, hermetically) until a visitor's client fetch filled it. Now
+// every request PEEKS the shared quote cache for this one symbol — a
+// single cheap read, never a vendor fetch — and the tile renders the
+// cached observation with its own \"as of\" time, or the honest
+// \"price unavailable\" state. The client hook still refreshes on mount.
+
+
+// Round-5 audit (finding 18): every stock page shared the site-default
+// <title> — 916 pages of duplicated metadata. Each page now names its
+// stock, sector and headline scores. Follow-up: INCOMPLETE records get a
+// title/description that matches the insufficient-data page they render —
+// the metadata must not promise scores the page no longer shows.
+// Audit M6/B.3 (retest 2026-10-02): per-symbol canonical + Open Graph —
+// aliases 308 to the canonical symbol, and the canonical link makes each
+// company exactly one indexable URL; og gives WhatsApp/X/LinkedIn unfurls.
+export async function generateMetadata({ params }: StockPageProps): Promise<Metadata> {
+  const { symbol } = await params;
+  const key = symbol.toUpperCase();
+  const canonicalSym = resolveTickerSymbol(key) ?? key;
+  const stock = STOCKS[canonicalSym];
+  if (!stock) {
+    return { title: `Stock not found | Rishi Terminal` };
+  }
+  // Percent-encode: J&KBANK/M&M/M&MFIN carry & — the encoded canonical
+  // matches the sitemap URL form exactly (both forms serve the same page).
+  const ogUrl = `/stock/${encodeURIComponent(canonicalSym)}`;
+  if (getStockScore(stock).dataQuality === \"INCOMPLETE\") {
+    const title = `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`;
+    const description = `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`;
+    return {
+      title,
+      description,
+      alternates: { canonical: ogUrl },
+      openGraph: { title, description, url: ogUrl, type: \"article\" },
+    };
+  }
+  const title = `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`;
+  const description = `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: ogUrl },
+    openGraph: { title, description, url: ogUrl, type: \"article\" },
+  };
+}
+
+export const dynamic = 'force-dynamic';
+
+interface StockPageProps {
+  params: Promise<{ symbol: string }>;
+}
+
+export default async function StockPage({ params }: StockPageProps) {
+  const { symbol } = await params;
+  const key = symbol.toUpperCase();
+
+  // T12: renamed/legacy symbols get a permanent (308) redirect to the
+  // canonical NSE symbol so saved links and share URLs keep working.
+  const canonical = resolveTickerSymbol(key);
+  if (canonical && canonical !== key) {
+    permanentRedirect(`/stock/${encodeURIComponent(canonical)}`);
+  }
+
+  const stock = STOCKS[key];
+
+  if (!stock) notFound();
+
+  const consensus = getStockScore(stock);
+
+  // Round-5 audit (findings 1, 8): an internally inconsistent record
+  // (impossible P/E-0-with-profit etc.) renders NO scored surface — no
+  // verdicts, no QVPS, no debate graph, no technical-edge signals.
+  // Rankings were gated in this same round; this gates the page itself.
+  if (consensus.dataQuality === 'INCOMPLETE') {
+    return <InsufficientDataRecord stock={stock} />;
+  }
+
+  // Commit M3 (free access): the RSC payload carries the FULL verdict set
+  // for every visitor — the seeker slice and the paid upgrade path are
+  // gone. The embedded set is the complete council, publicly, for everyone.
+  const sanitized = sanitizeConsensus(consensus);
+  const stockDetail = generateStockDetail(stock);
+
+  // N1 (round 3): every engine call happens here, on the server. The
+  // client components below receive RESULTS — the resolved seed-baseline
+  // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
+  // both QVPS modes, and the knowledge graph for the FULL verdict set.
+  const resolved = resolveStockMetrics(key);
+  const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
+  const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
+
+  // X3: the SSR price — a read-only peek at the shared quote cache. Miss →
+  // null → the tile renders the honest \"price unavailable\" state and the
+  // client hook fills it (its /api/prices call also warms the cache).
+  const initialQuote = await serveCachedQuote(key);
+
+  return (
+    <StockPageClient
+      stock={stock}
+      consensus={sanitized}
+      detail={stockDetail}
+      resolved={resolved}
+      qvpsDual={qvpsDual}
+      eliteGraph={eliteGraph}
+      initialQuote={initialQuote}
+    />
+  );
+}
+"
+
+ ❯ test/y1.isrSegmentConfig.test.ts:64:19
+     62|     // CI builds have no database, and a build-time bake of quote data
+     63|     // would reintroduce the W5 stale-bake defect the peek exists to a…
+     64|     expect(STOCK).toMatch(/isBuildPhase\(\)\s*\?\s*null\s*:\s*await\s+…
+       |                   ^
+     65|   });
+     66| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  00:19:59
+   Duration  169ms (transform 53%, tests 18%, import 11%, setup 10%, worker 7%)
+

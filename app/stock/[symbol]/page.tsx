@@ -6,17 +6,27 @@ import { sanitizeConsensus } from '@/lib/consensus/sanitize';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
-import { serveCachedQuote } from '@/lib/quotePath'; // X3: SSR peek — the last cached quote, read-only
+import { serveCachedQuote } from '@/lib/quotePath'; // X3+Y1: SSR peek — the last cached quote, read-only
+import { isBuildPhase } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
 
-// X3 (Round 11): stock pages render DYNAMICALLY. The 916-page SSG bake
-// carried a "⟳ FETCHING" price tile for every symbol (builds fetch
-// nothing, hermetically) until a visitor's client fetch filled it. Now
-// every request PEEKS the shared quote cache for this one symbol — a
-// single cheap read, never a vendor fetch — and the tile renders the
-// cached observation with its own "as of" time, or the honest
-// "price unavailable" state. The client hook still refreshes on mount.
+// Y1 (Round 12): stock pages are ISR again (revalidate 60 s). The X3
+// force-dynamic render answered the W5 stale-bake defect by making every
+// first byte pay a server render — the measured cost on production was
+// warm page TTFB p95 ~0.36 s (above the 300 ms acceptance), with
+// cache-control: no-store on every response. The Y1 contract:
+//   - the 916-page universe pre-renders at build (generateStaticParams);
+//   - the build phase fetches NOTHING (CI has no database) — the bake
+//     carries the honest "price unavailable" state;
+//   - every ISR regeneration (at most 60 s apart, under traffic) re-peeks
+//     the shared quote cache for this one symbol — a single cheap,
+//     READ-ONLY read, never a vendor fetch — so the served HTML carries
+//     the last cached observation with its own "as of" label;
+//   - the client hook still refreshes on mount (its /api/prices call is
+//     what warms the cache).
+// A stale or missing observation is LABELLED as such by the tile (X3
+// states; Y3 honest labels) — never presented as fresh (Rule 3).
 
 
 // Round-5 audit (finding 18): every stock page shared the site-default
@@ -58,7 +68,11 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   };
 }
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return Object.keys(STOCKS).map((symbol) => ({ symbol }));
+}
 
 interface StockPageProps {
   params: Promise<{ symbol: string }>;
@@ -103,10 +117,12 @@ export default async function StockPage({ params }: StockPageProps) {
   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
 
-  // X3: the SSR price — a read-only peek at the shared quote cache. Miss →
-  // null → the tile renders the honest "price unavailable" state and the
-  // client hook fills it (its /api/prices call also warms the cache).
-  const initialQuote = await serveCachedQuote(key);
+  // X3+Y1: the SSR price — a read-only peek at the shared quote cache,
+  // executed at ISR REGENERATION (skipped in the build phase: builds
+  // fetch nothing, hermetically). Miss → null → the tile renders the
+  // honest "price unavailable" state and the client hook fills it (its
+  // /api/prices call also warms the cache).
+  const initialQuote = isBuildPhase() ? null : await serveCachedQuote(key);
 
   return (
     <StockPageClient

@@ -1,1 +1,25 @@
       Tests  6 passed (6)
+--- CLS gate fix (same PR: it blocks Z3's own CI) ---
+Root cause of the 4 consecutive first-attempt Lighthouse failures (CLS
+0.1317 vs floor 0.1 on /stock/RELIANCE, green only on reruns): the stock
+loading skeleton used Tailwind-style classes (h-48, bg-zinc-900/40,
+animate-pulse, min-h-screen) that DO NOT EXIST in this project — there is
+no Tailwind; globals.css is a hand-written system and the compiled CSS
+contains none of them (grep 'h-48'/'zinc' in .next/static/chunks/*.css ->
+0). The skeleton rendered at ZERO height, dropping the LegalDisclaimer
+strip into the viewport at first paint (measured: strip at y=165, then
+displaced when content arrived — +0.0442 on 4-5 of 6 cold loads; the
+Playwright PerformanceObserver capture and the fix are reproducible with
+scripts in the session worklog).
+
+After the inline-style skeleton rewrite (no class dependency, mirrors the
+page's section heights):
+$ node /tmp/cls_deep.cjs   (6 cold loads, PerformanceObserver)
+ --- run 1..6: total 0.0004  (was 0.0446 on 4/6)
+$ npx lighthouse http://localhost:3220/stock/RELIANCE ... (x3)
+ CLS 0 / 0
+$ per-route: / 0, /screener 0, /stock/RELIANCE 0, /stock/SBIN 0.023
+Measurement-hygiene note: `pkill -f "next start"` does NOT match the
+server process (it renames itself to "next-server") — zombie servers on
+the port served stale builds and poisoned two measurement rounds before
+being caught (matches the Round-11 worklog warning).

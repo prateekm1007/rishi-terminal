@@ -1,46 +1,52 @@
+// app/stock/[symbol]/loading.tsx — the stock-page Suspense fallback.
+//
+// CLS GATE FIX (Round 13, folded into Z3 — it blocks Z3's own CI): the old
+// skeleton used Tailwind-style classes (h-48, bg-zinc-900/40, animate-pulse,
+// min-h-screen…) that DO NOT EXIST in this project — there is no Tailwind:
+// app/globals.css is a hand-written design system and the compiled CSS
+// contains none of those classes (verified: grep for 'h-48'/'zinc' in
+// .next/static/chunks/*.css -> 0 matches). The skeleton therefore rendered
+// at ZERO height, dropping the LegalDisclaimer strip into the viewport at
+// first paint (measured: strip at y=165, then displaced when the real
+// content streamed in — a deterministic +0.044 layout shift on ~5/6 cold
+// loads; the Lighthouse CLS floor of 0.1 breached on 4 consecutive
+// first-attempt CI runs, passing only on reruns).
+//
+// This rewrite uses inline styles ONLY (the repo's design idiom — see
+// every component in components/) and mirrors the real page's section
+// rhythm so the fallback-to-content swap displaces as little as possible.
+// Deterministic: no clocks, no randomness (Rule 18).
 export default function StockLoading() {
+  const block = (height: number, extra: React.CSSProperties = {}): React.CSSProperties => ({
+    height,
+    background: "rgba(24,24,27,0.4)",
+    border: "1px solid rgba(39,39,42,0.8)",
+    borderRadius: 12,
+    ...extra,
+  });
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="border-b border-zinc-800 bg-zinc-900/80 px-6 py-5">
-        <div className="max-w-7xl mx-auto">
-          <div className="h-4 w-48 bg-zinc-800 rounded animate-pulse mb-3" />
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="h-8 w-64 bg-zinc-800 rounded animate-pulse" />
-              <div className="h-4 w-32 bg-zinc-800 rounded mt-3 animate-pulse" />
-            </div>
-            <div className="text-right">
-              <div className="h-8 w-24 bg-zinc-800 rounded animate-pulse" />
-              <div className="h-3 w-20 bg-zinc-800 rounded mt-2 animate-pulse" />
-            </div>
-          </div>
-        </div>
+    <div style={{ minHeight: "1200px", padding: "0 0 32px" }}>
+      {/* Page header: name + price hero (mirrors the ~100px title row) */}
+      <div style={{ ...block(96, { marginBottom: 20, borderRadius: 16 }) }} />
+
+      {/* Consensus hero (mirrors the ~210px hero card) */}
+      <div style={{ ...block(210, { marginBottom: 20, borderRadius: 16 }) }} />
+
+      {/* Bull/Bear + radar two-column row (mirrors the ~190px grid) */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+        <div style={block(190)} />
+        <div style={block(190)} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-        {/* Consensus Hero Skeleton */}
-        <div className="border border-zinc-800 rounded-lg p-8 bg-zinc-900/50">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="h-4 w-64 bg-zinc-800 rounded animate-pulse mb-4" />
-              <div className="h-20 w-40 bg-zinc-800 rounded animate-pulse" />
-            </div>
-            <div className="h-24 w-48 bg-zinc-800 rounded animate-pulse" />
-          </div>
-        </div>
+      {/* Metrics panel (mirrors the ~150px card) */}
+      <div style={{ ...block(150, { marginBottom: 20 }) }} />
 
-        {/* Bull/Bear + Radar + Metrics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-48 bg-zinc-900/40 border border-zinc-800 rounded animate-pulse" />
-          <div className="h-48 bg-zinc-900/40 border border-zinc-800 rounded animate-pulse" />
-        </div>
-
-        {/* Rishi Grid Skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-48 bg-zinc-900/40 border border-zinc-800 rounded animate-pulse" />
-          ))}
-        </div>
+      {/* Rishi grid: three columns of cards (mirrors the tall grid) */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} style={block(180)} />
+        ))}
       </div>
     </div>
   );

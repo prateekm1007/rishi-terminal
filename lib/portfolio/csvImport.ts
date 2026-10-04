@@ -1,5 +1,10 @@
 /**
  * X3-07 (Round 14 A6): portfolio CSV import.
+ * B2 (founder Round-15): import SAFETY — formula-injection guard,
+ * ASCII-lookalike guard, date sanity (future / pre-1990 are ERRORS),
+ * ISIN shape check, and registry validation with an explicit warnings
+ * channel (unknown symbols are REPORTED and flagged, never silently
+ * stored; alias renames resolve to the canonical symbol).
  *
  * Parser strategy: ONE generic holdings-CSV grammar via header-alias
  * mapping (case/whitespace-insensitive), which covers the holdings
@@ -12,16 +17,17 @@
  * Honesty rules (Constitution 3/16/25, roadmap acceptance):
  *   - malformed rows are REPORTED with line number and reason — never
  *     silently dropped;
- *   - unknown symbols are reported (the registry is the authority — an
- *     unmapped symbol is imported as-is with a warning, NOT dropped:
- *     the user's broker data is theirs; our analytics simply shows
- *     those rows without consensus/sector enrichment);
+ *   - unknown symbols are REPORTED in `warnings` and flagged
+ *     `knownSymbol: false` — stored (the user's broker data is theirs;
+ *     our analytics shows those rows without consensus/sector
+ *     enrichment) but never silently;
  *   - zero/negative quantities and non-finite prices are errors;
  *   - re-importing the same content is a no-op (content hash, enforced
  *     by a UNIQUE constraint + this module's pre-check).
  */
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
+import { resolveTickerSymbolAgainst } from '../registry/tickerRegistry';
 
 export interface ParsedPosition {
   symbol: string;
@@ -33,6 +39,10 @@ export interface ParsedPosition {
   lastBuyDate: string | null;
   /** ISIN when the file is CAS-shaped. */
   isin: string | null;
+  /** B2 registry verdict: true = resolved against the universe,
+   * false = unknown (reported in warnings), null = no registry check
+   * was requested (no universe passed — parser-only usage). */
+  knownSymbol: boolean | null;
 }
 
 export interface RowError {
@@ -42,12 +52,31 @@ export interface RowError {
   raw: string;
 }
 
+/** B2: a non-fatal notice (unknown symbol, alias rename) — reported,
+ * never silently stored. */
+export interface RowNotice {
+  line: number;
+  symbol: string;
+  reason: string;
+}
+
 export interface ImportParseResult {
   positions: ParsedPosition[];
   errors: RowError[];
+  /** B2: registry notices (unknown symbols, alias resolutions). */
+  warnings: RowNotice[];
   /** Which header aliases matched, for the UI to show what was understood. */
   mappedColumns: Record<string, string>;
   contentHash: string;
+}
+
+export interface ParseOptions {
+  /** B2: the ticker universe (server callers pass the registry keys).
+   * When omitted, no registry claim is made (knownSymbol stays null). */
+  universe?: readonly string[];
+  /** B2: validation clock as yyyy-mm-dd (UTC). Defaults to today UTC;
+   * injectable so the date guards are deterministically testable. */
+  today?: string;
 }
 
 /** Header aliases → canonical column. Case/whitespace/punctuation-insensitive. */
@@ -65,7 +94,11 @@ function normalizeHeader(h: string): string {
   return h.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
-/** RFC 4180 CSV line splitter (handles quoted commas and embedded quotes). */
+/** RFC 4180 CSV line splitter (handles quoted commas and embedded quotes).
+ * B2: cells are returned UNTRIMMED — the formula-injection guard must see
+ * the raw leading tab/CR before any trimming. Every consumer trims at
+ * its point of use (toNumber/parseDateCell trim internally; the symbol
+ * and ISIN extractors trim explicitly). */
 function splitCsvLine(line: string): string[] {
   const out: string[] = [];
   let cur = '';
@@ -93,10 +126,43 @@ function splitCsvLine(line: string): string[] {
     }
   }
   out.push(cur);
-  return out.map((s) => s.trim());
+  return out;
 }
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'date must be yyyy-mm-dd');
+
+// ── B2 validation guards ────────────────────────────────────────────────────
+
+/** Spreadsheet formula-injection leads (OWASP CSV injection): a cell
+ * starting with any of these makes Excel/Sheets evaluate a formula when
+ * the exported CSV is opened. Rejected outright at IMPORT so the stored
+ * data can never carry one back out through a future export. */
+const FORMULA_LEAD = /^[=+\-@\t\r]/;
+
+/** A ticker is plain ASCII: an alphanumeric start, then alphanumerics,
+ * ampersand (M&M), hyphen (BAJAJ-AUTO) or dot, at most 30 chars. Rejects
+ * Unicode homoglyphs (Cyrillic І, fullwidth Ｉ), commas, quotes and
+ * control characters that survive CSV unquoting. */
+const SYMBOL_SHAPE = /^[A-Z0-9][A-Z0-9&.\-]{0,29}$/;
+
+/** ISO 6167 ISIN: 2 letters + 10 alphanumerics (the last is the check
+ * digit — shape only here; checksum verification is future work). */
+const ISIN_SHAPE = /^[A-Z]{2}[A-Z0-9]{10}$/;
+
+/** Buys before 1990 are data errors (NSE equity trading began 1994; the
+ * founder's floor is 1990). */
+const MIN_BUY_DATE = '1990-01-01';
+
+/** B2: validate a date cell's sanity against the validation clock.
+ * Returns null when the date is INSIDE the sane window, or the rejection
+ * reason when it is not. Unparseable dates are NOT rejected here (the
+ * pre-existing honest behavior — the row imports without a date). */
+function dateRejectionReason(iso: string | null, today: string): string | null {
+  if (iso === null) return null;
+  if (iso > today) return `future-dated buy (${iso} is after ${today}) — rejected`;
+  if (iso < MIN_BUY_DATE) return `buy date ${iso} is before 1990 — rejected (check the date column mapping)`;
+  return null;
+}
 
 function parseDateCell(cell: string): string | null {
   const trimmed = cell.trim();
@@ -135,8 +201,12 @@ function toNumber(cell: string): number | null {
 /**
  * Parse a portfolio holdings CSV (or CAS export). Total: never throws;
  * every problem row comes back in `errors` with its line number.
+ * B2: pass `{ universe }` for registry validation (unknown symbols are
+ * reported in `warnings`, alias renames resolve to canonical symbols).
  */
-export function parsePortfolioCsv(text: string): ImportParseResult {
+export function parsePortfolioCsv(text: string, opts: ParseOptions = {}): ImportParseResult {
+  const universe = opts.universe;
+  const today = opts.today ?? new Date().toISOString().slice(0, 10); // UTC
   // Idempotency key: hash the NORMALIZED form (line endings unified,
   // blank lines dropped) so the same data re-uploaded after an editor
   // round-trip is still recognized as the same file. Deterministic
@@ -149,6 +219,7 @@ export function parsePortfolioCsv(text: string): ImportParseResult {
   const result: ImportParseResult = {
     positions: [],
     errors: [],
+    warnings: [],
     mappedColumns: {},
     contentHash,
   };
@@ -168,7 +239,7 @@ export function parsePortfolioCsv(text: string): ImportParseResult {
     for (let i = 0; i < normalized.length; i++) {
       if (aliases.includes(normalized[i])) {
         colIndex[canonical] = i;
-        result.mappedColumns[canonical] = headerCells[i];
+        result.mappedColumns[canonical] = headerCells[i].trim();
         break;
       }
     }
@@ -226,6 +297,99 @@ export function parsePortfolioCsv(text: string): ImportParseResult {
       continue;
     }
 
+    // ── B2 guards (each rejection reports the line and reason) ──────
+
+    // Formula-injection lead: reject outright. The check runs on the RAW
+    // cell as well as its trimmed form — a leading tab or CR is stripped
+    // by trim() but is on the founder's reject list verbatim, and "= x"
+    // after a space is still a formula. The ISIN placeholder is
+    // constructed internally (never user-typed), so only the typed
+    // symbol cell needs this check.
+    if (
+      colIndex.symbol !== undefined &&
+      (FORMULA_LEAD.test(symbolCell) || FORMULA_LEAD.test(symbolCell.trim()))
+    ) {
+      result.errors.push({
+        line: lineNo,
+        reason: 'symbol begins with a spreadsheet formula character (=, +, -, @, tab or CR) — rejected (CSV injection guard)',
+        raw: raw.slice(0, 120),
+      });
+      continue;
+    }
+
+    // Symbol shape: plain ASCII ticker (rejects Unicode lookalikes,
+    // commas, quotes and control characters). The internal ISIN:
+    // placeholder is exempt — the ISIN itself is shape-checked below.
+    const isPlaceholder = symbol.startsWith('ISIN:');
+    if (!isPlaceholder && !SYMBOL_SHAPE.test(symbol)) {
+      result.errors.push({
+        line: lineNo,
+        reason: 'symbol is not a plain ASCII ticker (letters, digits, &, -, .) — possible Unicode lookalike or malformed cell — rejected',
+        raw: raw.slice(0, 120),
+      });
+      continue;
+    }
+
+    // ISIN shape for CAS rows.
+    if (isPlaceholder) {
+      const bare = symbol.slice('ISIN:'.length);
+      if (!ISIN_SHAPE.test(bare)) {
+        result.errors.push({
+          line: lineNo,
+          reason: `ISIN "${bare.slice(0, 24)}" is not a valid ISIN shape (2 letters + 10 alphanumerics) — rejected`,
+          raw: raw.slice(0, 120),
+        });
+        continue;
+      }
+    }
+
+    // Date sanity: future buys and pre-1990 buys are data errors.
+    const firstBuy = colIndex.firstBuyDate !== undefined ? parseDateCell(cells[colIndex.firstBuyDate] ?? '') : null;
+    const lastBuy = colIndex.lastBuyDate !== undefined ? parseDateCell(cells[colIndex.lastBuyDate] ?? '') : (firstBuy ?? null);
+    const firstRej = dateRejectionReason(firstBuy, today);
+    if (firstRej) {
+      result.errors.push({ line: lineNo, reason: firstRej, raw: raw.slice(0, 120) });
+      continue;
+    }
+    const lastRej = dateRejectionReason(lastBuy, today);
+    if (lastRej) {
+      result.errors.push({ line: lineNo, reason: lastRej, raw: raw.slice(0, 120) });
+      continue;
+    }
+
+    // Registry validation (B2): resolve against the universe when one
+    // was provided. Unknown -> REPORTED + flagged, still stored (the
+    // user's broker data is theirs); alias/mangled forms -> canonical.
+    let knownSymbol: boolean | null = null;
+    if (universe && !isPlaceholder) {
+      const canonical = resolveTickerSymbolAgainst(universe, symbol);
+      if (canonical === null) {
+        knownSymbol = false;
+        result.warnings.push({
+          line: lineNo,
+          symbol,
+          reason: 'symbol is not in the ticker registry — imported without consensus/sector enrichment (verify the spelling)',
+        });
+      } else {
+        knownSymbol = true;
+        if (canonical !== symbol) {
+          result.warnings.push({
+            line: lineNo,
+            symbol,
+            reason: `resolved via registry alias to canonical symbol ${canonical}`,
+          });
+          symbol = canonical;
+        }
+      }
+    } else if (universe && isPlaceholder) {
+      knownSymbol = false;
+      result.warnings.push({
+        line: lineNo,
+        symbol,
+        reason: 'ISIN not resolved to a symbol — row kept under the ISIN key without enrichment',
+      });
+    }
+
     const quantity = toNumber(qtyCell);
     if (quantity === null || quantity <= 0) {
       result.errors.push({
@@ -253,9 +417,6 @@ export function parsePortfolioCsv(text: string): ImportParseResult {
       continue;
     }
 
-    const firstBuy = colIndex.firstBuyDate !== undefined ? parseDateCell(cells[colIndex.firstBuyDate] ?? '') : null;
-    const lastBuy = colIndex.lastBuyDate !== undefined ? parseDateCell(cells[colIndex.lastBuyDate] ?? '') : (firstBuy ?? null);
-
     // Merge duplicate symbols (weighted average, honest date span)
     const existing = bySymbol.get(symbol);
     if (existing) {
@@ -264,6 +425,10 @@ export function parsePortfolioCsv(text: string): ImportParseResult {
       existing.quantity = totalQty;
       if (firstBuy && (!existing.firstBuyDate || firstBuy < existing.firstBuyDate)) existing.firstBuyDate = firstBuy;
       if (lastBuy && (!existing.lastBuyDate || lastBuy > existing.lastBuyDate)) existing.lastBuyDate = lastBuy;
+      // Registry verdict: a merge of known + unknown is still known only
+      // if BOTH sides resolved (they cannot differ — canonicalization
+      // happens before the merge key — but stay honest about null).
+      if (existing.knownSymbol === null) existing.knownSymbol = knownSymbol;
     } else {
       bySymbol.set(symbol, {
         symbol,
@@ -272,6 +437,7 @@ export function parsePortfolioCsv(text: string): ImportParseResult {
         firstBuyDate: firstBuy,
         lastBuyDate: lastBuy,
         isin,
+        knownSymbol,
       });
     }
   }

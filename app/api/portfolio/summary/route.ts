@@ -51,6 +51,10 @@ export async function GET() {
     firstBuyDate: r.first_buy_date ?? null,
     lastBuyDate: r.last_buy_date ?? null,
     isin: r.isin ?? null,
+    // B2: the DB row does not persist the import-time registry verdict —
+    // this reconstruction feeds XIRR/sector math, not registry claims,
+    // so the honest value is null (no claim either way).
+    knownSymbol: null,
   }));
 
   // Current values from the shared quote cache (peek — no upstream fetch

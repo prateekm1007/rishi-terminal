@@ -30,10 +30,19 @@ function clientIp(req: NextRequest): string {
   return req.headers.get('x-real-ip') ?? 'unknown';
 }
 
-/** RFC 4180 field quoting: wrap in quotes, double embedded quotes. */
+/** RFC 4180 field quoting: wrap in quotes, double embedded quotes.
+ * B2 (founder Round-15): STRING cells that begin with a spreadsheet
+ * formula character (=, +, -, @, tab, CR) are prefixed with a single
+ * quote so Excel/Sheets renders them as text — the stored data can no
+ * longer carry a formula back out through an export. Numeric cells are
+ * never prefixed (a real -5 must stay a number, and numbers cannot
+ * execute formulas). */
 function csvCell(v: number | string | null | undefined): string {
   if (v === null || v === undefined) return '';
-  const s = String(v);
+  let s = String(v);
+  if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s)) {
+    s = `'${s}`;
+  }
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

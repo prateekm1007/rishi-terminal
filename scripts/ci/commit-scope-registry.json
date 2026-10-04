@@ -320,6 +320,7 @@
       "test/y3.observationLabel.test.ts"
     ],
     "Z3": [
+   "app/stock/[symbol]/loading.tsx",
    "docs/DATA_SOURCES.md",
    "docs/evidence/round13/",
    "lib/quoteCache.ts",

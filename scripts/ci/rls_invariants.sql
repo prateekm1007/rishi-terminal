@@ -225,3 +225,94 @@ END
 $$;
 
 \echo '── X3-05 invariants: all passed'
+
+\echo '── X3-07: portfolio imports and positions are private to their owner'
+-- Behavioral proof of "RLS on all tables" for X3-07: user B cannot
+-- read user A's imports or positions, cannot forge rows owned by A,
+-- and the idempotency constraint (user_id, content_hash) rejects the
+-- same content twice for one user.
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  user_b uuid := gen_random_uuid();
+  imp_a uuid;
+  seen int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'a-x307@example.test'),
+    (user_b, 'b-x307@example.test');
+
+  INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+    VALUES (user_a, repeat('a', 64), 'holdings-csv', 'a.csv', 1, 0)
+    RETURNING id INTO imp_a;
+  INSERT INTO public.portfolio_positions (user_id, import_id, symbol, quantity, avg_price)
+    VALUES (user_a, imp_a, 'SBIN', 100, 550.25);
+
+  -- As user B: no read, no update-nothing, no delete.
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_b::text, true);
+
+  SELECT count(*) INTO seen FROM public.portfolio_imports WHERE id = imp_a;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-07 FAILED: user B READ user A''s import (% rows)', seen;
+  END IF;
+  SELECT count(*) INTO seen FROM public.portfolio_positions WHERE import_id = imp_a;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-07 FAILED: user B READ user A''s positions (% rows)', seen;
+  END IF;
+  DELETE FROM public.portfolio_positions WHERE import_id = imp_a;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-07 FAILED: user B DELETED user A''s positions (% rows)', seen;
+  END IF;
+  DELETE FROM public.portfolio_imports WHERE id = imp_a;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-07 FAILED: user B DELETED user A''s import (% rows)', seen;
+  END IF;
+
+  -- As user B: cannot forge rows owned by A.
+  BEGIN
+    INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+      VALUES (user_a, repeat('b', 64), 'holdings-csv', 'forge.csv', 0, 0);
+    RAISE EXCEPTION 'X3-07 FAILED: user B INSERTED an import owned by user A';
+  EXCEPTION
+    WHEN insufficient_privilege OR check_violation THEN
+      NULL;
+  END;
+  BEGIN
+    INSERT INTO public.portfolio_positions (user_id, import_id, symbol, quantity, avg_price)
+      VALUES (user_a, imp_a, 'FORGE', 1, 1);
+    RAISE EXCEPTION 'X3-07 FAILED: user B INSERTED a position owned by user A';
+  EXCEPTION
+    WHEN insufficient_privilege OR check_violation THEN
+      NULL;
+  END;
+
+  -- As user A: own rows reachable (policies scope, not block).
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+  SELECT count(*) INTO seen FROM public.portfolio_imports WHERE id = imp_a;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'X3-07 FAILED: user A cannot READ own import (% rows)', seen;
+  END IF;
+
+  -- Idempotency: the SAME content hash for the SAME user is rejected
+  -- (unique violation). A different user MAY import the same content
+  -- (switch identity first — we are still authenticated as user A).
+  BEGIN
+    INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+      VALUES (user_a, repeat('a', 64), 'holdings-csv', 'a-again.csv', 1, 0);
+    RAISE EXCEPTION 'X3-07 FAILED: duplicate (user_id, content_hash) was accepted';
+  EXCEPTION
+    WHEN unique_violation THEN
+      NULL; -- expected
+  END;
+  PERFORM set_config('request.jwt.claim.sub', user_b::text, true);
+  INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+    VALUES (user_b, repeat('a', 64), 'holdings-csv', 'b.csv', 1, 0);
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── X3-07 invariants: all passed'

@@ -340,6 +340,7 @@
       "test/z1.vercelIgnore.test.ts"
     ],
     "Z3": [
+      "app/stock/[symbol]/loading.tsx",
       "app/stock/[symbol]/page.tsx",
       "components/stock/PeerComparison.tsx",
       "docs/evidence/round13/",

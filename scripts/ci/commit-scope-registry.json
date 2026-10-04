@@ -409,6 +409,14 @@
       "scripts/ci/commit-scope-registry.json",
       "test/quoteCache.test.ts",
       "test/z3.peekAge.test.ts"
+    ],
+    "X6": [
+      "docs/evidence/round13/",
+      "docs/evidence/w4-audit-2026-10-03.md",
+      "lib/scorers/greenblatt.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "scripts/w4Audit.ts",
+      "test/x6.boundsGate.test.ts"
     ]
   }
 }

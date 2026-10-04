@@ -14,6 +14,14 @@ import { clamp, safeDiv } from '../utils';
  * every score came out ~100x too small (mean 0.18, sd 0.5, max 5 over the
  * 916-stock universe) and Greenblatt ranked "Top Bear" on every page.
  *
+ * X6 (Round 13) — the corrected allow-list reason (rule 1): on the current
+ * seed, 26.9% of the universe scores <= 5 here. That low pile REFLECTS THE
+ * PLACEHOLDER SEED'S EARNINGS VALUES — the June np placeholders drive
+ * np/mktcap toward zero for a large block of symbols — it is NOT a tuned
+ * property of this scorer, and it is NOT evidence the formula is broken.
+ * The placeholder-driven pile is why the W4 distribution gate allow-lists
+ * this scorer's <= 5 side until FD-1 lands real earnings.
+ *
  * Honesty about the formula (rule 1): the strict Magic Formula divides EBIT
  * by (net working capital + net fixed assets) for ROC and by enterprise
  * value for EY. The seed dataset carries none of those fields, so this

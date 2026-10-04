@@ -1,0 +1,9 @@
+  Pabrai       sd= 17.09  <=5: 0.0%  >=95: 3.4%
+  Porinju      sd= 17.30  <=5: 0.0%  >=95: 0.2%
+  Soros        sd=  8.74  <=5: 0.1%  >=95: 0.0%
+  Greenblatt   sd= 24.00  <=5: 26.9%  >=95: 1.7%
+  Nemish       sd= 12.65  <=5: 0.0%  >=95: 18.8%
+
+X6 gate (sd>=8, <=15% at <=5, <=15% at >=95; Greenblatt low pile allow-listed with the corrected placeholder-seed reason):
+  Greenblatt: allow-listed: the low pile reflects the placeholder seed's earnings values (June np placeholders), not a scorer property
+  NAMED OFFENDERS: Nemish: 18.8% >= 95 (above the 15% bound)

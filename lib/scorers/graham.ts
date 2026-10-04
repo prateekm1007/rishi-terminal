@@ -29,29 +29,30 @@ export function scoreGraham(s: Stock): RishiScore {
     full: 'Benjamin Graham',
     label: 'Deep Value',
     score: Math.round(total),
+    scoreRaw: total,
     origin: 'Global',
     comps: [
       {
         label: 'NCAV Discount',
-        v: Math.round(ncavS),
+        v: ncavS,
         wt: 40,
         detail: `NCAV ${Math.round(ncav)} vs ${s.price} (${ncavDisc > 0 ? '+' : ''}${Math.round(ncavDisc)}%)`
       },
       {
         label: 'P/E Value',
-        v: Math.round(peS),
+        v: peS,
         wt: 25,
         detail: `P/E ${s.pe} target <15`
       },
       {
         label: 'Current Ratio Safety',
-        v: Math.round(crS),
+        v: crS,
         wt: 15,
         detail: `Ratio ${cr.toFixed(2)} target >2`
       },
       {
         label: 'Debt Safety',
-        v: Math.round(deS),
+        v: deS,
         wt: 20,
         detail: `D/E ${s.de.toFixed(2)} target <0.5`
       },

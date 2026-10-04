@@ -50,7 +50,7 @@ describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
       scorePabrai(stock({ promo })).comps.find((c) => c.label === 'Clone Score')!.v;
     expect(at(0)).toBe(0);
     expect(at(35)).toBe(35);   // the documented contradiction: 35, NOT 0
-    expect(at(50)).toBe(78);   // 35 + 15 x 100/35 = 77.86 -> 78 (still ramping)
+    expect(at(50)).toBe(35 + 15 * (100 / 35)); // 77.857… — S2-05: comps carry the UNROUNDED ramp (display rounds to 78)
     expect(at(57.75)).toBe(100); // the EXACT clamp point: 35 + 22.75 x 100/35
     expect(at(60)).toBe(100);
     expect(at(90)).toBe(100);  // clamped above the ramp top
@@ -128,7 +128,7 @@ describe('W4 closure — Porinju boundaries + degenerate book value (direction 1
     const atPb = (price: number, bvps: number) =>
       scorePorinju(stock({ price, bvps })).comps.find((c) => c.label === 'Undervaluation')!;
     expect(atPb(200, 200).v).toBe(100);
-    expect(atPb(400, 200).v).toBe(67); // 100 - (2-1)*(100/3) = 66.67 -> rounded component
+    expect(atPb(400, 200).v).toBe(100 - (100 / 3)); // 66.67 — S2-05: unrounded (display rounds to 67)
     expect(atPb(800, 200).v).toBe(0);
     expect(atPb(300, 200).detail).toBe('P/B 1.5x');
   });

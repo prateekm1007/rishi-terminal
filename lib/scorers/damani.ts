@@ -32,12 +32,13 @@ export function scoreDamani(s: Stock): RishiScore {
 
   return {
     name: 'Damani', full: 'Radhakishan Damani', label: 'Zero-Debt Fortress',
-    score: total === null ? null : Math.round(total), origin: 'Bharat',
+    score: total === null ? null : Math.round(total), scoreRaw: total, origin: 'Bharat',
     comps: [
-      { label: 'Zero-Debt Filter', v: deS === null ? 0 : Math.round(deS), wt: 30, detail: de === null ? 'insufficient data' : `D/E ${de.toFixed(2)} target <= 0.1` },
-      { label: 'ROCE Sustainability', v: roceS === null ? 0 : Math.round(roceS), wt: 25, detail: roce === null ? 'insufficient data' : `${roce}% target >25%` },
-      { label: 'Cash Flow Predictability', v: cfS === null ? 0 : Math.round(cfS), wt: 20, detail: fcfM === null ? 'insufficient data (revenue is 0)' : `FCF margin ${fcfM.toFixed(1)}% target >10%` },
-      { label: 'Defensive Moat', v: moatS === null ? 0 : Math.round(moatS), wt: 15, detail: opm === null ? 'insufficient data' : `OPM ${opm}% target >15%` },
+      { label: 'Zero-Debt Filter', v: deS === null ? 0 : deS, wt: 30, detail: de === null ? 'insufficient data' : `D/E ${de.toFixed(2)} target <= 0.1` },
+      { label: 'ROCE Sustainability', v: roceS === null ? 0 : roceS, wt: 25, detail: roce === null ? 'insufficient data' : `${roce}% target >25%` },
+      { label: 'Cash Flow Predictability', v: cfS === null ? 0 : cfS, wt: 20, detail: fcfM === null ? 'insufficient data (revenue is 0)' : `FCF margin ${fcfM.toFixed(1)}% target >10%` },
+      { label: 'Defensive Moat', v: moatS === null ? 0 : moatS, wt: 15, detail: opm === null ? 'insufficient data' : `OPM ${opm}% target >15%` },
+      { label: 'Neutral Base', v: 50, wt: 10, detail: 'design constant — the scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)' },
     ],
     insight: insufficient
       ? 'Insufficient data — core fundamentals missing or zero, no Damani verdict.'

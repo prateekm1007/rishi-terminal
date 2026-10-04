@@ -31,6 +31,14 @@ export interface RishiScore {
   label: string;
   /** null = the scorer had insufficient data (documented, never NaN) — T11. */
   score: number | null;
+  /** S2-05: the scorer's PRE-ROUND weighted sum of its pillars — the
+   *  quantity `score` is Math.round of. Published so the page's breakdown
+   *  is the ACTUAL arithmetic (sum of contributions reproduces this
+   *  within 1e-6, pinned by test/scoring.explain.test.ts). Optional at
+   *  the type level only because non-consensus asset scorers (crypto,
+   *  bonds, forex teasers) do not carry it; the 20 consensus scorers
+   *  MUST (the gate enforces it). */
+  scoreRaw?: number | null;
   origin: 'Global' | 'India' | 'Bharat' | 'Crypto' | 'Commodity' | 'Forex/Macro';
   comps: Array<{
     label: string;

@@ -282,3 +282,19 @@ chat"). The identity-counter read for the challenge gate fails OPEN for
 the READ only (an unreadable counter must not lock out every anonymous
 caller behind challenges); the quota consume and the global reservation
 keep failing closed independently.
+
+**S2-05 (Round 13) — the published breakdown IS the arithmetic.** Every
+consensus scorer now publishes `scoreRaw` (its pre-round weighted sum)
+and carries UNROUNDED pillar values in `comps` (the page renders
+rounded, the data stays exact). Contracts pinned by
+`test/scoring.explain.test.ts` over the full 916 universe: comps weights
+sum to exactly 100 (no hidden pillars — the six scorers that held a
+neutral-50 constant term — Buffett, Lynch, Damani, Jhunjhunwala,
+Kacholia, Kedia — now show it as a "Neutral Base" component instead of
+a silent 10-20% of the verdict), every pillar is in [0, 100],
+`Σ v·wt/100` reproduces `scoreRaw` within 1e-6, and
+`score === Math.round(scoreRaw)`. The gate caught a real latent defect
+on its first run: Raamdeo's QGLP Quality pillar was the only unclamped
+pillar in the panel — negative ROCE/ROE drove it to -60/-35
+(CHEMPLASTS/PVRINOX), below the design floor; it is now clamped like
+every other pillar (2 of 916 seed stocks score honestly higher).

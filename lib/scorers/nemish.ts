@@ -66,12 +66,13 @@ export function scoreNemish(s: Stock, ctx?: ScoringContext): RishiScore {
   return {
     name: 'Nemish', full: 'Nemish Shah', label: 'Steady Compounder',
     score: insufficient ? null : Math.round(total),
+    scoreRaw: insufficient ? null : total,
     origin: 'Bharat',
     comps: [
-      { label: 'EPS Consistency', v: epsUnknown ? 0 : Math.round(consistencyScore), wt: 35, detail: epsUnknown ? insuff('EPS growth') : `${s.epscagr}%` },
-      { label: 'Debt Free', v: deUnknown ? 0 : Math.round(debtScore), wt: 30, detail: deUnknown ? insuff('debt (D/E)') : `D/E ${s.de}` },
-      { label: 'Management', v: promoUnknown ? 0 : Math.round(mgmtScore), wt: 20, detail: promoUnknown ? insuff('promoter holding') : `${s.promo}%` },
-      { label: 'Valuation', v: peUnknown ? 0 : Math.round(valueScore), wt: 15, detail: peUnknown ? insuff('valuation (no meaningful P/E)') : `P/E ${s.pe}` },
+      { label: 'EPS Consistency', v: epsUnknown ? 0 : consistencyScore, wt: 35, detail: epsUnknown ? insuff('EPS growth') : `${s.epscagr}%` },
+      { label: 'Debt Free', v: deUnknown ? 0 : debtScore, wt: 30, detail: deUnknown ? insuff('debt (D/E)') : `D/E ${s.de}` },
+      { label: 'Management', v: promoUnknown ? 0 : mgmtScore, wt: 20, detail: promoUnknown ? insuff('promoter holding') : `${s.promo}%` },
+      { label: 'Valuation', v: peUnknown ? 0 : valueScore, wt: 15, detail: peUnknown ? insuff('valuation (no meaningful P/E)') : `P/E ${s.pe}` },
     ],
     insight: insufficient
       ? 'Insufficient data \u2014 placeholder zeros in the Steady Compounder pillars (EPS growth / debt / management / valuation), no verdict.'

@@ -33,8 +33,10 @@ describe('V2: Greenblatt Magic Formula arithmetic is percentage-correct', () => 
     const g = scoreGreenblatt(SMALL_CAP_QUALITY);
     expect(g.score).not.toBeNull();
     // ROC 14.583% -> 14.583*4 = 58.3; EY 8.75% -> 8.75*10 = 87.5; mean = 72.9
-    expect(g.comps.find((c) => c.label === 'Return on Capital')!.v).toBe(58);
-    expect(g.comps.find((c) => c.label === 'Earnings Yield')!.v).toBe(88);
+    // S2-05: comps carry the UNROUNDED pillars (the display rounds) — the
+    // reconstruction contract requires the exact arithmetic here.
+    expect(g.comps.find((c) => c.label === 'Return on Capital')!.v).toBeCloseTo(58.333333333333336, 12);
+    expect(g.comps.find((c) => c.label === 'Earnings Yield')!.v).toBeCloseTo(87.5, 12);
     expect(g.score).toBe(73);
     // The detail strings must state percentages, not raw fractions.
     expect(g.comps.find((c) => c.label === 'Return on Capital')!.detail).toContain('14.6%');

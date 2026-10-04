@@ -31,31 +31,38 @@ export function scoreBuffett(s: Stock): RishiScore {
     full: 'Warren Buffett',
     label: 'Quality Moat',
     score: total === null ? null : Math.round(total),
+    scoreRaw: total,
     origin: 'Global',
     comps: [
       {
         label: 'ROE Sustainability',
-        v: Math.round(roeS),
+        v: roeS,
         wt: 30,
         detail: `${s.roe}% target >20%`
       },
       {
         label: 'Economic Moat',
-        v: Math.round(moatS),
+        v: moatS,
         wt: 25,
         detail: `OPM ${s.opm}% target >20%`
       },
       {
         label: 'Owner Earnings Yield',
-        v: oeS === null ? 0 : Math.round(oeS),
+        v: oeS === null ? 0 : oeS,
         wt: 20,
         detail: oeY === null ? 'insufficient data (market cap is 0)' : `${oeY.toFixed(1)}% target >8%`
       },
       {
         label: 'Management Skin',
-        v: Math.round(mgS),
+        v: mgS,
         wt: 15,
         detail: `Promoter ${s.promo}%`
+      },
+      {
+        label: 'Neutral Base',
+        v: 50,
+        wt: 10,
+        detail: 'design constant — the scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)'
       },
     ],
     insight: total === null

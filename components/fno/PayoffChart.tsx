@@ -47,7 +47,7 @@ export default function PayoffChart({ payoff, breakevens, spotPrice, maxProfit, 
     return (
       <div style={{
         height: "200px", display: "flex", alignItems: "center", justifyContent: "center",
-        color: "#475569", fontSize: "13px",
+        color: "var(--text-ghost)", fontSize: "13px",
         background: "rgba(17,24,39,0.4)", borderRadius: "12px",
       }}>
         Add legs to see payoff chart
@@ -96,7 +96,7 @@ export default function PayoffChart({ payoff, breakevens, spotPrice, maxProfit, 
             <line x1={pad.l} y1={y} x2={width - pad.r} y2={y}
               stroke="rgba(51,65,85,0.3)" strokeWidth="1" strokeDasharray={pnl === 0 ? "none" : "3,3"} />
             <text x={pad.l - 6} y={y + 4} textAnchor="end"
-              fontSize="10" fill={pnl === 0 ? "#64748B" : "#475569"}
+              fontSize="10" fill={pnl === 0 ? "var(--text-muted)" : "var(--text-ghost)"}
               fontFamily="JetBrains Mono, monospace">
               {fmt(pnl)}
             </text>
@@ -113,7 +113,7 @@ export default function PayoffChart({ payoff, breakevens, spotPrice, maxProfit, 
             <line x1={x} y1={pad.t} x2={x} y2={height - pad.b}
               stroke="rgba(51,65,85,0.2)" strokeWidth="1" strokeDasharray="3,3" />
             <text x={x} y={height - pad.b + 14} textAnchor="middle"
-              fontSize="10" fill="#475569" fontFamily="JetBrains Mono, monospace">
+              fontSize="10" fill="var(--text-ghost)" fontFamily="JetBrains Mono, monospace">
               {spot >= 1000 ? (spot/1000).toFixed(1)+"K" : spot.toFixed(0)}
             </text>
           </g>
@@ -181,7 +181,7 @@ export default function PayoffChart({ payoff, breakevens, spotPrice, maxProfit, 
               background: l.dash ? "none" : l.color,
               borderTop: l.dash ? "2px dashed " + l.color : "none",
             }} />
-            <span style={{ fontSize: "10px", color: "#64748B" }}>{l.label}</span>
+            <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>{l.label}</span>
           </div>
         ))}
       </div>

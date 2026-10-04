@@ -67,7 +67,7 @@ export default function Sidebar() {
         <div style={{
           fontFamily: "Inter, sans-serif",
           fontSize: "9px",
-          color: "#6b6b7a",
+          color: "var(--text-muted)",
           letterSpacing: "0.16em",
           marginTop: 10,
           fontWeight: 600,
@@ -85,7 +85,7 @@ export default function Sidebar() {
             <div style={{
               fontSize: "10px",
               fontWeight: 700,
-              color: "#6b6b7a",
+              color: "var(--text-muted)",
               letterSpacing: "0.14em",
               padding: "0 12px",
               marginBottom: "4px",
@@ -192,7 +192,7 @@ export default function Sidebar() {
       }}>
         <div style={{
           fontSize: "10px",
-          color: "#4b4b5a",
+          color: "var(--text-ghost)",
           fontFamily: "Inter, sans-serif",
           letterSpacing: "0.08em",
         }}>

@@ -509,7 +509,7 @@ const [beta, setBeta] = useState<number | null>(null);
         <h2 style={{ color: '#D4AF37', fontFamily: 'monospace', fontSize: 20, marginBottom: 12 }}>
           Your Portfolio is Empty
         </h2>
-        <p style={{ color: '#64748B', marginBottom: 24, lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 24, lineHeight: 1.6 }}>
           Add your first holding to unlock Overview metrics, risk, returns, and Council intelligence.
         </p>
         <Link
@@ -564,7 +564,7 @@ const [beta, setBeta] = useState<number | null>(null);
           <div style={{ fontSize: 28, fontWeight: 800, color: plColor(totals.totalPL), fontFamily: 'monospace' }}>
             {formatCurrency(totals.totalPL)} ({fmtPct(totals.totalPLPct)})
           </div>
-          <div style={{ fontSize: 10, color: '#64748B', marginTop: 6, display: 'flex', gap: 12 }}>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, display: 'flex', gap: 12 }}>
             {totals.best && <span style={{ color: '#22C55E' }}>▲ {totals.best.symbol} {fmtPct(totals.best.plPct)}</span>}
             {totals.worst && <span style={{ color: '#EF4444' }}>▼ {totals.worst.symbol} {fmtPct(totals.worst.plPct)}</span>}
           </div>
@@ -574,7 +574,7 @@ const [beta, setBeta] = useState<number | null>(null);
           <div style={{ fontSize: 28, fontWeight: 800, color: scoreColor(totals.avgScore), fontFamily: 'monospace' }}>
             {totals.avgScore}/100
           </div>
-          <div style={{ fontSize: 10, color: '#64748B', marginTop: 4 }}>{scoreLabel(totals.avgScore)}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{scoreLabel(totals.avgScore)}</div>
         </div>
       </div>
 
@@ -618,7 +618,7 @@ const [beta, setBeta] = useState<number | null>(null);
           <div style={{ fontSize: 22, fontWeight: 700, color: scoreColor(macroFit.score), fontFamily: 'monospace' }}>
             {macroFit.score}/100
           </div>
-          <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
             {macroFit.regime}
           </div>
         </div>
@@ -646,7 +646,7 @@ const [beta, setBeta] = useState<number | null>(null);
             <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>{t("overview.overallRisk")}</div>
           </div>
         </div>
-        <div style={{ marginTop: 16, fontSize: 11, color: '#64748B', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text-muted)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div><InfoTip term="Beta">Beta</InfoTip>: {beta != null ? beta.toFixed(2) : '—'}</div>
           <div><InfoTip term="Max Drawdown">{t("overview.maxDrawdown")}</InfoTip>: {maxDD != null ? fmtPct(maxDD) : '—'}</div>
           <div><InfoTip term="FCF Yield">{t("overview.fcfYield")}</InfoTip>: {fmtPct(fcfYieldPct)}</div>
@@ -665,15 +665,15 @@ const [beta, setBeta] = useState<number | null>(null);
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, fontSize: 11 }}>
             <div>
-              <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.portfolioBull")}</div>
+              <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{t("overview.portfolioBull")}</div>
               <div style={{ color: '#22C55E', fontWeight: 600 }}>{rishiCouncil.portfolioBull}</div>
             </div>
             <div>
-              <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.portfolioBear")}</div>
+              <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{t("overview.portfolioBear")}</div>
               <div style={{ color: '#EF4444', fontWeight: 600 }}>{rishiCouncil.portfolioBear}</div>
             </div>
             <div>
-              <div style={{ color: '#64748B', marginBottom: 4 }}><InfoTip term="Disagreement Index" icon={false}>{t("overview.disagreementIndex")}</InfoTip></div>
+              <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}><InfoTip term="Disagreement Index" icon={false}>{t("overview.disagreementIndex")}</InfoTip></div>
               <div style={{ color: '#F97316', fontWeight: 700 }}>{rishiCouncil.avgSpread}/100</div>
             </div>
           </div>
@@ -685,7 +685,7 @@ const [beta, setBeta] = useState<number | null>(null);
         <div style={label}>🔮 What-If Simulator</div>
         <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12 }}>
           <div>
-            <label style={{ fontSize: 11, color: '#64748B', display: 'block', marginBottom: 6 }}>{t("overview.symbol")}</label>
+            <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>{t("overview.symbol")}</label>
             <input
               type="text"
               value={whatIfSymbol}
@@ -699,7 +699,7 @@ const [beta, setBeta] = useState<number | null>(null);
             </datalist>
           </div>
           <div>
-            <label style={{ fontSize: 11, color: '#64748B', display: 'block', marginBottom: 6 }}>Amount ()</label>
+            <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Amount ()</label>
             <input
               type="number"
               value={whatIfAmount}
@@ -710,18 +710,18 @@ const [beta, setBeta] = useState<number | null>(null);
         </div>
         {whatIfRow && (
           <div style={{ marginTop: 16, padding: 12, background: 'rgba(56,189,248,0.1)', borderRadius: 6 }}>
-            <div style={{ fontSize: 12, color: '#64748B', marginBottom: 8 }}>Impact if you add {whatIfShares.toFixed(2)} shares of {whatIfSymbol.toUpperCase()} @ {formatCurrency(whatIfLtp)}:</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>Impact if you add {whatIfShares.toFixed(2)} shares of {whatIfSymbol.toUpperCase()} @ {formatCurrency(whatIfLtp)}:</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, fontSize: 11 }}>
               <div>
-                <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.newPortfolioValue")}</div>
+                <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{t("overview.newPortfolioValue")}</div>
                 <div style={{ color: '#38BDF8', fontWeight: 700 }}>{formatCurrency(whatIfNewValue)}</div>
               </div>
               <div>
-                <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.newRishiScore")}</div>
+                <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{t("overview.newRishiScore")}</div>
                 <div style={{ color: scoreColor(whatIfNewScore), fontWeight: 700 }}>{whatIfNewScore}/100</div>
               </div>
               <div>
-                <div style={{ color: '#64748B', marginBottom: 4 }}>{t("overview.scoreImpact")}</div>
+                <div style={{ color: 'var(--text-muted)', marginBottom: 4 }}>{t("overview.scoreImpact")}</div>
                 <div style={{ color: plColor(whatIfNewScore - totals.avgScore), fontWeight: 700 }}>
                   {whatIfNewScore - totals.avgScore >= 0 ? '+' : ''}{whatIfNewScore - totals.avgScore}
                 </div>
@@ -731,7 +731,7 @@ const [beta, setBeta] = useState<number | null>(null);
         )}
       </div>
 
-      {histLoading && <div style={{ padding: 20, textAlign: 'center', color: '#64748B', fontSize: 12 }}>Loading historical data...</div>}
+      {histLoading && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>Loading historical data...</div>}
       {histError && <div style={{ padding: 20, textAlign: 'center', color: '#EF4444', fontSize: 12 }}>Error: {histError}</div>}
     </div>
   );

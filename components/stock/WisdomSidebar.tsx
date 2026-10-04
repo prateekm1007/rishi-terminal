@@ -60,7 +60,7 @@ export function WisdomSidebar({ stock, scores, parallel }: WisdomSidebarProps) {
               flex: 1, padding: "10px", border: "none",
               background: activeMode === tab.id ? "rgba(212,175,55,0.1)" : "transparent",
               borderBottom: activeMode === tab.id ? "2px solid #D4AF37" : "2px solid transparent",
-              color: activeMode === tab.id ? "#D4AF37" : "#64748B",
+              color: activeMode === tab.id ? "#D4AF37" : "var(--text-muted)",
               fontSize: "12px", fontWeight: 700, cursor: "pointer",
               transition: "all 0.15s ease",
             }}
@@ -74,7 +74,7 @@ export function WisdomSidebar({ stock, scores, parallel }: WisdomSidebarProps) {
       {activeMode === "wisdom" && (
         <div style={{ padding: "20px", maxHeight: "600px", overflowY: "auto" }}>
           {!parallel ? (
-            <div style={{ textAlign: "center", color: "#64748B", fontSize: "12px", padding: "40px 20px" }}>
+            <div style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "12px", padding: "40px 20px" }}>
               No historical parallels detected
             </div>
           ) : (
@@ -92,7 +92,7 @@ export function WisdomSidebar({ stock, scores, parallel }: WisdomSidebarProps) {
               </div>
 
               <div style={{ marginBottom: "16px" }}>
-                <div style={{ fontSize: "10px", color: "#64748B", fontWeight: 700, marginBottom: "8px" }}>
+                <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: 700, marginBottom: "8px" }}>
                   SIMILAR COMPANIES:
                 </div>
                 {parallel.companies.filter(c => !c.toLowerCase().includes(stock.symbol.toLowerCase()) && !stock.name.toLowerCase().includes(c.toLowerCase())).map((c, i) => (
@@ -106,7 +106,7 @@ export function WisdomSidebar({ stock, scores, parallel }: WisdomSidebarProps) {
 
               {relevantScores.length > 0 && (
                 <div style={{ marginBottom: "16px" }}>
-                  <div style={{ fontSize: "10px", color: "#64748B", fontWeight: 700, marginBottom: "8px" }}>
+                  <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: 700, marginBottom: "8px" }}>
                     RELEVANT RISHIS:
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -132,7 +132,7 @@ export function WisdomSidebar({ stock, scores, parallel }: WisdomSidebarProps) {
                 <blockquote style={{ fontSize: "12px", fontStyle: "italic", color: "#94A3B8", lineHeight: 1.7, marginBottom: "8px" }}>
                   &quot;{parallel.quote}&quot;
                 </blockquote>
-                <div style={{ fontSize: "10px", color: "#64748B", textAlign: "right" }}>
+                <div style={{ fontSize: "10px", color: "var(--text-muted)", textAlign: "right" }}>
                   – {parallel.author}
                 </div>
               </div>

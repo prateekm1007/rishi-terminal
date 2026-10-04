@@ -297,7 +297,7 @@ export function GlobalSearchBar() {
               {r.sector && (
                 <span style={{
                   fontSize: 10,
-                  color: "#475569",
+                  color: "var(--text-ghost)",
                   marginLeft: "auto",
                   flexShrink: 0,
                   fontFamily: "monospace",
@@ -311,7 +311,7 @@ export function GlobalSearchBar() {
           <div style={{
             padding: "6px 16px",
             fontSize: 10,
-            color: "#475569",
+            color: "var(--text-ghost)",
             fontFamily: "monospace",
             background: "#050812",
             borderTop: "1px solid rgba(255,255,255,0.04)",

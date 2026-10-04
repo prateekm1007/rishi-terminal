@@ -29,8 +29,8 @@
   --amber:          #F59E0B;
   --text-primary:   #F8FAFC;
   --text-secondary: #94A3B8;
-  --text-muted:     #64748B;
-  --text-ghost:     #475569;
+  --text-muted:     #8395AC;
+  --text-ghost:     #7C8BA1;
   --border:         #1E293B;
   --border-subtle:  rgba(51,65,85,0.4);
   --border-gold:    rgba(212,175,55,0.25);
@@ -786,7 +786,7 @@ table { table-layout: fixed; width: 100%; }
 
   --text-primary:    #F8FAFC;
   --text-secondary:  #94A3B8;
-  --text-muted:      #64748B;
+  --text-muted:      #8395AC;
 
   --border-primary:  rgba(30,41,59,0.8);
   --border-subtle:   rgba(51,65,85,0.5);
@@ -820,7 +820,7 @@ table { table-layout: fixed; width: 100%; }
 .text-lg  { font-size: 18px; }
 .text-sm  { font-size: 14px; }
 .text-xs  { font-size: 12px; }
-.text-muted { color: #64748B; }
+.text-muted { color: var(--text-muted); }
 
 .p-6  { padding: 24px; }
 .p-4  { padding: 16px; }
@@ -945,7 +945,7 @@ table {
 th {
   font-size: 11px;
   font-weight: 700;
-  color: #64748B;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 10px 12px;

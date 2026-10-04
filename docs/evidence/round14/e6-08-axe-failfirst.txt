@@ -1,0 +1,40 @@
+    +         "none": Array [],
+    +         "target": Array [
+    +           "main > div:nth-child(2) > div:nth-child(1) > div:nth-child(2)",
+    +         ],
+    +       },
+    +     ],
+    +     "tags": Array [
+    +       "cat.keyboard",
+    +       "wcag2a",
+    +       "wcag211",
+    +       "wcag213",
+    +       "TTv5",
+    +       "TT4.a",
+    +       "EN-301-549",
+    +       "EN-9.2.1.1",
+    +       "EN-9.2.1.3",
+    +       "RGAAv4",
+    +       "RGAA-7.3.2",
+    +     ],
+    +   },
+    + ]
+
+      55 |       violations,
+      56 |       `axe found ${violations.length} violation kinds on ${route}:\n    ${summary}`,
+    > 57 |     ).toEqual([]);
+         |       ^
+      58 |   });
+      59 | }
+      60 |
+        at /home/z/my-project/repo/test/smoke/a11y-wcag.spec.ts:57:7
+
+    Error Context: test-results/a11y-wcag-axe-rishis-rishi-e695f-e-of-WCAG-2-2-AA-violations/error-context.md
+
+  6 failed
+    test/smoke/a11y-wcag.spec.ts:37:7 › axe: / (homepage) is free of WCAG 2.2 AA violations ────────
+    test/smoke/a11y-wcag.spec.ts:37:7 › axe: /screener (screener) is free of WCAG 2.2 AA violations 
+    test/smoke/a11y-wcag.spec.ts:37:7 › axe: /stock/RELIANCE (stock page) is free of WCAG 2.2 AA violations 
+    test/smoke/a11y-wcag.spec.ts:37:7 › axe: /methodology (methodology) is free of WCAG 2.2 AA violations 
+    test/smoke/a11y-wcag.spec.ts:37:7 › axe: /lab (portfolio lab) is free of WCAG 2.2 AA violations 
+    test/smoke/a11y-wcag.spec.ts:37:7 › axe: /rishis (rishis roster) is free of WCAG 2.2 AA violations 

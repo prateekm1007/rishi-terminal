@@ -116,7 +116,7 @@ export default function FnOHubPage() {
                     borderRadius: "10px", border: "1px solid " + f.color + "30",
                   }}>{f.tag}</span>
                 </div>
-                <p style={{ fontSize: "13px", color: "#64748B", lineHeight: 1.7, margin: 0 }}>
+                <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.7, margin: 0 }}>
                   {f.desc}
                 </p>
               </div>
@@ -133,7 +133,7 @@ export default function FnOHubPage() {
           }}>
             Strategy Library
           </h2>
-          <p style={{ fontSize: 12, color: "#64748B", marginBottom: 16, marginTop: -8 }}>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16, marginTop: -8 }}>
             {t('fno.strategyEdu')}
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "12px" }}>

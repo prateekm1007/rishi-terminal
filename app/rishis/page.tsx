@@ -153,7 +153,7 @@ export default function ChatWithRishisPage() {
         {/* Header */}
         <div style={{ padding: '16px 14px 10px', borderBottom: '1px solid var(--border-primary)' }}>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'monospace', marginBottom: 8 }}>
-            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>HOME</Link>
+            <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'underline' }}>HOME</Link>
             {' > '}CHAT WITH RISHIS
           </div>
           <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent-gold)', marginBottom: 10, letterSpacing: 1 }}>
@@ -180,7 +180,7 @@ export default function ChatWithRishisPage() {
         </div>
 
         {/* Rishi List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+        <div role="region" aria-label="Rishi list" tabIndex={0} style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
           {filteredRishis.map(rishi => {
             const isActive  = selectedRishi.id === rishi.id;
             const hasChat   = (chatHistories[rishi.id] || []).length > 0;

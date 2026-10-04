@@ -325,7 +325,7 @@ export default function RishiChat({ stock }: Props) {
           <div style={{ fontSize: "11px", fontWeight: 700, color: "#D4AF37", letterSpacing: "0.1em" }}>
             💬 {t("chat.header")}
           </div>
-          <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>
+          <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
             {debateMode
               ? `⚔️ ${debateRishis.map(r => personaById(r)?.name).join(' vs ')}`
               : `${rishi?.emoji} ${rishi?.name} · ${apiStatus === 'ok' ? '🟢 AI' : apiStatus === 'unavailable' ? '🔴 Unavailable' : '⚡ AI'}`}
@@ -340,7 +340,7 @@ export default function RishiChat({ stock }: Props) {
             cursor: availableRishis.length >= 2 ? "pointer" : "not-allowed",
             border: "none",
             background: debateMode ? "rgba(212,175,55,0.15)" : "rgba(51,65,85,0.3)",
-            color: debateMode ? "#D4AF37" : "#64748B",
+            color: debateMode ? "#D4AF37" : "var(--text-muted)",
             opacity: availableRishis.length >= 2 ? 1 : 0.5,
           }}
         >
@@ -363,7 +363,7 @@ export default function RishiChat({ stock }: Props) {
                   cursor: isAvailable ? "pointer" : "not-allowed",
                   border: selectedRishi === p.id ? `1px solid ${p.color}60` : "1px solid rgba(51,65,85,0.4)",
                   background: selectedRishi === p.id ? p.color + "18" : "transparent",
-                  color: selectedRishi === p.id ? p.color : isAvailable ? "#64748B" : "#334155",
+                  color: selectedRishi === p.id ? p.color : isAvailable ? "var(--text-muted)" : "var(--text-ghost)",
                   opacity: isAvailable ? 1 : 0.5,
                   display: "flex", alignItems: "center", gap: 4,
                 }}
@@ -403,9 +403,9 @@ export default function RishiChat({ stock }: Props) {
       {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: "center", color: "#475569", fontSize: "13px", marginTop: "30px" }}>
+          <div style={{ textAlign: "center", color: "var(--text-ghost)", fontSize: "13px", marginTop: "30px" }}>
             <div style={{ fontSize: "28px", marginBottom: "10px" }}>💬</div>
-            <div style={{ color: "#64748B" }}>{t("chat.askAbout")} {debateMode ? t("chat.askTheRishis") : rishi?.name} {stock.symbol}</div>
+            <div style={{ color: "var(--text-muted)" }}>{t("chat.askAbout")} {debateMode ? t("chat.askTheRishis") : rishi?.name} {stock.symbol}</div>
             <div style={{ fontSize: 11, color: "#334155", marginTop: 6 }}>
               {t("chat.poweredBy")} · {t("chat.personalityDriven")}
             </div>
@@ -442,7 +442,7 @@ export default function RishiChat({ stock }: Props) {
                 fontSize: "11px", color: "#94A3B8", lineHeight: 1.6,
                 whiteSpace: "pre-wrap", wordBreak: "break-word",
               }}>
-                <div style={{ fontSize: "9px", letterSpacing: "0.08em", color: "#64748B", marginBottom: 3 }}>
+                <div style={{ fontSize: "9px", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: 3 }}>
                   MODEL COMMENTARY · NOT VERIFIED
                 </div>
                 {msg.provenance.commentary}
@@ -452,7 +452,7 @@ export default function RishiChat({ stock }: Props) {
               {msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
             </div>
             {msg.role === "rishi" && msg.provenance && (
-              <div style={{ fontSize: "9px", color: "#475569", marginTop: "2px", lineHeight: 1.5 }}>
+              <div style={{ fontSize: "9px", color: "var(--text-ghost)", marginTop: "2px", lineHeight: 1.5 }}>
                 {msg.provenance.provider}/{msg.provenance.model} ·{" "}
                 {msg.provenance.grounded
                   ? `cites ${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0)} evidence item${msg.provenance.claims.reduce((n, c) => n + c.evidenceIds.length, 0) === 1 ? "" : "s"} · numbers checked`
@@ -476,14 +476,14 @@ export default function RishiChat({ stock }: Props) {
 
         {loading && (
           <div style={{ alignSelf: "flex-start" }}>
-            <div style={{ fontSize: "10px", color: "#64748B", marginBottom: 3 }}>
+            <div style={{ fontSize: "10px", color: "var(--text-muted)", marginBottom: 3 }}>
               {rishi?.emoji} {rishi?.name} · {t("chat.thinking")}
             </div>
             <div style={{
               background: "rgba(17,24,39,0.8)", border: "1px solid rgba(51,65,85,0.4)",
               borderRadius: "12px", padding: "10px 14px",
               display: "flex", alignItems: "center", gap: 8,
-              color: "#64748B", fontSize: "12px",
+              color: "var(--text-muted)", fontSize: "12px",
             }}>
               <span style={{ display: "flex", gap: 3 }}>
                 {[0, 1, 2].map(i => (
@@ -544,7 +544,7 @@ export default function RishiChat({ stock }: Props) {
               style={{
                 padding: "4px 9px", borderRadius: "6px", fontSize: "10px",
                 background: "rgba(31,41,59,0.5)", border: "1px solid rgba(51,65,85,0.4)",
-                color: loading ? "#334155" : "#64748B", cursor: loading ? "not-allowed" : "pointer",
+                color: loading ? "#334155" : "var(--text-muted)", cursor: loading ? "not-allowed" : "pointer",
               }}
             >
               {p.length > 22 ? p.slice(0, 22) + '…' : p}

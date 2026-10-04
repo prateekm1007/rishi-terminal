@@ -196,7 +196,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
               <div style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#22C55E', marginBottom: 12 }}>{t("kg.bullCase")} ({bulls.length})</div>
-                {bulls.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBulls")}</div>}
+                {bulls.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("kg.noBulls")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -209,7 +209,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
               </div>
               <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 12, padding: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', marginBottom: 12 }}>{t("kg.bearCase")} ({bears.length})</div>
-                {bears.length === 0 && <div style={{ fontSize: 11, color: '#64748B' }}>{t("kg.noBears")}</div>}
+                {bears.length === 0 && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t("kg.noBears")}</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -316,7 +316,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 CRYPTO RISHI CONSENSUS · HEURISTIC REFERENCE</div>
               <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
-              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? '#64748B' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
+              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore === null ? 'Insufficient Data — fewer than the minimum valid scorers' : avgScore >= 75 ? 'Strong HODL Signal — Sound Money Thesis Intact' : avgScore >= 55 ? 'Accumulation Phase — Selective Entry Points' : 'Weak Momentum — Patience Required'}
               </div>
@@ -361,7 +361,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                     <span style={{ fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{scoreDisp(r.result.score)}/100</span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                  <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
                 </div>
               ))}
             </div>
@@ -490,7 +490,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#22C55E' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>
@@ -504,7 +504,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#EF4444' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: '#64748B', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
                   </div>
                 ))}
               </div>

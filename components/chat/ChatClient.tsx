@@ -75,7 +75,7 @@ export function ChatClient({ rows }: Props) {
             overflow: 'hidden',
           }}>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#64748B', letterSpacing: '0.1em', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>
                 SEARCH STOCKS
               </div>
               <input
@@ -107,7 +107,7 @@ export function ChatClient({ rows }: Props) {
                   }}
                 >
                   <div>{s.symbol}</div>
-                  <div style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}>{s.name}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{s.name}</div>
                 </button>
               ))}
             </div>
@@ -127,13 +127,13 @@ export function ChatClient({ rows }: Props) {
               }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#D4AF37' }}>{selectedRow.symbol}</div>
-                  <div style={{ fontSize: 11, color: '#64748B' }}>{selectedRow.name} • {selectedRow.sector}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{selectedRow.name} • {selectedRow.sector}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: selectedRow.consensus !== null && selectedRow.consensus >= 70 ? '#22C55E' : '#F59E0B' }}>
                     {selectedRow.consensus === null ? '\u2014' : `${selectedRow.consensus}/100`}
                   </div>
-                  <div style={{ fontSize: 10, color: '#64748B' }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
                     PE <DataValue sourced={{ value: selectedRecord.pe ?? null, source: 'seed', asOf: null }} digits={1} unit="x" />
                     {' | '}
                     ROE <DataValue sourced={{ value: selectedRecord.roe ?? null, source: 'seed', asOf: null }} digits={1} unit="%" />

@@ -47,7 +47,7 @@ export function LabContent({ rows }: Props) {
               <h1 className="philosophy-heading" style={{ fontSize: 32, color: '#D4AF37', letterSpacing: 2 }}>
                 Rishi Portfolio Lab
               </h1>
-              <p style={{ fontSize: 13, color: '#64748B', marginTop: 8, letterSpacing: 0.5 }}>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8, letterSpacing: 0.5 }}>
                 One Lab. All Conviction.
               </p>
             </div>
@@ -98,7 +98,7 @@ export function LabContent({ rows }: Props) {
                     fontWeight: active ? 700 : 400,
                     background: 'transparent',
                     borderBottom: active ? '2px solid #D4AF37' : '2px solid transparent',
-                    color: active ? '#D4AF37' : '#64748B',
+                    color: active ? '#D4AF37' : 'var(--text-muted)',
                     cursor: 'pointer',
                     letterSpacing: active ? '1px' : '0.5px',
                     transition: 'all 0.2s ease',

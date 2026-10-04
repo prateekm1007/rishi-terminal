@@ -56,7 +56,9 @@ export function seedScoringContext(stock: Stock): ScoringContext {
   return { unknownFields };
 }
 
-const SCORER_REGISTRY: ScorerFn[] = [
+// R4-04: exported so the council can re-run individual scorers by name
+// (one registry, rule 14 — the council must not duplicate this list).
+export const SCORER_REGISTRY: ScorerFn[] = [
   scoreBuffett,
   scoreGraham,
   scoreLynch,

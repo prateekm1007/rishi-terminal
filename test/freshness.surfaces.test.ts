@@ -55,6 +55,8 @@ const EXEMPTED_SURFACES: Record<string, string> = {
     "rendered inside LabContent, which shows the banner above the tab content",
   "components/lab/IntelligenceTab.tsx":
     "rendered inside LabContent, which shows the banner above the tab content",
+  "components/stock/RishiCouncil.tsx":
+    "R4-04: rendered on /stock/[symbol] directly beneath the StockPageClient page-level banner — the council restates the SAME seed-derived verdicts the banner already labels, plus computed dissent paths",
   "components/stock/MetricsPanel.tsx":
     "rendered on /stock/[symbol] under the StockPageClient page-level banner; every value additionally renders through <DataValue> with per-field provenance",
   "components/score/RishiScoreDual.tsx":

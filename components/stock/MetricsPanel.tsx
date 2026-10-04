@@ -4,7 +4,7 @@ import { useFundamentals } from '@/hooks/useFundamentals';
 import { MetricCard, StatGroup } from './StyleGuide';
 import { DataValue } from '@/components/DataValue';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
-import { derivedSourced, overlaySourced, type Sourced } from '@/lib/types/sourced';
+import { derivedSourced, dropSeedPlaceholderZero, overlaySourced, type Sourced } from '@/lib/types/sourced';
 
 interface Props {
   /**
@@ -68,34 +68,62 @@ export function MetricsPanel({ resolved }: Props) {
     fcfMargin: resolved.sourced.fcfMargin,
   };
 
+  // Y4 (Round 12): a seed-sourced ZERO is the June placeholder for
+  // "unknown" (the founder's live greps: "Promoter Hold0.0%",
+  // "D/E Ratio0.0x" on BANDHANBNK). Lift every placeholder zero to null
+  // at this boundary so <DataValue> renders "—"; a LIVE 0 (a real
+  // debt-free D/E from a vendor) survives the overlay path untouched.
+  const metricsSourced = {
+    pe: dropSeedPlaceholderZero(s.pe),
+    roe: dropSeedPlaceholderZero(s.roe),
+    roce: dropSeedPlaceholderZero(s.roce),
+    de: dropSeedPlaceholderZero(s.de),
+    opm: dropSeedPlaceholderZero(s.opm),
+    revcagr: dropSeedPlaceholderZero(s.revcagr),
+    epscagr: dropSeedPlaceholderZero(s.epscagr),
+    mktcap: dropSeedPlaceholderZero(s.mktcap),
+    bvps: dropSeedPlaceholderZero(s.bvps),
+    promo: dropSeedPlaceholderZero(s.promo),
+    pb: dropSeedPlaceholderZero(s.pb),
+    fcfMargin: dropSeedPlaceholderZero(s.fcfMargin),
+  };
+
+  // Y4 (Round 12): banking-sector metrics. D/E, OPM and FCF yield are
+  // meaningless or distorted for banks under leverage-based accounting
+  // (the seed's bank D/E 0 is a placeholder; its OPM 32-44% is a
+  // non-bank formula). P/B and ROE stay — the standard bank lenses.
+  // NIM and GNPA remain blocked on the banking data feed (FD-16).
+  const isBank = resolved.stock.sector === 'Banking';
+
   const asOfOf = (...parts: Sourced<number>[]) =>
     parts.every(p => p.asOf) ? (parts.find(p => p.asOf) as Sourced<number>).asOf : null;
 
   // Derived valuation ratios — computed from the same sourced inputs
   // (live when a live overlay arrived, seed baseline otherwise).
   const peg: Sourced<number> = derivedSourced(
-    s.pe.value !== null && s.epscagr.value !== null && s.epscagr.value > 0
-      ? s.pe.value / s.epscagr.value
+    metricsSourced.pe.value !== null && metricsSourced.epscagr.value !== null && metricsSourced.epscagr.value > 0
+      ? metricsSourced.pe.value / metricsSourced.epscagr.value
       : null,
     asOfOf(s.pe, s.epscagr),
   );
   const fcfYield: Sourced<number> = derivedSourced(
-    s.mktcap.value !== null && resolved.stock.fcf > 0 && s.mktcap.value > 0
-      ? (resolved.stock.fcf / s.mktcap.value) * 100
+    metricsSourced.mktcap.value !== null && resolved.stock.fcf > 0 && metricsSourced.mktcap.value > 0
+      ? (resolved.stock.fcf / metricsSourced.mktcap.value) * 100
       : null,
     s.mktcap.asOf,
   );
 
   const metrics = [
-    { label: 'P/E Ratio',    sourced: s.pe,      unit: 'x',    threshold: 20,  inverse: true  },
-    { label: 'ROE',          sourced: s.roe,     unit: '%',    threshold: 15,  inverse: false },
-    { label: 'ROCE',         sourced: s.roce,    unit: '%',    threshold: 15,  inverse: false },
-    { label: 'D/E Ratio',    sourced: s.de,      unit: 'x',    threshold: 1,   inverse: true  },
-    { label: 'OPM',          sourced: s.opm,     unit: '%',    threshold: 10,  inverse: false },
-    { label: 'Revenue CAGR', sourced: s.revcagr, unit: '%',    threshold: 15,  inverse: false },
-    { label: 'EPS CAGR',     sourced: s.epscagr, unit: '%',    threshold: 15,  inverse: false },
-    { label: 'Mkt Cap',      sourced: s.mktcap,  unit: 'K Cr', threshold: 100, inverse: false, scale: 1000 },
-  ];
+    { label: 'P/E Ratio',    sourced: metricsSourced.pe,      unit: 'x',    threshold: 20,  inverse: true  },
+    { label: 'ROE',          sourced: metricsSourced.roe,     unit: '%',    threshold: 15,  inverse: false },
+    { label: 'ROCE',         sourced: metricsSourced.roce,    unit: '%',    threshold: 15,  inverse: false },
+    // Y4: hidden for banks (isBank) — leverage accounting makes them misleading.
+    { label: 'D/E Ratio',    sourced: metricsSourced.de,      unit: 'x',    threshold: 1,   inverse: true,  bankHidden: true },
+    { label: 'OPM',          sourced: metricsSourced.opm,     unit: '%',    threshold: 10,  inverse: false, bankHidden: true },
+    { label: 'Revenue CAGR', sourced: metricsSourced.revcagr, unit: '%',    threshold: 15,  inverse: false },
+    { label: 'EPS CAGR',     sourced: metricsSourced.epscagr, unit: '%',    threshold: 15,  inverse: false },
+    { label: 'Mkt Cap',      sourced: metricsSourced.mktcap,  unit: 'K Cr', threshold: 100, inverse: false, scale: 1000 },
+  ].filter(m => !(isBank && m.bankHidden));
 
   return (
     <div className="card-sacred p-6">
@@ -142,16 +170,22 @@ export function MetricsPanel({ resolved }: Props) {
         <div className="philosophy-subheading text-xs mb-4">{t("common.valuationSnapshot")}</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatGroup title="P/B Ratio" stats={[
-            { label: 'Price / Book', value: <DataValue sourced={s.pb} digits={2} unit="x" /> }
+            { label: 'Price / Book', value: <DataValue sourced={metricsSourced.pb} digits={2} unit="x" /> }
           ]} />
           <StatGroup title="PEG Ratio" stats={[
             { label: 'P/E / Growth', value: <DataValue sourced={peg} digits={2} /> }
           ]} />
-          <StatGroup title="FCF Yield" stats={[
-            { label: 'FCF / Mkt Cap', value: <DataValue sourced={fcfYield} digits={2} unit="%" /> }
-          ]} />
+          {isBank ? (
+            <StatGroup title="Banking note" stats={[
+              { label: 'D/E · OPM · FCF yield', value: <span style={{ fontSize: 12, color: '#94A3B8' }}>hidden for banks — leverage accounting makes them misleading; NIM / GNPA arrive with the banking data feed (FD-16)</span> }
+            ]} />
+          ) : (
+            <StatGroup title="FCF Yield" stats={[
+              { label: 'FCF / Mkt Cap', value: <DataValue sourced={fcfYield} digits={2} unit="%" /> }
+            ]} />
+          )}
           <StatGroup title="Promoter" stats={[
-            { label: 'Promoter Hold', value: <DataValue sourced={s.promo} unit="%" /> }
+            { label: 'Promoter Hold', value: <DataValue sourced={metricsSourced.promo} unit="%" /> }
           ]} />
         </div>
       </div>

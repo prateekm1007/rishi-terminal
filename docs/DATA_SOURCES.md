@@ -203,3 +203,23 @@ seed-derived surface remains labelled as illustrative sample data.
 8. **NESTLEIND ROE = 110** in the seed is real (buyback-shrunken equity), not
    a data bug; it is whitelisted explicitly in `scripts/validateStocks.ts`.
    Any other `|ROE| > 150` fails the registry validation gate.
+
+**Y4 (Round 12) — null, not zero.** A seed-sourced ZERO is the June
+placeholder for "unknown" — never an observation. Three enforcement
+points:
+
+- `lib/types/sourced.ts dropSeedPlaceholderZero` lifts seed-zeros to null
+  at the UI boundary (`<DataValue>` renders `—`); a vendor-sourced 0 is a
+  REAL observation (a debt-free D/E) and still renders as 0;
+- `/api/fundamentals`' static fallback nulls `debtToEquity`,
+  `promoterHolding` and `marketCap` when the seed has no value, and
+  `overlaySourced` no longer overlays `source: "static"` entries at all
+  (seed numbers may never relabel as `vendor:live-fundamentals`);
+- Banking-sector stocks hide D/E, OPM and FCF yield in MetricsPanel
+  (leverage accounting makes them misleading — the seed's bank D/E 0 and
+  OPM 32-44% were artifacts), keep P/B and ROE, and say so inline; NIM
+  and GNPA stay blocked on FD-16. The historical-analog classifier
+  returns null for unmatched profiles (banks included) instead of
+  defaulting every stock into the IT-services "quality compounder"
+  story; peer market caps render live-or-blank (`—`), never the seed
+  artifact.

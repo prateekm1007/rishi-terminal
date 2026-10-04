@@ -16,8 +16,59 @@ import { scorePabrai } from '../lib/scorers/pabrai';
 import { scorePorinju } from '../lib/scorers/porinju';
 import { scoreSoros } from '../lib/scorers/soros';
 import { scoreGreenblatt } from '../lib/scorers/greenblatt';
+import { scoreNemish } from '../lib/scorers/nemish';
 import { clamp } from '../lib/utils';
 import type { Stock } from '../lib/types';
+
+/** X6 (Round 13): the distribution gate as an importable pure unit.
+ *
+ * Two founder corrections shape this gate:
+ *   1. The Greenblatt allow-list REASON is corrected: the low pile (26.9%
+ *      of the universe at score <= 5 on the current seed) reflects the
+ *      PLACEHOLDER SEED's earnings values — the seed np fields are June
+ *      placeholders, so np/mktcap lands near zero for a large block of
+ *      symbols and the score pins low. It is NOT a property of the
+ *      scorer, and the old blanket wording ("documented allow-list")
+ *      hid that.
+ *   2. The at-bounds criterion tightens from 20% to 15%: a scorer whose
+ *      share of scores sits at its own bounds (<= 5 or >= 95) above 15%
+ *      is an offender. Measured on the current seed, Nemish carries 18.8%
+ *      at >= 95 (the founder cited ~19%) — the honest gate NAMES it
+ *      instead of passing.
+ * The Greenblatt exemption covers ONLY its documented low-pile side; the
+ * >= 95 side stays gated for every scorer. */
+export interface DistributionStats {
+  name: string;
+  sd: number;
+  pctLE5: number;
+  pctGE95: number;
+}
+
+export interface GateVerdict {
+  pass: boolean;
+  offenders: string[];
+  exemptReason: string | null;
+}
+
+export const GREENBLATT_LOW_PILE_REASON =
+  'allow-listed: the low pile reflects the placeholder seed\'s earnings values (June np placeholders), not a scorer property';
+
+export function evaluateDistributionGate(s: DistributionStats): GateVerdict {
+  const offenders: string[] = [];
+  const exemptLowPile = s.name === 'Greenblatt';
+  if (s.sd < 8) offenders.push(`${s.name}: sd ${s.sd.toFixed(2)} < 8`);
+  if (exemptLowPile) {
+    if (s.pctGE95 > 15) offenders.push(`${s.name}: ${s.pctGE95.toFixed(1)}% >= 95 (above the 15% bound)`);
+    return {
+      pass: offenders.length === 0,
+      offenders,
+      exemptReason: offenders.length === 0 ? GREENBLATT_LOW_PILE_REASON : null,
+    };
+  }
+  if (s.pctLE5 > 15) offenders.push(`${s.name}: ${s.pctLE5.toFixed(1)}% <= 5 (above the 15% bound)`);
+  if (s.pctGE95 > 15) offenders.push(`${s.name}: ${s.pctGE95.toFixed(1)}% >= 95 (above the 15% bound)`);
+  return { pass: offenders.length === 0, offenders, exemptReason: null };
+}
 
 const universe = Object.values(STOCKS);
 console.log(`universe size: ${universe.length}`);
@@ -72,17 +123,19 @@ const scorers: Array<[string, (s: Stock) => { score: number | null }]> = [
   ['Porinju', scorePorinju],
   ['Soros', scoreSoros],
   ['Greenblatt', scoreGreenblatt],
+  ['Nemish', scoreNemish], // X6: the founder's citation (19% at >= 95) requires Nemish in the measured set
 ];
 const offenders: string[] = [];
+const verdicts: GateVerdict[] = [];
 for (const [name, fn] of scorers) {
   const vals = universe.map((s) => fn(s).score).filter((v): v is number => typeof v === 'number');
   const r = stats(name, vals);
-  const exempt = name === 'Greenblatt'; // documented allow-list
-  if (!exempt) {
-    if (r.sd < 8) offenders.push(`${name}: sd ${r.sd.toFixed(2)} < 8`);
-    if (r.pctLE5 > 20) offenders.push(`${name}: ${r.pctLE5.toFixed(1)}% <= 5`);
-    if (r.pctGE95 > 20) offenders.push(`${name}: ${r.pctGE95.toFixed(1)}% >= 95`);
-  }
+  const v = evaluateDistributionGate({ name, sd: r.sd, pctLE5: r.pctLE5, pctGE95: r.pctGE95 });
+  verdicts.push(v);
+  offenders.push(...v.offenders);
 }
-console.log(`\nW4 gate (sd>=8, <=20% at <=5, <=20% at >=95, Greenblatt allow-listed):`);
-console.log(offenders.length === 0 ? '  PASS (no offenders)' : `  FAIL: ${offenders.join('; ')}`);
+console.log(`\nX6 gate (sd>=8, <=15% at <=5, <=15% at >=95; Greenblatt low pile allow-listed with the corrected placeholder-seed reason):`);
+for (const [name, v] of (scorers.map(([n]) => n)).map((n, i) => [n, verdicts[i]] as const)) {
+  if (v.exemptReason) console.log(`  ${name}: ${v.exemptReason}`);
+}
+console.log(offenders.length === 0 ? '  PASS (no offenders)' : `  NAMED OFFENDERS: ${offenders.join('; ')}`);

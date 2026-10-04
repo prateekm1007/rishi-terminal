@@ -115,6 +115,20 @@ disclosed in the response. Consequences for the surfaces:
   class within a 30-minute observation window. Telemetry only — never
   health severity; `null` when the probe could not run.
 
+**Y2 follow-up (2026-10-04, measured against live 429s).** The free tiers
+throttle per IP: the first full sweep measured ~17% equity misses (Yahoo
+v8 429s) and 4/4 crypto tile misses (`CoinGecko HTTP 429`, reproduced
+locally with the same console error). Two mitigations, both bounded:
+
+- the CoinGecko batch fetch retries rate-limit responses (429/503) up to
+  twice with a 500 ms/1.5 s backoff under one shared 8 s abort budget
+  (`lib/livePrice.ts`); a persistent throttle stays an honest miss —
+  never a zero-priced quote;
+- the workflow paces its six slices ~75 s apart, spreading the sweep
+  across most of the 15-minute window. Claims expire after 30 s, so the
+  NEXT cycle retries exactly the symbols a cycle missed — coverage is the
+  union across cycles, measured by the 30-minute health window.
+
 - **`/api/ingest/snapshot`** — recomputes consensus scores for the whole
   registry and persists them to `rishi_snapshots` (with
   `SCORE_ENGINE_VERSION`, T10). Scheduled in `vercel.json`:

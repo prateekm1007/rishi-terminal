@@ -84,6 +84,17 @@ describe("Y2 — stock page peers at the first byte (source pins)", () => {
     expect(page).toContain("initialPeerPrices");
   });
 
+  it("does NOT skip the page's own symbol — the peer-table self row is priced in the first byte too", () => {
+    // Y2 follow-up: the peek already contains the self symbol (it is the
+    // batch's first entry), so dropping it from the mapped peer prices
+    // leaves the peer table's highlighted self row as "—" until client
+    // hydration — the exact defect the founder's acceptance ("peer rows
+    // show prices in raw HTML") calls out. The self quote still rides
+    // initialQuote for the hero; PeerComparison reads the same observation
+    // from the mapped entries.
+    expect(page).not.toMatch(/if\s*\(sym\s*===\s*key\)\s*continue/);
+  });
+
   it("StockPageClient receives and forwards initialPeerPrices to PeerComparison", () => {
     const client = readFileSync(STOCK_PAGE_CLIENT, "utf8");
     expect(client).toContain("initialPeerPrices");

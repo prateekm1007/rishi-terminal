@@ -32,12 +32,18 @@ jobs:
   warm:
     runs-on: ubuntu-latest
     steps:
-      - name: Warm the quote cache (6 slices, sequential)
+      - name: Warm the quote cache (6 slices, paced)
         run: |
           set -euo pipefail
           BASE="https://rishi-terminal.vercel.app/api/ingest/quotes-warm"
           SLICES=6
+          # Y2 follow-up: pace the slices ~75 s apart. Back-to-back slices
+          # measured ~17% upstream 429 misses (Yahoo free tier throttles the
+          # burst); spacing spreads the same request count across most of the
+          # 15-minute window, and the next cycle retries whatever a cycle
+          # misses (claims expire after 30 s). Total run stays under 10 min.
           for k in $(seq 0 $((SLICES - 1))); do
+            if [ "$k" -gt 0 ]; then sleep 75; fi
             echo "== slice $k/$SLICES =="
             code=$(curl -s -o "/tmp/warm-$k.json" -w "%{http_code}" -X POST \
               -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \

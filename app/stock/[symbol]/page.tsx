@@ -127,9 +127,12 @@ export default async function StockPage({ params }: StockPageProps) {
   const peerSymbols = stockDetail.peers.map((p) => p.symbol);
   const peeked = isBuildPhase() ? {} : await serveCachedQuotes([key, ...peerSymbols]);
   const initialQuote = peeked[key] ?? null;
+  // Y2 follow-up: the SELF symbol stays in the mapped peer prices too — the
+  // peer table's highlighted self row renders the same cached observation
+  // the hero shows, instead of "—" until client hydration. One peek, one
+  // mapping, no second read; misses are still omitted (honest "—").
   const initialPeerPrices: Record<string, InitialPriceEntry> = {};
   for (const [sym, q] of Object.entries(peeked)) {
-    if (sym === key) continue;
     const mapped = toPriceData(q);
     if (mapped) initialPeerPrices[sym] = mapped;
   }

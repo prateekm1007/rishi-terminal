@@ -38,6 +38,10 @@ export default function RishiChat({ stock }: Props) {
   const [loading, setLoading] = useState(false);
   const [apiStatus, setApiStatus] = useState<'idle' | 'calling' | 'ok' | 'unavailable'>('idle');
   const [notice, setNotice] = useState<string | null>(null);
+  // A2 (Round 14): live proof-of-work progress while the challenge solves in
+  // the worker — {hashes, required} where `required` is the EXPECTED work
+  // (2^difficulty), a statistical denominator for the bar, not a cap.
+  const [challengeProgress, setChallengeProgress] = useState<{ hashes: number; required: number } | null>(null);
   const { t } = useLanguage();
 
   const quickPrompts = [
@@ -164,7 +168,17 @@ export default function RishiChat({ stock }: Props) {
         typeof (err.challenge as Record<string, unknown>).issuedAt === 'number'
       ) {
         const c = err.challenge as { token: string; difficulty: number; challengeId: string; issuedAt: number };
-        const solution = await solvePow(c.token, c.difficulty);
+        // A2: the solve runs in a Web Worker with live progress and a hard
+        // timeout. On timeout the worker is terminated and the human gets a
+        // clear retry message (rule 3) — never a silent hang, never a
+        // fabricated answer.
+        setChallengeProgress({ hashes: 0, required: Math.pow(2, c.difficulty) });
+        let solution: { nonce: string; hashes: number };
+        try {
+          solution = await solvePow(c.token, c.difficulty, p => setChallengeProgress(p));
+        } finally {
+          setChallengeProgress(null);
+        }
         res = await post({ token: c.token, nonce: solution.nonce, issuedAt: c.issuedAt, challengeId: c.challengeId });
       } else if (err && err.fallback) {
         throw new Error('FALLBACK');
@@ -269,8 +283,16 @@ export default function RishiChat({ stock }: Props) {
         addMessageToSession(currentSession, rishiMsg);
         setApiStatus('ok');
       }
-    } catch {
+    } catch (e) {
       // AI unavailable (rule 5): no fabricated answer, no pseudo-AI text.
+      // A2: a timed-out/stuck challenge gets its own clear wording — the
+      // generic unavailable notice would misstate what happened.
+      if (e instanceof Error && e.message === 'POW_TIMEOUT') {
+        console.warn('[RishiChat] chat challenge timed out — user asked to retry');
+        setNotice('The security check took too long and was stopped. Please send your question again.');
+        setApiStatus('unavailable');
+        return;
+      }
       console.warn('[RishiChat] AI unavailable — no answer generated');
       setNotice(t('chat.aiUnavailable'));
       setApiStatus('unavailable');
@@ -471,7 +493,28 @@ export default function RishiChat({ stock }: Props) {
                   }} />
                 ))}
               </span>
-              {t("chat.consultingAI")}
+              {challengeProgress ? (
+                // A2: live worker progress — the honest unit is hashes tried
+                // against the EXPECTED work (a lucky nonce can finish early).
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <span>Proving you are human…</span>
+                  <span style={{
+                    display: "inline-block", width: 120, height: 4,
+                    background: "rgba(51,65,85,0.8)", borderRadius: 3, overflow: "hidden",
+                  }}>
+                    <span style={{
+                      display: "block", height: "100%",
+                      width: `${Math.min(100, (challengeProgress.hashes / challengeProgress.required) * 100).toFixed(1)}%`,
+                      background: "#D4AF37",
+                    }} />
+                  </span>
+                  <span style={{ fontFamily: "monospace", fontSize: 10 }}>
+                    {challengeProgress.hashes.toLocaleString()} hashes
+                  </span>
+                </span>
+              ) : (
+                t("chat.consultingAI")
+              )}
             </div>
           </div>
         )}

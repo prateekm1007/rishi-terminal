@@ -151,3 +151,30 @@ corrective habit: anchor on merge time, keep ≥2 min margin.
 | #160 merged (docs) | 19:20:41Z | C8-exempt |
 | #157 merged | 19:50:25Z | 62.5 min after 143c575 — C8-compliant |
 | 9c1781d READY | 19:52:28Z | R15-D live; regression battery bound to it |
+
+## 8. Final SHA reconciliation — case A achieved (23:32Z)
+
+```text
+$ curl -s https://rishi-terminal.vercel.app/api/version
+{"sha":"62fd6233c42d2054fa2510e98a2c2bccd9a461be",...}
+$ git rev-parse origin/main
+62fd6233c42d2054fa2510e98a2c2bccd9a461be
+→ production SHA == origin/main (literal equality; the sanctioned retry
+  drained the sixth quota exhaustion at 23:30:38Z HTTP 200).
+```
+
+Full live acceptance suite on the FINAL SHA (raw output:
+scripts/round15/final-acceptance-62fd6233.txt, mirrored here):
+
+```text
+A1 first-byte markers on /stock/SBIN:            7
+Y4 negative control (placeholder zeros):         0
+Y4 positive control ("hidden for banks"):        1
+Y4 analog stale control:                         0
+Y4 peer stale control:                           0
+R15-E on /stock/ABFRL: peer panel = 2, "0.00x"/"0.00%" = 0
+```
+
+Positive-control-backed (B-18): every zero above rides a green positive
+control; the vacuous-zero attempt on ADANIGREEN (insufficient-data page,
+no panel) was discarded before any claim was made.

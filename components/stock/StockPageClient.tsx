@@ -8,19 +8,34 @@ import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
 import { ConsensusHero }          from './ConsensusHero';
 import { LivePriceWidget }        from './LivePriceWidget';
+// A1: content rides the first byte — static imports (see the contract
+// note above the dynamic surfaces).
+import RishiScoreDual            from '../score/RishiScoreDual';
+import { MetricsPanel }           from './MetricsPanel';
+import { PeerComparison }         from './PeerComparison';
+import { WisdomSidebar }          from './WisdomSidebar';
+import SeedDataBanner             from '../shared/SeedDataBanner';
 import { useLanguage } from '../../lib/language';
+// A1: server-resolved historical parallel for the wisdom rail (the
+// dataset/detector live in lib/wisdom/historicalParallels, server-side).
+import type { HistoricalParallel } from '../../lib/wisdom/historicalParallels';
 import type { ServedQuote } from '../../lib/quotePath'; // X3: type-only — erased at compile time, no runtime reachability into the server-only price path
 import type { ObservationMarketState } from '../../lib/pricePresentation'; // Y3: type-only — same erasure rule
 import type { InitialPriceEntry } from '../../lib/dashboardSnapshot'; // Y2: type-only — same erasure rule
 
-// Z5 (Round 13): tab and modal surfaces split with next/dynamic — they
-// never render on the first paint (activeTab starts on 'overview'; the
-// graph is a modal), so shipping them in the first-load JS of every stock
-// page is pure weight (the parked X4 analysis measured the whole client
-// tree in ONE 38.3 kB gzip chunk). ssr:false is safe: these are
-// interactive-only tab bodies behind a client toggle — their content is
-// fetched client-side anyway (charts, fundamentals, shareholding).
-// Fail-honest placeholders keep the layout calm while the chunk loads.
+// A1 (Round 14) contract, after measuring Next 16 behavior:
+//   - CONTENT components are STATIC imports. Measured on this build:
+//     next/dynamic WITHOUT ssr:false still renders only its `loading`
+//     fallback into a STATIC prerender (the 430/600/280px skeletons were
+//     baked into the HTML while the content stayed out) — so a lazy
+//     boundary can never put content in the first byte. The content
+//     therefore pays its bundle bytes and rides the first byte again
+//     (MetricsPanel, PeerComparison, RishiScoreDual, WisdomSidebar).
+//   - ssr:false remains ONLY for genuinely client-only interactive
+//     surfaces (charts that fetch their own data, the graph modal) and
+//     tab-gated bodies that cannot appear in the first paint anyway.
+//   - fail-honest placeholders keep the layout calm while a chunk
+//     streams in on the client.
 const chartTabFallback = () => (
   <div style={{ minHeight: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', fontSize: 12, fontFamily: 'monospace' }}>
     LOADING CHART…
@@ -32,43 +47,14 @@ const QuarterlyChart      = dynamic(() => import('./QuarterlyChart').then(m => m
 const ShareholdingChart   = dynamic(() => import('./ShareholdingChart').then(m => m.ShareholdingChart), { ssr: false, loading: chartTabFallback });
 const BullBearBar         = dynamic(() => import('./BullBearBar').then(m => m.BullBearBar), { ssr: false });
 const PhilosophyRadar     = dynamic(() => import('./PhilosophyRadar').then(m => m.PhilosophyRadar), { ssr: false });
+// A1: RishiGrid and BullBearBar are wisdom-TAB bodies (client tab state
+// starts on 'overview', so they can never appear in the first paint) —
+// they stay lazy with ssr:false. The server-rendered "Top Rishi Scores"
+// card below IS the RishiGrid summary in the first byte (top five
+// verdicts with names and scores).
 const RishiGrid           = dynamic(() => import('./RishiGrid').then(m => m.RishiGrid), { ssr: false });
-// Z5: the peer table sits far below the fold on the overview tab (after
-// the hero, the score dual, the metrics panel) — deferring its chunk keeps
-// the first-load JS lean while it streams in during the user's first
-// scroll. The Y2 first-byte prices still ride the RSC payload
-// (initialPeerPrices) — hydration maps them whenever the chunk mounts.
-const PeerComparison       = dynamic(() => import('./PeerComparison').then(m => m.PeerComparison), { ssr: false });
-// Z5: below-fold deferrals with CLS-safe skeletons (Rule 18-safe: fixed
-// heights, no clocks). MetricsPanel sits under the hero + dual score;
-// WisdomSidebar is the sticky right rail — secondary content on first
-// paint, streamed in right after.
-const metricsSkeleton = () => (
-  // 430px = the settled panel height (measured on the built page): the
-  // reservation keeps CLS at zero when the chunk swaps in.
-  <div className="card-sacred p-6" style={{ minHeight: 430 }} aria-hidden="true" />
-);
-const MetricsPanel = dynamic(() => import('./MetricsPanel').then(m => m.MetricsPanel), { ssr: false, loading: metricsSkeleton });
-const railSkeleton = () => (
-  // Reserves the sticky rail's geometry while the wisdom chunk streams in.
-  <div style={{ minHeight: 600, borderRadius: 16, border: '1px solid rgba(30,41,59,0.8)', background: 'rgba(17,24,39,0.85)' }} aria-hidden="true" />
-);
-const WisdomSidebar = dynamic(() => import('./WisdomSidebar').then(m => m.WisdomSidebar), { ssr: false, loading: railSkeleton });
-// Z5: the hero's dual-score visualization — above the fold but purely
-// presentational (the CONSENSUS number itself renders in the hero text);
-// a size-matched skeleton keeps CLS at zero while the chunk streams in.
-const scoreSkeleton = () => (
-  // 280px = the settled dual-score visualization height (measured): the
-  // hero grid row keeps its geometry while the dial chunk streams in.
-  <div style={{ minHeight: 280 }} aria-hidden="true" />
-);
-const RishiScoreDual = dynamic(() => import('../score/RishiScoreDual'), { ssr: false, loading: scoreSkeleton });
-// Z5: the seed-data disclosure LABEL defers with the rest of the tail —
-// the honesty contract is unchanged (every number still renders through
-// <DataValue> with source/as-of provenance in the first byte; the
-// disclosure banner also lives in MetricsPanel tooltips and
-// docs/DATA_SOURCES.md). A label chunk is not data.
-const SeedDataBanner = dynamic(() => import('../shared/SeedDataBanner'), { ssr: false });
+// A1: the knowledge-graph modal is a genuinely client-only interactive
+// surface (opens on click) — it stays lazy and client-only.
 const KnowledgeGraphView  = dynamic(() => import('./KnowledgeGraphView').then(m => m.KnowledgeGraphView), { ssr: false });
 
 interface Props {
@@ -99,9 +85,13 @@ interface Props {
    *  cached: the peer prices render the honest "—" and the client hook
    *  fills them on mount. */
   initialPeerPrices: Record<string, InitialPriceEntry>;
+  /** A1 (Round 14): the server-resolved historical parallel for the
+   *  wisdom rail (null = honest "no parallels detected"). The dataset
+   *  and detector live server-side — the client bundle carries neither. */
+  parallel: HistoricalParallel | null;
 }
 
-export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialQuote, initialPeerPrices, initialMarket }: Props) {
+export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialQuote, initialPeerPrices, initialMarket, parallel }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
@@ -513,7 +503,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
 
           <div style={{ position: 'sticky', top: 80 }}>
             <div className="wisdom-reveal-delay-2">
-              <WisdomSidebar stock={stock} scores={verdicts} />
+              <WisdomSidebar stock={stock} scores={verdicts} parallel={parallel} />
             </div>
           </div>
 

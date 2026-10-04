@@ -64,6 +64,13 @@ if (!existsSync(join(buildDir, "BUILD_ID"))) {
 }
 
 // ── 1. Boot next start (placeholder env — measurement must not need secrets) ──
+// A1 fix (Round 14): spawn DETACHED and kill the whole PROCESS GROUP. The
+// previous `spawn("npx", …)` + child.kill(“SIGTERM”) killed only the npx
+// shim — the real `next start` grandchild survived every run, held port
+// 3212, and served the PREVIOUS build's HTML to the next invocation (the
+// auditor-visible symptom: gzipKb ENOENT on chunk names that no longer
+// exist). Fail-honest: if the group kill cannot find the group, fall
+// through to the direct kill.
 const child = spawn("npx", ["next", "start", "-p", String(port)], {
   env: {
     ...process.env,
@@ -72,6 +79,7 @@ const child = spawn("npx", ["next", "start", "-p", String(port)], {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "placeholder",
   },
   stdio: "ignore",
+  detached: true,
 });
 
 function fetchPage(path: string, tries = 40): Promise<string> {
@@ -101,6 +109,29 @@ function fetchPage(path: string, tries = 40): Promise<string> {
 }
 
 // ── 2. Measure each route ──
+// A1 robustness (Round 14): a page fetch is only TRUSTED when every
+// <script src> it references exists on disk. During `next start` boot the
+// server can transiently answer with HTML whose chunk refs do not match
+// the build on disk (boot race), which used to crash the gate with a
+// gzipKb ENOENT. Fail-honest: refetch, and only give up after the retry
+// budget — a genuinely broken build still fails the gate loudly.
+function chunkMissing(html: string): boolean {
+  const srcs = [
+    ...new Set(
+      [...html.matchAll(/src="(\/_next\/static\/chunks\/([^"]+?\.js))"/g)].map(m => m[2]),
+    ),
+  ];
+  return srcs.some(src => !existsSync(join(buildDir, "static", "chunks", src)));
+}
+
+async function fetchPageStable(path: string): Promise<string> {
+  for (let attempt = 0; ; attempt++) {
+    const html = await fetchPage(path, attempt === 0 ? 40 : 10);
+    if (!chunkMissing(html) || attempt >= 5) return html;
+    console.log(`  (${path}: served HTML referenced chunks missing on disk — boot race, refetching)`);
+  }
+}
+
 async function main() {
   const results: Array<{ route: string; kb: number | null; scripts: number }> = [];
 try {
@@ -108,7 +139,7 @@ try {
     const url = route.replace("[symbol]", probeSymbol);
     let html: string;
     try {
-      html = await fetchPage(url);
+      html = await fetchPageStable(url);
     } catch {
       results.push({ route, kb: null, scripts: 0 });
       continue;
@@ -123,7 +154,11 @@ try {
     results.push({ route, kb, scripts: srcs.length });
   }
 } finally {
-    child.kill("SIGTERM");
+    try {
+      if (child.pid !== undefined) process.kill(-child.pid, "SIGTERM");
+    } catch {
+      child.kill("SIGTERM");
+    }
   }
 
   // ── 3. Verdict ──

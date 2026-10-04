@@ -457,6 +457,7 @@ Accept: `npm run build && npx tsx scripts/bundleBudget.ts` → exit 0; deliberat
 ### E6-03 Server components and streaming for `/screener` and `/lab`
 Owner: CODER   Depends: X3-05   Effort: L
 Accept: `curl -s localhost:3000/screener | grep -c "<tr"` → table rows present in the initial HTML (not client-rendered); e2e unchanged; E6-01 budgets hold.
+Positive control (standing rule for EVERY grep-based acceptance, A1 Round 14): pair each defect-grep with a string that only exists when the surface actually renders (a heading, a row label, a rendered-only marker), and paste that count in the same output — a zero must never be confusable with "the content is missing entirely". Where an acceptance needs occurrence counts on minified HTML, prefer `grep -o … | wc -l` (occurrences) over `grep -c` (lines — minified SSR HTML can hold many matches on one line).
 
 ### E6-04 ISR for stock pages
 Owner: CODER   Depends: D1-09   Effort: M

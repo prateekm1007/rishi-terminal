@@ -1,9 +1,9 @@
 {
- "note": "bundle ratchet baseline (E6-02). Values are gzip kB of first-load JS measured from the HTML script tags of a production build. The PROPOSED 200 kB budgets are NOT yet founder-confirmed; until then the gate fails on any increase beyond +2 kB build jitter. Shrink the numbers, then re-lock with --update-baseline.",
+ "note": "bundle ratchet baseline (E6-02). Values are gzip kB of first-load JS measured from the HTML script tags of a production build (locked via --update-baseline after a non-failing run). RE-ANCHORED in A1 (Round 14): the founder ordered the stock-page content components back into the server-rendered first byte; the previous baseline premised content living outside SSR (Z5 ssr:false). Per-module stub accounting and the 200 kB conflict are in docs/evidence/round14/a1-bundle-accounting.md; the 200 kB hard budget on /stock/[symbol] is flagged FOUNDER DECISION NEEDED in PR A1. The ratchet stays armed: any increase beyond +2 kB from these values fails.",
  "toleranceKb": 2,
  "measuredKb": {
-  "/": 197.6904296875,
-  "/screener": 199.2529296875,
-  "/stock/[symbol]": 199.736328125
+  "/": 197.3994140625,
+  "/screener": 198.96484375,
+  "/stock/[symbol]": 206.767578125
  }
 }

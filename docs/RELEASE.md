@@ -206,3 +206,24 @@ PROPOSED until the founder confirms it (E6-09 / FD-7).
   previously listed `opnfelgxklfvurzozhms` as staging — that project has
   never existed in this account; the table was wrong and is fixed above
   (Constitution art. 1).
+
+## A3 (Round 14) — deployment pacing against the Vercel rate limit
+
+Vercel caps production deploys at 100 per rolling 24 h; the account hit that
+cap three times in prior rounds by merging production-relevant PRs as soon
+as their CI went green (ten-plus merges in six hours starved later deploys
+of budget — the auditor's Round 14 finding).
+
+The discipline from here on, recorded so it survives sessions:
+
+- **At most ONE production-relevant merge per hour** (a merge that deploys:
+  app code, migrations, workflow changes). Docs/evidence-only commits do
+  not deploy (the `vercel-ignore.sh` build step skips them) and are exempt.
+- Related PRs are STACKED and deployed by a single merge: their branches
+  build on each other, so the last merge carries all of them to production.
+- After the day's batch, `main` is deployed ONCE and the live SHA is
+  proven against `origin/main`:
+  `curl -s https://rishi-terminal.vercel.app/api/version` must equal the
+  main tip — pasted in the round's PR with the raw output.
+- All live-acceptance greps from earlier rounds are re-run against THAT
+  SHA before the round is reported green.

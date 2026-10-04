@@ -8,6 +8,7 @@ import AuthProvider from "@/components/auth/AuthProvider";
 import LazyGlobalSearchBar from "@/components/ui/LazyGlobalSearchBar";
 import { LegalDisclaimer } from "@/components/ui/LegalDisclaimer";
 import { SITE_URL, SITE_NAME } from "@/lib/seo/site";
+import { ServiceWorkerRegister } from "@/components/shared/ServiceWorkerRegister"; // X3-09: app-shell SW registration (production builds)
 import enDictionary from "@/messages/en.json";
 import { pickShell } from "@/lib/languageShell";
 
@@ -89,6 +90,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </LanguageProvider>
         </AuthProvider>
+        {/* X3-09 (Round 15 B7): app-shell service worker — registers in
+            production builds only; never caches API data. */}
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

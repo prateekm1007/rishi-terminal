@@ -319,7 +319,17 @@
       "test/pricePresentation.test.ts",
       "test/y3.observationLabel.test.ts"
     ],
-    "Z1": [
+    "Z2": [
+   ".github/workflows/quotes-warm.yml",
+   "app/api/ingest/quotes-warm/",
+   "docs/DATA_SOURCES.md",
+   "docs/evidence/round13/",
+   "lib/auth/cron.ts",
+   "scripts/ci/commit-scope-registry.json",
+   "test/cron.auth.test.ts",
+   "test/y2.quoteWarm.test.ts"
+  ],
+  "Z1": [
       ".github/workflows/ci.yml",
       "docs/RELEASE.md",
       "docs/evidence/round13/",

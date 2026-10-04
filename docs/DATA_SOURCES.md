@@ -95,7 +95,11 @@ multi-source path — the cache is NSE-session scoped by design.
 only by visitor traffic: a scheduled **GitHub Actions** workflow
 (`.github/workflows/quotes-warm.yml`, every 15 min inside the NSE window;
 Vercel Hobby crons cannot run more than once a day) calls the authenticated
-`POST /api/ingest/quotes-warm?slice=k&of=n` endpoint (Bearer `CRON_SECRET`)
+`POST /api/ingest/quotes-warm?slice=k&of=n` endpoint (Bearer
+`QUOTES_WARM_SECRET` — the warmer's DEDICATED secret, Z2 Round 13: the
+GitHub-Actions caller and the Vercel-cron ingest routes never share a
+credential; `CRON_SECRET` stays exclusive to `/api/ingest/snapshot` and
+`/api/ingest/observations`)
 which sweeps the 916-symbol universe in six slices through the SAME claim
 mechanism above — never a naked fetch — and, on slice 0, the non-equity tile
 set (world indexes, `TOP_CRYPTO`, gold — `quotePath.nonEquityTileSymbols`,

@@ -59,6 +59,7 @@ import { POST } from "@/app/api/ingest/quotes-warm/route";
 import { nonEquityTileSymbols } from "@/lib/quotePath";
 
 const SECRET = "y2-warm-test-secret";
+const CRON = "cron-secret-that-must-not-open-the-warmer"; // deliberately different (Z2)
 
 function warmReq(query = "", bearer: string | null = `Bearer ${SECRET}`): never {
   return {
@@ -78,22 +79,33 @@ beforeEach(() => {
   marketStateMock.mockReset();
   cachedQuoteBatchForEquitiesMock.mockReset();
   serveQuoteMock.mockReset();
-  process.env.CRON_SECRET = SECRET;
+  process.env.QUOTES_WARM_SECRET = SECRET;
+  process.env.CRON_SECRET = CRON; // present on purpose: the warm endpoint must IGNORE it (Z2)
   marketStateMock.mockReturnValue(openMarket());
   cachedQuoteBatchForEquitiesMock.mockResolvedValue({ quotes: {} });
   serveQuoteMock.mockResolvedValue(null);
 });
 
 describe("Y2 — warmer auth (fail closed at the route level)", () => {
-  it("missing CRON_SECRET env -> 500, never an open endpoint", async () => {
-    const saved = process.env.CRON_SECRET;
-    delete process.env.CRON_SECRET;
+  it("missing QUOTES_WARM_SECRET env -> 500, never an open endpoint", async () => {
+    const saved = process.env.QUOTES_WARM_SECRET;
+    delete process.env.QUOTES_WARM_SECRET;
     try {
       const res = await POST(warmReq("", "Bearer anything"));
       expect(res.status).toBe(500);
     } finally {
-      process.env.CRON_SECRET = saved;
+      process.env.QUOTES_WARM_SECRET = saved;
     }
+  });
+
+  it("Z2: a valid CRON_SECRET is NOT accepted — the warm endpoint takes ONLY its dedicated secret", async () => {
+    // CRON_SECRET guards the Vercel-cron ingest routes; the warmer is a
+    // GitHub Actions caller with its own QUOTES_WARM_SECRET. Presenting
+    // the cron secret here must fail exactly like any wrong secret.
+    const res = await POST(warmReq("", `Bearer ${CRON}`));
+    expect(res.status).toBe(401);
+    expect(cachedQuoteBatchForEquitiesMock).not.toHaveBeenCalled();
+    expect(serveQuoteMock).not.toHaveBeenCalled();
   });
 
   it("missing or wrong Bearer -> 401 and NOTHING warmed", async () => {

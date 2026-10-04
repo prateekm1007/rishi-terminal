@@ -4,27 +4,33 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Shared cron authentication for ingest routes (remediation T8).
+ * Shared bearer-secret authentication for machine callers (remediation T8;
+ * Z2 parametrization).
  *
  * Fail-closed rules:
- * - Missing/empty CRON_SECRET → 500 in production, 500 in development too.
- *   An unauthenticated ingest endpoint is never acceptable.
- * - Only `Authorization: Bearer <CRON_SECRET>` is accepted. Vercel Cron sends
- *   exactly this header automatically when the CRON_SECRET env var is set on
- *   the project (verified against Vercel's cron documentation). The previous
- *   `?secret=` query parameter and `x-cron-secret` header are removed — query
- *   strings leak into access logs.
+ * - Missing/empty configured secret → 500 in production and development.
+ *   An unauthenticated machine endpoint is never acceptable.
+ * - Only `Authorization: Bearer <secret>` is accepted. Query strings leak
+ *   into access logs, so no `?secret=` form exists.
  * - Comparison uses crypto.timingSafeEqual with equal-length buffers.
  *
- * Usage:
- *   const denied = requireCronAuth(req);
- *   if (denied) return denied;
+ * Callers:
+ *   requireCronAuth      — CRON_SECRET, the Vercel-Cron ingest routes
+ *                          (/api/ingest/snapshot, /api/ingest/observations).
+ *   requireQuotesWarmAuth — QUOTES_WARM_SECRET, the GitHub-Actions-driven
+ *                          warmer (Z2, Round 13): a DEDICATED secret so the
+ *                          two callers never share a blast radius — rotating
+ *                          one must not break the other, and a leaked
+ *                          workflow secret must not reach the Vercel-cron
+ *                          ingest routes (or vice versa).
  */
-export function requireCronAuth(req: NextRequest): NextResponse | null {
-  const secret = process.env.CRON_SECRET;
-
+function requireBearerSecret(
+  req: NextRequest,
+  secret: string | undefined,
+  label: string,
+): NextResponse | null {
   if (!secret) {
-    console.error('[cron] CRON_SECRET is not configured — refusing request');
+    console.error(`[${label}] ${label === 'cron' ? 'CRON_SECRET' : 'QUOTES_WARM_SECRET'} is not configured — refusing request`);
     return NextResponse.json(
       { error: 'Cron authentication is not configured' },
       { status: 500 },
@@ -47,4 +53,17 @@ export function requireCronAuth(req: NextRequest): NextResponse | null {
   }
 
   return null;
+}
+
+export function requireCronAuth(req: NextRequest): NextResponse | null {
+  return requireBearerSecret(req, process.env.CRON_SECRET, 'cron');
+}
+
+/**
+ * Z2 (Round 13): the quotes-warm endpoint's OWN secret. Never falls back to
+ * CRON_SECRET — a missing dedicated secret must refuse (Rule 6), not reach
+ * for a neighboring credential.
+ */
+export function requireQuotesWarmAuth(req: NextRequest): NextResponse | null {
+  return requireBearerSecret(req, process.env.QUOTES_WARM_SECRET, 'quotes-warm');
 }

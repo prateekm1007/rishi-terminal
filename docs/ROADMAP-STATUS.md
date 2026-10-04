@@ -31,7 +31,7 @@ the live evidence. Phase 0 is NOT fully closed.
 
 | Task | Status | Evidence / notes |
 |---|---|---|
-| D1-01 Vendor and licence decision | 🚫 FD-1 | Founder task. Blocks D1-04/D1-05 (and D1-08's secondary source). |
+| D1-01 Vendor and licence decision | 🚫 FD-1 | **BLOCKED: FD-1** — vendor/licensing/budget is the founder's irreversible call (rule 31 / C10); the coder must not select a vendor coder-side. Founder task. Blocks D1-04/D1-05 (and D1-08's secondary source). |
 | D1-02 ISIN-keyed security master ★ | 🟡 (was ✅ — round 4 found binding defects) | **Q3:** direct symbol matches trusted symbol equality; the auditor found 5 wrong-company bindings and 12 renames; the implemented gate found 4 more wrong bindings (KALYANI, SUNDARAM, SUVEN, VSTL). Remediation (PR #28, applied live): name-agreement gate (`lib/db/nameAgreement.ts`), migration 014 (`NAME_MISMATCH`), `name_overrides.json` with 55 sourced decisions, 8 seed records removed (944→936), 4 seed names updated, CI `D1-02.7` + validator V5–V7; validator V1–V7 all PASS against live. Stays 🟡 until the auditor re-verifies. |
 | D1-03 Corporate actions + adjusted prices | ⬜ | Depends D1-02 (remediation in review, 🟡) — but real action *data* needs the vendor (D1-01). Schema+adjustment math can start. |
 | D1-04 Price ingestion (EOD) ★ | 🚫 FD-1 | Vendor adapter. |
@@ -94,7 +94,7 @@ R4-01 🟡, R4-02 🟡 (both started early, see below); R4-03..R4-07 ⬜. R4-06 
 | E6-08 Accessibility (WCAG 2.2 AA) | ✅ (automatable subset) | PR #150: axe-core gate (wcag2a/2aa/21a/21aa/22aa) over /, /screener, /stock/RELIANCE, /methodology, /lab, /rishis rides the blocking Playwright job; fail-first (all six routes red pre-fix), then 0 violations. Token-level contrast fixes (--text-muted #8395AC, --text-ghost #7C8BA1, ~270 literal hexes swept) + /rishis keyboard access. Honest scope note in PR: axe automates ~⅓ of WCAG; manual audit items remain. |
 | E6-09 Flags, migrations in CI, rollback drill | 🟡 | Migrations 001–014 run in CI (PG16 job, since N2; populates + validates the security master; Q1/Q3 invariants live). Feature flags + documented rollback drill remain. |
 | E6-10 Type safety everywhere | 🟡 | `no-explicit-any` is ERROR in `hooks/**` + `scripts/**` (N9); repo-wide promotion remains (318 warnings baseline). |
-| E6-11 Load + abuse testing | ✅ (scoped, deviations recorded) | PR #151: k6 profile (scripts/load/api.js; admitted p95 3.6 ms on the local build's fail-fast path — caveats recorded, budget stays PROPOSED); limiter 429 proven on the LIVE deployment (60×200 then 15×429, exactly the 60/60 s bound); "chat quota holds under 50 parallel" proven at the SQL level — W3-A storm extended 24→50 parallel, CI-gated. Staging-vs-local and no-synthetic-chat deviations documented. |
+| E6-11 Load + abuse testing | 🟡 (load/abuse proven; production warm-cache latency OPEN) | PR #151: k6 profile (scripts/load/api.js); limiter 429 proven on the LIVE deployment (60×200 then 15×429, exactly the 60/60 s bound); "chat quota holds under 50 parallel" proven at the SQL level — W3-A storm extended 24→50 parallel, CI-gated. Staging-vs-local and no-synthetic-chat deviations documented. **Required statement (founder Round-15 audit — supersedes any latency-closure reading of the 3.6 ms local number):** Control-plane latency measured locally. Live rate-limit behavior proven. Production warm-cache latency remains independently unmeasured. The <800 ms budget remains PROPOSED. Do not report `/api/prices/batch` as meeting a production latency budget. |
 
 ## Phase 7 — Growth (only after G-A and G-B)
 
@@ -104,7 +104,7 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-06 needs D1-01 licence terms)
 
 | FD | Decision | Blocks | Status |
 |---|---|---|---|
-| FD-1 | Data vendor(s) + budget | D1-01 → D1-04/05/08, L5-04, G7-06 | **OPEN** — the critical-path decision for G-A. |
+| FD-1 | Data vendor(s) + budget | D1-01 → D1-04/05/08, L5-04, G7-06 | **OPEN — the critical-path decision for G-A.** `BLOCKED: FD-1` stands on D1-01/D1-04/D1-05/L5-04 (Round-15 audit): the full D1 sequence (security master → corporate actions → EOD → PIT fundamentals → shareholding → validation/quarantine → reconciliation → universe gating → freshness/alerting → seed retirement → unattended run → G-A) starts only when FD-1 is supplied. |
 | FD-2 | SEBI positioning | L5-01, copy in X3/R4 | OPEN. |
 | FD-3 | Scope: India equities only until G-C | P0-05 hiding, X3-10 | OPEN (out-of-scope classes are reported, not hidden). |
 | FD-4 | Analytics tool | G7-01 | OPEN. |
@@ -117,7 +117,7 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-06 needs D1-01 licence terms)
 
 | FD | Decision | Blocks | Status |
 |---|---|---|---|
-| FD-9 | Constitution rules 32–37 ratification + encrypted-credentials-mirror proposal (detail below) | Article VI governance | OPEN (Constitution frozen pending ratification). |
+| FD-9 | Constitution rules 32–37 ratification + encrypted-credentials-mirror proposal (detail below) | Article VI governance | PARTIALLY RESOLVED — rules 32–37 are now in force as Appendix A Article VI of the ratified Constitution v2 (PR #152, 2026-10-05); the **encrypted-credentials-mirror proposal itself remains OPEN** (current base64 scheme stays in force until decided). |
 | FD-10 | `/rishis` general chat scope: philosophy-only vs symbol-aware evidence-grounded (detail below) | `app/rishis` product contract | OPEN. |
 | FD-11 | Matured bond instruments (IN91DTB and successors) (detail below) | `data/bonds.ts` | OPEN. |
 | FD-12 | Non-equity heuristic-reference scores: promote to official scores or keep labelled heuristic reference | crypto/forex/commodity/bond score surfaces | OPEN (they remain explicitly labelled heuristic reference; do not silently redesign). |
@@ -316,7 +316,7 @@ with fail-first proof (rule 21/24) and raw command output in the PR.
 | S2-05 published breakdown IS the arithmetic (unrounded pillars) | #137 | PR raw outputs |
 | S2-06 disagreement metric (population sigma of valid verdicts) | #138 | PR raw outputs |
 | S2-01 methodology docs for every scorer + public `/methodology` page | #139 | `/methodology` (production after deploy catch-up) |
-| A1 stock-page content back in the first byte (static imports, server-resolved parallels; bundle ratchet re-anchored — FOUNDER DECISION NEEDED on the 200 kB hard budget vs ~207 kB measured floor) | #140 | `a1-bundle-accounting.md`, `a1-fail-first-smoke.md` |
+| A1 stock-page content back in the first byte (static imports, server-resolved parallels; bundle ratchet re-anchored — **FOUNDER DECISION NEEDED, restated verbatim (Round-15 audit):** accept ~207 kB as the content-restored baseline, OR approve the deeper server-component/client-island refactor; if approved, an actual reduction must be proven before re-anchoring the ratchet. The budget is never silently loosened. Current ratchet: `/stock/[symbol]` 206.77 kB, tolerance +2 kB) | #140 | `a1-bundle-accounting.md`, `a1-fail-first-smoke.md` |
 | A2 chat challenge human-solvable (Web Worker PoW at 15 bits, progress + timeout) | #141 | `a2-failfirst-and-benchmarks.md` |
 | A5 `/methodology` linked from nav + stock-page footer | #142 | smoke suite pin |
 | A4 warmer run (workflow_dispatch + forced verification, all six slices) | #143 | `a4-warmer-run.md` |

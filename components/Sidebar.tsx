@@ -34,6 +34,7 @@ export default function Sidebar() {
         { href: "/rishis",      label: t("nav.chatWithRishis"), icon: "✦" },
         { href: "/news",        label: t("nav.news"),           icon: "◈" },
         { href: "/pricing",     label: t("nav.pricing"),        icon: "◇" },
+        { href: "/methodology", label: t("nav.methodology"),    icon: "❖" },
       ],
     },
   ];

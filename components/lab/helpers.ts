@@ -1,3 +1,5 @@
+import { xirr } from '@/lib/portfolio/xirr';
+
 export interface HistoryPoint {
   date: string;   // YYYY-MM-DD
   close: number;
@@ -183,34 +185,22 @@ export function computeBeta(portLevels: number[], benchLevels: number[]): number
   return varB === 0 ? 1 : cov / varB;
 }
 
-// Simple XIRR (bisection). Returns %.
+// XIRR — DELEGATED to lib/portfolio/xirr.ts (X3-07, rule 14: one
+// implementation). The import pipeline, the portfolio API and the lab
+// all share that single solver. This wrapper preserves the lab's
+// historical contract: Date-object flows in, PERCENT out. Behavioral
+// change, deliberate and honest: flows with no root (e.g. all-same-sign)
+// now return null instead of the old bisection's arbitrary midpoint.
 export function calcXIRR(cashflows: { date: Date; amount: number }[]): number | null {
   if (!Array.isArray(cashflows) || cashflows.length < 2) return null;
-  const base = cashflows[0]?.date;
-  if (!(base instanceof Date) || !Number.isFinite(base.getTime())) return null;
-
-  const npvAt = (rate: number) => {
-    let npv = 0;
-    for (const cf of cashflows) {
-      const d = cf?.date;
-      const amt = cf?.amount;
-      if (!(d instanceof Date) || !Number.isFinite(d.getTime())) continue;
-      if (!Number.isFinite(amt)) continue;
-      const years = (d.getTime() - base.getTime()) / (1000 * 60 * 60 * 24 * 365);
-      npv += amt / Math.pow(1 + rate, years);
-    }
-    return npv;
-  };
-
-  let lo = -0.999;
-  let hi = 10;
-  let mid = 0;
-
-  for (let i = 0; i < 90; i++) {
-    mid = (lo + hi) / 2;
-    const v = npvAt(mid);
-    if (v > 0) lo = mid;
-    else hi = mid;
-  }
-  return mid * 100;
+  const flows = cashflows
+    .filter(
+      (cf) =>
+        cf.date instanceof Date &&
+        Number.isFinite(cf.date.getTime()) &&
+        Number.isFinite(cf.amount),
+    )
+    .map((cf) => ({ amount: cf.amount, at: cf.date.getTime() }));
+  const rate = xirr(flows);
+  return rate === null ? null : rate * 100;
 }

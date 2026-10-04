@@ -18,9 +18,12 @@ BEGIN
 END
 $$;
 
--- Two identities. The pg_harness auth.uid() reads request.jwt.claim.sub.
-\set userA '11111111-1111-1111-1111-111111111111'
-\set userB '22222222-2222-2222-2222-222222222222'
+-- Two identities. The pg_harness auth.uid() reads request.jwt.claim.sub;
+-- the auth.users STUB table is empty in CI, so the identities are seeded
+-- first (the FK to auth.users is part of the schema under test).
+INSERT INTO auth.users (id, email) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'user-a@test.local'),
+  ('22222222-2222-2222-2222-222222222222', 'user-b@test.local');
 
 \echo '── X3-05.2: user A saves a screen; user B must NOT see it'
 BEGIN;

@@ -1,12 +1,12 @@
-// lib/db/migrations/024_screens.sql
-// X3-05 (Round 14): saved screener screens. One row per user-saved
-// expression; RLS keyed to auth.uid() (rule 13 — assume the REST API gets
-// called directly with the anon key), plus length caps mirrored in the
-// API route (the DB is the last line of defence, not the first).
-//
-// The expression is stored as TEXT and re-validated by the server-side
-// parser on every execution — a stored expression can never smuggle
-// anything into evaluation (there is no evaluation path but the parser).
+-- lib/db/migrations/024_screens.sql
+-- X3-05 (Round 14): saved screener screens. One row per user-saved
+-- expression; RLS keyed to auth.uid() (rule 13 — assume the REST API gets
+-- called directly with the anon key), plus length caps mirrored in the
+-- API route (the DB is the last line of defence, not the first).
+--
+-- The expression is stored as TEXT and re-validated by the server-side
+-- parser on every execution — a stored expression can never smuggle
+-- anything into evaluation (there is no evaluation path but the parser).
 
 create table if not exists public.screens (
   id uuid primary key default gen_random_uuid(),

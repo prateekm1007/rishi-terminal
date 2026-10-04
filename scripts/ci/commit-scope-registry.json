@@ -487,6 +487,16 @@
       "test/consensus.dispersion.test.ts",
       "scripts/ci/commit-scope-registry.json",
       "docs/DATA_SOURCES.md"
+    ],
+    "S2-01": [
+      "docs/methodology/",
+      "lib/methodology/",
+      "app/methodology/",
+      "test/methodology.coverage.test.ts",
+      "test/methodology.markdown.test.ts",
+      "docs/PROVENANCE.md",
+      "scripts/ci/commit-scope-registry.json",
+      "docs/DATA_SOURCES.md"
     ]
   }
 }

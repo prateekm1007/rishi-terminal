@@ -475,6 +475,18 @@
       "scripts/ci/commit-scope-registry.json",
       "docs/DATA_SOURCES.md",
       "docs/evidence/round13/"
+    ],
+    "S2-06": [
+      "lib/consensus/dispersion.ts",
+      "lib/consensus/engine.ts",
+      "lib/consensus/types.ts",
+      "lib/consensus/sanitize.ts",
+      "lib/types.ts",
+      "components/stock/ConsensusHero.tsx",
+      "docs/methodology/dispersion.md",
+      "test/consensus.dispersion.test.ts",
+      "scripts/ci/commit-scope-registry.json",
+      "docs/DATA_SOURCES.md"
     ]
   }
 }

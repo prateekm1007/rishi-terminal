@@ -13,6 +13,10 @@ export interface ConsensusResult {
   dataQuality: 'OK' | 'INCOMPLETE';
   tension: string;
   tensionSpread: number;
+  /** S2-06: the disagreement metric — population σ of the valid verdicts
+   *  (docs/methodology/dispersion.md). null when fewer than 2 verdicts
+   *  are valid: one voice is not agreement, and 0 would pretend it is. */
+  dispersion: number | null;
   weightedBy: string;
   topBull: RishiScore;
   topBear: RishiScore;

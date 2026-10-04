@@ -298,3 +298,14 @@ on its first run: Raamdeo's QGLP Quality pillar was the only unclamped
 pillar in the panel — negative ROCE/ROE drove it to -60/-35
 (CHEMPLASTS/PVRINOX), below the design floor; it is now clamped like
 every other pillar (2 of 916 seed stocks score honestly higher).
+
+**S2-06 (Round 13) — the disagreement metric.** `dispersion` is the
+population standard deviation of the panel's valid verdicts
+(docs/methodology/dispersion.md is normative; `lib/consensus/dispersion.ts`
+is the code). Nulls are excluded — a Rishi with insufficient data is not
+a Rishi who scored 0 — and below 2 valid verdicts the metric is null:
+one voice is not agreement, and σ = 0 would pretend it is. Computed in
+`buildConsensus`, carried through `sanitizeConsensus`, displayed on the
+stock page's consensus hero ("Disagreement σ") with honest em-dash when
+null. Constructed-case and monotonicity contracts:
+`test/consensus.dispersion.test.ts`.

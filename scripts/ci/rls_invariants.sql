@@ -502,3 +502,136 @@ END
 $$;
 
 \echo '── B3.4 invariants: all passed'
+
+\echo '── X3-08: alerts v2 — idempotent events, persistent rate limit, RLS'
+-- The database-level halves of the founder's acceptance (the evaluator
+-- halves are test/x3-08.alerts.test.ts):
+--   * "trigger fires once across two evaluator runs" = the UNIQUE
+--     (trigger_id, event_key) rejects the second insert.
+--   * "rate limit enforced (persistent counter)" = the SECURITY DEFINER
+--     RPC increments atomically and refuses past the cap.
+--   * RLS: another user's triggers/events are invisible.
+--   * The 25-trigger cap bites at the 26th insert.
+
+\echo '── X3-08.1: the same event inserts exactly once (idempotency)'
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  trig uuid;
+  seen int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES (user_a, 'a-x308@example.test');
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+
+  INSERT INTO alerts_triggers (user_id, symbol, kind, threshold)
+  VALUES (user_a, 'RELIANCE', 'price_above', 2500) RETURNING id INTO trig;
+
+  INSERT INTO alerts_events (trigger_id, user_id, event_key, observed_value, delivery_status)
+  VALUES (trig, user_a, 'price_above:RELIANCE:2500:2026-10-05', 2600, 'pending');
+
+  -- The SECOND evaluator run inserts the same key: must be rejected.
+  BEGIN
+    INSERT INTO alerts_events (trigger_id, user_id, event_key, observed_value, delivery_status)
+    VALUES (trig, user_a, 'price_above:RELIANCE:2500:2026-10-05', 2600, 'pending');
+    RAISE EXCEPTION 'X3-08.1 FAILED: the duplicate event was ACCEPTED';
+  EXCEPTION
+    WHEN unique_violation THEN NULL; -- expected
+  END;
+
+  SELECT count(*) INTO seen FROM alerts_events WHERE trigger_id = trig;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'X3-08.1 FAILED: expected 1 event, found %', seen;
+  END IF;
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── X3-08.2: the rate-limit RPC counts persistently and caps (service role only)'
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  allowed boolean;
+  n int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES (user_a, 'b-x308@example.test');
+
+  -- The RPC is SECURITY DEFINER service-role-only: authenticated is denied.
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+  BEGIN
+    PERFORM alerts_consume_rate_limit(user_a, '2026-10-05T05', 2);
+    RAISE EXCEPTION 'X3-08.2 FAILED: authenticated could call the rate-limit RPC';
+  EXCEPTION
+    WHEN insufficient_privilege THEN NULL; -- expected (fail-closed grants)
+  END;
+  RESET ROLE;
+
+  SET LOCAL ROLE service_role;
+  SELECT alerts_consume_rate_limit(user_a, '2026-10-05T05', 2) INTO allowed;
+  IF allowed IS NOT TRUE THEN RAISE EXCEPTION 'X3-08.2 FAILED: first delivery refused'; END IF;
+  SELECT alerts_consume_rate_limit(user_a, '2026-10-05T05', 2) INTO allowed;
+  IF allowed IS NOT TRUE THEN RAISE EXCEPTION 'X3-08.2 FAILED: second delivery refused'; END IF;
+  -- The counter PERSISTED: the third call in the same hour is over the cap.
+  SELECT alerts_consume_rate_limit(user_a, '2026-10-05T05', 2) INTO allowed;
+  IF allowed IS NOT FALSE THEN RAISE EXCEPTION 'X3-08.2 FAILED: the cap did not bite'; END IF;
+  -- A different hour bucket starts fresh.
+  SELECT alerts_consume_rate_limit(user_a, '2026-10-05T06', 2) INTO allowed;
+  IF allowed IS NOT TRUE THEN RAISE EXCEPTION 'X3-08.2 FAILED: new bucket refused'; END IF;
+  SELECT delivered INTO n FROM alerts_rate_limit WHERE user_id = user_a AND hour_bucket = '2026-10-05T05';
+  IF n <> 3 THEN RAISE EXCEPTION 'X3-08.2 FAILED: counter expected 3, found %', n; END IF;
+  RESET ROLE;
+END
+$$;
+
+\echo '── X3-08.3: alerts rows are private to their owner'
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  user_b uuid := gen_random_uuid();
+  seen int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'c-x308@example.test'), (user_b, 'd-x308@example.test');
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+  INSERT INTO alerts_triggers (user_id, symbol, kind, threshold)
+  VALUES (user_a, 'TCS', 'score_below', 40);
+
+  PERFORM set_config('request.jwt.claim.sub', user_b::text, true);
+  SELECT count(*) INTO seen FROM alerts_triggers WHERE user_id = user_a;
+  IF seen <> 0 THEN RAISE EXCEPTION 'X3-08.3 FAILED: user B READ user A''s triggers (%)', seen; END IF;
+  BEGIN
+    INSERT INTO alerts_triggers (user_id, symbol, kind, threshold)
+    VALUES (user_a, 'SBIN', 'price_above', 800);
+    RAISE EXCEPTION 'X3-08.3 FAILED: user B INSERTED a trigger owned by user A';
+  EXCEPTION
+    WHEN insufficient_privilege OR check_violation THEN NULL; -- RLS refused
+  END;
+  RESET ROLE;
+END
+$$;
+
+\echo '── X3-08.4: the 25-trigger cap bites at the 26th insert'
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES (user_a, 'e-x308@example.test');
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+  INSERT INTO alerts_triggers (user_id, symbol, kind, threshold)
+  SELECT user_a, 'SYM' || g, 'price_above', 10 FROM generate_series(1, 25) g;
+  BEGIN
+    INSERT INTO alerts_triggers (user_id, symbol, kind, threshold)
+    VALUES (user_a, 'THE26TH', 'price_above', 10);
+    RAISE EXCEPTION 'X3-08.4 FAILED: the 26th trigger was ACCEPTED';
+  EXCEPTION
+    WHEN check_violation THEN NULL; -- the 027 cap trigger
+  END;
+  RESET ROLE;
+END
+$$;
+
+\echo '── X3-08 invariants: all passed'

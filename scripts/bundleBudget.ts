@@ -220,11 +220,13 @@ try {
       const base = baseline.measuredKb[route];
       if (base !== undefined && r.kb > base + baseline.toleranceKb) regressed = true;
     }
-    // With a ratchet baseline, over-PROPOSED-budget is reported loudly but
-    // only a REGRESSION fails the gate (mirror of lint:ratchet). Once the
-    // founder confirms a budget, delete the baseline file and the hard
-    // budget becomes the fatal gate again.
-    if (regressed || (!baseline && overHardBudget)) failed = true;
+    // C3 (founder Round 16): the ratchet and the hard cap are FATAL
+    // alongside each other — a regression beyond +2 kB of the locked
+    // values fails the gate, and so does crossing the 200 kB hard budget
+    // ("Restore a ratchet baseline at the measured values ... alongside
+    // the 200 kB hard cap"). Before this PR, a present baseline silenced
+    // the hard cap entirely; that made the cap decoration, not a gate.
+    if (regressed || overHardBudget) failed = true;
     const verdict = regressed
       ? "REGRESSION vs ratchet"
       : overHardBudget
@@ -239,7 +241,7 @@ try {
     console.log(
       "Ratchet: fails on increase beyond +" +
         baseline.toleranceKb +
-        " kB (budgets PROPOSED, currently exceeded — shrink bundles, then re-lock).",
+        " kB, and the 200 kB hard budget stays fatal alongside it (C3, founder Round 16).",
     );
   }
 
@@ -256,7 +258,7 @@ try {
     }
     const toleranceKb = baseline?.toleranceKb ?? 2;
     const note =
-      "bundle ratchet baseline (E6-02). Values are gzip kB of first-load JS measured from the HTML script tags of a production build. The PROPOSED 200 kB budgets are NOT yet founder-confirmed; until then the gate fails on any increase beyond +2 kB build jitter. Shrink the numbers, then re-lock with --update-baseline.";
+      "bundle ratchet baseline (E6-02, restored by C3). Values are gzip kB of first-load JS measured from the HTML script tags of a production build (module-capable browser, nomodule excluded — B4 measurement). Founder Round 16: the ratchet fails on any increase beyond +2 kB AND the 200 kB hard budget stays fatal alongside it. Re-lock only with --update-baseline after a passing, non-regressing run.";
     writeFileSync(
       baselinePath,
       JSON.stringify({ note, toleranceKb, measuredKb: measured }, null, 1) + "\n",

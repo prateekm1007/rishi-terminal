@@ -100,6 +100,9 @@ export async function POST(req: NextRequest) {
   const { data: importRow, error: importError } = await supabase
     .from('portfolio_imports')
     .insert({
+      // C6 (founder Round-16): the owner is part of the insert — RLS
+      // rejects NULL user_id (same live defect as the screens upsert).
+      user_id: user.id,
       content_hash: parsed.contentHash,
       source: parsed.mappedColumns.isin !== undefined && parsed.mappedColumns.symbol === undefined ? 'cas' : 'holdings-csv',
       filename: fname,
@@ -128,6 +131,7 @@ export async function POST(req: NextRequest) {
   if (parsed.positions.length > 0) {
     const { error: posError } = await supabase.from('portfolio_positions').insert(
       parsed.positions.map((p) => ({
+        user_id: user.id,
         import_id: importRow.id,
         symbol: p.symbol,
         isin: p.isin,

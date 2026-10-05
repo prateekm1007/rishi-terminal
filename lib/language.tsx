@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { pickShell, type Messages } from './languageShell';
 
-type Locale = 'en' | 'hi' | 'bn' | 'mr' | 'te' | 'ta';
+type Locale = 'en' | 'hi' | 'bn' | 'mr' | 'te' | 'ta' | 'pseudo';
 
 export type { Messages };
 
@@ -97,7 +97,7 @@ export function LanguageProvider({
 
   useEffect(() => {
     const saved = (typeof window !== 'undefined' ? localStorage.getItem('rishi_locale') : null) as Locale | null;
-    if (saved && ['en', 'hi', 'bn', 'mr', 'te', 'ta'].includes(saved)) {
+    if (saved && ['en', 'hi', 'bn', 'mr', 'te', 'ta', 'pseudo'].includes(saved)) {
       setLocaleState(saved);
     }
   }, []);

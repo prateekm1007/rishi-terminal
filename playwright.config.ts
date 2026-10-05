@@ -1,7 +1,13 @@
 import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./test/smoke",
+  // R4-06: testDir widened from ./test/smoke to ./test so the roadmap's
+  // verbatim command `npx playwright test test/e2e/i18n.spec.ts` resolves
+  // alongside the smoke suite (Playwright filters by full path).
+  // testMatch keeps the Vitest unit suites (*.test.ts) OUT of Playwright's
+  // collector — Playwright owns *.spec.ts only.
+  testDir: "./test",
+  testMatch: "**/*.spec.ts",
   timeout: 60_000,
   retries: 0,
   use: {

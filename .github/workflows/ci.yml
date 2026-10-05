@@ -104,6 +104,9 @@ jobs:
       - name: Score parity (T10)
         run: npm run score:parity
 
+      - name: i18n coverage gate (R4-06 — hi complete, 0 missing)
+        run: npx tsx scripts/i18nCoverage.ts --locale=hi
+
       - name: Production build
         run: npm run build
 

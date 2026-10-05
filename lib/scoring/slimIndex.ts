@@ -1,5 +1,17 @@
 import 'server-only';
 
+// Types moved to ./wireIndex (R16 C5) so client components import the
+// transport codec without touching this server-only module — one source
+// of truth (Constitution 14); the re-exports below keep every existing
+// import path working.
+import type {
+  SlimStockRow,
+  SlimVerdictSummary,
+  SlimVerdictScore,
+} from '../transport/slimWire';
+
+export type { SlimStockRow, SlimVerdictSummary, SlimVerdictScore };
+
 // N1 (round 3): the slim index — what client LIST surfaces may receive.
 //
 // The auditor's finding: the full 944-record seed dataset and the scoring
@@ -27,64 +39,17 @@ import { STOCKS } from '@/data/stocks';
 import { getStockScore } from './index';
 
 /** Per-Rishi verdict summary (name/label/score/origin only). */
-export interface SlimVerdictSummary {
-  name: string;
-  full: string;
-  label: string;
-  /** null = insufficient data (T11) — rendered as an em dash. */
-  score: number | null;
-}
+// (interface SlimVerdictSummary lives in wireIndex.ts — see the re-export above.)
 
 /**
  * One stock's free, display-safe fields. Deliberately narrow — see the
- * module header before adding anything.
+ * module header before adding anything. (Interface lives in wireIndex.ts;
+ * re-exported above.)
  */
-export interface SlimStockRow {
-  symbol: string;
-  name: string;
-  sector: string;
-  /** THE consensus number (free for everyone); null = insufficient data. */
-  consensus: number | null;
-  category: string;
-  dataQuality: 'OK' | 'INCOMPLETE';
-  topBull: SlimVerdictSummary | null;
-  topBear: SlimVerdictSummary | null;
-  /** Council tension summary (free fields, part of SanitizedConsensus). */
-  tension: string;
-  tensionSpread: number;
-  /**
-   * A BOUNDED per-Rishi summary slice for LIST payloads (Commit M3 free
-   * access: this is a transport budget, NOT an entitlement — the full
-   * verdict set is public on every stock page and served by
-   * GET /api/rishis/[symbol] to any authenticated caller, which the lab
-   * tabs use to upgrade these rows). 936 stocks x every verdict would
-   * balloon the screener/lab flight payload (already the M5 perf
-   * bottleneck), so the list rows carry the first few and say so.
-   */
-  summaryScores: SlimVerdictScore[];
-  /** Free display / preset-filter fields (shown on every stock page). */
-  pe: number;
-  roe: number;
-  mktcap: number;
-  de: number;
-  /**
-   * Revenue CAGR and free cash flow — free display fields (rendered on
-   * every stock page by MetricsPanel) needed by the lab's portfolio
-   * style-box and FCF-yield analytics. Not engine-sufficient: verdicts
-   * cannot be recomputed from this row.
-   */
-  revcagr: number;
-  fcf: number;
-}
+// interface SlimStockRow lives in wireIndex.ts.
 
 /** Free-slice per-Rishi verdict (name/full/label/score/origin only). */
-export interface SlimVerdictScore {
-  name: string;
-  full: string;
-  label: string;
-  score: number | null;
-  origin: 'Global' | 'India' | 'Bharat' | 'Crypto' | 'Commodity' | 'Forex/Macro';
-}
+// (interface SlimVerdictScore lives in wireIndex.ts — re-exported above.)
 
 function toSummary(v: {
   name: string;

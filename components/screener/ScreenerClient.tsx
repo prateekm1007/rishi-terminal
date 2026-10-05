@@ -6,7 +6,7 @@
 // operate on the slim rows; per-Rishi verdicts stay behind the
 // tier-gated /api/rishis/[symbol] route.
 import { useState, useMemo } from 'react';
-import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
 import { StockTable } from '@/components/screener/StockTable';
 import { ScreenerQueryBar } from '@/components/screener/ScreenerQueryBar';
 import { useLanguage } from '@/lib/language';
@@ -15,7 +15,7 @@ import SeedDataBanner from '@/components/shared/SeedDataBanner';
 import Link from 'next/link';
 
 interface Props {
-  rows: SlimStockRow[];
+  rows: ScreenerPickerRow[];
 }
 
 export function ScreenerClient({ rows }: Props) {
@@ -24,8 +24,9 @@ export function ScreenerClient({ rows }: Props) {
   // X3-05: custom-expression results (server-evaluated). Null = the
   // expression mode is off; a custom query takes precedence over the
   // presets until cleared, because the user's explicit query is the
-  // most recent intent.
-  const [queryRows, setQueryRows] = useState<SlimStockRow[] | null>(null);
+  // most recent intent. The API's rows are a superset of the picker
+  // shape (extra fields are ignored at runtime).
+  const [queryRows, setQueryRows] = useState<ScreenerPickerRow[] | null>(null);
 
   const filteredStocks = useMemo(() => {
     if (queryRows) return queryRows;

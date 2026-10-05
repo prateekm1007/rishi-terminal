@@ -174,6 +174,9 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
   // no green/red claim; a genuine 0.00% is a real observation.
   const change = formatChangePair(changePercent, changeAbs);
   const hasPrice = displayPrice !== null;
+  // R16 C5: typed 52W metadata accessor — replaces the previous repeated
+  // `stock as any` casts (the lint ratchet owns every warning in this file).
+  const range52w = (stock as { metadata?: { high52w?: number; low52w?: number } }).metadata;
   const changeColor =
     !hasPrice || change.positive === null
       ? 'var(--text-muted)'
@@ -275,37 +278,50 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
       {/* Last updated — the UPSTREAM observation time when disclosed
           (Round 9), stamped Y3-style: IST date + clock + timezone + the
           server-disclosed market state ("… · market closed · last session
-          quote"). Absent a disclosed time, the line does not render —
-          there is no honest clock to show. */}
+          quote"). R16 C5: absent an observation the line's GEOMETRY is
+          still reserved (an invisible 14px slot with the same margins) —
+          the late-arriving attribution used to grow the tile and push
+          the whole content-wrapper down (measured CLS 0.053 on mobile,
+          Lighthouse layout-shift trace). */}
       {(() => {
         const obsLabel = observationLabel(observedIso, market);
-        if (!obsLabel) return null;
+        if (!obsLabel) {
+          return <div aria-hidden="true" style={{ fontSize: 9, fontFamily: 'monospace', marginTop: 10, lineHeight: '14px', height: 14 }} />;
+        }
         return (
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 10 }}>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 10, lineHeight: '14px' }}>
             {obsLabel}
           </div>
         );
       })()}
 
-      {/* 52W range bar — only meaningful once a server observation exists */}
-      {displayPrice !== null && (stock as any).metadata?.high52w && (stock as any).metadata?.low52w && (
+      {/* 52W range bar — only meaningful once a server observation exists.
+          R16 C5: when the metadata exists but the price has not arrived
+          yet, the bar's GEOMETRY is reserved (same margin + a 20px slot:
+          12px label line + 4px gap + 4px track) so the late fill cannot
+          grow the tile (CLS guard, same rationale as the observation
+          line above). */}
+      {displayPrice !== null && range52w?.high52w !== undefined && range52w?.low52w !== undefined && (
         <div style={{ marginTop: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4 }}>
-            <span>52W LOW {(stock as any).metadata?.low52w.toLocaleString('en-IN')}</span>
-            <span>{(stock as any).metadata?.high52w.toLocaleString('en-IN')} HIGH</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4, lineHeight: '12px' }}>
+            <span>52W LOW {range52w?.low52w?.toLocaleString('en-IN')}</span>
+            <span>{range52w?.high52w?.toLocaleString('en-IN')} HIGH</span>
           </div>
           <div style={{ height: 4, background: 'var(--bg-secondary)', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{
               height:     '100%',
               borderRadius: 2,
               width: Math.min(100, Math.max(0,
-                ((displayPrice - (stock as any).metadata?.low52w) / ((stock as any).metadata?.high52w - (stock as any).metadata?.low52w)) * 100
+                ((displayPrice - (range52w?.low52w ?? 0)) / ((range52w?.high52w ?? 0) - (range52w?.low52w ?? 0))) * 100
               )) + '%',
               background: 'linear-gradient(90deg, var(--accent-gold), var(--accent-green))',
               transition: 'width 0.5s ease',
             }} />
           </div>
         </div>
+      )}
+      {displayPrice === null && range52w?.high52w !== undefined && range52w?.low52w !== undefined && (
+        <div aria-hidden="true" style={{ marginTop: 14, height: 20 }} />
       )}
     </div>
   );

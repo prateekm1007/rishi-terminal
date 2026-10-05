@@ -5,6 +5,7 @@
 // dataset and the scoring engine never enter the client bundle; the
 // preset filters and stat pills run on the slim rows instead.
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
+import { toScreenerRows } from '@/lib/transport/slimWire';
 import { ScreenerClient } from '@/components/screener/ScreenerClient';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { screener } from '@/messages/en.json';
@@ -21,7 +22,12 @@ export const metadata = {
 };
 
 export default function ScreenerPage() {
-  const rows = getSlimIndex();
+  // R16 C5: the screener surface renders/filters FLAT fields only (table
+  // columns, stat pills, presets, search) — verdict summaries, tension and
+  // fcf never ship to this page's flight payload. The custom-query results
+  // from /api/screener/query arrive as on-demand JSON (a superset of this
+  // shape) and remain assignable.
+  const rows = toScreenerRows(getSlimIndex());
   return (
     <NamespaceProvider ns={{ screener }}>
       <ScreenerClient rows={rows} />

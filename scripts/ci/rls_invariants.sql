@@ -635,3 +635,49 @@ END
 $$;
 
 \echo '── X3-08 invariants: all passed'
+
+\echo '── L5-02: every public table with a user_id column is covered by the account registry'
+-- The LIVE information_schema half of the enumeration (the vitest half
+-- parses the migration files — test/account.delete.test.ts asserts the
+-- two lists are identical). A new user_id table without coverage fails
+-- BOTH gates.
+DO $$
+DECLARE
+  missing text;
+  extra text;
+  L5_02_EXPECTED[] := array[
+    'users','alerts','backtest_results','badges','fno_strategies','portfolios',
+    'transactions','watchlist','chat_usage','screens','portfolio_imports',
+    'portfolio_positions','alerts_triggers','alerts_events','alerts_rate_limit',
+    'alerts_preferences'
+  ];
+BEGIN
+  -- every real user_id table is expected
+  FOR missing IN
+    SELECT c.relname
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    JOIN pg_attribute a ON a.attrelid = c.oid AND a.attname = 'user_id'
+    WHERE n.nspname = 'public' AND c.relkind = 'r'
+      AND NOT a.attisdropped
+      AND c.relname <> ALL (L5_02_EXPECTED)
+  LOOP
+    RAISE EXCEPTION 'L5-02 FAILED: table % has a user_id column but is NOT in lib/account/coverage.ts (export/delete miss it)', missing;
+  END LOOP;
+
+  -- every expected table really exists (no stale registry entries)
+  FOR extra IN
+    SELECT t
+    FROM unnest(L5_02_EXPECTED) AS t
+    WHERE NOT EXISTS (
+      SELECT 1 FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relname = t
+    )
+  LOOP
+    RAISE EXCEPTION 'L5-02 FAILED: registry table % does not exist in the schema', extra;
+  END LOOP;
+END
+$$;
+
+\echo '── L5-02 invariants: all passed'

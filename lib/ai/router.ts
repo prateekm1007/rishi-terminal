@@ -29,7 +29,13 @@ import {
 } from "@/lib/registry/providerRegistry";
 import type { AiAnswer, AiClaim, AiEvidenceItem, ChatWire } from "./schemas";
 import { StructuredModelOutputSchema } from "./schemas";
-import { validateGrounding, extractNormalizedNumbers, canonicalNumber } from "./evidence";
+import {
+  validateGrounding,
+  extractNormalizedNumbers,
+  canonicalNumber,
+  normalizeFactField,
+  canonicalFactUnit,
+} from "./evidence";
 import type { CanonicalStockState } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
@@ -647,6 +653,7 @@ async function runGroundedLoop(
   const buildGroundingRepairFeedback = (
     rejections: readonly string[],
     matchedAssertionValues: readonly string[],
+    canonicalFactTokens: readonly string[] = [],
   ): string =>
     (rejections.length > 0
       ? "the validator rejected: " + rejections.slice(0, 4).join(" | ") + ". "
@@ -654,6 +661,10 @@ async function runGroundedLoop(
     "every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion)" +
     (matchedAssertionValues.length > 0
       ? " (matched assertion values you may state: " + matchedAssertionValues.slice(0, 8).join(", ") + ")"
+      : "") +
+    (canonicalFactTokens.length > 0
+      ? " (canonical fact values from the evidence you may copy digit-for-digit, one per field: " +
+        canonicalFactTokens.slice(0, 8).join(", ") + ")"
       : "") +
     "; " +
     CITE_FEEDBACK;
@@ -745,6 +756,22 @@ async function runGroundedLoop(
         for (const c of grounding.validatedClaims) {
           for (const a of c.assertions) matchedValues.add(canonicalNumber(a.value));
         }
+        // R15-L: this pool is provably EMPTY on every repair that fires —
+        // the validator returns validatedClaims: [] whenever the grounding
+        // verdict is ungrounded (evidence.ts hard-failure return), so the
+        // R10-03 matched-values feedback segment could never appear and
+        // every numeric repair ran blind (R15 after-battery, production
+        // 9c1781d: 15/15 unsupported-numeric-prose repairs lacked the
+        // segment; 3 ended in the honest no-answer fallback). The evidence
+        // package's typed facts are the canonical, stateable values
+        // regardless of claim survival — the repair feedback carries them
+        // in the exact annotation shape. FEEDBACK ONLY: validation
+        // semantics are unchanged (rule 23 — no check is weakened).
+        const canonicalFactTokens = loopEvidence.flatMap(it =>
+          (it.facts ?? []).map(
+            f => `${normalizeFactField(f.field)}=${canonicalNumber(f.value)} ${canonicalFactUnit(f.unit)}`,
+          ),
+        );
         const ungroundedNumbers = [...extractNormalizedNumbers(structured.data.answer)]
           .filter(n => !matchedValues.has(n));
         const isCleanContextOnly =
@@ -861,7 +888,7 @@ async function runGroundedLoop(
             repairFeedback(
               classifyGroundingRejections(grounding.rejections)[0] ??
                 (ungroundedNumbers.length > 0 ? "unsupported-numeric-prose" : "missing-claims"),
-              buildGroundingRepairFeedback(grounding.rejections, [...matchedValues]),
+              buildGroundingRepairFeedback(grounding.rejections, [...matchedValues], canonicalFactTokens),
             )
           )
             continue;
@@ -896,7 +923,7 @@ async function runGroundedLoop(
         if (
           repairFeedback(
             classifyGroundingRejections(grounding.rejections)[0] ?? "missing-claims",
-            buildGroundingRepairFeedback(grounding.rejections, [...matchedValues]),
+            buildGroundingRepairFeedback(grounding.rejections, [...matchedValues], canonicalFactTokens),
           )
         )
           continue;

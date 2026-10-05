@@ -403,4 +403,44 @@ describe("R10-03 — repair feedback carries the validator's rejections verbatim
     expect(feedback).toContain("is not a matched assertion value");
     expect(feedback).toContain("digit-for-digit");
   });
+
+  // R15-L: the R10-03 matched-values segment is built from
+  // grounding.validatedClaims — which the validator returns EMPTY whenever
+  // the grounding verdict is ungrounded (evidence.ts hard-failure return),
+  // so on every repair that actually fires the segment could never appear
+  // and the model repaired blind. The R15 after-battery (production
+  // 9c1781d) measured 15 unsupported-numeric-prose repairs, ALL 15 without
+  // the segment, 3 of them ending in the honest no-answer fallback. The
+  // feedback must carry the evidence package's canonical fact values (the
+  // exact annotation shape) even when zero claims survived. Rule 21: this
+  // test fails on main (no such segment exists) and passes with the fix.
+  it("numeric repair with zero surviving claims still names the canonical fact values (R15-L)", async () => {
+    const { stockState } = SEEDED_ARGS();
+    mockProviderReplies([
+      TOOL_REQUEST,
+      JSON.stringify({
+        answer: "Reliance is trading at 1168 rupees.",
+        claims: [
+          {
+            claim: "The latest observed price of RELIANCE is 1168 inr.",
+            evidenceIds: [EVIDENCE_ID],
+            assertions: [{ field: "price", value: 1168, unit: "inr" }],
+          },
+        ],
+        uncertainties: [],
+      }),
+      GOOD_STRUCTURED,
+    ]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "What is the latest price of RELIANCE?",
+      evidence: [],
+      stockState,
+    });
+    expect(answer?.claimsVerified).toBe(true);
+    const feedback = answer?.timings?.repairs?.[0]?.feedback ?? "";
+    // The exact annotation-shape token for the price fact is present.
+    expect(feedback).toContain("price=1167.7 inr");
+  });
 });

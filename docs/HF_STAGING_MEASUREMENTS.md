@@ -127,3 +127,35 @@ workspace; summaries above are the PR record).
   old replica serves until the new one is up; outage is not the
   differentiator, rebuild wall time (~3 min vs Vercel's ~2 min build)
   is the cost of that window.
+
+## E3 — Decision rule and verdict (the founder decides)
+
+**Pre-registered rule (verbatim from the founder's E3 directive, written
+before any Space measurement was examined):**
+
+> Recommend staying on Vercel unless the Space is **at least as good on
+> all of these**: warm TTFB p95 for pages ≤ the Vercel number,
+> India-measured LCP no worse, redeploy outage under 60 s, and cold wake
+> under 60 s with a plan that avoids sleep at no cost. Put the verdict
+> and the numbers in the doc. The founder decides.
+
+### Verdict per the rule (numbers: Tables 1–4)
+
+| # | Criterion | Measured | Result |
+|---|---|---|---|
+| 1 | warm TTFB p95 (pages) ≤ Vercel | Space 0.885 s vs Vercel 0.329 s `[sandbox]` | **FAIL** (2.7× worse; India run pending) |
+| 2 | India-measured LCP no worse | `[FOUNDER — pending]`; sandbox proxy: home 2.7 s vs 3.3 s (Space better), stock 2.9 s vs 2.5 s (Space worse) | **PENDING** founder run |
+| 3 | redeploy outage < 60 s | 0 of 78 one-second probes failed through a full rebuild | **PASS** |
+| 4 | cold wake < 60 s **with a no-cost plan that avoids sleep** | boot 2 s, restart 1 s — but `cpu-basic` sleeps after ~48 h idle (`gcTimeout` 172800 s) and **no cost-free avoidance plan exists**: a keep-alive ping was explicitly dropped by the founder's earlier PRO delta | **FAIL** (sleep avoidance unmet at zero cost) |
+
+**Verdict: the Space is NOT at least as good on all criteria — the
+pre-registered rule therefore recommends staying on Vercel.** Criterion 1
+fails on the sandbox numbers and is expected to fail or be marginal from
+India (the Space has no India edge region; Vercel serves its cached edge
+from wherever the request lands). Criterion 4 is structural on the free
+tier: sleep cannot be avoided without paying, and the founder already
+dropped the keep-alive ping.
+
+`FOUNDER DECISION NEEDED:` ratify "stay on Vercel" (recommended default;
+the Space remains a private staging/measurement target) or order a
+migration contrary to the rule — your call; nothing migrates without it.

@@ -106,7 +106,7 @@ describe("L5-02 — every user-data table is covered by export and delete", () =
   it("the CI Postgres L5-02 block lists exactly the registry tables", () => {
     const invariants = readFileSync(path.join(REPO, "scripts/ci/rls_invariants.sql"), "utf8");
     const block = invariants.slice(invariants.indexOf("L5-02:"));
-    const m = block.match(/L5_02_EXPECTED\[\]\s*:=\s*array\[([^\]]*)\]/);
+    const m = block.match(/L5_02_EXPECTED\s+text\[\]\s*:=\s*array\[([^\]]*)\]/);
     expect(m, "the L5-02 invariants block must declare its expected-table array").not.toBeNull();
     const sqlList = (m?.[1] ?? "")
       .split(",")

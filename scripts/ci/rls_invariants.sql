@@ -645,7 +645,7 @@ DO $$
 DECLARE
   missing text;
   extra text;
-  L5_02_EXPECTED[] := array[
+  L5_02_EXPECTED text[] := array[
     'users','alerts','backtest_results','badges','fno_strategies','portfolios',
     'transactions','watchlist','chat_usage','screens','portfolio_imports',
     'portfolio_positions','alerts_triggers','alerts_events','alerts_rate_limit',

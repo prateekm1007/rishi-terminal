@@ -77,7 +77,11 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase
     .from('screens')
     .upsert(
-      { name: name.trim(), query: q },
+      // C6 (founder Round-16): user_id MUST be in the payload — RLS's
+      // WITH CHECK (auth.uid() = user_id) rejects a NULL owner (the
+      // tables went live 2026-10-05 and the first real authenticated
+      // save exposed this: the insert without user_id failed closed).
+      { user_id: user.id, name: name.trim(), query: q },
       { onConflict: 'user_id,name' },
     )
     .select('id, name, query, created_at, updated_at')

@@ -13,11 +13,26 @@
  *     /screener        ≤ 200 kB
  *     /stock/[symbol]  ≤ 200 kB
  *
- * All three are currently OVER budget (app ships ~330-370 kB gzip). To stay
- * honest without a permanently red gate, the gate ALSO enforces a ratchet
- * baseline (bundle-budget-baseline.json): any increase beyond +2 kB jitter
- * fails immediately, and shrinking the app lets you re-lock a lower baseline.
- * A founder-confirmed budget replaces the ratchet as the hard gate.
+ * B4 (founder Round-15): the founder's directive "Reduce /stock/[symbol]
+ * to ≤ 200 kB gzip" confirms the 200 kB budget as operative — the ratchet
+ * baseline file is REMOVED and the hard budgets are the fatal gate.
+ *
+ * B4 measurement correction (the defect this fixes): the gate used to
+ * count EVERY <script src> tag, including the `noModule` legacy polyfill
+ * chunk (core-js, ~38 kB gzip) that NO module-capable browser downloads
+ * — Next emits it only for browsers outside its support matrix (Next 16
+ * docs, supported-browsers.md). Chromium network captures prove the
+ * chunk is never requested (docs/evidence/round15/b4-bundle-budget.md).
+ * The gate now measures what its docstring always claimed: the scripts a
+ * supported browser actually downloads for first load.
+ *
+ * History: the app once shipped ~330–370 kB gzip per route; the Z5 diet
+ * and the A1 content-restoration moved the measured values to ~197–207 kB.
+ * B4 (Round 15) corrected the MEASUREMENT (see above) — the real
+ * first-load for supported browsers is ~159–169 kB, inside the 200 kB
+ * budgets, so the hard budgets are the fatal gate and the ratchet
+ * baseline file is removed (re-add it only with founder approval to
+ * guard a transition period).
  *
  * Usage:  npm run build && npx tsx scripts/bundleBudget.ts
  * Flags:  --build-dir=.next  --port=3212  --symbol=RELIANCE
@@ -115,6 +130,24 @@ function fetchPage(path: string, tries = 40): Promise<string> {
 // the build on disk (boot race), which used to crash the gate with a
 // gzipKb ENOENT. Fail-honest: refetch, and only give up after the retry
 // budget — a genuinely broken build still fails the gate loudly.
+
+/** B4: extract the first-load chunk srcs from a page's HTML.
+ * `noModule` script tags (the legacy-browser core-js polyfill chunk) are
+ * EXCLUDED — module-capable browsers never download them, so they are not
+ * first-load JS for any supported browser (attribute matching is
+ * case-insensitive: React SSR emits `noModule`, the DOM normalizes to
+ * `nomodule`). */
+function firstLoadChunkSrcs(html: string): string[] {
+  return [
+    ...new Set(
+      [...html.matchAll(/<script\b[^>]*>/g)]
+        .map((m) => m[0])
+        .filter((tag) => !/\bnomodule\b/i.test(tag))
+        .flatMap((tag) => [...tag.matchAll(/src="(\/_next\/static\/chunks\/[^"]+?\.js)"/g)].map((m) => m[1])),
+    ),
+  ];
+}
+
 function chunkMissing(html: string): boolean {
   const srcs = [
     ...new Set(
@@ -144,11 +177,7 @@ try {
       results.push({ route, kb: null, scripts: 0 });
       continue;
     }
-    const srcs = [
-      ...new Set(
-        [...html.matchAll(/src="(\/_next\/static\/chunks\/[^"]+?\.js)"/g)].map(m => m[1]),
-      ),
-    ];
+    const srcs = firstLoadChunkSrcs(html);
     let kb = 0;
     for (const src of srcs) kb += gzipKb(join(buildDir, "static", src.split("/_next/static/")[1]));
     results.push({ route, kb, scripts: srcs.length });
@@ -174,7 +203,7 @@ try {
       })
     : null;
 
-  console.log("── bundleBudget (PROPOSED budgets; founder to confirm) ──");
+  console.log("── bundleBudget (200 kB budgets — founder-confirmed in Round-15 B4; first-load = scripts a module-capable browser downloads, nomodule polyfills excluded) ──");
   console.log("route                first-load   budget   ratchet   verdict");
   let failed = false;
   for (let i = 0; i < BUDGETS.length; i++) {

@@ -315,3 +315,26 @@ pacing discipline above remains the standing rule.
   before last-merge + 61 minutes (automation-side state, ledger remains
   the durable record). Slots recomputed from #189's actual time:
   earliest next production-relevant merge 14:50:18Z.
+
+### 2026-10-05 session (audit closure) — third pacing slip, mine
+
+- 14:07:20Z: sanctioned single-shot API retry succeeded (quota window
+  had drained) — production caught up from 243fd99 to d612cfe
+  (dpl_CZ1oQ6Ccghw4egcfkxqWRSvGEw83, READY 14:09:58Z), resolving the
+  deploy debt of 202e139 / c51e185 / 572562b.
+- #179 (cadence merge gate) merged 15:02:56Z — 73.6 min after #189 ✓.
+- **16:29:01Z pacing slip, recorded not hidden**: #202 (clean-server
+  harness) merged 11.4 min after the parallel session's #182
+  (16:17:37Z). Cause: this session's merge command chained
+  fetch-tip-print-merge in one shot; the tip HAD moved (b3c52db) but
+  the merge was already dispatching — the state check was decoration,
+  not a gate. #179's PR-side gate could not catch it (the green check
+  predated #182 by ~2 min). Correction: merges now go through
+  scripts/merge-guard.py (fetch → required-check-green-on-exact-head →
+  main-not-moved → cadence-window-open → merge; refuses otherwise;
+  docs-only exempt per C8). The push-time report for 5ca757f printed
+  the violation without failing main, exactly as #179 designed.
+- 5ca757f deploy did not auto-fire; sanctioned API retry at 16:53Z
+  (dpl_7poPsgYLEER3fFmVRiXMgCeCXgmU, READY ~16:56Z, /api/version
+  verified). 87deecf (parallel session's #184) auto-deployed after.
+- Full record: docs/evidence/round16/deployment-closure.md.

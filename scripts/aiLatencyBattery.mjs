@@ -48,6 +48,7 @@
  * (R6.2). Every attempt's HTTP status is recorded on the row.
  */
 import { writeFileSync, mkdirSync, appendFileSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -74,8 +75,15 @@ const PACING_MS = Number(process.env.BATTERY_PACING_MS ?? 6000);
 // limiter and 5xx from the provider are both transient infrastructure
 // states, not measurements — a battery that records them as final rows
 // manufactures sample loss, not evidence.
-const MAX_ATTEMPTS = 3;
-const RETRY_BACKOFF_MS = [10_000, 20_000];
+const MAX_ATTEMPTS = Number(process.env.BATTERY_MAX_ATTEMPTS ?? 3);
+// X7-era pacing note: an anonymous post-challenge question costs TWO
+// requests (challenge + solved retry), so the per-IP burst window
+// (12/60s) needs backoffs that drain the WHOLE window, not 10-20s
+// partial waits that cluster more requests inside it. Default raised to
+// 60s; override with BATTERY_BACKOFF_MS="60000,60000".
+const RETRY_BACKOFF_MS = (process.env.BATTERY_BACKOFF_MS ?? "60000,60000")
+  .split(",")
+  .map((s) => Number.parseInt(s.trim(), 10) || 60_000);
 const RETRYABLE = (status) => status === 429 || (status >= 500 && status <= 599);
 const collected = new Map();
 if (STATE) {
@@ -192,22 +200,75 @@ async function getJson(path) {
   return { status: res.status, ms: Date.now() - t0, body };
 }
 
+/** X7 (Round 13, deployed with migrations 023-026 on 2026-10-05): after
+ *  CHAT_CHALLENGE_AFTER (default 5) anonymous units per identity per day,
+ *  the chat route answers 429 {challengeRequired, challenge}. A real
+ *  browser solves the hashcash PoW (~1-2 s at difficulty 15); this
+ *  battery is that browser. The solve is counted in the row's wall time —
+ *  honest latency includes the challenge cost the product imposes. */
+function solvePow(token, difficulty) {
+  for (let i = 0; ; i++) {
+    const nonce = String(i);
+    const digest = createHash("sha256").update(`${token}|${nonce}`).digest("hex");
+    let bits = 0;
+    for (const ch of digest) {
+      const v = Number.parseInt(ch, 16);
+      if (v === 0) {
+        bits += 4;
+        continue;
+      }
+      if (v < 2) bits += 3;
+      else if (v < 4) bits += 2;
+      else if (v < 8) bits += 1;
+      break;
+    }
+    if (bits >= difficulty) return nonce;
+  }
+}
+
 async function chat(personaId, message) {
   const t0 = Date.now();
   let status = 0;
   let body = {};
+  let challenged = false;
+  let powMs = 0;
+  const headers = { "Content-Type": "application/json" };
+  // E5 measurement mode: when BATTERY_COOKIE is set the battery runs as a
+  // signed-in account (skips the X7 anonymous challenge) so the numbers
+  // isolate the AI loop (model + tools + grounding) from the PoW cost.
+  // The challenge cost itself is measured and reported separately.
+  if (process.env.BATTERY_COOKIE) headers.Cookie = process.env.BATTERY_COOKIE;
   try {
     const res = await fetch(BASE + "/api/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ personaId, history: [], message }),
     });
     status = res.status;
     body = await res.json().catch(() => ({}));
+    if (status === 429 && body?.challengeRequired && body?.challenge) {
+      const { token, difficulty, challengeId, issuedAt } = body.challenge;
+      const s0 = Date.now();
+      const nonce = solvePow(token, difficulty);
+      powMs = Date.now() - s0;
+      challenged = true;
+      const res2 = await fetch(BASE + "/api/chat", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          personaId,
+          history: [],
+          message,
+          challenge: { token, nonce, challengeId, issuedAt },
+        }),
+      });
+      status = res2.status;
+      body = await res2.json().catch(() => ({}));
+    }
   } catch (e) {
     body = { fetchError: String(e) };
   }
-  return { status, wallMs: Date.now() - t0, body };
+  return { status, wallMs: Date.now() - t0, body, challenged, powMs };
 }
 
 function percentile(arr, p) {
@@ -320,6 +381,8 @@ async function runClass(label, cls, personaId, questions) {
     const s = summarizeRun(r);
     s.attempt = attemptStatuses.length;
     s.attemptStatuses = attemptStatuses;
+    s.challenged = r.challenged === true;
+    s.powMs = r.powMs ?? 0;
     results.push(s);
     if (STATE) appendFileSync(STATE, JSON.stringify({ cls, idx, summary: s }) + "\n");
     console.log(
@@ -348,6 +411,9 @@ const artifact = {
   generatedAt: new Date().toISOString(),
   baseUrl: BASE,
   version: version.body,
+  measurementMode: process.env.BATTERY_COOKIE
+    ? "authenticated (X7 anonymous challenge skipped; PoW cost excluded from wallMs — measured separately)"
+    : "anonymous (X7 challenge solved in-loop after the daily free units; solve time included in wallMs)",
   providerModelIdentity: {
     provider: financial.find(r => r.provider)?.provider ?? null,
     model: financial.find(r => r.model)?.model ?? null,

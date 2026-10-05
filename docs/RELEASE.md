@@ -286,3 +286,16 @@ Lesson recorded: the counter's `reset` field reports the worst-case expiry
 of the oldest event, not the earliest moment a deploy can succeed — retry
 sporadically instead of waiting out the claim. The one-merge-per-hour
 pacing discipline above remains the standing rule.
+
+### 2026-10-05 session — eighth exhaustion (Round 18, E1-E5)
+
+- 11:52Z: PR #195 (E1) merged cleanly (merge commit `202e139`). Its
+  production deployment was **rate limited, not built**: GitHub status
+  on `202e139` reads "Deployment rate limited — retry in 24 hours."
+  (402-class, `api-deployments-free-per-day`).
+- 12:00:34Z and 12:05:53Z: sanctioned single-shot API retries (policy 4,
+  POST /v13/deployments, `gitSource` org/repo shape) — both HTTP 402;
+  rejected creations consume no quota event. Deploy debt: `202e139`.
+  Sporadic retry continues (the window drains on oldest-event expiry).
+- The E2/E3 PRs (#197/#198) are docs-only (the ignored build step owes
+  them no deployment).

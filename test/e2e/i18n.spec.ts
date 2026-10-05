@@ -26,8 +26,21 @@ const TOP_TEN_PAGES = [
   '/methodology',
 ];
 
+/** The first-visit LegalDisclaimer modal (fixed, z 9999 — mounted via
+ * next/dynamic AFTER hydration) blocks all pointer interaction until
+ * accepted. R16 (2026-10-05): the persistence test raced that mount and
+ * lost nondeterministically — CI run 37278845897 failed on #190 (whose own
+ * diff touches no UI) while main's push run 37277216419 passed the same
+ * spec; locally the race fails 5/5. Same seed shell.spec.ts uses. */
+async function acknowledgeDisclaimer(page: import('@playwright/test').Page) {
+  await page.addInitScript(() => {
+    try { localStorage.setItem('rishi_disclaimer_v2', 'accepted'); } catch {}
+  });
+}
+
 test.describe('R4-06 i18n', () => {
   test('switching language persists across reloads', async ({ page }) => {
+    await acknowledgeDisclaimer(page);
     await page.goto('/');
 
     // Open the selector (its trigger shows the current locale's native
@@ -54,7 +67,16 @@ test.describe('R4-06 i18n', () => {
   test('pseudo-locale (expanded strings) shows no overflow on the top 10 pages', async ({ browser }) => {
     for (const path of TOP_TEN_PAGES) {
       const context = await browser.newContext();
-      await context.addInitScript(() => localStorage.setItem('rishi_locale', 'pseudo'));
+      // Fresh context = first visit: seed disclaimer acceptance alongside
+      // the locale so the modal cannot mount mid-measurement on any of the
+      // ten pages (it is overflow-benign today, but that is an accident of
+      // its centered 560px box, not a contract).
+      await context.addInitScript(() => {
+        try {
+          localStorage.setItem('rishi_locale', 'pseudo');
+          localStorage.setItem('rishi_disclaimer_v2', 'accepted');
+        } catch {}
+      });
       const page = await context.newPage();
       await page.goto(path, { waitUntil: 'domcontentloaded' });
 

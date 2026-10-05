@@ -60,13 +60,16 @@ describe('X3-07 portfolio.import — broker holdings CSV shapes', () => {
   });
 
   it('handles quoted commas (RFC 4180) and Indian digit groupings', () => {
+    // B2: the comma-in-SYMBOL form ("ABC,DEF") is now REJECTED (charset
+    // guard — see portfolio.importValidation.test.ts). RFC 4180 quote
+    // handling is still covered here through the price cell.
     const csv = [
       'Symbol,Qty,Avg Price',
-      '"ABC,DEF",10,"1,23,456.78"',
+      'SBIN,10,"1,23,456.78"',
     ].join('\n');
     const r = parsePortfolioCsv(csv);
     expect(r.errors).toEqual([]);
-    expect(r.positions.find((p) => p.symbol === 'ABC,DEF')).toMatchObject({ symbol: 'ABC,DEF', quantity: 10, avgPrice: 123456.78 });
+    expect(r.positions.find((p) => p.symbol === 'SBIN')).toMatchObject({ symbol: 'SBIN', quantity: 10, avgPrice: 123456.78 });
   });
 
   it('merges duplicate symbols with weighted average pricing', () => {

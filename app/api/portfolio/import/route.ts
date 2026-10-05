@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getSessionUser } from '@/lib/auth/session';
 import { parsePortfolioCsv } from '@/lib/portfolio/csvImport';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { STOCKS } from '@/data/stocks';
 
 /**
  * X3-07 (Round 14 A6): portfolio CSV import.
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
   }
   const fname = typeof filename === 'string' && filename.trim() ? filename.trim().slice(0, 200) : 'portfolio.csv';
 
-  const parsed = parsePortfolioCsv(csv);
+  const parsed = parsePortfolioCsv(csv, { universe: Object.keys(STOCKS) });
 
   if (parsed.positions.length === 0 && parsed.errors.length === 0) {
     return NextResponse.json({ ok: false, error: 'no positions and no errors — empty file?' }, { status: 400 });
@@ -89,6 +90,7 @@ export async function POST(req: NextRequest) {
       importedAt: existing.created_at,
       positions: existingPositions ?? [],
       errors: parsed.errors,
+      warnings: parsed.warnings,
       mappedColumns: parsed.mappedColumns,
       note: 'identical content was already imported — nothing changed',
     });
@@ -149,8 +151,10 @@ export async function POST(req: NextRequest) {
       avg_price: p.avgPrice,
       first_buy_date: p.firstBuyDate,
       last_buy_date: p.lastBuyDate,
+      known_symbol: p.knownSymbol,
     })),
     errors: parsed.errors,
+    warnings: parsed.warnings,
     mappedColumns: parsed.mappedColumns,
   });
 }

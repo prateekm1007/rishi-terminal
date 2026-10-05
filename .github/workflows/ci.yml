@@ -48,10 +48,10 @@ jobs:
         if: github.event_name == 'push'
         run: node scripts/ci/deployCadence.mjs --base "origin/main"
 
-      - name: "Deploy cadence advisory (PR context — name the earliest safe merge time)"
-        if: github.event_name == 'pull_request'
-        run: node scripts/ci/deployCadence.mjs --advisory --base "origin/main"
-
+      # SCRATCH BRANCH ONLY: the PR cadence advisory moved BELOW the bundle
+      # step so this rule-24 bite proves the BUNDLE gate fails — during
+      # hourly merge windows the cadence gate would otherwise early-exit the
+      # job and mask the regression. Merged CI keeps the original order.
       - name: "Repository hygiene (no backup/corrupted/orig/rej files in git)"
         # N6 (round 3): the old pattern '\.(bak|backup|tmp)$' did NOT match
         # 'x.tsx.bak-20260515-1200' (verified by running it — the original
@@ -112,6 +112,10 @@ jobs:
 
       - name: Bundle budget (E6-02 ratchet; PROPOSED budgets reported)
         run: npm run bundle:budget
+
+      - name: "Deploy cadence advisory (PR context — name the earliest safe merge time)"
+        if: github.event_name == 'pull_request'
+        run: node scripts/ci/deployCadence.mjs --advisory --base "origin/main"
 
       - name: Gitleaks (secret scan)
         uses: gitleaks/gitleaks-action@v2

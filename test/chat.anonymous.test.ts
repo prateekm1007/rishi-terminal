@@ -147,7 +147,7 @@ describe("anonymous chat (founder 2026-10-02: no sign-in required)", () => {
   });
 
   it("GET /api/chat/personas serves the FULL roster without sign-in", async () => {
-    const res = await personasGET(makeGetReq("http://x/api/chat/personas"));
+    const res = await personasGET();
     expect(res.status).toBe(200);
     const body = (await res.json()) as { personas: Array<{ id: string }> };
     expect(body.personas.length).toBe(CANONICAL_PERSONAS.length);

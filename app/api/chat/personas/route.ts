@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getChatPersonas } from '@/lib/chat/personaAccess';
 
 /**
@@ -13,7 +13,7 @@ import { getChatPersonas } from '@/lib/chat/personaAccess';
  */
 export const dynamic = 'force-dynamic';
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const personas = getChatPersonas();
   return NextResponse.json({
     personas: personas.map((p) => ({

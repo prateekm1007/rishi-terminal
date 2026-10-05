@@ -111,7 +111,7 @@ describe("R3/M3 — sanitizeConsensus carries every verdict", () => {
 describe("R3/M3 — GET /api/chat/personas", () => {
   it("serves the full roster WITHOUT sign-in (founder 2026-10-02: no auth gate)", async () => {
     getSessionUserMock.mockResolvedValueOnce(null);
-    const res = await personasGET({} as never);
+    const res = await personasGET();
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(Array.isArray(data.personas)).toBe(true);
@@ -122,7 +122,7 @@ describe("R3/M3 — GET /api/chat/personas", () => {
   for (const legacyTier of ["seeker", "student", "disciple"]) {
     it(`${legacyTier}-equivalent session gets EVERY canonical persona (same roster for all)`, async () => {
       getSessionUserMock.mockResolvedValueOnce({ id: "u", email: "e", tier: legacyTier, tierExpiresAt: null });
-      const res = await personasGET({} as never);
+      const res = await personasGET();
       const data = await res.json();
       expect(data.tier).toBeUndefined(); // no tier on the wire
       expect(data.personas.length).toBe(CANONICAL_PERSONAS.length);

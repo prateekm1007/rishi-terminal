@@ -66,7 +66,7 @@ RUN npm ci --omit=dev
 COPY --from=builder --chown=node:node /app/.next ./.next
 COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder /app/next.config.ts ./next.config.ts
-USER node
+USER root
 EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:7860/api/health').then(()=>process.exit(0)).catch(()=>process.exit(1))"

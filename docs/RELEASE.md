@@ -308,3 +308,10 @@ pacing discipline above remains the standing rule.
   remaining queue slots are computed from each merge's actual time
   (#189 ≥ 14:20:41Z, hourly thereafter), and the wait loops now target
   last-merge-time + 61 minutes.
+- **13:49:18Z second pacing slip, recorded not hidden**: #189 (smoke
+  hardening) merged 28.5 minutes after #186 (13:20:41Z) — the automation
+  wait loops under-shot the wall-clock target twice in a row. Process
+  fix: merges now go through a cadence guard that refuses to merge
+  before last-merge + 61 minutes (automation-side state, ledger remains
+  the durable record). Slots recomputed from #189's actual time:
+  earliest next production-relevant merge 14:50:18Z.

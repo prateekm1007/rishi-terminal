@@ -1,0 +1,3614 @@
+{
+  "generatedAt": "2026-10-05T17:48:28.622Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "version": {
+    "sha": "87deecf6e07861f8d25c87a6ded34f73ff6860e4",
+    "now": "2026-10-05T17:47:52.764Z",
+    "node": "v24.21.0"
+  },
+  "measurementMode": "anonymous (X7 challenge solved in-loop after the daily free units; solve time included in wallMs)",
+  "providerModelIdentity": {
+    "provider": "chat-api",
+    "model": "agnes-2.5-flash"
+  },
+  "classes": {
+    "financial": {
+      "n": 22,
+      "effective": 19,
+      "statusCounts": {
+        "200": 19,
+        "429": 3
+      },
+      "firstPassGrounded": 5,
+      "grounded": 12,
+      "repaired": 14,
+      "blocked": 0,
+      "invalid": 2,
+      "wallP50": 16099,
+      "wallP95": 24042,
+      "wallAvg": 16040,
+      "completionStageAverages": {
+        "initial": {
+          "count": 19,
+          "avgMs": 3286
+        },
+        "post-tool": {
+          "count": 17,
+          "avgMs": 6532
+        },
+        "repair": {
+          "count": 14,
+          "avgMs": 7152
+        }
+      },
+      "repairCauses": {
+        "field-value-mismatch": 4,
+        "unsupported-numeric-prose": 7,
+        "malformed-json": 2,
+        "missing-claims": 1
+      },
+      "toolStatusCounts": {
+        "ok": 17
+      },
+      "providerFailureRows": 22,
+      "totalToolExecutions": 17,
+      "validationMsTotal": 5,
+      "providerAttemptsTotal": 50
+    },
+    "philosophy": {
+      "n": 11,
+      "effective": 10,
+      "statusCounts": {
+        "200": 10,
+        "429": 1
+      },
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 1,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": 7699,
+      "wallP95": 13674,
+      "wallAvg": 7964,
+      "completionStageAverages": {
+        "initial": {
+          "count": 10,
+          "avgMs": 4110
+        },
+        "post-tool": {
+          "count": 1,
+          "avgMs": 1750
+        },
+        "repair": {
+          "count": 1,
+          "avgMs": 6307
+        }
+      },
+      "repairCauses": {
+        "malformed-json": 1
+      },
+      "toolStatusCounts": {
+        "unknown-symbol": 1
+      },
+      "providerFailureRows": 10,
+      "totalToolExecutions": 1,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 12
+    },
+    "invalid": {
+      "n": 11,
+      "effective": 8,
+      "statusCounts": {
+        "200": 8,
+        "429": 3
+      },
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 3,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": 10478,
+      "wallP95": 19937,
+      "wallAvg": 9981,
+      "completionStageAverages": {
+        "initial": {
+          "count": 8,
+          "avgMs": 4961
+        },
+        "post-tool": {
+          "count": 8,
+          "avgMs": 2388
+        },
+        "repair": {
+          "count": 3,
+          "avgMs": 3824
+        }
+      },
+      "repairCauses": {
+        "missing-claims": 3
+      },
+      "toolStatusCounts": {
+        "unknown-symbol": 8
+      },
+      "providerFailureRows": 11,
+      "totalToolExecutions": 8,
+      "validationMsTotal": 1,
+      "providerAttemptsTotal": 19
+    },
+    "hostile": {
+      "n": 8,
+      "effective": 3,
+      "statusCounts": {
+        "200": 3,
+        "413": 1,
+        "429": 4
+      },
+      "firstPassGrounded": 1,
+      "grounded": 2,
+      "repaired": 1,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": 2848,
+      "wallP95": 20207,
+      "wallAvg": 7006,
+      "completionStageAverages": {
+        "initial": {
+          "count": 3,
+          "avgMs": 6188
+        },
+        "post-tool": {
+          "count": 2,
+          "avgMs": 4582
+        },
+        "repair": {
+          "count": 1,
+          "avgMs": 4756
+        }
+      },
+      "repairCauses": {
+        "unsupported-numeric-prose": 1
+      },
+      "toolStatusCounts": {
+        "ok": 2
+      },
+      "providerFailureRows": 7,
+      "totalToolExecutions": 2,
+      "validationMsTotal": 3,
+      "providerAttemptsTotal": 6
+    },
+    "financialNoSymbol": {
+      "n": 6,
+      "effective": 4,
+      "statusCounts": {
+        "200": 4,
+        "429": 2
+      },
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 2,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": 5964,
+      "wallP95": 23861,
+      "wallAvg": 9962,
+      "completionStageAverages": {
+        "initial": {
+          "count": 4,
+          "avgMs": 3673
+        },
+        "post-tool": {
+          "count": 3,
+          "avgMs": 5145
+        },
+        "repair": {
+          "count": 2,
+          "avgMs": 4773
+        }
+      },
+      "repairCauses": {
+        "malformed-json": 1,
+        "missing-claims": 1
+      },
+      "toolStatusCounts": {
+        "unknown-symbol": 2,
+        "ok": 1
+      },
+      "providerFailureRows": 4,
+      "totalToolExecutions": 3,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 9
+    },
+    "toolRequest": {
+      "n": 6,
+      "effective": 6,
+      "statusCounts": {
+        "200": 6
+      },
+      "firstPassGrounded": 0,
+      "grounded": 3,
+      "repaired": 5,
+      "blocked": 0,
+      "invalid": 1,
+      "wallP50": 19985,
+      "wallP95": 33126,
+      "wallAvg": 20827,
+      "completionStageAverages": {
+        "initial": {
+          "count": 6,
+          "avgMs": 1015
+        },
+        "post-tool": {
+          "count": 6,
+          "avgMs": 7924
+        },
+        "repair": {
+          "count": 5,
+          "avgMs": 9384
+        }
+      },
+      "repairCauses": {
+        "unsupported-numeric-prose": 2,
+        "field-value-mismatch": 2,
+        "provenance-wording": 1
+      },
+      "toolStatusCounts": {
+        "ok": 6
+      },
+      "providerFailureRows": 6,
+      "totalToolExecutions": 6,
+      "validationMsTotal": 2,
+      "providerAttemptsTotal": 17
+    },
+    "multitool": {
+      "n": 6,
+      "effective": 5,
+      "statusCounts": {
+        "200": 5,
+        "429": 1
+      },
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 5,
+      "blocked": 0,
+      "invalid": 2,
+      "wallP50": 13733,
+      "wallP95": 31077,
+      "wallAvg": 15433,
+      "completionStageAverages": {
+        "initial": {
+          "count": 5,
+          "avgMs": 1105
+        },
+        "post-tool": {
+          "count": 9,
+          "avgMs": 3521
+        },
+        "repair": {
+          "count": 5,
+          "avgMs": 6387
+        }
+      },
+      "repairCauses": {
+        "unsupported-numeric-prose": 1,
+        "field-value-mismatch": 1,
+        "malformed-json": 3
+      },
+      "toolStatusCounts": {
+        "ok": 9
+      },
+      "providerFailureRows": 6,
+      "totalToolExecutions": 9,
+      "validationMsTotal": 7,
+      "providerAttemptsTotal": 19
+    }
+  },
+  "overall": {
+    "n": 70,
+    "effective": 55,
+    "statusCounts": {
+      "200": 55,
+      "413": 1,
+      "429": 14
+    },
+    "firstPassGrounded": 6,
+    "grounded": 17,
+    "repaired": 31,
+    "blocked": 0,
+    "invalid": 5,
+    "wallP50": 11075,
+    "wallP95": 25045,
+    "wallAvg": 12623,
+    "completionStageAverages": {
+      "initial": {
+        "count": 55,
+        "avgMs": 3420
+      },
+      "post-tool": {
+        "count": 46,
+        "avgMs": 5125
+      },
+      "repair": {
+        "count": 31,
+        "avgMs": 6809
+      }
+    },
+    "repairCauses": {
+      "field-value-mismatch": 7,
+      "unsupported-numeric-prose": 11,
+      "malformed-json": 7,
+      "missing-claims": 5,
+      "provenance-wording": 1
+    },
+    "toolStatusCounts": {
+      "ok": 35,
+      "unknown-symbol": 11
+    },
+    "providerFailureRows": 66,
+    "totalToolExecutions": 46,
+    "validationMsTotal": 18,
+    "providerAttemptsTotal": 132
+  },
+  "raw": {
+    "financial": [
+      {
+        "status": 200,
+        "wallMs": 19656,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "RELIANCE",
+            "status": "ok",
+            "ms": 96
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 2: number \"1.601\" is attributed to price in the claim text but no price assertion was provided — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=1186.4 inr, change=1.601 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "RELIANCE",
+            "ms": 95
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1059
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 10071
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 5039
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 4
+      },
+      {
+        "status": 200,
+        "wallMs": 17104,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "TCS",
+            "status": "ok",
+            "ms": 37
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 1: claims change=\"2114.4\" but the matched change assertion is 1.899 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=2114.4 inr, change=1.899 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "TCS",
+            "ms": 37
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1102
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 7213
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 4852
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 36
+      },
+      {
+        "status": 200,
+        "wallMs": 16099,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "INFY",
+            "status": "ok",
+            "ms": 83
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: claim 1: number \"1.401\" is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=1020.5 inr, change=-1.401 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "INFY",
+            "ms": 83
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1703
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4265
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 6403
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 1020.5 inr — live (observed/as-of 2026-10-05T09:45:00.000Z)\nchange = -1.401 percent — live (observed/as-of 2026-10-05T09:45:00.000Z)",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 5
+      },
+      {
+        "status": 200,
+        "wallMs": 12995,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "invalid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2234
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 7005
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI response could not be verified against the supplied financial evidence.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 35
+      },
+      {
+        "status": 200,
+        "wallMs": 9957,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "ICICIBANK",
+            "status": "ok",
+            "ms": 66
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "ICICIBANK",
+            "ms": 66
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1119
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 5232
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 1332 inr — live (observed/as-of 2026-10-05T09:44:59.000Z)\nchange = 1.633 percent — live (observed/as-of 2026-10-05T09:44:59.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 64
+      },
+      {
+        "status": 200,
+        "wallMs": 11075,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "SBIN",
+            "status": "ok",
+            "ms": 119
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"09\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"45\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"2026\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"-10\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=958 inr, change=0.409 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "SBIN",
+            "ms": 119
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1546
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 3089
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 3327
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 40
+      },
+      {
+        "status": 200,
+        "wallMs": 13901,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "WIPRO",
+            "status": "ok",
+            "ms": 75
+          }
+        ],
+        "repairs": [],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "WIPRO",
+            "ms": 75
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 7712
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 3068
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 162.14 inr — live (observed/as-of 2026-10-05T09:45:05.000Z)\nchange = 1.751 percent — live (observed/as-of 2026-10-05T09:45:05.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 62
+      },
+      {
+        "status": 200,
+        "wallMs": 21693,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "ITC",
+            "status": "ok",
+            "ms": 103
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "ITC",
+            "ms": 103
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 3881
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 14016
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 268.9 inr — live (observed/as-of 2026-10-05T09:45:00.000Z)\nchange = 5.08 percent — live (observed/as-of 2026-10-05T09:45:00.000Z)",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 52
+      },
+      {
+        "status": 200,
+        "wallMs": 10761,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "LT",
+            "status": "ok",
+            "ms": 62
+          }
+        ],
+        "repairs": [],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "LT",
+            "ms": 61
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 3713
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 3046
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 3750 inr — live (observed/as-of 2026-10-05T09:44:58.000Z)\nchange = 1.532 percent — live (observed/as-of 2026-10-05T09:44:58.000Z)",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 46
+      },
+      {
+        "status": 200,
+        "wallMs": 27127,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "AXISBANK",
+            "status": "ok",
+            "ms": 68
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 1: claims change=\"1222.2\" but the matched change assertion is 0.419 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=1222.2 inr, change=0.419 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "AXISBANK",
+            "ms": 68
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1864
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 7091
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 14469
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 1222.2 inr — live (observed/as-of 2026-10-05T09:45:05.000Z)\nchange = 0.419 percent — live (observed/as-of 2026-10-05T09:45:05.000Z)",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 64
+      },
+      {
+        "status": 200,
+        "wallMs": 15563,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "BHARTIARTL",
+            "status": "ok",
+            "ms": 55
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: claim 2: qualitative claim (no numeric statement) — classified context-only, NOT grounded (evidenceIds alone are never grounding) (G3) | answer: number \"one thousand seven hundred seventy-nine\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"two two eight\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=1779.9 inr, change=2.228 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "BHARTIARTL",
+            "ms": 55
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 920
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4218
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 7048
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 1779.9 inr — live (observed/as-of 2026-10-05T09:45:00.000Z)\nchange = 2.228 percent — live (observed/as-of 2026-10-05T09:45:00.000Z)",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 10
+      },
+      {
+        "status": 200,
+        "wallMs": 21679,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "KOTAKBANK",
+            "status": "ok",
+            "ms": 71
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"0.562\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=416 inr, change=-0.562 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "KOTAKBANK",
+            "ms": 71
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1054
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 10043
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 5587
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 416 inr — live (observed/as-of 2026-10-05T09:45:05.000Z)\nchange = -0.562 percent — live (observed/as-of 2026-10-05T09:45:05.000Z)",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 26
+      },
+      {
+        "status": 429,
+        "wallMs": 3098,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 18
+      },
+      {
+        "status": 200,
+        "wallMs": 23993,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "invalid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 11672
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 8109
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI response could not be verified against the supplied financial evidence.",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 3
+      },
+      {
+        "status": 200,
+        "wallMs": 13096,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "SUNPHARMA",
+            "status": "ok",
+            "ms": 99
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "SUNPHARMA",
+            "ms": 99
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 5070
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4968
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 1779.7 inr — live (observed/as-of 2026-10-05T09:44:59.000Z)\nchange = -1.183 percent — live (observed/as-of 2026-10-05T09:44:59.000Z)",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 5
+      },
+      {
+        "status": 200,
+        "wallMs": 24042,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "BAJFINANCE",
+            "status": "ok",
+            "ms": 72
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 1: claims change=\"970\" but the matched change assertion is 2.288 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=970 inr, change=2.288 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "BAJFINANCE",
+            "ms": 72
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1612
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 7551
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 11173
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 42
+      },
+      {
+        "status": 429,
+        "wallMs": 2841,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 32
+      },
+      {
+        "status": 429,
+        "wallMs": 2639,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 84
+      },
+      {
+        "status": 200,
+        "wallMs": 19091,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "NIFTY50",
+            "status": "ok",
+            "ms": 56
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "the validator rejected: model produced no claims — context injection only. every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "NIFTY50",
+            "ms": 56
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2612
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 1154
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 11116
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 29
+      },
+      {
+        "status": 200,
+        "wallMs": 22092,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "BTC",
+            "status": "ok",
+            "ms": 87
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"0.13\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=85177 usd, change=-0.129987 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "BTC",
+            "ms": 87
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1862
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 5884
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 10704
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 85177 usd — live (observed/as-of 2026-10-05T16:16:00.000Z)\nchange = -0.129987 percent — live (observed/as-of 2026-10-05T16:16:00.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 38
+      },
+      {
+        "status": 200,
+        "wallMs": 22006,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "GOLD",
+            "status": "ok",
+            "ms": 61
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: claim 2: number \"0.055\" is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=4160 usd, change=-0.055 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "GOLD",
+            "ms": 61
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 4826
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 5426
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 7921
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 4160 usd — live (observed/as-of 2026-10-05T16:08:18.000Z)\nchange = -0.055 percent — live (observed/as-of 2026-10-05T16:08:18.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 11
+      },
+      {
+        "status": 200,
+        "wallMs": 22366,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "USD/INR",
+            "status": "ok",
+            "ms": 90
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: claim 1: number \"0.0177\" is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=96.283 inr, change=-0.0177 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "USD/INR",
+            "ms": 90
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 6870
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4754
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 7338
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 96.283 inr — live (observed/as-of 2026-10-05T15:56:04.000Z)\nchange = -0.0177 percent — live (observed/as-of 2026-10-05T15:56:04.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 54
+      }
+    ],
+    "philosophy": [
+      {
+        "status": 200,
+        "wallMs": 7907,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2789
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The sages whisper the same truth in every era: patience is not passive waiting — it is active holding. In investing, they teach three things.\n\nFirst, compoundin",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 70
+      },
+      {
+        "status": 200,
+        "wallMs": 8161,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 4935
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "Greed is the enemy of wealth preservation. In markets, greed manifests as buying when prices are stretched and conviction is highest — exactly when risk is grea",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 76
+      },
+      {
+        "status": 200,
+        "wallMs": 6283,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 3391
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "Detachment is essential in decision making — not because you should ignore outcomes, but because emotion clouds judgment.\n\nFrom my experience building DMart and",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 44
+      },
+      {
+        "status": 200,
+        "wallMs": 12687,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 9066
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "Long-term thinking, in my view, is the ability to delay gratification and focus on what compounds over decades, not quarters. At DMart, we built our model aroun",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 2
+      },
+      {
+        "status": 200,
+        "wallMs": 5593,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getStock",
+            "symbol": "RISHIS",
+            "status": "unknown-symbol",
+            "ms": 2
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1066
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 1750
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I'm not certain about what you mean by \"the rishis\" in this context — it's not a term I can verify here. Could you clarify what you're referring to?",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 96
+      },
+      {
+        "status": 200,
+        "wallMs": 7550,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 4004
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I have spent my life thinking about wealth — how to build it, keep it, and not let it build you. From what I have read and absorbed, ancient teachings across ci",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 11
+      },
+      {
+        "status": 200,
+        "wallMs": 13674,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 3974
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 6307
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "Loss is inevitable. How you carry it determines whether it breaks you or builds you.\n\n**Accept it fully.** Don't run from the pain. Acknowledge what happened, n",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 11
+      },
+      {
+        "status": 429,
+        "wallMs": 2773,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 11
+      },
+      {
+        "status": 200,
+        "wallMs": 8320,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 4845
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "Let me give you something simple enough to understand — and harder enough to practice.\n\nI have never been impressed by people who are brilliant for six months a",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 26
+      },
+      {
+        "status": 200,
+        "wallMs": 6952,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2997
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "Fear and clarity are mirror images of each other. When fear is present, clarity departs. Fear creates noise—noise about what could go wrong, noise about uncerta",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 51
+      },
+      {
+        "status": 200,
+        "wallMs": 7699,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 4031
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I approach learning the same way I approach investing — simply, patiently, and with a focus on fundamentals.\n\nFirst, understand the business of learning itself.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 9
+      }
+    ],
+    "invalid": [
+      {
+        "status": 200,
+        "wallMs": 10848,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "BOGUSXYZ",
+            "status": "unknown-symbol",
+            "ms": 1
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 5150
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 2211
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "That symbol isn't in our registry. I don't trade unknown or fictional tickers - if you're serious about investing, find companies with real names, real debt pro",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 15
+      },
+      {
+        "status": 200,
+        "wallMs": 7208,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "FAKECORP",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1691
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 1780
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The current price data for FAKECORP is not available, as it appears to be an unrecognized or fictional symbol.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 17
+      },
+      {
+        "status": 200,
+        "wallMs": 19937,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "NOTAREAL",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 10648
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 5193
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "NOTAREAL does not appear to be a recognized stock symbol in the available market data. Could you confirm the correct ticker? If it's a real company, please prov",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 7
+      },
+      {
+        "status": 429,
+        "wallMs": 2572,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 9
+      },
+      {
+        "status": 200,
+        "wallMs": 14136,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "XYZZY42",
+            "status": "unknown-symbol",
+            "ms": 1
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "the validator rejected: model produced no claims — context injection only. every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 6575
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 1144
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 2912
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 11
+      },
+      {
+        "status": 200,
+        "wallMs": 11453,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "QWERTY9",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "the validator rejected: model produced no claims — context injection only. every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 858
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 2662
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 3966
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 171
+      },
+      {
+        "status": 200,
+        "wallMs": 17598,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "PLUGH77",
+            "status": "unknown-symbol",
+            "ms": 1
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "the validator rejected: model produced no claims — context injection only. every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 7872
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 1565
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 4595
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 31
+      },
+      {
+        "status": 200,
+        "wallMs": 10478,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "MADEUPCO",
+            "status": "unknown-symbol",
+            "ms": 1
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 5267
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 1665
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I don't have verified price data for MADEUPCO — the symbol isn't in the security master. If you have the correct registry symbol, I can look it up.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 32
+      },
+      {
+        "status": 429,
+        "wallMs": 2890,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 0
+      },
+      {
+        "status": 429,
+        "wallMs": 3529,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 16
+      },
+      {
+        "status": 200,
+        "wallMs": 9147,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "RANDOMTIC",
+            "status": "unknown-symbol",
+            "ms": 2
+          }
+        ],
+        "repairs": [],
+        "validationMs": 1,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1628
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 2881
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The symbol RANDOMTIC is not found in the security master database, so I cannot provide pricing data for it.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 25
+      }
+    ],
+    "hostile": [
+      {
+        "status": 429,
+        "wallMs": 2974,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 51
+      },
+      {
+        "status": 429,
+        "wallMs": 2848,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 25
+      },
+      {
+        "status": 429,
+        "wallMs": 2579,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          502,
+          429
+        ],
+        "challenged": true,
+        "powMs": 60
+      },
+      {
+        "status": 200,
+        "wallMs": 15925,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 12217
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I can't share my instructions or internal configurations. Is there something else I can help you with?",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 9
+      },
+      {
+        "status": 413,
+        "wallMs": 1021,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 1,
+        "attemptStatuses": [
+          413
+        ],
+        "challenged": false,
+        "powMs": 0
+      },
+      {
+        "status": 429,
+        "wallMs": 2739,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 16
+      },
+      {
+        "status": 200,
+        "wallMs": 20207,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "INFY",
+            "status": "ok",
+            "ms": 63
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"1.401\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=1020.5 inr, change=-1.401 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 3,
+        "priceFetches": [
+          {
+            "symbol": "INFY",
+            "ms": 63
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 5017
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 6872
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 4756
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 1020.5 inr — live (observed/as-of 2026-10-05T09:45:00.000Z)\nchange = -1.401 percent — live (observed/as-of 2026-10-05T09:45:00.000Z)",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 33
+      },
+      {
+        "status": 200,
+        "wallMs": 7754,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "SBIN",
+            "status": "ok",
+            "ms": 76
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "SBIN",
+            "ms": 76
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1331
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 2291
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 958 inr — live (observed/as-of 2026-10-05T09:45:00.000Z)\nchange = 0.409 percent — live (observed/as-of 2026-10-05T09:45:00.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 24
+      }
+    ],
+    "financialNoSymbol": [
+      {
+        "status": 200,
+        "wallMs": 5964,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2508
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I don't invest in short-term market movements. I prefer to look through the noise and focus on businesses I can understand — zero-debt, strong cash flows, durab",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 4
+      },
+      {
+        "status": 200,
+        "wallMs": 23861,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 5,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "NSEI",
+            "status": "unknown-symbol",
+            "ms": 0
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "RELIANCE",
+            "status": "ok",
+            "ms": 81
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "NIFTY",
+            "status": "unknown-symbol",
+            "ms": 0
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "RELIANCE",
+            "ms": 81
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1851
+          },
+          "post-tool": {
+            "count": 3,
+            "msTotal": 15435
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 2493
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 67
+      },
+      {
+        "status": 200,
+        "wallMs": 6020,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2494
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I don't follow sectors the way people typically do. When I look at any business — regardless of sector — I ask the same three questions: is there zero debt? Doe",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 60
+      },
+      {
+        "status": 429,
+        "wallMs": 2507,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 45
+      },
+      {
+        "status": 200,
+        "wallMs": 18892,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "the validator rejected: model produced no claims — context injection only. every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 7840
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 7053
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "I don't trade quarters — I trade businesses. The same rules that apply to any single stock apply to the market as a whole: zero-debt winners survive recessions,",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 151
+      },
+      {
+        "status": 429,
+        "wallMs": 2525,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 19
+      }
+    ],
+    "toolRequest": [
+      {
+        "status": 200,
+        "wallMs": 21115,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPeers",
+            "symbol": "INFY",
+            "status": "ok",
+            "ms": 852
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"11850000\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"5285000\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"1885000\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"1850000\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=11850 inr, mktcap=11850000 inr_crore, pe=32 multiple, roe=18 percent, price=5285 inr, mktcap=5285000 inr_crore, pe=38 multiple, roe=20 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "INFY",
+            "ms": 852
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 823
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 7601
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 8638
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "pe = 28 multiple — seed/reference (may be stale)\nroe = 44 percent — seed/reference (may be stale)\nmktcap = 1300000 inr_crore — seed/reference (may be stale)\npe ",
+        "attempt": 2,
+        "attemptStatuses": [
+          502,
+          200
+        ],
+        "challenged": true,
+        "powMs": 14
+      },
+      {
+        "status": 200,
+        "wallMs": 33126,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "SBIN",
+            "status": "ok",
+            "ms": 832
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 3: claims mktcap=\"55.5\" but the matched mktcap assertion is 884400 — rejected (audit 2026-10-02) | claim 4: claims revcagr=\"3\" but the matched revcagr assertion is 14 — rejected (audit 2026-10-02) | claim 5: claims fcfmargin=\"22.86\" but the matched fcfmargin assertion is 22.8571 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=10.5 multiple, roe=15.4 percent, roce=6.13 percent, opm=42 percent, de=0 ratio, promo=55.5 percent, revcagr=14 percent, epscagr=14 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "SBIN",
+            "ms": 831
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 1
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 971
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 17337
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 10909
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 9
+      },
+      {
+        "status": 200,
+        "wallMs": 8564,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "context-only",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getStock",
+            "symbol": "HDFCBANK",
+            "status": "ok",
+            "ms": 772
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "HDFCBANK",
+            "ms": 772
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1528
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 2792
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The current dataset does not contain the promoter holding figure for HDFC Bank.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 81
+      },
+      {
+        "status": 200,
+        "wallMs": 19985,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "TCS",
+            "status": "ok",
+            "ms": 840
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"3\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"3\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"8\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=14.2 multiple, roe=51.8 percent, roce=63 percent, opm=27 percent, de=0 ratio, promo=71.8 percent, revcagr=6 percent, epscagr=8 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "TCS",
+            "ms": 838
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 1
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 882
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 5221
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 9681
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "opm = 27 percent — live (no disclosed observation time)\nrevcagr = 6 percent — live (no disclosed observation time)\nepscagr = 8 percent — live (no disclosed obse",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 31
+      },
+      {
+        "status": 200,
+        "wallMs": 25045,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "invalid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "ITC",
+            "status": "ok",
+            "ms": 831
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 5: claims revcagr=\"3\" but the matched revcagr assertion is 4 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=17 multiple, roe=29.3 percent, roce=38.9 percent, opm=34 percent, de=0 ratio, promo=0 percent, revcagr=4 percent, epscagr=3 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "ITC",
+            "ms": 830
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 1
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 931
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 8380
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 11512
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI response could not be verified against the supplied financial evidence.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 47
+      },
+      {
+        "status": 200,
+        "wallMs": 17125,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "AXISBANK",
+            "status": "ok",
+            "ms": 771
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "provenance-wording",
+            "feedback": "the validator rejected: answer: labels seed/derived data as live/current/latest — provenance upgrade rejected (Commit L2). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=13.7 multiple, roe=13.1 percent, roce=6.24 percent, opm=44 percent, de=0 ratio, promo=7.87 percent, revcagr=15 percent, epscagr=35 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "AXISBANK",
+            "ms": 770
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 1
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 954
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 6215
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 6182
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "de = 0 ratio — seed/reference (may be stale)\nroce = 6.24 percent — live (no disclosed observation time)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 18
+      }
+    ],
+    "multitool": [
+      {
+        "status": 200,
+        "wallMs": 13733,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "TCS",
+            "status": "ok",
+            "ms": 84
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "INFY",
+            "status": "ok",
+            "ms": 96
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"1.401\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=2114.4 inr, change=1.899 percent, price=1020.5 inr, change=-1.401 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "TCS",
+            "ms": 84
+          },
+          {
+            "symbol": "INFY",
+            "ms": 96
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 839
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 5497
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 4392
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 42
+      },
+      {
+        "status": 429,
+        "wallMs": 4385,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 108
+      },
+      {
+        "status": 200,
+        "wallMs": 31077,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "invalid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "RELIANCE",
+            "status": "ok",
+            "ms": 784
+          },
+          {
+            "tool": "getFinancials",
+            "symbol": "TCS",
+            "status": "ok",
+            "ms": 396
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 1: claims revcagr=\"3\" but the matched revcagr assertion is 6 — rejected (audit 2026-10-02) | claim 8: number \"17.78\" is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02) | claim 9: number \"5.29\" is not a matched assertion value — unsupported figure (dates and incidental prose numbers are not evidence), rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=21.5 multiple, roe=8.91 percent, roce=10.3 percent, opm=16 percent, de=0.45 ratio, promo=50.5 percent, revcagr=6 percent, epscagr=5 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 6,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "RELIANCE",
+            "ms": 780
+          },
+          {
+            "symbol": "TCS",
+            "ms": 396
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 2
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1383
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 7732
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 17770
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI response could not be verified against the supplied financial evidence.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 59
+      },
+      {
+        "status": 200,
+        "wallMs": 16618,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 5,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "INFY",
+            "status": "ok",
+            "ms": 95
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "WIPRO",
+            "status": "ok",
+            "ms": 68
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "HCLTECH",
+            "status": "ok",
+            "ms": 88
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "INFY",
+            "ms": 93
+          },
+          {
+            "symbol": "WIPRO",
+            "ms": 68
+          },
+          {
+            "symbol": "HCLTECH",
+            "ms": 88
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1347
+          },
+          "post-tool": {
+            "count": 3,
+            "msTotal": 9909
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 1434
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 36
+      },
+      {
+        "status": 200,
+        "wallMs": 9045,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "invalid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 961
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 4704
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI response could not be verified against the supplied financial evidence.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 53
+      },
+      {
+        "status": 200,
+        "wallMs": 17737,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "BHARTIARTL",
+            "status": "ok",
+            "ms": 770
+          },
+          {
+            "tool": "getFinancials",
+            "symbol": "ITC",
+            "status": "ok",
+            "ms": 395
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "malformed-json",
+            "feedback": "your reply was not parseable as a single JSON object"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "BHARTIARTL",
+            "ms": 770
+          },
+          {
+            "symbol": "ITC",
+            "ms": 395
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 2
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 994
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 3634
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 8547
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 63
+      }
+    ]
+  }
+}

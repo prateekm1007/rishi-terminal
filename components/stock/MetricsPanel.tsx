@@ -192,3 +192,6 @@ export function MetricsPanel({ resolved }: Props) {
     </div>
   );
 }
+
+// R16-C3 scratch-branch bite proof: deliberate +10 kB regression (rule 24)
+import "@/lib/r16C3BiteDeadweight";

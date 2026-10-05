@@ -279,17 +279,25 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
           (Round 9), stamped Y3-style: IST date + clock + timezone + the
           server-disclosed market state ("… · market closed · last session
           quote"). R16 C5: absent an observation the line's GEOMETRY is
-          still reserved (an invisible 14px slot with the same margins) —
-          the late-arriving attribution used to grow the tile and push
-          the whole content-wrapper down (measured CLS 0.053 on mobile,
-          Lighthouse layout-shift trace). */}
+          still reserved — the late-arriving attribution used to grow the
+          tile and push the whole content-wrapper down (measured CLS 0.053
+          on mobile, Lighthouse layout-shift trace).
+          R18 fix(C5): the reserve and the real line are BOTH fixed at the
+          2-line height (2 × 14px lineHeight, overflow hidden). The real
+          label wraps to two lines at the tile's fixed 380px width — the
+          old 1-line (14px) reserve made the tile grow by the second line
+          and shift the content-wrapper (deterministic CLS 0.038396,
+          reproduced locally and in CI; docs/evidence/round18/). A fixed
+          2-line footprint can never change height on the late fill, so
+          the shift is structurally impossible; no honest text is
+          truncated. */}
       {(() => {
         const obsLabel = observationLabel(observedIso, market);
         if (!obsLabel) {
-          return <div aria-hidden="true" style={{ fontSize: 9, fontFamily: 'monospace', marginTop: 10, lineHeight: '14px', height: 14 }} />;
+          return <div aria-hidden="true" style={{ fontSize: 9, fontFamily: 'monospace', marginTop: 10, lineHeight: '14px', height: 28 }} />;
         }
         return (
-          <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 10, lineHeight: '14px' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 10, lineHeight: '14px', height: 28, overflow: 'hidden' }}>
             {obsLabel}
           </div>
         );

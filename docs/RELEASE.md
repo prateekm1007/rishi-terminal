@@ -299,3 +299,12 @@ pacing discipline above remains the standing rule.
   Sporadic retry continues (the window drains on oldest-event expiry).
 - The E2/E3 PRs (#197/#198) are docs-only (the ignored build step owes
   them no deployment).
+
+- **13:20:41Z pacing slip, recorded not hidden**: #186 (bundle ratchet)
+  merged 27.7 minutes after #197 (E2, 12:52:57Z) — inside the same
+  hour window, against C8's one-production-relevant-merge-per-hour.
+  Cause: automation wait under-shot the boundary. Consequence: deploy
+  debt accrues while the quota window is 402-saturated. Correction:
+  remaining queue slots are computed from each merge's actual time
+  (#189 ≥ 14:20:41Z, hourly thereafter), and the wait loops now target
+  last-merge-time + 61 minutes.

@@ -20,7 +20,14 @@ export default defineConfig({
         command: "npm run start",
         port: 3000,
         timeout: 120_000,
-        reuseExistingServer: true,
+        // E2 (2026-10-05 audit): NEVER adopt an already-running server. The
+        // old `reuseExistingServer: true` silently tested against whatever
+        // zombie held port 3000 — the exact stale-build false-evidence
+        // incident this config line now makes impossible. The sanctioned
+        // full lifecycle (kill stale -> clean -> build -> start -> health)
+        // lives in scripts/ci/withCleanServer.mjs; a bare `npx playwright
+        // test` with a foreign server on the port now fails loudly here.
+        reuseExistingServer: false,
         // U4: the smoke suite pins the ranked widgets (Top Buy section +
         // its mandated seed banner). CI runs without project env vars, so
         // without this the homepage renders the (honest) disabled state

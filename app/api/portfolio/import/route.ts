@@ -111,6 +111,15 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (importError || !importRow) {
+    // B3: the 20-imports-per-user database cap (migration 026) maps to a
+    // clean 409 — the rate limiter bounds attempts per hour, this bounds
+    // total distinct contents.
+    if (/imports cap reached/i.test(importError?.message ?? '')) {
+      return NextResponse.json(
+        { ok: false, error: 'You already have 20 portfolio imports — this is the per-account limit.' },
+        { status: 409 },
+      );
+    }
     console.error('[portfolio:import]', importError?.message ?? 'no row returned');
     return NextResponse.json({ ok: false, error: 'Could not record the import.' }, { status: 500 });
   }
@@ -129,6 +138,15 @@ export async function POST(req: NextRequest) {
       })),
     );
     if (posError) {
+      // B3: the 500-positions-per-import database cap (migration 026).
+      // The route pre-checks MAX_POSITIONS, so this is the backstop for
+      // direct-to-database writes — still mapped cleanly if ever hit.
+      if (/positions cap reached/i.test(posError.message)) {
+        return NextResponse.json(
+          { ok: false, error: `too many positions in one import (limit ${MAX_POSITIONS})` },
+          { status: 413 },
+        );
+      }
       console.error('[portfolio:import:positions]', posError.message);
       // The import row is orphaned — remove it so a retry starts clean
       // (idempotency is per content; a half-finished import must not

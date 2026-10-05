@@ -84,7 +84,17 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error || !data) {
-    console.error('[screens:save]', error?.message ?? 'no row returned');
+    // B3: the database cap trigger (migration 026) surfaces as a
+    // check_violation whose message names the cap — map it to a clean
+    // 409 instead of a generic 500 (the user can fix this themselves).
+    const msg = error?.message ?? '';
+    if (/screens cap reached/i.test(msg)) {
+      return NextResponse.json(
+        { ok: false, error: 'You already have 50 saved screens — delete one first.' },
+        { status: 409 },
+      );
+    }
+    console.error('[screens:save]', msg || 'no row returned');
     return NextResponse.json({ ok: false, error: 'Could not save the screen.' }, { status: 500 });
   }
 

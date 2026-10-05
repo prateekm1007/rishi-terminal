@@ -17,7 +17,7 @@
  *  - Space README front matter wrong/missing  (HF: sdk: docker, app_port: 7860)
  *  - ISR writes failing as non-root           (build output chowned to uid 1000)
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -156,6 +156,40 @@ describe("build-context hygiene (E1, rule 8)", () => {
     expect(lastIndexOf("!docs/methodology/*.md")).toBeGreaterThan(
       dockerignore.search(/^\*\.md$/m)
     );
+  });
+});
+
+describe("runtime dependency hygiene (E1, self-hosted next start)", () => {
+  it("imports no devDependency from runtime source", () => {
+    // `next start` (self-hosted — the Space, unlike Vercel) loads
+    // next.config.ts at runtime with production-only node_modules
+    // (`npm ci --omit=dev`). A devDependency imported from runtime
+    // source crashes the server after boot ("Cannot find module ...").
+    // This exact incident: @next/bundle-analyzer in next.config.ts
+    // (Space RUNTIME_ERROR + CI docker job red on 2026-10-05; fixed by
+    // moving it to dependencies).
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { recursive: true, withFileTypes: false })
+        .map((f) => join(dir, String(f)))
+        .filter((f) => /\.(ts|tsx|mjs|js)$/.test(f) && !f.includes("node_modules"));
+    const files = [
+      ...walk(join(repoRoot, "app")),
+      ...walk(join(repoRoot, "lib")),
+      join(repoRoot, "next.config.ts"),
+    ];
+    const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"));
+    const devDeps = Object.keys(pkg.devDependencies ?? {});
+    const imported: string[] = [];
+    for (const file of files) {
+      const src = readFileSync(file, "utf8");
+      for (const name of devDeps) {
+        const esc = name.replace(/[/]/g, "\\/");
+        if (new RegExp(`(from|require\\(|import\\()\\s*["']${esc}`).test(src)) {
+          imported.push(`${name} (${file.replace(repoRoot + "/", "")})`);
+        }
+      }
+    }
+    expect(imported, `runtime source imports devDependencies: ${imported.join(", ")}`).toEqual([]);
   });
 });
 

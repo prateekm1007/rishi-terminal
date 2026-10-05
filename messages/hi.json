@@ -21,7 +21,8 @@
     "keyMetrics": "प्रमुख मेट्रिक्स",
     "valuationSnapshot": "मूल्यांकन स्नैपशॉट",
     "shareholdingPattern": "शेयरहोल्डिंग पैटर्न",
-    "noDebates": "इस स्टॉक के लिए कोई दार्शनिक बहस नहीं मिली"
+    "noDebates": "इस स्टॉक के लिए कोई दार्शनिक बहस नहीं मिली",
+    "qvpsScore": "क्वालिटी-वैल्यू पिलर स्कोर"
   },
   "header": {
     "title": "ऋषि टर्मिनल",
@@ -243,8 +244,7 @@
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
       "livePrices": "Live prices and market data (where the upstream provides them)",
-      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
-      "_note": "English copy pending translation"
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
     }
   },
   "news": {
@@ -698,7 +698,8 @@
     "compare": "तुलना",
     "portfolio": "पोर्टफोलियो",
     "watchlist": "वॉचलिस्ट",
-    "allRishis": "सभी ऋषि"
+    "allRishis": "सभी ऋषि",
+    "methodology": "पद्धति"
   },
   "alerts": {
     "symbol": "प्रतीक",

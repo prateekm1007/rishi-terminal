@@ -29,6 +29,7 @@
  */
 
 import { readFileSync, readdirSync, statSync, writeFileSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 
 const REPO = path.resolve(__dirname, "..");
@@ -43,6 +44,29 @@ const EDITORIAL_IMPORT_RE =
   /from\s+['"][^'"]*(?:lib\/chat\/personas|data\/glossary|lib\/gurus)[^'"]*['"]/;
 
 const FD3_PREFIXES = ["/crypto", "/forex", "/commodities", "/bonds", "/fno"];
+
+/**
+ * The snapshot date is DETERMINISTIC (Constitution 18): the committer
+ * date of the last commit that touched app/ — the audit's input surface.
+ * The previous wall-clock stamp made the drift gate fail on every PR
+ * whose CI ran on a later UTC day than the last PROVENANCE.md commit,
+ * with zero content change (observed 2026-10-05 00:1x UTC: four green
+ * PRs blocked simultaneously by a pure 2026-10-04 → 2026-10-05 date
+ * bump). Falls back to the wall date only outside a git checkout.
+ */
+function snapshotDate(): string {
+  try {
+    const d = execFileSync(
+      "git",
+      ["log", "-1", "--format=%cs", "--", "app"],
+      { cwd: REPO, encoding: "utf8" },
+    ).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  } catch {
+    /* not a git checkout — fall through */
+  }
+  return new Date().toISOString().slice(0, 10);
+}
 
 type Classification = "seed" | "sourced" | "static-editorial" | "none";
 
@@ -204,7 +228,7 @@ decision on "India equities only until G-C". Hiding them from nav and
 returning a "not available yet" state is BLOCKED: FD-3 — not the
 coder's call (Constitution art. 31).
 
-Snapshot: ${new Date().toISOString().slice(0, 10)} · ${counts}
+Snapshot: ${snapshotDate()} · ${counts}
 
 | Route | Classification | Seed label | Notes |
 |---|---|---|---|

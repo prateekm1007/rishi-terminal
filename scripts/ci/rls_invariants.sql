@@ -449,3 +449,56 @@ END
 $$;
 
 \echo '── B3 invariants: all passed'
+
+\echo '── B3.4: import deletion cascades positions; cross-user delete is a no-op'
+-- The DELETE /api/portfolio/import/[id] route (B3 follow-up) rides the
+-- 025 DELETE policies + the FK cascade. Behavioral proof: user A's
+-- delete removes the import AND its positions in one statement; user B's
+-- attempt on the same id removes nothing (RLS filters the row).
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  user_b uuid := gen_random_uuid();
+  imp uuid;
+  pos uuid;
+  seen int;
+BEGIN
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'a-b34-del@example.test'),
+    (user_b, 'b-b34-del@example.test');
+
+  SET LOCAL ROLE authenticated;
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+
+  INSERT INTO public.portfolio_imports (user_id, content_hash, source, filename, rows_imported, rows_rejected)
+    VALUES (user_a, md5('b34') || repeat('0', 32), 'holdings-csv', 'b34.csv', 1, 0)
+    RETURNING id INTO imp;
+  INSERT INTO public.portfolio_positions (user_id, import_id, symbol, quantity, avg_price)
+    VALUES (user_a, imp, 'SBIN', 10, 100)
+    RETURNING id INTO pos;
+
+  -- User B cannot delete user A's import (RLS: the row is invisible).
+  PERFORM set_config('request.jwt.claim.sub', user_b::text, true);
+  DELETE FROM public.portfolio_imports WHERE id = imp;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'B3.4 FAILED: user B deleted user A''s import (% rows)', seen;
+  END IF;
+
+  -- User A's delete cascades the positions.
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+  DELETE FROM public.portfolio_imports WHERE id = imp;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'B3.4 FAILED: user A''s own delete did not match (% rows)', seen;
+  END IF;
+  SELECT count(*) INTO seen FROM public.portfolio_positions WHERE id = pos;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'B3.4 FAILED: position row survived the import delete (cascade broken)';
+  END IF;
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── B3.4 invariants: all passed'

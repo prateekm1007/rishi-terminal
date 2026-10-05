@@ -88,3 +88,29 @@ describe('X3-07 rls.portfolio — the API layer never bypasses RLS', () => {
     }
   });
 });
+
+describe('B3 follow-up — import delete route (DELETE /api/portfolio/import/[id])', () => {
+  const ROUTE = readFileSync(
+    path.join(ROOT, 'app/api/portfolio/import/[id]/route.ts'),
+    'utf8',
+  );
+
+  it('gates on a session before anything else (401 path)', () => {
+    expect(ROUTE).toMatch(/getSessionUser\(\)/);
+    expect(ROUTE).toMatch(/401/);
+  });
+
+  it('validates the id shape at the trust boundary (rule 9)', () => {
+    expect(ROUTE).toMatch(/\[0-9a-f\]\{8\}/);
+    expect(ROUTE).toMatch(/400/);
+  });
+
+  it('uses the user-scoped client (RLS decides ownership, not the route)', () => {
+    expect(ROUTE).toMatch(/from\('portfolio_imports'\)/);
+    expect(ROUTE).toMatch(/createClient\(\)/);
+  });
+
+  it('a no-row delete surfaces as 404 (the cross-user information boundary)', () => {
+    expect(ROUTE).toMatch(/404/);
+  });
+});

@@ -8,7 +8,7 @@
 // dropped as dead code).
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
@@ -16,12 +16,12 @@ import { DataValue } from '@/components/DataValue';
 import { overlaySourced, type Sourced } from '@/lib/types/sourced';
 
 interface Props {
-  stocks: SlimStockRow[];
+  stocks: ScreenerPickerRow[];
 }
 
 type SortKey = "symbol" | "livePrice" | "pe" | "roe" | "mktcap" | "consensus" | "change24h";
 
-interface Row extends SlimStockRow {
+interface Row extends ScreenerPickerRow {
   /** null = no live quote — em dash shown; seed price is NEVER displayed (T14). */
   livePrice: number | null;
   change24h: number | null;

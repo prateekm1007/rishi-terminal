@@ -3,9 +3,11 @@
 // N1 (round 3): the interactive lab shell (moved from app/lab/page.tsx).
 // Receives the server-generated slim index and distributes it to the
 // tabs — no client module imports the seed dataset or the engine.
+import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import { decodeSlimIndex, type SlimWirePayload } from '@/lib/transport/slimWire';
 import ErrorBoundary from './ErrorBoundary';
 
 import HoldingsTabView from './HoldingsTab';
@@ -29,10 +31,13 @@ function isValidTab(t: string | null): t is LabTab {
 }
 
 interface Props {
-  rows: SlimStockRow[];
+  /** R16 C5 wire form: verdict metadata deduped into a legend (see wireIndex.ts). */
+  wire: SlimWirePayload;
 }
 
-export function LabContent({ rows }: Props) {
+export function LabContent({ wire }: Props) {
+  // Decode once per mount; every tab below keeps receiving SlimStockRow[].
+  const rows = useMemo(() => decodeSlimIndex(wire), [wire]);
   const searchParams = useSearchParams();
   const rawTab = (searchParams.get('tab') ?? '').toLowerCase();
   const activeTab: LabTab = isValidTab(rawTab) ? rawTab : 'overview';

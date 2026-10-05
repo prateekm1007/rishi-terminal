@@ -3,6 +3,7 @@
 // server. Tab routing/search-params handling moved to LabContent.
 import { Suspense } from 'react';
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
+import { encodeSlimIndex } from '@/lib/transport/slimWire';
 import { LabContent } from '@/components/lab/LabContent';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { compare, holdings, intel, overview } from '@/messages/en.json';
@@ -20,7 +21,11 @@ export const metadata = {
 };
 
 export default function PortfolioLabPage() {
-  const rows = getSlimIndex();
+  // R16 C5: the lab tabs DO read verdict summaries (topBull.full,
+  // summaryScores) — the wire codec dedupes the verdict metadata into a
+  // legend instead of re-serializing it for every stock (6,412 `full`
+  // strings became 39 legend entries). LabContent decodes on arrival.
+  const wire = encodeSlimIndex(getSlimIndex());
   return (
     <NamespaceProvider ns={{ compare, holdings, intel, overview }}>
       <Suspense
@@ -30,7 +35,7 @@ export default function PortfolioLabPage() {
           </div>
         }
       >
-        <LabContent rows={rows} />
+        <LabContent wire={wire} />
       </Suspense>
     </NamespaceProvider>
   );

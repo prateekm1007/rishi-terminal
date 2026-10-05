@@ -89,11 +89,14 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-/** Files importing the seed/scoring surface (value OR type imports). */
+/** Files importing the seed/scoring surface (value OR type imports).
+ *  R16 C5: lib/transport/slimWire is the RSC transport codec for the
+ *  slim index — importing it (even type-only) marks a component as a
+ *  seed-derived surface exactly like the slim index it replaced. */
 function discoverSeedSurfaces(): string[] {
   const files = [...walk("app"), ...walk("components")];
   const IMPORT_RE =
-    /from\s+['"][^'"]*(?:lib\/scoring|lib\/scorers|data\/stocks|lib\/consensus)[^'"]*['"]/;
+    /from\s+['"][^'"]*(?:lib\/scoring|lib\/scorers|data\/stocks|lib\/consensus|lib\/transport\/slimWire)[^'"]*['"]/;
   return files.filter((f) => {
     if (f.startsWith("app/api/")) return false; // API responses render no UI
     const src = readFileSync(path.join(REPO, f), "utf8");

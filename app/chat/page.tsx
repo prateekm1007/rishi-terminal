@@ -3,6 +3,7 @@
 // display record for the selected symbol comes from
 // GET /api/stock/[symbol]. No dataset, no engine in the bundle.
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
+import { toScreenerRows } from '@/lib/transport/slimWire';
 import { ChatClient } from '@/components/chat/ChatClient';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { chat } from '@/messages/en.json';
@@ -12,7 +13,9 @@ import { chat } from '@/messages/en.json';
 // note in app/page.tsx.
 
 export default function ChatPage() {
-  const rows = getSlimIndex();
+  // R16 C5: the picker reads symbol/name/sector/consensus only — the
+  // projection drops verdict summaries from this page's flight payload.
+  const rows = toScreenerRows(getSlimIndex());
   return (
     <NamespaceProvider ns={{ chat }}>
       <ChatClient rows={rows} />

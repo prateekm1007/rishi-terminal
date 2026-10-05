@@ -7,7 +7,7 @@
 // results/errors.
 
 import { useCallback, useEffect, useState } from 'react';
-import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
 
 interface SavedScreen {
   id: string;
@@ -19,7 +19,7 @@ interface SavedScreen {
 
 interface Props {
   /** Rows matching the active expression (null = expression mode off). */
-  onQueryResult: (rows: SlimStockRow[] | null, q: string | null) => void;
+  onQueryResult: (rows: ScreenerPickerRow[] | null, q: string | null) => void;
 }
 
 const EXAMPLES = [
@@ -85,7 +85,8 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
       }
       setActive(query);
       setCount(data.count);
-      onQueryResult(data.rows as SlimStockRow[], query);
+      // The API rows are a superset of the picker shape; extra fields are ignored.
+      onQueryResult(data.rows as ScreenerPickerRow[], query);
     } catch {
       setError('network error — try again');
     } finally {

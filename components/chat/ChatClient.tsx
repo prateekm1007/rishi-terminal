@@ -5,13 +5,13 @@
 // GET /api/stock/[symbol] (the seed dataset is server-only now).
 import { useState, useMemo, useEffect } from 'react';
 import type { Stock } from '@/lib/types';
-import type { SlimStockRow } from '@/lib/scoring/slimIndex';
+import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
 import RishiChat from './RishiChat';
 import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: seed-derived context in chat
 import { DataValue } from '@/components/DataValue'; // P0-06: provenance for the displayed metrics
 
 interface Props {
-  rows: SlimStockRow[];
+  rows: ScreenerPickerRow[];
 }
 
 export function ChatClient({ rows }: Props) {

@@ -113,3 +113,34 @@ $ git grep -c "rishi-terminal.vercel.app" -- . ':!docs' ':!package-lock.json' | 
 34                           # 33 files + CONSTITUTION.md (untouchable, rule: founder approval)
 $ next.config.ts             # no Vercel-only options present (verified by read)
 ```
+
+## PRO account verification (whoami-v2 via API, 2026-10-05 — founder delta D1)
+
+Command (token value redacted; token lives in the local vault per Article VI):
+
+```
+$ HF_TOKEN=<vault:HF_TOKEN> curl -s -H "Authorization: Bearer $HF_TOKEN" \
+    https://huggingface.co/api/whoami-v2 | jq '{isPro, canPay, billingMode, periodEnd}'
+```
+
+Raw redacted result (only the non-secret fields; token, email, user name and org ids
+withheld per rule 34 — the full shape matches the live response):
+
+```json
+{
+  "canPay": true,
+  "billingMode": "prepaid",
+  "isPro": true
+}
+```
+
+Token capability relevant to D1/D2 (same response, `auth.accessToken.fineGrained.scoped`
+on the founder's own account): `repo.write`, `repo.content.read`, `repo.access.read`,
+`user.billing.read`, among others. Space creation, secret setting, hardware requests and
+git pushes to `*.hf.space` repos are exercised live in D2 — any scope shortfall is
+recorded as `BLOCKED` there, never worked around.
+
+Interpretation recorded in the plan doc: PRO is active on the account itself
+(`isPro: true`), paid hardware is payable (`canPay: true`, prepaid). The PRO monthly
+compute-credit amount remains unverified here (see the plan's unverified-facts ledger) —
+the founder checks his billing page.

@@ -1,7 +1,11 @@
 # .dockerignore — keep the build context minimal and secret-free (E1, HF staging Space).
-# The Dockerfile only needs package manifests, source, public/ and next.config.
-# .env* must never enter the image (Constitution rule 8) — this exclusion is
-# asserted by test/dockerfile.invariants.test.ts.
+# The Dockerfile needs package manifests, source, public/ and next.config,
+# PLUS docs/methodology/*.md: the /methodology pages read them at BUILD
+# time (lib/methodology/index.ts, S2-01) — excluding them broke the image
+# build with "ENOENT ... /app/docs/methodology" (caught by the CI
+# docker-space job and the first HF build; see docs/evidence/round18/).
+# .env* must never enter the image (Constitution rule 8) — this exclusion
+# is asserted by test/dockerfile.invariants.test.ts.
 .git
 .github
 node_modules
@@ -12,6 +16,8 @@ node_modules
 *.md
 !README.md
 docs
+!docs/methodology
+!docs/methodology/*.md
 artifacts
 scripts
 test

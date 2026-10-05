@@ -138,6 +138,25 @@ describe("build-context hygiene (E1, rule 8)", () => {
     expect(dockerignore).toMatch(/^node_modules$/m);
     expect(dockerignore).toMatch(/^\.next$/m);
   });
+
+  it("still ships the build-time methodology content (S2-01 loader)", () => {
+    // /methodology pages read docs/methodology/*.md at BUILD time via
+    // lib/methodology/index.ts. The first image build failed with
+    // "ENOENT ... /app/docs/methodology" once `docs` and `*.md` were
+    // excluded — these un-excludes are load-bearing, and the CI
+    // docker-space build is the semantic bite (a regression fails it).
+    const lastIndexOf = (s: string) => dockerignore.lastIndexOf(s);
+    expect(lastIndexOf("!docs/methodology")).toBeGreaterThan(-1);
+    expect(lastIndexOf("!docs/methodology/*.md")).toBeGreaterThan(-1);
+    // Last-match-wins: the un-excludes must come AFTER both the `docs`
+    // and the `*.md` exclusions or they are dead lines.
+    expect(lastIndexOf("!docs/methodology")).toBeGreaterThan(
+      dockerignore.search(/^docs$/m)
+    );
+    expect(lastIndexOf("!docs/methodology/*.md")).toBeGreaterThan(
+      dockerignore.search(/^\*\.md$/m)
+    );
+  });
 });
 
 describe("Space README front matter (E1, HF Space configuration)", () => {

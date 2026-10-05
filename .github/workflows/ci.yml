@@ -225,6 +225,65 @@ jobs:
       - name: Run smoke tests
         run: npx playwright test
 
+  docker-space:
+    name: Docker Space image (E1 — build, run, probe acceptance routes)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the Space image (placeholder args — identical to the HF build)
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL="https://placeholder.supabase.co" \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="ci-placeholder-anon-key" \
+            --build-arg NEXT_PUBLIC_BASE_URL="" \
+            -t rishi-terminal-space .
+
+      - name: Image size (E2 measurement — raw output)
+        run: docker images rishi-terminal-space --format '{{.Repository}}:{{.Tag}} {{.Size}}'
+
+      - name: Run the container exactly as the Space does
+        run: docker run -d --name space -p 7860:7860 rishi-terminal-space
+
+      - name: Wait for first response (cold-boot time, E2 measurement — raw output)
+        run: |
+          start=$(date +%s)
+          code=""
+          for i in $(seq 1 90); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:7860/ || true)
+            if [ "$code" = "200" ]; then break; fi
+            sleep 2
+          done
+          end=$(date +%s)
+          echo "first 200 after $((end - start)) s (last code: $code)"
+
+      - name: Probe the four E1 acceptance routes (raw output)
+        run: |
+          for route in / /screener /stock/BANKBARODA /api/health; do
+            echo "GET $route -> $(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:7860$route")"
+          done
+          echo "--- /api/health body (no DB env — honest degraded verdict):"
+          curl -s http://127.0.0.1:7860/api/health; echo
+
+      - name: Assert E1 acceptance statuses
+        run: |
+          for route in / /screener /stock/BANKBARODA; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:7860$route")
+            if [ "$code" != "200" ]; then
+              echo "::error::E1 acceptance failed: $route returned $code, expected 200"
+              exit 1
+            fi
+          done
+          # The Space runs seed-only (no DB env, per the founder's staging
+          # rule): /api/health must still answer, honestly reporting its
+          # degraded verdict as 503 — fail closed (Constitution C2). A 200
+          # here would mean a database was silently attached.
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:7860/api/health)
+          if [ "$code" != "503" ]; then
+            echo "::error::/api/health returned $code, expected the honest degraded 503 (seed-only staging)"
+            exit 1
+          fi
+
   lighthouse:
     name: Lighthouse gate (U3 — measured-score floors, ratchet)
     runs-on: ubuntu-latest

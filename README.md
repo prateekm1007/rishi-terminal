@@ -1,3 +1,12 @@
+---
+title: Rishi Terminal
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # Rishi Terminal
 
 **Analyze stocks like the legends.**  

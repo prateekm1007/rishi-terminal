@@ -1,0 +1,22 @@
+# .dockerignore — keep the build context minimal and secret-free (E1, HF staging Space).
+# The Dockerfile only needs package manifests, source, public/ and next.config.
+# .env* must never enter the image (Constitution rule 8) — this exclusion is
+# asserted by test/dockerfile.invariants.test.ts.
+.git
+.github
+node_modules
+.next
+.env
+.env.*
+!.env.example
+*.md
+!README.md
+docs
+artifacts
+scripts
+test
+coverage
+playwright-report
+test-results
+*.log
+.DS_Store

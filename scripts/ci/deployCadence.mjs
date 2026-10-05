@@ -107,17 +107,56 @@ export function evaluateCadence(merges, now = Date.now()) {
   };
 }
 
+/** C2 (founder Round 16): the PR-side merge gate, pure and fixture-testable.
+ *  Given whether THIS PR is production-relevant and the age of the last
+ *  production-relevant merge on main, decide whether merging NOW would
+ *  violate C8. This is the function behind the required PR check that
+ *  blocks the merge button (the push-time run only REPORTS — a failed
+ *  push check cannot undo a merge; it only trains people to ignore red).
+ *
+ *  Returns {ok, reason, earliestSafeIso}:
+ *    - docs-only PR          -> ok (docs merges never deploy; C8 owes no pacing)
+ *    - no prior relevant merge -> ok (nothing to pace against)
+ *    - inside the window     -> BLOCK with the earliest safe merge time
+ *    - window elapsed        -> ok
+ */
+export function prGateDecision({ prRelevant, lastRelevantTs, now, cadenceMinutes = CADENCE_MINUTES }) {
+  if (!prRelevant) {
+    return { ok: true, reason: "docs-only PR — C8 exempt (ignored-build-step skips it; it owes no pacing)", earliestSafeIso: null };
+  }
+  if (lastRelevantTs == null) {
+    return { ok: true, reason: "no production-relevant merges on main in the audited window", earliestSafeIso: null };
+  }
+  const ageMinutes = (now - lastRelevantTs) / MS_PER_MINUTE;
+  if (ageMinutes < cadenceMinutes) {
+    return {
+      ok: false,
+      reason: `this PR is production-relevant and the last production-relevant merge landed ${Math.round(ageMinutes * 10) / 10} min ago — C8 allows at most one per ${cadenceMinutes} min`,
+      earliestSafeIso: new Date(lastRelevantTs + cadenceMinutes * MS_PER_MINUTE).toISOString(),
+    };
+  }
+  return {
+    ok: true,
+    reason: `last production-relevant merge was ${Math.round(ageMinutes)} min ago — within the ${cadenceMinutes} min cadence`,
+    earliestSafeIso: null,
+  };
+}
+
 function main() {
   const argv = process.argv.slice(2);
   let fixturePath = null;
   let now = Date.now();
   let base = "HEAD";
   let advisory = false;
+  let report = false;
+  let prMode = false;
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--fixture") fixturePath = argv[++i];
     else if (argv[i] === "--now") now = Number(argv[++i]);
     else if (argv[i] === "--base") base = argv[++i];
     else if (argv[i] === "--advisory") advisory = true;
+    else if (argv[i] === "--report") report = true;
+    else if (argv[i] === "--pr") prMode = true;
   }
 
   let merges;
@@ -132,6 +171,47 @@ function main() {
   }
 
   const verdict = evaluateCadence(merges, now);
+
+  if (prMode) {
+    // C2 PR merge gate (required check): BLOCK the merge button when THIS
+    // PR is production-relevant and the last production-relevant merge is
+    // younger than the cadence. Docs-only PRs pass unconditionally. The
+    // check runs at CI time; before merging inside the window's tail,
+    // re-run the check (the ritual the ledger documents) — the gate reads
+    // the wall clock, so a re-run past the hour passes.
+    const headRelevant = (function () {
+      const mb = git("merge-base", base, "HEAD").trim();
+      const diff = git("diff", "--name-only", mb, "HEAD", "--", ".", ...SKIP_PATHS);
+      return diff.trim().length > 0;
+    })();
+    const last = merges.find((m) => m.relevant);
+    const decision = prGateDecision({
+      prRelevant: headRelevant,
+      lastRelevantTs: last ? last.ts : null,
+      now,
+    });
+    if (!decision.ok) {
+      console.error(`deploy-cadence: BLOCKED — ${decision.reason}`);
+      console.error(`deploy-cadence: earliest safe merge time ${decision.earliestSafeIso} (re-run this check then merge)`);
+      process.exit(1);
+    }
+    console.log(`deploy-cadence: PASS — ${decision.reason}`);
+    process.exit(0);
+  }
+
+  if (report) {
+    // C2 push-time mode: the landed reality is REPORTED, never failed.
+    // A red main run cannot undo a merge (the merge is already landed);
+    // it only trains everyone to ignore red (founder Round 16, defect 2).
+    // Violations stay on the record here and in the cadence ledger.
+    if (!verdict.ok) {
+      console.log(`::warning::deploy-cadence: C8 VIOLATION ON THE RECORD — ${verdict.message}`);
+      console.log(`deploy-cadence: report-only — main stays green; record this in docs/RELEASE.md cadence ledger`);
+      process.exit(0);
+    }
+    console.log(`deploy-cadence: PASS — ${verdict.message}`);
+    process.exit(0);
+  }
 
   if (advisory) {
     // PR context: name the risk and the wait. The relevant merges here are

@@ -19,7 +19,7 @@
  * manufactured for this proof.
  */
 import { describe, expect, it } from "vitest";
-import { evaluateCadence } from "../scripts/ci/deployCadence.mjs";
+import { evaluateCadence, prGateDecision } from "../scripts/ci/deployCadence.mjs";
 
 const HOUR = 60 * 60 * 1000;
 const NOW = 1_800_000_000_000;
@@ -78,5 +78,47 @@ describe("R15-F — C8 deploy cadence is executable logic", () => {
     );
     expect(verdict.ok).toBe(true);
     expect(verdict.message).toContain("no production-relevant merges");
+  });
+});
+
+describe("R16-C2 — the PR merge gate blocks the button inside the C8 window", () => {
+  it("BITES: a production-relevant PR inside the window is BLOCKED with the earliest safe time", () => {
+    const decision = prGateDecision({
+      prRelevant: true,
+      lastRelevantTs: NOW - 17 * 60_000,
+      now: NOW,
+    });
+    expect(decision.ok).toBe(false);
+    expect(decision.reason).toContain("C8 allows at most one per 60 min");
+    expect(decision.earliestSafeIso).toBe(new Date(NOW - 17 * 60_000 + HOUR).toISOString());
+  });
+
+  it("PASSES: a production-relevant PR after the window has elapsed", () => {
+    const decision = prGateDecision({
+      prRelevant: true,
+      lastRelevantTs: NOW - 61 * 60_000,
+      now: NOW,
+    });
+    expect(decision.ok).toBe(true);
+    expect(decision.earliestSafeIso).toBeNull();
+  });
+
+  it("PASSES: a docs-only PR is C8-exempt even seconds after a production merge", () => {
+    const decision = prGateDecision({
+      prRelevant: false,
+      lastRelevantTs: NOW - 10_000,
+      now: NOW,
+    });
+    expect(decision.ok).toBe(true);
+    expect(decision.reason).toContain("docs-only PR");
+  });
+
+  it("PASSES: no prior production-relevant merge in the window — nothing to pace against", () => {
+    const decision = prGateDecision({
+      prRelevant: true,
+      lastRelevantTs: null,
+      now: NOW,
+    });
+    expect(decision.ok).toBe(true);
   });
 });

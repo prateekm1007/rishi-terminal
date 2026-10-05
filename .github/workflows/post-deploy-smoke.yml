@@ -7,10 +7,15 @@
 # finishes, and goes RED if the deployed HTML lacks the first-byte content
 # sections (Constitution v2 C6: done = merged + deployed + live).
 #
-# Triggers:
-#   deployment_status (success) — Vercel's GitHub integration fires this for
-#     every deployment; the job filters to environment "Production" so
-#     preview deployments do not spam runs.
+#   deployment_status — Vercel's GitHub integration fires this for every
+#     deployment; the job filters to environment "Production" and runs for
+#     ANY completed state. C2 (founder Round 16, defect 2): the smoke must
+#     run REGARDLESS of the cadence result and regardless of deployment
+#     hiccups — a canceled/failed deployment leaves the PREVIOUS build
+#     serving, and the probes then honestly report what production is
+#     actually serving (version check without --expect-sha, content
+#     anchors still asserted). Silent skips are how B-20/B-21 class
+#     defects hide.
 #   workflow_dispatch — manual/fail-first runs (rule 24: prove the gate
 #     bites by running it with a deliberately missing section or against a
 #     pre-fix local build).
@@ -40,8 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.deployment_status.state == 'success' &&
-       startsWith(github.event.deployment.environment, 'Production'))
+      (startsWith(github.event.deployment.environment, 'Production'))
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,10 +58,14 @@ jobs:
         with:
           node-version: 22
 
-      - name: "Live probes: A1 first-byte sections, version SHA, Y4 null-zero (B1; C6/C10)"
+      - name: "Live probes: A1 first-byte sections, version SHA, Y4 null-zero (B1; C6/C10; C2: runs for any production deployment state)"
         run: |
+          echo "deployment state: ${{ github.event.deployment_status.state }} (smoke runs regardless — C2)"
           EXPECT="${{ github.event.inputs.expect_sha || github.event.deployment.sha || '' }}"
-          if [ -n "$EXPECT" ]; then
+          # C2: only assert the just-deployed SHA when the deployment itself
+          # succeeded; any other state leaves the previous build serving, so
+          # the version check REPORTS the serving SHA instead of asserting.
+          if [ "${{ github.event.deployment_status.state }}" = "success" ] && [ -n "$EXPECT" ]; then
             node scripts/ci/postDeploySmoke.mjs --expect-sha "$EXPECT"
           else
             node scripts/ci/postDeploySmoke.mjs

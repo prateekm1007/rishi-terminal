@@ -6,9 +6,19 @@
 # window (09:15-15:30 IST = 03:45-10:00 UTC) on weekdays.
 #
 # Schedule vs endpoint gating (defense in depth):
-#   - cron fires 03:00-10:45 UTC on weekdays (the :15-offset window cannot
+#   - cron fires 03:07-10:52 UTC on weekdays (the :15-offset window cannot
 #     be expressed in cron's 5-field syntax, so the schedule is WIDER than
 #     the session and the ENDPOINT gates precisely via marketState).
+#   - R16 C4 repair (2026-10-05): the schedule had NEVER fired — zero
+#     event=schedule runs (total_count=0) while the workflow was active on
+#     main since Oct 4 and the 03:45/04:00/04:15/04:30 slots all passed
+#     empty. Two changes: (a) this commit re-registers the schedule (a
+#     default-branch change to the workflow file re-registers its cron),
+#     and (b) the minutes shift OFF the :00/:15/:30/:45 boundaries to
+#     :07/:22/:37/:52 — GitHub's documented guidance: "The schedule event
+#     can be delayed during periods of high load ... To decrease the
+#     chance of delay, schedule your workflow to run at a different time
+#     of the hour." The old */15 form sat exactly on the worst spots.
 #   - each run partitions the universe into 6 slices (916/6 ≈ 153 symbols
 #     per request, well inside the function timeout) fired sequentially;
 #     slice 0 also warms the index/crypto/gold tiles.
@@ -23,7 +33,7 @@ name: quotes-warm
 
 on:
   schedule:
-    - cron: "*/15 3-10 * * 1-5" # weekdays 03:00-10:45 UTC (covers the IST session)
+    - cron: "7-52/15 3-10 * * 1-5" # weekdays 03:07-10:52 UTC, off the high-load :00/:15/:30/:45 boundaries (R16 C4)
   workflow_dispatch: {} # manual runs for verification (endpoint gates market hours)
 
 concurrency:

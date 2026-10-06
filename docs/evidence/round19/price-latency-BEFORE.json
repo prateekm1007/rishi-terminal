@@ -1,0 +1,579 @@
+{
+  "generatedAt": "2026-10-06T09:42:48.162Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "maxSeconds": 300,
+  "plateauReached": true,
+  "firstPriceMs": 9020,
+  "finalCoverage": 762,
+  "timeToPct": {
+    "p25": 35530,
+    "p50": 66395,
+    "p75": 90675,
+    "p100": 116965
+  },
+  "wire": {
+    "responses": 19,
+    "symbols": 916,
+    "LIVE": 761,
+    "CACHED": 1,
+    "UNAVAILABLE": 154
+  },
+  "batchResponses": [
+    {
+      "tMs": 8880,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 43,
+        "CACHED": 0,
+        "UNAVAILABLE": 7,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 15417,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 42,
+        "CACHED": 0,
+        "UNAVAILABLE": 8,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 22433,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 42,
+        "CACHED": 1,
+        "UNAVAILABLE": 7,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 29027,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 46,
+        "CACHED": 0,
+        "UNAVAILABLE": 4,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 35145,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 43,
+        "CACHED": 0,
+        "UNAVAILABLE": 7,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 41243,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 42,
+        "CACHED": 0,
+        "UNAVAILABLE": 8,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 47744,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 41,
+        "CACHED": 0,
+        "UNAVAILABLE": 9,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 53922,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 38,
+        "CACHED": 0,
+        "UNAVAILABLE": 12,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 59871,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 38,
+        "CACHED": 0,
+        "UNAVAILABLE": 12,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 66090,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 39,
+        "CACHED": 0,
+        "UNAVAILABLE": 11,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 72169,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 41,
+        "CACHED": 0,
+        "UNAVAILABLE": 9,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 78305,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 47,
+        "CACHED": 0,
+        "UNAVAILABLE": 3,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 84394,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 41,
+        "CACHED": 0,
+        "UNAVAILABLE": 9,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 90477,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 45,
+        "CACHED": 0,
+        "UNAVAILABLE": 5,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 96706,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 39,
+        "CACHED": 0,
+        "UNAVAILABLE": 11,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 102828,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 42,
+        "CACHED": 0,
+        "UNAVAILABLE": 8,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 108547,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 40,
+        "CACHED": 0,
+        "UNAVAILABLE": 10,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 114441,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 41,
+        "CACHED": 0,
+        "UNAVAILABLE": 9,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 116868,
+      "http": 200,
+      "symbols": 16,
+      "split": {
+        "LIVE": 11,
+        "CACHED": 0,
+        "UNAVAILABLE": 5,
+        "other": 0
+      }
+    }
+  ],
+  "coverageEvery500ms": [
+    {
+      "tMs": 402,
+      "rows": 916,
+      "priced": 0
+    },
+    {
+      "tMs": 2430,
+      "rows": 916,
+      "priced": 0
+    },
+    {
+      "tMs": 4471,
+      "rows": 916,
+      "priced": 0
+    },
+    {
+      "tMs": 6495,
+      "rows": 916,
+      "priced": 0
+    },
+    {
+      "tMs": 8515,
+      "rows": 916,
+      "priced": 0
+    },
+    {
+      "tMs": 10537,
+      "rows": 916,
+      "priced": 43
+    },
+    {
+      "tMs": 12558,
+      "rows": 916,
+      "priced": 43
+    },
+    {
+      "tMs": 14580,
+      "rows": 916,
+      "priced": 43
+    },
+    {
+      "tMs": 16599,
+      "rows": 916,
+      "priced": 85
+    },
+    {
+      "tMs": 18620,
+      "rows": 916,
+      "priced": 85
+    },
+    {
+      "tMs": 21379,
+      "rows": 916,
+      "priced": 85
+    },
+    {
+      "tMs": 23402,
+      "rows": 916,
+      "priced": 128
+    },
+    {
+      "tMs": 25423,
+      "rows": 916,
+      "priced": 128
+    },
+    {
+      "tMs": 27442,
+      "rows": 916,
+      "priced": 128
+    },
+    {
+      "tMs": 29462,
+      "rows": 916,
+      "priced": 174
+    },
+    {
+      "tMs": 31490,
+      "rows": 916,
+      "priced": 174
+    },
+    {
+      "tMs": 33510,
+      "rows": 916,
+      "priced": 174
+    },
+    {
+      "tMs": 35530,
+      "rows": 916,
+      "priced": 217
+    },
+    {
+      "tMs": 37560,
+      "rows": 916,
+      "priced": 217
+    },
+    {
+      "tMs": 39601,
+      "rows": 916,
+      "priced": 217
+    },
+    {
+      "tMs": 41622,
+      "rows": 916,
+      "priced": 259
+    },
+    {
+      "tMs": 43642,
+      "rows": 916,
+      "priced": 259
+    },
+    {
+      "tMs": 45663,
+      "rows": 916,
+      "priced": 259
+    },
+    {
+      "tMs": 47685,
+      "rows": 916,
+      "priced": 259
+    },
+    {
+      "tMs": 49708,
+      "rows": 916,
+      "priced": 300
+    },
+    {
+      "tMs": 51729,
+      "rows": 916,
+      "priced": 300
+    },
+    {
+      "tMs": 53751,
+      "rows": 916,
+      "priced": 300
+    },
+    {
+      "tMs": 55776,
+      "rows": 916,
+      "priced": 338
+    },
+    {
+      "tMs": 57796,
+      "rows": 916,
+      "priced": 338
+    },
+    {
+      "tMs": 59818,
+      "rows": 916,
+      "priced": 338
+    },
+    {
+      "tMs": 61840,
+      "rows": 916,
+      "priced": 376
+    },
+    {
+      "tMs": 63865,
+      "rows": 916,
+      "priced": 376
+    },
+    {
+      "tMs": 65889,
+      "rows": 916,
+      "priced": 376
+    },
+    {
+      "tMs": 67912,
+      "rows": 916,
+      "priced": 415
+    },
+    {
+      "tMs": 69942,
+      "rows": 916,
+      "priced": 415
+    },
+    {
+      "tMs": 71969,
+      "rows": 916,
+      "priced": 415
+    },
+    {
+      "tMs": 73991,
+      "rows": 916,
+      "priced": 456
+    },
+    {
+      "tMs": 76013,
+      "rows": 916,
+      "priced": 456
+    },
+    {
+      "tMs": 78035,
+      "rows": 916,
+      "priced": 456
+    },
+    {
+      "tMs": 80056,
+      "rows": 916,
+      "priced": 503
+    },
+    {
+      "tMs": 82078,
+      "rows": 916,
+      "priced": 503
+    },
+    {
+      "tMs": 84101,
+      "rows": 916,
+      "priced": 503
+    },
+    {
+      "tMs": 86125,
+      "rows": 916,
+      "priced": 544
+    },
+    {
+      "tMs": 88147,
+      "rows": 916,
+      "priced": 544
+    },
+    {
+      "tMs": 90170,
+      "rows": 916,
+      "priced": 544
+    },
+    {
+      "tMs": 92191,
+      "rows": 916,
+      "priced": 589
+    },
+    {
+      "tMs": 94212,
+      "rows": 916,
+      "priced": 589
+    },
+    {
+      "tMs": 96235,
+      "rows": 916,
+      "priced": 589
+    },
+    {
+      "tMs": 98259,
+      "rows": 916,
+      "priced": 628
+    },
+    {
+      "tMs": 100281,
+      "rows": 916,
+      "priced": 628
+    },
+    {
+      "tMs": 102303,
+      "rows": 916,
+      "priced": 628
+    },
+    {
+      "tMs": 104324,
+      "rows": 916,
+      "priced": 670
+    },
+    {
+      "tMs": 106344,
+      "rows": 916,
+      "priced": 670
+    },
+    {
+      "tMs": 108368,
+      "rows": 916,
+      "priced": 670
+    },
+    {
+      "tMs": 110391,
+      "rows": 916,
+      "priced": 710
+    },
+    {
+      "tMs": 112413,
+      "rows": 916,
+      "priced": 710
+    },
+    {
+      "tMs": 114437,
+      "rows": 916,
+      "priced": 710
+    },
+    {
+      "tMs": 116460,
+      "rows": 916,
+      "priced": 751
+    },
+    {
+      "tMs": 118481,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 120504,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 122527,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 124551,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 126575,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 128599,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 130624,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 132648,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 134672,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 136695,
+      "rows": 916,
+      "priced": 762
+    },
+    {
+      "tMs": 137201,
+      "rows": 916,
+      "priced": 762
+    }
+  ]
+}

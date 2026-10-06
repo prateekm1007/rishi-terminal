@@ -61,51 +61,63 @@ export const LONG_PILLARS: PillarConfig[] = [
 ];
 
 // ── SHORT MODE PILLARS (weights must sum to 1.0) ──────────────
+//
+// Round 20 (qvps-short-v2, contract section 5 / A1): weights renormalize
+// the declared architecture onto the RESOLVABLE input set — the pillars
+// whose inputs never resolve (moatDestruction, growthMirage, catalyst)
+// carry weight 0 and are disabled until D1-04/D1-05 license their data.
+// No weight was chosen from any backtest result (pre-registered).
 
 export const SHORT_PILLARS: PillarConfig[] = [
   {
     id:          "overvaluation",
     name:        "Overvaluation & Froth",
-    weight:      0.25,
+    weight:      0.35,
     description: "PE vs Sector, PB Extreme, EV/Sales vs Margins, PEG Excess",
     enabled:     true,
   },
   {
     id:          "fundamentalDecay",
     name:        "Fundamental Decay",
-    weight:      0.22,
-    description: "Declining ROE/ROCE, Negative FCF, Rising Debt, Altman Z-Score",
+    weight:      0.40,
+    description: "Declining ROE/ROCE, Negative FCF, Leverage (D/E), Revenue Decay, Thin Margins",
     enabled:     true,
   },
   {
     id:          "governanceRisk",
     name:        "Governance & Fraud Risk",
-    weight:      0.20,
-    description: "High Pledge, Related Party, Accounting Flags, Insider Selling",
+    weight:      0.25,
+    description: "Promoter Skin-in-Game, Pledge, Related Party, Accounting Flags",
     enabled:     true,
   },
   {
     id:          "moatDestruction",
     name:        "Moat Destruction",
-    weight:      0.18,
+    weight:      0.00,
     description: "USFDA Warnings, China API, DPCO Risk, Patent Cliff, Competition",
-    enabled:     true,
+    enabled:     false, // no resolvable inputs in the current data contract (round 20 A1); re-enable at D1-04/D1-05
   },
   {
     id:          "growthMirage",
     name:        "Growth Mirage",
-    weight:      0.10,
+    weight:      0.00,
     description: "Channel Stuffing, Revenue Recognition, Working Capital Deterioration",
-    enabled:     true,
+    enabled:     false, // no resolvable inputs in the current data contract (round 20 A1); re-enable at D1-04/D1-05
   },
   {
     id:          "catalyst",
     name:        "Catalyst & Timing",
-    weight:      0.05,
+    weight:      0.00,
     description: "Short Interest, Event Risk, Technical Breakdown",
-    enabled:     true,
+    enabled:     false, // shortInterest is NSE-unavailable and 200DMA/RSI do not resolve via resolveStockMetrics (round 20 A1); the constant base-20 was removed as information-free
   },
 ];
+
+/** Single source for SHORT pillar weights (the scorers read this — the
+ *  weight is declared HERE, never hardcoded in the pillar files). */
+export function getShortPillarWeight(id: string): number {
+  return SHORT_PILLARS.find((p) => p.id === id)?.weight ?? 0;
+}
 
 // ── CONVICTION THRESHOLDS ─────────────────────────────────────
 

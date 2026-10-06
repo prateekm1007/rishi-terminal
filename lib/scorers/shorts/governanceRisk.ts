@@ -1,11 +1,34 @@
 import 'server-only';
 
 import { StockMetrics, PillarScore, Signal, RedFlag, clamp, safeNum } from "../types";
+import { getShortPillarWeight } from "../config";
+
+// Round 20 (qvps-short-v2, contract A1.1): promoterHolding skin-in-game
+// now scores via piecewise normalization anchored at the declared
+// reference points — score = clamp((40 - promo) * 2.5, 0, 100):
+// promo >= 40 -> 0, 25 -> 37.5, 15 -> 62.5, 0 -> 100. Pledge, accounting
+// flags and related-party remain null-gated for when their data resolves.
 
 export function scoreGovernanceRisk(m: StockMetrics): PillarScore {
   const signals: Signal[]  = [];
   const redFlags: RedFlag[] = [];
+  const weight = getShortPillarWeight("governanceRisk");
   let score = 0;
+
+  if (m.promoterHolding != null) {
+    const v = safeNum(m.promoterHolding);
+    const skinInGame = clamp((40 - v) * 2.5, 0, 100);
+    if (skinInGame > 0) {
+      score += skinInGame;
+      if (v < 15) {
+        redFlags.push({ label: "Promoter holding < 15% — minimal skin-in-game", severity: "critical", penalty: 0 });
+      } else if (v < 25) {
+        redFlags.push({ label: "Promoter holding < 25% — weak skin-in-game", severity: "major", penalty: 0 });
+      } else {
+        signals.push({ label: "Promoter Holding", value: v + "% — below the 40% comfort mark", impact: "negative", strength: "moderate" });
+      }
+    }
+  }
 
   if (m.promoterPledge != null) {
     const v = safeNum(m.promoterPledge);
@@ -25,12 +48,13 @@ export function scoreGovernanceRisk(m: StockMetrics): PillarScore {
     redFlags.push({ label: "Related party > 20% of revenue", severity: "critical", penalty: 0 });
   }
 
-  return { id: "governanceRisk", name: "Governance & Fraud Risk", score: clamp(score, 0, 100), weight: 0.20, weighted: clamp(score, 0, 100) * 0.20, confidence: 0.75, signals, redFlags };
+  return { id: "governanceRisk", name: "Governance & Fraud Risk", score: clamp(score, 0, 100), weight, weighted: clamp(score, 0, 100) * weight, confidence: 0.75, signals, redFlags };
 }
 
 export function scoreMoatDestruction(m: StockMetrics): PillarScore {
   const signals: Signal[]  = [];
   const redFlags: RedFlag[] = [];
+  const weight = getShortPillarWeight("moatDestruction");
   let score = 0;
 
   if (m.usfdaWarnings != null) {
@@ -54,12 +78,13 @@ export function scoreMoatDestruction(m: StockMetrics): PillarScore {
     redFlags.push({ label: "Patent cliff risk > 60 — revenue erosion incoming", severity: "major", penalty: 0 });
   }
 
-  return { id: "moatDestruction", name: "Moat Destruction", score: clamp(score, 0, 100), weight: 0.18, weighted: clamp(score, 0, 100) * 0.18, confidence: 0.75, signals, redFlags };
+  return { id: "moatDestruction", name: "Moat Destruction", score: clamp(score, 0, 100), weight, weighted: clamp(score, 0, 100) * weight, confidence: 0.75, signals, redFlags };
 }
 
 export function scoreGrowthMirage(m: StockMetrics): PillarScore {
   const signals: Signal[]  = [];
   const redFlags: RedFlag[] = [];
+  const weight = getShortPillarWeight("growthMirage");
   let score = 0;
 
   if (m.debtorDays != null && safeNum(m.debtorDays) > 120) {
@@ -77,13 +102,17 @@ export function scoreGrowthMirage(m: StockMetrics): PillarScore {
     signals.push({ label: "Inventory Days", value: m.inventoryDays + " — working capital deterioration", impact: "negative", strength: "moderate" });
   }
 
-  return { id: "growthMirage", name: "Growth Mirage", score: clamp(score, 0, 100), weight: 0.10, weighted: clamp(score, 0, 100) * 0.10, confidence: 0.65, signals, redFlags };
+  return { id: "growthMirage", name: "Growth Mirage", score: clamp(score, 0, 100), weight, weighted: clamp(score, 0, 100) * weight, confidence: 0.65, signals, redFlags };
 }
 
 export function scoreCatalyst(m: StockMetrics): PillarScore {
   const signals: Signal[]  = [];
   const redFlags: RedFlag[] = [];
-  let score = 20;
+  const weight = getShortPillarWeight("catalyst");
+  // Round 20 (D2 repair): the constant base of 20 was removed — a term
+  // identical for every stock carries no information and only offset the
+  // score. The pillar now starts at 0 and scores only resolvable signals.
+  let score = 0;
 
   if (m.shortInterest != null && safeNum(m.shortInterest) > 10) {
     score += 25;
@@ -100,5 +129,5 @@ export function scoreCatalyst(m: StockMetrics): PillarScore {
     signals.push({ label: "RSI Low", value: m.rsi.toFixed(0) + " — could mean exhaustion", impact: "neutral", strength: "weak" });
   }
 
-  return { id: "catalyst", name: "Catalyst & Timing", score: clamp(score, 0, 100), weight: 0.05, weighted: clamp(score, 0, 100) * 0.05, confidence: 0.7, signals, redFlags };
+  return { id: "catalyst", name: "Catalyst & Timing", score: clamp(score, 0, 100), weight, weighted: clamp(score, 0, 100) * weight, confidence: 0.7, signals, redFlags };
 }

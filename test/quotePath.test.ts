@@ -66,8 +66,12 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
             error: null,
           }),
         }),
-        upsert: async (row: Row) => {
-          table[row.symbol] = { ...table[row.symbol], ...row };
+        upsert: async (rowOrRows: Row | Row[]) => {
+          // LP2: the batch write passes an ARRAY (one upsert for all claimed
+          // winners); real Postgres accepts both shapes — emulate that.
+          for (const row of Array.isArray(rowOrRows) ? rowOrRows : [rowOrRows]) {
+            table[row.symbol] = { ...table[row.symbol], ...row };
+          }
           return { error: null };
         },
       };

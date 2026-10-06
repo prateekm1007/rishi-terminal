@@ -35,6 +35,7 @@ function yahooChartOk(price: number, changePct: number, regularMarketTimeSec?: n
         result: [
           {
             meta: {
+              currency: "INR",
               regularMarketPrice: price,
               regularMarketChangePercent: changePct,
               chartPreviousClose: price - (changePct / 100) * price,
@@ -46,6 +47,51 @@ function yahooChartOk(price: number, changePct: number, regularMarketTimeSec?: n
     }),
     { status: 200, headers: { "Content-Type": "application/json" } },
   );
+}
+
+/** LP2: deterministic spark (multi-symbol) response — the bulk transport's
+ *  first-choice wire. One HTTP attempt per ≤20-symbol GROUP; the ledger
+ *  records it with symbolsRequested=group, symbolsReturned=returned. */
+function yahooSparkOk(entries: Array<{ sym: string; price: number; changePct: number; ts?: number }>) {
+  return new Response(
+    JSON.stringify({
+      spark: {
+        result: entries.map((e) => ({
+          symbol: `${e.sym}.NS`,
+          response: [
+            {
+              meta: {
+                currency: "INR",
+                regularMarketPrice: e.price,
+                regularMarketChangePercent: e.changePct,
+                chartPreviousClose: e.price - (e.changePct / 100) * e.price,
+                ...(e.ts !== undefined ? { regularMarketTime: e.ts } : {}),
+              },
+            },
+          ],
+        })),
+      },
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } },
+  );
+}
+
+/** Answers a spark URL with one INR entry per requested symbol (uniform
+ *  price/change/ts); non-spark URLs fall through to `chart`. */
+function mockSparkThenChart(
+  spark: (u: URL, syms: string[]) => Promise<Response> | Response,
+  chart: (url: string) => Promise<Response> | Response,
+) {
+  return mockFetchAlways((...args: unknown[]) => {
+    const url = String((args[0] as RequestInfo) ?? "");
+    const u = new URL(url);
+    if (u.pathname.includes("/v7/finance/spark")) {
+      const syms = (u.searchParams.get("symbols") ?? "").split(",").filter(Boolean)
+        .map((s) => s.replace(/\.(NS|BO)$/, ""));
+      return Promise.resolve(spark(u, syms));
+    }
+    return Promise.resolve(chart(url));
+  });
 }
 
 function mockFetchAlways(impl: () => Promise<Response> | Response) {
@@ -150,15 +196,18 @@ describe("T59.2 — upstream attempts vs application requests vs caches", () => 
 // ── T59.1: bulk-path instrumentation ─────────────────────────────────────
 
 describe("T59.1 — Yahoo-bulk path is measured", () => {
-  it("every upstream HTTP attempt is counted; run aggregate is exact", async () => {
-    const spy = mockFetchAlways(() => yahooChartOk(1500, 0.4, 1761900000));
+  it("every upstream HTTP attempt is counted; run aggregate is exact (one attempt per spark GROUP)", async () => {
+    const spy = mockSparkThenChart(
+      (_u, syms) => yahooSparkOk(syms.map((s) => ({ sym: s, price: 1500, changePct: 0.4, ts: 1761900000 }))),
+      () => yahooChartOk(1500, 0.4, 1761900000),
+    );
     const symbols = ["TATASTEEL", "JSWSTEEL", "COALINDIA"]; // unique per test (module cache)
 
     const out = await fetchBulkPricesForSymbols(symbols);
 
     expect(Object.keys(out).sort()).toEqual([...symbols].sort());
-    expect(spy.mock.calls.length).toBe(3); // one HTTP attempt per symbol
-    expect(ledgerBulkAttempts()).toBe(3);
+    expect(spy.mock.calls.length).toBe(1); // ONE spark call for the whole ≤20-symbol group
+    expect(ledgerBulkAttempts()).toBe(1);
     expect(ledgerBulkFailures()).toBe(0);
     const run = lastBulkRun();
     expect(run).toMatchObject({
@@ -166,23 +215,26 @@ describe("T59.1 — Yahoo-bulk path is measured", () => {
       symbolsRequested: 3,
       symbolsReturned: 3,
       bulkCacheHits: 0,
-      upstreamAttempts: 3,
+      upstreamAttempts: 1,
       chunks: 1,
       chunkSize: 20,
     });
   });
 
-  it("suffix failover counts each attempt and records the HTTP failure class", async () => {
-    mockFetchAlways((...args: unknown[]) => {
-      const url = String((args[0] as RequestInfo) ?? "");
-      if (url.includes(".NS")) return Promise.resolve(new Response("nope", { status: 404 }));
-      return Promise.resolve(yahooChartOk(2400, 0.2, 1761900001));
-    });
+  it("spark→chart failover counts each attempt and records the HTTP failure class", async () => {
+    mockSparkThenChart(
+      () => new Response("nope", { status: 404 }), // spark refused
+      (url) =>
+        url.includes(".NS")
+          ? Promise.resolve(new Response("nope", { status: 404 })) // .NS refused
+          : Promise.resolve(yahooChartOk(2400, 0.2, 1761900001)), // .BO serves
+    );
 
     const out = await fetchBulkPricesForSymbols(["HINDALCO"]);
     expect(out["HINDALCO"]?.price).toBe(2400);
-    expect(ledgerBulkAttempts()).toBe(2);
-    expect(ledgerBulkFailures()).toBe(1);
+    // three REAL HTTP attempts: spark 404, chart .NS 404, chart .BO 200
+    expect(ledgerBulkAttempts()).toBe(3);
+    expect(ledgerBulkFailures()).toBe(2);
 
     const failed = measurementSnapshot().recentEvents.find(
       e => e.kind === "upstream-attempt" && !(e as { ok: boolean }).ok,
@@ -191,7 +243,10 @@ describe("T59.1 — Yahoo-bulk path is measured", () => {
   });
 
   it("batch cache traffic is identified: second run inside TTL → zero upstream, cache hits recorded", async () => {
-    const spy = mockFetchAlways(() => yahooChartOk(999, 0.1, 1761900002));
+    const spy = mockSparkThenChart(
+      (_u, syms) => yahooSparkOk(syms.map((s) => ({ sym: s, price: 999, changePct: 0.1, ts: 1761900002 }))),
+      () => yahooChartOk(999, 0.1, 1761900002),
+    );
     const symbols = ["WIPRO", "HCLTECH"];
 
     await fetchBulkPricesForSymbols(symbols);
@@ -212,7 +267,10 @@ describe("T59.1 — Yahoo-bulk path is measured", () => {
   });
 
   it("bulk traffic stays OUT of providerHealth counters (reconciliation expects this split)", async () => {
-    mockFetchAlways(() => yahooChartOk(1500, 0.4, 1761900000));
+    mockSparkThenChart(
+      (_u, syms) => yahooSparkOk(syms.map((s) => ({ sym: s, price: 1500, changePct: 0.4, ts: 1761900000 }))),
+      () => yahooChartOk(1500, 0.4, 1761900000),
+    );
     await fetchBulkPricesForSymbols(["PFC"]);
 
     expect(ledgerBulkAttempts()).toBe(1);
@@ -224,7 +282,10 @@ describe("T59.1 — Yahoo-bulk path is measured", () => {
 
 describe("T60.1 — provenance semantics survive replay", () => {
   it("bulk entries carry the ORIGINAL observation time, never the serve time", async () => {
-    mockFetchAlways(() => yahooChartOk(1500, 0.4, 1761900000));
+    mockSparkThenChart(
+      (_u, syms) => yahooSparkOk(syms.map((s) => ({ sym: s, price: 1500, changePct: 0.4, ts: 1761900000 }))),
+      () => yahooChartOk(1500, 0.4, 1761900000),
+    );
     const out = await fetchBulkPricesForSymbols(["TATAPOWER"]);
     const entry = out["TATAPOWER"];
     expect(entry?.observedAt).toBe("2025-10-31T08:40:00.000Z");
@@ -234,7 +295,10 @@ describe("T60.1 — provenance semantics survive replay", () => {
   });
 
   it("missing regularMarketTime → observedAt null (never fabricated)", async () => {
-    mockFetchAlways(() => yahooChartOk(1500, 0.4)); // no regularMarketTime field
+    mockSparkThenChart(
+      (_u, syms) => yahooSparkOk(syms.map((s) => ({ sym: s, price: 1500, changePct: 0.4 }))),
+      () => yahooChartOk(1500, 0.4), // no regularMarketTime field
+    );
     const out = await fetchBulkPricesForSymbols(["NTPC"]);
     expect(out["NTPC"]?.observedAt).toBeNull();
   });
@@ -354,27 +418,31 @@ describe("corrective — app-request wall time is attributed by request ID", () 
 
 describe("corrective — overlapping bulk runs cannot charge each other's attempts", () => {
   it("two concurrent bulk runs each report exactly their own upstream attempts and failures", async () => {
-    // Run 1: symbols TESTA/TESTB — first suffix succeeds, but slowly (keeps
-    // the run's before→after window open across run 2's entire lifetime).
-    // Run 2: symbols TESTC/TESTD — .NS fails (404), .BO succeeds.
-    const spy = mockFetchAlways((...args: unknown[]) => {
-      const url = String((args[0] as RequestInfo) ?? "");
-      const sym = decodeURIComponent(url.split("/chart/")[1] ?? "").split("?")[0]
-        .replace(/\.NS$/, "").replace(/\.BO$/, "");
-      if (sym === "TESTA" || sym === "TESTB") {
-        return new Promise<Response>(resolve =>
-          setTimeout(() => resolve(yahooChartOk(100, 0.1, 1761900004)), 40),
+    // Run 1: symbols TESTA/TESTB — spark serves both, but slowly (keeps the
+    // run's window open across run 2's entire lifetime).
+    // Run 2: symbols TESTC/TESTD — spark 404s, then chart .NS 404s, .BO serves.
+    const spy = mockSparkThenChart(
+      (_u, syms) => {
+        if (syms.includes("TESTA")) {
+          return new Promise<Response>((resolve) =>
+            setTimeout(() => resolve(yahooSparkOk(syms.map((s) => ({ sym: s, price: 100, changePct: 0.1, ts: 1761900004 })))), 40),
+          );
+        }
+        return new Promise<Response>((resolve) =>
+          setTimeout(() => resolve(new Response("no", { status: 404 })), 5),
         );
-      }
-      if (url.includes(".BO")) {
-        return new Promise<Response>(resolve =>
-          setTimeout(() => resolve(yahooChartOk(200, 0.2, 1761900005)), 60),
+      },
+      (url) => {
+        if (url.includes(".BO")) {
+          return new Promise<Response>((resolve) =>
+            setTimeout(() => resolve(yahooChartOk(200, 0.2, 1761900005)), 60),
+          );
+        }
+        return new Promise<Response>((resolve) =>
+          setTimeout(() => resolve(new Response("no", { status: 404 })), 5),
         );
-      }
-      return new Promise<Response>(resolve =>
-        setTimeout(() => resolve(new Response("no", { status: 404 })), 5),
-      );
-    });
+      },
+    );
 
     // Start run 1, let it enter its fetch window, then start run 2 inside
     // that window — the contamination scenario the old delta method got wrong.
@@ -385,25 +453,25 @@ describe("corrective — overlapping bulk runs cannot charge each other's attemp
 
     expect(Object.keys(out1).sort()).toEqual(["TESTA", "TESTB"]);
     expect(Object.keys(out2).sort()).toEqual(["TESTC", "TESTD"]);
-    // Real upstream HTTP: 2 (run 1) + 4 (run 2, incl. .NS 404s) = 6.
+    // Real upstream HTTP: 1 spark (run 1) + 1 spark + 2×(.NS+.BO) chart (run 2) = 6.
     expect(spy.mock.calls.length).toBe(6);
 
     const runs = measurementSnapshot().recentEvents.filter(
       e => e.kind === "bulk-run",
     ) as unknown as Array<Record<string, number | string>>;
     expect(runs).toHaveLength(2);
-    const run1Event = runs.find(r => r.upstreamAttempts === 2);
-    const run2Event = runs.find(r => r.upstreamAttempts === 4);
-    expect(run1Event, "run 1 must own exactly its 2 attempts").toBeDefined();
-    expect(run2Event, "run 2 must own exactly its 4 attempts").toBeDefined();
+    const run1Event = runs.find(r => r.upstreamAttempts === 1);
+    const run2Event = runs.find(r => r.upstreamAttempts === 5);
+    expect(run1Event, "run 1 must own exactly its 1 spark attempt").toBeDefined();
+    expect(run2Event, "run 2 must own exactly its spark+4 chart attempts").toBeDefined();
     expect(run1Event).toMatchObject({
       symbolsRequested: 2, symbolsReturned: 2, bulkCacheHits: 0, upstreamFailures: 0,
     });
     expect(run2Event).toMatchObject({
-      symbolsRequested: 2, symbolsReturned: 2, bulkCacheHits: 0, upstreamFailures: 2,
+      symbolsRequested: 2, symbolsReturned: 2, bulkCacheHits: 0, upstreamFailures: 3,
     });
     // The global ledger still saw every attempt (reconciliation stream intact).
     expect(ledgerBulkAttempts()).toBe(6);
-    expect(ledgerBulkFailures()).toBe(2);
+    expect(ledgerBulkFailures()).toBe(3);
   });
 });

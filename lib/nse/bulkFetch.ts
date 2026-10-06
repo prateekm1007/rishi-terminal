@@ -60,6 +60,122 @@ let cacheTimestamp = 0;
 let inflightPromise: Promise<Record<string, BulkPriceEntry>> | null = null;
 const CACHE_TTL = 60_000; // 60 seconds
 
+// LP2 (founder directives 7+8, 2026-10-06 audit): the true bulk transport.
+// The previous "bulk" sweep issued ONE v8/chart HTTP call PER SYMBOL in
+// 20-per-lane SEQUENTIAL batches — a 50-symbol chunk cost 3 lanes x 17
+// sequential round-trips ≈ 5-10 s of pure upstream wall time, which is the
+// measured dominant component of the ~10 s per stale chunk (and 17.4 s to
+// first price) on the /stocks table. Yahoo's v7/spark endpoint accepts up
+// to 20 symbols per call WITHOUT a crumb (v7/quote is 401-gated), so the
+// same symbol set now costs ceil(N/20) PARALLEL calls (≈0.1-0.3 s each).
+// Symbols spark does not return (unknown/renamed instruments) fall back to
+// the original per-symbol chart path — bounded parallel, same .NS/.BO
+// suffix semantics, same honest-null miss.
+const SPARK_CHUNK = 20;
+const SPARK_POOL = 8; // bounded parallel spark calls (the warmer's 916 → 46 groups)
+
+function sparkMetaToEntry(
+  meta: Record<string, unknown> | null | undefined,
+): BulkPriceEntry | null {
+  if (!meta) return null;
+  const price = Number(meta.regularMarketPrice);
+  // ADR/masquerade gate at the ROOT: a suffixed (.NS/.BO) query is an INR
+  // instrument, so the honest discriminator is the payload's own currency,
+  // NOT a price floor. The previous `price < 20` rejection misfired on
+  // every legitimate sub-₹20 NSE stock (IDEA, YESBANK-class names never
+  // got a price at all — part of the never-fresh set within the 916).
+  // Fail closed: an absent/USD currency is a rejected instrument (C2).
+  if (String(meta.currency ?? "") !== "INR") return null;
+  if (!Number.isFinite(price) || price <= 0) return null;
+  const parsed = yahooChangeFromMeta(meta);
+  if (!parsed) return null;
+  const volumeNum = Number(meta.regularMarketVolume);
+  const rt = Number(meta.regularMarketTime);
+  return {
+    price,
+    change: parsed.change,
+    volume: Number.isFinite(volumeNum) ? volumeNum : null,
+    observedAt: Number.isFinite(rt) && rt > 0 ? new Date(rt * 1000).toISOString() : null,
+  };
+}
+
+async function fetchSparkGroup(
+  symbols: string[],
+  acc: BulkAttemptAccumulator,
+): Promise<Record<string, BulkPriceEntry>> {
+  const out: Record<string, BulkPriceEntry> = {};
+  const t0 = Date.now();
+  const url =
+    `https://query1.finance.yahoo.com/v7/finance/spark?symbols=` +
+    // literal commas: the wire form verified against the real endpoint
+    // (encodeURIComponent per symbol; %2C-joined lists are unverified)
+    symbols.map((s) => encodeURIComponent(s.includes(".") ? s : `${s}.NS`)).join(",") +
+    `&range=1d&interval=1d`;
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; RishiTerminal/1.0)" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) {
+      acc.attempts += 1;
+      acc.failures += 1;
+      recordUpstreamAttempt({
+        providerId: "yahoo", path: "bulk", ok: false,
+        latencyMs: Date.now() - t0, httpFailureClass: classifyFailure(res, null),
+        symbolsRequested: symbols.length, symbolsReturned: 0,
+      });
+      return out;
+    }
+    const data = await res.json();
+    const results: Array<{ symbol: string; response: Array<{ meta: Record<string, unknown> }> }> =
+      data?.spark?.result ?? [];
+    let returned = 0;
+    for (const r of results) {
+      const entry = sparkMetaToEntry(r?.response?.[0]?.meta);
+      if (entry) {
+        // The spark result echoes the YAHOO symbol ("RELIANCE.NS"); the
+        // caller keys by the REGISTRY symbol ("RELIANCE").
+        const registrySymbol = r.symbol.replace(/\.(NS|BO)$/, "");
+        out[registrySymbol] = entry;
+        returned += 1;
+      }
+    }
+    acc.attempts += 1;
+    recordUpstreamAttempt({
+      providerId: "yahoo", path: "bulk", ok: true,
+      latencyMs: Date.now() - t0, httpFailureClass: null,
+      symbolsRequested: symbols.length, symbolsReturned: returned,
+    });
+    return out;
+  } catch (err) {
+    acc.attempts += 1;
+    acc.failures += 1;
+    recordUpstreamAttempt({
+      providerId: "yahoo", path: "bulk", ok: false,
+      latencyMs: Date.now() - t0, httpFailureClass: classifyFailure(null, err),
+      symbolsRequested: symbols.length, symbolsReturned: 0,
+    });
+    return out;
+  }
+}
+
+/** One spark pass over ≤SPARK_CHUNK-sized groups, bounded-parallel. */
+async function fetchSparkPrices(symbols: string[], acc: BulkAttemptAccumulator): Promise<Record<string, BulkPriceEntry>> {
+  const groups = chunkArray(symbols, SPARK_CHUNK);
+  const pool = Math.max(1, Math.min(SPARK_POOL, groups.length));
+  const results: Record<string, BulkPriceEntry> = {};
+  let next = 0;
+  const worker = async () => {
+    for (;;) {
+      const i = next++;
+      if (i >= groups.length) return;
+      Object.assign(results, await fetchSparkGroup(groups[i], acc));
+    }
+  };
+  await Promise.all(Array.from({ length: pool }, worker));
+  return results;
+}
+
 // T59.1: classify a failed HTTP/transport attempt (null = no failure).
 function classifyFailure(res: Response | null, err: unknown): HttpFailureClass {
   if (res) {
@@ -123,7 +239,13 @@ async function fetchYahooPrice(
       }
 
       const price = Number(meta.regularMarketPrice) || 0;
-      if (price < 20) {
+      // ADR/masquerade gate (LP2, 2026-10-06): the suffixed query (.NS/.BO)
+      // is an INR instrument — the honest discriminator is the payload's
+      // own currency, not a price floor. The old `price < 20` rejection
+      // misfired on every legitimate sub-₹20 NSE stock (they could NEVER
+      // be priced — a structural hole in the 916-universe freshness).
+      // Fail closed: absent/USD currency → rejected instrument (C2).
+      if (String(meta.currency ?? "") !== "INR") {
         // ADR-price rejection — transport succeeded, observation rejected.
         acc.attempts += 1;
         acc.failures += 1;
@@ -132,7 +254,17 @@ async function fetchYahooPrice(
           latencyMs: Date.now() - t0, httpFailureClass: null,
           symbolsRequested: 1, symbolsReturned: 0,
         });
-        continue; // Reject US ADR prices (INFY without suffix ≈ $12)
+        continue; // e.g. a US-line masquerade for a dead/renamed ticker
+      }
+      if (!Number.isFinite(price) || price <= 0) {
+        acc.attempts += 1;
+        acc.failures += 1;
+        recordUpstreamAttempt({
+          providerId: 'yahoo', path: 'bulk', ok: false,
+          latencyMs: Date.now() - t0, httpFailureClass: 'parse',
+          symbolsRequested: 1, symbolsReturned: 0,
+        });
+        continue;
       }
 
       // Commit O: ONE unified Yahoo chart-meta parser for the whole codebase
@@ -274,27 +406,36 @@ export async function fetchBulkPricesForSymbols(
     return results;
   }
   
-  // Process in parallel batches (10 batches of ~100 symbols each).
-  // Corrective gate: this run owns a fresh accumulator — attempts made by
-  // any OTHER concurrent bulk run never enter this run's counts.
-  const chunks = chunkArray(toFetch, 20);
+  // LP2: spark-first — ceil(N/20) parallel multi-symbol calls; only the
+  // symbols spark did not resolve fall back to the per-symbol chart path
+  // (bounded parallel lanes, unchanged .NS/.BO semantics, honest miss).
+  // Corrective gate (kept from the deep-audit): this run owns a fresh
+  // accumulator — attempts made by any OTHER concurrent bulk run never
+  // enter this run's counts.
   const own: BulkAttemptAccumulator = { attempts: 0, failures: 0 };
-  const batchResults = await Promise.allSettled(
-    chunks.map(chunk => processBatch(chunk, own))
-  );
-  const upstreamAttempts = own.attempts;
-  const upstreamFailures = own.failures;
-  
-  // Merge results
-  for (const settled of batchResults) {
-    if (settled.status === 'fulfilled') {
-      Object.assign(results, settled.value);
-      // Update cache
-      Object.assign(priceCache, settled.value);
+  const sparkResults = await fetchSparkPrices(toFetch, own);
+  Object.assign(results, sparkResults);
+  const missed = toFetch.filter((s) => results[s] === undefined);
+
+  // Fallback for spark misses: the original per-symbol path, bounded-parallel
+  // lanes of 20 (sequential inside a lane — the same load profile as before,
+  // now covering only the residual set).
+  let fallbackChunks: string[][] = [];
+  if (missed.length > 0) {
+    fallbackChunks = chunkArray(missed, 20);
+    const fallbackResults = await Promise.allSettled(
+      fallbackChunks.map((chunk) => processBatch(chunk, own)),
+    );
+    for (const settled of fallbackResults) {
+      if (settled.status === 'fulfilled') Object.assign(results, settled.value);
     }
   }
-  
+  const upstreamAttempts = own.attempts;
+  const upstreamFailures = own.failures;
+
+  // Update cache (both transports' results feed the same 60 s instance cache)
   if (Object.keys(results).length > 0) {
+    Object.assign(priceCache, results);
     cacheTimestamp = now;
   }
   
@@ -312,8 +453,8 @@ export async function fetchBulkPricesForSymbols(
     bulkCacheHits: symbols.length - toFetch.length,
     upstreamAttempts,
     upstreamFailures,
-    chunks: chunks.length,
-    chunkSize: 20,
+    chunks: Math.ceil(toFetch.length / SPARK_CHUNK) + fallbackChunks.length,
+    chunkSize: SPARK_CHUNK,
     wallMs: Date.now() - runStart,
   });
   

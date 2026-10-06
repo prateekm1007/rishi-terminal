@@ -226,7 +226,7 @@ export function resolveAiProvider(): AiProvider | null {
  *  renders verified facts itself; model prose is commentary) and the
  *  provenance wording rule (seed/derived facts may never be worded
  *  live/current/latest — a closed-vocabulary validator rejects them). */
-function evidenceBlock(evidence: AiEvidenceItem[]): string {
+export function evidenceBlock(evidence: AiEvidenceItem[]): string {
   if (evidence.length === 0) return "";
   const lines = evidence.map(e => `[${e.id}] ${e.text}`);
   return (
@@ -278,6 +278,15 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "times, you never repeat them). Digits used as list markers count as " +
     "numbers too — never write a numbered list ('1.' '2.' '3.') in your " +
     "answer or claims; use unnumbered prose or dash bullets. " +
+    // E5 (R18 fresh battery, 2026-10-06): the residual unsupported-prose
+    // shape — the model DERIVED a figure from two annotated numbers (a
+    // computed percentage/discount/ratio) and stated it as if annotated.
+    // Computed numbers are unsupported by construction: state the two
+    // annotated values and let the verified surface / reader carry the
+    // comparison.
+    "Never COMPUTE a number the annotations do not contain (a difference, " +
+    "ratio, percentage change you calculated, or any derived figure) — " +
+    "state the two annotated numbers side by side instead. " +
     "When you state a fact's number, copy it digit-for-digit from the fact " +
     "annotation — never round it and never reformat it (write 1741.05, not " +
     "1,741.1 or roughly 1741). " +
@@ -709,6 +718,7 @@ async function runGroundedLoop(
     // currency-denominated or 'changed to' number as a price level; teach
     // the split phrasing so the repair converges on the first re-ask.
     " (never introduce a price level with the word change - 'changed to 2091' states the PRICE: write 'the price is 2091 inr' and 'the change is -1.107 percent' as separate statements, each with its own assertion)" +
+    " (never COMPUTE a number the annotations do not contain - no self-calculated differences, ratios or percentages; state the two annotated numbers side by side instead)" +
     (matchedAssertionValues.length > 0
       ? " (matched assertion values you may state: " + matchedAssertionValues.slice(0, 8).join(", ") + ")"
       : "") +

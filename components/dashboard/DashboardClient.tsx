@@ -306,7 +306,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
 
           <div style={{ display:"flex", gap:"10px", flexWrap:"wrap" }}>
             {[
-              { href:"/screener",  label:"📊 " + t("nav.screener"),   primary:true  },
+              { href:"/stocks",  label:"📊 " + t("nav.screener"),   primary:true  },
               // Commit O (#18): /portfolio, /watchlist and /compare were dead
               // links (routes never existed) — the real surfaces live in the
               // Portfolio Lab (/lab, public since Commit N).

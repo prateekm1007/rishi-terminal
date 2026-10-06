@@ -39,7 +39,7 @@
     "masterInvestor": "मास्टर गुंतवणूकदार",
     "globalMarkets": "जागतिक बाजार — शोधण्यासाठी क्लिक करा",
     "topBuySignals": "टॉप खरेदी सिग्नल — ऋषी आमसंमती ६५ पेक्षा जास्त",
-    "fullScreener": "संपूर्ण स्क्रीनर",
+    "fullScreener": "सर्व स्टॉक्स",
     "notInvestmentAdvice": "गुंतवणूक सल्ला नाही — शैक्षणिक सिम्युलेशन — ऋषी टर्मिनल v4.2 — २० ऋषी सक्रिय",
     "heroWisdomSuffix": "। द्वैत-मोड स्कोअरिंग, शॉर्ट थिसिस, तात्त्विक अंतर्दृष्टी।",
     "updatedPrefix": "अपडेट केले ",
@@ -101,7 +101,7 @@
     "signalTimeline": "सिग्नल टाइमलाइन"
   },
   "screener": {
-    "title": "स्टॉक स्क्रीनर",
+    "title": "स्टॉक्स",
     "subtitle": "२० ऋषी दृष्टिकोनातून विश्लेषित भारतीय स्टॉक. संपूर्ण सखोल विश्लेषणासाठी कोणत्याही स्टॉकवर क्लिक करा.",
     "totalCoverage": "एकूण कव्हरेज",
     "nseBseStocks": "NSE + BSE स्टॉक",
@@ -513,7 +513,7 @@
   "dashboard2": {
     "viewAll": "सर्व पहा",
     "fullAnalysis": "संपूर्ण विश्लेषण",
-    "fullScreener": "संपूर्ण स्क्रीनर",
+    "fullScreener": "सर्व स्टॉक्स",
     "todaySuffix": "आज",
     "rishiScore": "ऋषी स्कोअर",
     "rishiConsensus": "ऋषी आमसंमती",
@@ -691,7 +691,7 @@
     "pricing": "किंमत",
     "dashboard": "डॅशबोर्ड",
     "intelligence": "विश्लेषण",
-    "screener": "स्क्रीनर",
+    "screener": "स्टॉक्स",
     "core": "मुख्य",
     "portfolioLab": "पोर्टफोलिओ लॅब",
     "crypto": "क्रिप्टो",

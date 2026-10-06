@@ -238,7 +238,7 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
 
       {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
       <div style={{ marginBottom:"48px" }}>
-        <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/screener" linkLabel={t("dashboard2.fullScreener")} />
+        <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/stocks" linkLabel={t("dashboard2.fullScreener")} />
         <SeedDataBanner suffix="ranked by Rishi consensus among data-quality-OK stocks" />
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
         {rotatingStocks.map((stock) => {

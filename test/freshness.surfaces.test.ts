@@ -35,7 +35,7 @@ const EXEMPTED_SURFACES: Record<string, string> = {
     "server component; the three banners render in the dynamically loaded components/dashboard/DashboardTail.tsx",
   "components/dashboard/DashboardClient.tsx":
     "Z5 split: the ranked trio and their three banners moved to the dynamically loaded components/dashboard/DashboardTail.tsx; the client shell that remains renders no seed-derived numbers of its own (prices render through the honest unavailable/em-dash states)",
-  "app/screener/page.tsx":
+  "app/stocks/page.tsx":
     "server component; the banner renders in its client child components/screener/ScreenerClient.tsx",
   "app/chat/page.tsx":
     "server component; the banner renders in its client child components/chat/ChatClient.tsx",

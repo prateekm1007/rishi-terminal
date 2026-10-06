@@ -20,7 +20,7 @@ import http from "node:http";
 import { readFileSync, mkdirSync, existsSync } from "node:fs";
 
 const PORT = 3220;
-const URLS = ["/", "/screener", "/stock/RELIANCE"];
+const URLS = ["/", "/stocks", "/stock/RELIANCE"]; // SR: renamed surface
 const OUT_DIR = ".lighthouseci";
 const CONFIG = "lighthouserc.json";
 

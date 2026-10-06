@@ -39,7 +39,7 @@
     "masterInvestor": "মাস্টার বিনিয়োগকারী",
     "globalMarkets": "বৈশ্বিক বাজার — অন্বেষণ করতে ক্লিক করুন",
     "topBuySignals": "শীর্ষ ক্রয় সংকেত — ঋষি ঐকমত্য ৬৫ এর উপরে",
-    "fullScreener": "সম্পূর্ণ স্ক্রিনার",
+    "fullScreener": "সব স্টক",
     "notInvestmentAdvice": "বিনিয়োগ পরামর্শ নয় — শৈক্ষিক সিমুলেশন — ঋষি টার্মিনাল v4.2 — ২০ ঋষি সক্রিয়",
     "heroWisdomSuffix": "। দ্বৈত-মোড স্কোরিং, শর্ট থিসিস, দার্শনিক অন্তর্দৃষ্টি।",
     "updatedPrefix": "আপডেট হয়েছে ",
@@ -101,7 +101,7 @@
     "signalTimeline": "সংকেত টাইমলাইন"
   },
   "screener": {
-    "title": "স্টক স্ক্রিনার",
+    "title": "স্টক",
     "subtitle": "২০ ঋষি দৃষ্টিকোণ থেকে বিশ্লেষিত ভারতীয় স্টক। সম্পূর্ণ গভীর বিশ্লেষণের জন্য যেকোনো স্টকে ক্লিক করুন।",
     "totalCoverage": "মোট কভারেজ",
     "nseBseStocks": "NSE + BSE স্টক",
@@ -513,7 +513,7 @@
   "dashboard2": {
     "viewAll": "সব দেখুন",
     "fullAnalysis": "সম্পূর্ণ বিশ্লেষণ",
-    "fullScreener": "সম্পূর্ণ স্ক্রিনার",
+    "fullScreener": "সব স্টক",
     "todaySuffix": "আজ",
     "rishiScore": "ঋষি স্কোর",
     "rishiConsensus": "ঋষি ঐকমত্য",
@@ -691,7 +691,7 @@
     "pricing": "মূল্য নির্ধারণ",
     "dashboard": "ড্যাশবোর্ড",
     "intelligence": "বিশ্লেষণ",
-    "screener": "স্ক্রিনার",
+    "screener": "স্টক",
     "core": "মূল",
     "portfolioLab": "পোর্টফোলিও ল্যাব",
     "crypto": "ক্রিপ্টো",

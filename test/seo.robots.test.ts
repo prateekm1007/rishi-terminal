@@ -47,7 +47,7 @@ describe('app/robots.ts (served at /robots.txt)', () => {
   it('does NOT disallow any public stock/screener surface', () => {
     const rules = Array.isArray(doc.rules) ? doc.rules : [doc.rules];
     const disallow = rules.flatMap(r => r.disallow ?? []);
-    const bannedPublic = ['/screener', '/stock', '/rishis', '/news', '/crypto', '/bonds'];
+    const bannedPublic = ['/stocks', '/stock', '/rishis', '/news', '/crypto', '/bonds'];
     for (const b of bannedPublic) {
       expect(disallow.some(d => d === b || d.startsWith(b + '/')), `unexpectedly disallowed: ${b}`).toBe(false);
     }

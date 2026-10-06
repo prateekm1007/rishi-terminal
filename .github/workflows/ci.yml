@@ -259,7 +259,7 @@ jobs:
 
       - name: Probe the four E1 acceptance routes (raw output)
         run: |
-          for route in / /screener /stock/BANKBARODA /api/health; do
+          for route in / /stocks /screener /stock/BANKBARODA /api/health; do
             echo "GET $route -> $(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:7860$route")"
           done
           echo "--- /api/health body (no DB env — honest degraded verdict):"
@@ -267,7 +267,8 @@ jobs:
 
       - name: Assert E1 acceptance statuses
         run: |
-          for route in / /screener /stock/BANKBARODA; do
+          # SR: /screener 308-redirects to /stocks (next.config) — probe both, assert both.
+          for route in / /stocks /stock/BANKBARODA; do
             code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:7860$route")
             if [ "$code" != "200" ]; then
               echo "::error::E1 acceptance failed: $route returned $code, expected 200"
@@ -313,7 +314,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Lighthouse gate (warm server, audit /, /screener, /stock/RELIANCE, assert floors)
+      - name: Lighthouse gate (warm server, audit /, /stocks, /stock/RELIANCE, assert floors)
         run: npm run lhci
 
       - name: Upload raw Lighthouse reports

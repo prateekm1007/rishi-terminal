@@ -17,7 +17,7 @@
   },
   "nav": {
     "dashboard": "ડેશબોર્ડ",
-    "screener": "સ્ક્રીનર",
+    "screener": "સ્ટોક્સ",
     "portfolio": "પોર્ટફોલિયો",
     "allRishis": "બધા ઋષિઓ",
     "news": "સમાચાર",
@@ -46,7 +46,7 @@
     "masterInvestor": "માસ્ટર રોકાણકાર",
     "globalMarkets": "વૈશ્વિક બજારો — અન્વેષણ કરવા માટે ક્લિક કરો",
     "topBuySignals": "ટોચના ખરીદી સંકેતો — ઋષિ સર્વસંમતિ 65 થી ઉપર",
-    "fullScreener": "સંપૂર્ણ સ્ક્રીનર",
+    "fullScreener": "બધા સ્ટોક્સ",
     "notInvestmentAdvice": "રોકાણ સલાહ નથી — શૈક્ષણિક સિમ્યુલેશન — ઋષિ ટર્મિનલ v4.2 — 20 ઋષિઓ સક્રિય"
   },
   "stock": {
@@ -92,7 +92,7 @@
     "signalTimeline": "સંકેત સમયરેખા"
   },
   "screener": {
-    "title": "સ્ટોક સ્ક્રીનર",
+    "title": "સ્ટોક્સ",
     "subtitle": "20 ઋષિ દૃષ્ટિકોણથી ભારતીય શેરોનું વિશ્લેષણ.",
     "totalCoverage": "કુલ કવરેજ",
     "nseBseStocks": "NSE + BSE શેર",

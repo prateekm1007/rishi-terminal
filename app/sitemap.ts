@@ -24,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticPages: { path: string; priority: number; changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly' }[] = [
     { path: '/', priority: 1.0, changeFrequency: 'daily' },
-    { path: '/screener', priority: 0.9, changeFrequency: 'daily' },
+    { path: '/stocks', priority: 0.9, changeFrequency: 'daily' },
     { path: '/rishis', priority: 0.8, changeFrequency: 'weekly' },
     { path: '/news', priority: 0.7, changeFrequency: 'daily' },
     { path: '/pulse', priority: 0.7, changeFrequency: 'daily' },

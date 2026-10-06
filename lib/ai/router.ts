@@ -264,7 +264,12 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "(4) Do NOT include any other numbers anywhere — no dates, timestamps, " +
     "item counts or ids in your claims or answer: every number you write " +
     "must be one of your own assertion values, or validation will reject " +
-    "the whole response (a date like 2026-09-30 in the answer fails it). " +
+    "the whole response (a date like 2026-09-30 in the answer fails it; " +
+    "so does copying an observation timestamp like 2026-10-05T09:45 from " +
+    "a fact — the server's verified surface already carries observation " +
+    "times, you never repeat them). Digits used as list markers count as " +
+    "numbers too — never write a numbered list ('1.' '2.' '3.') in your " +
+    "answer or claims; use unnumbered prose or dash bullets. " +
     "When you state a fact's number, copy it digit-for-digit from the fact " +
     "annotation — never round it and never reformat it (write 1741.05, not " +
     "1,741.1 or roughly 1741). " +
@@ -289,7 +294,21 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "its own verified statement (field = value unit — source state) as the " +
     "grounded answer; your answer text is shown separately as unverified " +
     "commentary. State facts plainly and let the verified surface carry " +
-    "the numbers."
+    "the numbers. " +
+    // E5 (R16 fresh battery): 11 of 31 repairs were numeric-prose failures,
+    // the dominant single class. The measured shape: the model's ASSERTION
+    // carried the correct signed value (change=-1.401) but its PROSE wrote
+    // natural English that drops the sign ("declined 1.401 percent") — a
+    // semantically-correct sentence that the exact-value match must refuse
+    // (rule 23: the validator is not weakened to accept it). The contract
+    // therefore teaches the model the one phrasing that satisfies the
+    // validator: carry the sign into the prose.
+    "(10) SIGNED VALUES: when a fact's value is negative, your prose must " +
+    "carry the minus sign exactly as the fact annotation does — write " +
+    "'changed by -1.401 percent' or 'a -1.401 percent move'; NEVER a " +
+    "direction word plus the bare magnitude ('down 1.401 percent', " +
+    "'declined by 1.401%') — that states a different number and the whole " +
+    "response is rejected. Positive values need no sign."
   );
 }
 
@@ -307,7 +326,9 @@ function contextOnlyBlock(): string {
     "RULES: (1) claims MUST be empty — you have no verified facts to cite. " +
     "(2) Do NOT state any numbers (prices, scores, percentages, dates, " +
     "metrics) in your answer: you have no verified data, and a reply that " +
-    "contains numbers will be discarded rather than shown. " +
+    "contains numbers will be discarded rather than shown — digits used " +
+    "as list markers count as numbers too, so never write a numbered " +
+    "list ('1.' '2.' '3.'); use unnumbered prose or dash bullets. " +
     "(3) If the user asks for specific market data (a price, a score, " +
     "fundamentals), request a server tool first (see TOOL PROTOCOL) instead " +
     "of improvising; if no tool can provide it, say the data is not " +
@@ -636,6 +657,17 @@ async function runGroundedLoop(
   const MAX_FINAL_REPAIRS = 1;
   let repairsUsed = 0;
   let lastFinalCandidate = "";
+  // E5 (R16 fresh battery): 7 of 31 repairs were malformed-json, and the
+  // repair feedback only NAMED the failure ("not parseable as a single
+  // JSON object") without re-teaching the shape — the model that just
+  // failed JSON is the model least able to reconstruct it from memory.
+  // The repair now carries the EXACT skeleton for the current contract
+  // state (evidence vs context-only), the same demonstration-first fix
+  // Commit O applied to the initial contract.
+  const FINAL_JSON_SKELETON_EVIDENCE =
+    'Reply with ONLY this exact shape: {"answer": "<your full reply as one string>", "claims": [{"claim": "<one factual statement>", "evidenceIds": ["<an id from VERIFIED CONTEXT or a TOOL RESULT>"], "assertions": [{"field": "<the fact field>", "value": <the EXACT number from that fact\'s annotation>, "unit": "<the EXACT unit>"}]}], "uncertainties": ["<things you could not verify>"]} — no text outside the JSON object.';
+  const FINAL_JSON_SKELETON_CONTEXT_ONLY =
+    'Reply with ONLY this exact shape: {"answer": "<your reply>", "claims": [], "uncertainties": ["<things you could not verify>"]} — no text outside the JSON object.';
   const CITE_FEEDBACK =
     "every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it";
   /** R10-03 (Coder Directions 2026-10-03, directives 7 + 8): the numeric
@@ -659,6 +691,11 @@ async function runGroundedLoop(
       ? "the validator rejected: " + rejections.slice(0, 4).join(" | ") + ". "
       : "") +
     "every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion)" +
+    // E5 (R16 fresh battery): the dominant numeric failure was the SIGN —
+    // correct assertion, unsigned prose ("declined 1.401 percent" with
+    // assertion change=-1.401). The rule 4/10 contract lines teach it up
+    // front; the repair names it at the exact moment the model needs it.
+    " (signed values: when you state a negative fact in prose, write the minus sign exactly as the annotation does - 'changed by -1.401 percent', never 'down 1.401 percent'; and never write dates, observation timestamps, or numbered-list digits - only assertion values may appear as numbers)" +
     (matchedAssertionValues.length > 0
       ? " (matched assertion values you may state: " + matchedAssertionValues.slice(0, 8).join(", ") + ")"
       : "") +
@@ -958,9 +995,15 @@ async function runGroundedLoop(
       if (
         repairFeedback(
           parsed ? "schema-mismatch" : "malformed-json",
-          parsed
-            ? `your reply was not a structurally valid final response (schema: ${JSON.stringify(structured?.error?.issues?.slice(0, 2) ?? [])})`
-            : "your reply was not parseable as a single JSON object",
+          (parsed
+            ? `your reply was not a structurally valid final response (schema: ${JSON.stringify(structured?.error?.issues?.slice(0, 2) ?? [])}). `
+            : "your reply was not parseable as a single JSON object. ") +
+          // E5: re-teach the exact shape on the re-ask — the failing model
+          // cannot be assumed to recall it (Commit O's lesson, applied to
+          // the repair path).
+          (loopEvidence.length > 0
+            ? FINAL_JSON_SKELETON_EVIDENCE
+            : FINAL_JSON_SKELETON_CONTEXT_ONLY),
         )
       ) {
         continue;

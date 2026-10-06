@@ -231,7 +231,18 @@ if (existsSync(".next")) {
 }
 
 log(`3. building fresh (npm run build)`);
-const build = spawnSync("npm", ["run", "build"], { stdio: "inherit", env: process.env });
+// E2S fix (2026-10-06, found via the SR rename verification): --env values
+// must reach the BUILD too, not only the server. CI sets env vars like
+// RANKINGS_ENABLED at the JOB level, so its `npm run build` bakes them
+// into the ISR prerender ("the homepage prerender bakes the rankings
+// state — ISR serves that prerender on the first hit", ci.yml). A harness
+// whose --env skips the build produced a prerender that DISAGREED with
+// CI's — the exact stale-build false-failure class this harness exists
+// to kill (the SR smoke run failed locally on the ranked banner while CI
+// was green, because the local build had baked the disabled state).
+const buildEnv = { ...process.env, ...envExtra };
+for (const [k, v] of Object.entries(envExtra)) log(`   build env: ${k}=${v}`);
+const build = spawnSync("npm", ["run", "build"], { stdio: "inherit", env: buildEnv });
 if (build.status !== 0) {
   console.error(`[clean-server] FAIL: build exited ${build.status} (exit 4)`);
   process.exit(4);

@@ -15,7 +15,7 @@ import { expect, test } from '@playwright/test';
 
 const TOP_TEN_PAGES = [
   '/',
-  '/screener',
+  '/stocks',
   '/stock/SBIN',
   '/stock/RELIANCE',
   '/stock/TCS',

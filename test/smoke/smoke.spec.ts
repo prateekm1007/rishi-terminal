@@ -15,8 +15,8 @@ test.describe("smoke — core surfaces", () => {
     await expect(page.getByText(/as of \d{4}-\d{2}-\d{2}/i).first()).toHaveCount(0);
   });
 
-  test("screener table renders with null-safe consensus", async ({ page }) => {
-    await page.goto("/screener");
+  test("stocks table renders with null-safe consensus", async ({ page }) => {
+    await page.goto("/stocks");
     await expect(page.locator("table").first()).toBeVisible({ timeout: 20_000 });
     // Audit retest 2026-10-02, C.3: the sector filter <select> had no
     // accessible name (Lighthouse select-name fail). An aria-label is the
@@ -30,6 +30,17 @@ test.describe("smoke — core surfaces", () => {
   test("stock page for RELIANCE renders the consensus hero", async ({ page }) => {
     await page.goto("/stock/RELIANCE");
     await expect(page.getByText(/RISHI CONSENSUS/i).first()).toBeVisible({ timeout: 20_000 });
+  });
+
+  // SR (2026-10-06): /screener is the legacy URL for the renamed Stocks
+  // surface — it must 308-redirect to /stocks (query strings preserved),
+  // never 404 and never render a second canonical copy.
+  test("legacy /screener URL redirects to /stocks (query preserved)", async ({ page }) => {
+    const res = await page.goto("/screener?q=pe%3C20");
+    expect(res?.status()).toBeLessThan(400); // followed redirect -> 200 at /stocks
+    expect(page.url()).toContain("/stocks");
+    expect(page.url()).toContain("q=pe%3C20");
+    await expect(page.locator("table").first()).toBeVisible({ timeout: 20_000 });
   });
 
   // X3 (Round 11): the FIRST BYTE must never carry the fetching states the

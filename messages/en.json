@@ -40,7 +40,7 @@
     "masterInvestor": "Master Investor",
     "globalMarkets": "GLOBAL MARKETS - CLICK TO EXPLORE",
     "topBuySignals": "TOP BUY SIGNALS - RISHI CONSENSUS ABOVE 65",
-    "fullScreener": "FULL SCREENER",
+    "fullScreener": "ALL STOCKS",
     "notInvestmentAdvice": "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE",
     "heroWisdomSuffix": ". Dual-mode scoring, short thesis, philosophical insights.",
     "updatedPrefix": "Updated ",
@@ -102,8 +102,8 @@
     "signalTimeline": "Signal Timeline"
   },
   "screener": {
-    "title": "Stock Screener",
-    "subtitle": "Indian stocks analyzed through 20 Rishi perspectives. Click any stock for full deep-dive.",
+    "title": "Stocks",
+    "subtitle": "Indian stocks analyzed through 20 Rishi perspectives. Click any stock for the full deep-dive.",
     "totalCoverage": "TOTAL COVERAGE",
     "nseBseStocks": "NSE + BSE Stocks",
     "strongBuy": "Strong Buy",
@@ -234,13 +234,13 @@
     "breadcrumb": "WISDOM TIERS",
     "free": {
       "title": "Everything Is Free",
-      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the full stock list, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
       "allRishis": "All 21 Rishis — every persona, every verdict",
       "aiChat": "AI Rishi chat with verified, grounded answers",
-      "screener": "Full screener with every filter and field",
+      "screener": "All stocks with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
       "livePrices": "Live prices and market data (where the upstream provides them)",
@@ -513,7 +513,7 @@
   "dashboard2": {
     "viewAll": "View All",
     "fullAnalysis": "Full Analysis",
-    "fullScreener": "Full Screener",
+    "fullScreener": "All Stocks",
     "todaySuffix": "today",
     "rishiScore": "Rishi Score",
     "rishiConsensus": "Rishi Consensus",
@@ -537,7 +537,7 @@
       "exploreBtn": "Explore All Rishis"
     },
     "rankingsDisabled": "Ranked picks are disabled",
-    "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Everything else — live prices, screeners, chat — keeps working."
+    "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Everything else — live prices, the stock list, chat — keeps working."
   },
   "chat": {
     "header": "Chat with Rishis",
@@ -685,7 +685,7 @@
     "pairs": "PAIRS",
     "core": "CORE",
     "dashboard": "Dashboard",
-    "screener": "Screener",
+    "screener": "Stocks",
     "portfolioLab": "Portfolio Lab",
     "markets": "MARKETS",
     "crypto": "Crypto",

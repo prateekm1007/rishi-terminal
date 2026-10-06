@@ -27,7 +27,7 @@ for (const vp of VIEWPORTS) {
 
     test("no horizontal overflow on the core pages", async ({ page }) => {
       await acknowledgeDisclaimer(page);
-      for (const path of ["/", "/screener", "/crypto", "/bonds"]) {
+      for (const path of ["/", "/stocks", "/crypto", "/bonds"]) {
         await page.goto(path, { waitUntil: "domcontentloaded" });
         await page.waitForTimeout(600); // let client price fetches settle
         const overflow = await page.evaluate(() => {

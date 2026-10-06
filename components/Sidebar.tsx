@@ -14,7 +14,7 @@ export default function Sidebar() {
       title: t("nav.core"),
       items: [
         { href: "/",            label: t("nav.dashboard"),      icon: "◆" },
-        { href: "/screener",    label: t("nav.screener"),       icon: "◇" },
+        { href: "/stocks",    label: t("nav.screener"),       icon: "◇" },
         { href: "/lab",         label: t("nav.portfolioLab"),   icon: "□" },
       ],
     },

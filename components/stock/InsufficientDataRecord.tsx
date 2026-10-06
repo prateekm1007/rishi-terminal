@@ -50,7 +50,7 @@ export function InsufficientDataRecord({ stock }: { stock: Stock }) {
 
         <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
           <Link
-            href="/screener"
+            href="/stocks"
             style={{ padding: '10px 18px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13, textDecoration: 'none' }}
           >
             Browse the screener

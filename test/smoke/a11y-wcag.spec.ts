@@ -26,7 +26,7 @@ const WCAG_AA_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 // automatically; nothing is skipped for convenience.
 const ROUTES: Array<[string, string]> = [
   ["/", "homepage"],
-  ["/screener", "screener"],
+  ["/stocks", "stocks"],
   ["/stock/RELIANCE", "stock page"],
   ["/methodology", "methodology"],
   ["/lab", "portfolio lab"],

@@ -25,7 +25,7 @@ describe("P0-05 — provenance audit", () => {
   it("the walk finds pages (not vacuous) and covers the known seed routes", () => {
     expect(audits.length).toBeGreaterThan(20);
     const routes = audits.map((a) => a.route);
-    for (const expected of ["/", "/screener", "/chat", "/lab", "/stock/*"]) {
+    for (const expected of ["/", "/stocks", "/chat", "/lab", "/stock/*"]) {
       expect(routes, `page walk must find ${expected}`).toContain(expected);
     }
   });
@@ -39,7 +39,7 @@ describe("P0-05 — provenance audit", () => {
   });
 
   it("the known seed routes are classified seed", () => {
-    for (const route of ["/", "/screener", "/chat", "/lab", "/stock/*"]) {
+    for (const route of ["/", "/stocks", "/chat", "/lab", "/stock/*"]) {
       const page = audits.find((a) => a.route === route);
       expect(page, `${route} present in the audit`).toBeDefined();
       expect(page!.classification, `${route} renders seed-derived numbers`).toBe("seed");

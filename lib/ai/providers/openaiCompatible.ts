@@ -36,6 +36,18 @@ export interface ProviderCompletion {
  *  the ceiling. */
 export const PROVIDER_MAX_OUTPUT_TOKENS = 2048;
 
+/** E5 (R16 fresh battery, 2026-10-05): 7 of 31 repairs were malformed-json
+ *  — the model answered open-ended questions with markdown prose despite
+ *  the in-prompt JSON contract. The wire-level fix is the OpenAI-compatible
+ *  JSON mode: the API itself refuses to emit non-JSON, which enforces the
+ *  contract at the earliest layer (the request) instead of catching it at
+ *  validation. Accepted by the production provider (probe, 2026-10-05:
+ *  HTTP 200 with response_format json_object; tool-request replies are
+ *  JSON objects too, so the bounded tool loop is unaffected). The tool
+ *  request and the final structured reply are BOTH single JSON objects,
+ *  so one mode covers both — there is no non-JSON reply this loop wants. */
+const JSON_MODE: Record<string, unknown> = { type: "json_object" };
+
 export async function callOpenAiCompatible(
   baseUrl: string,
   apiKey: string,
@@ -53,26 +65,49 @@ export async function callOpenAiCompatible(
     ...loopTurns.map(h => ({ role: h.role, content: h.content })),
   ];
 
-  const body = JSON.stringify({
+  const baseParams = {
     model,
     messages,
     temperature: 0.9,
     top_p: 0.95,
     max_tokens: PROVIDER_MAX_OUTPUT_TOKENS,
-  });
+  };
+  const doFetch = (body: string) =>
+    fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body,
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+
   // W3 hard-cap audit: refuse an oversized request BEFORE the provider
   // call — the attempt fails (failover/502), it never overspends.
+  let body = JSON.stringify({ ...baseParams, response_format: JSON_MODE });
   assertSerializedInputWithinBound(body);
-
-  const res = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body,
-    signal: AbortSignal.timeout(timeoutMs),
-  });
+  let res = await doFetch(body);
+  // Availability-only bounded fallback: if THIS provider build rejects the
+  // json_object param outright (a 400 naming response_format — a future
+  // model/base-URL swap), retry ONCE without it. Everything downstream
+  // (parse, zod, grounding) is unchanged, so this can never launder a bad
+  // reply — it only restores the pre-E5 request shape for that provider.
+  // Logged server-side (rule 10); any other 400 still fails closed.
+  if (res.status === 400) {
+    const errText = await res.text();
+    if (/response_format/i.test(errText)) {
+      console.error(
+        "[ai/openai] provider rejected response_format (json mode) — one bounded retry without it; validation unchanged",
+      );
+      body = JSON.stringify(baseParams);
+      assertSerializedInputWithinBound(body);
+      res = await doFetch(body);
+    } else {
+      console.error("[ai/openai] upstream error:", res.status, errText.slice(0, 500));
+      throw new Error(`openai-compatible HTTP ${res.status}`);
+    }
+  }
 
   if (!res.ok) {
     const errText = await res.text();

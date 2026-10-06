@@ -34,7 +34,11 @@ export default function Sidebar() {
         { href: "/rishis",      label: t("nav.chatWithRishis"), icon: "✦" },
         { href: "/news",        label: t("nav.news"),           icon: "◈" },
         { href: "/pricing",     label: t("nav.pricing"),        icon: "◇" },
-        { href: "/methodology", label: t("nav.methodology"),    icon: "❖" },
+        // MH (founder directive 10, 2026-10-06): /methodology is HIDDEN from
+        // the product navigation (IA-level hide, not deletion). The route,
+        // the content and the CONTEXTUAL links (stock-page "how is this
+        // scored" footer) remain — direct URL access stays coherent; the
+        // a5-navigation spec pins both sides.
       ],
     },
   ];

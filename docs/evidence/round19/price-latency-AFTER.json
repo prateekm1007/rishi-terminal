@@ -1,0 +1,384 @@
+{
+  "generatedAt": "2026-10-06T10:56:06.659Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "maxSeconds": 300,
+  "plateauReached": true,
+  "firstPriceMs": 6367,
+  "finalCoverage": 783,
+  "timeToPct": {
+    "p25": 15466,
+    "p50": 26906,
+    "p75": 32976,
+    "p100": 41568
+  },
+  "wire": {
+    "responses": 19,
+    "symbols": 916,
+    "LIVE": 21,
+    "CACHED": 762,
+    "UNAVAILABLE": 133
+  },
+  "batchResponses": [
+    {
+      "tMs": 6335,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 43,
+        "UNAVAILABLE": 5,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 8946,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 0,
+        "CACHED": 42,
+        "UNAVAILABLE": 8,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 10679,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 43,
+        "UNAVAILABLE": 5,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 12223,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 1,
+        "CACHED": 46,
+        "UNAVAILABLE": 3,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 15089,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 1,
+        "CACHED": 43,
+        "UNAVAILABLE": 6,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 17120,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 1,
+        "CACHED": 42,
+        "UNAVAILABLE": 7,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 19406,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 1,
+        "CACHED": 41,
+        "UNAVAILABLE": 8,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 21603,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 0,
+        "CACHED": 38,
+        "UNAVAILABLE": 12,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 24025,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 38,
+        "UNAVAILABLE": 10,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 26486,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 0,
+        "CACHED": 39,
+        "UNAVAILABLE": 11,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 28154,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 0,
+        "CACHED": 41,
+        "UNAVAILABLE": 9,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 29438,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 47,
+        "UNAVAILABLE": 1,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 31367,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 0,
+        "CACHED": 41,
+        "UNAVAILABLE": 9,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 32596,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 0,
+        "CACHED": 45,
+        "UNAVAILABLE": 5,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 34722,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 39,
+        "UNAVAILABLE": 9,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 36806,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 1,
+        "CACHED": 42,
+        "UNAVAILABLE": 7,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 38704,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 40,
+        "UNAVAILABLE": 8,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 40208,
+      "http": 200,
+      "symbols": 50,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 41,
+        "UNAVAILABLE": 7,
+        "other": 0
+      }
+    },
+    {
+      "tMs": 41496,
+      "http": 200,
+      "symbols": 16,
+      "split": {
+        "LIVE": 2,
+        "CACHED": 11,
+        "UNAVAILABLE": 3,
+        "other": 0
+      }
+    }
+  ],
+  "coverageEvery500ms": [
+    {
+      "tMs": 2833,
+      "rows": 916,
+      "priced": 0
+    },
+    {
+      "tMs": 4853,
+      "rows": 916,
+      "priced": 0
+    },
+    {
+      "tMs": 6872,
+      "rows": 916,
+      "priced": 45
+    },
+    {
+      "tMs": 8890,
+      "rows": 916,
+      "priced": 45
+    },
+    {
+      "tMs": 10910,
+      "rows": 916,
+      "priced": 132
+    },
+    {
+      "tMs": 12926,
+      "rows": 916,
+      "priced": 179
+    },
+    {
+      "tMs": 14958,
+      "rows": 916,
+      "priced": 179
+    },
+    {
+      "tMs": 16981,
+      "rows": 916,
+      "priced": 223
+    },
+    {
+      "tMs": 19002,
+      "rows": 916,
+      "priced": 266
+    },
+    {
+      "tMs": 21026,
+      "rows": 916,
+      "priced": 308
+    },
+    {
+      "tMs": 23048,
+      "rows": 916,
+      "priced": 346
+    },
+    {
+      "tMs": 25068,
+      "rows": 916,
+      "priced": 386
+    },
+    {
+      "tMs": 27917,
+      "rows": 916,
+      "priced": 425
+    },
+    {
+      "tMs": 29945,
+      "rows": 916,
+      "priced": 515
+    },
+    {
+      "tMs": 31966,
+      "rows": 916,
+      "priced": 556
+    },
+    {
+      "tMs": 33987,
+      "rows": 916,
+      "priced": 601
+    },
+    {
+      "tMs": 36010,
+      "rows": 916,
+      "priced": 642
+    },
+    {
+      "tMs": 38031,
+      "rows": 916,
+      "priced": 685
+    },
+    {
+      "tMs": 40052,
+      "rows": 916,
+      "priced": 727
+    },
+    {
+      "tMs": 42074,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 44097,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 46119,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 48140,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 50163,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 52185,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 54207,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 56228,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 58251,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 60274,
+      "rows": 916,
+      "priced": 783
+    },
+    {
+      "tMs": 61790,
+      "rows": 916,
+      "priced": 783
+    }
+  ]
+}

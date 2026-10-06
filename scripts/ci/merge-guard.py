@@ -140,7 +140,12 @@ def main() -> None:
     if code != 0:
         die(2, f"head {head[:12]} not reachable — unknown SHA to this clone? {out[:200]}")
     if out != tip1:
-        n, _ = sh(["git", "rev-list", "--count", f"{head}..origin/main"], args.repo_dir)
+        # NOTE: sh() returns (exit_code, output) — the count is the OUTPUT,
+        # not the status. The first version printed the exit code (always 0
+        # on success) and claimed "0 commits ahead" on a genuinely stale
+        # branch; caught while capturing the stale-base bite on PR #188.
+        code_n, count_out = sh(["git", "rev-list", "--count", f"{head}..origin/main"], args.repo_dir)
+        n = count_out if code_n == 0 else "unknown"
         die(2, f"STALE BASE: merge-base {out[:12]} != main tip {tip1[:12]} "
                f"(main is {n} commit(s) ahead of this branch — rebase first, C7)")
     print(f"[gate 2] merge-base == main tip — branch is current with main")

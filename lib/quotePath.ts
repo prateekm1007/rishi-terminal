@@ -158,9 +158,13 @@ export async function serveQuote(
   rawSymbol: string,
   deps: ServeQuoteDeps = {},
 ): Promise<ServedQuote | null> {
-  // The alias must resolve BEFORE the cache key is chosen so one instrument
-  // can never hold two cache rows (mirrors fetchLivePrice's own aliasing).
-  const symbol = STOCK_ALIASES[rawSymbol] ?? rawSymbol;
+  // LP3 (round 21): the cache key is the REQUESTED registry symbol — the
+  // provider-identifier aliasing happens INSIDE the refreshers
+  // (fetchLivePrice's own entry, bulkRefreshQuotes for the bulk path), and
+  // results are re-keyed to the requested symbol. One instrument, one row,
+  // one key shape across the single and batch paths, and the /api/health
+  // coverage RPC (p_universe = STOCKS keys) keeps counting every row.
+  const symbol = rawSymbol;
   const r = await cachedQuote(symbol, {
     fetchUpstream: deps.fetchUpstream ?? fetchLivePriceAsCached,
     ...(deps.nowMs ? { nowMs: deps.nowMs } : {}),
@@ -177,7 +181,8 @@ export async function serveQuote(
  * serveQuote path) is what warms the cache.
  */
 export async function serveCachedQuote(rawSymbol: string): Promise<ServedQuote | null> {
-  const symbol = STOCK_ALIASES[rawSymbol] ?? rawSymbol;
+  // LP3: rows are keyed by the requested registry symbol (see serveQuote).
+  const symbol = rawSymbol;
   const r = await peekCachedQuote(symbol);
   if (!r) return null;
   return toServedQuote(symbol, r.quote, r.market, "CACHED");
@@ -186,8 +191,8 @@ export async function serveCachedQuote(rawSymbol: string): Promise<ServedQuote |
 /** Batch peek (X3): ONE cache read for the whole SSR symbol list. Only
  *  symbols with a usable cached row are present in the result. */
 export async function serveCachedQuotes(rawSymbols: string[]): Promise<Record<string, ServedQuote>> {
-  const resolved = rawSymbols.map(s => STOCK_ALIASES[s] ?? s);
-  const rows = await peekCachedQuotes(resolved);
+  // LP3: rows are keyed by the requested registry symbols (see serveQuote).
+  const rows = await peekCachedQuotes(rawSymbols);
   const out: Record<string, ServedQuote> = {};
   for (const [symbol, r] of Object.entries(rows)) {
     out[symbol] = toServedQuote(symbol, r.quote, r.market, "CACHED");
@@ -202,10 +207,19 @@ export async function bulkRefreshQuotes(
   symbols: string[],
 ): Promise<Record<string, CachedQuote | null>> {
   const { fetchBulkPricesForSymbols } = await import("@/lib/nse/bulkFetch");
-  const bulk = symbols.length > 0 ? await fetchBulkPricesForSymbols(symbols) : {};
+  // LP3 (round 21): the transport is queried under the symbol YAHOO serves
+  // today (STOCK_ALIASES — the provider-identifier map), and every result
+  // is re-keyed to the REQUESTED registry symbol, so quote_cache rows stay
+  // registry-keyed. Renamed instruments (BAJAJAUTO -> BAJAJ-AUTO class)
+  // become priceable without ever faking a row: an upstream miss for the
+  // current symbol is an honest null, exactly as before.
+  const providerOf = (sym: string): string => STOCK_ALIASES[sym] ?? sym;
+  const providerSymbols = [...new Set(symbols.map(providerOf))];
+  const bulk =
+    providerSymbols.length > 0 ? await fetchBulkPricesForSymbols(providerSymbols) : {};
   const out: Record<string, CachedQuote | null> = {};
   for (const symbol of symbols) {
-    const b = bulk[symbol];
+    const b = bulk[providerOf(symbol)];
     out[symbol] =
       b && Number.isFinite(b.price) && b.price > 0
         ? {

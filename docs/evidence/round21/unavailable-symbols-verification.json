@@ -1,0 +1,1837 @@
+{
+  "summary": {
+    "generatedAt": "2026-10-06T16:25:16.230Z",
+    "inventory": 133,
+    "probed": 133,
+    "renames": 51,
+    "unresolved": 82,
+    "decisions": {
+      "rename": 51,
+      "no-nse-search-candidate": 76,
+      "candidate-name-mismatch": 6
+    }
+  },
+  "rows": [
+    {
+      "symbol": "ABCL",
+      "seedName": "Aditya Birla Capital",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "ABCAPITAL.NS",
+          "name": "ADITYA BIRLA CAPITAL LTD.",
+          "price": 378.9,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "ABCAPITAL",
+      "evidence": "provider \"ADITYA BIRLA CAPITAL LTD.\" @ 378.9 INR; token overlap 1"
+    },
+    {
+      "symbol": "ADANITRANS",
+      "seedName": "Adani Transmission",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Adani Transmission\" returned no NSE quote"
+    },
+    {
+      "symbol": "AKZOINDIA",
+      "seedName": "Akzo Nobel",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Akzo Nobel\" returned no NSE quote"
+    },
+    {
+      "symbol": "ALLSEC",
+      "seedName": "Allsec Technologies",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Allsec Technologies\" returned no NSE quote"
+    },
+    {
+      "symbol": "AMARAJABAT",
+      "seedName": "Amara Raja Energy & Mobility",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "ARE&M.NS",
+          "name": "AMARA RAJA ENERGY MOB LTD",
+          "price": 742.9,
+          "currency": "INR",
+          "overlap": 0.6
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "ARE&M",
+      "evidence": "provider \"AMARA RAJA ENERGY MOB LTD\" @ 742.9 INR; token overlap 0.6"
+    },
+    {
+      "symbol": "AROHAN",
+      "seedName": "Arohan Financial Services",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Arohan Financial Services\" returned no NSE quote"
+    },
+    {
+      "symbol": "BAJAJAUTO",
+      "seedName": "Bajaj Auto",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "BAJAJ-AUTO.NS",
+          "name": "BAJAJ AUTO LIMITED",
+          "price": 10017,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "BAJAJ-AUTO",
+      "evidence": "provider \"BAJAJ AUTO LIMITED\" @ 10017 INR; token overlap 1"
+    },
+    {
+      "symbol": "BALAJI",
+      "seedName": "Balaji Amines",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "BALAMINES.NS",
+          "name": "BALAJI AMINES LIMITED",
+          "price": 2287.7,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "BALAMINES",
+      "evidence": "provider \"BALAJI AMINES LIMITED\" @ 2287.7 INR; token overlap 1"
+    },
+    {
+      "symbol": "BALLARPUR",
+      "seedName": "Ballarpur Industries",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Ballarpur Industries\" returned no NSE quote"
+    },
+    {
+      "symbol": "BANSWARA",
+      "seedName": "Banswara Syntex",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "BANSWRAS.NS",
+          "name": "BANSWARA SYNTEX LIMITED",
+          "price": 105.09,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "BANSWRAS",
+      "evidence": "provider \"BANSWARA SYNTEX LIMITED\" @ 105.09 INR; token overlap 1"
+    },
+    {
+      "symbol": "BARBEQUE",
+      "seedName": "Barbeque Nation",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Barbeque Nation\" returned no NSE quote"
+    },
+    {
+      "symbol": "BAYER",
+      "seedName": "Bayer CropScience India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Bayer CropScience India\" returned no NSE quote"
+    },
+    {
+      "symbol": "BECKBIES",
+      "seedName": "Beckbies Infrastructure",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Beckbies Infrastructure\" returned no NSE quote"
+    },
+    {
+      "symbol": "BLUESTAR",
+      "seedName": "Blue Star Limited",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "BLUESTARCO.NS",
+          "name": "BLUE STAR LIMITED",
+          "price": 1571.5,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "BLUESTARCO",
+      "evidence": "provider \"BLUE STAR LIMITED\" @ 1571.5 INR; token overlap 1"
+    },
+    {
+      "symbol": "BOOKMYSHOW",
+      "seedName": "BookMyShow",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"BookMyShow\" returned no NSE quote"
+    },
+    {
+      "symbol": "BRAHMASTRA",
+      "seedName": "Brahmastra Realty",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Brahmastra Realty\" returned no NSE quote"
+    },
+    {
+      "symbol": "BRAINBEES",
+      "seedName": "FirstCry",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "FIRSTCRY.NS",
+          "name": "BRAINBEES SOLUTIONS LTD",
+          "price": 177.57,
+          "currency": "INR",
+          "overlap": 0
+        }
+      ],
+      "decision": "candidate-name-mismatch",
+      "acceptedAlias": null,
+      "evidence": "best \"BRAINBEES SOLUTIONS LTD\" overlap 0 < 0.6"
+    },
+    {
+      "symbol": "CENTURYTEX",
+      "seedName": "Century Textiles",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Century Textiles\" returned no NSE quote"
+    },
+    {
+      "symbol": "COLGATE",
+      "seedName": "Colgate Palmolive",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "COLPAL.NS",
+          "name": "COLGATE PALMOLIVE LTD.",
+          "price": 1809.4,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "COLPAL",
+      "evidence": "provider \"COLGATE PALMOLIVE LTD.\" @ 1809.4 INR; token overlap 1"
+    },
+    {
+      "symbol": "COSMOFILMS",
+      "seedName": "Cosmo Films",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Cosmo Films\" returned no NSE quote"
+    },
+    {
+      "symbol": "DISH",
+      "seedName": "Dish TV India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "DISHTV.NS",
+          "name": "DISH TV INDIA LTD.",
+          "price": 2.12,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "DISHTV",
+      "evidence": "provider \"DISH TV INDIA LTD.\" @ 2.12 INR; token overlap 1"
+    },
+    {
+      "symbol": "DRONEAERO",
+      "seedName": "Drone Aero",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Drone Aero\" returned no NSE quote"
+    },
+    {
+      "symbol": "ELDECO",
+      "seedName": "Eldeco Housing",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "ELDEHSG.NS",
+          "name": "ELDECO HSG & IND LTD.",
+          "price": 785.2,
+          "currency": "INR",
+          "overlap": 0.5
+        }
+      ],
+      "decision": "candidate-name-mismatch",
+      "acceptedAlias": null,
+      "evidence": "best \"ELDECO HSG & IND LTD.\" overlap 0.5 < 0.6"
+    },
+    {
+      "symbol": "ELID",
+      "seedName": "Electronics Mart India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "EMIL.NS",
+          "name": "ELECTRONICS MART IND LTD",
+          "price": 201.42,
+          "currency": "INR",
+          "overlap": 0.667
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "EMIL",
+      "evidence": "provider \"ELECTRONICS MART IND LTD\" @ 201.42 INR; token overlap 0.667"
+    },
+    {
+      "symbol": "ETHOS",
+      "seedName": "Ethos",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "ETHOSLTD.NS",
+          "name": "ETHOS LIMITED",
+          "price": 2621.2,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "ETHOSLTD",
+      "evidence": "provider \"ETHOS LIMITED\" @ 2621.2 INR; token overlap 1"
+    },
+    {
+      "symbol": "EXCELCROP",
+      "seedName": "Excel Industries",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "EXCELINDUS.NS",
+          "name": "EXCEL INDUSTRIES LTD",
+          "price": 924.1,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "EXCELINDUS",
+      "evidence": "provider \"EXCEL INDUSTRIES LTD\" @ 924.1 INR; token overlap 1"
+    },
+    {
+      "symbol": "GANESHHOUC",
+      "seedName": "Ganesh Housing Corporation",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Ganesh Housing Corporation\" returned no NSE quote"
+    },
+    {
+      "symbol": "GARWARE",
+      "seedName": "Garware Technical Fibres",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "GARFIBRES.NS",
+          "name": "GARWARE TECH FIBRES LTD",
+          "price": 770.05,
+          "currency": "INR",
+          "overlap": 0.667
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "GARFIBRES",
+      "evidence": "provider \"GARWARE TECH FIBRES LTD\" @ 770.05 INR; token overlap 0.667"
+    },
+    {
+      "symbol": "GATI",
+      "seedName": "Gati Limited",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Gati Limited\" returned no NSE quote"
+    },
+    {
+      "symbol": "GEPIL",
+      "seedName": "GE Power India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "GVPIL.NS",
+          "name": "GE POWER INDIA LIMITED",
+          "price": 734.85,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "GVPIL",
+      "evidence": "provider \"GE POWER INDIA LIMITED\" @ 734.85 INR; token overlap 1"
+    },
+    {
+      "symbol": "GMDC",
+      "seedName": "Gujarat Mineral",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "GMDCLTD.NS",
+          "name": "GUJARAT MINERAL DEV CORP",
+          "price": 491.55,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "GMDCLTD",
+      "evidence": "provider \"GUJARAT MINERAL DEV CORP\" @ 491.55 INR; token overlap 1"
+    },
+    {
+      "symbol": "GMRINFRA",
+      "seedName": "GMR Infra",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"GMR Infra\" returned no NSE quote"
+    },
+    {
+      "symbol": "GODAWARI",
+      "seedName": "Godawari Power & Ispat",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "GPIL.NS",
+          "name": "GODAWARI POW & ISP LTD",
+          "price": 218.98,
+          "currency": "INR",
+          "overlap": 0.5
+        }
+      ],
+      "decision": "candidate-name-mismatch",
+      "acceptedAlias": null,
+      "evidence": "best \"GODAWARI POW & ISP LTD\" overlap 0.5 < 0.6"
+    },
+    {
+      "symbol": "GUJGASLTD",
+      "seedName": "Gujarat Gas",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Gujarat Gas\" returned no NSE quote"
+    },
+    {
+      "symbol": "HBLPOWER",
+      "seedName": "HBL Power Systems",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"HBL Power Systems\" returned no NSE quote"
+    },
+    {
+      "symbol": "HIL",
+      "seedName": "HIL Limited",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"HIL Limited\" returned no NSE quote"
+    },
+    {
+      "symbol": "HLE",
+      "seedName": "HLE Glascoat",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "HLEGLAS.NS",
+          "name": "HLE GLASCOAT LIMITED",
+          "price": 447.1,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "HLEGLAS",
+      "evidence": "provider \"HLE GLASCOAT LIMITED\" @ 447.1 INR; token overlap 1"
+    },
+    {
+      "symbol": "HOVS",
+      "seedName": "HOV Services",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"HOV Services\" returned no NSE quote"
+    },
+    {
+      "symbol": "IBREALEST",
+      "seedName": "Indiabulls Real Estate",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Indiabulls Real Estate\" returned no NSE quote"
+    },
+    {
+      "symbol": "IBULHSGFIN",
+      "seedName": "Indiabulls Housing",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Indiabulls Housing\" returned no NSE quote"
+    },
+    {
+      "symbol": "IIFLSEC",
+      "seedName": "IIFL Securities",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"IIFL Securities\" returned no NSE quote"
+    },
+    {
+      "symbol": "IIFLWAM",
+      "seedName": "IIFL Wealth Management",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"IIFL Wealth Management\" returned no NSE quote"
+    },
+    {
+      "symbol": "INFIBEAM",
+      "seedName": "Infibeam",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Infibeam\" returned no NSE quote"
+    },
+    {
+      "symbol": "INFOEDGE",
+      "seedName": "Info Edge",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "NAUKRI.NS",
+          "name": "INFO EDGE (I) LTD",
+          "price": 1241,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "NAUKRI",
+      "evidence": "provider \"INFO EDGE (I) LTD\" @ 1241 INR; token overlap 1"
+    },
+    {
+      "symbol": "INOXLEISURE",
+      "seedName": "INOX Leisure",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"INOX Leisure\" returned no NSE quote"
+    },
+    {
+      "symbol": "ISEC",
+      "seedName": "ICICI Securities",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"ICICI Securities\" returned no NSE quote"
+    },
+    {
+      "symbol": "ISMT",
+      "seedName": "ISMT Limited",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"ISMT Limited\" returned no NSE quote"
+    },
+    {
+      "symbol": "ITDCEM",
+      "seedName": "ITD Cementation",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"ITD Cementation\" returned no NSE quote"
+    },
+    {
+      "symbol": "JAINIRRIG",
+      "seedName": "Jain Irrigation",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "JISLJALEQS.NS",
+          "name": "JAIN IRRIGATION SYSTEMS",
+          "price": 26.65,
+          "currency": "INR",
+          "overlap": 1
+        },
+        {
+          "symbol": "JISLDVREQS.NS",
+          "name": "JAIN DVR EQUITY SHARES",
+          "price": 18.96,
+          "currency": "INR",
+          "overlap": 0.5
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "JISLJALEQS",
+      "evidence": "provider \"JAIN IRRIGATION SYSTEMS\" @ 26.65 INR; token overlap 1"
+    },
+    {
+      "symbol": "JAYASWAL",
+      "seedName": "Jayaswal Neco",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "JAYNECOIND.NS",
+          "name": "JAYASWAL NECO INDUSTR LTD",
+          "price": 94.45,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "JAYNECOIND",
+      "evidence": "provider \"JAYASWAL NECO INDUSTR LTD\" @ 94.45 INR; token overlap 1"
+    },
+    {
+      "symbol": "JBCHEMPHAR",
+      "seedName": "JB Chemicals",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"JB Chemicals\" returned no NSE quote"
+    },
+    {
+      "symbol": "JINDALALKM",
+      "seedName": "Jindal Poly Films",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "JINDALPOLY.NS",
+          "name": "JINDAL POLY FILMS LIMITED",
+          "price": 658.35,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "JINDALPOLY",
+      "evidence": "provider \"JINDAL POLY FILMS LIMITED\" @ 658.35 INR; token overlap 1"
+    },
+    {
+      "symbol": "JINDALSTPP",
+      "seedName": "Jindal Steel and Power",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Jindal Steel and Power\" returned no NSE quote"
+    },
+    {
+      "symbol": "JMCPROJECT",
+      "seedName": "JMC Projects",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"JMC Projects\" returned no NSE quote"
+    },
+    {
+      "symbol": "JMTAUTOLTD",
+      "seedName": "JMT Auto",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"JMT Auto\" returned no NSE quote"
+    },
+    {
+      "symbol": "JPASSOCIAT",
+      "seedName": "Jaiprakash Associates",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Jaiprakash Associates\" returned no NSE quote"
+    },
+    {
+      "symbol": "JSLHISAR",
+      "seedName": "Jindal Stainless (Hisar)",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Jindal Stainless (Hisar)\" returned no NSE quote"
+    },
+    {
+      "symbol": "JSWISPL",
+      "seedName": "JSW Ispat",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"JSW Ispat\" returned no NSE quote"
+    },
+    {
+      "symbol": "JUBILANT",
+      "seedName": "Jubilant Pharmova",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "JUBLPHARMA.NS",
+          "name": "JUBILANT PHARMOVA LTD",
+          "price": 989.2,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "JUBLPHARMA",
+      "evidence": "provider \"JUBILANT PHARMOVA LTD\" @ 989.2 INR; token overlap 1"
+    },
+    {
+      "symbol": "JUPITER",
+      "seedName": "Jupiter Life Line",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "JLHL.NS",
+          "name": "JUPITER LIFE LINE HOSP L",
+          "price": 253.85,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "JLHL",
+      "evidence": "provider \"JUPITER LIFE LINE HOSP L\" @ 253.85 INR; token overlap 1"
+    },
+    {
+      "symbol": "KALPATPOWR",
+      "seedName": "Kalpataru Power",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Kalpataru Power\" returned no NSE quote"
+    },
+    {
+      "symbol": "KALYANAJW",
+      "seedName": "Kalyan Jewelers",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Kalyan Jewelers\" returned no NSE quote"
+    },
+    {
+      "symbol": "KAPIL",
+      "seedName": "Kapil Raj Feeds (Avanti)",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Kapil Raj Feeds (Avanti)\" returned no NSE quote"
+    },
+    {
+      "symbol": "KNESL",
+      "seedName": "KNL",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"KNL\" returned no NSE quote"
+    },
+    {
+      "symbol": "KSOLV",
+      "seedName": "K Somaiya Chemicals",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"K Somaiya Chemicals\" returned no NSE quote"
+    },
+    {
+      "symbol": "KWALITY",
+      "seedName": "Kwality",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "KWIL.NS",
+          "name": "KWALITY WALL'S (INDIA) L",
+          "price": 38.29,
+          "currency": "INR",
+          "overlap": 1
+        },
+        {
+          "symbol": "KPL.NS",
+          "name": "KWALITY PHARMACEUTICALS L",
+          "price": 3745,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "KWIL",
+      "evidence": "provider \"KWALITY WALL'S (INDIA) L\" @ 38.29 INR; token overlap 1"
+    },
+    {
+      "symbol": "LAXMIMACH",
+      "seedName": "Lakshmi Machine Works",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Lakshmi Machine Works\" returned no NSE quote"
+    },
+    {
+      "symbol": "LINGFORGER",
+      "seedName": "Ling Forger",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Ling Forger\" returned no NSE quote"
+    },
+    {
+      "symbol": "LTIM",
+      "seedName": "LTIMindtree",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"LTIMindtree\" returned no NSE quote"
+    },
+    {
+      "symbol": "MACROTECH",
+      "seedName": "Macrotech Developers",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Macrotech Developers\" returned no NSE quote"
+    },
+    {
+      "symbol": "MAGADHSUGAR",
+      "seedName": "Magadh Sugar",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "MAGADSUGAR.NS",
+          "name": "MAGADH SUGAR & ENERGY LTD",
+          "price": 552.45,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "MAGADSUGAR",
+      "evidence": "provider \"MAGADH SUGAR & ENERGY LTD\" @ 552.45 INR; token overlap 1"
+    },
+    {
+      "symbol": "MAGMA",
+      "seedName": "Magma Fincorp",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Magma Fincorp\" returned no NSE quote"
+    },
+    {
+      "symbol": "MAHINDCIE",
+      "seedName": "Mahindra CIE Automotive",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Mahindra CIE Automotive\" returned no NSE quote"
+    },
+    {
+      "symbol": "MAHINDRAHOL",
+      "seedName": "Mahindra Holidays",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "MHRIL.NS",
+          "name": "MAHINDRA HOLIDAYS LTD",
+          "price": 196.71,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "MHRIL",
+      "evidence": "provider \"MAHINDRA HOLIDAYS LTD\" @ 196.71 INR; token overlap 1"
+    },
+    {
+      "symbol": "MANGCHEFER",
+      "seedName": "Mangalore Chemicals",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Mangalore Chemicals\" returned no NSE quote"
+    },
+    {
+      "symbol": "MCXINDIA",
+      "seedName": "MCX India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"MCX India\" returned no NSE quote"
+    },
+    {
+      "symbol": "MEDHA",
+      "seedName": "Medha Servo Drives",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Medha Servo Drives\" returned no NSE quote"
+    },
+    {
+      "symbol": "MEGH",
+      "seedName": "Meghmani Organics",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "MOL.NS",
+          "name": "MEGHMANI ORGANICS LIMITED",
+          "price": 60.25,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "MOL",
+      "evidence": "provider \"MEGHMANI ORGANICS LIMITED\" @ 60.25 INR; token overlap 1"
+    },
+    {
+      "symbol": "MENON",
+      "seedName": "Menon Bearings",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "MENONBE.NS",
+          "name": "MENON BEARINGS LIMITED",
+          "price": 304.95,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "MENONBE",
+      "evidence": "provider \"MENON BEARINGS LIMITED\" @ 304.95 INR; token overlap 1"
+    },
+    {
+      "symbol": "MERCK",
+      "seedName": "Merck Limited",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Merck Limited\" returned no NSE quote"
+    },
+    {
+      "symbol": "MUKAND",
+      "seedName": "Mukand Limited",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "MUKANDLTD.NS",
+          "name": "MUKAND LTD.",
+          "price": 181.55,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "MUKANDLTD",
+      "evidence": "provider \"MUKAND LTD.\" @ 181.55 INR; token overlap 1"
+    },
+    {
+      "symbol": "NAINITAL",
+      "seedName": "Nainital Bank",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Nainital Bank\" returned no NSE quote"
+    },
+    {
+      "symbol": "NAMINDIA",
+      "seedName": "Nippon Life India AMC",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Nippon Life India AMC\" returned no NSE quote"
+    },
+    {
+      "symbol": "NARAYANA",
+      "seedName": "Narayana Hrudayalaya",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "NH.NS",
+          "name": "NARAYANA HRUDAYALAYA LTD.",
+          "price": 1723.8,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "NH",
+      "evidence": "provider \"NARAYANA HRUDAYALAYA LTD.\" @ 1723.8 INR; token overlap 1"
+    },
+    {
+      "symbol": "NECTARLIF",
+      "seedName": "Nectar Lifesciences",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "NECLIFE.NS",
+          "name": "NECTAR LIFESCIENCES LTD.",
+          "price": 10.95,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "NECLIFE",
+      "evidence": "provider \"NECTAR LIFESCIENCES LTD.\" @ 10.95 INR; token overlap 1"
+    },
+    {
+      "symbol": "PENNAR",
+      "seedName": "Pennar Industries",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "PENIND.NS",
+          "name": "PENNAR INDUSTRIES LTD",
+          "price": 177.85,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "PENIND",
+      "evidence": "provider \"PENNAR INDUSTRIES LTD\" @ 177.85 INR; token overlap 1"
+    },
+    {
+      "symbol": "PRICOL",
+      "seedName": "Pricol",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "PRICOLLTD.NS",
+          "name": "PRICOL LIMITED",
+          "price": 677.65,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "PRICOLLTD",
+      "evidence": "provider \"PRICOL LIMITED\" @ 677.65 INR; token overlap 1"
+    },
+    {
+      "symbol": "PRISMJOHNSN",
+      "seedName": "Prism Johnson",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "PRSMJOHNSN.NS",
+          "name": "PRISM JOHNSON LIMITED",
+          "price": 103.48,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "PRSMJOHNSN",
+      "evidence": "provider \"PRISM JOHNSON LIMITED\" @ 103.48 INR; token overlap 1"
+    },
+    {
+      "symbol": "PTON",
+      "seedName": "Prime Textiles",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Prime Textiles\" returned no NSE quote"
+    },
+    {
+      "symbol": "PUDUMJEE",
+      "seedName": "Pudumjee Paper",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "PDMJEPAPER.NS",
+          "name": "PUDUMJEE PAPER PRO. LTD",
+          "price": 96.16,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "PDMJEPAPER",
+      "evidence": "provider \"PUDUMJEE PAPER PRO. LTD\" @ 96.16 INR; token overlap 1"
+    },
+    {
+      "symbol": "PURAVANKARA",
+      "seedName": "Puravankara",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "PURVA.NS",
+          "name": "PURAVANKARA LIMITED",
+          "price": 210.75,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "PURVA",
+      "evidence": "provider \"PURAVANKARA LIMITED\" @ 210.75 INR; token overlap 1"
+    },
+    {
+      "symbol": "RADICON",
+      "seedName": "Radicon",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Radicon\" returned no NSE quote"
+    },
+    {
+      "symbol": "RAILVIKAS",
+      "seedName": "Rail Vikas Nigam (RVNL)",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Rail Vikas Nigam (RVNL)\" returned no NSE quote"
+    },
+    {
+      "symbol": "RANEENGINE",
+      "seedName": "Rane Engine Valve",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Rane Engine Valve\" returned no NSE quote"
+    },
+    {
+      "symbol": "RAYMOND2",
+      "seedName": "Raymond Realty",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "RAYMONDREL.NS",
+          "name": "RAYMOND REALTY LIMITED",
+          "price": 707.8,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "RAYMONDREL",
+      "evidence": "provider \"RAYMOND REALTY LIMITED\" @ 707.8 INR; token overlap 1"
+    },
+    {
+      "symbol": "REVATHI",
+      "seedName": "Revathi Equipment",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "RVTH.NS",
+          "name": "REVATHI EQUIPMENT INDIA L",
+          "price": 756.2,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "RVTH",
+      "evidence": "provider \"REVATHI EQUIPMENT INDIA L\" @ 756.2 INR; token overlap 1"
+    },
+    {
+      "symbol": "RRVL",
+      "seedName": "Reliance Retail Ventures",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Reliance Retail Ventures\" returned no NSE quote"
+    },
+    {
+      "symbol": "SANDUMANG",
+      "seedName": "Sandur Manganese",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "SANDUMA.NS",
+          "name": "SANDUR MANG & IRON ORES L",
+          "price": 183.38,
+          "currency": "INR",
+          "overlap": 0.5
+        }
+      ],
+      "decision": "candidate-name-mismatch",
+      "acceptedAlias": null,
+      "evidence": "best \"SANDUR MANG & IRON ORES L\" overlap 0.5 < 0.6"
+    },
+    {
+      "symbol": "SANGAM",
+      "seedName": "Sangam India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "SANGAMIND.NS",
+          "name": "SANGAM (INDIA) LTD",
+          "price": 642.4,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "SANGAMIND",
+      "evidence": "provider \"SANGAM (INDIA) LTD\" @ 642.4 INR; token overlap 1"
+    },
+    {
+      "symbol": "SELAN",
+      "seedName": "Selan Exploration Technology",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Selan Exploration Technology\" returned no NSE quote"
+    },
+    {
+      "symbol": "SEQUENT",
+      "seedName": "Sequent Scientific",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Sequent Scientific\" returned no NSE quote"
+    },
+    {
+      "symbol": "SESAPAPER",
+      "seedName": "Seshasayee Paper",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "SESHAPAPER.NS",
+          "name": "SESHASAYEE PAPER & BOARDS",
+          "price": 233.87,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "SESHAPAPER",
+      "evidence": "provider \"SESHASAYEE PAPER & BOARDS\" @ 233.87 INR; token overlap 1"
+    },
+    {
+      "symbol": "SHREYASHIP",
+      "seedName": "Shreyas Shipping",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Shreyas Shipping\" returned no NSE quote"
+    },
+    {
+      "symbol": "SHRIRAMEPC",
+      "seedName": "Shriram EPC",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Shriram EPC\" returned no NSE quote"
+    },
+    {
+      "symbol": "SMLISUZU",
+      "seedName": "SML Isuzu",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"SML Isuzu\" returned no NSE quote"
+    },
+    {
+      "symbol": "SOMDISTILL",
+      "seedName": "Som Distilleries",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Som Distilleries\" returned no NSE quote"
+    },
+    {
+      "symbol": "SONATASOFT",
+      "seedName": "Sonata Software",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "SONATSOFTW.NS",
+          "name": "SONATA SOFTWARE LTD",
+          "price": 252.05,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "SONATSOFTW",
+      "evidence": "provider \"SONATA SOFTWARE LTD\" @ 252.05 INR; token overlap 1"
+    },
+    {
+      "symbol": "SRTRANSFIN",
+      "seedName": "Shriram Finance",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "SHRIRAMFIN.NS",
+          "name": "SHRIRAM FINANCE LIMITED",
+          "price": 965.05,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "SHRIRAMFIN",
+      "evidence": "provider \"SHRIRAM FINANCE LIMITED\" @ 965.05 INR; token overlap 1"
+    },
+    {
+      "symbol": "STRIDES",
+      "seedName": "Strides Pharma",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "STAR.NS",
+          "name": "STRIDES PHARMA SCI LTD",
+          "price": 1088.7,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "STAR",
+      "evidence": "provider \"STRIDES PHARMA SCI LTD\" @ 1088.7 INR; token overlap 1"
+    },
+    {
+      "symbol": "SUVENPHAR",
+      "seedName": "Suven Pharma",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Suven Pharma\" returned no NSE quote"
+    },
+    {
+      "symbol": "SUVIDHAFIN",
+      "seedName": "Suvidha Finance",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Suvidha Finance\" returned no NSE quote"
+    },
+    {
+      "symbol": "SWANENERGY",
+      "seedName": "Swan Energy",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Swan Energy\" returned no NSE quote"
+    },
+    {
+      "symbol": "TASYBITE",
+      "seedName": "Tasty Bite Eatables",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "TASTYBITE.NS",
+          "name": "TASTY BITE EATABLES LTD",
+          "price": 9413,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "TASTYBITE",
+      "evidence": "provider \"TASTY BITE EATABLES LTD\" @ 9413 INR; token overlap 1"
+    },
+    {
+      "symbol": "TATACOFFEE",
+      "seedName": "Tata Coffee",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Tata Coffee\" returned no NSE quote"
+    },
+    {
+      "symbol": "TATAMOTORS",
+      "seedName": "Tata Motors",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "TMCV.NS",
+          "name": "TATA MOTORS LIMITED",
+          "price": 433.8,
+          "currency": "INR",
+          "overlap": 1
+        },
+        {
+          "symbol": "TMPV.NS",
+          "name": "TATA MOTORS PASS VEH LTD",
+          "price": 285.8,
+          "currency": "INR",
+          "overlap": 1
+        },
+        {
+          "symbol": "TMCV-BL.NS",
+          "name": "TATA MOTORS LIMITED",
+          "price": 438,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "TMCV",
+      "evidence": "provider \"TATA MOTORS LIMITED\" @ 433.8 INR; token overlap 1"
+    },
+    {
+      "symbol": "TCNSBRANDS",
+      "seedName": "TCNS Clothing",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"TCNS Clothing\" returned no NSE quote"
+    },
+    {
+      "symbol": "TECHNO",
+      "seedName": "Techno Electric",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "TECHNOE.NS",
+          "name": "TECHNO ELEC & ENG CO. LTD",
+          "price": 996.2,
+          "currency": "INR",
+          "overlap": 0.5
+        }
+      ],
+      "decision": "candidate-name-mismatch",
+      "acceptedAlias": null,
+      "evidence": "best \"TECHNO ELEC & ENG CO. LTD\" overlap 0.5 < 0.6"
+    },
+    {
+      "symbol": "TILAKNAGAR",
+      "seedName": "Tilaknagar Industries",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "TI.NS",
+          "name": "TILAKNAGAR INDUSTRIES LTD",
+          "price": 547.8,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "TI",
+      "evidence": "provider \"TILAKNAGAR INDUSTRIES LTD\" @ 547.8 INR; token overlap 1"
+    },
+    {
+      "symbol": "TIPSIND",
+      "seedName": "Tips Industries",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Tips Industries\" returned no NSE quote"
+    },
+    {
+      "symbol": "TMVFINANCE",
+      "seedName": "TMB Bank",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"TMB Bank\" returned no NSE quote"
+    },
+    {
+      "symbol": "TORNT",
+      "seedName": "Torrent Pharma",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "TORNTPHARM.NS",
+          "name": "TORRENT PHARMACEUTICALS L",
+          "price": 4772,
+          "currency": "INR",
+          "overlap": 0.5
+        }
+      ],
+      "decision": "candidate-name-mismatch",
+      "acceptedAlias": null,
+      "evidence": "best \"TORRENT PHARMACEUTICALS L\" overlap 0.5 < 0.6"
+    },
+    {
+      "symbol": "TV18BRDCST",
+      "seedName": "TV18 Broadcast",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"TV18 Broadcast\" returned no NSE quote"
+    },
+    {
+      "symbol": "UJJIVAN",
+      "seedName": "Ujjivan Financial Services",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Ujjivan Financial Services\" returned no NSE quote"
+    },
+    {
+      "symbol": "UPDATER",
+      "seedName": "Updater Services",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "UDS.NS",
+          "name": "UPDATER SERVICES LIMITED",
+          "price": 215.4,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "UDS",
+      "evidence": "provider \"UPDATER SERVICES LIMITED\" @ 215.4 INR; token overlap 1"
+    },
+    {
+      "symbol": "VFL",
+      "seedName": "Viceroy Hotels",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "VHLTD.NS",
+          "name": "VICEROY HOTELS LIMITED",
+          "price": 128.97,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "VHLTD",
+      "evidence": "provider \"VICEROY HOTELS LIMITED\" @ 128.97 INR; token overlap 1"
+    },
+    {
+      "symbol": "VIPUL",
+      "seedName": "Vipul Limited",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "VIPULLTD.NS",
+          "name": "VIPUL LIMITED",
+          "price": 10.2,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "VIPULLTD",
+      "evidence": "provider \"VIPUL LIMITED\" @ 10.2 INR; token overlap 1"
+    },
+    {
+      "symbol": "VRLOG",
+      "seedName": "VRL Logistics",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "VRLLOG.NS",
+          "name": "VRL LOGISTICS LIMITED",
+          "price": 284.95,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "VRLLOG",
+      "evidence": "provider \"VRL LOGISTICS LIMITED\" @ 284.95 INR; token overlap 1"
+    },
+    {
+      "symbol": "WABCO",
+      "seedName": "WABCO India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"WABCO India\" returned no NSE quote"
+    },
+    {
+      "symbol": "WEBSOL",
+      "seedName": "Websol Energy",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "WEBELSOLAR.NS",
+          "name": "WEBSOL ENERGY SYSTEM LTD",
+          "price": 70.89,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "WEBELSOLAR",
+      "evidence": "provider \"WEBSOL ENERGY SYSTEM LTD\" @ 70.89 INR; token overlap 1"
+    },
+    {
+      "symbol": "WELSPUNIND",
+      "seedName": "Welspun India",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Welspun India\" returned no NSE quote"
+    },
+    {
+      "symbol": "ZEN",
+      "seedName": "Zen Technologies",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "ZENTEC.NS",
+          "name": "ZEN TECHNOLOGIES LIMITED",
+          "price": 1614.3,
+          "currency": "INR",
+          "overlap": 1
+        },
+        {
+          "symbol": "ZENSARTECH.NS",
+          "name": "ZENSAR TECHNOLOGIES  LTD",
+          "price": 445.45,
+          "currency": "INR",
+          "overlap": 0.5
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "ZENTEC",
+      "evidence": "provider \"ZEN TECHNOLOGIES LIMITED\" @ 1614.3 INR; token overlap 1"
+    },
+    {
+      "symbol": "ZENSAR",
+      "seedName": "Zensar Technologies",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [
+        {
+          "symbol": "ZENSARTECH.NS",
+          "name": "ZENSAR TECHNOLOGIES  LTD",
+          "price": 445.45,
+          "currency": "INR",
+          "overlap": 1
+        }
+      ],
+      "decision": "rename",
+      "acceptedAlias": "ZENSARTECH",
+      "evidence": "provider \"ZENSAR TECHNOLOGIES  LTD\" @ 445.45 INR; token overlap 1"
+    },
+    {
+      "symbol": "ZUARIGLOB",
+      "seedName": "Zuari Global",
+      "oldProbeNS": "miss",
+      "oldProbeBO": "miss",
+      "candidates": [],
+      "decision": "no-nse-search-candidate",
+      "acceptedAlias": null,
+      "evidence": "search \"Zuari Global\" returned no NSE quote"
+    }
+  ]
+}

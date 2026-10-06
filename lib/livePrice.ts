@@ -13,6 +13,7 @@ import { PROVIDER_IDS, isProviderApproved } from './registry/providerRegistry';
 import { persistentCacheGet, persistentCacheSet } from './cache/persistentCache';
 import { isPersistableSource } from './cache/storageRights';
 import { recordUpstreamAttempt } from './health/measurement';
+import yahooAliasesJson from "./registry/yahooAliases.json";
 
 // Corrective gate: the storage-rights allow-list moved to
 // lib/cache/storageRights.ts so the persistent-cache READ path can
@@ -865,10 +866,25 @@ export const YAHOO_SYMBOLS: Record<string, string> = {};
 // MAIN EXPORT FUNCTION
 // =============================================================================
 
-// Exported for lib/quotePath: the alias must be applied BEFORE the shared
-// cache key is chosen, so one instrument can never hold two cache rows.
+// LP3 (round 21): the PROVIDER-IDENTIFIER alias map — registry symbol ->
+// the symbol Yahoo actually serves today. Concept note: this is NOT the
+// registry rename map (lib/registry/tickerAliases.json — what users may
+// type); the two legitimately differ where Yahoo lags or leads the
+// registry. The 44 verified entries come from
+// lib/registry/yahooAliases.json (generated from provider probes, see
+// scripts/generateYahooAliases.ts); BGV01 is the pre-existing hand entry.
+// Consumers: the per-symbol chain below (fetchLivePrice entry) and
+// bulkRefreshQuotes (lib/quotePath) — the alias applies at the
+// PROVIDER-QUERY layer only; quote_cache rows stay keyed by the REQUESTED
+// registry symbol so the /api/health coverage RPC (p_universe = STOCKS
+// keys) keeps counting them.
 export const STOCK_ALIASES: Record<string,string> = {
   BGV01: 'BSLIMITED',
+  // $comment keys are documentation, not aliases (same filter as
+  // tickerRegistry's TICKER_ALIASES).
+  ...Object.fromEntries(
+    Object.entries(yahooAliasesJson).filter(([k]) => !k.startsWith("$")),
+  ),
 };
 // ── Phase 5 T47/T48: provenance-carrying price points ────────────────
 export type PriceStatus = "LIVE" | "CACHED" | "STATIC" | "DERIVED" | "UNAVAILABLE";

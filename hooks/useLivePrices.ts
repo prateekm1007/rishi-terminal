@@ -121,6 +121,75 @@ async function fetchChunk(symbols: string[]): Promise<{ entries: Record<string, 
   };
 }
 
+/** LP (founder directives 7+8, 2026-10-06): the chunked batch fetch as an
+ *  injectable, INCREMENTAL orchestration. The live defect it replaces: the
+ *  Stocks table fetched its 50-symbol chunks sequentially and applied state
+ *  only after ALL chunks settled — 16/19 chunks had returned HTTP 200 while
+ *  the table still rendered 0/916 prices (production probe, 2026-10-06
+ *  ~05:10Z), and a single failed chunk would have discarded every other
+ *  chunk's data. Contract (pinned by test/lp.chunkWaterfall.test.ts):
+ *   - each completed chunk is delivered AS IT LANDS (onChunk) — consumers
+ *     render progressively, never gated on the slowest chunk;
+ *   - a chunk that rejects does not discard the others — the failure is
+ *     counted and the partial result stands (honest nulls for the missing
+ *     symbols, exactly as before);
+ *   - chunks run in a small bounded-parallel pool (default 4) instead of a
+ *     sequential waterfall — the route is designed for batch sweeps and
+ *     the per-IP limiter (60/min) sees the same request count either way;
+ *   - the 50-symbol batch cap (the route contract) is preserved;
+ *   - market state from any chunk's payload is surfaced (the cadence stays
+ *     server-decided, U2). */
+export async function fetchPricesChunked(
+  symbols: string[],
+  deps: {
+    fetchChunk: (symbols: string[]) => Promise<{
+      entries: Record<string, BatchPriceEntry>;
+      market: WireMarketState | null;
+    }>;
+    onChunk?: (normalized: Record<string, PriceData>) => void;
+    concurrency?: number;
+  },
+): Promise<{
+  merged: Record<string, PriceData>;
+  markets: WireMarketState[];
+  failures: number;
+}> {
+  const chunks = chunkArray(symbols, 50);
+  const pool = Math.max(1, Math.min(deps.concurrency ?? 4, chunks.length || 1));
+  const merged: Record<string, PriceData> = {};
+  const markets: WireMarketState[] = [];
+  let failures = 0;
+  let next = 0;
+
+  const worker = async () => {
+    for (;;) {
+      const i = next++;
+      if (i >= chunks.length) return;
+      const chunkSymbols = chunks[i];
+      try {
+        const { entries, market } = await deps.fetchChunk(chunkSymbols);
+        if (market) markets.push(market);
+        const normalized: Record<string, PriceData> = {};
+        for (const sym of chunkSymbols) {
+          const n = normalizeBatchEntry(entries[sym]);
+          if (n) {
+            normalized[sym] = n;
+            merged[sym] = n;
+          }
+        }
+        deps.onChunk?.(normalized);
+      } catch {
+        // Tolerant by contract: this chunk's symbols stay honestly absent
+        // (never zeroed); the other chunks' data stands.
+        failures += 1;
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: pool }, worker));
+  return { merged, markets, failures };
+}
+
 export function useLivePrices(
   symbols: string[],
   refreshInterval = 60000,
@@ -168,38 +237,38 @@ export function useLivePrices(
     try {
       setError(null);
 
-      // R5: /api/prices/batch caps at 50 symbols — chunk to match.
-      const chunks = chunkArray(currentSymbols, 50);
-      const merged: Record<string, BatchPriceEntry> = {};
-      for (const chunk of chunks) {
-        const { entries, market } = await fetchChunk(chunk);
-        Object.assign(merged, entries);
-        // U2: the server decides the NSE session state (Rule 7) — the
-        // cadence decision below reads ONLY this server-provided state.
-        if (market) marketRef.current = market;
-      }
+      // LP (2026-10-06): the incremental chunk orchestration — every
+      // completed chunk updates state as it lands (progressive rendering:
+      // the first rows light up after the FIRST chunk, not after all 19),
+      // a failed chunk cannot discard the rest, and the chunks run in a
+      // bounded-parallel pool instead of a sequential waterfall. Honest-null
+      // normalization (G6) and the server-decided market state (U2) are
+      // unchanged — only the delivery schedule changed.
+      const { merged, markets, failures } = await fetchPricesChunked(currentSymbols, {
+        fetchChunk,
+        onChunk: (normalized) => {
+          setPrices((prev) => ({ ...prev, ...normalized }));
+        },
+      });
+      if (markets.length > 0) marketRef.current = markets[markets.length - 1];
 
-      const normalized: Record<string, PriceData> = {};
-      for (const sym of currentSymbols) {
-        // Phase 5.1 (T57): the batch contract guarantees exactly one entry
-        // per requested symbol — total provider failure is an explicit
-        // UNAVAILABLE entry. G6: normalizeBatchEntry maps it (and partial
-        // provider responses) to nulls, never zeros — consumers keep their
-        // own no-data fallbacks.
-        const normalizedEntry = normalizeBatchEntry(merged[sym]);
-        if (normalizedEntry) {
-          normalized[sym] = normalizedEntry;
-        }
-      }
-
-      setPrices(normalized);
+      // The final state is the pruned full map: symbols no longer in the
+      // list are dropped (same replace semantics the old code had), while
+      // every chunk's data survived.
+      setPrices(merged);
       setLastUpdated(new Date());
       // Round 9: the observation clock is the LATEST upstream-disclosed
       // timestamp (never the fetch time). latestObservedAt ignores
       // unparsable/absent values, so no disclosed time → null stays null.
-      const latestIso = latestObservedAt(Object.values(normalized));
+      const latestIso = latestObservedAt(Object.values(merged));
       setObservedAt(latestIso ? new Date(Date.parse(latestIso)) : null);
       initialLoadDone.current = true;
+      if (failures > 0) {
+        // Partial delivery with at least one failed chunk: surface the
+        // error WITHOUT discarding what landed (the old code lost every
+        // chunk's data on a single failure — the exact live defect).
+        setError(`Price API: ${failures} of ${Math.ceil(currentSymbols.length / 50)} chunk(s) failed`);
+      }
     } catch (err) {
       console.error('[useLivePrices] fetch error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');

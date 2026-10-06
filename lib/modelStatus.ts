@@ -9,8 +9,7 @@
 // Isomorphic on purpose: imported by server components and by client
 // components that render the Short Radar banner. No server-only import.
 
-import { SHORT_RADAR_VALIDATION, type ShortRadarValidationClaims } from "./shortRadarValidation";
-import { QVPS_SHORT_MODEL } from "./scorers/modelVersion";
+import { SHORT_RADAR_VALIDATION, QVPS_SHORT_MODEL, type ShortRadarValidationClaims } from "./shortRadarValidation";
 
 export type ShortRadarModelStatus = "unvalidated" | "structure-evaluated" | "validated";
 

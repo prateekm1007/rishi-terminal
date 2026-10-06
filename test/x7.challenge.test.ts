@@ -15,7 +15,7 @@
 // Contracts below are written to FAIL FIRST against the pre-X7 tree (Rule
 // 21/24): the module does not exist yet. Run note in PR (X7).
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { createHash, createHmac } from "crypto";
 
 import {

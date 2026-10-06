@@ -13,6 +13,8 @@ import { STOCKS } from "@/data/stocks";
 import type { Stock } from "@/lib/consensus/types";
 import { getStockScore } from "./index";
 import { calculateQvps } from "@/lib/scorers/rishiScoreV2";
+import { shortFlagsFromMetrics } from "@/lib/scorers/shortFlags";
+import type { StockMetrics } from "@/lib/scorers/types";
 import { resolveStockMetrics } from "./index";
 
 export interface RankedStock {
@@ -110,7 +112,7 @@ export function pickStockOfTheDay(now: Date = new Date(), poolSize = 10): StockO
 export interface ShortCandidate {
   symbol: string;
   name: string;
-  /** QVPS short-mode score — an unvalidated screening model, clearly labelled in the UI. */
+  /** QVPS short-mode score (qvps-short-v2) — validation status is rendered from the model-status contract (lib/modelStatus.ts). */
   shortScore: number;
   /** Reasons derived from the actual triggering factors, in a stable order. */
   reason: string;
@@ -123,20 +125,90 @@ interface Flag {
   detail: string;
 }
 
+/**
+ * Round 20: THE one Short Radar trigger-flag path (rule 14). Delegates to
+ * lib/scorers/shortFlags (the single definition) with seed-record
+ * semantics: in the seed dataset a 0 is a PLACEHOLDER for unknown (X6),
+ * so zero-valued fields are passed as unknown and fire no flag — missing
+ * data is never reinterpreted as a value (rules 3/16).
+ */
 export function shortFlags(s: Stock): Flag[] {
-  const flags: Flag[] = [];
-  if (s.pe > 40) flags.push({ key: "overvalued", label: "Overvaluation", detail: `P/E ${s.pe.toFixed(1)}x above 40x` });
-  if (s.revcagr < 0) flags.push({ key: "decay", label: "Revenue decay", detail: `revenue CAGR ${s.revcagr.toFixed(1)}%` });
-  if (s.de > 2) flags.push({ key: "leverage", label: "High leverage", detail: `D/E ${s.de.toFixed(2)}x above 2x` });
-  if (s.fcf < 0) flags.push({ key: "cash_burn", label: "Negative FCF", detail: "free cash flow is negative" });
-  if (s.promo < 25) flags.push({ key: "governance", label: "Low promoter skin-in-game", detail: `promoter holding ${s.promo.toFixed(1)}%` });
-  return flags;
+  return shortFlagsFromMetrics({
+    pe: s.pe === 0 ? null : s.pe,
+    revenueCAGR3Y: s.revcagr === 0 ? null : s.revcagr,
+    debtToEquity: s.de === 0 ? null : s.de,
+    fcfMargin: s.rev > 0 ? (s.fcf / s.rev) * 100 : null,
+    promoterHolding: s.promo === 0 ? null : s.promo,
+  });
 }
 
 /**
- * Short radar: stocks triggering >= 2 short-risk factors, ranked by the QVPS
- * short-mode score (unvalidated screening model — labelled as such in the
- * UI), with reasons generated from the actual triggering factors.
+ * Registry field key -> StockMetrics key. resolveStockMetrics names its
+ * provenance fields in registry vocabulary ("de", "promo", "revcagr")
+ * while the QVPS metrics use model vocabulary — the mapping is explicit
+ * so placeholder-nulling lands on the right metric key (round 20 v2-2).
+ */
+const FIELD_TO_METRIC: Record<string, keyof StockMetrics> = {
+  pe: "pe",
+  roe: "roe",
+  roce: "roce",
+  opm: "opm",
+  de: "debtToEquity",
+  promo: "promoterHolding",
+  revcagr: "revenueCAGR3Y",
+  epscagr: "epsCAGR3Y",
+  mktcap: "marketCap",
+  fcfMargin: "fcfMargin",
+  pb: "pb",
+};
+
+/**
+ * Round 20 (v2-2/v2-3): resolve a symbol through the single scoring
+ * surface, null seed-placeholder zeros at the QVPS boundary (X6
+ * semantics — the same rule getStockScore applies to the consensus), and
+ * compute the trigger flags from those nulled metrics. The flags gate
+ * candidacy AND generate the displayed rationale, so every displayed
+ * warning maps to a feature that contributes to the ranking score.
+ */
+export function prepareShortCandidate(symbol: string): {
+  symbol: string;
+  name: string;
+  sector: string;
+  metrics: StockMetrics;
+  flags: Flag[];
+} | null {
+  const resolved = resolveStockMetrics(symbol);
+  if (!resolved) return null;
+
+  const metrics: StockMetrics = { ...resolved.metrics };
+  // A mutable view for placeholder-nulling: StockMetrics types most fields
+  // as required `number`, but at the QVPS boundary a placeholder zero means
+  // UNKNOWN — the scorer's null guards treat absent as no-signal.
+  const mutable = metrics as unknown as Record<string, number | undefined>;
+  for (const [key, field] of Object.entries(resolved.fields)) {
+    const metricKey = FIELD_TO_METRIC[key];
+    if (metricKey && field.source === "seed" && field.value === 0) {
+      mutable[metricKey] = undefined;
+    }
+  }
+  // pb is a mixed-source derivation (seed price / possibly-live BVPS): a
+  // non-positive value means "cannot derive", never a real 0.
+  if (!(metrics.pb > 0)) mutable.pb = undefined;
+
+  return {
+    symbol: resolved.symbol,
+    name: resolved.name,
+    sector: resolved.sector,
+    metrics,
+    flags: shortFlagsFromMetrics(metrics),
+  };
+}
+
+/**
+ * Short radar: stocks triggering >= 2 short-risk factors, ranked by the
+ * QVPS short-mode score (qvps-short-v2 — the validation status is
+ * rendered from lib/modelStatus.ts, never hardcoded), with reasons
+ * generated from the actual triggering factors (v2-3 rationale contract).
  * Tie-breaks: more flags first, larger market cap first, symbol A-Z.
  */
 export function computeShortRadar(n = 3): ShortCandidate[] {
@@ -146,19 +218,18 @@ export function computeShortRadar(n = 3): ShortCandidate[] {
     const report = getStockScore(s);
     if (report.dataQuality !== "OK") continue;
 
-    const flags = shortFlags(s);
-    if (flags.length < 2) continue;
+    const prepared = prepareShortCandidate(s.symbol);
+    if (!prepared) continue;
+    if (prepared.flags.length < 2) continue;
 
-    const resolved = resolveStockMetrics(s.symbol);
-    if (!resolved) continue;
-    const qvps = calculateQvps(resolved.metrics, "SHORT");
+    const qvps = calculateQvps(prepared.metrics, "SHORT");
 
     candidates.push({
-      symbol: s.symbol,
-      name: s.name,
+      symbol: prepared.symbol,
+      name: prepared.name,
       shortScore: qvps.finalScore,
-      reason: flags.map(f => `${f.label} (${f.detail})`).join("; "),
-      flagCount: flags.length,
+      reason: prepared.flags.map(f => `${f.label} (${f.detail})`).join("; "),
+      flagCount: prepared.flags.length,
     });
   }
 

@@ -18,6 +18,7 @@ import type { FullFundamentals } from '@/hooks/useFundamentals';
 import { DataValue } from '@/components/DataValue'; // P0-06: provenance for displayed metrics
 import { overlaySourced } from '@/lib/types/sourced';
 import SeedDataBanner from '@/components/shared/SeedDataBanner'; // R1: honest placeholder-data label
+import { shortRadarStatusLine } from '@/lib/modelStatus'; // round 20: the model-status contract is the ONLY wording source
 
 const C = {
   text:      '#F8FAFC',
@@ -299,7 +300,7 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
       {/* ── SHORT OF THE DAY ──────────────────────────────── */}
       <div style={{ marginBottom:"48px" }}>
         <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
-        <SeedDataBanner suffix="ranked by QVPS short screen (unvalidated model) from actual trigger flags" />
+        <SeedDataBanner suffix={shortRadarStatusLine()} />
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
         {rotatingShorts.map(short => (
           <Link href={"/stock/" + short.symbol} key={short.symbol} style={{ textDecoration:"none" }}>

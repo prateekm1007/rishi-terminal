@@ -283,3 +283,14 @@ UNTOUCHED.
 A2 was recorded after the RED run and BEFORE the model repair; no model
 criterion was altered, and no parameter was changed to improve a measured
 MODEL result.
+
+## 10. Pre-merge amendment A3 (mechanical-gate conflict)
+
+The N1 client-boundary gate (test/clientBoundary.test.ts) bans every
+lib/scorers/** module from 'use client' reachability, while direction 9
+requires the UI to render the model version. v2-4 is therefore relocated:
+the model identity ({ id: 'qvps-short', version: 2 }) lives in the
+isomorphic artifact module lib/shortRadarValidation.ts (ONE source, rule
+14); lib/scorers/modelVersion.ts is deleted (rule 17); lib/modelStatus.ts
+derives both status and version from the artifact. No battery criterion
+or threshold is affected.

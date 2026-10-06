@@ -46,13 +46,31 @@ export interface ShortRadarValidationClaims {
 }
 
 /**
- * Claims state = the RED run (2026-10-06, main @ 25dec82 + contract):
- * the v1 model fails P2/P3/P7/P10 (information, duplication, calibration,
- * rationale) and satisfies the harness/stability/leakage/survivorship/
- * regime/concentration criteria. These claims are mechanically verified
- * by test/shortRadar.validation.test.ts + test/shortRadar.rationale.test.ts;
- * the repair PR flips a claim to true ONLY when the freshly-run battery
- * actually passes it.
+ * The canonical Short Radar model identity (contract section 5, v2-4 as
+ * relocated by amendment A3: it lives HERE — the one isomorphic source —
+ * because the N1 client-boundary gate bans lib/scorers/** from 'use
+ * client' reachability and the UI must render the version).
+ */
+export const QVPS_SHORT_MODEL = {
+  id: "qvps-short",
+  version: 2,
+} as const;
+
+export type QvpsShortModel = typeof QVPS_SHORT_MODEL;
+
+/**
+ * Claims state = the fresh battery run against the REPAIRED qvps-short-v2
+ * model (2026-10-06). v2 fixed the structural defects (dead pillars fed,
+ * constant removed, placeholder-nulling, rationale alignment) — P10 is
+ * green and P2 improved 0.0558 -> 0.0803 — but the PRE-REGISTERED
+ * information bar is still not met:
+ *   P2: modelShortIC 0.0803 < 0.10 (and < heuristic 0.0528 + 0.05)
+ *   P3: model 0.0803 < best single pillar 0.0822 + 0.02 (dilution)
+ *   P7: seed-universe census populates 1 conviction band (< 2)
+ * (fixture reachability = 100.00 passes; the census clause fails).
+ * Per contract section 3/6 the model therefore stays honestly
+ * UNVALIDATED — no threshold was moved after seeing results. The real
+ * historical criterion (R1) remains open on FD-1.
  */
 export const SHORT_RADAR_VALIDATION: ShortRadarValidationClaims = {
   battery: "synthetic-walk-forward-round20",
@@ -67,7 +85,7 @@ export const SHORT_RADAR_VALIDATION: ShortRadarValidationClaims = {
     P7: false,
     P8: true,
     P9: true,
-    P10: false,
+    P10: true,
   },
   realDataCriterion: { id: "R1", status: "open-fd1" },
 };

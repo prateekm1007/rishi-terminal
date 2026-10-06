@@ -15,6 +15,7 @@ import { computeShortRadar, shortFlags } from "@/lib/scoring/rankings";
 import { resolveStockMetrics, calculateQvps } from "@/lib/scoring";
 import { STOCKS } from "@/data/stocks";
 import type { StockMetrics } from "@/lib/scorers/types";
+import { SHORT_RADAR_VALIDATION } from "@/lib/shortRadarValidation";
 
 /** Each trigger flag maps to exactly ONE scoring feature. */
 const FLAG_FIELD: Record<string, keyof StockMetrics> = {
@@ -80,5 +81,11 @@ describe("P10 — Short Radar rationale contract (round 20)", () => {
         expect(candidate.reason).toContain(f.label);
       }
     }
+  });
+
+  it("artifact claim P10 equals the mechanical rationale result (direction 15 link)", () => {
+    // This test IS the P10 criterion; the artifact may claim it only while
+    // the assertions above actually pass.
+    expect(SHORT_RADAR_VALIDATION.criteria.P10).toBe(true);
   });
 });

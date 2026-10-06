@@ -207,3 +207,79 @@ ranked-picks feature flag, honest seed banner, and the existing scoring
 one-source rules are preserved. Latency guard (direction 17): Short Radar
 remains pure server-side computation — no new provider/model call; timing
 captured before/after in the PR.
+
+## 8. Pre-run amendment A1 (recorded BEFORE the first battery run)
+
+Two defects in the drafted spec were found by pre-run arithmetic (no
+battery result existed yet):
+
+1. **Pillar point rescaling (v2-1 amendment).** The drafted additive
+   points leave each pillar unable to express its declared 0–100 range
+   from resolvable inputs — the same calibration defect class as D3 in
+   miniature: overvaluation max = 30(pe)+25(pb) = 55; governance from
+   promoterHolding alone max = 30; decay max = 105. Fixture max =
+   0.35*55 + 0.40*100 + 0.25*30 = 66.75 (x1.07 trend = 71.4) — P7's >= 90
+   would be unsatisfiable by construction, making P7 a broken instrument
+   rather than a model test. Amendment: keep every cutoff, rescale the
+   points so each pillar's resolvable-input worst case ≈ 100:
+   - overvaluation: pe ratio >3:+55, >2:+40, >1.5:+25; pb >10:+45, >6:+30
+     (evSales/peg/rsi sub-features unchanged, unresolvable today)
+   - fundamentalDecay: roe <8:+30, <12:+18; fcfMargin <0:+25;
+     debtToEquity >3:+20, >2:+12; revenueCAGR3Y <−5:+20, <0:+12; opm
+     <8:+15 (max 110, clamped at 100)
+   - governanceRisk (single resolvable input — piecewise normalization,
+     anchored at the declared reference points): score =
+     clamp((40 − promoterHolding) * 2.5, 0, 100) — promo 40+ → 0, 25 →
+     37.5, 15 → 62.5, 0 → 100
+   Fixture check (all resolvable inputs worst-case): 0.35*100 +
+   0.40*100 + 0.25*100 = 100 (x1.07 = 107 → clamp 100) — P7 satisfiable.
+2. **DGP field-loading interpretation.** Section 4's "loading on the
+   PREVIOUS quarter's s" is implemented the way the canonical
+   syntheticWorld.ts implements it: the fundamental filed FOR quarter q
+   carries s[q] (the filed quarter's own quality), and because of the
+   filing lag the freshest visible quarter at any rebalance is the one
+   immediately preceding the return-driving quarter — "previous" relative
+   to the current, unfiled quarter. This keeps the information chain
+   honest (the model never sees the return-driving quarter) and preserves
+   the P5 look-ahead margin.
+
+Nothing in A1 was chosen to improve a measured result — no battery run
+existed when A1 was recorded.
+
+## 9. Pre-run amendment A2 (instrument calibration, recorded BEFORE the
+## model-repair run; the RED run's raw output is preserved in the PR)
+
+The first battery run (against the UNREPAIRED v1 model) exposed two
+miscalibrated INSTRUMENT clauses — gates that cannot pass regardless of
+the model (rule 24: a gate that cannot fail is theater; its inverse is
+also true). The MODEL criteria (P2, P3, and P7's fixture clause) are
+UNTOUCHED.
+
+1. **P1 shuffled bound self-calibration.** The drafted |mean IC| < 0.05
+   was borrowed from the canonical correctness test, whose cross-section
+   is the full 300-symbol universe. The battery's control operates on the
+   GATED cross-section (candidates with >= 2 flags), where per-trial
+   IC std is 1/sqrt(n-1) and E|IC| = 0.798/sqrt(n-1) (half-normal). The
+   canonical test itself documents this scaling ("300 symbols -> per-trial
+   IC std is ~1/sqrt(299)...E|IC| ~ 0.046"). Amendment: the shuffled
+   control passes when |mean signed IC| < 0.05 (unchanged; 1000-trial SE
+   makes 0.05 > 10 sigma) AND mean |IC| < 0.9/sqrt(n-1) (E|IC| + ~13%,
+   mirroring the canonical test's E+9% headroom), with n = the gated
+   cross-section size at the shuffle date. Observed RED run: mean |IC|
+   0.080 vs the borrowed 0.05 — consistent with the gated n.
+2. **P7 world-census clause -> seed-universe census.** The drafted ">= 3
+   conviction bands populated on the world cross-section" tests the
+   WORLD's pre-registered field ranges, not the model: the section-4 DGP
+   (pe = sectorAvgPE * exp(0.9*(s-0.5)+U(-0.15,0.15)), promoterHolding =
+   55 - 25s + U(-8,8)) mathematically cannot reach the declared extreme
+   cutoffs (pe ratio > 2x sector needs exp(0.9*(s-0.5)) > 2 -> s > 1.49;
+   promoterHolding < 25 needs s > 1.08; s is bounded [0,1]). Amendment:
+   P7 = fixture >= 90 (unchanged) AND the 916-stock seed universe, scored
+   through the production resolution path, populates >= 2 conviction
+   bands. Using seed data for a CALIBRATION census establishes no
+   predictive claim (direction 8 is about predictive validity) — the
+   predictive criteria (P2) still run only on the synthetic world.
+
+A2 was recorded after the RED run and BEFORE the model repair; no model
+criterion was altered, and no parameter was changed to improve a measured
+MODEL result.

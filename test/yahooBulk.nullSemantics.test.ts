@@ -37,10 +37,35 @@ function yahooChartResponse(meta: Record<string, unknown>): Response {
   );
 }
 
+// LP2: the bulk transport is spark-first — the stub is URL-aware so the
+// same meta fixtures flow through BOTH transports: spark URLs receive a
+// spark-shaped envelope; per-symbol chart fallbacks receive the chart
+// shape. Metas carry currency:"INR" — the LP2 currency gate (fail-closed)
+// rejects an absent/USD currency, so the fixtures name the instrument
+// they claim to be.
+function stubMeta(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return { currency: "INR", ...overrides };
+}
+
 beforeEach(() => {
-  (globalThis as { fetch: unknown }).fetch = vi.fn(async () =>
-    yahooChartResponse({ regularMarketPrice: 1167.7, regularMarketTime: 1727784000 }),
-  );
+  (globalThis as { fetch: unknown }).fetch = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/v7/finance/spark")) {
+      const requested = new URL(url).searchParams.get("symbols") ?? "";
+      const results = requested
+        .split(",")
+        .filter(Boolean)
+        .map((s) => ({
+          symbol: s,
+          response: [{ meta: stubMeta({ regularMarketPrice: 1167.7, regularMarketTime: 1727784000 }) }],
+        }));
+      return new Response(JSON.stringify({ spark: { result: results } }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return yahooChartResponse(stubMeta({ regularMarketPrice: 1167.7, regularMarketTime: 1727784000 }));
+  });
 });
 
 afterEach(() => {
@@ -63,14 +88,40 @@ describe("MUST FAIL PRE-O: the bulk path never fabricates change/volume", () => 
   });
 
   it("a genuine disclosed change still flows through", async () => {
-    (globalThis as { fetch: unknown }).fetch = vi.fn(async () =>
-      yahooChartResponse({
-        regularMarketPrice: 1167.7,
-        regularMarketChangePercent: 0.42,
-        regularMarketVolume: 16667234,
-        regularMarketTime: 1727784000,
-      }),
-    );
+    (globalThis as { fetch: unknown }).fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/v7/finance/spark")) {
+        const requested = new URL(url).searchParams.get("symbols") ?? "";
+        const results = requested
+          .split(",")
+          .filter(Boolean)
+          .map((s) => ({
+            symbol: s,
+            response: [
+              {
+                meta: stubMeta({
+                  regularMarketPrice: 1167.7,
+                  regularMarketChangePercent: 0.42,
+                  regularMarketVolume: 16667234,
+                  regularMarketTime: 1727784000,
+                }),
+              },
+            ],
+          }));
+        return new Response(JSON.stringify({ spark: { result: results } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return yahooChartResponse(
+        stubMeta({
+          regularMarketPrice: 1167.7,
+          regularMarketChangePercent: 0.42,
+          regularMarketVolume: 16667234,
+          regularMarketTime: 1727784000,
+        }),
+      );
+    });
     const out = await fetchBulkPricesForSymbols(["INFY"]);
     expect(out.INFY.change).toBe(0.42);
     expect(out.INFY.volume).toBe(16667234);

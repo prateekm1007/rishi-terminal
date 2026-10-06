@@ -110,17 +110,38 @@ async function readRows(symbols: string[]): Promise<Record<string, CachedQuote>>
 }
 
 async function writeRow(symbol: string, quote: CachedQuote, ttlSeconds: number, nowIso: string): Promise<void> {
-  const { error } = await getAdminSupabase().from("quote_cache").upsert({
-    symbol,
-    price: quote.price,
-    change: quote.change,
-    currency: quote.currency,
-    source: quote.source,
-    observed_at: quote.observedAt,
-    refreshed_at: nowIso,
-    ttl_seconds: ttlSeconds,
-    volume24h: quote.volume24h ?? null,
-  });
+  await writeRows([{ symbol, quote }], ttlSeconds, nowIso);
+}
+
+/** LP2 (2026-10-06): the BATCH write — ONE upsert for all claimed winners.
+ *  The previous cachedQuoteBatch looped `await writeRow(...)` per symbol:
+ *  a fully-cold 50-symbol chunk paid ~50 SERIAL round-trips (1.5-3 s) in
+ *  addition to the upstream sweep. Same contract: only claimed winners are
+ *  written, refreshed_at = the batch's decision time, null volume stays
+ *  null. A batch failure is logged once — unwritten rows simply remain
+ *  unwritten (the next read's refresh claim repopulates them; nothing
+ *  fabricated, nothing partially stale-labelled). */
+async function writeRows(
+  entries: Array<{ symbol: string; quote: CachedQuote }>,
+  ttlSeconds: number,
+  nowIso: string,
+): Promise<void> {
+  if (entries.length === 0) return;
+  const { error } = await getAdminSupabase()
+    .from("quote_cache")
+    .upsert(
+      entries.map(({ symbol, quote }) => ({
+        symbol,
+        price: quote.price,
+        change: quote.change,
+        currency: quote.currency,
+        source: quote.source,
+        observed_at: quote.observedAt,
+        refreshed_at: nowIso,
+        ttl_seconds: ttlSeconds,
+        volume24h: quote.volume24h ?? null,
+      })),
+    );
   if (error) throw new Error(error.message);
 }
 
@@ -384,21 +405,23 @@ export async function cachedQuoteBatch(
       upstream = {};
     }
     const nowIso = new Date(now()).toISOString();
+    const winners: Array<{ symbol: string; quote: CachedQuote }> = [];
     for (const symbol of upstreamSymbols) {
       const u = upstream[symbol] ?? null;
       if (isRealQuote(u)) {
-        if (claimed.includes(symbol)) {
-          try {
-            await writeRow(symbol, u, ttl ?? 0, nowIso);
-          } catch (e) {
-            console.error("[quoteCache] batch write failed:", e instanceof Error ? e.message : e);
-          }
-        }
+        if (claimed.includes(symbol)) winners.push({ symbol, quote: u });
         result(symbol, u, "stale-revalidated");
       } else {
         const stale = isRealQuote(rows[symbol]) ? rows[symbol] : null;
         if (stale) result(symbol, stale, "stale-served");
         else result(symbol, null, "miss");
+      }
+    }
+    if (winners.length > 0) {
+      try {
+        await writeRows(winners, ttl ?? 0, nowIso);
+      } catch (e) {
+        console.error("[quoteCache] batch write failed:", e instanceof Error ? e.message : e);
       }
     }
   }

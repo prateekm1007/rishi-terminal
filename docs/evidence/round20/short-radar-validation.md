@@ -127,3 +127,24 @@ requires REAL data: R1 (licensed point-in-time NSE fundamentals, FD-1) is
 pre-registered and open. Until then the radar remains what its banner says:
 a research signal ranked by a model that has not been validated against
 historical outcomes, on seed-derived inputs — not investment advice.
+
+## 7. C6 closure — merged + deployed + live (2026-10-06)
+
+- Merged: PR #225 through scripts/ci/merge-guard.py — 6 gates green
+  (branch currency, exact-head checks 6/6, cadence PASS 77.8 min,
+  main-not-moved), merge commit 1bdc909baba0cb7c41e3fc097a906ea39bd57047.
+- Deployed: `curl -s https://rishi-terminal.vercel.app/api/version` →
+  sha 1bdc909baba0cb7c41e3fc097a906ea39bd57047 (14:25:45Z).
+- Live (positive control, real browser render of the deployed homepage):
+  banner textContent =
+  "Illustrative sample data — not current, not investment advice. ·
+  Research signal — QVPS short screen v2 — model not validated;
+  inputs seed-derived. Not investment advice."
+  v2 radar cards CDSL / MAXHEALTH / NTPCGREEN present; v1 members
+  DELHIVERY / NAZARA / GMRAIRPORT absent from the radar; the phrase
+  "unvalidated model" absent from the page.
+- Final gated population (computeShortRadar(20), 7 candidates):
+  1 CDSL 42.19, 2 MAXHEALTH 40.25, 3 NTPCGREEN 39.25, 4 DELHIVERY 27.68,
+  5 GMRAIRPORT 25.30, 6 ADANITRANS 18.80, 7 IDEA 18.54.
+  NAZARA no longer gates: its promoter-holding 0.0% was a seed placeholder
+  and no longer fires a flag (direction 13 closed at the root).

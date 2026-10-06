@@ -59,32 +59,44 @@ test/rankingsFlag.test.ts and the rankings unit tests. The live positive
 control below fetches the homepage twice (separate ISR generations) and
 asserts the same ranked symbols in the same order.
 
-## Live acceptance (C6, against the deployed SHA — appended post-merge)
+## LP post-deploy measurement (directive 7, appended after #214 merged — 64b44bb8)
 
-Merged as `b2d2b795` (PR #210, 2026-10-06 04:11:30Z); production
-`/api/version` verified `== b2d2b795 == origin/main`. Browser probe
-against the deployed site (the ranked trio is a lazy client chunk —
-invisible to curl; Playwright, 2 loads, fresh query strings):
+Same timed browser probe, before vs after the incremental chunk delivery
+(#214, deployed 2026-10-06 ~07:01 UTC, in-session):
 
 ```
-run 1: {"disabledMessage":false,"stockOfDayHeading":true,"topBuyHeading":true,
-        "shortRadarHeading":true,"illustrativeBanner":true,"stockLinks":11}
-  stock links: /stock/SBIN, /stock/SBIN, /stock/SBIN, /stock/CANBK,
-    /stock/SANDUMANG, /stock/GUFICBIO, /stock/DLF, /stock/BANKBARODA,
-    /stock/DELHIVERY, /stock/GMRAIRPORT, /stock/NAZARA
-run 2: (identical)
-ACCEPTANCE: PASS (all three widgets render, banner present, disabled
-message absent, deterministic across two loads)
+BEFORE (b2d2b795): t=10..100s rows with price: 0/916 — while batch
+  responses accumulated 200 x16 (all-or-nothing waterfall; raw timing
+  table in the LP PR).
+AFTER  (64b44bb8): TIME-TO-FIRST-PRICE: 17.4s; progressive fill
+  t=22s: 43 | t=33s: 85 | t=43s: 128 | t=53s: 217 | t=63s: 259 |
+  t=73s: 338 | t=83s: 376 | t=93s: 456 | t=103s: 503 rows of 916.
 ```
 
-- Positive controls: Stock of the Day = SBIN (heading + linked pick);
-  Top Buy Signals = 8 linked picks (SBIN, CANBK, SANDUMANG, GUFICBIO,
-  DLF, BANKBARODA, DELHIVERY, GMRAIRPORT, NAZARA); Short Radar heading
-  renders with its section.
-- Determinism: both loads produce the IDENTICAL link list (the ranking
-  engine is pure over the seed + IST date; two ISR generations agree).
-- Honest labeling: the "Illustrative sample data" banner present on the
-  ranked section; no ranked value is worded as live.
-- The disabled message ("Ranked picks are disabled … switched off")
-  appears NOWHERE in the rendered DOM (it remains in the RSC flight
-  payload's i18n dictionary — untranslated string data, not rendered).
+The user-visible contract is restored: prices render as each chunk lands
+(the screenshot defect — dashes beside populated fundamentals — is gone).
+The full-table fill rate is bounded by per-chunk server latency (each
+stale chunk triggers a Yahoo sweep); the operational lever for that is
+the warmer's scheduler — still FOUNDER DECISION NEEDED
+(e4-scheduler-decision.md), not claimable as closed.
+
+## LP post-deploy measurement (directive 7, appended after #214 merged — 64b44bb8)
+
+Same timed browser probe, before vs after the incremental chunk delivery
+(#214, deployed 2026-10-06 ~07:01 UTC, in-session):
+
+```
+BEFORE (b2d2b795): t=10..100s rows with price: 0/916 — while batch
+  responses accumulated 200 x16 (all-or-nothing waterfall; raw timing
+  table in the LP PR).
+AFTER  (64b44bb8): TIME-TO-FIRST-PRICE: 17.4s; progressive fill
+  t=22s: 43 | t=33s: 85 | t=43s: 128 | t=53s: 217 | t=63s: 259 |
+  t=73s: 338 | t=83s: 376 | t=93s: 456 | t=103s: 503 rows of 916.
+```
+
+The user-visible contract is restored: prices render as each chunk lands
+(the screenshot defect — dashes beside populated fundamentals — is gone).
+The full-table fill rate is bounded by per-chunk server latency (each
+stale chunk triggers a Yahoo sweep); the operational lever for that is
+the warmer's scheduler — still FOUNDER DECISION NEEDED
+(e4-scheduler-decision.md), not claimable as closed.

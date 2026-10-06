@@ -39,7 +39,7 @@ describe('app/sitemap.ts (served at /sitemap.xml)', () => {
   });
 
   it('covers the static market surfaces', () => {
-    for (const p of ['/', '/screener', '/rishis', '/news', '/pulse', '/bonds', '/crypto', '/forex', '/commodities', '/pricing', '/terms', '/privacy']) {
+    for (const p of ['/', '/stocks', '/rishis', '/news', '/pulse', '/bonds', '/crypto', '/forex', '/commodities', '/pricing', '/terms', '/privacy']) {
       expect(urls, `missing ${p}`).toContain(`${SITE_URL}${p}`);
     }
   });

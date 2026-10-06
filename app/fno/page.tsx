@@ -26,7 +26,7 @@ const FEATURES = [
     color: "#22C55E",
   },
   {
-    href:  "/screener",
+    href:  "/stocks",
     icon:  "🔴",
     title: "Short Radar",
     desc:  "Rishi Score Short Mode identifies structural short candidates with high conviction.",

@@ -12,7 +12,7 @@ export default function StockNotFound() {
           This symbol doesn’t exist in our current universe of 100+ stocks.
         </p>
         <Link 
-          href="/screener" 
+          href="/stocks" 
           className="inline-block px-6 py-2 border border-zinc-700 hover:bg-zinc-900 rounded font-mono text-sm transition-colors"
         >
           Go to Screener

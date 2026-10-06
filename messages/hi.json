@@ -40,7 +40,7 @@
     "masterInvestor": "मास्टर निवेशक",
     "globalMarkets": "वैश्विक बाज़ार — देखने के लिए क्लिक करें",
     "topBuySignals": "शीर्ष खरीद संकेत — ऋषि सर्वसम्मति 65 से अधिक",
-    "fullScreener": "पूर्ण स्क्रीनर",
+    "fullScreener": "सभी स्टॉक्स",
     "notInvestmentAdvice": "निवेश सलाह नहीं — शैक्षिक सिमुलेशन — ऋषि टर्मिनल v4.2 — 20 ऋषि सक्रिय",
     "heroWisdomSuffix": " से। डुअल-मोड स्कोरिंग, शॉर्ट थीसिस और दार्शनिक अंतर्दृष्टि।",
     "updatedPrefix": "अपडेट ",
@@ -102,7 +102,7 @@
     "signalTimeline": "संकेत समयरेखा"
   },
   "screener": {
-    "title": "स्टॉक स्क्रीनर",
+    "title": "स्टॉक्स",
     "subtitle": "20 ऋषि दृष्टिकोण से भारतीय शेयरों का विश्लेषण।",
     "totalCoverage": "कुल कवरेज",
     "nseBseStocks": "NSE + BSE शेयर",
@@ -513,7 +513,7 @@
   "dashboard2": {
     "viewAll": "सभी देखें",
     "fullAnalysis": "पूर्ण विश्लेषण",
-    "fullScreener": "पूर्ण स्क्रीनर",
+    "fullScreener": "सभी स्टॉक्स",
     "todaySuffix": "आज",
     "rishiScore": "ऋषि स्कोर",
     "rishiConsensus": "ऋषि सर्वसम्मति",
@@ -685,7 +685,7 @@
     "pairs": "जोड़े",
     "core": "मुख्य",
     "dashboard": "डैशबोर्ड",
-    "screener": "स्क्रीनर",
+    "screener": "स्टॉक्स",
     "portfolioLab": "पोर्टफोलियो लैब",
     "markets": "बाज़ार",
     "crypto": "क्रिप्टो",

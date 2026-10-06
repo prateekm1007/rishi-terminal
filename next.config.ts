@@ -90,6 +90,15 @@ const nextConfig: NextConfig = {
       }));
     return [
       ...aliasRedirects,
+      // SR (founder directive 6, 2026-10-06): the screener product surface
+      // is renamed to Stocks at /stocks; /screener 308-redirects (query
+      // strings are preserved by Next.js redirects). API routes under
+      // /api/screener/* are internal transport and keep their paths.
+      {
+        source: '/screener',
+        destination: '/stocks',
+        permanent: true,
+      },
       {
         source: '/crypto/MATIC',
         destination: '/crypto/POL',

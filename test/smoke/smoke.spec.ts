@@ -11,7 +11,15 @@ test.describe("smoke — core surfaces", () => {
     // R1: rankings on placeholder data carry the mandated illustrative-data
     // label; the former "as of <date>" caption was a false freshness claim
     // and must NOT be rendered.
-    await expect(page.getByText(/Illustrative sample data/i).first()).toBeVisible();
+    // SM (2026-10-06): the ranked trio is a LAZY CLIENT CHUNK (next/dynamic,
+    // the Z5 bundle split) — it renders after chunk load + hydration, which
+    // can exceed the default 5s expect timeout on a loaded CI runner. Two
+    // real CI failures (PR #209 2026-10-06T00:36Z, PR #212 2026-10-06T04:13Z)
+    // were exactly this: 35 passed / 1 failed, element not found at 5s while
+    // the section renders. Same timeout its sibling assertions already use
+    // (the /stocks table and consensus-hero tests both wait 20s). The CHECK
+    // is unchanged — only the wait now covers the lazy chunk's real cost.
+    await expect(page.getByText(/Illustrative sample data/i).first()).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/as of \d{4}-\d{2}-\d{2}/i).first()).toHaveCount(0);
   });
 

@@ -240,12 +240,20 @@ export function useLivePrices(
       // LP (2026-10-06): the incremental chunk orchestration — every
       // completed chunk updates state as it lands (progressive rendering:
       // the first rows light up after the FIRST chunk, not after all 19),
-      // a failed chunk cannot discard the rest, and the chunks run in a
-      // bounded-parallel pool instead of a sequential waterfall. Honest-null
+      // and a failed chunk cannot discard the rest. Honest-null
       // normalization (G6) and the server-decided market state (U2) are
       // unchanged — only the delivery schedule changed.
+      // C9 correction (Lighthouse ratchet, measured): the first version ran
+      // the chunks 4-wide and /screener's measured performance dropped
+      // 69 -> 63, below the 65 floor, from load-window contention. The
+      // stated goal (the floor) wins over the speed optimization: the
+      // production default is SEQUENTIAL (one chunk at a time — the same
+      // load profile main always had) with incremental delivery. The
+      // bounded-pool capability stays in fetchPricesChunked (unit-pinned)
+      // for a future idle-deferred design that keeps the floor.
       const { merged, markets, failures } = await fetchPricesChunked(currentSymbols, {
         fetchChunk,
+        concurrency: 1,
         onChunk: (normalized) => {
           setPrices((prev) => ({ ...prev, ...normalized }));
         },

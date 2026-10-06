@@ -261,6 +261,14 @@ function evidenceBlock(evidence: AiEvidenceItem[]): string {
     "0.905%' must carry assertions [{\"field\": \"price\", \"value\": 1741.05, " +
     "\"unit\": \"inr\"}, {\"field\": \"change\", \"value\": -0.905, \"unit\": " +
     "\"%\"}] — 1741.05 in the change field is REJECTED. " +
+    // E5-FVM (Round 18 battery): the dominant residual shape — the model
+    // introduces the price level with the change verb. Teach the split
+    // phrasing up front; the validator's re-attribution is the deterministic
+    // net, this line reduces how often the model needs it.
+    "Never introduce a price level with the word change: write 'the price " +
+    "is 1741.05 inr', never 'changed to 1741.05' — 'changed to X' states X " +
+    "as the resulting LEVEL (price), and a level in a change claim must " +
+    "carry a price assertion. " +
     "(4) Do NOT include any other numbers anywhere — no dates, timestamps, " +
     "item counts or ids in your claims or answer: every number you write " +
     "must be one of your own assertion values, or validation will reject " +
@@ -696,6 +704,11 @@ async function runGroundedLoop(
     // assertion change=-1.401). The rule 4/10 contract lines teach it up
     // front; the repair names it at the exact moment the model needs it.
     " (signed values: when you state a negative fact in prose, write the minus sign exactly as the annotation does - 'changed by -1.401 percent', never 'down 1.401 percent'; and never write dates, observation timestamps, or numbered-list digits - only assertion values may appear as numbers)" +
+    // E5-FVM (Round 18 battery): 'changed to <price>' was the dominant
+    // field-value-mismatch shape (11 of 14). The validator now reads a
+    // currency-denominated or 'changed to' number as a price level; teach
+    // the split phrasing so the repair converges on the first re-ask.
+    " (never introduce a price level with the word change - 'changed to 2091' states the PRICE: write 'the price is 2091 inr' and 'the change is -1.107 percent' as separate statements, each with its own assertion)" +
     (matchedAssertionValues.length > 0
       ? " (matched assertion values you may state: " + matchedAssertionValues.slice(0, 8).join(", ") + ")"
       : "") +

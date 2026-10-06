@@ -846,14 +846,33 @@ const FIELD_MENTIONS: Array<{ field: string; re: RegExp }> = [
  *  R15: "%" is a NON-word character, so "%\b" never matches ("%." — two
  *  non-word chars, no boundary) and a percent-suffixed number silently
  *  carried unit=null; the lookahead form matches "%" before punctuation,
- *  whitespace or end-of-string. Word tokens keep \b. */
+ *  whitespace or end-of-string. Word tokens keep \b. E5-FVM (Round 18):
+ *  the fact annotations write the unit token as "inr" verbatim
+ *  (factAnnotation), and the #208 output contract tells the model to copy
+ *  annotations digit-for-digit — so the parser must recognize the literal
+ *  "inr" too, not just rs/rupees. */
 const UNIT_TOKENS: Array<{ unit: string; re: RegExp }> = [
   { unit: "percent", re: /^(?:%(?![0-9A-Za-z])|percent\b|pct\b)/i },
   { unit: "multiple", re: /^(?:x|times)\b/i },
   { unit: "inr_crore", re: /^(?:cr|crore)s?\b/i },
   { unit: "points", re: /^(?:pts?|points)\b/i },
-  { unit: "inr", re: /^(?:rs\.?|rupees?)\b/i },
+  { unit: "inr", re: /^(?:rs\.?|rupees?|inr)\b/i },
 ];
+
+// ── E5-FVM (Round 18, 2026-10-06): index names contain digits — "Nifty 50",
+// "S&P 500", "FTSE 100" — and those digits are NAME components, never
+// stated figures. The r18 authenticated battery measured a row rejected as
+// an unsupported figure because "50" in the claim "Nifty 50 trades at
+// 22697.4 points" was parsed as a stated number. Closed vocabulary of
+// (name, digits) pairs that must appear as ONE name token (only whitespace
+// may sit between); "Nifty at 22697" does not match ("at" breaks the
+// name), so no figure can launder through the exemption.
+const INDEX_NAME_NUMBER_RE = /\b(?:nifty\s*50|s&p\s*500|ftse\s*100)$/i;
+
+// ── E5-FVM: a change verb + to/at immediately before a number introduces
+// the resulting LEVEL ("SBIN changed to 2091", "changes at 2091"), never
+// the change metric. Distinct from "changed by <value>" (the metric).
+const CHANGE_LEVEL_INTRO_RE = /\bchang(?:e|ed|es)\s+(?:to|at)\s*$/i;
 
 interface StatedNumber {
   key: string;
@@ -975,6 +994,12 @@ function statedNumbers(text: string): StatedNumber[] {
     if (!span.isWord && YEAR_TOKEN_RE.test(span.raw) && DATE_CONTEXT_RE.test(collapsed.slice(Math.max(0, start - 16), start))) {
       continue;
     }
+    // E5-FVM: index-name digits are name components, not stated figures
+    // (INDEX_NAME_NUMBER_RE above — the YEAR_TOKEN_RE skip pattern applied
+    // to index names).
+    if (!span.isWord && INDEX_NAME_NUMBER_RE.test(collapsed.slice(Math.max(0, start - 12), end))) {
+      continue;
+    }
     // nearest field mention within the window (distance, then specificity)
     let field: string | null = null;
     let bestDist = Infinity;
@@ -1012,8 +1037,15 @@ function statedNumbers(text: string): StatedNumber[] {
       scaled = value * 100000;
       unit = "inr";
     } else {
+      // E5-FVM: trim the leading whitespace before unit matching — the
+      // number-WORD path above and the lakh/crore matchers both tolerate
+      // the space ("12 percent", "5 lakh"), but the digit path silently
+      // dropped every space-separated unit ("1006.35 inr" carried
+      // unit=null), so the unit consistency gate never ran for them and
+      // the E5-FVM currency re-attribution below could not see the unit.
+      const afterTrim = after.replace(/^\s+/, "");
       for (const ut of UNIT_TOKENS) {
-        if (ut.re.test(after)) { unit = ut.unit; break; }
+        if (ut.re.test(afterTrim)) { unit = ut.unit; break; }
       }
     }
     // ── R15 (Coder Directions 2026-10-04, §4): movement-language
@@ -1035,6 +1067,32 @@ function statedNumbers(text: string): StatedNumber[] {
     ) {
       const windowText = collapsed.slice(Math.max(0, start - ATTR_WINDOW_BEFORE), end + ATTR_WINDOW_AFTER);
       if (MOVEMENT_LANGUAGE_RE.test(windowText)) field = "change";
+    }
+    // ── E5-FVM (Round 18, 2026-10-06): change is ALWAYS percent in the
+    // fact model (FACT_UNIT_BY_FIELD.change; live prices compute
+    // (price-prev)/prev*100). A number attributed to `change` that is
+    // denominated in CURRENCY (inr / inr_crore — including the literal
+    // "inr" token the fact annotations write) is therefore never the
+    // change metric: it is a PRICE LEVEL the change language introduces.
+    // The r18 authenticated battery measured this as the dominant
+    // field-value-mismatch shape (11 of 14 rows): "changed to 1006.35 inr",
+    // "changed by -1.386 percent to 1006.35 inr", "1006.35 inr with a
+    // change of -1.386 percent" — in each, the model's assertions were
+    // exactly right and the PROSE attribution mis-assigned the price to
+    // `change`, hard-failing a correct batch. Re-attribute to price; gate
+    // (b) still requires the digit-exact price assertion match, so a
+    // wrong level ("changed to 999 inr") still fails closed. The R15
+    // movement-language correction above is the mirror image (percent
+    // numbers in movement language are the change); both are attribution
+    // repairs, and neither touches a grounded-value gate.
+    if (field === "change" && (unit === "inr" || unit === "inr_crore")) {
+      field = "price";
+    }
+    // The unitless twin: "changed to 2091" (sentence end, no unit token).
+    // A change verb + to/at immediately before the number introduces the
+    // resulting level, never the change metric.
+    if (field === "change" && CHANGE_LEVEL_INTRO_RE.test(collapsed.slice(Math.max(0, start - 24), start))) {
+      field = "price";
     }
     out.push({ key: canonicalNumber(scaled), field, unit, raw: collapsed.slice(Math.max(0, start), end + (lakhCr ? 16 : (lakhOnly ? 8 : 0))).trim() });
   }

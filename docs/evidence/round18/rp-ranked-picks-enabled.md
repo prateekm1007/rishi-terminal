@@ -58,3 +58,33 @@ of the seed dataset (+ the IST date for Stock of the Day) — pinned by
 test/rankingsFlag.test.ts and the rankings unit tests. The live positive
 control below fetches the homepage twice (separate ISR generations) and
 asserts the same ranked symbols in the same order.
+
+## Live acceptance (C6, against the deployed SHA — appended post-merge)
+
+Merged as `b2d2b795` (PR #210, 2026-10-06 04:11:30Z); production
+`/api/version` verified `== b2d2b795 == origin/main`. Browser probe
+against the deployed site (the ranked trio is a lazy client chunk —
+invisible to curl; Playwright, 2 loads, fresh query strings):
+
+```
+run 1: {"disabledMessage":false,"stockOfDayHeading":true,"topBuyHeading":true,
+        "shortRadarHeading":true,"illustrativeBanner":true,"stockLinks":11}
+  stock links: /stock/SBIN, /stock/SBIN, /stock/SBIN, /stock/CANBK,
+    /stock/SANDUMANG, /stock/GUFICBIO, /stock/DLF, /stock/BANKBARODA,
+    /stock/DELHIVERY, /stock/GMRAIRPORT, /stock/NAZARA
+run 2: (identical)
+ACCEPTANCE: PASS (all three widgets render, banner present, disabled
+message absent, deterministic across two loads)
+```
+
+- Positive controls: Stock of the Day = SBIN (heading + linked pick);
+  Top Buy Signals = 8 linked picks (SBIN, CANBK, SANDUMANG, GUFICBIO,
+  DLF, BANKBARODA, DELHIVERY, GMRAIRPORT, NAZARA); Short Radar heading
+  renders with its section.
+- Determinism: both loads produce the IDENTICAL link list (the ranking
+  engine is pure over the seed + IST date; two ISR generations agree).
+- Honest labeling: the "Illustrative sample data" banner present on the
+  ranked section; no ranked value is worded as live.
+- The disabled message ("Ranked picks are disabled … switched off")
+  appears NOWHERE in the rendered DOM (it remains in the RSC flight
+  payload's i18n dictionary — untranslated string data, not rendered).

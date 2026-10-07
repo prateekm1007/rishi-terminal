@@ -239,3 +239,64 @@ describe("G7 driver 1: deterministic singleton fast path (one completion)", () =
     expect(calls.length).toBe(3);
   });
 });
+
+describe("G7 audit — advice-shaped asks are never fast-pathed (target price / fair price)", () => {
+  it("a target-price ask with a single price tool result runs the model synthesis (no deterministic surface)", async () => {
+    const { stockState, getPrice } = SEEDED();
+    const calls = mockProviderReplies([
+      TOOL_REQUEST("getPrices", "RELIANCE"),
+      JSON.stringify({
+        answer:
+          "I do not provide target prices. The latest verified price follows, and how to think about targets is up to your own process.",
+        claims: [
+          { claim: "The latest observed price of RELIANCE is 1167.7 inr.", evidenceIds: ["price:RELIANCE:2026-10-01T09:45:00.000Z"], assertions: [{ field: "price", value: 1167.7, unit: "inr" }] },
+        ],
+        uncertainties: ["no analyst target-price data exists on the platform"],
+      }),
+    ]);
+
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "What is RELIANCE's target price?",
+      evidence: [],
+      stockState,
+    });
+
+    // The advice ask MUST run the post-tool synthesis: two provider calls,
+    // no deterministic mark. The price card alone under-answers an advice
+    // ask (founder direction 11).
+    expect(calls.length).toBe(2);
+    expect(getPrice).toHaveBeenCalledTimes(1);
+    expect(answer?.synthesis).toBeUndefined();
+    expect(answer?.claimsVerified).toBe(true);
+    expect(answer?.answer).toBe("price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)");
+    expect(answer?.commentary).toContain("target prices");
+  });
+
+  it("a fair-price ask with a single price tool result runs the model synthesis", async () => {
+    const { stockState } = SEEDED();
+    const calls = mockProviderReplies([
+      TOOL_REQUEST("getPrices", "RELIANCE"),
+      JSON.stringify({
+        answer: "Whether that is fair is your judgment; the verified observation follows.",
+        claims: [
+          { claim: "The latest observed price of RELIANCE is 1167.7 inr.", evidenceIds: ["price:RELIANCE:2026-10-01T09:45:00.000Z"], assertions: [{ field: "price", value: 1167.7, unit: "inr" }] },
+        ],
+        uncertainties: [],
+      }),
+    ]);
+
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "Is RELIANCE at a fair price?",
+      evidence: [],
+      stockState,
+    });
+
+    expect(calls.length).toBe(2);
+    expect(answer?.synthesis).toBeUndefined();
+    expect(answer?.claimsVerified).toBe(true);
+  });
+});

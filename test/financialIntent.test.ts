@@ -377,3 +377,61 @@ describe("R12-03 — directive-9 hardening: a bare rate/yield word prices an ins
     expect(intentSeedTool("rates are rising — does GOLD still hedge?")).toBeNull();
   });
 });
+
+// ── G7 driver-1 boundary audit (founder round-27 direction 13): the
+// seed map's own design contract says advice-shaped asks are NOT seeded
+// ("buy or sell, target price, bullish or bearish, recommendations,
+// ratings ... and general valuation wording"). Two valuation-advice
+// shapes leaked through the BARE `prices?` alternation of the price
+// seed regex — "What is RELIANCE's target price?" and "Is RELIANCE at a
+// fair price?" matched the standalone word "price" and seeded
+// getPrices. With the G7 deterministic singleton fast path (which keys
+// on intentSeed), that leak served a bare current-price card for an
+// ADVICE ask — the model's synthesis pass was skipped exactly where
+// founder direction 11 requires it ("advice-shaped asks ... must
+// continue through the real bounded AI loop"). The detector keeps
+// flagging these asks as financial (advice needs data — the zero-tool
+// backstop still applies); only the SEED is suppressed, so the model
+// chooses its own tools and synthesizes.
+describe("G7 audit — valuation-advice wording never seeds a tool (target price / fair price leak)", () => {
+  it("target-price asks do NOT seed getPrices (the advice ask must synthesize)", () => {
+    expect(intentSeedTool("What is RELIANCE's target price?")).toBeNull();
+    expect(intentSeedTool("What is the target price of TCS?")).toBeNull();
+    expect(intentSeedTool("Any target price view on INFY?")).toBeNull();
+  });
+
+  it("fair-price / valuation-advice asks do NOT seed getPrices", () => {
+    expect(intentSeedTool("Is RELIANCE at a fair price?")).toBeNull();
+    expect(intentSeedTool("Is TCS fairly priced right now?")).toBeNull();
+    expect(intentSeedTool("What is a fair price for INFY?")).toBeNull();
+    expect(intentSeedTool("How does the market value RELIANCE's valuation?")).toBeNull();
+  });
+
+  it("the documented advice vocabulary stays seed-free (already null — pinned against drift)", () => {
+    expect(intentSeedTool("Should I buy or sell RELIANCE?")).toBeNull();
+    expect(intentSeedTool("Is RELIANCE bullish or bearish?")).toBeNull();
+    expect(intentSeedTool("What are the analyst recommendations for RELIANCE?")).toBeNull();
+    expect(intentSeedTool("What ratings does TCS have?")).toBeNull();
+  });
+
+  it("genuine price/data asks keep their seeds (non-target behavior unchanged)", () => {
+    expect(intentSeedTool("What is the latest price of RELIANCE?")).toEqual({
+      tool: "getPrices",
+      args: { symbol: "RELIANCE" },
+    });
+    expect(intentSeedTool("What is the price of TCS?")?.tool).toBe("getPrices");
+    expect(intentSeedTool("What is the share price of INFY?")?.tool).toBe("getPrices");
+    expect(intentSeedTool("What are SBIN's fundamentals?")?.tool).toBe("getFinancials");
+    expect(intentSeedTool("Show me the peer comparison for INFY.")?.tool).toBe("getPeers");
+    expect(intentSeedTool("What is the TCS dividend yield?")?.tool).toBe("getFinancials");
+  });
+
+  it("the detector still flags advice asks as financial (the zero-tool backstop keeps biting)", () => {
+    const t = detectFinancialDataIntent("What is RELIANCE's target price?");
+    expect(t.financial).toBe(true);
+    expect(t.symbol).toBe("RELIANCE");
+    const f = detectFinancialDataIntent("Is RELIANCE at a fair price?");
+    expect(f.financial).toBe(true);
+    expect(f.symbol).toBe("RELIANCE");
+  });
+});

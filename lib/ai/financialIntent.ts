@@ -252,6 +252,24 @@ const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinanci
 ];
 
 /**
+ * G7 driver-1 boundary audit (founder round-27 direction 13): the closed
+ * ADVICE-ASK vocabulary. The seed map's own design contract says these
+ * shapes are NOT seeded — "buy or sell, target price, bullish or bearish,
+ * recommendations, ratings ... and general valuation wording". Two
+ * valuation-advice shapes leaked through the BARE `prices?` alternation of
+ * the price seed regex ("What is RELIANCE's target price?" / "Is RELIANCE
+ * at a fair price?" matched the standalone word "price"), and with the G7
+ * deterministic singleton fast path keying on intentSeed, that leak served
+ * a bare current-price card for an ADVICE ask — the model's synthesis pass
+ * was skipped exactly where it is genuinely required (founder direction
+ * 11). The detector still flags these asks as financial (advice needs
+ * data — the zero-tool backstop still applies); only the SEED is
+ * suppressed, so the model chooses its own tools and synthesizes.
+ */
+const ADVICE_ASK_RE =
+  /\b(buy or sell|target price|fair price|fairly priced|bullish or bearish|recommendations?|ratings?|valuation)\b/i;
+
+/**
  * The canonical tool the server should seed for this message, or null.
  * Pure like the detector; null means "no server-side engagement" (the
  * model keeps full tool choice and the existing intent backstop still
@@ -260,6 +278,13 @@ const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinanci
 export function intentSeedTool(message: string): { tool: string; args: { symbol: string } } | null {
   const intent = detectFinancialDataIntent(message);
   if (!intent.financial || !intent.symbol) return null;
+  // The advice-ask guard comes FIRST: an advice-shaped ask never seeds a
+  // tool (and therefore can never trigger the deterministic singleton fast
+  // path, which requires a non-null seed). Data asks compound with advice
+  // wording ("price and should I buy?") lose the seed too — the model
+  // requests its own tools and synthesizes, which is the required behavior
+  // whenever advice is part of the ask.
+  if (ADVICE_ASK_RE.test(message)) return null;
   // R11 (directive 8): a rate/yield ask anchored to a NON-EQUITY price
   // instrument seeds getPrices — for FX, commodities, crypto, indexes and
   // bonds the rate IS the observed price datum ("USD/INR rate", "gold

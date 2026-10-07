@@ -371,12 +371,25 @@ describe("G6 clean-server — portOwnershipViaProc decision", () => {
 });
 
 describe("G6 clean-server — subprocess bites with ss AND lsof removed from PATH", () => {
-  /** A PATH that contains the shell/node/npm essentials but NOT ss/lsof. */
+  /** A PATH that contains the shell/node/npm essentials but NOT ss/lsof.
+   *  Tools are resolved from the CURRENT environment (process.execPath for
+   *  node, `which` for the rest) — hardcoding /usr/bin broke on CI runners
+   *  where node/npm live in the hostedtoolcache (found in CI: the harness
+   *  subprocess produced EMPTY output because node itself was missing from
+   *  the fake bin dir). */
   function strippedPath() {
     const bin = mkdtempSync(join(tmpdir(), "e2s-path-"));
-    for (const tool of ["node", "npm", "sh", "env", "python3"]) {
+    const add = (tool, target) => {
       try {
-        symlinkSync(join("/usr/bin", tool), join(bin, tool));
+        symlinkSync(target, join(bin, tool));
+      } catch {}
+    };
+    add("node", process.execPath);
+    for (const tool of ["npm", "sh", "env", "python3"]) {
+      try {
+        const r = spawnSync("which", [tool], { encoding: "utf8" });
+        const p = (r.stdout || "").trim();
+        if (p) add(tool, p);
       } catch {}
     }
     return bin;

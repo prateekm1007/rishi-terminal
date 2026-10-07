@@ -51,6 +51,12 @@ import { writeFileSync, mkdirSync, appendFileSync, readFileSync } from "node:fs"
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+// G7 Direction-13 (2026-10-07): the artifact now embeds the ONE canonical
+// calculation shared with scripts/g7CanonicalStats.mjs — raw rows are the
+// only source, both wall variants (incl/excl PoW) are reported, and refusal
+// counts come from the rows themselves. The narrative may never again
+// disagree with its own artifact.
+import { computeCanonical } from "./g7CanonicalStats.mjs";
 
 const BASE = process.argv[2] || "https://rishi-terminal.vercel.app";
 const OUT =
@@ -232,6 +238,7 @@ async function chat(personaId, message) {
   let body = {};
   let challenged = false;
   let powMs = 0;
+  let ttfbMs = null;
   const headers = { "Content-Type": "application/json" };
   // E5 measurement mode: when BATTERY_COOKIE is set the battery runs as a
   // signed-in account (skips the X7 anonymous challenge) so the numbers
@@ -252,8 +259,12 @@ async function chat(personaId, message) {
       body: JSON.stringify({ personaId, history: [], message }),
       signal: AbortSignal.timeout(180_000),
     });
+    // G7 Direction-13: time-to-response-headers shrinks the historical
+    // "unattributed" bucket (HTTP + queue + serialize were invisible).
+    const tH = Date.now();
     status = res.status;
     body = await res.json().catch(() => ({}));
+    ttfbMs = tH - t0;
     if (status === 429 && body?.challengeRequired && body?.challenge) {
       const { token, difficulty, challengeId, issuedAt } = body.challenge;
       const s0 = Date.now();
@@ -270,13 +281,15 @@ async function chat(personaId, message) {
           challenge: { token, nonce, challengeId, issuedAt },
         }),
       });
+      const tH2 = Date.now();
       status = res2.status;
       body = await res2.json().catch(() => ({}));
+      ttfbMs = tH2 - t0; // the solved retry's header time replaces the challenge response's
     }
   } catch (e) {
     body = { fetchError: String(e) };
   }
-  return { status, wallMs: Date.now() - t0, body, challenged, powMs };
+  return { status, wallMs: Date.now() - t0, body, challenged, powMs, ttfbMs };
 }
 
 function percentile(arr, p) {
@@ -391,6 +404,7 @@ async function runClass(label, cls, personaId, questions) {
     s.attemptStatuses = attemptStatuses;
     s.challenged = r.challenged === true;
     s.powMs = r.powMs ?? 0;
+    s.ttfbMs = r.ttfbMs ?? null;
     results.push(s);
     if (STATE) appendFileSync(STATE, JSON.stringify({ cls, idx, summary: s }) + "\n");
     console.log(
@@ -422,6 +436,9 @@ const artifact = {
   measurementMode: process.env.BATTERY_COOKIE
     ? "authenticated (X7 anonymous challenge skipped; PoW cost excluded from wallMs — measured separately)"
     : "anonymous (X7 challenge solved in-loop after the daily free units; solve time included in wallMs)",
+  // G7 Direction-13: the explicit, machine-readable PoW statement — the
+  // narrative/artifact disagreement of round 23 can never recur.
+  powIncludedInWallMs: !process.env.BATTERY_COOKIE,
   providerModelIdentity: {
     provider: financial.find(r => r.provider)?.provider ?? null,
     model: financial.find(r => r.model)?.model ?? null,
@@ -438,6 +455,9 @@ const artifact = {
   overall: aggregate([...financial, ...philosophy, ...invalid, ...hostile, ...financialNoSymbol, ...toolRequest, ...multitool]),
   raw: { financial, philosophy, invalid, hostile, financialNoSymbol, toolRequest, multitool },
 };
+// G7 Direction-13: the ONE canonical result, computed from this artifact's
+// own raw rows by the SAME code the standalone canonical stats script uses.
+artifact.canonical = computeCanonical(artifact);
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(artifact, null, 2));

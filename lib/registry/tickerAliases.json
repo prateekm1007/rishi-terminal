@@ -1,5 +1,5 @@
 {
-  "$comment": "Remediation T12 — oldSymbol -> canonicalSymbol. Every mapping was decided by (1) the currently trading NSE symbol and (2) the seed rows sharing a normalized name. Sources: NSE symbol-change history and the seed dataset itself (see PR description for the full per-group table).",
+  "$comment": "Remediation T12 + G5 (round 23) — oldSymbol -> canonicalSymbol. T12 mappings were decided by (1) the currently trading NSE symbol and (2) seed rows sharing a normalized name. G5 mappings merge duplicate seed rows: each bogus symbol 404'd at the provider while its canonical pair served the same company name (verification table in docs/evidence/round23/g5-duplicate-merge.md).",
   "DIVI": "DIVISLAB",
   "AMBUJACEMENT": "AMBUJACEM",
   "MINDTREE": "LTIM",
@@ -56,5 +56,15 @@
   "INDIGONAV": "INDIGO",
   "INTERGLOBE": "INDIGO",
   "ABBVIE": "ABBOTINDIA",
-  "BAJAJ_AUTO": "BAJAJAUTO"
+  "BAJAJ_AUTO": "BAJAJAUTO",
+  "ANUPAM": "ANURAS",
+  "BAYER": "BAYERCROP",
+  "BLUESTAR": "BLUESTARCO",
+  "COLGATE": "COLPAL",
+  "INFOEDGE": "NAUKRI",
+  "TASYBITE": "TASTYBITE",
+  "GODAWARI": "GPIL",
+  "RAILVIKAS": "RVNL",
+  "JINDALSTPP": "JINDALSTEL",
+  "JAINIRRIG": "JISLJALEQS"
 }

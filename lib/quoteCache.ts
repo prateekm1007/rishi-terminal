@@ -26,6 +26,10 @@
 
 import { getAdminSupabase } from "@/lib/services/supabaseAdmin";
 import { marketState, type MarketState } from "@/lib/marketHours";
+import {
+  appendStateTransitions,
+  buildQuoteTransitions,
+} from "@/lib/intelligence/stateLog";
 
 export interface CachedQuote {
   symbol: string;
@@ -111,6 +115,29 @@ async function readRows(symbols: string[]): Promise<Record<string, CachedQuote>>
 
 async function writeRow(symbol: string, quote: CachedQuote, ttlSeconds: number, nowIso: string): Promise<void> {
   await writeRows([{ symbol, quote }], ttlSeconds, nowIso);
+}
+
+/** Phase A item 2 (direction 12): after a quote write lands, append the
+ *  value transitions to the observation-state log. BEST-EFFORT by
+ *  contract: a telemetry failure is logged server-side and NEVER breaks
+ *  or delays quote serving (the cache path is the latency-critical G7
+ *  surface). Idempotent — a retried append of the same transition is one
+ *  row (unique change_id). */
+async function logTransitionsBestEffort(
+  entries: Array<{ symbol: string; previous: CachedQuote | null; next: CachedQuote }>,
+): Promise<void> {
+  if (entries.length === 0) return;
+  try {
+    const transitions = entries.flatMap(({ symbol, previous, next }) =>
+      buildQuoteTransitions(symbol, previous, next),
+    );
+    const r = await appendStateTransitions(transitions);
+    if (r.error) {
+      console.error("[quoteCache] state-log append failed:", r.error);
+    }
+  } catch (e) {
+    console.error("[quoteCache] state-log append threw:", e instanceof Error ? e.message : e);
+  }
 }
 
 /** LP2 (2026-10-06): the BATCH write — ONE upsert for all claimed winners.
@@ -211,6 +238,7 @@ export async function cachedQuote(
       const upstream = await deps.fetchUpstream(symbol);
       if (upstream && Number.isFinite(upstream.price) && upstream.price > 0) {
         await writeRow(symbol, upstream, ttl ?? 0, new Date(now()).toISOString());
+        await logTransitionsBestEffort([{ symbol, previous: row, next: upstream }]);
         return { quote: upstream, state: "stale-revalidated", market };
       }
       // Upstream unavailable: serve the stale row (still labelled with its
@@ -420,6 +448,15 @@ export async function cachedQuoteBatch(
     if (winners.length > 0) {
       try {
         await writeRows(winners, ttl ?? 0, nowIso);
+        // Phase A item 2: the SAME old-state rows read before the claims
+        // (the claim window serializes writers) feed the state log.
+        await logTransitionsBestEffort(
+          winners.map(({ symbol, quote }) => ({
+            symbol,
+            previous: isRealQuote(rows[symbol]) ? rows[symbol] : null,
+            next: quote,
+          })),
+        );
       } catch (e) {
         console.error("[quoteCache] batch write failed:", e instanceof Error ? e.message : e);
       }

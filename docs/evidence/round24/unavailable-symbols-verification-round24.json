@@ -1,0 +1,977 @@
+{
+ "summary": {
+  "generatedAt": "2026-10-07T09:42:38.160124+00:00",
+  "source": "round-24 E4 residual classification (sandbox probes over the production-sweep-unserved set)",
+  "probeNeed": 90,
+  "decisions": {
+   "rename": 9,
+   "duplicate-seed-row": 10,
+   "ambiguous-identity": 3,
+   "candidate-rejected-false-match": 1,
+   "no-nse-search-candidate": 67
+  }
+ },
+ "rows": [
+  {
+   "symbol": "ADANITRANS",
+   "seedName": "Adani Transmission",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "AKZOINDIA",
+   "seedName": "Akzo Nobel",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "ALLSEC",
+   "seedName": "Allsec Technologies",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "ANUPAM",
+   "seedName": "Anupam Rasayan",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "AROHAN",
+   "seedName": "Arohan Financial Services",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BALLARPUR",
+   "seedName": "Ballarpur Industries",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BARBEQUE",
+   "seedName": "Barbeque Nation",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BAYER",
+   "seedName": "Bayer CropScience India",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BECKBIES",
+   "seedName": "Beckbies Infrastructure",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BLUESTAR",
+   "seedName": "Blue Star Limited",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BOOKMYSHOW",
+   "seedName": "BookMyShow",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BRAHMASTRA",
+   "seedName": "Brahmastra Realty",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "BRAINBEES",
+   "seedName": "FirstCry",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [
+    {
+     "symbol": "FIRSTCRY.NS",
+     "name": "Brainbees Solutions Limited",
+     "price": 172.4,
+     "currency": "INR",
+     "overlap": 0.0,
+     "symbolTextMatch": true
+    }
+   ],
+   "decision": "rename",
+   "acceptedAlias": "FIRSTCRY",
+   "evidence": "symbol-text identity: seed name 'FirstCry' == candidate ticker FIRSTCRY; provider longName 'Brainbees Solutions Limited' == the seed SYMBOL's company; current INR quote"
+  },
+  {
+   "symbol": "CENTURYTEX",
+   "seedName": "Century Textiles",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "COLGATE",
+   "seedName": "Colgate Palmolive",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "COSMOFILMS",
+   "seedName": "Cosmo Films",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "ambiguous-identity",
+   "acceptedAlias": null,
+   "evidence": "public-record rename to 'Cosmo First' (COSMOFIRST serves current INR) but the in-band identity gates cannot verify it (token overlap 0.5, no subset/initialism/symbol-text match) \u2014 same class as the round-21 ADANITRANS exclusion; FOUNDER DECISION NEEDED"
+  },
+  {
+   "symbol": "DRONEAERO",
+   "seedName": "Drone Aero",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "ELDECO",
+   "seedName": "Eldeco Housing",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [
+    {
+     "symbol": "ELDEHSG.NS",
+     "overlap": 0.667,
+     "symbolTextMatch": false,
+     "served": true
+    }
+   ],
+   "decision": "rename",
+   "acceptedAlias": "ELDEHSG",
+   "evidence": "provider 'Eldeco Housing and Industries Limited' @ INR; token overlap 0.667 (>= 0.6 gate); ELDECO.NS dead on both suffixes (provider serving is intermittent \u2014 reliability noted, identity verified)"
+  },
+  {
+   "symbol": "GANESHHOUC",
+   "seedName": "Ganesh Housing Corporation",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [
+    {
+     "symbol": "GANESHHOU.NS",
+     "name": "Ganesh Housing Limited",
+     "price": 699.45,
+     "currency": "INR",
+     "overlap": 1.0,
+     "symbolTextMatch": false
+    }
+   ],
+   "decision": "rename",
+   "acceptedAlias": "GANESHHOU",
+   "evidence": "provider 'Ganesh Housing Limited' @ current INR; token overlap 1.0; GANESHHOUC.NS dead on both suffixes"
+  },
+  {
+   "symbol": "GATI",
+   "seedName": "Gati Limited",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "GMRINFRA",
+   "seedName": "GMR Infra",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "GMRAIRPORT ('GMR Airports Infrastructure'; provider 'GMR Airports Limited') is itself a STOCKS key and serves fresh; GMRINFRA ('GMR Infra') is the dead pre-rename relic"
+  },
+  {
+   "symbol": "GODAWARI",
+   "seedName": "Godawari Power & Ispat",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "GUJGASLTD",
+   "seedName": "Gujarat Gas",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "HBLPOWER",
+   "seedName": "HBL Power Systems",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "HIL",
+   "seedName": "HIL Limited",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "HOVS",
+   "seedName": "HOV Services",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "IBREALEST",
+   "seedName": "Indiabulls Real Estate",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "IBULHSGFIN",
+   "seedName": "Indiabulls Housing",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "IIFLSEC",
+   "seedName": "IIFL Securities",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "IIFLWAM",
+   "seedName": "IIFL Wealth Management",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "360ONE ('360 One WAM') is itself a STOCKS key and serves fresh; IIFLWAM ('IIFL Wealth Management') is the dead pre-rename relic"
+  },
+  {
+   "symbol": "INFIBEAM",
+   "seedName": "Infibeam",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "INFOEDGE",
+   "seedName": "Info Edge",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "INOXLEISURE",
+   "seedName": "INOX Leisure",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "PVRINOX ('PVR INOX') is itself a STOCKS key and serves fresh; INOXLEISURE ('INOX Leisure') merged into PVR (2023) \u2014 dead relic"
+  },
+  {
+   "symbol": "ISEC",
+   "seedName": "ICICI Securities",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "ISMT",
+   "seedName": "ISMT Limited",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "ITDCEM",
+   "seedName": "ITD Cementation",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "JAINIRRIG",
+   "seedName": "Jain Irrigation",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "JBCHEMPHAR",
+   "seedName": "JB Chemicals",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "JINDALSTPP",
+   "seedName": "Jindal Steel and Power",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "JMCPROJECT",
+   "seedName": "JMC Projects",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "JMTAUTOLTD",
+   "seedName": "JMT Auto",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "JPASSOCIAT",
+   "seedName": "Jaiprakash Associates",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "JSLHISAR",
+   "seedName": "Jindal Stainless (Hisar)",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "rename",
+   "acceptedAlias": "JSL",
+   "evidence": "provider 'Jindal Stainless Limited' @ current INR; token overlap 0.667 (>= 0.6 gate: seed 'Jindal Stainless (Hisar)'); JSLHISAR.NS dead on both suffixes; JSL not a STOCKS key"
+  },
+  {
+   "symbol": "JSWISPL",
+   "seedName": "JSW Ispat",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "JSWSTEEL ('JSW Steel') is itself a STOCKS key and serves fresh; JSWISPL ('JSW Ispat') merged into JSW Steel (2014) \u2014 dead relic"
+  },
+  {
+   "symbol": "KALPATPOWR",
+   "seedName": "Kalpataru Power",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "KALYANAJW",
+   "seedName": "Kalyan Jewelers",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "KAPIL",
+   "seedName": "Kapil Raj Feeds (Avanti)",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "KNESL",
+   "seedName": "KNL",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "KSOLV",
+   "seedName": "K Somaiya Chemicals",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "KWALITY",
+   "seedName": "Kwality",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "LAXMIMACH",
+   "seedName": "Lakshmi Machine Works",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "rename",
+   "acceptedAlias": "LMW",
+   "evidence": "provider 'LMW Limited' @ current INR; candidate ticker LMW is the INITIALISM of the seed name 'Lakshmi Machine Works'; LAXMIMACH.NS dead on both suffixes; LMW not a STOCKS key"
+  },
+  {
+   "symbol": "LINGFORGER",
+   "seedName": "Ling Forger",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "LTIM",
+   "seedName": "LTIMindtree",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "MACROTECH",
+   "seedName": "Macrotech Developers",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "LODHA ('Lodha Group'; provider 'Lodha Developers Limited') is itself a STOCKS key and serves fresh; MACROTECH ('Macrotech Developers') is the dead duplicate of the same listed entity"
+  },
+  {
+   "symbol": "MAGMA",
+   "seedName": "Magma Fincorp",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "POONAWALLA ('Poonawalla Fincorp') is itself a STOCKS key and serves fresh; MAGMA ('Magma Fincorp') is the dead pre-rename relic"
+  },
+  {
+   "symbol": "MAHINDCIE",
+   "seedName": "Mahindra CIE Automotive",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "ambiguous-identity",
+   "acceptedAlias": null,
+   "evidence": "public-record rename to 'CIE Automotive India' (CIEINDIA serves current INR) but the in-band identity gates cannot verify it (token overlap 0.5) \u2014 same class as the round-21 ADANITRANS exclusion; FOUNDER DECISION NEEDED"
+  },
+  {
+   "symbol": "MANGCHEFER",
+   "seedName": "Mangalore Chemicals",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "MCXINDIA",
+   "seedName": "MCX India",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [
+    {
+     "symbol": "MCX.NS",
+     "name": "Multi Commodity Exchange of India Limited",
+     "price": 3356.1,
+     "currency": "INR",
+     "overlap": 0.0,
+     "symbolTextMatch": true
+    }
+   ],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "accepted candidate MCX is itself a STOCKS key ('Multi Commodity Exchange') \u2014 eleventh duplicate seed pair; registry merge work, not an alias"
+  },
+  {
+   "symbol": "MEDHA",
+   "seedName": "Medha Servo Drives",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "MERCK",
+   "seedName": "Merck Limited",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "NAINITAL",
+   "seedName": "Nainital Bank",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "NAMINDIA",
+   "seedName": "Nippon Life India AMC",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "rename",
+   "acceptedAlias": "NAM-INDIA",
+   "evidence": "provider 'Nippon Life India Asset Management Limited' @ current INR; the NSE ticker is hyphenated NAM-INDIA (format-normalized symbol equality with the seed key; token overlap 0.5 on names); NAMINDIA.NS dead on both suffixes"
+  },
+  {
+   "symbol": "PTON",
+   "seedName": "Prime Textiles",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "RADICON",
+   "seedName": "Radicon",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "RAILVIKAS",
+   "seedName": "Rail Vikas Nigam (RVNL)",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "RANEENGINE",
+   "seedName": "Rane Engine Valve",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "RRVL",
+   "seedName": "Reliance Retail Ventures",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SANDUMANG",
+   "seedName": "Sandur Manganese",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "rename",
+   "acceptedAlias": "SANDUMA",
+   "evidence": "provider 'The Sandur Manganese & Iron Ores Limited' @ current INR; seed-name tokens {sandur, manganese} are a SUBSET of the provider name tokens; SANDUMANG.NS dead on both suffixes"
+  },
+  {
+   "symbol": "SELAN",
+   "seedName": "Selan Exploration Technology",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SEQUENT",
+   "seedName": "Sequent Scientific",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SHREYASHIP",
+   "seedName": "Shreyas Shipping",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SHRIRAMEPC",
+   "seedName": "Shriram EPC",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SMLISUZU",
+   "seedName": "SML Isuzu",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SOMDISTILL",
+   "seedName": "Som Distilleries",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [
+    {
+     "symbol": "SDBL.NS",
+     "name": "Som Distilleries & Breweries Limited",
+     "price": 73.1,
+     "currency": "INR",
+     "overlap": 0.667,
+     "symbolTextMatch": false
+    }
+   ],
+   "decision": "rename",
+   "acceptedAlias": "SDBL",
+   "evidence": "provider 'Som Distilleries & Breweries Limited' @ current INR; token overlap 0.667 (>= 0.6 gate); SOMDISTILL.NS dead on both suffixes"
+  },
+  {
+   "symbol": "SUVENPHAR",
+   "seedName": "Suven Pharma",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SUVIDHAFIN",
+   "seedName": "Suvidha Finance",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "SWANENERGY",
+   "seedName": "Swan Energy",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "TASYBITE",
+   "seedName": "Tasty Bite Eatables",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "TATACOFFEE",
+   "seedName": "Tata Coffee",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "TATACONSUM ('Tata Consumer') is itself a STOCKS key and serves fresh; TATACOFFEE ('Tata Coffee') merged into Tata Consumer \u2014 dead relic"
+  },
+  {
+   "symbol": "TATAMOTORS",
+   "seedName": "Tata Motors",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [
+    {
+     "symbol": "TMCV.NS",
+     "name": "Tata Motors Limited",
+     "price": 428.5,
+     "currency": "INR",
+     "overlap": 1.0,
+     "symbolTextMatch": false
+    }
+   ],
+   "decision": "ambiguous-identity",
+   "acceptedAlias": null,
+   "evidence": "2025 demerger: TMCV 'Tata Motors Limited' and TMPV both match at overlap 1.0; identity is a product decision (round-21 exclusion stands)"
+  },
+  {
+   "symbol": "TCNSBRANDS",
+   "seedName": "TCNS Clothing",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "TECHNO",
+   "seedName": "Techno Electric",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "rename",
+   "acceptedAlias": "TECHNOE",
+   "evidence": "provider 'Techno Electric & Engineering Company Limited' @ current INR; seed-name tokens {techno, electric} are a SUBSET of the provider name tokens; TECHNO.NS dead on both suffixes"
+  },
+  {
+   "symbol": "TIPSIND",
+   "seedName": "Tips Industries",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "TMVFINANCE",
+   "seedName": "TMB Bank",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "TORNT",
+   "seedName": "Torrent Pharma",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "TORNTPHARM ('Torrent Pharmaceuticals') is itself a STOCKS key and serves fresh; TORNT ('Torrent Pharma') is the dead pre-rename relic"
+  },
+  {
+   "symbol": "TV18BRDCST",
+   "seedName": "TV18 Broadcast",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "duplicate-seed-row",
+   "acceptedAlias": null,
+   "evidence": "NETWORK18 ('Network18 Media & Investments') is itself a STOCKS key and serves fresh; TV18BRDCST ('TV18 Broadcast') merged into Network18 \u2014 dead relic"
+  },
+  {
+   "symbol": "UJJIVAN",
+   "seedName": "Ujjivan Financial Services",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "WABCO",
+   "seedName": "WABCO India",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  },
+  {
+   "symbol": "WELSPUNIND",
+   "seedName": "Welspun India",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [
+    {
+     "symbol": "WELCORP.NS",
+     "name": "Welspun Corp Limited",
+     "price": 2699.6,
+     "currency": "INR",
+     "overlap": 1.0,
+     "symbolTextMatch": false
+    }
+   ],
+   "decision": "candidate-rejected-false-match",
+   "acceptedAlias": null,
+   "evidence": "candidate WELCORP is a different company (Welspun Corp/Metals vs Welspun India/Textiles; G5 kept both rows) \u2014 suffix-stripping artifact, rejected"
+  },
+  {
+   "symbol": "ZUARIGLOB",
+   "seedName": "Zuari Global",
+   "oldProbeNS": "miss",
+   "oldProbeBO": "miss",
+   "candidates": [],
+   "decision": "no-nse-search-candidate",
+   "acceptedAlias": null,
+   "evidence": "round-24 probe: canonical .NS/miss .BO/miss; no NSE search candidate matched the seed identity"
+  }
+ ]
+}

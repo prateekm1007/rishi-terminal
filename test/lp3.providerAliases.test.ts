@@ -110,7 +110,7 @@ describe("LP3 — the alias map is sane", () => {
     }
   });
 
-  it("carries the provider-verified renames from the round-21 artifact", () => {
+  it("carries the provider-verified renames from the round-21 and round-24 artifacts", () => {
     const must: Array<[string, string]> = [
       ["BAJAJAUTO", "BAJAJ-AUTO"],
       ["AMARAJABAT", "ARE&M"],
@@ -119,15 +119,32 @@ describe("LP3 — the alias map is sane", () => {
       ["SONATASOFT", "SONATSOFTW"],
       ["SRTRANSFIN", "SHRIRAMFIN"],
       ["ZEN", "ZENTEC"],
+      // Round 24 (E4 residual classification): the seed symbol is dead on
+      // both suffixes; the provider serves the instrument under the
+      // current ticker with an identity-verified name.
+      ["BRAINBEES", "FIRSTCRY"],
+      ["GANESHHOUC", "GANESHHOU"],
+      ["SOMDISTILL", "SDBL"],
+      ["TECHNO", "TECHNOE"],
+      ["SANDUMANG", "SANDUMA"],
+      ["ELDECO", "ELDEHSG"],
+      ["JSLHISAR", "JSL"],
+      ["LAXMIMACH", "LMW"],
+      ["NAMINDIA", "NAM-INDIA"],
     ];
     for (const [from, to] of must) {
       expect(STOCK_ALIASES[from]).toBe(to);
     }
-    // 44 verified renames + the pre-existing BGV01 hand entry. The other
-    // accepted artifact rows are deliberately NOT here (demerger ambiguity,
-    // un-establishable identity, duplicate seed rows) — see
-    // scripts/generateYahooAliases.ts EXCLUDED.
-    expect(Object.keys(STOCK_ALIASES).length).toBe(45);
+    // 53 verified renames + the pre-existing BGV01 hand entry. Deliberately
+    // NOT here: demerger/identity ambiguity (TATAMOTORS, COSMOFILMS,
+    // MAHINDCIE), un-establishable identity (KWALITY), and duplicate seed
+    // rows whose CURRENT ticker is itself a STOCKS key (MCXINDIA->MCX,
+    // TORNT->TORNTPHARM, MACROTECH->LODHA, GMRINFRA->GMRAIRPORT,
+    // INOXLEISURE->PVRINOX, MAGMA->POONAWALLA, TATACOFFEE->TATACONSUM,
+    // IIFLWAM->360ONE, TV18BRDCST->NETWORK18, JSWISPL->JSWSTEEL — registry
+    // merge work, and WELSPUNIND->WELCORP is a rejected false match) — see
+    // scripts/generateYahooAliases.ts EXCLUDED and the round-24 artifact.
+    expect(Object.keys(STOCK_ALIASES).length).toBe(54);
   });
 
   it("never maps a symbol to itself", () => {

@@ -173,6 +173,27 @@ export interface ObservedEntry {
 }
 
 /**
+ * The entry's disclosed observation timestamp as the VERBATIM ISO string:
+ * `observedAt` first, the legacy `lastUpdated` shape second, null when
+ * neither discloses one. Shared by latestObservedAt and
+ * observationDateFromEntry so the single-entry and multi-entry clocks can
+ * never disagree about what counts as a disclosed observation (the G4B
+ * defect: latestObservedAt read only `observedAt` while the wire's
+ * normalized PriceData carries `lastUpdated` — the page-level "Observed …"
+ * clock was unreachable and every surface fell back to "not disclosed").
+ */
+function observationIso(entry: ObservedEntry): string | null {
+  const iso =
+    typeof entry.observedAt === "string" && entry.observedAt
+      ? entry.observedAt
+      : typeof entry.lastUpdated === "string" && entry.lastUpdated
+        ? entry.lastUpdated
+        : null;
+  if (!iso) return null;
+  return Number.isFinite(Date.parse(iso)) ? iso : null;
+}
+
+/**
  * The LATEST disclosed upstream observation time across a set of entries,
  * or null when no entry disclosed one. Non-string / non-parsable values are
  * ignored (never coerced, never substituted with the fetch time — a
@@ -182,10 +203,9 @@ export function latestObservedAt(entries: ObservedEntry[]): string | null {
   let best: string | null = null;
   let bestMs = -Infinity;
   for (const e of entries) {
-    const raw = typeof e.observedAt === "string" && e.observedAt ? e.observedAt : null;
+    const raw = observationIso(e);
     if (!raw) continue;
     const ms = Date.parse(raw);
-    if (!Number.isFinite(ms)) continue;
     if (ms > bestMs) {
       bestMs = ms;
       best = raw;
@@ -199,15 +219,8 @@ export function latestObservedAt(entries: ObservedEntry[]): string | null {
  *  "Updated …" clock in the market UI — `new Date()` (browser fetch time)
  *  presented as an observation time is the Round-9 defect this replaces. */
 export function observationDateFromEntry(entry: ObservedEntry): Date | null {
-  const iso =
-    typeof entry.observedAt === "string" && entry.observedAt
-      ? entry.observedAt
-      : typeof entry.lastUpdated === "string" && entry.lastUpdated
-        ? entry.lastUpdated
-        : null;
-  if (!iso) return null;
-  const ms = Date.parse(iso);
-  return Number.isFinite(ms) ? new Date(ms) : null;
+  const iso = observationIso(entry);
+  return iso ? new Date(Date.parse(iso)) : null;
 }
 
 /** Conservative aggregation precedence for a page-level badge: the badge

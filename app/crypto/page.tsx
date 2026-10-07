@@ -22,7 +22,6 @@ export default function CryptoPage() {
   const router = useRouter();
   const [sector, setSector] = useState('All');
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // R3 (round 2) + Commit M3 (free access): guru verdicts are computed
   // SERVER-SIDE (/api/gurus) and served in full to every caller. This page
@@ -42,19 +41,19 @@ export default function CryptoPage() {
 
   // Extract all crypto symbols
   const cryptoSymbols = useMemo(() => CRYPTO_ASSETS.map(c => c.symbol), []);
-  
-  // Fetch live prices
-  const { prices, loading } = useLivePrices(cryptoSymbols, 60000);
+
+  // Fetch live prices. G4 (founder round 23): observedAt is the
+  // server-disclosed OBSERVATION clock — the header below keys off it,
+  // never off a fetch/arrival time, and the LIVE word is earned by
+  // actual observations (a fetch is not a freshness claim).
+  const { prices, loading, observedAt } = useLivePrices(cryptoSymbols, 60000);
+  const observedCount = useMemo(
+    () => Object.values(prices).filter(p => typeof p.price === 'number' && p.price > 0).length,
+    [prices],
+  );
 
   const sectors = ['All', ...Array.from(new Set(CRYPTO_ASSETS.map(c => c.sector)))];
   const filtered = sector === 'All' ? CRYPTO_ASSETS : CRYPTO_ASSETS.filter(c => c.sector === sector);
-
-  // Update timestamp when prices change
-  useEffect(() => {
-    if (Object.keys(prices).length > 0) {
-      setLastUpdated(new Date());
-    }
-  }, [prices]);
 
   // Audit 2026-10-02 (P1): Volume 24h sums the actual per-asset 24h
   // VOLUMES from the live transport (it previously summed PRICES divided
@@ -102,10 +101,10 @@ export default function CryptoPage() {
                 {t('crypto.subtitle')}
               </p>
             </div>
-            {lastUpdated && (
+            {observedCount > 0 && (
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace', textAlign: 'right' }}>
-                <div style={{ color: '#00BA7C', fontWeight: 700 }}>● LIVE</div>
-                <div>Updated {lastUpdated.toLocaleTimeString()}</div>
+                <div style={{ color: '#00BA7C', fontWeight: 700 }}>● {observedCount === CRYPTO_ASSETS.length ? 'LIVE' : `LIVE ${observedCount}/${CRYPTO_ASSETS.length}`}</div>
+                {observedAt ? <div>Observed {observedAt.toLocaleTimeString('en-IN')}</div> : <div>Observation time not disclosed</div>}
               </div>
             )}
           </div>

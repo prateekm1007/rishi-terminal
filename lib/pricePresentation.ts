@@ -288,8 +288,12 @@ export function formatChangePair(
  * alerts header). Conservative like aggregatePresentationState — and when
  * the aggregate IS live, any delayed transport among the live entries
  * downgrades the word to DELAYED (a freshly fetched Yahoo quote is not a
- * realtime tick; docs/DATA_PROVIDER_MATRIX.md). Untranslated by design:
- * state vocabulary is machine wording, like ProvenanceChip/statusLabel.
+ * realtime tick; docs/DATA_PROVIDER_MATRIX.md). G4 (founder round 23):
+ * the cached aggregate is worded for the DATA actually present — the
+ * last observed prices — not the serving mechanism ("CACHED" told the
+ * user where the value came from, not what it is). Untranslated by
+ * design: state vocabulary is machine wording, like ProvenanceChip/
+ * statusLabel.
  */
 export function aggregateMarketLabel(
   entries: Array<PresentationEntry | null | undefined>,
@@ -306,6 +310,9 @@ export function aggregateMarketLabel(
         isDelayedSource(e.source),
     );
     return anyDelayed ? "DELAYED MARKET DATA" : "LIVE MARKET DATA";
+  }
+  if (state === "cached") {
+    return "LAST OBSERVED MARKET DATA";
   }
   return `${state.toUpperCase()} MARKET DATA`;
 }

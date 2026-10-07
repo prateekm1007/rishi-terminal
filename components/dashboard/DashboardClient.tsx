@@ -267,9 +267,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           </div>
           <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
             {/* Round 9: the age keys off the SERVER observation time; no
-                disclosed observation → an honest dash, never a fabricated
-                "updated Ns" off the fetch clock. */}
-            {observedAt ? (t("dashboard.updatedPrefix") + timeAgo) : (marketLabel ? "—" : t("dashboard.priceUnavailable"))}
+                disclosed observation → the honest not-disclosed state,
+                never a bare dash that reads like a glitch (G4). */}
+            {observedAt
+              ? (t("dashboard.updatedPrefix") + timeAgo)
+              : (marketLabel ? t("dashboard.observationTimeNotDisclosed") : t("dashboard.priceUnavailable"))}
           </span>
         </div>
       </div>

@@ -24,9 +24,9 @@ provider-identity evidence gathered 2026-10-07 12:35-12:45 UTC.
 | class | count | disposition |
 |---|---:|---|
 | rename/merger with provider-verified identity (NEW evidence) | 4 | alias candidates — FOUNDER DECISION NEEDED (evidence below; default: leave unavailable until confirmed, per the round-24 §4 precedent) |
-| already founder-held as alias-kept-out (cross-referenced) | 3 | TATAMOTORS, COSMOFILMS, ADANITRANS — evidence STRENGTHENED, disposition unchanged (founder holds) |
-| provider coverage gap (Yahoo NSE hole) | ~50 | FOUNDER DECISION NEEDED (second provider) — the round-24 §6 class, re-confirmed at 896 |
-| seed-identity corrections recorded | 1 | PTON = "Prime Textiles" (NSE) — the US Peloton ticker collision is a FALSE lead and is recorded so it is not re-tried |
+| already founder-held as alias-kept-out (cross-referenced) | 4 | TATAMOTORS, COSMOFILMS, MAHINDCIE, ADANITRANS — evidence STRENGTHENED, disposition unchanged (founder holds) |
+| provider coverage gap (Yahoo NSE hole) | 53 | FOUNDER DECISION NEEDED (second provider) — the round-24 §6 class, re-confirmed at 896; 4 + 4 + 53 = 61, the census exact |
+| seed-identity corrections recorded | 1 | PTON = "Prime Textiles" (NSE) — counted inside the 53 (its own `.NS` is unserved); the US Peloton ticker collision is a FALSE lead, recorded so it is not re-tried |
 
 ## New identity evidence (Yahoo v8 longName + current INR quote, 2026-10-07)
 
@@ -51,6 +51,19 @@ proven by #239/#242/#243.
   831.95 — the documented 2022 rename. Overlap stays 0.5; founder holds.
 - `ADANITRANS.NS` 404s; `ADANIENSOL.NS` serves "Adani Energy Solutions
   Limited" @ 1318.8 — the documented rename. Founder holds.
+- `MAHINDCIE.NS` 404s; `CIEINDIA.NS` serves "CIE Automotive India
+  Limited" @ 378.70 — the documented Dec-2023 rename (Mahindra CIE
+  Automotive → CIE Automotive India; the Mahindra stake exit). Round-24
+  §4 kept the alias out at overlap 0.5; founder holds. (Added in the
+  review pass: MAHINDCIE is in the census JSON but was missing from the
+  original cross-reference — the arithmetic above is now exact.)
+
+## Independent verification (review pass, 2026-10-07 ~13:59 UTC)
+
+- `SUVENPHAR.NS` 404 / `COHANCE.NS` serves "Cohance Lifesciences Limited"
+  @ 455.45 INR — reproduced exactly as recorded above.
+- `MAHINDCIE.NS` 404 / `CIEINDIA.NS` serves "CIE Automotive India Limited"
+  @ 378.70 INR — as recorded above.
 
 ## Honest corrections recorded
 

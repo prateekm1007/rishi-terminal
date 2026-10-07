@@ -1,5 +1,5 @@
 {
-  "$comment": "Remediation T12 + G5 (round 23) — oldSymbol -> canonicalSymbol. T12 mappings were decided by (1) the currently trading NSE symbol and (2) seed rows sharing a normalized name. G5 mappings merge duplicate seed rows: each bogus symbol 404'd at the provider while its canonical pair served the same company name (verification table in docs/evidence/round23/g5-duplicate-merge.md).",
+  "$comment": "Remediation T12 + G5 (rounds 23-24) — oldSymbol -> canonicalSymbol. T12 mappings were decided by (1) the currently trading NSE symbol and (2) seed rows sharing a normalized name. G5 round-23 mappings merge duplicate seed rows (verification: docs/evidence/round23/g5-duplicate-merge.md). G5 round-24 mappings merge relic rows of renamed/merged entities — each relic 404'd at the provider while its current key served the same listed entity (verification: docs/evidence/round24/e4-residual-classification.md §3).",
   "DIVI": "DIVISLAB",
   "AMBUJACEMENT": "AMBUJACEM",
   "MINDTREE": "LTIM",
@@ -66,5 +66,15 @@
   "GODAWARI": "GPIL",
   "RAILVIKAS": "RVNL",
   "JINDALSTPP": "JINDALSTEL",
-  "JAINIRRIG": "JISLJALEQS"
+  "JAINIRRIG": "JISLJALEQS",
+  "MCXINDIA": "MCX",
+  "TORNT": "TORNTPHARM",
+  "MACROTECH": "LODHA",
+  "GMRINFRA": "GMRAIRPORT",
+  "INOXLEISURE": "PVRINOX",
+  "MAGMA": "POONAWALLA",
+  "TATACOFFEE": "TATACONSUM",
+  "IIFLWAM": "360ONE",
+  "TV18BRDCST": "NETWORK18",
+  "JSWISPL": "JSWSTEEL"
 }

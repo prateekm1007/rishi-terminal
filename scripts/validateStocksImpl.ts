@@ -223,9 +223,30 @@ console.log("\n[6] Registry + master-list consistency (G5)");
       issues++;
     }
   }
+  // 6c. The G5 round-24 relic-merge pin. Each of these symbols is a dead
+  // relic of a renamed/merged listed entity whose CURRENT ticker is itself
+  // a STOCKS key serving a fresh quote (probes 2026-10-07 ~09:39 UTC;
+  // verification table in docs/evidence/round24/e4-residual-classification.md
+  // §3). Same bite as 6b: a re-added row would split one instrument into
+  // two cache/universe entries.
+  const G5_RELICS = [
+    "MCXINDIA", "TORNT", "MACROTECH", "GMRINFRA", "INOXLEISURE", "MAGMA",
+    "TATACOFFEE", "IIFLWAM", "TV18BRDCST", "JSWISPL",
+  ] as const;
+  for (const s of G5_RELICS) {
+    if (STOCKS[s]) {
+      fail(`G5 relic pin: ${s} was merged away as a relic row and must not return as a registry key`);
+      issues++;
+    }
+    const canonical = TICKER_ALIASES[s];
+    if (!canonical || !STOCKS[canonical]) {
+      fail(`G5 relic pin: ${s} must alias to a live canonical row (got ${String(canonical)})`);
+      issues++;
+    }
+  }
   if (issues === 0) {
     console.log(
-      `  OK    master list unique (${seen.size}) and resolves; ${G5_REMOVED.length} merged symbols pinned out`,
+      `  OK    master list unique (${seen.size}) and resolves; ${G5_REMOVED.length + G5_RELICS.length} merged symbols pinned out`,
     );
   }
 }

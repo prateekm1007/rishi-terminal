@@ -20,7 +20,7 @@ describe("T10 — score parity across entry paths", () => {
       if (vals.size > 1) mismatches++;
       expect(mismatches).toBe(0);
     }
-    expect(symbols.length).toBeGreaterThan(900);
+    expect(symbols.length).toBeGreaterThan(890);
   });
 
   it("scoring is deterministic — two calls give the same result", () => {

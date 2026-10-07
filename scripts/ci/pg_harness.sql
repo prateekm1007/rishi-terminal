@@ -95,3 +95,47 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+-- ── 5. pg_cron stand-in (G3, migration 029) ────────────────────
+-- Migration 029 registers the warmer job through cron.schedule /
+-- cron.unschedule. The CI container is vanilla Postgres (no pg_cron
+-- binaries), so this stub provides the schema surface the migration
+-- touches: the job table + the two functions, shaped like pg_cron
+-- 1.6's own. The job COMMAND is stored, never executed — CI verifies
+-- the registration SQL mechanically; the warming behavior itself is
+-- the live NSE-session acceptance's to prove (never CI's).
+CREATE SCHEMA IF NOT EXISTS cron;
+
+CREATE TABLE IF NOT EXISTS cron.job (
+  jobid    bigint PRIMARY KEY,
+  jobname  text UNIQUE,
+  schedule text NOT NULL,
+  command  text NOT NULL,
+  database text,
+  username text,
+  active   boolean NOT NULL DEFAULT true
+);
+
+CREATE OR REPLACE FUNCTION cron.schedule(p_jobname text, p_schedule text, p_command text)
+RETURNS bigint
+LANGUAGE plpgsql
+AS $$
+DECLARE v_id bigint;
+BEGIN
+  SELECT COALESCE(MAX(jobid), 0) + 1 INTO v_id FROM cron.job;
+  INSERT INTO cron.job (jobid, jobname, schedule, command, database, username, active)
+  VALUES (v_id, p_jobname, p_schedule, p_command, current_database(), current_user, true)
+  ON CONFLICT (jobname) DO UPDATE
+    SET schedule = EXCLUDED.schedule,
+        command  = EXCLUDED.command,
+        active   = true;
+  RETURN v_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION cron.unschedule(p_jobname text)
+RETURNS boolean
+LANGUAGE sql
+AS $$
+  DELETE FROM cron.job WHERE jobname = p_jobname RETURNING TRUE;
+$$;

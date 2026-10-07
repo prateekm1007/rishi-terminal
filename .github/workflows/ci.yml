@@ -158,6 +158,9 @@ jobs:
       - name: Assert RLS invariants (N2)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/rls_invariants.sql
 
+      - name: Assert account erasure invariants (G1 — live deletion proof on real Postgres)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/account_erasure_invariants.sql
+
       - name: Assert quote-cache claim invariants (U2 — real-Postgres cold-claim proof)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/quote_cache_invariants.sql
 

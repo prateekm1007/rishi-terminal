@@ -7,10 +7,16 @@
 // /api/account/export and /api/account/delete, so coverage is mechanical,
 // not aspirational (Constitution 14: one source of truth).
 //
-// Deletion shape: every listed table cascades from auth.users(id) ON
-// DELETE CASCADE (directly, or via public.users) — the delete route
-// removes the auth user and Postgres empties every row below. The
-// cascade claim is asserted per table by the test (FK clause present).
+// Deletion shape: every listed table is emptied by the account
+// deletion through a SCHEMA-LEVEL mechanism that fires on every
+// deletion path (the route deletes the auth.users row; Postgres does
+// the rest) — either an FK ... ON DELETE CASCADE (directly, or via
+// public.users), or, for chat_usage, the BEFORE DELETE trigger
+// migration 028 added on public.users (015 had to drop its FK:
+// anonymous quota identities are not auth users and cannot satisfy
+// a references-auth.users constraint). The live half of the proof is
+// scripts/ci/account_erasure_invariants.sql (CI migrations job); the
+// static half is test/account.delete.test.ts.
 
 export interface UserDataTable {
   /** Table name as created in lib/db/migrations. */
@@ -21,7 +27,7 @@ export interface UserDataTable {
    *  construction — DPDP data-portability). */
   columns: '*';
   /** How the row disappears on account deletion. */
-  deletion: 'cascade-via-users' | 'cascade-via-auth-users';
+  deletion: 'cascade-via-users' | 'cascade-via-auth-users' | 'trigger-sweep-via-users';
 }
 
 export const USER_DATA_TABLES: UserDataTable[] = [
@@ -33,7 +39,10 @@ export const USER_DATA_TABLES: UserDataTable[] = [
   { table: 'portfolios', migration: '001_initial_schema.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'transactions', migration: '001_initial_schema.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'watchlist', migration: '001_initial_schema.sql', columns: '*', deletion: 'cascade-via-users' },
-  { table: 'chat_usage', migration: '005_chat_usage.sql', columns: '*', deletion: 'cascade-via-auth-users' },
+  // 015 dropped the FK (anonymous quota identities); 028 restored
+  // erasure via the users_erase_chat_usage BEFORE DELETE trigger —
+  // the live CI erasure test guards this table by name.
+  { table: 'chat_usage', migration: '005_chat_usage.sql', columns: '*', deletion: 'trigger-sweep-via-users' },
   { table: 'screens', migration: '024_screens.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'portfolio_imports', migration: '025_portfolio_import.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'portfolio_positions', migration: '025_portfolio_import.sql', columns: '*', deletion: 'cascade-via-users' },

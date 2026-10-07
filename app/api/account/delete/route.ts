@@ -13,9 +13,14 @@ import { USER_DATA_TABLES } from '@/lib/account/coverage';
  *   - identity from the session (the server decides who is deleted —
  *     Constitution 7; a body-supplied id is never trusted);
  *   - explicit confirmation phrase required ("DELETE MY ACCOUNT");
- *   - deletion = auth.users removal; every covered table cascades
- *     (FK ... ON DELETE CASCADE — asserted per table by
- *     test/account.delete.test.ts), then the session is signed out.
+ *   - deletion = auth.users removal; every covered table is emptied
+ *     by a schema-level mechanism in the same transaction — an FK
+ *     ... ON DELETE CASCADE for most tables, and for chat_usage the
+ *     BEFORE DELETE trigger migration 028 added on public.users (015
+ *     had to drop its FK: anonymous quota identities are not auth
+ *     users). Both halves are asserted by test/account.delete.test.ts
+ *     (static) and scripts/ci/account_erasure_invariants.sql (the
+ *     live CI Postgres proof, G1); then the session is signed out.
  *
  * The coverage registry is the same module the export uses — one source
  * of truth, mechanically complete (the enumeration test fails when a new

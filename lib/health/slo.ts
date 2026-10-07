@@ -6,16 +6,24 @@
  * picks a number). Until D1-04/D1-05 introduce prices_eod and
  * fundamentals_pit, freshness is derived from ingestion_log job rows; the
  * job-name lists below are the single place to update when those tasks land.
+ *
+ * G6 (round 23): the lists now name the jobs REAL routes write. The
+ * pre-G6 lists ("ingestPrices", "ingestQuarterly", "ingestFundamentals")
+ * matched no logIngestion caller, so lastPriceIngestAt /
+ * lastFundamentalsIngestAt were structurally null and /api/health reported
+ * "no ingestion recorded yet" forever — permanently "degraded" while the
+ * warmer kept the cache fresh. Verified against the actual writers:
+ * quotes-warm logs "quotes_warm" per non-skipped slice; the financials
+ * route logs "ingest_financials"; the other ingestion jobs
+ * (nightly_snapshot = consensus scores, reference_observations = FRED/FX)
+ * carry no equity-price or fundamentals signal.
  */
 
 /** Jobs whose latest finished_at means "prices were ingested recently". */
-export const PRICE_INGEST_JOBS: readonly string[] = ["ingestPrices"];
+export const PRICE_INGEST_JOBS: readonly string[] = ["quotes_warm"];
 
 /** Jobs whose latest finished_at means "fundamentals were ingested recently". */
-export const FUNDAMENTALS_INGEST_JOBS: readonly string[] = [
-  "ingestQuarterly",
-  "ingestFundamentals",
-];
+export const FUNDAMENTALS_INGEST_JOBS: readonly string[] = ["ingest_financials"];
 
 /**
  * PROPOSED (D1-10): prices ≤ 1 trading day old. Trading calendar is not

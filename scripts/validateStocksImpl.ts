@@ -16,6 +16,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { STOCKS, SEED_STATUS } from "../data/stocks";
+import { MASTER_STOCK_LIST } from "../data/stocks/master-list";
 import {
   buildTickerRegistry,
   registryHealthScore,
@@ -176,6 +177,77 @@ console.log("\n[5] Alias map");
   }
   if (aliasIssues === 0) {
     console.log(`  OK    ${Object.keys(TICKER_ALIASES).length} aliases all resolve, none shadow live rows`);
+  }
+}
+
+// ── 6. Registry + master-list consistency (G5) ────────────────
+console.log("\n[6] Registry + master-list consistency (G5)");
+{
+  let issues = 0;
+  // 6a. Master list: unique entries, every entry resolving (directly or
+  // via the alias map) to a STOCKS row. The list is a dev-facing
+  // reference, but an entry that resolves to nothing is a stale symbol
+  // lying about the universe.
+  const seen = new Set<string>();
+  for (const s of MASTER_STOCK_LIST) {
+    if (seen.has(s)) {
+      fail(`master list duplicate entry: ${s}`);
+      issues++;
+      continue;
+    }
+    seen.add(s);
+    const resolved = resolveTickerSymbol(s);
+    if (resolved === null || !STOCKS[resolved]) {
+      fail(`master list symbol ${s} does not resolve to a STOCKS row (got ${String(resolved)})`);
+      issues++;
+    }
+  }
+  // 6b. The G5 duplicate-merge pin. Each of these symbols 404'd at the
+  // provider while its canonical pair served the SAME company name
+  // (verification table in docs/evidence/round23/g5-duplicate-merge.md):
+  // the row was merged away and the symbol must live only as an alias.
+  // A re-added row would split one instrument into two cache/universe
+  // entries again — the exact defect this gate bites on.
+  const G5_REMOVED = [
+    "ANUPAM", "BAYER", "BLUESTAR", "COLGATE", "INFOEDGE", "TASYBITE",
+    "GODAWARI", "RAILVIKAS", "JINDALSTPP", "JAINIRRIG",
+  ] as const;
+  for (const s of G5_REMOVED) {
+    if (STOCKS[s]) {
+      fail(`G5 pin: ${s} was merged away as a duplicate row and must not return as a registry key`);
+      issues++;
+    }
+    const canonical = TICKER_ALIASES[s];
+    if (!canonical || !STOCKS[canonical]) {
+      fail(`G5 pin: ${s} must alias to a live canonical row (got ${String(canonical)})`);
+      issues++;
+    }
+  }
+  // 6c. The G5 round-24 relic-merge pin. Each of these symbols is a dead
+  // relic of a renamed/merged listed entity whose CURRENT ticker is itself
+  // a STOCKS key serving a fresh quote (probes 2026-10-07 ~09:39 UTC;
+  // verification table in docs/evidence/round24/e4-residual-classification.md
+  // §3). Same bite as 6b: a re-added row would split one instrument into
+  // two cache/universe entries.
+  const G5_RELICS = [
+    "MCXINDIA", "TORNT", "MACROTECH", "GMRINFRA", "INOXLEISURE", "MAGMA",
+    "TATACOFFEE", "IIFLWAM", "TV18BRDCST", "JSWISPL",
+  ] as const;
+  for (const s of G5_RELICS) {
+    if (STOCKS[s]) {
+      fail(`G5 relic pin: ${s} was merged away as a relic row and must not return as a registry key`);
+      issues++;
+    }
+    const canonical = TICKER_ALIASES[s];
+    if (!canonical || !STOCKS[canonical]) {
+      fail(`G5 relic pin: ${s} must alias to a live canonical row (got ${String(canonical)})`);
+      issues++;
+    }
+  }
+  if (issues === 0) {
+    console.log(
+      `  OK    master list unique (${seen.size}) and resolves; ${G5_REMOVED.length + G5_RELICS.length} merged symbols pinned out`,
+    );
   }
 }
 

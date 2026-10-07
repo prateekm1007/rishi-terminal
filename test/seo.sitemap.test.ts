@@ -26,9 +26,11 @@ describe('app/sitemap.ts (served at /sitemap.xml)', () => {
     expect(new Set(urls).size).toBe(urls.length);
   });
 
-  it('covers every stock page in the universe (all 916 symbols)', () => {
+  it('covers every stock page in the universe (all symbols)', () => {
     const symbols = Object.keys(STOCKS);
-    expect(symbols.length).toBeGreaterThanOrEqual(900); // 916 at round-5 close
+    // 916 at round-5 close; 906 after the round-23 G5 duplicate merge;
+    // 896 after the round-24 G5 relic merge (deliberate, reviewed).
+    expect(symbols.length).toBeGreaterThanOrEqual(890);
     for (const s of symbols) {
       // Symbols with URI-special characters (J&KBANK, M&M, M&MFIN) are
       // percent-encoded in URLs — encodeURIComponent is identity for the

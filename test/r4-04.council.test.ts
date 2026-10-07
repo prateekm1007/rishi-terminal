@@ -158,7 +158,7 @@ describe("R4-04 — council structure over the universe", () => {
       // the gate must have exercised real material (not vacuous)
       expect(reported).toBeGreaterThan(0);
       // sanity: universe scale actually walked
-      expect(UNIVERSE.length).toBeGreaterThan(900);
+      expect(UNIVERSE.length).toBeGreaterThan(890);
       // rule 25: the raw count of honest "no lever path" rows is itself
       // evidence — the council does NOT fabricate paths it cannot verify.
       console.log(`[r4-04] honest-null (no lever path) rows across the universe: ${honestNulls}`);

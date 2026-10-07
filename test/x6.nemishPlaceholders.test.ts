@@ -142,15 +142,19 @@ describe("X6 — engine-level contract (every entry path agrees)", () => {
     }
   });
 
-  it("the seed universe pins the honest null count: 259 of 916 stocks have a placeholder zero in a Nemish pillar", () => {
+  it("the seed universe pins the honest null count: 254 of 906 stocks have a placeholder zero in a Nemish pillar", () => {
     // Pinning the exact count: it may only change when the SEED changes
     // (a deliberate, reviewed act) or the pillar set changes — never
     // silently. Measured on main @ 0a56ad1: epscagr=0 (19) ∪ de=0 (145)
-    // ∪ promo=0 (66) ∪ pe=0 (73) = 259.
+    // ∪ promo=0 (66) ∪ pe=0 (73) = 259 of 916. G5 (round 23) merged ten
+    // duplicate rows out of the registry (916 -> 906); five of the removed
+    // bogus rows carried a placeholder zero in a Nemish pillar, so the
+    // honest null count moved 259 -> 254. Re-measured on the G5 tree:
+    // 254 nulls of 906 rows.
     const all = Object.values(STOCKS);
     const nulls = all.filter((s) => scoreNemish(s).score === null).length;
-    expect(nulls).toBe(259);
-    expect(all.length).toBe(916);
+    expect(nulls).toBe(254);
+    expect(all.length).toBe(906);
   });
 
   it("the consensus stays finite for every stock (quorum 12 holds with 19 valid scorers)", () => {

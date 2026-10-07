@@ -80,6 +80,11 @@ const TOOL_REQUEST = JSON.stringify({
   args: { symbol: "RELIANCE" },
 });
 
+const TOOL_REQUEST_TCS = JSON.stringify({
+  tool: "getPrices",
+  args: { symbol: "TCS" },
+});
+
 const GOOD_STRUCTURED = JSON.stringify({
   answer: "Reliance is trading at 1167.7 rupees.",
   claims: [
@@ -95,11 +100,14 @@ const GOOD_STRUCTURED = JSON.stringify({
 describe("R15 — field-value discipline (founder optimization #1)", () => {
   it("the first-pass contract carries the per-field copying rule and a worked example", async () => {
     const { stockState } = SEEDED_ARGS();
-    const bodies = mockProviderRepliesCapturing([TOOL_REQUEST, GOOD_STRUCTURED]);
+    // G7 driver 1: re-scoped to a two-symbol ask (the singleton data ask
+    // is served deterministically before the post-tool completion now) —
+    // the evidence contract under test is the POST-TOOL prompt.
+    const bodies = mockProviderRepliesCapturing([TOOL_REQUEST, TOOL_REQUEST_TCS, GOOD_STRUCTURED]);
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState,
     });
@@ -113,8 +121,10 @@ describe("R15 — field-value discipline (founder optimization #1)", () => {
 
   it("cross-field assertion (price value in the change field) → field-value-mismatch repair feedback names the field-discipline rule", async () => {
     const { stockState } = SEEDED_ARGS();
+    // G7 driver 1: re-scoped to a two-symbol ask (see test/aiRouter.fastPath.test.ts).
     mockProviderRepliesCapturing([
       TOOL_REQUEST,
+      TOOL_REQUEST_TCS,
       // The exact production battery failure: the model asserts the PRICE
       // number (1167.7) in the change field.
       JSON.stringify({
@@ -133,7 +143,7 @@ describe("R15 — field-value discipline (founder optimization #1)", () => {
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState,
     });

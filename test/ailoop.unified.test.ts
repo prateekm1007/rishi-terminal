@@ -56,6 +56,12 @@ const PRICE_ITEM = {
   ],
 };
 
+// The TOOL_DEPS price stub returns the same observation for ANY symbol,
+// so the TCS item the tool builds carries this id.
+const TCS_PRICE_ITEM = {
+  id: "price:TCS:2026-10-01T10:00:00.000Z",
+};
+
 const TOOL_DEPS: AiToolDeps = {
   ...NO_TOOLS,
   getPrice: async () => ({
@@ -202,13 +208,18 @@ describe("the unified loop — financial questions in general chat enter the sam
   });
 
   it("tool exhaustion in the no-evidence path terminates BLOCKED (same budget, same honesty)", async () => {
-    const replies = Array.from({ length: MAX_TOOL_ITERATIONS + 1 }, (_, i) =>
-      JSON.stringify({ tool: "getStock", args: { symbol: `SYM${i}XYZ` } }),
+    // G7 driver 1 note: exhaustion needs outcomes the deterministic gate
+    // does NOT serve — getStock returns ok WITHOUT typed facts (a profile
+    // is qualitative), so the loop keeps executing until the budget ends
+    // it. A terminal failure (unknown-symbol) or a fact-bearing outcome
+    // would serve deterministically after ONE tool now.
+    const replies = Array.from({ length: MAX_TOOL_ITERATIONS + 1 }, () =>
+      JSON.stringify({ tool: "getStock", args: { symbol: "RELIANCE" } }),
     );
     const { calls } = scriptProvider(replies);
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are Damani.", history: [], message: "analyze everything",
-      evidence: [], toolDeps: NO_TOOLS,
+      evidence: [], toolDeps: TOOL_DEPS,
     });
     expect(calls.length).toBe(MAX_TOOL_ITERATIONS + 1);
     expect(answer!.structuredResponse).toBe("blocked");
@@ -336,22 +347,30 @@ describe("Commit N — financial-intent enforcement before context-only acceptan
 // claims -> server-generated verified surface -> wire. This is the local
 // deterministic twin of the production grounded-AI canary.
 describe("Commit N — the complete general-chat loop contract (production-grade)", () => {
-  it("What is the price of RELIANCE? -> getPrices -> grounded=true with the server-generated verified surface", async () => {
+  it("Compare RELIANCE and TCS prices -> two getPrices -> grounded=true with the server-generated verified surface (the multi-symbol synthesis contract)", async () => {
+    // G7 driver 1: the SINGLETON version of this scenario is now served
+    // deterministically with one completion (pinned in
+    // test/aiRouter.fastPath.test.ts). The model-synthesis contract for the
+    // complete loop lives on the multi-symbol shape, where the post-tool
+    // completion is still required.
     const { calls } = scriptProvider([
       '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
+      '{"tool": "getPrices", "args": {"symbol": "TCS"}}',
       JSON.stringify({
-        answer: "RELIANCE trades at 1000, up 0.5%.",
+        answer: "RELIANCE trades at 1000, up 0.5%; TCS at 1000.",
         claims: [
           {
             claim: "RELIANCE trades at 1000, up 0.5%",
             evidenceIds: [PRICE_ITEM.id],
-            // BOTH numbers in the prose are asserted and both are carried
-            // by the same typed fact item — the fail-closed validator
-            // rejects any number the assertions do not cover.
             assertions: [
               { field: "price", value: 1000, unit: "inr" },
               { field: "change", value: 0.5, unit: "percent" },
             ],
+          },
+          {
+            claim: "TCS trades at 1000.",
+            evidenceIds: [TCS_PRICE_ITEM.id],
+            assertions: [{ field: "price", value: 1000, unit: "inr" }],
           },
         ],
         uncertainties: [],
@@ -360,16 +379,19 @@ describe("Commit N — the complete general-chat loop contract (production-grade
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are Damani.",
       history: [],
-      message: "What is the price of RELIANCE?",
+      message: "Compare the prices of RELIANCE and TCS.",
       evidence: [],
       toolDeps: TOOL_DEPS,
     });
 
-    // 1. Two provider completions: the tool request + the final structure.
-    expect(calls.length).toBe(2);
+    // 1. Three provider completions: two tool requests + the final structure.
+    expect(calls.length).toBe(3);
 
-    // 2. The tool audit trail shows the expected tool, ok, on the symbol.
-    expect(answer!.toolCalls).toEqual([{ tool: "getPrices", status: "ok", symbol: "RELIANCE" }]);
+    // 2. The tool audit trail shows both ok executions.
+    expect(answer!.toolCalls).toEqual([
+      { tool: "getPrices", status: "ok", symbol: "RELIANCE" },
+      { tool: "getPrices", status: "ok", symbol: "TCS" },
+    ]);
 
     // 3. Grounded: at least one validated claim, claimsVerified true.
     expect(answer!.claimsVerified).toBe(true);
@@ -381,10 +403,10 @@ describe("Commit N — the complete general-chat loop contract (production-grade
     expect(wire.provenance.grounded).toBe(true);
     expect(wire.provenance.groundingMode).toBe("structured-claims");
     expect(wire.text).toContain("price = 1000 inr");
-    expect(wire.text).not.toBe("RELIANCE trades at 1000, up 0.5%.");
+    expect(wire.text).not.toBe("RELIANCE trades at 1000, up 0.5%; TCS at 1000.");
 
     // 5. Commentary (the model prose) rides SEPARATELY, never merged.
-    expect(wire.provenance.commentary).toBe("RELIANCE trades at 1000, up 0.5%.");
+    expect(wire.provenance.commentary).toBe("RELIANCE trades at 1000, up 0.5%; TCS at 1000.");
 
     // 6. The validated claim carries its evidence id and the
     //    server-generated verifiedFacts with the closed source state.
@@ -397,10 +419,7 @@ describe("Commit N — the complete general-chat loop contract (production-grade
     expect(priceFact?.sourceState).toBe("live");
     expect(priceFact?.statement).toContain("price = 1000 inr");
 
-    // 7. An unsupported number cannot appear in the verified surface: the
-    //    0.5% change IS carried by the same fact item, but a number the
-    //    evidence does not carry (e.g. 9999) is absent by construction —
-    //    the surface is rendered only from matched typed facts.
+    // 7. An unsupported number cannot appear in the verified surface.
     expect(wire.text).not.toContain("9999");
 
     // 8. The wire is schema-valid end to end (the UI contract).
@@ -440,8 +459,12 @@ describe("Commit N — the complete general-chat loop contract (production-grade
     // of fact-annotation STRINGS. Root cause: the system prompt was built
     // once from the INITIAL evidence and never rebuilt after tool evidence
     // landed. This regression pins both halves of the fix.
+    // G7 driver 1: re-scoped to a two-symbol ask — the singleton shape is
+    // served deterministically before any post-tool call now, so the
+    // prompt-rebuild contract is pinned on the second symbol's tool turn.
     const { calls } = scriptProvider([
       '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
+      '{"tool": "getPrices", "args": {"symbol": "TCS"}}',
       // The REAL model's reply shape after the fix (captured live): a
       // proper claims object with STRINGLY assertion values — exactly what
       // coerceStringlyTypedValues exists to admit at the parse boundary.
@@ -463,15 +486,16 @@ describe("Commit N — the complete general-chat loop contract (production-grade
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are Damani.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
-      evidence: [], // no initial evidence — the tool must supply it
+      message: "Compare the latest prices of RELIANCE and TCS.",
+      evidence: [], // no initial evidence — the tools must supply it
       toolDeps: TOOL_DEPS,
     });
 
-    // 1. The SECOND provider call's system prompt must carry the EVIDENCE
-    //    contract (VERIFIED CONTEXT + the claims format), NOT the stale
-    //    context-only contract that starves the model of the format.
-    expect(calls.length).toBe(2);
+    // 1. The SECOND provider call's system prompt (after the FIRST tool
+    //    landed evidence) must carry the EVIDENCE contract (VERIFIED
+    //    CONTEXT + the claims format), NOT the stale context-only
+    //    contract that starves the model of the format.
+    expect(calls.length).toBe(3);
     const secondSystem = JSON.stringify(calls[1]?.body ?? {});
     expect(secondSystem, "the post-tool system prompt must teach the claims format").toContain("VERIFIED CONTEXT");
     expect(
@@ -493,8 +517,11 @@ describe("Commit N — the complete general-chat loop contract (production-grade
     // Belt-and-braces: the live model's PRE-FIX reply (claims as an array
     // of fact-annotation strings) must keep failing the schema — the fix
     // changes the PROMPT, it must not loosen the VALIDATOR.
+    // G7 driver 1: re-scoped to a two-symbol ask (the singleton shape is
+    // served deterministically before the post-tool completion).
     scriptProvider([
       '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
+      '{"tool": "getPrices", "args": {"symbol": "TCS"}}',
       JSON.stringify({
         answer: "The latest observed price of Reliance is 1294.30.",
         claims: ["price=1294.3 inr (live) - Source: price:RELIANCE:2026-10-02T05:53:40.947Z"],
@@ -502,7 +529,7 @@ describe("Commit N — the complete general-chat loop contract (production-grade
       }),
     ]);
     const answer = await generateEvidenceGroundedAnswer({
-      systemPrompt: "You are Damani.", history: [], message: "What is the latest price of RELIANCE?",
+      systemPrompt: "You are Damani.", history: [], message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [], toolDeps: TOOL_DEPS,
     });
     const wire = toChatWire(answer!);

@@ -120,18 +120,23 @@ const CONTEXT_ONLY_FINAL = JSON.stringify({
 });
 
 describe("W3 input bound — the ugly path: a model bloating its tool-request args", () => {
-  it("every attempt's serialized input stays within the enforced bound", async () => {
+  it("every attempt's serialized input stays within the enforced bound (multi-turn valid-args flow)", async () => {
+    // G7 driver 1: the bloated-args variant of this scenario now terminates
+    // deterministically after ONE invalid-args outcome (pinned below), so
+    // the multi-turn serialized-input bound is pinned on the valid-args
+    // multi-tool flow — the bound must hold on every attempt, echoes and all.
+    const stockReq = () => JSON.stringify({ tool: "getStock", args: { symbol: "RELIANCE" } });
     const { bodies } = scriptProvider([
-      junkToolRequest(),
-      junkToolRequest(),
-      junkToolRequest(),
-      junkToolRequest(),
+      stockReq(),
+      stockReq(),
+      stockReq(),
+      stockReq(),
       CONTEXT_ONLY_FINAL,
     ]);
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "p",
       history: [],
-      message: "What is the philosophy of value investing?",
+      message: "Analyze RELIANCE for me.",
       evidence: [],
       toolDeps: { getFundamentals: async () => null, getPrice: async () => null },
     });
@@ -140,15 +145,39 @@ describe("W3 input bound — the ugly path: a model bloating its tool-request ar
     const perAttempt = bodies.map(attemptInputChars);
     // The reservation's input estimate (22,000 tokens = 64,000 chars at
     // the calibrated factor) must be a TRUE bound of what we send — for
-    // every attempt, including the ones after junk-args tool turns.
+    // every attempt, including the ones after tool turns.
     for (const chars of perAttempt) {
+      expect(chars).toBeLessThanOrEqual(ENFORCED_BOUND_CHARS);
+    }
+  });
+
+  it("a bloated junk-args request is bounded AND terminates deterministically — the honest invalid-args disclosure, one completion", async () => {
+    const { bodies } = scriptProvider([junkToolRequest(), CONTEXT_ONLY_FINAL]);
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "p",
+      history: [],
+      message: "What is the philosophy of value investing?",
+      evidence: [],
+      toolDeps: { getFundamentals: async () => null, getPrice: async () => null },
+    });
+    expect(answer).not.toBeNull();
+    // The invalid-args outcome is a terminal deterministic failure: the
+    // loop serves the bounded disclosure instead of a second completion.
+    expect(bodies.length).toBe(1);
+    expect(answer!.synthesis).toBe("deterministic");
+    expect(answer!.structuredResponse).toBe("valid");
+    expect(answer!.toolCalls).toEqual([
+      { tool: "getStock", status: "invalid-args" },
+    ]);
+    expect(answer!.answer).toContain("Invalid arguments for getStock");
+    // The single attempt's serialized input stays within the bound.
+    for (const chars of bodies.map(attemptInputChars)) {
       expect(chars).toBeLessThanOrEqual(ENFORCED_BOUND_CHARS);
     }
   });
 
   it("the transcript's tool-request echo carries canonical or bounded args — never raw model JSON", async () => {
     const { bodies } = scriptProvider([
-      junkToolRequest(),
       junkToolRequest(),
       CONTEXT_ONLY_FINAL,
     ]);
@@ -160,15 +189,17 @@ describe("W3 input bound — the ugly path: a model bloating its tool-request ar
       toolDeps: { getFundamentals: async () => null, getPrice: async () => null },
     });
     expect(answer).not.toBeNull();
+    // The junk-args echo never rides a SECOND attempt (the deterministic
+    // invalid-args disclosure ends the loop after one completion); the
+    // truncation guarantee itself is pinned by toolRequestTurn's unit
+    // tests — here we pin the honest terminal state the loop serves.
     const assistantEchoes = bodies
       .flatMap(b => b.messages)
       .filter(m => m.role === "assistant");
-    // With no repair in this scenario every assistant turn is a
-    // tool-request echo; canonical valid args are ~60 chars, the
-    // invalid-args truncation is bounded well under 400.
     for (const echo of assistantEchoes) {
       expect(echo.content.length).toBeLessThanOrEqual(400);
     }
+    expect(answer!.toolCalls).toEqual([{ tool: "getStock", status: "invalid-args" }]);
   });
 });
 

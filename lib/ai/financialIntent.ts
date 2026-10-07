@@ -290,3 +290,36 @@ export function intentSeedTool(message: string): { tool: string; args: { symbol:
   }
   return null;
 }
+
+/**
+ * G7 driver 1 (2026-10-07): how many DISTINCT registry symbols the message
+ * names — the singleton gate for the deterministic fast path. A message
+ * naming 2+ symbols (a comparison/multitool ask) must keep the model's
+ * synthesis; a message naming exactly one may be served from the loop's
+ * single canonical tool outcome. Same tokenization + registries as
+ * detectFinancialDataIntent (one registry, no re-listing — rule 14);
+ * slashed pairs count once each (the tokenizer cannot see them).
+ * Pure and synchronous, like the detector.
+ */
+export function countRegistrySymbols(message: string): number {
+  const text = message ?? '';
+  if (text.length === 0) return 0;
+  let count = 0;
+  if (SLASHED.size > 0) {
+    const seenPairs = new Set<string>();
+    for (const pair of SLASHED) {
+      const re = new RegExp(
+        `\\b${pair.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+        'i',
+      );
+      if (re.test(text)) seenPairs.add(pair);
+    }
+    count += seenPairs.size;
+  }
+  const tokens = text
+    .toUpperCase()
+    .split(/[^A-Z0-9&]+/)
+    .filter((t) => t.length >= 2);
+  count += new Set(tokens.filter((t) => SYMBOL_TOKENS.has(t))).size;
+  return count;
+}

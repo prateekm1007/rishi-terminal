@@ -50,7 +50,7 @@ import http from "node:http";
 
 const BUDGETS: Array<{ route: string; budgetKb: number }> = [
   { route: "/", budgetKb: 200 },
-  { route: "/screener", budgetKb: 200 },
+  { route: "/stocks", budgetKb: 200 }, // G2 (founder Round-22): the canonical Stocks surface (was /screener)
   { route: "/stock/[symbol]", budgetKb: 200 }, // PROPOSED in the roadmap
 ];
 
@@ -211,6 +211,16 @@ try {
     const r = results[i];
     if (r.kb === null) {
       console.log(`${route.padEnd(20)} UNREACHABLE (${probeSymbol}) — route failed to render`);
+      failed = true;
+      continue;
+    }
+    // G2 positive control (founder Round-22): a "measured" route with NO
+    // first-load script (0 scripts / 0 kB) is a missing or redirecting
+    // page — e.g. /screener 308-redirects to /stocks and its empty
+    // response would otherwise pass silently. A page that renders no
+    // first-load JS must FAIL the gate, never bless emptiness.
+    if (r.scripts === 0 || !(r.kb > 0)) {
+      console.log(`${route.padEnd(20)} ${r.kb.toFixed(1).padStart(8)} kB ${String(budgetKb).padStart(6)} kB       —    NO FIRST-LOAD JS (${r.scripts} scripts) — positive control FAILED`);
       failed = true;
       continue;
     }

@@ -73,8 +73,11 @@ describe("G5 — duplicate instruments merged out of the registry", () => {
     for (const c of companies) expect(STOCKS[c]).toBeDefined();
   });
 
-  it("universe shrank by exactly the merged rows (916 -> 906)", () => {
-    expect(Object.keys(STOCKS)).toHaveLength(906);
+  it("universe shrank by exactly the merged rows (916 -> 906 -> 896)", () => {
+    // Round 23 merged ten duplicate rows (916 -> 906); round 24 merged ten
+    // relic rows of renamed/merged entities (906 -> 896,
+    // test/g5.relicMerge.test.ts pins those pairs individually).
+    expect(Object.keys(STOCKS)).toHaveLength(896);
   });
 });
 

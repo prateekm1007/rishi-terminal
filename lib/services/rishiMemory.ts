@@ -11,13 +11,23 @@ function today(): string {
 export async function snapshotAllStocks(): Promise<{
   snapshots: number;
   errors: number;
+  skipped: number;
 }> {
   const db = getAdminSupabase();
   const date = today();
   const symbols = Object.keys(STOCKS);
 
-  let snapshots = 0;
-  let errors = 0;
+  // NS1 (2026-10-07): build every row FIRST (pure computation), then write
+  // in BOUNDED batches. The previous one-upsert-per-symbol loop paid ~896
+  // serial DB round-trips inside the cron's 60 s maxDuration and was killed
+  // mid-loop every night — production evidence (Management API SQL,
+  // 2026-10-07): rishi_snapshots landed 376-480 of 896 rows/day and
+  // ingestion_log never recorded nightly_snapshot at all (logIngestion sits
+  // after the loop). Batching is the LP2 precedent; maxDuration stays 60 s
+  // because the Hobby plan caps it there — the job now completes in ~10
+  // round-trips.
+  const rows: Array<Record<string, unknown>> = [];
+  let skipped = 0;
 
   for (const sym of symbols) {
     try {
@@ -29,7 +39,7 @@ export async function snapshotAllStocks(): Promise<{
       // historical series the terminal reasons over.
       if (consensus.consensus === null || !Number.isFinite(consensus.consensus)) {
         console.warn(`[RishiMemory] ${sym}: consensus is null (insufficient data) — snapshot skipped`);
-        errors++;
+        skipped++;
         continue;
       }
 
@@ -42,7 +52,7 @@ export async function snapshotAllStocks(): Promise<{
       // 010 (N2): rishi_snapshots is append-only for every role. The first
       // write of a (symbol, snapshot_date) wins; a re-run of the nightly job
       // must be a no-op, never a rewrite of history (S2-07).
-      const { error } = await db.from("rishi_snapshots").upsert({
+      rows.push({
         symbol:            sym,
         asset_category:    "stock",
         snapshot_date:     date,
@@ -61,15 +71,36 @@ export async function snapshotAllStocks(): Promise<{
         price_at_snapshot: stock.price,
         price_change_1d:   0,
         created_at:        new Date().toISOString(),
-      }, { onConflict: "symbol,snapshot_date", ignoreDuplicates: true });
-
-      if (error) { errors++; } else { snapshots++; }
-
+      });
     } catch (e) {
-      errors++;
       console.error(`[RishiMemory] ${sym}:`, e);
+      skipped++;
     }
   }
 
-  return { snapshots, errors };
+  // One batched upsert per bounded chunk — a chunk failure counts its rows
+  // as errors and the job CONTINUES (a retry completes the missing chunk;
+  // ignoreDuplicates makes the already-written rows no-ops — rule 11).
+  const BATCH = 100;
+  let snapshots = 0;
+  let errors = 0;
+  for (let i = 0; i < rows.length; i += BATCH) {
+    const chunk = rows.slice(i, i + BATCH);
+    const { error } = await db.from("rishi_snapshots").upsert(chunk, {
+      onConflict: "symbol,snapshot_date",
+      ignoreDuplicates: true,
+    });
+    if (error) {
+      errors += chunk.length;
+      console.error(`[RishiMemory] batch ${Math.floor(i / BATCH) + 1} write failed:`, error.message);
+    } else {
+      snapshots += chunk.length;
+    }
+  }
+
+  if (skipped > 0) {
+    console.warn(`[RishiMemory] ${skipped}/${symbols.length} symbols skipped (null consensus or build error — honest skips, never fabricated)`);
+  }
+
+  return { snapshots, errors, skipped };
 }

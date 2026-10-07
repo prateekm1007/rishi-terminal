@@ -217,13 +217,18 @@ describe("MUST FAIL PRE-FIX: the instrument gate is currency, not a ₹20 price 
 describe("MUST FAIL PRE-FIX: the shared-cache batch write is ONE upsert", () => {
   it("50 claimed winners are persisted in a single upsert statement", async () => {
     vi.resetModules();
-    const upsertCalls: unknown[][] = [];
+    // Phase A item 2: the batch write now also appends value transitions
+    // to observation_state_log — ONE additional batched upsert on a
+    // DIFFERENT table. The LP2 invariant is per-table: the quote_cache
+    // write stays ONE statement (never 50 serial round-trips), and the
+    // state-log append is batched the same way. Track calls per table.
+    const upsertsByTable: Record<string, unknown[][]> = {};
     vi.doMock("@/lib/services/supabaseAdmin", () => ({
       getAdminSupabase: () => ({
-        from: () => ({
+        from: (table: string) => ({
           select: () => ({ in: async () => ({ data: [], error: null }) }),
           upsert: async (rows: unknown[]) => {
-            upsertCalls.push(rows);
+            (upsertsByTable[table] ??= []).push(rows);
             return { error: null };
           },
         }),
@@ -251,8 +256,12 @@ describe("MUST FAIL PRE-FIX: the shared-cache batch write is ONE upsert", () => 
         ),
     });
     expect(Object.keys(result.quotes).length).toBe(50);
-    expect(upsertCalls.length).toBe(1); // pre-fix: 50 sequential upserts
-    expect(upsertCalls[0].length).toBe(50);
+    // quote_cache: exactly ONE batched upsert (pre-fix: 50 sequential).
+    expect((upsertsByTable["quote_cache"] ?? []).length).toBe(1);
+    expect(upsertsByTable["quote_cache"][0].length).toBe(50);
+    // observation_state_log: at most ONE batched append (50 first
+    // observations x the price field — one statement), never per-symbol.
+    expect((upsertsByTable["observation_state_log"] ?? []).length).toBeLessThanOrEqual(1);
     vi.doUnmock("@/lib/services/supabaseAdmin");
   });
 });

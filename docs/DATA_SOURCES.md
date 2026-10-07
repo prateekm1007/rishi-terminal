@@ -88,6 +88,17 @@ every user and instance for the TTL window:
   supersedes the Phase-6 `isPersistableSource` restraint for THIS table
   only; the 24 h persistent cache keeps its stricter allow-list.
 
+**Phase A item 2 (2026-10-07) — temporal memory.** Every value transition
+the cache write path lands is now ALSO appended to the append-only
+`observation_state_log` (migration 030: entity, observation timestamp,
+source, old/new state, provenance, closed source-state vocabulary,
+deterministic `change_id`; no-op re-observations are not transitions and
+are rejected at the DB level; retries collapse to one row). The append is
+BEST-EFFORT from the price path's perspective — a log failure is logged
+server-side and never breaks or delays quote serving. The log is the ONE
+temporal-memory store the intelligence layer (ChangeSince, Watchtower,
+Truth Tracker, Since-Last-Visit) reads; nothing else writes it.
+
 Non-equity classes (crypto/forex/bonds/commodities/indices) keep the direct
 multi-source path — the cache is NSE-session scoped by design.
 

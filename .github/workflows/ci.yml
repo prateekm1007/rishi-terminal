@@ -164,6 +164,9 @@ jobs:
       - name: Assert quote-cache claim invariants (U2 — real-Postgres cold-claim proof)
         run: psql -v ON_ERROR_STOP=1 -f scripts/ci/quote_cache_invariants.sql
 
+      - name: Assert observation-state-log invariants (Phase A item 2 — temporal memory: no-op rejection, JSON-null rejection, retry idempotency, RLS deny, chain continuity)
+        run: psql -v ON_ERROR_STOP=1 -f scripts/ci/observation_state_log_invariants.sql
+
       - name: Populate security master (D1-02, generated from the official NSE listing)
         run: psql -v ON_ERROR_STOP=1 -f data/security-master/populate.sql
 

@@ -25,9 +25,16 @@
  * classification and bite tests always run.
  */
 import { describe, expect, it } from "vitest";
-import { classifyHolder, parseSsListeners } from "../scripts/ci/withCleanServer.mjs";
+import {
+  classifyHolder,
+  parseSsListeners,
+  parseProcNetListeners,
+  pidsForSocketInodes,
+  portOwnershipViaProc,
+  procUnavailableMessage,
+} from "../scripts/ci/withCleanServer.mjs";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -236,5 +243,199 @@ describe("E2 clean-server — full lifecycle (SKIP_FULL_LIFECYCLE=1 to skip)", (
       }
     },
     180_000,
+  );
+});
+
+// ── G6 (founder Round-22, 2026-10-07): missing-ss detection + deterministic
+// /proc/net/tcp fallback for port ownership. Contract: ss is the primary
+// tool; when it is missing or fails the harness says so in clear English and
+// falls back to the KERNEL tables (/proc/net/tcp{6} + /proc/*/fd inode
+// mapping) — never to an unrelated tool, and never to a silent "free" with
+// no evidence. Exit 4 is reserved for the case where even the fallback
+// cannot safely establish port state. ─────────────────────────────────────
+
+/** A realistic /proc/net/tcp sample: LISTEN on :3000 (0x0BB8), one ESTAB,
+ *  one LISTEN on another port, one malformed line. */
+const PROC_TCP_SAMPLE = [
+  "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode",
+  "   0: 0100007F:0BB8 00000000:0000 0A 00000000:00000000 00:00000000 00000000  1000        0 12345 1 ffffabc000000000 100 0 0 10 0",
+  "   1: 0100007F:0BB8 0100007F:88AB 01 00000000:00000000 00:00000000 00000000  1000        0 12399 1 ffffabc000000001 20 4 30 10 -1",
+  "   2: 00000000:1F90 00000000:0000 0A 00000000:00000000 00:00000000 00000000      0        0 23456 1 ffffabc000000002 100 0 0 10 0",
+  "   3: garbage line with too few columns",
+  "",
+].join("\n");
+
+describe("G6 clean-server — parseProcNetListeners (pure)", () => {
+  it("extracts the listening socket inode for the target port", () => {
+    expect(parseProcNetListeners(PROC_TCP_SAMPLE, 3000)).toEqual(["12345"]);
+  });
+
+  it("separates ports: the :1F90 LISTEN (8080) belongs to 8080, not 3000; the ESTAB on :0BB8 is ignored", () => {
+    expect(parseProcNetListeners(PROC_TCP_SAMPLE, 8080)).toEqual(["23456"]);
+  });
+
+  it("parses the IPv6 table format identically", () => {
+    const tcp6 = [
+      "  sl  local_address remote_address st tx_queue rx_queue tr tm->when retrnsmt uid timeout inode",
+      "   0: 00000000000000000000000000000000:0BB8 00000000000000000000000000000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 34567 2 ffffabc000000003 100 0 0 10 0",
+    ].join("\n");
+    expect(parseProcNetListeners(tcp6, 3000)).toEqual(["34567"]);
+  });
+
+  it("never invents inodes for malformed lines", () => {
+    expect(parseProcNetListeners("garbage\n\n0: x y z", 3000)).toEqual([]);
+  });
+});
+
+describe("G6 clean-server — pidsForSocketInodes (injectable fs)", () => {
+  it("maps a socket inode to the owning pid via /proc/<pid>/fd links", () => {
+    const root = mkdtempSync(join(tmpdir(), "e2s-proc-"));
+    try {
+      // fake /proc: <root>/4242/fd/18 -> socket:[12345]; <root>/4242/comm
+      mkdirSync(join(root, "4242", "fd"), { recursive: true });
+      symlinkSync("socket:[12345]", join(root, "4242", "fd", "18"));
+      writeFileSync(join(root, "4242", "comm"), "next-server");
+      writeFileSync(join(root, "4242", "cmdline"), "next-server (v16)\0");
+      // an unrelated process with a different socket
+      mkdirSync(join(root, "777", "fd"), { recursive: true });
+      symlinkSync("socket:[99999]", join(root, "777", "fd", "3"));
+      writeFileSync(join(root, "777", "comm"), "sshd");
+
+      const pids = pidsForSocketInodes(["12345"], {
+        procRoot: root,
+        listPids: () => readdirSync(root).filter((d) => /^\d+$/.test(d)),
+        readlink: (p) => readlinkSync(p),
+        readFile: (p) => readFileSync(p, "utf8"),
+      });
+      expect(pids).toHaveLength(1);
+      expect(pids[0].pid).toBe(4242);
+      expect(pids[0].name).toBe("next-server");
+      expect(pids[0].cmdline).toContain("next-server");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("an unmapped inode is surfaced as a HIDDEN holder (refuse, never guess)", () => {
+    const pids = pidsForSocketInodes(["555555"], {
+      procRoot: "/nonexistent-proc-root",
+      listPids: () => [],
+      readlink: () => {
+        throw Object.assign(new Error("nope"), { code: "ENOENT" });
+      },
+      readFile: () => {
+        throw Object.assign(new Error("nope"), { code: "ENOENT" });
+      },
+    });
+    expect(pids).toHaveLength(1);
+    expect(pids[0].pid).toBeNull();
+    expect(classifyHolder({ pids }).kind).toBe("unknown");
+  });
+});
+
+describe("G6 clean-server — portOwnershipViaProc decision", () => {
+  it("unavailable when BOTH /proc/net/tcp and tcp6 are unreadable -> the exit-4 message", () => {
+    const via = portOwnershipViaProc(3000, {
+      readProcNet: (file) => {
+        throw Object.assign(new Error("missing"), { code: "ENOENT", path: file });
+      },
+      listPids: () => [],
+      readlink: () => {
+        throw new Error("unused");
+      },
+      readFile: () => {
+        throw new Error("unused");
+      },
+    });
+    expect(via.kind).toBe("unavailable");
+    expect(via.reason).toContain("/proc/net/tcp");
+    const msg = procUnavailableMessage(3000, via.reason);
+    expect(msg).toContain("exit 4");
+    expect(msg).toContain("cannot establish");
+  });
+
+  it("free: kernel tables readable and no LISTEN inode on the port", () => {
+    const via = portOwnershipViaProc(3000, {
+      readProcNet: (file) => (file.endsWith("tcp6") ? "" : PROC_TCP_SAMPLE.replace(":0BB8 ", ":0000 ")),
+      listPids: () => [],
+      readlink: () => {
+        throw new Error("unused");
+      },
+      readFile: () => {
+        throw new Error("unused");
+      },
+    });
+    expect(via.kind).toBe("pids");
+    expect(via.pids).toEqual([]);
+  });
+});
+
+describe("G6 clean-server — subprocess bites with ss AND lsof removed from PATH", () => {
+  /** A PATH that contains the shell/node/npm essentials but NOT ss/lsof. */
+  function strippedPath() {
+    const bin = mkdtempSync(join(tmpdir(), "e2s-path-"));
+    for (const tool of ["node", "npm", "sh", "env", "python3"]) {
+      try {
+        symlinkSync(join("/usr/bin", tool), join(bin, tool));
+      } catch {}
+    }
+    return bin;
+  }
+
+  it(
+    "BITES: foreign holder with ss missing -> the /proc fallback identifies it -> exit 3 refusal",
+    async () => {
+      const foreign = spawn("python3", ["-m", "http.server", String(PORT)], { stdio: "ignore" });
+      await new Promise((resolve) => {
+        const t = setInterval(async () => {
+          try {
+            const r = await fetch(`http://127.0.0.1:${PORT}/`);
+            if (r.ok) { clearInterval(t); resolve(); }
+          } catch {}
+        }, 200);
+        setTimeout(() => { clearInterval(t); resolve(); }, 8000);
+      });
+      const bin = strippedPath();
+      try {
+        const res = spawnSync("node", [HARNESS, "--port", String(PORT), "--", "true"], {
+          encoding: "utf8",
+          timeout: 30_000,
+          env: { ...process.env, PATH: bin },
+        });
+        const out = res.stdout + res.stderr;
+        expect(out).toContain("/proc/net/tcp fallback");
+        expect(res.status).toBe(3);
+        expect(out).toContain("UNRECOGNIZED process");
+        const still = await fetch(`http://127.0.0.1:${PORT}/`);
+        expect(still.ok).toBe(true);
+      } finally {
+        foreign.kill("SIGKILL");
+        rmSync(bin, { recursive: true, force: true });
+      }
+    },
+    45_000,
+  );
+
+  it(
+    "PASSES: ss missing + port free -> explicit fallback message, full stub lifecycle still works",
+    () => {
+      const dir = mkdtempSync(join(tmpdir(), "e2s-g6-"));
+      const bin = strippedPath();
+      try {
+        stubProject(dir, PORT);
+        const res = spawnSync(
+          "node",
+          [HARNESS, "--port", String(PORT), "--health", "/", "--", "node", "-e", "process.exit(0)"],
+          { cwd: dir, encoding: "utf8", timeout: 90_000, env: { ...process.env, PATH: bin } },
+        );
+        const out = res.stdout + res.stderr;
+        expect(out).toContain("/proc/net/tcp fallback");
+        expect(res.status).toBe(0);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+        rmSync(bin, { recursive: true, force: true });
+      }
+    },
+    120_000,
   );
 });

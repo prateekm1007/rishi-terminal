@@ -38,10 +38,11 @@
 // Exit codes: 0 = wrapped command exited 0; 1.. = wrapped command's code;
 // 3 = unrecognized port holder (refused to proceed); 4 = environment error
 // (build failed, server never became healthy, server died mid-run, port
-// never freed); 5 = usage error.
+// never freed, port ownership UNDETERMINABLE — ss missing AND the
+// /proc/net/tcp fallback cannot read the kernel tables); 5 = usage error.
 
 import { spawn, spawnSync } from "node:child_process";
-import { rmSync, existsSync, readFileSync } from "node:fs";
+import { rmSync, existsSync, readFileSync, readdirSync, readlinkSync } from "node:fs";
 import { createServer } from "node:net";
 import { pathToFileURL } from "node:url";
 
@@ -96,22 +97,153 @@ export function parseSsListeners(stdout) {
   return pids;
 }
 
+// ── G6 (founder Round-22, 2026-10-07): the deterministic port-ownership
+// chain is ss → /proc/net/tcp{6}. The previous chain silently fell back to
+// lsof and, when BOTH tools were missing, returned [] — which
+// classifyHolder reads as "free". A blind free verdict is fail-OPEN: the
+// exact incident class (testing the wrong build / a zombie's port) this
+// harness exists to kill. The kernel tables are always present on Linux
+// (the only platform this harness supports), so the fallback is
+// deterministic: parse the LISTEN inodes for the port, map each inode to
+// its owning pid through /proc/<pid>/fd, and refuse on anything that
+// cannot be attributed (hidden holder), exactly like the ss path.
+
+/** Pure: parse /proc/net/tcp or /proc/net/tcp6 content and return the
+ *  socket inodes LISTENING on portNum (st = 0A, local port hex match).
+ *  Malformed lines are skipped, never guessed into inodes. */
+export function parseProcNetListeners(procNetText, portNum) {
+  const wantHex = Number(portNum).toString(16).toUpperCase().padStart(4, "0");
+  const inodes = [];
+  for (const line of String(procNetText).split("\n").slice(1)) {
+    const cols = line.trim().split(/\s+/);
+    // sl, local, rem, st, tx:rx, tr:tm->when, retrnsmt, uid, timeout, inode, ...
+    if (cols.length < 10) continue;
+    if (cols[3] !== "0A") continue; // TCP_LISTEN only
+    const localPortHex = (cols[1].split(":")[1] || "").toUpperCase();
+    if (localPortHex !== wantHex) continue;
+    const inode = cols[9];
+    if (!/^\d+$/.test(inode)) continue;
+    inodes.push(inode);
+  }
+  return inodes;
+}
+
+/** Map socket inodes to owning pids by scanning <procRoot>/<pid>/fd/*
+ *  links (socket:[inode]). Injectable fs for tests. An inode NO pid can
+ *  claim (another user in a hardened environment, vanished process) is
+ *  surfaced as a HIDDEN holder — classifyHolder refuses those — never
+ *  dropped, because dropping it would turn an attributable port into a
+ *  blind "free". */
+export function pidsForSocketInodes(inodes, opts = {}) {
+  const procRoot = opts.procRoot || "/proc";
+  const listPids = opts.listPids || (() => {
+    try {
+      return readdirSync(procRoot).filter((d) => /^\d+$/.test(d));
+    } catch {
+      return [];
+    }
+  });
+  const readlink = opts.readlink || ((p) => readlinkSync(p));
+  const readFile = opts.readFile || ((p) => readFileSync(p, "utf8"));
+  const wanted = new Set(inodes);
+  const found = new Map(); // inode -> {pid, name, cmdline}
+  for (const dir of listPids()) {
+    const pid = Number(dir);
+    const fdDir = `${procRoot}/${dir}/fd`;
+    let fds = [];
+    try {
+      fds = readdirSync(fdDir);
+    } catch {
+      continue; // unreadable (other user / vanished) — other pids may still map
+    }
+    for (const fd of fds) {
+      let link = "";
+      try {
+        link = readlink(`${fdDir}/${fd}`);
+      } catch {
+        continue;
+      }
+      const m = /^socket:\[(\d+)\]$/.exec(link);
+      if (!m || !wanted.has(m[1]) || found.has(m[1])) continue;
+      let name = "";
+      let cmdline = "";
+      try {
+        name = readFile(`${procRoot}/${dir}/comm`).trim();
+      } catch {}
+      try {
+        cmdline = readFile(`${procRoot}/${dir}/cmdline`).replace(/\0/g, " ").trim();
+      } catch {}
+      found.set(m[1], { pid, name, cmdline });
+    }
+  }
+  const pids = [];
+  for (const inode of inodes) {
+    if (found.has(inode)) pids.push(found.get(inode));
+    else
+      pids.push({
+        pid: null,
+        name: `(socket inode ${inode} — pid not visible)`,
+        cmdline: "",
+      });
+  }
+  return pids;
+}
+
+/** Read /proc/net/tcp (+ tcp6) and resolve the port's LISTEN holders.
+ *  Returns { kind: "pids", pids } or { kind: "unavailable", reason } —
+ *  the latter ONLY when the kernel tables themselves are unreadable (no
+ *  /proc, hardened mount), i.e. when even the fallback cannot safely
+ *  establish port state. Injectable readers for tests. */
+export function portOwnershipViaProc(portNum, opts = {}) {
+  const readProcNet = opts.readProcNet || ((file) => readFileSync(file, "utf8"));
+  const inodes = [];
+  const unreadable = [];
+  for (const file of ["/proc/net/tcp", "/proc/net/tcp6"]) {
+    try {
+      inodes.push(...parseProcNetListeners(readProcNet(file), portNum));
+    } catch (e) {
+      unreadable.push(`${file}: ${e.code || e.message}`);
+    }
+  }
+  if (inodes.length === 0 && unreadable.length === 2) {
+    return { kind: "unavailable", reason: unreadable.join(", ") };
+  }
+  if (inodes.length === 0) return { kind: "pids", pids: [] };
+  return { kind: "pids", pids: pidsForSocketInodes(inodes, opts) };
+}
+
+/** The clear English failure for an unresolvable port state (exit 4). */
+export function procUnavailableMessage(portNum, reason) {
+  return (
+    `[clean-server] FAIL: cannot establish port ${portNum} ownership — ` +
+    `ss is unavailable and the /proc/net/tcp fallback cannot read the kernel ` +
+    `tables (${reason}). Refusing to guess: the run would not be trustworthy (exit 4).`
+  );
+}
+
 function listeningPids(portNum) {
   const trySs = spawnSync("ss", ["-ltnp", `sport = :${portNum}`], { encoding: "utf8" });
-  if ((trySs.status === 0 || trySs.stdout) && /LISTEN/.test(trySs.stdout || "")) {
-    const fromSs = parseSsListeners(trySs.stdout);
+  if (!trySs.error && trySs.status === 0) {
+    // ss RAN CLEAN — its verdict is trusted outright.
+    const fromSs = parseSsListeners(trySs.stdout || "");
     if (fromSs.length) return fromSs;
-    // ss showed a LISTEN socket but no pid/name at all (not even hidden-name)
-    return [{ pid: null, name: "(no pid visible)", cmdline: "" }];
+    if (/LISTEN/.test(trySs.stdout || "")) {
+      // ss showed a LISTEN socket but no pid/name at all (not even hidden-name)
+      return [{ pid: null, name: "(no pid visible)", cmdline: "" }];
+    }
+    return []; // genuinely free per ss
   }
-  const tryLsof = spawnSync("lsof", [`-ti :${portNum}`, "-sTCP:LISTEN"], { encoding: "utf8" });
-  if (tryLsof.status === 0 && tryLsof.stdout.trim()) {
-    return tryLsof.stdout
-      .trim()
-      .split("\n")
-      .map((pid) => ({ pid: Number(pid), name: "", cmdline: "" }));
+  const why =
+    trySs.error?.code === "ENOENT"
+      ? "not available in this environment"
+      : `failed to run (spawn error: ${trySs.error?.code || trySs.error?.message || "unknown"}${trySs.status != null ? `, exit ${trySs.status}` : ""})`;
+  log(`ss is ${why} — using the deterministic /proc/net/tcp fallback for port ownership`);
+  const via = portOwnershipViaProc(portNum);
+  if (via.kind === "unavailable") {
+    console.error(procUnavailableMessage(portNum, via.reason));
+    process.exit(4);
   }
-  return [];
+  return via.pids;
 }
 
 function portIsFree(portNum) {

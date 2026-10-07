@@ -33,6 +33,12 @@ export const USER_DATA_TABLES: UserDataTable[] = [
   { table: 'portfolios', migration: '001_initial_schema.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'transactions', migration: '001_initial_schema.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'watchlist', migration: '001_initial_schema.sql', columns: '*', deletion: 'cascade-via-users' },
+  // chat_usage: the FK to auth.users was deliberately dropped by
+  // migration 015 (the quota identity may be an anonymous uuidv5 of the
+  // client IP, which no FK can represent). Erasure coverage is
+  // re-established at the database layer by migration 028's purge
+  // trigger on auth.users; the live CI erasure invariant
+  // (scripts/ci/account_deletion_invariants.sql) pins the behavior.
   { table: 'chat_usage', migration: '005_chat_usage.sql', columns: '*', deletion: 'cascade-via-auth-users' },
   { table: 'screens', migration: '024_screens.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'portfolio_imports', migration: '025_portfolio_import.sql', columns: '*', deletion: 'cascade-via-users' },

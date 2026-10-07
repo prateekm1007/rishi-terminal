@@ -116,4 +116,32 @@ describe("L5-02 — every user-data table is covered by export and delete", () =
     const registryList = USER_DATA_TABLES.map((t) => t.table).sort();
     expect(sqlList).toEqual(registryList);
   });
+
+  it("the LIVE CI Postgres erasure invariant is wired into CI and exercises every registry table (G1)", () => {
+    const invariantSql = readFileSync(
+      path.join(REPO, "scripts/ci/account_deletion_invariants.sql"), "utf8");
+    const ci = readFileSync(path.join(REPO, ".github/workflows/ci.yml"), "utf8");
+    // CI runs it AFTER the L5-02 equality block (its fixture-coverage
+    // sweep is meaningful only once registry == live schema is proven).
+    const rlsPos = ci.indexOf("scripts/ci/rls_invariants.sql");
+    const erasePos = ci.indexOf("scripts/ci/account_deletion_invariants.sql");
+    expect(erasePos, "the G1 live erasure invariant must be wired into the CI migrations job").toBeGreaterThan(-1);
+    expect(erasePos).toBeGreaterThan(rlsPos);
+    // Every registry table appears in the invariant (fixture + zero
+    // assertion), chat_usage explicitly per the founder's direction.
+    for (const entry of USER_DATA_TABLES) {
+      expect(invariantSql).toContain(entry.table);
+    }
+    // The erase is the auth-user delete — the database-level effect of
+    // the supported deletion mechanism (auth.admin.deleteUser).
+    expect(invariantSql).toMatch(/DELETE FROM auth\.users WHERE id/);
+    // The completeness sweeps are information_schema-derived live (no
+    // second hand-maintained table list may exist).
+    expect(invariantSql).toMatch(/information_schema\.columns/);
+    // The chat_usage erasure root fix (028) exists: migration 015
+    // dropped the FK (anonymous quota identities), 028 re-established
+    // erasure coverage with the purge trigger on auth.users.
+    const eraseMigration = readdirSync(MIGRATIONS_DIR).filter((f) => f.includes("chat_usage_erase"));
+    expect(eraseMigration, "exactly one chat_usage erasure migration expected").toEqual(["028_chat_usage_erase.sql"]);
+  });
 });

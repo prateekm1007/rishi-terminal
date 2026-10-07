@@ -676,6 +676,63 @@ function verifiedStatement(fact: Omit<AiVerifiedFact, "statement">): string {
  *  legitimately be described with them; live-undated facts may be called
  *  live (they ARE live) but an inserted observation DATE already fails the
  *  number floor. */
+/** G7 driver 1 (2026-10-07): the DETERMINISTIC verified surface for a
+ *  fully-determined tool outcome. Same statement builder
+ *  (`verifiedStatement`) and the same dedup rule the grounding validator's
+ *  server-generated surface uses — one source of truth for verified
+ *  wording (rule 14). Returns null when the evidence carries NO typed
+ *  facts (an unavailable observation is never rendered as data). */
+export function buildDeterministicVerifiedSurface(
+  evidence: readonly AiEvidenceItem[],
+): { answer: string; claims: Array<{ claim: string; evidenceIds: string[]; assertions: Array<{ field: string; value: number; unit: string }>; verifiedFacts: AiVerifiedFact[] }>; uncertainties: string[] } | null {
+  type Built = {
+    claim: string;
+    evidenceIds: string[];
+    assertions: Array<{ field: string; value: number; unit: string }>;
+    verifiedFacts: AiVerifiedFact[];
+  };
+  const claims: Built[] = [];
+  const seenStatements = new Set<string>();
+  const lines: string[] = [];
+  let liveUndated = false;
+  for (const item of evidence) {
+    for (const fact of item.facts ?? []) {
+      const sourceState = sourceStateOf(fact);
+      if (sourceState === "live-undated") liveUndated = true;
+      const observedAt = typeof fact.observedAt === "string" ? fact.observedAt : null;
+      const vf: AiVerifiedFact = {
+        field: fact.field,
+        value: fact.value,
+        unit: canonicalFactUnit(fact.unit),
+        sourceState,
+        observedAt,
+        statement: "",
+      };
+      vf.statement = verifiedStatement(vf);
+      if (!seenStatements.has(vf.statement)) {
+        seenStatements.add(vf.statement);
+        lines.push(vf.statement);
+      }
+      claims.push({
+        // The claim text IS the verified statement: the server authored it,
+        // from its own typed fact — nothing model-made rides inside.
+        claim: vf.statement,
+        evidenceIds: [item.id],
+        assertions: [{ field: vf.field, value: vf.value, unit: vf.unit }],
+        verifiedFacts: [vf],
+      });
+    }
+  }
+  if (claims.length === 0) return null;
+  return {
+    answer: lines.join("\n"),
+    claims,
+    uncertainties: liveUndated
+      ? ["no disclosed observation time for at least one served fact"]
+      : [],
+  };
+}
+
 const PROVENANCE_UPGRADE_RE =
   /\b(?:live|current|currently|latest|right\s+now|as\s+of\s+now|today|real[-\s]?time)\b/i;
 

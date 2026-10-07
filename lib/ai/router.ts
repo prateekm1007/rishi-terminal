@@ -37,10 +37,11 @@ import {
   canonicalFactUnit,
 } from "./evidence";
 import type { CanonicalStockState } from "./evidence";
+import { buildDeterministicVerifiedSurface } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
-import { executeAiTool, AI_TOOL_NAMES, toolRequestTurn, type AiToolDeps } from "./tools";
-import { detectFinancialDataIntent, intentSeedTool } from "./financialIntent";
+import { executeAiTool, AI_TOOL_NAMES, toolRequestTurn, type AiToolDeps, type AiToolOutcome } from "./tools";
+import { detectFinancialDataIntent, intentSeedTool, countRegistrySymbols } from "./financialIntent";
 import type { FinancialDataIntent } from "./financialIntent";
 import { evaluatePhilosophyProse } from "./philosophyGuard";
 
@@ -609,6 +610,11 @@ async function runGroundedLoop(
   // R9 §12: set by repairFeedback, consumed by the next callProvider — the
   // completion that answers a repair is stage-labelled "repair".
   let repairPending = false;
+  // G7 driver 1: the loop's last executed tool outcome + the last provider
+  // that returned a completion — the deterministic-singleton gate reads
+  // both (never a guess from logs; the state is recorded where it happens).
+  let lastOutcome: AiToolOutcome | null = null;
+  let lastSuccessfulProvider: AiProvider | null = null;
 
   // §8: execute + inject ONE tool request through the canonical executor,
   // the budget having been checked by the caller. Shared verbatim by the
@@ -617,6 +623,7 @@ async function runGroundedLoop(
   const executeAndInject = async (toolReq: { tool: string; args: unknown }) => {
     const execStart = Date.now();
     const outcome = await executeAiTool(toolReq, args.toolDeps ?? {}, args.stockState);
+    lastOutcome = outcome;
     timings.toolExecutions.push({
       tool: outcome.tool,
       ...("symbol" in outcome ? { symbol: outcome.symbol } : {}),
@@ -749,6 +756,62 @@ async function runGroundedLoop(
     return true;
   };
 
+  // ── G7 driver 1 (2026-10-07): the DETERMINISTIC-SINGLETON gate. Pure
+  // loop-state read — no NLP, no probabilities. When it holds, the
+  // post-tool model synthesis completion is REDUNDANT: the server already
+  // holds the canonical observation (or a terminal registry verdict) for a
+  // single-symbol ask, and the verified surface / bounded disclosure it
+  // serves is built from typed facts, not model prose (founder round-26
+  // direction 10: "redundant completions"; the FDN 1(b) default from
+  // docs/evidence/round23/g7-latency-battery.md, proceeded under C10/B-26
+  // and measured as one driver per founder direction 14).
+  const DETERMINISTIC_FAILURE_STATES: ReadonlySet<string> = new Set([
+    "unknown-tool",
+    "invalid-args",
+    "unknown-symbol",
+    "no-data",
+    "failed",
+  ]);
+  const deterministicSingletonOutcome = (): AiToolOutcome | null => {
+    // The deterministic probe exists to exercise the FULL loop — never
+    // shortcut it (the canary's post-tool contract coverage depends on it).
+    if (args.probeSeedToolCall) return null;
+    // v1 scope: the no-initial-evidence path (the battery's dominant mass).
+    if (hasInitialEvidence) return null;
+    if (toolCalls.length !== 1 || !lastOutcome || !lastSuccessfulProvider) return null;
+    const outcome = lastOutcome;
+    if (outcome.status !== "ok") {
+      // A terminal deterministic failure (unknown symbol, no data, failed
+      // execution) is already the honest answer for ANY ask shape — a
+      // disclosure answers nothing, so it cannot mislabel advice or prose.
+      return DETERMINISTIC_FAILURE_STATES.has(outcome.status) ? outcome : null;
+    }
+    // ok outcome: ONLY the intent-detected singleton ask's own canonical
+    // tool (advice asks seed nothing — intentSeed is null — so an advice
+    // ask never serves a bare fact surface).
+    if (!intent.financial || !intentSeed) return null;
+    if (outcome.tool !== intentSeed.tool || outcome.symbol !== intent.symbol) return null;
+    // A message naming 2+ symbols is a comparison ask: the model must
+    // synthesize across multiple tool results (direction: never
+    // under-answer a multi-symbol question with one symbol's fact).
+    if (countRegistrySymbols(args.message) !== 1) return null;
+    // The outcome must actually carry observed data: an UNAVAILABLE
+    // observation has no typed facts and is never rendered as one.
+    return outcome.evidence.some((e) => (e.facts?.length ?? 0) > 0) ? outcome : null;
+  };
+  const disclosureFromOutcome = (
+    outcome: Extract<AiToolOutcome, { status: "unknown-tool" | "invalid-args" | "unknown-symbol" | "no-data" | "failed" }>,
+  ): string => {
+    try {
+      const parsed = JSON.parse(outcome.modelPayload) as { message?: unknown };
+      if (typeof parsed?.message === "string" && parsed.message.trim()) return parsed.message.trim();
+    } catch {
+      // The payload is registry-authored JSON; the generic bounded line is
+      // the honest fallback (rule 10: no raw upstream material either way).
+    }
+    return "The requested platform data is not available for this request. No unverified substitute is served.";
+  };
+
   for (;;) {
     if (pendingSeed) {
       const seed = pendingSeed;
@@ -756,7 +819,55 @@ async function runGroundedLoop(
       await executeAndInject(seed);
       continue;
     }
+    // ── G7 driver 1: serve the deterministic singleton outcome BEFORE any
+    // post-tool completion. One completion serves the class (the initial
+    // tool request); the model's synthesis pass is skipped by design —
+    // there is nothing left for it to add that the server's own verified
+    // surface does not already state with strictly stronger provenance.
+    const deterministicOutcome = deterministicSingletonOutcome();
+    if (deterministicOutcome && lastSuccessfulProvider) {
+      if (deterministicOutcome.status === "ok") {
+        const surface = buildDeterministicVerifiedSurface(deterministicOutcome.evidence);
+        if (surface) {
+          return {
+            answer: surface.answer,
+            claims: surface.claims,
+            uncertainties: surface.uncertainties,
+            provider: lastSuccessfulProvider.id,
+            model: lastSuccessfulProvider.model,
+            generatedAt,
+            claimsVerified: true,
+            groundingRejections: [],
+            groundingMode: "structured-claims",
+            structuredResponse: "valid",
+            toolCalls: toolCalls.length > 0 ? toolCalls : [],
+            synthesis: "deterministic",
+          };
+        }
+      } else {
+        const disclosure = disclosureFromOutcome(
+          deterministicOutcome as Extract<AiToolOutcome, { status: "unknown-tool" | "invalid-args" | "unknown-symbol" | "no-data" | "failed" }>,
+        );
+        return {
+          answer: disclosure,
+          claims: [],
+          uncertainties: [disclosure],
+          provider: lastSuccessfulProvider.id,
+          model: lastSuccessfulProvider.model,
+          generatedAt,
+          claimsVerified: false,
+          groundingRejections: [],
+          groundingMode: "context-only",
+          structuredResponse: "valid",
+          toolCalls: toolCalls.length > 0 ? toolCalls : [],
+          synthesis: "deterministic",
+        };
+      }
+    }
     const { text, provider } = await callProvider(transcript, buildSystem(loopEvidence));
+    // G7 driver 1: flow-tracked (the closure-only assignment defeated TS's
+    // control-flow narrowing at the gate below).
+    lastSuccessfulProvider = provider;
 
     const toolReq = extractToolRequest(text);
     // §11: attribute this successful completion now that its shape is known.
@@ -1137,6 +1248,9 @@ export function toChatWire(answer: AiAnswer): ChatWire {
       toolCalls: answer.toolCalls ?? [],
       // §11: latency attribution rides when present (router-stamped).
       ...(answer.timings ? { timings: answer.timings } : {}),
+      // G7 driver 1: "deterministic" when the served surface is the
+      // server's own (no post-tool model synthesis ran). Router-set only.
+      ...(answer.synthesis ? { synthesis: answer.synthesis } : {}),
     },
   };
 }

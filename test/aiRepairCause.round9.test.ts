@@ -17,6 +17,14 @@
  * Rule 21: written first and watched FAIL on main (timings.repairs absent,
  * completions carried no stage).
  */
+// G7 driver 1 re-scope (2026-10-07): the deterministic singleton fast path
+// serves single-symbol DATA asks before the post-tool completion, so the
+// repair taxonomy below is exercised on an advice-shaped singleton ask
+// ("Should I buy RELIANCE, and what is the latest price?") — intentSeed is
+// null there (advice is never seeded), the model still requests the price
+// tool itself, and every repair cause / stage label under test is reached
+// unchanged. The fast-path behavior itself is pinned in
+// test/aiRouter.fastPath.test.ts.
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { generateEvidenceGroundedAnswer } from "@/lib/ai/router";
 import { createCanonicalStockState } from "@/lib/ai/evidence";
@@ -93,7 +101,7 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -119,7 +127,7 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -149,7 +157,7 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -185,7 +193,7 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -215,7 +223,7 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -245,7 +253,7 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -269,7 +277,7 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -280,6 +288,10 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
   });
 
   it("financial ask answered with zero tool engagement → repair cause zero-tool-engagement", async () => {
+    // G7 driver 1: this test keeps the DATA-ask message on purpose — the
+    // seed + repair cause still record, and the deterministic singleton
+    // surface then serves (claimsVerified true from the server's own
+    // facts) without consuming the queued repair.
     const { stockState, getPrice } = SEEDED_ARGS();
     mockProviderReplies([
       JSON.stringify({
@@ -298,11 +310,12 @@ describe("R9 — repair causes are first-class timing fields (directive 7)", () 
     });
     expect(getPrice).toHaveBeenCalledTimes(1);
     expect(answer?.claimsVerified).toBe(true);
+    expect(answer?.synthesis).toBe("deterministic");
     expect(answer?.timings?.repairs).toEqual([
       expect.objectContaining({ cause: "zero-tool-engagement" }),
     ]);
-    // The seed executed through the real executor between the two
-    // completions: the repair completion follows a tool execution.
+    // The seed executed through the real executor before the deterministic
+    // surface was served.
     expect(answer?.timings?.toolExecutions).toEqual([
       expect.objectContaining({ tool: "getPrices", status: "ok" }),
     ]);
@@ -316,7 +329,7 @@ describe("R9 — the latency chain is explicit in timings (directive 12)", () =>
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -361,7 +374,7 @@ describe("R10-03 — repair feedback carries the validator's rejections verbatim
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -393,7 +406,7 @@ describe("R10-03 — repair feedback carries the validator's rejections verbatim
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });
@@ -434,7 +447,7 @@ describe("R10-03 — repair feedback carries the validator's rejections verbatim
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Should I buy or sell RELIANCE?",
       evidence: [],
       stockState,
     });

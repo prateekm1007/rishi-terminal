@@ -91,6 +91,7 @@ const SEEDED_ARGS = () => {
 
 const EVIDENCE_ID = "price:RELIANCE:2026-10-05T09:45:00.000Z";
 const TOOL_REQUEST = JSON.stringify({ tool: "getPrices", args: { symbol: "RELIANCE" } });
+const TOOL_REQUEST_TCS = JSON.stringify({ tool: "getPrices", args: { symbol: "TCS" } });
 
 /** Correctly-SIGNED structured reply — the shape the contract now teaches. */
 const GOOD_SIGNED = JSON.stringify({
@@ -188,11 +189,13 @@ describe("E5 — malformed-json repair teaches the exact final-JSON skeleton", (
 
   it("evidence path: repair feedback carries the claims/assertions skeleton", async () => {
     const { stockState } = SEEDED_ARGS();
-    mockProviderReplies([TOOL_REQUEST, "Reliance is a great company, trust me.", "still not JSON"]);
+    // G7 driver 1: re-scoped to a two-symbol ask (the singleton data ask
+    // is served deterministically before the post-tool completion now).
+    mockProviderReplies([TOOL_REQUEST, TOOL_REQUEST_TCS, "Reliance is a great company, trust me.", "still not JSON"]);
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState,
     });
@@ -208,12 +211,13 @@ describe("E5 — malformed-json repair teaches the exact final-JSON skeleton", (
 
 describe("E5 — the response contract teaches signed values and bans list digits", () => {
   it("evidence contract: the signed-value rule with the WRONG example named", async () => {
-    const bodies = captureWithReplies([TOOL_REQUEST, GOOD_SIGNED]);
+    const bodies = captureWithReplies([TOOL_REQUEST, TOOL_REQUEST_TCS, GOOD_SIGNED]);
     const { stockState } = SEEDED_ARGS();
+    // G7 driver 1: re-scoped to a two-symbol ask (see test/aiRouter.fastPath.test.ts).
     await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState,
     });
@@ -240,11 +244,12 @@ describe("E5 — the response contract teaches signed values and bans list digit
 
   it("numeric repair feedback carries the signed-value rule (evidence path)", async () => {
     const { stockState } = SEEDED_ARGS();
-    mockProviderReplies([TOOL_REQUEST, UNSIGNED_PROSE, GOOD_SIGNED]);
+    // G7 driver 1: re-scoped to a two-symbol ask (see test/aiRouter.fastPath.test.ts).
+    mockProviderReplies([TOOL_REQUEST, TOOL_REQUEST_TCS, UNSIGNED_PROSE, GOOD_SIGNED]);
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState,
     });
@@ -275,11 +280,12 @@ describe("E5 — validator semantics the contract rule targets (protected, uncha
 
   it("unsigned prose ('declined 1.401 percent' with assertion -1.401) is REJECTED — the failure mode the contract targets", async () => {
     const { stockState } = SEEDED_ARGS();
-    mockProviderReplies([TOOL_REQUEST, UNSIGNED_PROSE, UNSIGNED_PROSE]);
+    // G7 driver 1: re-scoped to a two-symbol ask (see test/aiRouter.fastPath.test.ts).
+    mockProviderReplies([TOOL_REQUEST, TOOL_REQUEST_TCS, UNSIGNED_PROSE, UNSIGNED_PROSE]);
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "You are a persona.",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState,
     });

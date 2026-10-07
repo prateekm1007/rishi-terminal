@@ -88,15 +88,35 @@ const GOOD_STRUCTURED = JSON.stringify({
   uncertainties: [],
 });
 
+const GOOD_STRUCTURED_BOTH = JSON.stringify({
+  answer: "Both verified prices follow.",
+  claims: [
+    {
+      claim: "The latest observed price of RELIANCE is 1167.7 inr.",
+      evidenceIds: ["price:RELIANCE:2026-10-01T09:45:00.000Z"],
+      assertions: [{ field: "price", value: 1167.7, unit: "inr" }],
+    },
+    {
+      claim: "The latest observed price of TCS is 1167.7 inr.",
+      evidenceIds: ["price:TCS:2026-10-01T09:45:00.000Z"],
+      assertions: [{ field: "price", value: 1167.7, unit: "inr" }],
+    },
+  ],
+  uncertainties: [],
+});
+
 const SEEDED_ARGS = () => {
   const getPrice = vi.fn(async () => LIVE_PRICE);
   return { stockState: createCanonicalStockState({ getPrice }), getPrice };
 };
 
 describe("server-enforced canonical tool engagement (Coder Directions §5)", () => {
-  it("seeds the canonical price tool for an unambiguous data ask even when the model never requests a tool, and the repair re-ask grounds the answer", async () => {
-    // The model NEVER requests a tool: first a claims-free reply, then —
-    // after the server's validation feedback — the correct structured cite.
+  it("seeds the canonical price tool for an unambiguous data ask even when the model never requests a tool, and the deterministic singleton surface serves without consuming the repair", async () => {
+    // The model NEVER requests a tool: first a claims-free reply. G7
+    // driver 1: for this SINGLETON ask the server then executes the seed
+    // and serves its OWN verified surface — the second (post-tool)
+    // completion the old contract required is gone, and the queued repair
+    // feedback is never consumed. The multi-symbol shape is pinned below.
     const { stockState, getPrice } = SEEDED_ARGS();
     const calls = mockProviderReplies([
       JSON.stringify({
@@ -118,14 +138,51 @@ describe("server-enforced canonical tool engagement (Coder Directions §5)", () 
     // The SERVER engaged the canonical tool even though the model never did.
     expect(getPrice).toHaveBeenCalledTimes(1);
     expect(answer?.toolCalls).toEqual([{ tool: "getPrices", status: "ok", symbol: "RELIANCE" }]);
-    // The repair re-ask happened on the SAME transcript (server feedback turn).
-    expect(calls.length).toBe(2);
-    const feedbackTurn = calls[1].loopTurns.find((t) => t.role === "user" && t.content.includes("SERVER VALIDATION FEEDBACK"));
-    expect(feedbackTurn).toBeDefined();
+    // ONE completion total: the post-tool synthesis is deterministic now.
+    expect(calls.length).toBe(1);
+    expect(answer?.synthesis).toBe("deterministic");
     // The model's structured answer grounded against the seeded evidence.
     expect(answer?.claimsVerified).toBe(true);
     expect(answer?.groundingMode).toBe("structured-claims");
-    expect(answer?.answer).toBe("price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)");
+    // The deterministic surface states EVERY fact the canonical observation
+    // carries — the price AND the disclosed change (the old model-cited
+    // surface carried only what the model chose to claim).
+    expect(answer?.answer).toBe(
+      "price = 1167.7 inr — live (observed/as-of 2026-10-01T09:45:00.000Z)\n" +
+        "change = 1.2 percent — live (observed/as-of 2026-10-01T09:45:00.000Z)",
+    );
+  });
+
+  it("multi-symbol data asks keep the repair re-ask path (G7 driver 1 scope guard): the model synthesizes across both tool results", async () => {
+    // The model dodges, the server seeds the FIRST symbol's tool, and the
+    // post-tool completion is still required (the ask names 2+ symbols —
+    // the deterministic surface must not under-answer it).
+    const { stockState, getPrice } = SEEDED_ARGS();
+    const calls = mockProviderReplies([
+      JSON.stringify({
+        answer: "Large Indian conglomerates with diversified operations.",
+        claims: [],
+        uncertainties: [],
+      }),
+      JSON.stringify({ tool: "getPrices", args: { symbol: "TCS" } }),
+      GOOD_STRUCTURED_BOTH,
+    ]);
+
+    const answer = await generateEvidenceGroundedAnswer({
+      systemPrompt: "You are a persona.",
+      history: [],
+      message: "Compare the latest prices of RELIANCE and TCS.",
+      evidence: [],
+      stockState,
+    });
+
+    expect(getPrice).toHaveBeenCalledTimes(2); // the server's seed + the model's own tool request
+    expect(answer?.synthesis).toBeUndefined();
+    expect(answer?.claimsVerified).toBe(true);
+    expect(answer?.groundingMode).toBe("structured-claims");
+    expect(calls.length).toBe(3);
+    const feedbackTurn = calls[1].loopTurns.find((t) => t.role === "user" && t.content.includes("SERVER VALIDATION FEEDBACK"));
+    expect(feedbackTurn).toBeDefined();
   });
 
   it("advice asks are NOT seeded — no tool runs for 'buy or sell'", async () => {

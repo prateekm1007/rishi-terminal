@@ -229,6 +229,15 @@ export const AiAnswerSchema = z.object({
   /** §11 latency attribution (router-stamped; optional for legacy
    *  answers/tests). */
   timings: AiTimingsSchema.optional(),
+  /** G7 driver 1 (2026-10-07): who produced the ANSWER surface for this
+   *  request. "model" (the default, absent on legacy answers) = the model's
+   *  validated synthesis. "deterministic" = the loop state was fully
+   *  deterministic (one canonical tool outcome on the no-initial-evidence
+   *  singleton path) and the server served its OWN verified surface / the
+   *  bounded honest disclosure — the post-tool model synthesis completion
+   *  was deliberately skipped (latency driver 1, founder direction 10:
+   *  "redundant completions"). NEVER set by the model; router-only. */
+  synthesis: z.enum(["model", "deterministic"]).optional(),
 });
 
 export type AiAnswer = z.infer<typeof AiAnswerSchema>;
@@ -337,6 +346,10 @@ export const ChatWireSchema = z.object({
     /** §11 latency attribution, router/route-stamped. Optional: absent on
      *  legacy wires; the probe/canary surfaces record it. */
     timings: AiTimingsSchema.optional(),
+    /** G7 driver 1: "deterministic" when the served surface is the
+     *  server's own (no post-tool model synthesis ran for this request).
+     *  Absent/"model" for the standard loop. Router-set only. */
+    synthesis: z.enum(["model", "deterministic"]).optional(),
   }),
 });
 

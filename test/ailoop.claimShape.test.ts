@@ -74,8 +74,11 @@ const PRICE_FACT_ID = "price:RELIANCE:2026-10-01T10:00:00.000Z";
 
 describe("the agnes claims-shape defect is contained (production evidence pin)", () => {
   it("a reply whose claims are EVIDENCE-ID STRINGS (as agnes-2.5-flash emits) fail-closes — never grounded, never displayed", async () => {
+    // G7 driver 1: re-scoped to a two-symbol ask (the singleton data ask
+    // is served deterministically before the post-tool completion now).
     scriptProvider([
       JSON.stringify({ tool: "getPrices", args: { symbol: "RELIANCE" } }),
+      JSON.stringify({ tool: "getPrices", args: { symbol: "TCS" } }),
       JSON.stringify({
         answer: "The latest observed price for RELIANCE is 1167.7 INR, with a change of 0 percent as of October 1, 2026.",
         claims: [PRICE_FACT_ID], // ← the defect: strings, not claim objects
@@ -85,7 +88,7 @@ describe("the agnes claims-shape defect is contained (production evidence pin)",
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "test persona",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState: undefined,
       toolDeps: TOOL_DEPS,
@@ -102,8 +105,11 @@ describe("the agnes claims-shape defect is contained (production evidence pin)",
 
 describe("the loop grounds when the model emits the contract shape (canary mechanics)", () => {
   it("tool request → server TOOL RESULT → claim-OBJECT reply → grounded=true + server-generated surface + separate commentary", async () => {
+    // G7 driver 1: re-scoped to a two-symbol ask (the singleton data ask
+    // is served deterministically before the post-tool completion now).
     scriptProvider([
       JSON.stringify({ tool: "getPrices", args: { symbol: "RELIANCE" } }),
+      JSON.stringify({ tool: "getPrices", args: { symbol: "TCS" } }),
       JSON.stringify({
         answer: "Reliance traded at the observed level; this is my read of the tape.",
         claims: [
@@ -119,7 +125,7 @@ describe("the loop grounds when the model emits the contract shape (canary mecha
     const answer = await generateEvidenceGroundedAnswer({
       systemPrompt: "test persona",
       history: [],
-      message: "What is the latest price of RELIANCE?",
+      message: "Compare the latest prices of RELIANCE and TCS.",
       evidence: [],
       stockState: undefined,
       toolDeps: TOOL_DEPS,

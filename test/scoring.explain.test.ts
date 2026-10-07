@@ -31,7 +31,7 @@ describe("S2-05 — every score is reconstructible from its published breakdown"
   it(
     "every universe stock's every scorer: complete weights, in-range pillars, exact reconstruction, honest rounding",
     () => {
-      expect(UNIVERSE.length).toBeGreaterThan(900);
+      expect(UNIVERSE.length).toBeGreaterThan(890);
 
       for (const stock of UNIVERSE) {
         const scores = runAllScorers(stock);

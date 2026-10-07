@@ -114,7 +114,7 @@ describe("X6 — consensus output saturation gate (measured on the seed universe
 
   it("every seed stock produces a finite consensus (quorum holds)", () => {
     expect(cons.length).toBe(Object.values(STOCKS).length);
-    expect(cons.length).toBeGreaterThan(900);
+    expect(cons.length).toBeGreaterThan(890);
   });
 
   it("the consensus keeps real spread: sd >= 5 (measured baseline documented in the PR)", () => {

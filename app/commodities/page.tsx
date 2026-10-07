@@ -47,7 +47,18 @@ export default function CommoditiesPage() {
 
   // Pull symbols for live price fetching
   const commoditySymbols = useMemo(() => COMMODITIES.map(c => c.symbol), []);
-  const { prices, loading, error, lastUpdated } = useLivePrices(commoditySymbols);
+  const { prices, loading, error, observedAt } = useLivePrices(commoditySymbols);
+  // G4 (founder round 23): the header clock is the server-disclosed
+  // OBSERVATION time — never the fetch clock (a fetch is not a freshness
+  // claim; the same defect Round 9 fixed on the dashboard). The state
+  // word comes from the shared aggregate contract, and the count below
+  // counts genuine observations, not price-map keys.
+  const observedCount = useMemo(
+    () => Object.values(prices).filter(p => typeof p.price === 'number' && p.price > 0).length,
+    [prices],
+  );
+  const headerState: 'live' | 'derived' | 'reference' =
+    observedCount === 0 ? 'reference' : observedCount >= COMMODITIES.length ? 'live' : 'derived';
 
   // Merge live prices into commodities. Audit 2026-10-02 (P1): a
   // no-live fallback keeps the STATIC reference price but is explicitly
@@ -101,9 +112,13 @@ export default function CommoditiesPage() {
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.6 }}>
                 {t('commodities.subtitle')}
               </p>
-              {lastUpdated && (
+              {/* G4: the observation clock + the shared aggregate word.
+                  No observation time disclosed → no time is shown (never
+                  the fetch time, never an unconditional "Live"). */}
+              {observedCount > 0 && (
                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN')}
+                  {headerState === 'live' ? '⚡ Live' : headerState === 'derived' ? 'Partially live' : 'Last observed'}
+                  {observedAt ? <> • Observed {observedAt.toLocaleTimeString('en-IN')}</> : null}
                 </div>
               )}
             </div>
@@ -118,12 +133,12 @@ export default function CommoditiesPage() {
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, display: 'flex', alignItems: 'center' }}>
                 <span>Global Markets</span>
                 <ProvenanceChip
-                  state={Object.keys(prices).length > 0 ? 'live' : 'reference'}
-                  title={Object.keys(prices).length > 0
-                    ? `${Object.keys(prices).length} of ${COMMODITIES.length} quotes live`
+                  state={headerState}
+                  title={observedCount > 0
+                    ? `${observedCount} of ${COMMODITIES.length} quotes are live observations${observedCount < COMMODITIES.length ? ' — the rest show static reference prices' : ''}`
                     : 'No live quotes — reference data shown'}
-                  label={Object.keys(prices).length > 0
-                    ? `LIVE ${Object.keys(prices).length}/${COMMODITIES.length}`
+                  label={observedCount > 0
+                    ? `LIVE ${observedCount}/${COMMODITIES.length}`
                     : 'REFERENCE'}
                 />
               </div>
@@ -137,15 +152,23 @@ export default function CommoditiesPage() {
               { label: 'SILVER (XAG/USD)', data: silverData, color: '#C0C0C0', bg: 'rgba(192,192,192,0.08)', border: 'rgba(192,192,192,0.2)', prefix: '$' },
               { label: 'WTI CRUDE',        data: wtiData,    color: '#f97316', bg: 'rgba(249,115,22,0.08)',  border: 'rgba(249,115,22,0.2)',  prefix: '$' },
               { label: 'BRENT CRUDE',      data: brentData,  color: '#60a5fa', bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.2)',  prefix: '$' },
-            ].map(stat => (
+            ].map(stat => {
+              // G4: every stat tile labels its own value — a tile without a
+              // live observation shows the static reference price WITH the
+              // reference chip, never an unlabeled number that reads as a
+              // current price.
+              const statIsLive = typeof stat.data?.price === 'number' && stat.data.price > 0
+                && typeof prices[stat.data.symbol]?.price === 'number' && (prices[stat.data.symbol]?.price ?? 0) > 0;
+              return (
               <div key={stat.label} style={{
                 background: stat.bg,
                 border: '1px solid ' + stat.border,
                 borderRadius: 10,
                 padding: '12px 16px',
               }}>
-                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
-                  {stat.label}
+                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1, display: 'flex', alignItems: 'center' }}>
+                  <span>{stat.label}</span>
+                  <ProvenanceChip state={statIsLive ? 'live' : 'reference'} title={statIsLive ? 'Live quote' : 'Static reference price — live quote unavailable'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                   <div style={{ fontSize: 20, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
@@ -160,7 +183,8 @@ export default function CommoditiesPage() {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

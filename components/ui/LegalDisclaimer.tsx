@@ -26,7 +26,11 @@ function dataSourceLine(pathname: string): string {
     return 'F&O: strategy definitions are educational reference; analytics require licensed NSE derivatives data (not available yet).';
   if (pathname.startsWith('/pulse'))
     return 'Macro indicators: static reference — as-of dates shown per row; live FX where labelled.';
-  return 'Equity data: NSE India / Yahoo Finance / Screener.in (live where labelled); fundamentals seeded illustratively where marked.';
+  // G4 (founder round 23): Screener.in is removed from the public source
+  // line (the provider registry marks it RESEARCH_ONLY and price routing
+  // is structurally barred from it), and the NSE/Yahoo path is described
+  // by its actual behavior: unofficial endpoints, delayed quotes.
+  return 'Equity data: unofficial, delayed quotes from NSE India / Yahoo Finance endpoints where labelled LIVE; fundamentals seeded illustratively where marked.';
 }
 
 /**

@@ -48,10 +48,12 @@ export default function TermsPage() {
           <section>
             <h2 style={{ fontSize: 16, color: 'var(--accent-gold)', marginBottom: 8 }}>3. Data accuracy</h2>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-              Live data, where shown, comes from public upstream providers (NSE India, Yahoo Finance,
-              Screener.in, CoinGecko) and may be delayed or incomplete. Analytical values derived from our
-              static reference datasets are illustrative placeholders. We label the provenance of displayed
-              values, and where data is unavailable we show that state rather than a substitute number.
+              Live data, where shown, comes from unofficial, delayed public sources — NSE India
+              and Yahoo Finance endpoints for equities and indexes, CoinGecko for crypto — under
+              no data contract, and may be delayed or incomplete. Analytical values derived from
+              our static reference datasets are illustrative placeholders. We label the provenance
+              of displayed values, and where data is unavailable we show that state rather than a
+              substitute number.
             </p>
           </section>
 

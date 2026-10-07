@@ -132,7 +132,7 @@ describe("R9 — aggregateMarketLabel (dashboard/alerts badge text)", () => {
     ).toBe("STATIC MARKET DATA");
     expect(
       aggregateMarketLabel([{ price: 100, status: "CACHED", source: "yahoo" }]),
-    ).toBe("CACHED MARKET DATA");
+    ).toBe("LAST OBSERVED MARKET DATA");
   });
 
   it("no usable entries → UNAVAILABLE MARKET DATA (never LIVE)", () => {

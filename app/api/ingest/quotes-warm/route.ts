@@ -33,6 +33,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireQuotesWarmAuth } from "@/lib/auth/cron";
 import { marketState } from "@/lib/marketHours";
 import { STOCKS } from "@/data/stocks";
+import { logIngestion } from "@/lib/services/ingestion";
 import {
   cachedQuoteBatchForEquities,
   nonEquityTileSymbols,
@@ -55,6 +56,10 @@ export async function POST(req: NextRequest) {
   const force = req.nextUrl.searchParams.get("force") === "1";
   const ms = marketState();
   if (!ms.open && !force) {
+    // G6: an off-session no-op ingests nothing, so it logs nothing — a
+    // zero-records "ingestion" row would keep the health price signal
+    // green through a weekend of no-ops (Rule 3: label data by what it
+    // is; the staleness SLO is allowed to decay over long closures).
     return NextResponse.json({
       warmed: 0,
       skipped: "market closed",
@@ -62,6 +67,8 @@ export async function POST(req: NextRequest) {
       note: "no-op outside the NSE session (Mon-Fri 09:15-15:30 IST); force=1 with the same Bearer secret overrides for verification runs",
     });
   }
+
+  const started_at = new Date().toISOString();
 
   const universe = Object.keys(STOCKS);
   const { slice, of } = parseSlice(req);
@@ -112,6 +119,22 @@ export async function POST(req: NextRequest) {
       }
     }
   }
+
+  // G6 (round 23): this slice IS a price ingestion — record it so
+  // /api/health's price signal tracks the REAL freshness mechanism (the
+  // pg_cron warmer) instead of a job name nothing writes. records_out
+  // counts upstream WRITES only (fresh-cache serves prove the cache is
+  // current but are not new data); misses make the row "partial" — the
+  // log must not imply complete coverage. The off-session no-op path
+  // above deliberately does NOT log (nothing was ingested).
+  const totalMisses = misses + (slice === 0 ? tileMisses : 0);
+  await logIngestion({
+    job_name: "quotes_warm",
+    status: totalMisses > 0 ? "partial" : "success",
+    records_out: upstreamWrites + (slice === 0 ? tileWrites : 0),
+    source: "quotes-cache-warmer",
+    started_at,
+  });
 
   return NextResponse.json({
     slice,

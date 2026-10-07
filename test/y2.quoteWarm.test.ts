@@ -27,9 +27,17 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 const marketStateMock = vi.fn();
 const cachedQuoteBatchForEquitiesMock = vi.fn();
 const serveQuoteMock = vi.fn();
+const logIngestionMock = vi.fn();
 
 vi.mock("@/lib/marketHours", () => ({
   marketState: (...a: unknown[]) => marketStateMock(...a),
+}));
+
+vi.mock("@/lib/services/ingestion", () => ({
+  // G6: the warmer records a quotes_warm ingestion row (the health price
+  // signal's real source). Mocked here like every other route dependency;
+  // the calls themselves are pinned in the market-hours cases below.
+  logIngestion: (...a: unknown[]) => logIngestionMock(...a),
 }));
 
 vi.mock("@/lib/quotePath", async (importOriginal) => {
@@ -79,6 +87,7 @@ beforeEach(() => {
   marketStateMock.mockReset();
   cachedQuoteBatchForEquitiesMock.mockReset();
   serveQuoteMock.mockReset();
+  logIngestionMock.mockReset();
   process.env.QUOTES_WARM_SECRET = SECRET;
   process.env.CRON_SECRET = CRON; // present on purpose: the warm endpoint must IGNORE it (Z2)
   marketStateMock.mockReturnValue(openMarket());
@@ -119,7 +128,7 @@ describe("Y2 — warmer auth (fail closed at the route level)", () => {
 });
 
 describe("Y2 — market-hours gate (endpoint gates precisely)", () => {
-  it("market closed -> honest no-op: 200, skipped, zero work", async () => {
+  it("market closed -> honest no-op: 200, skipped, zero work, NO ingestion row (nothing was ingested)", async () => {
     marketStateMock.mockReturnValue(closedMarket());
     const res = await POST(warmReq(""));
     expect(res.status).toBe(200);
@@ -129,6 +138,7 @@ describe("Y2 — market-hours gate (endpoint gates precisely)", () => {
     expect(body.market).toEqual(closedMarket());
     expect(cachedQuoteBatchForEquitiesMock).not.toHaveBeenCalled();
     expect(serveQuoteMock).not.toHaveBeenCalled();
+    expect(logIngestionMock).not.toHaveBeenCalled();
   });
 
   it("force=1 (same secret) overrides the closed market and DISCLOSES the override", async () => {
@@ -143,6 +153,14 @@ describe("Y2 — market-hours gate (endpoint gates precisely)", () => {
     expect(body.forced).toBe(true);
     expect(body.equities.served).toBe(10);
     expect(cachedQuoteBatchForEquitiesMock).toHaveBeenCalled();
+    // G6: a forced run DID ingest — one row per non-skipped invocation,
+    // writes counted (serves only here, so 0), and the status is honest
+    // about the tile misses (serveQuote is not mocked in this case).
+    expect(logIngestionMock).toHaveBeenCalledTimes(1);
+    const logged = logIngestionMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(logged.job_name).toBe("quotes_warm");
+    expect(logged.records_out).toBe(0); // serves only — no upstream writes
+    expect(logged.status).toBe("partial"); // every tile serve missed
   });
 
   it("market open -> no force flag needed, forced stays false", async () => {

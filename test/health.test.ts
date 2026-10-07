@@ -30,7 +30,7 @@ describe("computeHealth", () => {
     const body = computeHealth({
       dbOk: true,
       now: NOW,
-      ingestionRows: [row("ingestPrices", 60), row("ingestQuarterly", 120)],
+      ingestionRows: [row("quotes_warm", 60), row("ingest_financials", 120)],
       engineVersion: ENGINE,
     });
     expect(body.status).toBe("ok");
@@ -42,7 +42,7 @@ describe("computeHealth", () => {
     const body = computeHealth({
       dbOk: true,
       now: NOW,
-      ingestionRows: [row("ingestPrices", 60), row("ingestQuarterly", 100 * 60)],
+      ingestionRows: [row("quotes_warm", 60), row("ingest_financials", 100 * 60)],
       engineVersion: ENGINE,
     });
     expect(body.status).toBe("degraded");
@@ -53,7 +53,7 @@ describe("computeHealth", () => {
     const body = computeHealth({
       dbOk: true,
       now: NOW,
-      ingestionRows: [row("ingestPrices", 10)],
+      ingestionRows: [row("quotes_warm", 10)],
       engineVersion: ENGINE,
     });
     expect(body.status).toBe("degraded");
@@ -65,7 +65,7 @@ describe("computeHealth", () => {
     const body = computeHealth({
       dbOk: false,
       now: NOW,
-      ingestionRows: [row("ingestPrices", 1), row("ingestQuarterly", 1)],
+      ingestionRows: [row("quotes_warm", 1), row("ingest_financials", 1)],
       engineVersion: ENGINE,
     });
     expect(body.status).toBe("down");
@@ -79,7 +79,7 @@ describe("computeHealth", () => {
     const body = computeHealth({
       dbOk: true,
       now: NOW,
-      ingestionRows: [row("ingestPrices", 1), row("ingestQuarterly", 1)],
+      ingestionRows: [row("quotes_warm", 1), row("ingest_financials", 1)],
       engineVersion: ENGINE,
     });
     expect(Object.keys(body).sort()).toEqual(
@@ -105,7 +105,7 @@ describe("computeHealth", () => {
     const body = computeHealth({
       dbOk: true,
       now: NOW,
-      ingestionRows: [row("ingestPrices", 1), row("ingestQuarterly", 1)],
+      ingestionRows: [row("quotes_warm", 1), row("ingest_financials", 1)],
       engineVersion: ENGINE,
       quoteCache,
     });
@@ -119,7 +119,7 @@ describe("computeHealth", () => {
     const body = computeHealth({
       dbOk: true,
       now: NOW,
-      ingestionRows: [row("ingestPrices", 1), row("ingestQuarterly", 1)],
+      ingestionRows: [row("quotes_warm", 1), row("ingest_financials", 1)],
       engineVersion: ENGINE,
       quoteCache: null,
     });

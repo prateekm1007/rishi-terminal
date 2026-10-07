@@ -1,0 +1,86 @@
+{
+ "SUVENPHAR": {
+  "self": {
+   "status": "ERR",
+   "desc": "No data found, symbol may be delisted"
+  },
+  "candidate": {
+   "symbol": "COHANCE.NS",
+   "status": "OK",
+   "name": "Cohance Lifesciences Limited",
+   "price": 455.45
+  }
+ },
+ "WABCO": {
+  "self": {
+   "status": "ERR",
+   "desc": "No data found, symbol may be delisted"
+  },
+  "candidate": {
+   "symbol": "ZFCVINDIA.NS",
+   "status": "OK",
+   "name": "ZF Commercial Vehicle Control Systems India L",
+   "price": 2172.2
+  }
+ },
+ "IBULHSGFIN": {
+  "self": {
+   "status": "ERR",
+   "desc": "No data found, symbol may be delisted"
+  },
+  "candidate": {
+   "symbol": "SAMMAANCAP.NS",
+   "status": "OK",
+   "name": "Sammaan Capital Limited",
+   "price": 132.94
+  }
+ },
+ "UJJIVAN": {
+  "self": {
+   "status": "ERR",
+   "desc": "No data found, symbol may be delisted"
+  },
+  "candidate": {
+   "symbol": "UJJIVANSFB.NS",
+   "status": "OK",
+   "name": "Ujjivan Small Finance Bank Limited",
+   "price": 64.94
+  }
+ },
+ "TATAMOTORS": {
+  "self": {
+   "status": "ERR",
+   "desc": "No data found, symbol may be delisted"
+  },
+  "candidate": {
+   "symbol": "TMPV.NS",
+   "status": "OK",
+   "name": "Tata Motors Passenger Vehicles Limited",
+   "price": 283.0
+  }
+ },
+ "COSMOFILMS": {
+  "self": {
+   "status": "ERR",
+   "desc": "No data found, symbol may be delisted"
+  },
+  "candidate": {
+   "symbol": "COSMOFIRST.NS",
+   "status": "OK",
+   "name": "Cosmo First Limited",
+   "price": 831.95
+  }
+ },
+ "ADANITRANS": {
+  "self": {
+   "status": "ERR",
+   "desc": "No data found, symbol may be delisted"
+  },
+  "candidate": {
+   "symbol": "ADANIENSOL.NS",
+   "status": "OK",
+   "name": "Adani Energy Solutions Limited",
+   "price": 1318.8
+  }
+ }
+}

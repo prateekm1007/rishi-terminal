@@ -150,6 +150,14 @@ locally with the same console error). Two mitigations, both bounded:
   `30 13 * * 1-5` = **19:00 IST, Mon–Fri** (Vercel Cron sends
   `Authorization: Bearer $CRON_SECRET` automatically when the variable is set
   on the project; auth fails closed without it, T8).
+  **NS1 (2026-10-07): the writer is batched** — rows are built first, then
+  written in ≤100-row chunked upserts (~10 round-trips, LP2 precedent).
+  The previous one-upsert-per-symbol loop was killed by the cron's 60 s
+  `maxDuration` before `logIngestion` could run: production carried
+  376–480 of 896 rows per day and ZERO `ingestion_log` entries for
+  `nightly_snapshot` ever (raw SQL evidence, Management API, 2026-10-07).
+  Honest coverage semantics: null-consensus skips (T11 fail-closed) are
+  counted separately and map to status `partial`, never `success`.
 - **`/api/ingest/financials`** — quarterly fundamentals ingest (from the
   Screener scrape / manual JSON) into `financial_quarters` / `financial_annual`.
   **Not cron-scheduled**; triggered manually.

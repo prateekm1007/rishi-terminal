@@ -1,4 +1,6 @@
-// SNAPSHOT_V1
+// SNAPSHOT_V1 (NS1 2026-10-07: the writer is batched — see lib/services/rishiMemory.ts;
+// the 60 s kill that prevented logIngestion from ever running is fixed at the
+// root: ~10 bounded round-trips instead of ~896 serial ones.)
 import { NextRequest, NextResponse } from "next/server";
 import { snapshotAllStocks } from "../../../../lib/services/rishiMemory";
 import { logIngestion } from "../../../../lib/services/ingestion";
@@ -21,7 +23,9 @@ async function run(req: NextRequest) {
 
   await logIngestion({
     job_name:    "nightly_snapshot",
-    status:      result.errors === 0 ? "success" : "partial",
+    // NS1: honest coverage semantics — a null-consensus skip (T11 fail-closed)
+    // is not a write error, but it IS partial coverage, never "success".
+    status:      result.errors === 0 && result.skipped === 0 ? "success" : "partial",
     records_out: result.snapshots,
     source:      "RishiEngine",
     started_at,

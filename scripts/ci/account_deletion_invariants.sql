@@ -206,6 +206,48 @@ BEGIN;
   END $$;
 ROLLBACK;
 
+-- ── 5b. Ugly path: the ERASURE ROOT itself (G1-ROOT). The authenticated
+--        and anon roles must not be able to delete auth.users AT ALL —
+--        client roles hold no grants on the auth schema (fail closed,
+--        Constitution C2). The whole account-erasure surface hangs off
+--        that root: if a client role could reach it, it could erase
+--        ANY account, not just read/edit rows (which RLS already
+--        guards above). ─────────────────────────────────────────────
+BEGIN;
+  SET LOCAL ROLE authenticated;
+  SET LOCAL request.jwt.claim.sub = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+  DO $$
+  BEGIN
+    BEGIN
+      DELETE FROM auth.users WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+      -- Reaching this line at all means the role COULD delete from
+      -- auth.users — regardless of rows affected, the root is open.
+      RAISE EXCEPTION 'G1-ROOT FAILED: an authenticated role could DELETE from auth.users — the erasure root is not closed';
+    EXCEPTION
+      WHEN insufficient_privilege THEN NULL; -- expected: permission denied
+    END;
+  END $$;
+ROLLBACK;
+BEGIN;
+  SET LOCAL ROLE anon;
+  DO $$
+  BEGIN
+    BEGIN
+      DELETE FROM auth.users WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+      RAISE EXCEPTION 'G1-ROOT FAILED: the anon role DELETED an auth user';
+    EXCEPTION
+      WHEN insufficient_privilege THEN NULL; -- expected
+    END;
+  END $$;
+ROLLBACK;
+-- The erasure subject survived both attempts (asserted as superuser).
+DO $$
+DECLARE n int;
+BEGIN
+  SELECT count(*) INTO n FROM auth.users WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  IF n <> 1 THEN RAISE EXCEPTION 'G1-ROOT FAILED: erasure subject vanished during the unauthorized-attempt section (% rows)', n; END IF;
+END $$;
+
 -- ── 6. THE ERASE: delete the auth user (the supported deletion
 --       mechanism) and assert ZERO rows remain anywhere ──────────
 DELETE FROM auth.users WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';

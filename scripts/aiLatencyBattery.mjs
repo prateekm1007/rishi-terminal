@@ -239,10 +239,18 @@ async function chat(personaId, message) {
   // The challenge cost itself is measured and reported separately.
   if (process.env.BATTERY_COOKIE) headers.Cookie = process.env.BATTERY_COOKIE;
   try {
+    // G7 (2026-10-07): a bounded fetch — row 2 of the first G7 run hung
+    // ~12 min on an upstream that neither answered nor errored (the
+    // battery's fetch had no AbortSignal, so one stalled connection froze
+    // the whole battery). 180 s covers the worst honest loop (6 completions
+    // x 20 s provider timeout x 2 candidates) plus Vercel overhead; a
+    // fetch-level abort is recorded like any provider-shaped transient
+    // (retry/backoff applies, never a fabricated row).
     const res = await fetch(BASE + "/api/chat", {
       method: "POST",
       headers,
       body: JSON.stringify({ personaId, history: [], message }),
+      signal: AbortSignal.timeout(180_000),
     });
     status = res.status;
     body = await res.json().catch(() => ({}));

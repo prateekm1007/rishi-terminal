@@ -42,6 +42,7 @@ import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, toolRequestTurn, type AiToolDeps } from "./tools";
 import { detectFinancialDataIntent, intentSeedTool } from "./financialIntent";
 import type { FinancialDataIntent } from "./financialIntent";
+import { evaluatePhilosophyProse } from "./philosophyGuard";
 
 const TIMEOUT_MS = 20_000;
 
@@ -834,8 +835,19 @@ async function runGroundedLoop(
         );
         const ungroundedNumbers = [...extractNormalizedNumbers(structured.data.answer)]
           .filter(n => !matchedValues.has(n));
-        const isCleanContextOnly =
-          structured.data.claims.length === 0 && ungroundedNumbers.length === 0;
+        // G7: the DISTINCT no-numbers / philosophy-mode validator. Same
+        // semantics as the inline decision it replaces
+        // (claims.length === 0 && ungroundedNumbers.length === 0) — now a
+        // named, independently tested contract (test/philosophyGuard.test.ts)
+        // that can never silently bypass the grounding validator: claims
+        // reject here and stay with validateGrounding; unsupported numbers
+        // reject here and take the repair/BLOCKED path below.
+        const philosophy = evaluatePhilosophyProse({
+          answer: structured.data.answer,
+          claimCount: structured.data.claims.length,
+          ungroundedNumbers,
+        });
+        const isCleanContextOnly = philosophy.verdict === "philosophy-ok";
         if (isCleanContextOnly) {
           // ── Commit N (Coder Directions §8): deterministic financial-intent
           // enforcement on the no-initial-evidence path. A model INSTRUCTION

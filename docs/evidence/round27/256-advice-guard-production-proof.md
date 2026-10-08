@@ -73,8 +73,24 @@ row escaped only because that model run picked the `{symbol}` form
 Fix: PR #262 — batch floor is 1 (empty/9+/symbol+symbols ambiguity stay
 rejected, pinned); fail-first RED→GREEN in
 `test/g7Driver2.batchedPrices.test.ts`; the taught contract now says
-`[1-8 registry symbols]`. Post-fix live verification: see the addendum
-appended after #262 deploys.
+`[1-8 registry symbols]`.
+
+### Post-fix live verification (PR #262, production `2d74e06`, 06:25 UTC)
+
+Merged + deployed (exact SHA at `/api/version`), then the same ask re-run
+against production. The model chose the SAME 1-element batch form that
+failed pre-fix — and the fix held end-to-end:
+
+```
+singleton-pure (post-fix)  status 200 | stages [initial] | tools getPrices(RELIANCE, ok) | synthesis "deterministic" | grounded TRUE
+                           answer: "price = 1179.5 inr — live (observed/as-of 2026-10-08T06:25:00.000Z)
+                                    change = -2.334 percent — live (observed/as-of 2026-10-08T06:25:00.000Z)"
+```
+
+Raw rows: `256-postfix-singleton-verification.rows.json`. The canonical
+single-symbol price ask now serves a verified live price on EVERY model
+arg choice — C9 restored (the #257 batching no longer trades away the
+singleton class).
 
 ## Verdict
 

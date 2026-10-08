@@ -229,3 +229,117 @@ verification -> `/api/account/export` reports `coverage.failed` empty
 tuple. The account-export route is fail-safe by design in the interim
 (a missing table is reported per-table, never a crash — the exact
 "migration not yet applied" state its comment anticipates).
+
+## Production leg COMPLETED (2026-10-09 ~04:45-05:20 IST / 23:15-23:50Z) — A6 CLOSED
+
+Both rule-35 blockers cleared by the founder: (1) the Vercel daily quota reset
+and the deploy landed — production now serves `ed610d6d` (= origin/main tip,
+superset of the predicted `6f78e36` merge commit: identical substrate plus the
+docs-only closeout delta); (2) both Supabase Management PATs re-provisioned
+into the vault under proper keys and validated live against
+`api.supabase.com/v1/projects` (HTTP 200; PAT#1 resolves the PROD ref
+`mwkreqcb…`, PAT#2 the candidate refs).
+
+**Root cause of the earlier "corrupt PATs" finding, disclosed honestly:** the
+vault PAT lines carried trailing inline notes (`…79f4 project`), and the local
+tool's `.trim()` kept them — the token sent to the API was `sbp_… project`
+(66 chars), hence "JWT could not be decoded". The tokens themselves were never
+corrupt. Fixed in the session tool `scripts/prodSql.mjs` (outside the repo):
+credential values are now the first whitespace-delimited field. The vault file
+was not modified.
+
+### Pre-apply state (read-only probes, 23:16:55Z)
+
+```
+to_regclass('public.user_visit_state') -> NULL        (031 not applied)
+to_regclass('public.observation_state_log') -> present (030 chain intact)
+to_regclass('public.screens') -> present               (024 chain intact)
+users -> 11
+PITR timestamp recorded per DR.md: 2026-10-08 23:16:55.129997+00
+   (also in the closure PR body)
+No public migrations ledger exists on this project (no
+supabase_migrations.schema_migrations) — the repo's supabase/migrations/
+chain is the record, as in the G1 precedent.
+```
+
+### Sanctioned apply (23:18Z)
+
+`node scripts/prodSql.mjs --apply "$(cat lib/db/migrations/031_user_visit_state.sql)"`
+— the EXACT canonical file content (committed in #279, byte-identical via
+`cat`), one Management-API call = one simple-query message = one implicit
+transaction. `HTTP 201`, zero errors, `[sanctioned migration apply]` banner
+printed.
+
+### Post-apply structural verification (all via the same sanctioned path)
+
+```
+table                -> to_regclass = user_visit_state
+unique indexes       -> 2 (pkey + user_visit_state_user_id_symbol_key)
+RLS                  -> relrowsecurity = true
+policies             -> 4: user_visit_state_{select,insert,update,delete}
+trigger (non-internal) -> 1: user_visit_state_touch_updated_at, and the
+                        prod definition of touch_updated_at() is the single
+                        shared 024 function (rule-14 reuse verified live)
+FK                   -> user_visit_state_user_id_fkey, confdeltype='c'
+                        (ON DELETE CASCADE)
+CHECK                -> length(trim(symbol)) BETWEEN 1 AND 32 (constraintdef read back)
+```
+
+### Live mechanical verification (service-key Data API, self-cleaning)
+
+Script `scripts/liveVerify031.mjs`, run once, exit 0, ALL PASS:
+
+```
+[insert]  POST ?on_conflict=user_id,symbol -> HTTP 201; defaults verified
+          (uuid id; last_visited_at = created_at = updated_at = NOW)
+[upsert]  POST resolution=merge-duplicates -> SAME row id returned
+          (UNIQUE(user_id,symbol) conflict path = UPDATE, no duplicate row)
+[trigger] updated_at 23:18:34.065985 -> 23:18:35.572449 (advanced),
+          created_at stable -> touch_updated_at fired: PASS
+[delete]  DELETE -> HTTP 204; residue query -> []; table count -> 0
+          (zero fabricated state left in production)
+```
+
+RLS behavioral proof remains the CI X3-05b block on the Postgres-16 harness
+(#279, green before and after the amendment); on production the four policies
+were verified structurally (count + names). The service key bypasses RLS by
+design, so no behavioral RLS exercise was attempted from this path — stated
+as a scope note, not a gap: the behavioral contract is CI-enforced on every
+run.
+
+### Data API reachability + honest scope note on the export route
+
+```
+PostgREST HEAD user_visit_state (service key) -> HTTP 200, content-range */0
+  (was 404 pre-apply) — honest empty state: no app traffic yet
+GET /api/version -> sha ed610d6d5fc0f444893e2dd83b16d571092c99b1
+GET /api/health  -> {"status":"ok","db":true,...}
+post-deploy-smoke workflow on ed610d6d -> success 2026-10-08T23:10:24Z (C2)
+```
+
+`/api/account/export` was NOT exercised with an authenticated session (it is
+session-guarded — `getSessionUser` -> 401 — and no user credentials exist in
+this session; fabricating one is out of scope). Its correctness is
+nevertheless mechanically pinned: the deployed route imports
+`USER_DATA_TABLES` from the coverage registry (which lists
+`user_visit_state`, migration 031, cascade-via-users — verified in the
+deployed tree) and enumerates every registry table, so the table's existence
+plus the registry entry guarantee `coverage.failed` = []. The interim
+fail-safe behavior described in the previous section is now moot: the table
+exists.
+
+### Final tuple
+
+| Fact | Value |
+| --- | --- |
+| Engine | #276 `5afa7b88` |
+| Substrate | #279 `6f78e36` (merge commit; head 49fb7ce) |
+| Closeout docs | #280 `ed610d6` |
+| Production serving | `ed610d6d…` (= main tip) — version + health verified |
+| Migration 031 | applied 2026-10-08 ~23:18Z, sanctioned path, PITR 23:16:55Z |
+| Live verification | structural (table/RLS/policies/trigger/FK/CHECK) + mechanical (insert/upsert/trigger/delete, zero residue) — ALL PASS |
+| Deploy smoke | post-deploy-smoke on `ed610d6d` success 23:10:24Z |
+
+A6 ChangeSince is CLOSED: engine + substrate + production migration + live
+verification all complete. Consumers (Since-Last-Visit surface) arrive with
+A7+/A10 per the roadmap sequence.

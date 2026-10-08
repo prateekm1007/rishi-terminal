@@ -27,7 +27,7 @@
 //
 // Clocks: the pure layer keeps none (`changeKeyOf` is total over its
 // inputs); generated_at / last_hit_at are the DATABASE's NOW() —
-// every timestamp-producing statement lives in migration 031's SQL
+// every timestamp-producing statement lives in migration 032's SQL
 // functions, which the client calls via rpc.
 
 import { createHash } from "node:crypto";

@@ -1,6 +1,6 @@
 -- insight_cache invariants (INT-A7, Phase A item 7) — REAL-Postgres
 -- proof for the persistent insight-cache semantics. Runs in the CI
--- migrations job after migrations 001…031.
+-- migrations job after migrations 001…032.
 --
 -- Every block RAISES on violation (Constitution 24: a check that
 -- cannot fail is theatre). The blocks target the defects each

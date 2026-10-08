@@ -1,5 +1,5 @@
 -- ============================================================
--- 031_insight_cache.sql — Phase A item 7 (INT-A7): the PERSISTENT
+-- 032_insight_cache.sql — Phase A item 7 (INT-A7): the PERSISTENT
 -- INSIGHT CACHE keyed by the deterministic change key. Roadmap
 -- execution rule 4: "A7 means a deterministic change key + persistent
 -- cache — never in-memory memoization."

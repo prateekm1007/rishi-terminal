@@ -22,7 +22,7 @@ table are pinned by test — a silent change breaks the build.
    feature, subject, or changeId set → different key. This is the
    value A1's `provenance.changeKey` is reserved for.
 2. **The persistent insight cache** (`readCachedInsight` /
-   `writeCachedInsight` over migration 031's `insight_cache` table):
+   `writeCachedInsight` over migration 032's `insight_cache` table):
    generated insights are stored server-side keyed by the change key,
    with reuse accounting (`hit_count`, `last_hit_at`). Reads return the
    stored payload or null (the honest miss — never a guess). Writes
@@ -78,7 +78,7 @@ changeKeyOf({ feature, subject, changeIds }) =
 | payload failing `parseRishiInsight` | write refused (no row written) |
 | unknown changeKey on read | null (miss) |
 
-## Schema (migration 031, closed column set)
+## Schema (migration 032, closed column set)
 
 `insight_cache(change_key 64-hex UNIQUE, feature, subject, payload
 jsonb-object, generated_at, hit_count >= 0, last_hit_at)` — RLS

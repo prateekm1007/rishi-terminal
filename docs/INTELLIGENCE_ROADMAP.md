@@ -88,7 +88,7 @@ the exit gate, repair only what is missing, advance.**
 | A1 RishiInsight | Merged #247 (`e88dd14`): `lib/intelligence/types.ts` — zod-validated, closed vocabularies (5 status / 3 confidence / 3 materiality / 5 model roles / 20-feature registry), honesty couplings, 28 fail-first tests | **Existing — audit/close. Contract complete (code+tests+CI+merged+deployed). Runtime consumers arrive at A8+ by design; no rebuild** |
 | A2 Temporal Memory | Merged #253: migration 030 + `lib/intelligence/stateLog.ts` + quote-cache hook. Production ingestion PROVEN live (round27 evidence) | **Existing — CLOSED** (ingestion proof filed; reader consumers are A6+) |
 | A3 Events | **CLOSED 2026-10-08** — merged #263 (`6c61d4ae`, deployed, exact production SHA verified). Strict-audited per round-28 directions 5–7: one hard gap found (seed source-state projected instead of refused) and root-fixed IN the PR (RED→GREEN); entropy guard strengthened to the exact 13-key closed set; byte-stability pinned. Closeout: `docs/evidence/round28/int-a3-closeout.md` | **Done — consumers arrive at A4+** |
-| A4 Materiality | BLOCKED on the founder's threshold confirmation (see standing blocked items). Architecture decided: `A3 event → deterministic threshold engine → material/non-material`; location `lib/intelligence/materiality.ts` + `docs/intelligence/materiality.md` + fail-first tests incl. the economic invariant (non-material → zero AI spend). Two competing pre-registrations exist (directive-10 statistical rules vs the PA3 branch's static v1) — the coder does not choose | **FOUNDER DECISION NEEDED before the task starts** |
+| A4 Materiality | **CLOSED 2026-10-08** — merged #270 (`361706f`, deployed, exact production SHA verified). Founder-confirmed statistical set (in-session): price ≥ 3σ of 20-day daily returns OR ≥ 4% intraday; volume ≥ 3× 20-day median; technical regime change confirmed over 2 sessions; portfolio exposure change ≥ 2pp. Fail-closed until ~20-day baselines accumulate (~2026-11-03). 39 fail-first tests incl. the economic invariant (non-material → zero AI spend) and proof of no model call. Closeout: `docs/evidence/round29/int-a4.md` | **Done — consumers arrive at A5+** |
 | A5 Thesis | Does not exist | Depends on A3/A4 |
 | A6 ChangeSince | Does not exist | Depends on A2/A3 |
 | A7 Insight cache / change key | Does not exist | Depends on A3/A4 |
@@ -148,18 +148,13 @@ the exit gate, repair only what is missing, advance.**
 - **G7 future drivers** (serial financials compositions, repair stage):
   pre-registered iteration, founder-authorized only (the #260 verdict's
   recorded candidate).
-- **A4 materiality thresholds** (raised 2026-10-08, round 28): the
-  founder must confirm the numerical thresholds before INT-A4 starts.
-  Two competing pre-registrations exist — the founder's round-28
-  statistical proposal (price ≥ 3σ of 20-day daily returns OR ≥ 4%
-  intraday; volume ≥ 3× 20-day median; technical regime over 2 sessions;
-  portfolio ≥ 2pp) vs the PA3 branch's static v1 (5%/2%, 5pp/2pp, 50%/20%).
-  Statistical rules require 20-day baselines the temporal memory only
-  began accumulating 2026-10-07 (~2026-11-03 readiness; fail-closed until
-  then). Escalation with recommended default (the directive-10 statistical
-  rules verbatim, fail-closed on insufficient baselines): #263 thread,
-  `docs/evidence/round28/int-a3-closeout.md` links it. A5+ are blocked
-  behind A4.
+- **A4 materiality thresholds** (raised 2026-10-08, round 28; RESOLVED
+  2026-10-08, round 29): the founder confirmed the directive-10
+  statistical rules verbatim in-session (decision logged in the #270 PR
+  thread per C10). Pre-registration: `docs/intelligence/materiality.md`;
+  implementation: #270 (`361706f`, deployed, production SHA verified);
+  closeout: `docs/evidence/round29/int-a4.md`. The PA3 branch's static v1
+  was not selected. A5 is next.
 - **NS1 health semantics** (raised 2026-10-08, round 28): does the
   nightly consensus snapshot (computed from the static seed registry)
   count as "fundamentals ingestion" for `/api/health`? #267 (merged)

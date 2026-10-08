@@ -1,0 +1,368 @@
+{
+  "canonicalVersion": 1,
+  "source": {
+    "generatedAt": "2026-10-08T03:55:49.672Z",
+    "baseUrl": "https://rishi-terminal.vercel.app",
+    "version": {
+      "sha": "fd17886e64a8fda2f3a2fa785e9fc52df452ca69",
+      "now": "2026-10-08T03:52:05.993Z",
+      "node": "v24.21.0"
+    },
+    "measurementMode": "anonymous (X7 challenge solved in-loop after the daily free units; solve time included in wallMs)"
+  },
+  "rule": "raw rows are the only source; both wall variants reported; attribution basis = wallExclPoW",
+  "overall": {
+    "n": 14,
+    "usable": 8,
+    "refusals": 6,
+    "refusalStatusCounts": {
+      "429": 6
+    },
+    "wallInclPoW": {
+      "p50Ms": 12719,
+      "p95Ms": 24579,
+      "meanMs": 15698
+    },
+    "wallExclPoW": {
+      "p50Ms": 12695,
+      "p95Ms": 24578,
+      "meanMs": 15678
+    },
+    "attribution": {
+      "basis": "usable rows, wallExclPoW totals",
+      "wallExclPoWTotalMs": 125422,
+      "completionsInitialMs": 7274,
+      "completionsInitialPct": 5.8,
+      "completionsPostToolMs": 62639,
+      "completionsPostToolPct": 49.9,
+      "completionsRepairMs": 28655,
+      "completionsRepairPct": 22.8,
+      "completionsTotalPct": 78.6,
+      "toolExecutionMs": 3684,
+      "toolExecutionPct": 2.9,
+      "validationMs": 7,
+      "validationPct": 0,
+      "ttfbMs": 125574,
+      "ttfbPct": 100.1,
+      "unattributedMs": 23163,
+      "unattributedPct": 18.5
+    },
+    "grounded": 6,
+    "repaired": 3,
+    "repairCauses": {
+      "field-value-mismatch": 2,
+      "evidence-id-mismatch": 1
+    }
+  },
+  "classes": {
+    "financial": {
+      "n": 0,
+      "usable": 0,
+      "refusals": 0,
+      "refusalStatusCounts": {},
+      "wallInclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "wallExclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 0,
+        "completionsInitialMs": 0,
+        "completionsInitialPct": null,
+        "completionsPostToolMs": 0,
+        "completionsPostToolPct": null,
+        "completionsRepairMs": 0,
+        "completionsRepairPct": null,
+        "completionsTotalPct": null,
+        "toolExecutionMs": 0,
+        "toolExecutionPct": null,
+        "validationMs": 0,
+        "validationPct": null,
+        "ttfbMs": 0,
+        "ttfbPct": null,
+        "unattributedMs": 0,
+        "unattributedPct": null
+      },
+      "grounded": 0,
+      "repaired": 0,
+      "repairCauses": {}
+    },
+    "philosophy": {
+      "n": 0,
+      "usable": 0,
+      "refusals": 0,
+      "refusalStatusCounts": {},
+      "wallInclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "wallExclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 0,
+        "completionsInitialMs": 0,
+        "completionsInitialPct": null,
+        "completionsPostToolMs": 0,
+        "completionsPostToolPct": null,
+        "completionsRepairMs": 0,
+        "completionsRepairPct": null,
+        "completionsTotalPct": null,
+        "toolExecutionMs": 0,
+        "toolExecutionPct": null,
+        "validationMs": 0,
+        "validationPct": null,
+        "ttfbMs": 0,
+        "ttfbPct": null,
+        "unattributedMs": 0,
+        "unattributedPct": null
+      },
+      "grounded": 0,
+      "repaired": 0,
+      "repairCauses": {}
+    },
+    "invalid": {
+      "n": 0,
+      "usable": 0,
+      "refusals": 0,
+      "refusalStatusCounts": {},
+      "wallInclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "wallExclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 0,
+        "completionsInitialMs": 0,
+        "completionsInitialPct": null,
+        "completionsPostToolMs": 0,
+        "completionsPostToolPct": null,
+        "completionsRepairMs": 0,
+        "completionsRepairPct": null,
+        "completionsTotalPct": null,
+        "toolExecutionMs": 0,
+        "toolExecutionPct": null,
+        "validationMs": 0,
+        "validationPct": null,
+        "ttfbMs": 0,
+        "ttfbPct": null,
+        "unattributedMs": 0,
+        "unattributedPct": null
+      },
+      "grounded": 0,
+      "repaired": 0,
+      "repairCauses": {}
+    },
+    "hostile": {
+      "n": 0,
+      "usable": 0,
+      "refusals": 0,
+      "refusalStatusCounts": {},
+      "wallInclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "wallExclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 0,
+        "completionsInitialMs": 0,
+        "completionsInitialPct": null,
+        "completionsPostToolMs": 0,
+        "completionsPostToolPct": null,
+        "completionsRepairMs": 0,
+        "completionsRepairPct": null,
+        "completionsTotalPct": null,
+        "toolExecutionMs": 0,
+        "toolExecutionPct": null,
+        "validationMs": 0,
+        "validationPct": null,
+        "ttfbMs": 0,
+        "ttfbPct": null,
+        "unattributedMs": 0,
+        "unattributedPct": null
+      },
+      "grounded": 0,
+      "repaired": 0,
+      "repairCauses": {}
+    },
+    "financialNoSymbol": {
+      "n": 0,
+      "usable": 0,
+      "refusals": 0,
+      "refusalStatusCounts": {},
+      "wallInclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "wallExclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 0,
+        "completionsInitialMs": 0,
+        "completionsInitialPct": null,
+        "completionsPostToolMs": 0,
+        "completionsPostToolPct": null,
+        "completionsRepairMs": 0,
+        "completionsRepairPct": null,
+        "completionsTotalPct": null,
+        "toolExecutionMs": 0,
+        "toolExecutionPct": null,
+        "validationMs": 0,
+        "validationPct": null,
+        "ttfbMs": 0,
+        "ttfbPct": null,
+        "unattributedMs": 0,
+        "unattributedPct": null
+      },
+      "grounded": 0,
+      "repaired": 0,
+      "repairCauses": {}
+    },
+    "toolRequest": {
+      "n": 0,
+      "usable": 0,
+      "refusals": 0,
+      "refusalStatusCounts": {},
+      "wallInclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "wallExclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 0,
+        "completionsInitialMs": 0,
+        "completionsInitialPct": null,
+        "completionsPostToolMs": 0,
+        "completionsPostToolPct": null,
+        "completionsRepairMs": 0,
+        "completionsRepairPct": null,
+        "completionsTotalPct": null,
+        "toolExecutionMs": 0,
+        "toolExecutionPct": null,
+        "validationMs": 0,
+        "validationPct": null,
+        "ttfbMs": 0,
+        "ttfbPct": null,
+        "unattributedMs": 0,
+        "unattributedPct": null
+      },
+      "grounded": 0,
+      "repaired": 0,
+      "repairCauses": {}
+    },
+    "multitool": {
+      "n": 0,
+      "usable": 0,
+      "refusals": 0,
+      "refusalStatusCounts": {},
+      "wallInclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "wallExclPoW": {
+        "p50Ms": null,
+        "p95Ms": null,
+        "meanMs": null
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 0,
+        "completionsInitialMs": 0,
+        "completionsInitialPct": null,
+        "completionsPostToolMs": 0,
+        "completionsPostToolPct": null,
+        "completionsRepairMs": 0,
+        "completionsRepairPct": null,
+        "completionsTotalPct": null,
+        "toolExecutionMs": 0,
+        "toolExecutionPct": null,
+        "validationMs": 0,
+        "validationPct": null,
+        "ttfbMs": 0,
+        "ttfbPct": null,
+        "unattributedMs": 0,
+        "unattributedPct": null
+      },
+      "grounded": 0,
+      "repaired": 0,
+      "repairCauses": {}
+    },
+    "multitoolDriver2": {
+      "n": 14,
+      "usable": 8,
+      "refusals": 6,
+      "refusalStatusCounts": {
+        "429": 6
+      },
+      "wallInclPoW": {
+        "p50Ms": 12719,
+        "p95Ms": 24579,
+        "meanMs": 15698
+      },
+      "wallExclPoW": {
+        "p50Ms": 12695,
+        "p95Ms": 24578,
+        "meanMs": 15678
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 125422,
+        "completionsInitialMs": 7274,
+        "completionsInitialPct": 5.8,
+        "completionsPostToolMs": 62639,
+        "completionsPostToolPct": 49.9,
+        "completionsRepairMs": 28655,
+        "completionsRepairPct": 22.8,
+        "completionsTotalPct": 78.6,
+        "toolExecutionMs": 3684,
+        "toolExecutionPct": 2.9,
+        "validationMs": 7,
+        "validationPct": 0,
+        "ttfbMs": 125574,
+        "ttfbPct": 100.1,
+        "unattributedMs": 23163,
+        "unattributedPct": 18.5
+      },
+      "grounded": 6,
+      "repaired": 3,
+      "repairCauses": {
+        "field-value-mismatch": 2,
+        "evidence-id-mismatch": 1
+      }
+    }
+  }
+}

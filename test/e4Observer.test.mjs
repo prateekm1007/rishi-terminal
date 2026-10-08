@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  batchPricesRequestBody,
   extractUniverseKeys,
   nseSessionOpenAt,
 } from "../scripts/e4SessionObserver.mjs";
@@ -65,5 +66,23 @@ describe("nseSessionOpenAt (IST 09:15-15:30 = UTC 03:45-10:00, Mon-Fri)", () => 
   });
   it("is open mid-session on each weekday", () => {
     for (const day of [0, 1, 2, 3, 4]) expect(at(day, 6, 30)).toBe(true);
+  });
+});
+
+describe("batchPricesRequestBody (the U2 /api/prices/batch contract)", () => {
+  // Fail-first lesson embedded (2026-10-08 04:29 early battery): the
+  // instrument still sent the PRE-U2 bare-array body; every batch POST
+  // got HTTP 400 "symbols array required" and the sweep recorded ALL
+  // 896 symbols as 'unavailable' - an instrument failure masquerading
+  // as a data state. The U2 route (6b02dd3) requires {"symbols": [...]}.
+  it("sends the OBJECT form {symbols: [...]}, never a bare array", () => {
+    const parsed = JSON.parse(batchPricesRequestBody(["BANKBARODA", "TCS"]));
+    expect(Array.isArray(parsed)).toBe(false);
+    expect(parsed).toEqual({ symbols: ["BANKBARODA", "TCS"] });
+  });
+
+  it("preserves order and duplicates inside symbols (no silent dedupe)", () => {
+    const parsed = JSON.parse(batchPricesRequestBody(["TCS", "TCS", "ABC"]));
+    expect(parsed.symbols).toEqual(["TCS", "TCS", "ABC"]);
   });
 });

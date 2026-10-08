@@ -32,6 +32,7 @@ the engine fails closed (see below); readiness is honest, never assumed.
 | history shorter than 20 | `insufficient-history` |
 | constant or zero-variance baseline (no scale) | `insufficient-history` |
 | NaN / non-finite / negative-impossible baseline members | `invalid-input` |
+| negative `price`- or `volume24h`-field event values (impossible domain; signed `change` declines stay legal) | `invalid-input` |
 | non-numeric event values, zero old price, unorderable clocks | `non-comparable` |
 | every applicable leg evaluated, none fired | `below-threshold` (and only then) |
 

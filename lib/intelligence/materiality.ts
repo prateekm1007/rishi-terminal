@@ -200,6 +200,18 @@ function decimalReturnOf(event: IntelligenceEvent): number | null {
   return null;
 }
 
+/** Prices and share volumes are non-negative physical quantities. A
+ *  negative `price`- or `volume24h`-field value is corrupt input (the
+ *  completion-audit class): the legs refuse it as invalid-input, never
+ *  scaled. Signed `change`-field values stay legal — declines are real. */
+function hasImpossibleDomain(event: IntelligenceEvent): boolean {
+  if (event.field !== "price" && event.field !== "volume24h") return false;
+  return (
+    (isFiniteNumber(event.oldValue) && event.oldValue < 0) ||
+    (isFiniteNumber(event.newValue) && event.newValue < 0)
+  );
+}
+
 // ── legs ─────────────────────────────────────────────────────────────────────
 
 type AbstainCause =
@@ -236,6 +248,9 @@ function priceSigmaLeg(
   ctx: MaterialityContext,
 ): LegOutcome {
   const thresholdId = MATERIALITY_THRESHOLD_IDS.priceSigma;
+  if (hasImpossibleDomain(event)) {
+    return { fired: false, thresholdId, cause: "invalid-input", note: "negative price is impossible" };
+  }
   const r = decimalReturnOf(event);
   if (r === null || !Number.isFinite(r)) {
     return { fired: false, thresholdId, cause: "non-comparable", note: "return not scalable" };
@@ -274,6 +289,9 @@ function priceSigmaLeg(
 
 function priceIntradayLeg(event: IntelligenceEvent): LegOutcome {
   const thresholdId = MATERIALITY_THRESHOLD_IDS.priceIntraday;
+  if (hasImpossibleDomain(event)) {
+    return { fired: false, thresholdId, cause: "invalid-input", note: "negative price is impossible" };
+  }
   const pct = intradayPctOf(event);
   if (pct === null || !Number.isFinite(pct)) {
     return { fired: false, thresholdId, cause: "non-comparable", note: "intraday pct not scalable" };
@@ -293,6 +311,9 @@ function volumeLeg(
   const thresholdId = MATERIALITY_THRESHOLD_IDS.volumeSurge;
   if (!isFiniteNumber(event.newValue)) {
     return { fired: false, thresholdId, cause: "non-comparable", note: "volume not numeric" };
+  }
+  if (hasImpossibleDomain(event)) {
+    return { fired: false, thresholdId, cause: "invalid-input", note: "negative volume is impossible" };
   }
   const baseline = ctx.volumeBaseline;
   if (!baseline) {

@@ -88,13 +88,23 @@ const PeersArgsSchema = z
  *  tool. A multi-instrument ask previously needed N serial tool requests,
  *  each costing a full provider completion (the measured multitool driver:
  *  2-3 post-tool completions, 7.3-15.2 s of the wall). The batch form is
- *  BOUNDED (2-8 symbols, each registry-validated by the executor) and
+ *  BOUNDED (1-8 symbols, each registry-validated by the executor) and
  *  STRICT (no extra keys; symbol+symbols together are rejected as an
  *  ambiguous ask). Synthesis stays with the model - this only collapses
- *  the observation round-trips. */
+ *  the observation round-trips.
+ *
+ *  MODEL-TRAP FIX (2026-10-08, #256 behavioral proof, production 345134c):
+ *  the production model (agnes-2.5-flash) answered the canonical
+ *  single-symbol price ask with {symbols:["RELIANCE"]} - the taught batch
+ *  form, one element. min(2) rejected it and the deterministic disclosure
+ *  served "Invalid arguments ... >=2 items" AS THE ANSWER. A 1-element
+ *  batch is a well-defined single fetch through the identical executor
+ *  path (registry-validate, dedupe, observe, join); the floor is 1 so
+ *  EVERY model arg choice is valid. The empty array, the 9+ batch, and
+ *  the symbol+symbols ambiguity stay rejected (pinned by test). */
 const PricesBatchArgsSchema = z
   .object({
-    symbols: z.array(z.string().min(1).max(25)).min(2).max(8),
+    symbols: z.array(z.string().min(1).max(25)).min(1).max(8),
   })
   .strict();
 const PricesArgsSchema = z.union([SymbolArgsSchema, PricesBatchArgsSchema]);

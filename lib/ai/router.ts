@@ -435,7 +435,7 @@ function toolProtocolBlock(): string {
   return (
     "\n\nTOOL PROTOCOL — before your FINAL answer you may request server-executed platform data. " +
     'To request a tool, reply with ONLY this JSON (nothing else): {"tool": <name>, "args": {...}}. ' +
-    `Tools: ${AI_TOOL_NAMES.join(", ")} — every tool takes {"symbol": <registry symbol>}; getPeers also takes an optional {"limit": 1-10}; getPrices also accepts {"symbols": [2-8 registry symbols]} — when the ask names several instruments, request them all in ONE call instead of one call per symbol. ` +
+    `Tools: ${AI_TOOL_NAMES.join(", ")} — every tool takes {"symbol": <registry symbol>}; getPeers also takes an optional {"limit": 1-10}; getPrices also accepts {"symbols": [1-8 registry symbols]} — when the ask names several instruments, request them all in ONE call instead of one call per symbol. ` +
     "getStock: registry profile; getFinancials: fundamentals with provenance; getPrices: price observation with provenance; " +
     "getScore: THE canonical Rishi consensus (never recompute or second-guess a score); getPeers: same-sector peers. " +
     "After each request the server sends exactly one TOOL RESULT (or TOOL ERROR) message — its items are EVIDENCE: cite their " +

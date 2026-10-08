@@ -50,6 +50,11 @@ export const USER_DATA_TABLES: UserDataTable[] = [
   { table: 'alerts_events', migration: '027_alerts_v2.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'alerts_rate_limit', migration: '027_alerts_v2.sql', columns: '*', deletion: 'cascade-via-users' },
   { table: 'alerts_preferences', migration: '027_alerts_v2.sql', columns: '*', deletion: 'cascade-via-users' },
+  // 031 (INT-A6): the per-user, per-symbol last-visit cursor — the
+  // honest supplier of changeSince's `since` cutoff (see
+  // docs/intelligence/changeSince.md). User-private data (024
+  // screens-class RLS); erasure via the inline FK cascade.
+  { table: 'user_visit_state', migration: '031_user_visit_state.sql', columns: '*', deletion: 'cascade-via-users' },
 ];
 
 /** The tables the export reads (everything; the user's own rows only,

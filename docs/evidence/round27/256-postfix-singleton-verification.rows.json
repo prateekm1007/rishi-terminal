@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-08T06:25:10.240Z",
+  "base": "https://rishi-terminal.vercel.app",
+  "productionSha": "2d74e064b2c45d6630dc94220861231f57c1b037",
+  "rows": [
+    {
+      "id": "singleton-pure",
+      "message": "What is the price of RELIANCE?",
+      "status": 200,
+      "wallMs": 57047,
+      "challenged": true,
+      "powMs": 43,
+      "step1Status": 429,
+      "step2Status": 200,
+      "step2BodyHead": "{\"text\":\"price = 1179.5 inr — live (observed/as-of 2026-10-08T06:25:00.000Z)\\nchange = -2.334 percent — live (observed/as-of 2026-10-08T06:25:00.000Z)\",\"provena",
+      "completionStages": [
+        "initial"
+      ],
+      "nCompletions": 1,
+      "hasInitialStage": true,
+      "toolCalls": [
+        {
+          "tool": "getPrices",
+          "status": "ok",
+          "symbol": "RELIANCE"
+        }
+      ],
+      "nToolCalls": 1,
+      "synthesis": "deterministic",
+      "grounded": true,
+      "claimsVerified": true,
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "repairs": [],
+      "answerHead": "price = 1179.5 inr — live (observed/as-of 2026-10-08T06:25:00.000Z)\nchange = -2.334 percent — live (observed/as-of 2026-10-08T06:25:00.000Z)"
+    }
+  ],
+  "verdict": {
+    "singleton-pure": {
+      "deterministic_surface": true,
+      "pass": true
+    }
+  },
+  "rowFilter": [
+    "singleton-pure"
+  ]
+}

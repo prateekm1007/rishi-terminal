@@ -146,3 +146,44 @@ describe("G6 — the warmer logs what it actually ingested", () => {
     expect(logIdx).toBeGreaterThan(noopIdx);
   });
 });
+
+describe("NS1 health agreement (round 28) — the daily snapshot is a live fundamentals-adjacent signal", () => {
+  // The pre-registered NS1 acceptance runbook
+  // (docs/evidence/round26/ns1-acceptance-runbook.md) requires: "the
+  // fundamentals 'no ingestion recorded yet' reason must CLEAR once the
+  // first real nightly_snapshot row exists; if it does not, that is a
+  // blocking health/data-plane disagreement."
+  //
+  // Observed on production 2026-10-08: the first REAL scheduled
+  // nightly_snapshot row landed (started 13:53:21Z, status success,
+  // records_out 896, 5.0s) while /api/health still reported
+  // "fundamentals: no ingestion recorded yet" — the signal list named
+  // only "ingest_financials", a job with ZERO rows ever (G6 round-24:
+  // honestly never-produced pending the founder's source decision).
+  // Fail-first: on pre-fix main both tests below fail.
+
+  it("MUST FAIL PRE-FIX: FUNDAMENTALS_INGEST_JOBS includes the snapshot route's job name", () => {
+    expect(FUNDAMENTALS_INGEST_JOBS).toContain("nightly_snapshot");
+  });
+
+  it("MUST FAIL PRE-FIX: a recent nightly_snapshot row clears the fundamentals reason", () => {
+    const body = computeHealth({
+      dbOk: true,
+      now: NOW,
+      ingestionRows: [row("nightly_snapshot", 30)],
+      engineVersion: ENGINE,
+    });
+    expect(body.lastFundamentalsIngestAt).not.toBeNull();
+    expect(body.reasons ?? []).not.toContain("fundamentals: no ingestion recorded yet");
+  });
+
+  it("positive control: ingest_financials stays a recognized fundamentals identity", () => {
+    const body = computeHealth({
+      dbOk: true,
+      now: NOW,
+      ingestionRows: [row("ingest_financials", 30)],
+      engineVersion: ENGINE,
+    });
+    expect(body.lastFundamentalsIngestAt).not.toBeNull();
+  });
+});

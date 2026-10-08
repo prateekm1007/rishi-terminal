@@ -75,6 +75,12 @@ export type EventConfidence = "high" | "moderate" | "low";
  *   live → high; live-undated → moderate (real, but the upstream
  *   disclosed no observation time); derived → moderate; seed → low
  *   (reference data, may be stale); unavailable → low.
+ * Total over the closed vocabulary on purpose: `projectEvent` refuses
+ * seed rows before confidence is ever assigned (see
+ * NON_OBSERVATION_STATES), so the `seed → low` branch is unreachable
+ * from the projection — it exists so this exported map stays total and
+ * deterministic for every consumer of the shared source-state
+ * vocabulary (evidence/UI layers, A4), never improvised at a call site.
  */
 export function eventConfidenceOf(sourceState: StateSourceState): EventConfidence {
   switch (sourceState) {
@@ -116,13 +122,28 @@ export interface IntelligenceEvent {
 }
 
 /**
+ * Source states that NEVER project to events (founder round-28
+ * directions 6–7: "seed-derived state → no event"). The state LOG is
+ * temporal MEMORY — future reference writers (fundamentals, master
+ * data) may legitimately append seed-sourced transitions there for
+ * traceability. The EVENT stream is the OBSERVATION stream: it is what
+ * A4 materiality classifies and what AI-synthesis eligibility feeds on.
+ * A seed row is reference data, not an observation — projecting it
+ * would launder placeholder data into the intelligence stream (the
+ * B-04 sin at the substrate level). Refused here, fail-closed.
+ */
+const NON_OBSERVATION_STATES: ReadonlySet<StateSourceState> = new Set(["seed"]);
+
+/**
  * Project ONE state-log row into an event, or null when the row's field
- * has no category mapping (no event — never a mis-categorized one).
- * Pure: no I/O, no clocks, no randomness.
+ * has no category mapping (no event — never a mis-categorized one) or
+ * the row is not an observation (seed-derived state). Pure: no I/O, no
+ * clocks, no randomness.
  */
 export function projectEvent(row: StateLogRow): IntelligenceEvent | null {
   const category = FIELD_CATEGORY[row.field];
   if (!category) return null;
+  if (NON_OBSERVATION_STATES.has(row.sourceState)) return null;
   return {
     id: `evt:${category}:${row.changeId}`,
     category,

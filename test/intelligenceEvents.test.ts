@@ -114,10 +114,56 @@ describe("the projection (deterministic, fail-closed)", () => {
   it("A3 scope discipline: the projected event carries NO materiality verdict (A4's engine owns it)", () => {
     // The entropy-locked roadmap separates A3 (projection) from A4
     // (materiality). A3's event must not smuggle a magnitude opinion:
-    // "materiality" in the event's own keys would be an A4 dependency
-    // inside A3's contract.
+    // the event's key set is CLOSED — no "materiality", no "importance",
+    // no "impact", no "significance", no "magnitude", no future A4
+    // semantic of any name (round-28 audit: the exact-key-set form is
+    // the entropy lock; a single banned word can be spelled around).
     const evt = projectEvent(ROW()) as IntelligenceEvent;
-    expect(Object.keys(evt)).not.toContain("materiality");
+    expect(Object.keys(evt).sort()).toEqual(
+      [
+        "id",
+        "category",
+        "entity",
+        "field",
+        "unit",
+        "observedAt",
+        "recordedAt",
+        "source",
+        "sourceState",
+        "oldValue",
+        "newValue",
+        "confidence",
+        "evidenceRefs",
+      ].sort(),
+    );
+  });
+
+  it("seed source-state projects to NO event (reference data is not an observation)", () => {
+    // Founder round-28 direction 6/7: "seed-derived state → no event".
+    // The state LOG may legitimately record seed-sourced transitions
+    // (future fundamentals/reference writers hook it for traceability),
+    // but the EVENT stream is the observation stream that A4 materiality
+    // and the AI synthesis eligibility feed on. Projecting a seed row
+    // would launder reference data into the intelligence stream — the
+    // placeholder-as-live sin (B-04) at the substrate level.
+    expect(projectEvent(ROW({ sourceState: "seed" }))).toBeNull();
+    expect(
+      projectEvents([
+        ROW({ field: "price", changeId: "a".repeat(64) }),
+        ROW({ field: "price", sourceState: "seed", changeId: "b".repeat(64) }),
+        ROW({ field: "volume24h", unit: "shares", changeId: "c".repeat(64) }),
+      ]).map((e) => e.id),
+    ).toEqual([`evt:PRICE:${"a".repeat(64)}`, `evt:VOLUME:${"c".repeat(64)}`]);
+  });
+
+  it("same input → byte-stable output (JSON-identical across calls)", () => {
+    const rows = [
+      ROW({ field: "price", changeId: "a".repeat(64) }),
+      ROW({ field: "volume24h", unit: "shares", changeId: "b".repeat(64) }),
+    ];
+    const first = JSON.stringify(projectEvents(rows));
+    const second = JSON.stringify(projectEvents(rows));
+    expect(first).toBe(second);
   });
 });
 

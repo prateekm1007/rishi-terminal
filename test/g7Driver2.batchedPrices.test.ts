@@ -7,7 +7,11 @@
  *
  * The one-driver fix under test here:
  *   - the canonical getPrices tool accepts a BOUNDED plural form
- *     {"symbols": [2-8 registry symbols]} alongside the singular form;
+ *     {"symbols": [1-8 registry symbols]} alongside the singular form
+ *     (the 1-element form is the 2026-10-08 model-trap fix: the production
+ *     model sent {symbols:["RELIANCE"]} for the canonical single-symbol
+ *     price ask and min(2) served an invalid-args disclosure as the
+ *     ANSWER — evidence: #256 behavioral proof, production 345134c);
  *   - the multi-symbol price intent seed (the EXISTING server-enforced
  *     reactive-engagement mechanism, round-3 Coder Directions section 5)
  *     seeds ONE batched call through the SAME real executor for
@@ -102,9 +106,39 @@ describe("G7 driver 2 - the canonical getPrices tool accepts a bounded batch", (
     expect(r.status).toBe("invalid-args");
   });
 
-  it("STRICT: a 1-element symbols array is rejected - the singular form is the one-tool shape", async () => {
+  it("MODEL-TRAP FIX (2026-10-08): a 1-element symbols array executes as the single fetch — ok, never invalid-args", async () => {
+    // Production evidence (#256 behavioral proof, 2026-10-08 05:26 UTC,
+    // production 345134c, model agnes-2.5-flash): "What is the price of
+    // RELIANCE?" was answered with {"tool":"getPrices",
+    // "args":{"symbols":["RELIANCE"]}} — the #257 prompt teaches the
+    // symbols form and the model chose it for ONE symbol; min(2) rejected
+    // it and the deterministic disclosure served "Invalid arguments for
+    // getPrices: symbols Too small: expected array to have >=2 items."
+    // as the answer to the canonical price ask. A 1-element batch is a
+    // well-defined single fetch through the identical executor path
+    // (registry-validate, dedupe, observe, join) — the constraint was a
+    // model-trap, not a safety property. Rule 21: RED on the pre-fix
+    // tree (invalid-args).
+    const deps = priceDeps();
     const r = await executeAiTool(
       { tool: "getPrices", args: { symbols: ["TCS"] } },
+      deps,
+    );
+    expect(r.status).toBe("ok");
+    if (r.status !== "ok") return;
+    expect(r.evidence).toHaveLength(1);
+    expect(r.evidence.map((e) => e.id)).toEqual([
+      "price:TCS:2026-10-07T09:45:01.000Z",
+    ]);
+    // the joined label of one canonical symbol is the symbol itself —
+    // the singleton gate's key matches, so the driver-1 fast path serves
+    expect(r.symbol).toBe("TCS");
+    expect(deps.calls).toEqual(["TCS"]);
+  });
+
+  it("STRICT: an EMPTY symbols array still fails closed (invalid-args, no execution)", async () => {
+    const r = await executeAiTool(
+      { tool: "getPrices", args: { symbols: [] } },
       priceDeps(),
     );
     expect(r.status).toBe("invalid-args");

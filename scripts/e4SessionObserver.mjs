@@ -68,6 +68,16 @@ if (!IS_MAIN) {
 }
 
 // ── universe (896 keys, extracted deterministically from the registry) ─────
+// The U2 batch contract (6b02dd3): POST /api/prices/batch takes
+// {"symbols": [...]} — a bare JSON array is rejected with HTTP 400
+// "symbols array required". The 2026-10-08 04:29 early battery swept all
+// 896 symbols into 'unavailable' because this instrument still sent the
+// pre-U2 bare-array body; an instrument failure must fail LOUDLY, never
+// masquerade as a data state.
+export function batchPricesRequestBody(symbols) {
+  return JSON.stringify({ symbols });
+}
+
 export function extractUniverseKeys(stocksSource) {
   const keys = [];
   // One entry per STOCKS record: `  "KEY": { symbol: "KEY" ...` (2-space
@@ -166,8 +176,13 @@ async function runBattery(label) {
     const r = await getJson(`${BASE}/api/prices/batch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(chunk),
+      body: batchPricesRequestBody(chunk),
     });
+    if (!r.body?.prices) {
+      throw new Error(
+        `controls batch: HTTP ${r.status} without a prices object (endpoint contract?) - refusing to record ${chunk.length} 'unavailable' rows from an instrument failure`,
+      );
+    }
     for (const [sym, q] of Object.entries(r.body?.prices ?? {})) {
       controls[sym] = {
         status: q.status,
@@ -187,8 +202,13 @@ async function runBattery(label) {
     const r = await getJson(`${BASE}/api/prices/batch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(chunk),
+      body: batchPricesRequestBody(chunk),
     });
+    if (!r.body?.prices) {
+      throw new Error(
+        `sweep batch: HTTP ${r.status} without a prices object (endpoint contract?) - refusing to record ${chunk.length} 'unavailable' rows from an instrument failure`,
+      );
+    }
     for (const sym of chunk) {
       const q = r.body?.prices?.[sym];
       if (!q || q.price == null || q.status === "UNAVAILABLE") {

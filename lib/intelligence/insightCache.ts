@@ -13,7 +13,7 @@
 //     evidence set always yields the same key (this is the value
 //     A1's `provenance.changeKey` is reserved for);
 //   - the server-side reader/writer for `insight_cache` (migration
-//     031), service-role only, with reuse accounting (hit_count via
+//     032), service-role only, with reuse accounting (hit_count via
 //     the migration's atomic SQL functions — never read-then-write);
 //   - parse-or-refuse at the write boundary: only A1-contract
 //     artifacts (`parseRishiInsight`) are ever stored.

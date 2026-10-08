@@ -278,51 +278,34 @@ const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinanci
  * 11). The detector still flags these asks as financial (advice needs
  * data — the zero-tool backstop still applies); only the SEED is
  * suppressed, so the model chooses its own tools and synthesizes.
+ *
+ * Directive-7 re-audit (after the driver-2 reconciliation, 2026-10-08):
+ * the COMPOUND advice+data wording the original comment always claimed to
+ * cover ("price and should I buy?") did NOT match this vocabulary — the
+ * probe on pre-reconciliation main seeded getPrices for "What is
+ * RELIANCE's price and should I buy it?" and fast-pathed it. The
+ * valuation family also leaked through word forms ("overvalued",
+ * "undervalued" — the \bvaluation\b alternative cannot see inside them).
+ * Added: "should I/we buy/sell", "worth buying / worth a buy",
+ * "good time/idea to buy/sell", the over/under-valued/priced family, and
+ * the "cheap or expensive" phrase (the PHRASE only — bare "cheaper" is a
+ * legitimate fundamentals comparison: "Which is cheaper on P/E?" is a
+ * data ask and keeps its seed, pinned in test/financialIntent.test.ts).
  */
 const ADVICE_ASK_RE =
-  /\b(buy or sell|target price|fair price|fairly priced|bullish or bearish|recommendations?|ratings?|valuation)\b/i;
+  /\b(buy or sell|target price|fair price|fairly priced|bullish or bearish|recommendations?|ratings?|valuation|should (?:i|we) (?:buy|sell)|worth (?:buying|a buy)|good (?:time|idea) to (?:buy|sell)|overvalued|undervalued|overpriced|underpriced|cheap or expensive)\b/i;
 
 /**
- * The canonical tool the server should seed for this message, or null.
- * Pure like the detector; null means "no server-side engagement" (the
- * model keeps full tool choice and the existing intent backstop still
- * applies).
+ * G7 driver 2 (reconciliation, 2026-10-08): the ask's canonical TOOL,
+ * resolved from the intent — ONE resolution rule shared by the
+ * single-symbol seed (intentSeedTool), the pre-emptive batch seed and the
+ * multi-symbol upfront seeds (intentSeedTools) — rule 14. Pure; null means
+ * the ask's terms map to no canonical seed tool.
  */
-export function intentSeedTool(
+function seedToolFor(
   message: string,
-): { tool: string; args: { symbol: string } | { symbols: string[] } } | null {
-  const intent = detectFinancialDataIntent(message);
-  if (!intent.financial) return null;
-  // The advice-ask guard comes FIRST (G7 driver-1 boundary audit, #256): an
-  // advice-shaped ask never seeds a tool (and therefore can never trigger
-  // the deterministic singleton fast path, which requires a non-null seed).
-  // Data asks compound with advice wording ("price and should I buy?") lose
-  // the seed too — the model requests its own tools and synthesizes, which
-  // is the required behavior whenever advice is part of the ask. The guard
-  // also bounds the driver-2 batch seed below: a "target price" comparison
-  // is an advice ask, not a pure price observation set.
-  if (ADVICE_ASK_RE.test(message)) return null;
-  // G7 driver 2 (founder round-26 directions 8-9): the measured multitool
-  // driver is SERIAL per-symbol round-trips, each costing a full provider
-  // completion. A PURE price-comparison ask (a price term + 2+ registry
-  // symbols + NO non-price data term) seeds ONE batched getPrices through
-  // the SAME canonical executor - deterministic, model-independent,
-  // bounded (8, re-enforced by the tool's own zod schema). The ROUTER
-  // consumes this seed pre-emptively (before the first completion), so the
-  // model still synthesizes the final structured answer over the batched
-  // observations (multi-symbol asks never take the deterministic singleton
-  // surface - the singleton gate excludes them). A MIXED composition (price
-  // + fundamentals/advice vocabulary) keeps the historical single-symbol
-  // reactive seed below - no over-seeding beyond the ask.
-  const batchSymbols = registrySymbolsInMessage(message);
-  if (
-    batchSymbols.length >= 2 &&
-    PRICE_DATA_TERM_RE.test(message) &&
-    !NON_PRICE_DATA_TERM_RE.test(message)
-  ) {
-    return { tool: 'getPrices', args: { symbols: batchSymbols.slice(0, 8) } };
-  }
-  if (!intent.symbol) return null;
+  intent: FinancialDataIntent,
+): "getPrices" | "getFinancials" | "getScore" | "getPeers" | null {
   // R11 (directive 8): a rate/yield ask anchored to a NON-EQUITY price
   // instrument seeds getPrices — for FX, commodities, crypto, indexes and
   // bonds the rate IS the observed price datum ("USD/INR rate", "gold
@@ -337,21 +320,88 @@ export function intentSeedTool(
   // DATA TERM itself names a pair's rate datum ("exchange rate" — a listed
   // DATA_TERM_RE term, restricted to non-equity symbols so "exchange rate
   // impact on TCS" never prices a stock, exactly as before this change).
+  const symbol = intent.symbol;
+  if (!symbol) return null;
   const rateAnchored =
     !!intent.instrumentText && rateAnchorsInstrument(message, intent.instrumentText);
   const pairRateTerm =
     /\bexchange rates?\b/i.test(message) &&
-    (intent.symbol.includes('/') || PRICE_REGISTRY_TOKENS.has(intent.symbol));
+    (symbol.includes('/') || PRICE_REGISTRY_TOKENS.has(symbol));
   if (
     (rateAnchored || pairRateTerm) &&
-    (intent.symbol.includes('/') || PRICE_REGISTRY_TOKENS.has(intent.symbol))
+    (symbol.includes('/') || PRICE_REGISTRY_TOKENS.has(symbol))
   ) {
-    return { tool: 'getPrices', args: { symbol: intent.symbol } };
+    return 'getPrices';
   }
   for (const { re, tool } of SEED_TERM_RES) {
-    if (re.test(message)) return { tool, args: { symbol: intent.symbol } };
+    if (re.test(message)) return tool;
   }
   return null;
+}
+
+/**
+ * G7 driver 2: the PURE price-comparison batch rule — ONE shared rule for
+ * the reactive seed (intentSeedTool) and the upfront plan
+ * (intentSeedTools), so the two can never drift (rule 14). A price term +
+ * 2+ distinct registry symbols + NO non-price data term means the ask
+ * wants exactly a price observation SET: ONE batched getPrices call
+ * (bounded to 8, re-enforced by the tool's own zod schema) through the
+ * SAME canonical executor. A MIXED composition (price +
+ * fundamentals/advice vocabulary) is not a pure comparison — it keeps the
+ * single-symbol/historical seeding instead (no over-seeding beyond the
+ * ask). Pure; null when the rule does not apply.
+ */
+function purePriceComparisonSeed(
+  message: string,
+): { tool: 'getPrices'; args: { symbols: string[] } } | null {
+  const batchSymbols = registrySymbolsInMessage(message);
+  if (
+    batchSymbols.length >= 2 &&
+    PRICE_DATA_TERM_RE.test(message) &&
+    !NON_PRICE_DATA_TERM_RE.test(message)
+  ) {
+    return { tool: 'getPrices', args: { symbols: batchSymbols.slice(0, 8) } };
+  }
+  return null;
+}
+
+/**
+ * The canonical tool the server should seed for this message, or null.
+ * Pure like the detector; null means "no server-side engagement" (the
+ * model keeps full tool choice and the existing intent backstop still
+ * applies).
+ */
+export function intentSeedTool(
+  message: string,
+): { tool: string; args: { symbol: string } | { symbols: string[] } } | null {
+  const intent = detectFinancialDataIntent(message);
+  if (!intent.financial) return null;
+  // The advice-ask guard comes FIRST (G7 driver-1 boundary audit, #256 +
+  // the directive-7 re-audit): an advice-shaped ask never seeds a tool
+  // (and therefore can never trigger the deterministic singleton fast
+  // path, which requires a non-null seed). Data asks compound with advice
+  // wording ("price and should I buy?", "overvalued at the current
+  // price?") lose the seed too — the model requests its own tools and
+  // synthesizes, which is the required behavior whenever advice is part of
+  // the ask. The guard also bounds the driver-2 batch seed below: a
+  // "target price" comparison is an advice ask, not a pure price
+  // observation set.
+  if (ADVICE_ASK_RE.test(message)) return null;
+  // G7 driver 2 (founder round-26 directions 8-9): a PURE price-comparison
+  // ask seeds ONE batched getPrices call — deterministic,
+  // model-independent, bounded. The ROUTER consumes this seed
+  // pre-emptively (before the first completion), so the model still
+  // synthesizes the final structured answer over the batched observations
+  // (multi-symbol asks never take the deterministic singleton surface —
+  // the singleton gate excludes them).
+  const batchSeed = purePriceComparisonSeed(message);
+  if (batchSeed) return batchSeed;
+  if (!intent.symbol) return null;
+  // Every other ask resolves its canonical tool through the ONE shared
+  // resolution rule (rate-anchored non-equity price asks, then the seed
+  // term map) and seeds it for the detector's single symbol.
+  const tool = seedToolFor(message, intent);
+  return tool ? { tool, args: { symbol: intent.symbol } } : null;
 }
 
 /**
@@ -365,26 +415,67 @@ export function intentSeedTool(
  * Pure and synchronous, like the detector.
  */
 export function countRegistrySymbols(message: string): number {
-  const text = message ?? '';
-  if (text.length === 0) return 0;
-  let count = 0;
-  if (SLASHED.size > 0) {
-    const seenPairs = new Set<string>();
-    for (const pair of SLASHED) {
-      const re = new RegExp(
-        `\\b${pair.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
-        'i',
-      );
-      if (re.test(text)) seenPairs.add(pair);
-    }
-    count += seenPairs.size;
-  }
-  const tokens = text
-    .toUpperCase()
-    .split(/[^A-Z0-9&]+/)
-    .filter((t) => t.length >= 2);
-  count += new Set(tokens.filter((t) => SYMBOL_TOKENS.has(t))).size;
-  return count;
+  // Driver-2 reconciliation (rule 14): the COUNT is the canonical LIST's
+  // length - one tokenizer, one dedupe rule. Two raw spellings that
+  // canonicalize to the same registry symbol are ONE instrument and count
+  // once (the more honest count for the singleton gate).
+  return registrySymbolsInMessage(message).length;
+}
+
+/**
+ * G7 driver 2 (reconciliation, 2026-10-08): the maximum number of symbols
+ * the server seeds UPFRONT for a multi-symbol data ask. The model's tool
+ * budget (MAX_TOOL_ITERATIONS = 4 in the router) is a stated protocol
+ * bound - seeded calls are calls, so the cap deliberately leaves the model
+ * at least two of its four requests after the seeds (a 3-symbol P/E ask
+ * seeds two and lets the model fetch the third itself). Raising this cap
+ * past 2 would shrink the model's remaining budget toward the BLOCKED
+ * boundary; that is a founder decision, not a tuning knob.
+ */
+export const MAX_UPFRONT_SEED_SYMBOLS = 2;
+
+/**
+ * G7 driver 2 (reconciliation of #257 + #258, 2026-10-08): the canonical
+ * seeds the server executes UPFRONT - before the first provider
+ * completion - for a multi-symbol financial data ask, or [] when the ask
+ * is not one. The measured multitool driver is the SERIAL per-symbol
+ * tool-request round trip: every extra symbol costs one full provider
+ * completion (N symbols = N+1 completions before the final answer).
+ * Upfront seeding collapses that to one evidence-complete synthesis pass.
+ *
+ * This is evidence prefetch, NOT a fast path: the model still synthesizes
+ * and its structured answer still runs the full grounding validation; a
+ * 2+-symbol ask can never fast-path (the singleton gate requires exactly
+ * one symbol). Same seeds, same executor, same injection contract as the
+ * probe/reactive seeds - no second tool path.
+ *
+ * The ONE seed rule (deterministic, in order):
+ *   1. advice-shaped asks (ADVICE_ASK_RE) seed NOTHING - advice
+ *      synthesizes over the model's OWN tool choices (direction 11);
+ *   2. a PURE price-comparison ask (the #257 rule, unchanged) seeds ONE
+ *      batched getPrices call for up to 8 named symbols;
+ *   3. any other multi-symbol ask whose terms resolve to a canonical tool
+ *      (the #258 rule) seeds that tool for the first
+ *      MAX_UPFRONT_SEED_SYMBOLS named symbols - the model fetches any
+ *      remainder itself inside its preserved budget.
+ * Single-symbol asks seed nothing upfront (the reactive seed + the
+ * driver-1 singleton fast path own that class, byte-for-byte).
+ */
+export function intentSeedTools(
+  message: string,
+): Array<{ tool: string; args: { symbol: string } | { symbols: string[] } }> {
+  const intent = detectFinancialDataIntent(message);
+  if (!intent.financial || !intent.symbol) return [];
+  if (ADVICE_ASK_RE.test(message)) return [];
+  const symbols = registrySymbolsInMessage(message);
+  if (symbols.length < 2) return [];
+  const batchSeed = purePriceComparisonSeed(message);
+  if (batchSeed) return [batchSeed];
+  const tool = seedToolFor(message, intent);
+  if (!tool) return [];
+  return symbols
+    .slice(0, MAX_UPFRONT_SEED_SYMBOLS)
+    .map((symbol) => ({ tool, args: { symbol } }));
 }
 
 /**
@@ -402,29 +493,37 @@ export function countRegistrySymbols(message: string): number {
 export function registrySymbolsInMessage(message: string): string[] {
   const text = message ?? '';
   if (text.length === 0) return [];
-  const out: string[] = [];
+  // TRUE first-appearance order (the directive-7 audit caught the comment
+  // claiming it while the implementation was tokens-then-pairs): every
+  // match carries its position in the message, the merged list is sorted
+  // by position, and the first appearance of a canonical symbol wins the
+  // dedupe. Deterministic for a fixed registry.
+  const found: Array<{ at: number; canonical: string }> = [];
   const seen = new Set<string>();
-  const push = (raw: string): void => {
+  const consider = (at: number, raw: string): void => {
     const canonical = normalizeSymbolInput(raw) ?? (SYMBOL_TOKENS.has(raw) ? raw : null);
     if (!canonical || seen.has(canonical)) return;
     seen.add(canonical);
-    out.push(canonical);
+    found.push({ at, canonical });
   };
-  const tokens = text
-    .toUpperCase()
-    .split(/[^A-Z0-9&]+/)
-    .filter((t) => t.length >= 2);
-  for (const t of tokens) {
-    if (SYMBOL_TOKENS.has(t)) push(t);
-  }
+  // Slashed pairs are invisible to the token split (the '/' separator), so
+  // they are matched against the RAW text; the match index preserves their
+  // first-appearance order against the token positions.
   if (SLASHED.size > 0) {
     for (const pair of SLASHED) {
       const re = new RegExp(
         `\\b${pair.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
         'i',
       );
-      if (re.test(text)) push(pair);
+      const m = re.exec(text);
+      if (m) consider(m.index, pair);
     }
   }
-  return out;
+  const upper = text.toUpperCase();
+  for (const m of upper.matchAll(/[A-Z0-9&]+/g)) {
+    const t = m[0];
+    if (t.length >= 2 && SYMBOL_TOKENS.has(t)) consider(m.index, t);
+  }
+  found.sort((a, b) => a.at - b.at);
+  return found.map((f) => f.canonical);
 }

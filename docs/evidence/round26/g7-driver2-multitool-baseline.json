@@ -1,0 +1,1393 @@
+{
+  "generatedAt": "2026-10-08T00:18:58.194Z",
+  "baseUrl": "https://rishi-terminal.vercel.app",
+  "version": {
+    "sha": "93c1dac034c97921a4b53d2e55dae9a0bf571b1e",
+    "now": "2026-10-08T00:12:46.449Z",
+    "node": "v24.21.0"
+  },
+  "measurementMode": "anonymous (X7 challenge solved in-loop after the daily free units; solve time included in wallMs)",
+  "selectedClasses": [
+    "multitoolDriver2"
+  ],
+  "powIncludedInWallMs": true,
+  "providerModelIdentity": {
+    "provider": null,
+    "model": null
+  },
+  "classes": {
+    "financial": {
+      "n": 0,
+      "effective": 0,
+      "statusCounts": {},
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": null,
+      "wallP95": null,
+      "wallAvg": null,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "toolStatusCounts": {},
+      "providerFailureRows": 0,
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "philosophy": {
+      "n": 0,
+      "effective": 0,
+      "statusCounts": {},
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": null,
+      "wallP95": null,
+      "wallAvg": null,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "toolStatusCounts": {},
+      "providerFailureRows": 0,
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "invalid": {
+      "n": 0,
+      "effective": 0,
+      "statusCounts": {},
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": null,
+      "wallP95": null,
+      "wallAvg": null,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "toolStatusCounts": {},
+      "providerFailureRows": 0,
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "hostile": {
+      "n": 0,
+      "effective": 0,
+      "statusCounts": {},
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": null,
+      "wallP95": null,
+      "wallAvg": null,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "toolStatusCounts": {},
+      "providerFailureRows": 0,
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "financialNoSymbol": {
+      "n": 0,
+      "effective": 0,
+      "statusCounts": {},
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": null,
+      "wallP95": null,
+      "wallAvg": null,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "toolStatusCounts": {},
+      "providerFailureRows": 0,
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "toolRequest": {
+      "n": 0,
+      "effective": 0,
+      "statusCounts": {},
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": null,
+      "wallP95": null,
+      "wallAvg": null,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "toolStatusCounts": {},
+      "providerFailureRows": 0,
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "multitool": {
+      "n": 0,
+      "effective": 0,
+      "statusCounts": {},
+      "firstPassGrounded": 0,
+      "grounded": 0,
+      "repaired": 0,
+      "blocked": 0,
+      "invalid": 0,
+      "wallP50": null,
+      "wallP95": null,
+      "wallAvg": null,
+      "completionStageAverages": {},
+      "repairCauses": {},
+      "toolStatusCounts": {},
+      "providerFailureRows": 0,
+      "totalToolExecutions": 0,
+      "validationMsTotal": 0,
+      "providerAttemptsTotal": 0
+    },
+    "multitoolDriver2": {
+      "n": 14,
+      "effective": 10,
+      "statusCounts": {
+        "200": 10,
+        "429": 4
+      },
+      "firstPassGrounded": 4,
+      "grounded": 7,
+      "repaired": 6,
+      "blocked": 1,
+      "invalid": 0,
+      "wallP50": 10477,
+      "wallP95": 37425,
+      "wallAvg": 14951,
+      "completionStageAverages": {
+        "initial": {
+          "count": 10,
+          "avgMs": 2595
+        },
+        "post-tool": {
+          "count": 17,
+          "avgMs": 5579
+        },
+        "repair": {
+          "count": 6,
+          "avgMs": 6842
+        }
+      },
+      "repairCauses": {
+        "unsupported-numeric-prose": 2,
+        "forecast-advice-wording": 1,
+        "missing-claims": 2,
+        "field-value-mismatch": 1
+      },
+      "toolStatusCounts": {
+        "ok": 18
+      },
+      "providerFailureRows": 13,
+      "totalToolExecutions": 18,
+      "validationMsTotal": 9,
+      "providerAttemptsTotal": 33
+    }
+  },
+  "overall": {
+    "n": 14,
+    "effective": 10,
+    "statusCounts": {
+      "200": 10,
+      "429": 4
+    },
+    "firstPassGrounded": 4,
+    "grounded": 7,
+    "repaired": 6,
+    "blocked": 1,
+    "invalid": 0,
+    "wallP50": 10477,
+    "wallP95": 37425,
+    "wallAvg": 14951,
+    "completionStageAverages": {
+      "initial": {
+        "count": 10,
+        "avgMs": 2595
+      },
+      "post-tool": {
+        "count": 17,
+        "avgMs": 5579
+      },
+      "repair": {
+        "count": 6,
+        "avgMs": 6842
+      }
+    },
+    "repairCauses": {
+      "unsupported-numeric-prose": 2,
+      "forecast-advice-wording": 1,
+      "missing-claims": 2,
+      "field-value-mismatch": 1
+    },
+    "toolStatusCounts": {
+      "ok": 18
+    },
+    "providerFailureRows": 13,
+    "totalToolExecutions": 18,
+    "validationMsTotal": 9,
+    "providerAttemptsTotal": 33
+  },
+  "raw": {
+    "financial": [],
+    "philosophy": [],
+    "invalid": [],
+    "hostile": [],
+    "financialNoSymbol": [],
+    "toolRequest": [],
+    "multitool": [],
+    "multitoolDriver2": [
+      {
+        "status": 429,
+        "wallMs": 2190,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 53,
+        "ttfbMs": 2189
+      },
+      {
+        "status": 200,
+        "wallMs": 18099,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "SBIN",
+            "status": "ok",
+            "ms": 848
+          },
+          {
+            "tool": "getFinancials",
+            "symbol": "HDFCBANK",
+            "status": "ok",
+            "ms": 771
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: claim 1: qualitative claim (no numeric statement) — classified context-only, NOT grounded (evidenceIds alone are never grounding; its unused assertions are ignored) (G3) | answer: number \"10.5\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"13.7\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (signed values: when you state a negative fact in prose, write the minus sign exactly as the annotation does - 'changed by -1.401 percent', never 'down 1.401 percent'; and never write dates, observation timestamps, or numbered-list digits - only assertion values may appear as numbers) (never introduce a price level with the word change - 'changed to 2091' states the PRICE: write 'the price is 2091 inr' and 'the change is -1.107 percent' as separate statements, each with its own assertion) (never COMPUTE a number the annotations do not contain - no self-calculated differences, ratios or percentages; state the two annotated numbers side by side instead) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=10.5 multiple, roe=15.4 percent, roce=6.13 percent, opm=42 percent, de=0 ratio, promo=55.5 percent, revcagr=14 percent, epscagr=14 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "SBIN",
+            "ms": 847
+          },
+          {
+            "symbol": "HDFCBANK",
+            "ms": 769
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 2
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1170
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 8534
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 3171
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "pe = 10.5 multiple — live (no disclosed observation time)\npe = 13.7 multiple — live (no disclosed observation time)",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 116,
+        "ttfbMs": 18098
+      },
+      {
+        "status": 200,
+        "wallMs": 18596,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "RELIANCE",
+            "status": "ok",
+            "ms": 770
+          },
+          {
+            "tool": "getFinancials",
+            "symbol": "TCS",
+            "status": "ok",
+            "ms": 395
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "unsupported-numeric-prose",
+            "feedback": "the validator rejected: answer: number \"51.8\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"63\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"17.7778\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02) | answer: number \"0.45\" is not a matched assertion value — unsupported figure, rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (signed values: when you state a negative fact in prose, write the minus sign exactly as the annotation does - 'changed by -1.401 percent', never 'down 1.401 percent'; and never write dates, observation timestamps, or numbered-list digits - only assertion values may appear as numbers) (never introduce a price level with the word change - 'changed to 2091' states the PRICE: write 'the price is 2091 inr' and 'the change is -1.107 percent' as separate statements, each with its own assertion) (never COMPUTE a number the annotations do not contain - no self-calculated differences, ratios or percentages; state the two annotated numbers side by side instead) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=21.9 multiple, roe=8.91 percent, roce=10.3 percent, opm=16 percent, de=0.45 ratio, promo=50.5 percent, revcagr=6 percent, epscagr=5 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "RELIANCE",
+            "ms": 770
+          },
+          {
+            "symbol": "TCS",
+            "ms": 395
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 2
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2570
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 4344
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 7511
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 37,
+        "ttfbMs": 18595
+      },
+      {
+        "status": 429,
+        "wallMs": 2100,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          502,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 19,
+        "ttfbMs": 2099
+      },
+      {
+        "status": 200,
+        "wallMs": 5978,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 1,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "SBIN",
+            "status": "ok",
+            "ms": 82
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "SBIN",
+            "ms": 81
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2490
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 954 inr — live (observed/as-of 2026-10-07T09:44:59.000Z)\nchange = -0.495 percent — live (observed/as-of 2026-10-07T09:44:59.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 22,
+        "ttfbMs": 5977
+      },
+      {
+        "status": 429,
+        "wallMs": 3129,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 22,
+        "ttfbMs": 3128
+      },
+      {
+        "status": 429,
+        "wallMs": 1830,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": null,
+        "structuredResponse": null,
+        "provider": null,
+        "model": null,
+        "providerAttempts": null,
+        "toolExecutions": [],
+        "repairs": [],
+        "validationMs": null,
+        "priceFetches": [],
+        "fundamentalsFetches": [],
+        "memoHits": null,
+        "completionStages": {},
+        "firstPassGrounded": false,
+        "answerHead": "",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          429
+        ],
+        "challenged": true,
+        "powMs": 10,
+        "ttfbMs": 1829
+      },
+      {
+        "status": 200,
+        "wallMs": 12596,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "HDFCBANK",
+            "status": "ok",
+            "ms": 271
+          }
+        ],
+        "repairs": [],
+        "validationMs": 5,
+        "priceFetches": [
+          {
+            "symbol": "HDFCBANK",
+            "ms": 270
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 5030
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4179
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 702.75 inr — live (observed/as-of 2026-10-07T09:45:00.000Z)\nchange = -1.223 percent — live (observed/as-of 2026-10-07T09:45:00.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 64,
+        "ttfbMs": 12595
+      },
+      {
+        "status": 200,
+        "wallMs": 8520,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 2,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "MARUTI",
+            "status": "ok",
+            "ms": 74
+          }
+        ],
+        "repairs": [],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "MARUTI",
+            "ms": 74
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1225
+          },
+          "post-tool": {
+            "count": 1,
+            "msTotal": 4583
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 11450 inr — live (observed/as-of 2026-10-07T09:45:02.000Z)\nchange = -1.505 percent — live (observed/as-of 2026-10-07T09:45:02.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 29,
+        "ttfbMs": 8515
+      },
+      {
+        "status": 200,
+        "wallMs": 36471,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 5,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "SUNPHARMA",
+            "status": "ok",
+            "ms": 77
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "CIPLA",
+            "status": "ok",
+            "ms": 136
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "DRREDDY",
+            "status": "ok",
+            "ms": 134
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "forecast-advice-wording",
+            "feedback": "the validator rejected: answer: forecast/advice-superlative language (\"double\") — no platform fact can back a prediction (U6 atomic claims). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (signed values: when you state a negative fact in prose, write the minus sign exactly as the annotation does - 'changed by -1.401 percent', never 'down 1.401 percent'; and never write dates, observation timestamps, or numbered-list digits - only assertion values may appear as numbers) (never introduce a price level with the word change - 'changed to 2091' states the PRICE: write 'the price is 2091 inr' and 'the change is -1.107 percent' as separate statements, each with its own assertion) (never COMPUTE a number the annotations do not contain - no self-calculated differences, ratios or percentages; state the two annotated numbers side by side instead) (canonical fact values from the evidence you may copy digit-for-digit, one per field: price=1781 inr, change=-1.28 percent, price=1327.2 inr, change=-0.97 percent, price=1203.8 inr, change=-0.348 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "SUNPHARMA",
+            "ms": 77
+          },
+          {
+            "symbol": "CIPLA",
+            "ms": 135
+          },
+          {
+            "symbol": "DRREDDY",
+            "ms": 133
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2440
+          },
+          "post-tool": {
+            "count": 3,
+            "msTotal": 22182
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 7966
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 1781 inr — live (observed/as-of 2026-10-07T09:45:04.000Z)\nchange = -1.28 percent — live (observed/as-of 2026-10-07T09:45:04.000Z)\nprice = 1327.2 inr — l",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 98,
+        "ttfbMs": 36470
+      },
+      {
+        "status": 200,
+        "wallMs": 32773,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "BAJFINANCE",
+            "status": "ok",
+            "ms": 1
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "HDFCBANK",
+            "status": "ok",
+            "ms": 50
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "you received TOOL RESULT data for this data question but replied with zero claims — every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 1,
+        "priceFetches": [
+          {
+            "symbol": "BAJFINANCE",
+            "ms": 0
+          },
+          {
+            "symbol": "HDFCBANK",
+            "ms": 49
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 5646
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 22265
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 2266
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "price = 963.85 inr — live (observed/as-of 2026-10-07T09:45:00.000Z)\nprice = 702.75 inr — live (observed/as-of 2026-10-07T09:45:00.000Z)",
+        "attempt": 1,
+        "attemptStatuses": [
+          200
+        ],
+        "challenged": true,
+        "powMs": 17,
+        "ttfbMs": 32771
+      },
+      {
+        "status": 200,
+        "wallMs": 10477,
+        "grounded": true,
+        "claimsVerified": true,
+        "groundingMode": "structured-claims",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 3,
+        "toolExecutions": [
+          {
+            "tool": "getPrices",
+            "symbol": "ITC",
+            "status": "ok",
+            "ms": 81
+          },
+          {
+            "tool": "getPrices",
+            "symbol": "WIPRO",
+            "status": "ok",
+            "ms": 68
+          }
+        ],
+        "repairs": [],
+        "validationMs": 0,
+        "priceFetches": [
+          {
+            "symbol": "ITC",
+            "ms": 81
+          },
+          {
+            "symbol": "WIPRO",
+            "ms": 67
+          }
+        ],
+        "fundamentalsFetches": [],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1236
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 6549
+          }
+        },
+        "firstPassGrounded": true,
+        "answerHead": "price = 265.7 inr — live (observed/as-of 2026-10-07T09:45:00.000Z)\nprice = 159.6 inr — live (observed/as-of 2026-10-07T09:45:04.000Z)",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 27,
+        "ttfbMs": 10476
+      },
+      {
+        "status": 200,
+        "wallMs": 37425,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "valid",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getFinancials",
+            "symbol": "INFY",
+            "status": "ok",
+            "ms": 772
+          },
+          {
+            "tool": "getFinancials",
+            "symbol": "WIPRO",
+            "status": "ok",
+            "ms": 395
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "field-value-mismatch",
+            "feedback": "the validator rejected: claim 1: claims pe=\"12,\" but the matched pe assertion is 12.9 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (signed values: when you state a negative fact in prose, write the minus sign exactly as the annotation does - 'changed by -1.401 percent', never 'down 1.401 percent'; and never write dates, observation timestamps, or numbered-list digits - only assertion values may appear as numbers) (never introduce a price level with the word change - 'changed to 2091' states the PRICE: write 'the price is 2091 inr' and 'the change is -1.107 percent' as separate statements, each with its own assertion) (never COMPUTE a number the annotations do not contain - no self-calculated differences, ratios or percentages; state the two annotated numbers side by side instead) (canonical fact values from the evidence you may copy digit-for-digit, one per field: pe=12.9 multiple, roe=31.9 percent, roce=40 percent, opm=24 percent, de=0 ratio, promo=0.56 percent, revcagr=7 percent, epscagr=8 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "INFY",
+            "ms": 771
+          },
+          {
+            "symbol": "WIPRO",
+            "ms": 395
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 2
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 2545
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 11459
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 19036
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "The AI reply could not be verified against platform evidence and was not shown.",
+        "attempt": 3,
+        "attemptStatuses": [
+          429,
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 3,
+        "ttfbMs": 37424
+      },
+      {
+        "status": 200,
+        "wallMs": 19129,
+        "grounded": false,
+        "claimsVerified": false,
+        "groundingMode": "evidence-context",
+        "structuredResponse": "blocked",
+        "provider": "chat-api",
+        "model": "agnes-2.5-flash",
+        "providerAttempts": 4,
+        "toolExecutions": [
+          {
+            "tool": "getStock",
+            "symbol": "TCS",
+            "status": "ok",
+            "ms": 775
+          },
+          {
+            "tool": "getStock",
+            "symbol": "RELIANCE",
+            "status": "ok",
+            "ms": 770
+          }
+        ],
+        "repairs": [
+          {
+            "cause": "missing-claims",
+            "feedback": "you received TOOL RESULT data for this data question but replied with zero claims — every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+          }
+        ],
+        "validationMs": 0,
+        "priceFetches": [],
+        "fundamentalsFetches": [
+          {
+            "symbol": "TCS",
+            "ms": 775
+          },
+          {
+            "symbol": "RELIANCE",
+            "ms": 770
+          }
+        ],
+        "memoHits": {
+          "price": 0,
+          "fundamentals": 0
+        },
+        "completionStages": {
+          "initial": {
+            "count": 1,
+            "msTotal": 1599
+          },
+          "post-tool": {
+            "count": 2,
+            "msTotal": 10746
+          },
+          "repair": {
+            "count": 1,
+            "msTotal": 1104
+          }
+        },
+        "firstPassGrounded": false,
+        "answerHead": "BLOCKED: verified platform data was retrieved for this question, but the reply did not cite it. No uncited restatement of the data is served. Ask again, or reph",
+        "attempt": 2,
+        "attemptStatuses": [
+          429,
+          200
+        ],
+        "challenged": true,
+        "powMs": 42,
+        "ttfbMs": 19128
+      }
+    ]
+  },
+  "canonical": {
+    "canonicalVersion": 1,
+    "source": {
+      "generatedAt": "2026-10-08T00:18:58.194Z",
+      "baseUrl": "https://rishi-terminal.vercel.app",
+      "version": {
+        "sha": "93c1dac034c97921a4b53d2e55dae9a0bf571b1e",
+        "now": "2026-10-08T00:12:46.449Z",
+        "node": "v24.21.0"
+      },
+      "measurementMode": "anonymous (X7 challenge solved in-loop after the daily free units; solve time included in wallMs)"
+    },
+    "rule": "raw rows are the only source; both wall variants reported; attribution basis = wallExclPoW",
+    "overall": {
+      "n": 14,
+      "usable": 10,
+      "refusals": 4,
+      "refusalStatusCounts": {
+        "429": 4
+      },
+      "wallInclPoW": {
+        "p50Ms": 18099,
+        "p95Ms": 37425,
+        "meanMs": 20006
+      },
+      "wallExclPoW": {
+        "p50Ms": 17983,
+        "p95Ms": 37422,
+        "meanMs": 19961
+      },
+      "attribution": {
+        "basis": "usable rows, wallExclPoW totals",
+        "wallExclPoWTotalMs": 199609,
+        "completionsInitialMs": 25951,
+        "completionsInitialPct": 13,
+        "completionsPostToolMs": 94841,
+        "completionsPostToolPct": 47.5,
+        "completionsRepairMs": 41054,
+        "completionsRepairPct": 20.6,
+        "completionsTotalPct": 81.1,
+        "toolExecutionMs": 6470,
+        "toolExecutionPct": 3.2,
+        "validationMs": 9,
+        "validationPct": 0,
+        "ttfbMs": 200049,
+        "ttfbPct": 100.2,
+        "unattributedMs": 31284,
+        "unattributedPct": 15.7
+      },
+      "grounded": 7,
+      "repaired": 6,
+      "repairCauses": {
+        "unsupported-numeric-prose": 2,
+        "forecast-advice-wording": 1,
+        "missing-claims": 2,
+        "field-value-mismatch": 1
+      }
+    },
+    "classes": {
+      "financial": {
+        "n": 0,
+        "usable": 0,
+        "refusals": 0,
+        "refusalStatusCounts": {},
+        "wallInclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "wallExclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 0,
+          "completionsInitialMs": 0,
+          "completionsInitialPct": null,
+          "completionsPostToolMs": 0,
+          "completionsPostToolPct": null,
+          "completionsRepairMs": 0,
+          "completionsRepairPct": null,
+          "completionsTotalPct": null,
+          "toolExecutionMs": 0,
+          "toolExecutionPct": null,
+          "validationMs": 0,
+          "validationPct": null,
+          "ttfbMs": 0,
+          "ttfbPct": null,
+          "unattributedMs": 0,
+          "unattributedPct": null
+        },
+        "grounded": 0,
+        "repaired": 0,
+        "repairCauses": {}
+      },
+      "philosophy": {
+        "n": 0,
+        "usable": 0,
+        "refusals": 0,
+        "refusalStatusCounts": {},
+        "wallInclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "wallExclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 0,
+          "completionsInitialMs": 0,
+          "completionsInitialPct": null,
+          "completionsPostToolMs": 0,
+          "completionsPostToolPct": null,
+          "completionsRepairMs": 0,
+          "completionsRepairPct": null,
+          "completionsTotalPct": null,
+          "toolExecutionMs": 0,
+          "toolExecutionPct": null,
+          "validationMs": 0,
+          "validationPct": null,
+          "ttfbMs": 0,
+          "ttfbPct": null,
+          "unattributedMs": 0,
+          "unattributedPct": null
+        },
+        "grounded": 0,
+        "repaired": 0,
+        "repairCauses": {}
+      },
+      "invalid": {
+        "n": 0,
+        "usable": 0,
+        "refusals": 0,
+        "refusalStatusCounts": {},
+        "wallInclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "wallExclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 0,
+          "completionsInitialMs": 0,
+          "completionsInitialPct": null,
+          "completionsPostToolMs": 0,
+          "completionsPostToolPct": null,
+          "completionsRepairMs": 0,
+          "completionsRepairPct": null,
+          "completionsTotalPct": null,
+          "toolExecutionMs": 0,
+          "toolExecutionPct": null,
+          "validationMs": 0,
+          "validationPct": null,
+          "ttfbMs": 0,
+          "ttfbPct": null,
+          "unattributedMs": 0,
+          "unattributedPct": null
+        },
+        "grounded": 0,
+        "repaired": 0,
+        "repairCauses": {}
+      },
+      "hostile": {
+        "n": 0,
+        "usable": 0,
+        "refusals": 0,
+        "refusalStatusCounts": {},
+        "wallInclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "wallExclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 0,
+          "completionsInitialMs": 0,
+          "completionsInitialPct": null,
+          "completionsPostToolMs": 0,
+          "completionsPostToolPct": null,
+          "completionsRepairMs": 0,
+          "completionsRepairPct": null,
+          "completionsTotalPct": null,
+          "toolExecutionMs": 0,
+          "toolExecutionPct": null,
+          "validationMs": 0,
+          "validationPct": null,
+          "ttfbMs": 0,
+          "ttfbPct": null,
+          "unattributedMs": 0,
+          "unattributedPct": null
+        },
+        "grounded": 0,
+        "repaired": 0,
+        "repairCauses": {}
+      },
+      "financialNoSymbol": {
+        "n": 0,
+        "usable": 0,
+        "refusals": 0,
+        "refusalStatusCounts": {},
+        "wallInclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "wallExclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 0,
+          "completionsInitialMs": 0,
+          "completionsInitialPct": null,
+          "completionsPostToolMs": 0,
+          "completionsPostToolPct": null,
+          "completionsRepairMs": 0,
+          "completionsRepairPct": null,
+          "completionsTotalPct": null,
+          "toolExecutionMs": 0,
+          "toolExecutionPct": null,
+          "validationMs": 0,
+          "validationPct": null,
+          "ttfbMs": 0,
+          "ttfbPct": null,
+          "unattributedMs": 0,
+          "unattributedPct": null
+        },
+        "grounded": 0,
+        "repaired": 0,
+        "repairCauses": {}
+      },
+      "toolRequest": {
+        "n": 0,
+        "usable": 0,
+        "refusals": 0,
+        "refusalStatusCounts": {},
+        "wallInclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "wallExclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 0,
+          "completionsInitialMs": 0,
+          "completionsInitialPct": null,
+          "completionsPostToolMs": 0,
+          "completionsPostToolPct": null,
+          "completionsRepairMs": 0,
+          "completionsRepairPct": null,
+          "completionsTotalPct": null,
+          "toolExecutionMs": 0,
+          "toolExecutionPct": null,
+          "validationMs": 0,
+          "validationPct": null,
+          "ttfbMs": 0,
+          "ttfbPct": null,
+          "unattributedMs": 0,
+          "unattributedPct": null
+        },
+        "grounded": 0,
+        "repaired": 0,
+        "repairCauses": {}
+      },
+      "multitool": {
+        "n": 0,
+        "usable": 0,
+        "refusals": 0,
+        "refusalStatusCounts": {},
+        "wallInclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "wallExclPoW": {
+          "p50Ms": null,
+          "p95Ms": null,
+          "meanMs": null
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 0,
+          "completionsInitialMs": 0,
+          "completionsInitialPct": null,
+          "completionsPostToolMs": 0,
+          "completionsPostToolPct": null,
+          "completionsRepairMs": 0,
+          "completionsRepairPct": null,
+          "completionsTotalPct": null,
+          "toolExecutionMs": 0,
+          "toolExecutionPct": null,
+          "validationMs": 0,
+          "validationPct": null,
+          "ttfbMs": 0,
+          "ttfbPct": null,
+          "unattributedMs": 0,
+          "unattributedPct": null
+        },
+        "grounded": 0,
+        "repaired": 0,
+        "repairCauses": {}
+      },
+      "multitoolDriver2": {
+        "n": 14,
+        "usable": 10,
+        "refusals": 4,
+        "refusalStatusCounts": {
+          "429": 4
+        },
+        "wallInclPoW": {
+          "p50Ms": 18099,
+          "p95Ms": 37425,
+          "meanMs": 20006
+        },
+        "wallExclPoW": {
+          "p50Ms": 17983,
+          "p95Ms": 37422,
+          "meanMs": 19961
+        },
+        "attribution": {
+          "basis": "usable rows, wallExclPoW totals",
+          "wallExclPoWTotalMs": 199609,
+          "completionsInitialMs": 25951,
+          "completionsInitialPct": 13,
+          "completionsPostToolMs": 94841,
+          "completionsPostToolPct": 47.5,
+          "completionsRepairMs": 41054,
+          "completionsRepairPct": 20.6,
+          "completionsTotalPct": 81.1,
+          "toolExecutionMs": 6470,
+          "toolExecutionPct": 3.2,
+          "validationMs": 9,
+          "validationPct": 0,
+          "ttfbMs": 200049,
+          "ttfbPct": 100.2,
+          "unattributedMs": 31284,
+          "unattributedPct": 15.7
+        },
+        "grounded": 7,
+        "repaired": 6,
+        "repairCauses": {
+          "unsupported-numeric-prose": 2,
+          "forecast-advice-wording": 1,
+          "missing-claims": 2,
+          "field-value-mismatch": 1
+        }
+      }
+    }
+  }
+}

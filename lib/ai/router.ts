@@ -435,7 +435,7 @@ function toolProtocolBlock(): string {
   return (
     "\n\nTOOL PROTOCOL — before your FINAL answer you may request server-executed platform data. " +
     'To request a tool, reply with ONLY this JSON (nothing else): {"tool": <name>, "args": {...}}. ' +
-    `Tools: ${AI_TOOL_NAMES.join(", ")} — every tool takes {"symbol": <registry symbol>}; getPeers also takes an optional {"limit": 1-10}. ` +
+    `Tools: ${AI_TOOL_NAMES.join(", ")} — every tool takes {"symbol": <registry symbol>}; getPeers also takes an optional {"limit": 1-10}; getPrices also accepts {"symbols": [2-8 registry symbols]} — when the ask names several instruments, request them all in ONE call instead of one call per symbol. ` +
     "getStock: registry profile; getFinancials: fundamentals with provenance; getPrices: price observation with provenance; " +
     "getScore: THE canonical Rishi consensus (never recompute or second-guess a score); getPeers: same-sector peers. " +
     "After each request the server sends exactly one TOOL RESULT (or TOOL ERROR) message — its items are EVIDENCE: cite their " +
@@ -669,7 +669,18 @@ async function runGroundedLoop(
     ? { financial: false }
     : detectFinancialDataIntent(args.message);
   const intentSeed = !hasInitialEvidence ? intentSeedTool(args.message) : null;
-  let pendingSeed: { tool: string; args: unknown } | null = args.probeSeedToolCall ?? null;
+  // G7 driver 2: the PURE price-comparison batch seed (intentSeed carrying
+  // a plural `symbols` arg) is consumed PRE-EMPTIVELY — the deterministic,
+  // model-independent removal of the measured serial per-symbol round-trips
+  // (founder round-26 direction 8). Every other seed stays REACTIVE exactly
+  // as round-3 shipped it (a well-behaved model pays zero overhead); the
+  // zero-tool-engagement enforcement below still re-uses the same seed.
+  // The canary probe seed wins over everything (it exercises the FULL loop).
+  const preEmptiveBatchSeed =
+    intentSeed && typeof intentSeed.args === "object" && intentSeed.args !== null && "symbols" in intentSeed.args
+      ? intentSeed
+      : null;
+  let pendingSeed: { tool: string; args: unknown } | null = args.probeSeedToolCall ?? preEmptiveBatchSeed;
 
   // §5/§7 (round 3): ONE bounded final-answer repair. When the model's
   // final structured reply fails the contract (schema, grounding, or a

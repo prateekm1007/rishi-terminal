@@ -84,6 +84,31 @@ const PeersArgsSchema = z
     limit: z.number().int().min(1).max(10).optional(),
   })
   .strict();
+/** G7 driver 2 (founder round-26 directions 8-9): the ONE plural-capable
+ *  tool. A multi-instrument ask previously needed N serial tool requests,
+ *  each costing a full provider completion (the measured multitool driver:
+ *  2-3 post-tool completions, 7.3-15.2 s of the wall). The batch form is
+ *  BOUNDED (2-8 symbols, each registry-validated by the executor) and
+ *  STRICT (no extra keys; symbol+symbols together are rejected as an
+ *  ambiguous ask). Synthesis stays with the model - this only collapses
+ *  the observation round-trips. */
+const PricesBatchArgsSchema = z
+  .object({
+    symbols: z.array(z.string().min(1).max(25)).min(2).max(8),
+  })
+  .strict();
+const PricesArgsSchema = z.union([SymbolArgsSchema, PricesBatchArgsSchema]);
+
+/** ONE schema-selection rule, shared by the executor and the transcript
+ *  echo (toolRequestTurn) so the W3 canonical echo can never drift from
+ *  what the executor actually accepts (rule 14). */
+function argsSchemaFor(
+  tool: string,
+): typeof PeersArgsSchema | typeof PricesArgsSchema | typeof SymbolArgsSchema {
+  if (tool === "getPeers") return PeersArgsSchema;
+  if (tool === "getPrices") return PricesArgsSchema;
+  return SymbolArgsSchema;
+}
 
 /** Explicit tool outcome states. `ok` carries evidence items (the ONLY way
  *  tool data enters the grounding set); every other status is a disclosed
@@ -143,7 +168,7 @@ export async function executeAiTool(
   const tool = call.tool;
 
   // 2. zod argument validation (STRICT — unknown keys rejected).
-  const schema = tool === "getPeers" ? PeersArgsSchema : SymbolArgsSchema;
+  const schema = argsSchemaFor(tool);
   const parsed = schema.safeParse(call.args ?? {});
   if (!parsed.success) {
     return {
@@ -163,6 +188,63 @@ export async function executeAiTool(
   //    answer honest no-data (known-but-out-of-scope is NOT unknown);
   //    getPrices serves the full canonical price registry through the same
   //    shared canonical state (lib/livePrice underneath).
+  // G7 driver 2: the batch form carries no singular `symbol` — each element
+  // is registry-validated here (fail-closed whole call: one unknown element
+  // is a caller error, never a partial observation set), deduped in
+  // first-appearance order, then observed through the SAME shared canonical
+  // state the singular form uses (one price observation per symbol per
+  // request — Commit M7).
+  if (tool === "getPrices" && "symbols" in parsed.data) {
+    const canonical: string[] = [];
+    for (const raw of parsed.data.symbols as string[]) {
+      const rs = raw.trim().toUpperCase();
+      if (!isValidSymbolInput(rs)) {
+        return {
+          status: "unknown-symbol",
+          tool,
+          symbol: rs,
+          modelPayload: failPayload(tool, "unknown-symbol", {
+            symbol: rs,
+            message: `Symbol ${rs} is not in the security master. Do not guess data for it.`,
+          }),
+        };
+      }
+      const norm = normalizeSymbolInput(rs) ?? rs;
+      if (!canonical.includes(norm)) canonical.push(norm);
+    }
+    const sharedBatch = state ?? createCanonicalStockState(deps);
+    try {
+      const points = await Promise.all(canonical.map((sym) => sharedBatch.price(sym)));
+      const evidence = canonical.map((sym, i) => buildPriceItem(sym, points[i] ?? null));
+      const batchSymbol = canonical.join(",");
+      return {
+        status: "ok",
+        tool,
+        symbol: batchSymbol,
+        evidence,
+        modelPayload: okPayload(tool, batchSymbol, evidence),
+      };
+    } catch (e) {
+      console.error(`[ai/tools] getPrices(${batchCanonicalLabel(canonical)}) failed:`, e instanceof Error ? e.message : e);
+      return {
+        status: "failed",
+        tool,
+        symbol: canonical.join(","),
+        modelPayload: failPayload(tool, "failed", { symbol: canonical.join(","), message: "Tool getPrices could not be completed. Do not invent its data." }),
+      };
+    }
+  }
+  // Defensive narrowing (fail-closed): every schema that reaches this line
+  // is singular-arg; a batch-shaped parse here would be a selector bug.
+  if (!("symbol" in parsed.data)) {
+    return {
+      status: "invalid-args",
+      tool,
+      modelPayload: failPayload(tool, "invalid-args", {
+        message: `Invalid arguments for ${tool}: the plural symbols form is accepted by getPrices only.`,
+      }),
+    };
+  }
   const rawSymbol = parsed.data.symbol.trim().toUpperCase();
   if (!isValidSymbolInput(rawSymbol)) {
     return {
@@ -291,7 +373,7 @@ function canonicalPeers(symbol: string, sector: string, limit: number): AiPeerRo
  *     nothing here can execute (the executor validates independently).
  */
 export function toolRequestTurn(tool: string, args: unknown): string {
-  const schema = tool === "getPeers" ? PeersArgsSchema : SymbolArgsSchema;
+  const schema = argsSchemaFor(tool);
   const parsed = schema.safeParse(args ?? {});
   if (parsed.success) {
     return JSON.stringify({ tool, args: parsed.data });
@@ -306,6 +388,10 @@ export function toolRequestTurn(tool: string, args: unknown): string {
 }
 
 /** The model-facing rendering of an ok outcome: ids + item text only. */
+function batchCanonicalLabel(canonical: readonly string[]): string {
+  return canonical.length > 0 ? canonical.join(",") : "(empty batch)";
+}
+
 function okPayload(tool: AiToolName, symbol: string, evidence: AiEvidenceItem[]): string {
   return JSON.stringify({
     tool,

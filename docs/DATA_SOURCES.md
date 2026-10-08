@@ -341,3 +341,19 @@ real investors would do. Public render: `/methodology` +
 emits React text nodes only — no HTML generation anywhere). Coverage and
 orphan-docs gates: `test/methodology.coverage.test.ts`; renderer gates:
 `test/methodology.markdown.test.ts`.
+
+**G7-D2 (Round 26) — the multi-symbol price observation is one batched
+tool round-trip.** The canonical `getPrices` tool (the AI loop's ONE price
+surface, `lib/ai/tools.ts`) additionally accepts a bounded plural form
+`{"symbols": [2-8 registry symbols]}` — every element registry-validated
+(fail-closed whole call), deduped, observed through the SAME shared
+per-request canonical state (one price observation per symbol per
+request). A PURE price-comparison ask (a price data term + 2+ registry
+symbols + no fundamentals/score/peers/advice/level term,
+`lib/ai/financialIntent.ts`) seeds ONE batched call pre-emptively through
+the real executor; mixed compositions keep the historical single-symbol
+reactive seed. Synthesis is unchanged: the model still produces the final
+structured answer over the batched observations (multi-symbol asks never
+take the deterministic singleton surface). Measured driver: serial
+per-symbol tool requests each cost a full provider completion
+(`docs/evidence/round25/g7-fastpath-corroboration.md`).

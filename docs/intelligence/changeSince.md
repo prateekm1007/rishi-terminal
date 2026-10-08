@@ -99,3 +99,79 @@ Totals: `fieldsTracked`, `fieldsChanged` (direction ≠ `unchanged`),
   unknown stays unknown;
 - provenance is the log's own `changeId`s (A2 identity), which A3
   already turns into event ids — one identity system, no second one.
+
+
+## Substrate pre-registration: `user_visit_state` (migration 031)
+
+Founder direction for A6 (2026-10-09, verbatim scope): "A6 ChangeSince
+(includes the user_visit_state migration + coverage-registry
+registration)". This section is committed BEFORE the migration or any
+test of it (the A5/A6 precedent). It pins what the table is, the closed
+schema, the RLS class, and the coverage contract — a silent change
+breaks the build.
+
+### What the table is
+
+The per-user, per-symbol LAST-VISIT cursor: the moment a user last
+looked at a symbol's intelligence surface. It is the honest supplier of
+`computeChangeSince`'s caller-supplied `since` — a Since-Last-Visit
+surface reads the cursor and passes `last_visited_at` as the cutoff.
+No row = never visited = no cutoff exists, and the surface reports the
+honest empty state (never fabricates a default window).
+
+It is NOT a second history system (rule 14): history remains in A2's
+append-only `observation_state_log`; the cursor is user-owned STATE
+(current fact about the user), mutable by upsert, and holds exactly
+one row per (user, symbol). It is not a change key (A7 owns the
+deterministic change key), not an event/materiality/thesis surface
+(A3/A4/A5), and has no API route yet (A10 wires consumers; Phase E
+surfaces own the write path).
+
+### Closed schema (pinned by test)
+
+| Column | Type | Rule |
+|---|---|---|
+| `id` | UUID PK | `uuid_generate_v4()` (001's extension, 024's pattern) |
+| `user_id` | UUID NOT NULL | inline `REFERENCES users(id) ON DELETE CASCADE` — deletion mode `cascade-via-users` (the L5-02 end-state parser sees the live clause) |
+| `symbol` | TEXT NOT NULL | `CHECK (length(trim(symbol)) BETWEEN 1 AND 32)` — the 025/027 canonical-code bound; stored verbatim, normalization is the writer's job |
+| `last_visited_at` | TIMESTAMPTZ NOT NULL | `DEFAULT NOW()`; the value that becomes `since` |
+| `created_at` | TIMESTAMPTZ NOT NULL | `DEFAULT NOW()` |
+| `updated_at` | TIMESTAMPTZ NOT NULL | `DEFAULT NOW()`; maintained by the 024 `touch_updated_at` trigger (reused — the function is defined once, in 024) |
+
+Constraint: `UNIQUE (user_id, symbol)` — one cursor per (user, symbol);
+a re-visit is an UPDATE (upsert semantics decided in code, uniqueness
+decided here — the screens precedent). No separate `user_id` index:
+the UNIQUE btree already leads with `user_id`, and a second index on
+the same leading column is redundant weight (documented deviation from
+024's `idx_screens_user`).
+
+### RLS class (pinned by test)
+
+This is USER-PRIVATE data — the opposite class from 030's global log.
+It uses the 024 screens class exactly: `ENABLE ROW LEVEL SECURITY`
+plus four policies `TO authenticated` (`SELECT/INSERT/UPDATE/DELETE`),
+each `USING`/`WITH CHECK (auth.uid() = user_id)`. The application
+reaches it only through the request's user-scoped client; the
+behavioral proof lives in `scripts/ci/rls_invariants.sql` (a
+user_visit_state block in the X3-05 style: owner CRUD works, the
+other user's rows are invisible, anon is denied).
+
+### Coverage contract (three sources, one truth)
+
+The registration is mechanical, not aspirational (L5-02):
+
+1. `lib/account/coverage.ts`: `{ table: 'user_visit_state',
+   migration: '031_user_visit_state.sql', columns: '*',
+   deletion: 'cascade-via-users' }` — export reads it (DPDP
+   portability), delete erases it via the live FK cascade;
+2. `scripts/ci/rls_invariants.sql`: `L5_02_EXPECTED` gains
+   `'user_visit_state'` (the live information_schema enumeration must
+   equal the registry — both directions enforced);
+3. `scripts/ci/account_deletion_invariants.sql`: a fixture row is
+   inserted before the auth-user erase and the completeness sweep must
+   show zero rows after.
+
+`test/account.delete.test.ts` already fails a migration whose table
+ships unregistered; the A6 tests pin the exact entry, the exact
+migration contents, and the exact CI wiring on top (fail-first: they
+are committed and observed RED before the migration exists).

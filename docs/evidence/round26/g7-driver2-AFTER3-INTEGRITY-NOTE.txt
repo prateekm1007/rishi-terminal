@@ -1,0 +1,8 @@
+MEASUREMENT INTEGRITY NOTE (kept for honesty, NOT gate evidence)
+Run window 02:29-03:12 UTC 2026-10-08. Production advanced mid-run:
+af5ba01 went live 01:33:06Z; fd17886e (PR #258 + reconciliation) went
+live 02:43:23Z, between chunk 2 rows. Rows are split-SHA; the artifact
+cannot support a single-SHA gate verdict. Replaced as gate measurement
+by g7-driver2-after.json (fd17886e, 03:26-03:55 UTC, SHA-constant
+verified at every chunk boundary). Also: an earlier concurrent-process
+attempt was quarantined locally (after2-CONTAMINATED-duplicate-processes).

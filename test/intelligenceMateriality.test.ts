@@ -532,3 +532,67 @@ describe("determinism and batch behaviour", () => {
     );
   });
 });
+
+describe("impossible event-domain inputs are refused (A4 completion audit)", () => {
+  // Prices and share volumes are non-negative physical quantities. A
+  // negative price or volume is corrupt input, and the module contract
+  // ("corrupt numerics are NON-MATERIAL with a named reason") requires
+  // refusal — a negative price must never read as MATERIAL, and a
+  // negative volume must never read as merely below-threshold. Signed
+  // `change`-field declines stay legal: a -5% move is a real decline.
+  it("negative new price is refused even at huge magnitude", () => {
+    const v = recordNonMaterial(
+      classifyEvent(EVT({ field: "price", unit: "inr", oldValue: 100, newValue: -5 }), CTX()),
+    );
+    expect(v.reason).toBe("invalid-input");
+  });
+
+  it("negative old price is refused", () => {
+    const v = recordNonMaterial(
+      classifyEvent(EVT({ field: "price", unit: "inr", oldValue: -100, newValue: 105 }), CTX()),
+    );
+    expect(v.reason).toBe("invalid-input");
+  });
+
+  it("negative event volume is refused (never below-threshold)", () => {
+    const v = recordNonMaterial(
+      classifyEvent(
+        EVT({
+          id: "evt:VOLUME:vvvv",
+          category: "VOLUME",
+          field: "volume24h",
+          unit: "shares",
+          oldValue: 100,
+          newValue: -50,
+          evidenceRefs: ["vvvv"],
+        }),
+        CTX({ volumeBaseline: { dailyVolumes: FLAT100_VOLUMES } }),
+      ),
+    );
+    expect(v.reason).toBe("invalid-input");
+  });
+
+  it("negative old volume with material new volume is refused", () => {
+    const v = recordNonMaterial(
+      classifyEvent(
+        EVT({
+          id: "evt:VOLUME:vvvv",
+          category: "VOLUME",
+          field: "volume24h",
+          unit: "shares",
+          oldValue: -50,
+          newValue: 300,
+          evidenceRefs: ["vvvv"],
+        }),
+        CTX({ volumeBaseline: { dailyVolumes: FLAT100_VOLUMES } }),
+      ),
+    );
+    expect(v.reason).toBe("invalid-input");
+  });
+
+  it("signed change-field declines still classify (declines are real)", () => {
+    const v = classifyEvent(EVT({ field: "change", newValue: -5 }), CTX());
+    expect(v.verdict).toBe("material");
+    expect(v.reason).toBe("price-intraday");
+  });
+});

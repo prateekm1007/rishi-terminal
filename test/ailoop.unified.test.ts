@@ -347,15 +347,20 @@ describe("Commit N — financial-intent enforcement before context-only acceptan
 // claims -> server-generated verified surface -> wire. This is the local
 // deterministic twin of the production grounded-AI canary.
 describe("Commit N — the complete general-chat loop contract (production-grade)", () => {
-  it("Compare RELIANCE and TCS prices -> two getPrices -> grounded=true with the server-generated verified surface (the multi-symbol synthesis contract)", async () => {
+  it("Compare RELIANCE and TCS prices -> ONE batched getPrices seed -> the model synthesizes grounded=true on the server-generated verified surface (the multi-symbol synthesis contract, G7 driver 2)", async () => {
     // G7 driver 1: the SINGLETON version of this scenario is now served
     // deterministically with one completion (pinned in
     // test/aiRouter.fastPath.test.ts). The model-synthesis contract for the
     // complete loop lives on the multi-symbol shape, where the post-tool
     // completion is still required.
+    // G7 driver 2 (founder round-26 direction 8): the measured driver was
+    // the SERIAL per-symbol tool round-trips — each costing one full
+    // provider completion. A pure price-comparison ask is now seeded as ONE
+    // batched getPrices through the real executor BEFORE the first
+    // completion; the model still synthesizes the final structured answer
+    // (the contract under test below is otherwise unchanged — same
+    // grounding, same verified surface, same commentary separation).
     const { calls } = scriptProvider([
-      '{"tool": "getPrices", "args": {"symbol": "RELIANCE"}}',
-      '{"tool": "getPrices", "args": {"symbol": "TCS"}}',
       JSON.stringify({
         answer: "RELIANCE trades at 1000, up 0.5%; TCS at 1000.",
         claims: [
@@ -384,13 +389,14 @@ describe("Commit N — the complete general-chat loop contract (production-grade
       toolDeps: TOOL_DEPS,
     });
 
-    // 1. Three provider completions: two tool requests + the final structure.
-    expect(calls.length).toBe(3);
+    // 1. ONE provider completion: the seeded batch carries both symbols'
+    //    observations, so the first completion IS the final synthesis.
+    expect(calls.length).toBe(1);
 
-    // 2. The tool audit trail shows both ok executions.
+    // 2. The tool audit trail shows the ONE batched ok execution covering
+    //    both registry symbols in first-appearance order.
     expect(answer!.toolCalls).toEqual([
-      { tool: "getPrices", status: "ok", symbol: "RELIANCE" },
-      { tool: "getPrices", status: "ok", symbol: "TCS" },
+      { tool: "getPrices", status: "ok", symbol: "RELIANCE,TCS" },
     ]);
 
     // 3. Grounded: at least one validated claim, claimsVerified true.

@@ -199,6 +199,36 @@ const MULTITOOL = [
   "Between BHARTIARTL and ITC, which has higher ROE?",
 ];
 
+// G7 Driver 2 (founder round-26 directions 8-10): the FIXED multitool
+// baseline set, pre-registered and committed BEFORE any driver-2 result
+// exists (C5/C10 — the executing session cannot move the goalposts). It
+// supersettes the round-25 MULTITOOL six (kept verbatim for row-level
+// comparability) with eight additional synthesis-required composition
+// asks: price-comparison rows (the measured dominant serial mass) and
+// fundamentals/mixed rows (a different sub-driver, measured but NOT
+// optimized by driver 2 — honest scoping). Every symbol is registry-
+// verified. 14 rows at ~1 quota unit each is identity-quota-safe for a
+// baseline + a post-fix run within the same identity-day.
+const MULTITOOL_DRIVER2 = [
+  // the round-25 six, verbatim
+  "Compare the latest prices of TCS and INFY.",
+  "Which is cheaper on P/E: SBIN or HDFCBANK?",
+  "Compare revenue growth of RELIANCE and TCS.",
+  "What are the latest prices of INFY, WIPRO and HCLTECH?",
+  "Show SBIN's price and its promoter holding.",
+  "Between BHARTIARTL and ITC, which has higher ROE?",
+  // the driver-2 additions: price comparisons (pure)
+  "What are the current prices of RELIANCE and SBIN?",
+  "Show me the latest prices of HDFCBANK and ICICIBANK.",
+  "Compare the current prices of MARUTI and TATAMOTORS.",
+  "What are the latest prices of SUNPHARMA, CIPLA and DRREDDY?",
+  "Which trades at a higher price right now, BAJFINANCE or HDFCBANK?",
+  "What is the price of ITC and WIPRO?",
+  // the driver-2 additions: fundamentals / mixed composition
+  "Compare the P/E ratios of INFY and WIPRO.",
+  "Which has the higher market cap: TCS or RELIANCE?",
+];
+
 async function getJson(path) {
   const t0 = Date.now();
   const res = await fetch(BASE + path, { headers: { Accept: "application/json" } });
@@ -418,16 +448,54 @@ async function runClass(label, cls, personaId, questions) {
   return results;
 }
 
+// G7 driver 2: `--only=<cls>` runs ONE class (e.g. the multitool baseline)
+// instead of the full battery. The artifact still carries ALL class keys —
+// unrun classes are empty (n=0, no fabricated rows) — and records
+// `selectedClasses` so a subset run can never masquerade as a full battery.
+// Same pacing, retries, and canonical calculator.
+const onlyIdx = process.argv.indexOf("--only");
+const ONLY = onlyIdx >= 0
+  ? process.argv[onlyIdx + 1] ?? null
+  : (process.argv.find((a) => a.startsWith("--only=")) ?? "").split("=")[1] || null;
+const CLASS_QUESTIONS = {
+  financial: FINANCIAL,
+  philosophy: PHILOSOPHY,
+  invalid: INVALID,
+  hostile: HOSTILE,
+  financialNoSymbol: FINANCIAL_NOSYMBOL,
+  toolRequest: TOOL_REQUEST,
+  multitool: MULTITOOL,
+  multitoolDriver2: MULTITOOL_DRIVER2,
+};
+if (ONLY && !(ONLY in CLASS_QUESTIONS)) {
+  console.error(`--only: unknown class "${ONLY}" (known: ${Object.keys(CLASS_QUESTIONS).join(", ")})`);
+  process.exit(2);
+}
+const SELECTED = ONLY ? [ONLY] : Object.keys(CLASS_QUESTIONS).filter((c) => c !== "multitoolDriver2");
+// The full battery keeps its historical exact shape (the round-9/15/25
+// seven classes). multitoolDriver2 runs only when explicitly selected.
+
 const version = await getJson("/api/version");
 console.log(`bound to /api/version: ${JSON.stringify(version.body)} (HTTP ${version.status})`);
+if (ONLY) console.log(`--only=multitoolDriver2 selection: ${ONLY} (${CLASS_QUESTIONS[ONLY].length} questions)`);
 
-const financial = await runClass("FINANCIAL-DATA", "financial", "damani", FINANCIAL);
-const philosophy = await runClass("PHILOSOPHY", "philosophy", "damani", PHILOSOPHY);
-const invalid = await runClass("INVALID-SYMBOL", "invalid", "damani", INVALID);
-const hostile = await runClass("HOSTILE", "hostile", "damani", HOSTILE);
-const financialNoSymbol = await runClass("FINANCIAL-NOSYMBOL", "financialNoSymbol", "damani", FINANCIAL_NOSYMBOL);
-const toolRequest = await runClass("TOOL-REQUEST", "toolRequest", "damani", TOOL_REQUEST);
-const multitool = await runClass("MULTITOOL", "multitool", "damani", MULTITOOL);
+const runLog = {};
+for (const cls of SELECTED) {
+  const label = {
+    financial: "FINANCIAL-DATA", philosophy: "PHILOSOPHY", invalid: "INVALID-SYMBOL",
+    hostile: "HOSTILE", financialNoSymbol: "FINANCIAL-NOSYMBOL", toolRequest: "TOOL-REQUEST",
+    multitool: "MULTITOOL", multitoolDriver2: "MULTITOOL-DRIVER2",
+  }[cls];
+  runLog[cls] = await runClass(label, cls, "damani", CLASS_QUESTIONS[cls]);
+}
+const financial = runLog.financial ?? [];
+const philosophy = runLog.philosophy ?? [];
+const invalid = runLog.invalid ?? [];
+const hostile = runLog.hostile ?? [];
+const financialNoSymbol = runLog.financialNoSymbol ?? [];
+const toolRequest = runLog.toolRequest ?? [];
+const multitool = runLog.multitool ?? [];
+const multitoolDriver2 = runLog.multitoolDriver2 ?? [];
 
 const artifact = {
   generatedAt: new Date().toISOString(),
@@ -438,6 +506,7 @@ const artifact = {
     : "anonymous (X7 challenge solved in-loop after the daily free units; solve time included in wallMs)",
   // G7 Direction-13: the explicit, machine-readable PoW statement — the
   // narrative/artifact disagreement of round 23 can never recur.
+  selectedClasses: SELECTED,
   powIncludedInWallMs: !process.env.BATTERY_COOKIE,
   providerModelIdentity: {
     provider: financial.find(r => r.provider)?.provider ?? null,
@@ -451,9 +520,10 @@ const artifact = {
     financialNoSymbol: aggregate(financialNoSymbol),
     toolRequest: aggregate(toolRequest),
     multitool: aggregate(multitool),
+    multitoolDriver2: aggregate(multitoolDriver2),
   },
-  overall: aggregate([...financial, ...philosophy, ...invalid, ...hostile, ...financialNoSymbol, ...toolRequest, ...multitool]),
-  raw: { financial, philosophy, invalid, hostile, financialNoSymbol, toolRequest, multitool },
+  overall: aggregate([...financial, ...philosophy, ...invalid, ...hostile, ...financialNoSymbol, ...toolRequest, ...multitool, ...multitoolDriver2]),
+  raw: { financial, philosophy, invalid, hostile, financialNoSymbol, toolRequest, multitool, multitoolDriver2 },
 };
 // G7 Direction-13: the ONE canonical result, computed from this artifact's
 // own raw rows by the SAME code the standalone canonical stats script uses.

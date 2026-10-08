@@ -37,6 +37,7 @@ import {
   PRICE_REGISTRY_TOKENS,
   SLASHED,
   canonicalPriceRegistrySymbol,
+  normalizeSymbolInput,
 } from '@/lib/registry/validateInput';
 
 /** Registry symbol tokens (R9-9, Rule 14): the security master UNION the
@@ -235,6 +236,18 @@ export function detectFinancialDataIntent(message: string): FinancialDataIntent 
  * NOT seeded — a tool result must never auto-materialize to answer an
  * advice question (Rule 4: nothing fabricated; advice stays a discussion).
  */
+/** G7 driver 2: the price DATA TERM, hoisted so the multi-symbol batch
+ *  seed tests the SAME term list as the historical single-symbol seed
+ *  (one term list — rule 14). */
+const PRICE_DATA_TERM_RE = /\b(prices?|share price|stock price|current price|latest price|cmp|quote)\b/i;
+
+/** G7 driver 2: the NON-price members of DATA_TERM_RE. The pre-emptive
+ *  batch seed fires only for PURE price-comparison asks — a price term
+ *  PLUS any fundamentals/score/peers/advice/technical-level term means the
+ *  ask wants more than observations, so the historical single-tool
+ *  reactive seed applies instead (no over-seeding beyond the ask). */
+const NON_PRICE_DATA_TERM_RE = /\b(scores?|rishi scores?|consensus|verdicts?|fundamentals?|financials?|financial data|p\/e|p\.e\.\b|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|peers?|competitors?|revenues?|profits?|earnings|eps|dividends?|book value|valuation|margins?|growth rates?|recommendations?|ratings?|buy or sell|bullish or bearish|target price|levels?|yields?|exchange rates?)\b/i;
+
 const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinancials" | "getScore" | "getPeers" }> = [
   // R11 (directive 8): the standalone "rate(s)" entry is GONE from this
   // map — it seeded getPrices for fundamentals compounds ("growth rate")
@@ -242,7 +255,7 @@ const SEED_TERM_RES: ReadonlyArray<{ re: RegExp; tool: "getPrices" | "getFinanci
   // asks seed getPrices ONLY through the instrument-anchored branch in
   // intentSeedTool below (non-equity registry instruments and slashed
   // pairs, where the rate IS the observed price datum).
-  { re: /\b(prices?|share price|stock price|current price|latest price|cmp|quote)\b/i, tool: "getPrices" },
+  { re: PRICE_DATA_TERM_RE, tool: "getPrices" },
   {
     re: /\b(fundamentals?|financials?|financial data|p\/e|p\.e\.|p-e|pe ratio|price[- ]to[- ]earnings|roe|return on equity|roce|debt[- ]?to[- ]?equity|d\/e|market ?caps?|market capitalization|revenues?|profits?|earnings|eps|dividends?|book value|margins?|growth rates?)\b/i,
     tool: "getFinancials",
@@ -275,16 +288,41 @@ const ADVICE_ASK_RE =
  * model keeps full tool choice and the existing intent backstop still
  * applies).
  */
-export function intentSeedTool(message: string): { tool: string; args: { symbol: string } } | null {
+export function intentSeedTool(
+  message: string,
+): { tool: string; args: { symbol: string } | { symbols: string[] } } | null {
   const intent = detectFinancialDataIntent(message);
-  if (!intent.financial || !intent.symbol) return null;
-  // The advice-ask guard comes FIRST: an advice-shaped ask never seeds a
-  // tool (and therefore can never trigger the deterministic singleton fast
-  // path, which requires a non-null seed). Data asks compound with advice
-  // wording ("price and should I buy?") lose the seed too — the model
-  // requests its own tools and synthesizes, which is the required behavior
-  // whenever advice is part of the ask.
+  if (!intent.financial) return null;
+  // The advice-ask guard comes FIRST (G7 driver-1 boundary audit, #256): an
+  // advice-shaped ask never seeds a tool (and therefore can never trigger
+  // the deterministic singleton fast path, which requires a non-null seed).
+  // Data asks compound with advice wording ("price and should I buy?") lose
+  // the seed too — the model requests its own tools and synthesizes, which
+  // is the required behavior whenever advice is part of the ask. The guard
+  // also bounds the driver-2 batch seed below: a "target price" comparison
+  // is an advice ask, not a pure price observation set.
   if (ADVICE_ASK_RE.test(message)) return null;
+  // G7 driver 2 (founder round-26 directions 8-9): the measured multitool
+  // driver is SERIAL per-symbol round-trips, each costing a full provider
+  // completion. A PURE price-comparison ask (a price term + 2+ registry
+  // symbols + NO non-price data term) seeds ONE batched getPrices through
+  // the SAME canonical executor - deterministic, model-independent,
+  // bounded (8, re-enforced by the tool's own zod schema). The ROUTER
+  // consumes this seed pre-emptively (before the first completion), so the
+  // model still synthesizes the final structured answer over the batched
+  // observations (multi-symbol asks never take the deterministic singleton
+  // surface - the singleton gate excludes them). A MIXED composition (price
+  // + fundamentals/advice vocabulary) keeps the historical single-symbol
+  // reactive seed below - no over-seeding beyond the ask.
+  const batchSymbols = registrySymbolsInMessage(message);
+  if (
+    batchSymbols.length >= 2 &&
+    PRICE_DATA_TERM_RE.test(message) &&
+    !NON_PRICE_DATA_TERM_RE.test(message)
+  ) {
+    return { tool: 'getPrices', args: { symbols: batchSymbols.slice(0, 8) } };
+  }
+  if (!intent.symbol) return null;
   // R11 (directive 8): a rate/yield ask anchored to a NON-EQUITY price
   // instrument seeds getPrices — for FX, commodities, crypto, indexes and
   // bonds the rate IS the observed price datum ("USD/INR rate", "gold
@@ -347,4 +385,46 @@ export function countRegistrySymbols(message: string): number {
     .filter((t) => t.length >= 2);
   count += new Set(tokens.filter((t) => SYMBOL_TOKENS.has(t))).size;
   return count;
+}
+
+/**
+ * G7 driver 2 (founder round-26 directions 8-9): the DISTINCT registry
+ * symbols a message names, in first-appearance order - the SAME tokenizer,
+ * stock master and price registry countRegistrySymbols uses (one tokenizer,
+ * rule 14), returning the symbols themselves instead of their count.
+ * Slashed pairs are invisible to the token split (the '/' separator), so
+ * they are matched against the RAW text exactly like countRegistrySymbols
+ * does, then canonicalized. Each element is canonicalized through
+ * normalizeSymbolInput so the seed hands the executor registry-canonical
+ * symbols; the executor re-validates every element at its own boundary.
+ * Pure and synchronous, like the detector.
+ */
+export function registrySymbolsInMessage(message: string): string[] {
+  const text = message ?? '';
+  if (text.length === 0) return [];
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (raw: string): void => {
+    const canonical = normalizeSymbolInput(raw) ?? (SYMBOL_TOKENS.has(raw) ? raw : null);
+    if (!canonical || seen.has(canonical)) return;
+    seen.add(canonical);
+    out.push(canonical);
+  };
+  const tokens = text
+    .toUpperCase()
+    .split(/[^A-Z0-9&]+/)
+    .filter((t) => t.length >= 2);
+  for (const t of tokens) {
+    if (SYMBOL_TOKENS.has(t)) push(t);
+  }
+  if (SLASHED.size > 0) {
+    for (const pair of SLASHED) {
+      const re = new RegExp(
+        `\\b${pair.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+        'i',
+      );
+      if (re.test(text)) push(pair);
+    }
+  }
+  return out;
 }

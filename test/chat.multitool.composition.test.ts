@@ -183,3 +183,77 @@ describe("R10-14 — multi-tool composition inside the ONE bounded loop", () => 
     expect(fundamentalsFetches.filter((f: { symbol: string }) => f.symbol === "RELIANCE")).toHaveLength(1);
   });
 });
+
+describe("G7 driver 2 — the multi-symbol price seed composes ONE batched observation", () => {
+  it("MUST FAIL PRE-DRIVER-2: a 2-symbol price ask executes ONE batched getPrices and the model synthesizes", async () => {
+    // No model-scripted tool requests: the seed is SERVER-enforced and
+    // deterministic, so the scripted model goes straight to the final
+    // grounded answer citing BOTH batched evidence ids.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: unknown, init?: { body?: string }) => {
+        const body = JSON.parse(init!.body!) as { messages: Array<{ role: string; content: string }> };
+        captured.push({
+          systemPrompt: body.messages.find(m => m.role === "system")!.content,
+          lastUserContent: body.messages[body.messages.length - 1].content,
+        });
+        const finalReply = {
+          answer: "TCS trades at 1420.5 and INFY trades at 1420.5.",
+          claims: [
+            {
+              claim: "TCS trades at 1420.5",
+              evidenceIds: ["price:TCS:2025-10-31T08:40:00.000Z"],
+              assertions: [{ field: "price", value: 1420.5, unit: "inr" }],
+            },
+            {
+              claim: "INFY trades at 1420.5",
+              evidenceIds: ["price:INFY:2025-10-31T08:40:00.000Z"],
+              assertions: [{ field: "price", value: 1420.5, unit: "inr" }],
+            },
+          ],
+          uncertainties: [],
+        };
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(finalReply) } }] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }) as unknown as typeof fetch,
+    );
+    const res = await POST(makeReq({
+      personaId: "buffett", history: [],
+      message: "What are the latest prices of TCS and INFY?",
+    }));
+    expect(res.status).toBe(200);
+    const wire = await res.json();
+
+    // ONE tool execution for BOTH symbols (the driver-2 mechanism)
+    expect(wire.provenance.toolCalls).toEqual([
+      { tool: "getPrices", status: "ok", symbol: "TCS,INFY" },
+    ]);
+    expect(wire.provenance.timings.toolExecutions).toHaveLength(1);
+
+    // the model still synthesizes: exactly ONE completion, and it is the
+    // post-tool FINAL response (grounded, validated) — never a
+    // deterministic surface for a multi-symbol ask (founder direction 9)
+    expect(wire.provenance.timings.completions).toHaveLength(1);
+    const stages = wire.provenance.timings.completions.map((c: { stage: string; outcome: string }) => `${c.stage}:${c.outcome}`);
+    expect(stages).toEqual(["post-tool:final-response"]);
+
+    // grounded on BOTH batched items through the real executor
+    expect(wire.provenance.grounded).toBe(true);
+    expect(wire.provenance.claimsVerified).toBe(true);
+    // the server-generated verified surface renders the typed facts; the
+    // claims array carries BOTH batched evidence ids (the mock returns the
+    // same price for both symbols, and the verified surface dedupes
+    // identical fact lines — the ids are the per-symbol proof)
+    expect(wire.text).toContain("price = 1420.5 inr");
+    const claimIds = (wire.provenance.claims ?? []).flatMap((c: { evidenceIds: string[] }) => c.evidenceIds);
+    expect(claimIds).toContain("price:TCS:2025-10-31T08:40:00.000Z");
+    expect(claimIds).toContain("price:INFY:2025-10-31T08:40:00.000Z");
+
+    // the seeded batch rode the transcript as the canonical validated echo
+    expect(captured[0].lastUserContent).toContain("TOOL RESULT");
+    expect(captured[0].lastUserContent).toContain("price:TCS:2025-10-31T08:40:00.000Z");
+    expect(captured[0].lastUserContent).toContain("price:INFY:2025-10-31T08:40:00.000Z");
+  });
+});

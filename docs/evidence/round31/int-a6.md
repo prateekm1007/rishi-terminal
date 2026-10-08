@@ -166,3 +166,66 @@ pre-apply PITR timestamp per DR.md), and read-only production
 verification are appended in the final closeout docs update after #279
 merges — this file's section 6/7 numbers remain valid for the delta
 engine exactly as written.
+
+
+## Final closeout facts (2026-10-08 ~23:05Z — merged, CI green; production leg blocked on environment)
+
+### Merge (sanctioned merge-guard path, gates 0-6 all printed)
+
+```
+[gate 0] GET /pulls/279 -> HTTP 200; head pinned 49fb7cee7a307ac9a6800e0a4b3f7013c09b093b
+[gate 1/5] origin/main tip read twice = 8e3cb096e88b53ab770e76beb1f3e1d265e70581 (no movement)
+[gate 2] merge-base == main tip — branch current
+[gate 3] all five blocking checks success on the exact head
+[gate 4] deployCadence --pr -> PASS (last production-relevant merge 67.2 min ago — within the 60 min cadence)
+[gate 6] PUT /pulls/279/merge (sha=49fb7cee7a30) -> HTTP 200
+MERGE: 6f78e36fcd83e83257d9e655c47d7bb3f7f33dd1 (2026-10-08 ~22:44Z)
+```
+
+CI on the main merge commit: run 37855481572 -> success (2026-10-08T22:45:41Z).
+CI on the PR head: one C8 bite recorded honestly (22:22:06Z FAIL — "44 min
+ago — earliest safe merge 2026-10-08T22:38:08.000Z"), failed job 113570383088
+re-run at the window open -> success. The Migrations & RLS invariants job
+applied `031_user_visit_state.sql` to a Postgres-16 harness and passed the
+L5-02 registry equality, the X3-05b behavioral block, and the G1 erasure
+sweep — both before and after the amendment commit.
+
+### Production probes (22:26Z, read-only, BEFORE any apply attempt)
+
+```
+GET /api/version -> sha 5afa7b882f8ca7d857127f4ee00e713bf08f19ae (the #276 build)
+GET /api/health  -> {"status":"ok","db":true,...}
+PostgREST HEAD observation_state_log (service key, read-only) -> 0-999/98976
+  (98,976 live rows — production DB identity proven)
+PostgREST HEAD user_visit_state -> 404 (pre-apply state: table absent)
+```
+
+### Blockers (environmental, both flagged to the founder — rule 35)
+
+1. **Vercel deployment quota**: the merge push produced NO deployment
+   (webhook received, nothing created). Manual `gitSource` deploy of
+   `6f78e36` via the API returned `HTTP 402 api-deployments-free-per-day`
+   ("more than 100 — try again in 24 hours"). Production continues serving
+   `5afa7b88` — harmless by construction: the substrate has no runtime
+   consumer, and the serving build predates the registry change. When the
+   quota frees, the deploy lands and the post-deploy-smoke fires
+   (deployment_status workflow; no silent skip is possible — C2).
+2. **Supabase Management PATs corrupt**: both vault tokens fail the
+   Management API after whitespace normalization ("JWT could not be
+   decoded"; 60/69 chars vs the ~68-char token shape — vault
+   transcription loss). The G1-sanctioned migration apply therefore
+   cannot run from this session. Tool ready: `scripts/prodSql.mjs`
+   (Management API query endpoint); the apply is the EXACT canonical
+   `031_user_visit_state.sql` in one transaction, with the pre-apply PITR
+   timestamp per DR.md, followed by the read-only verification set
+   (table + RLS + 4 policies + trigger + L5-02 enumeration + zero rows).
+
+### Consequence chain to close A6 fully
+
+deploy lands (quota reset) -> /api/version = `6f78e36...` verified ->
+PAT re-provisioned -> apply 031 via Management API -> live read-only
+verification -> `/api/account/export` reports `coverage.failed` empty
+(user_visit_state covered) -> this row flips to CLOSED with the final
+tuple. The account-export route is fail-safe by design in the interim
+(a missing table is reported per-table, never a crash — the exact
+"migration not yet applied" state its comment anticipates).

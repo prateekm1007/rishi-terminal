@@ -1,5 +1,31 @@
 # Architecture Inventory — Coder Directions §1 gate (2026-10-07)
 
+> **CURRENT-STATE ADDENDUM (2026-10-08, `origin/main` = `345134c`).** This
+> file was written against `3ef7237` (merge of #231) and is preserved as the
+> pre-roadmap audit artifact. What changed since it was written:
+> - §3 "Missing" item 1 (temporal memory) **now exists**: migration 030 +
+>   `lib/intelligence/stateLog.ts` (PR #253), production ingestion proven
+>   (`docs/evidence/round27/pa2-production-ingestion-proof.md`) — roadmap
+>   item **A2 CLOSED**.
+> - The `RishiInsight` contract **now exists**: `lib/intelligence/types.ts`
+>   (PR #247, 28 fail-first tests) — roadmap item **A1** (contract
+>   complete; consumers arrive at A8+).
+> - §3 "Missing" item 2 (event model + materiality) is **built on a branch**
+>   (`feat/pa3-event-model`, not merged) and is being re-partitioned into
+>   the roadmap's one-PR-per-item shape (INT-A3 events, INT-A4
+>   materiality — `lib/intelligence/materiality.ts` as §4 originally
+>   designed).
+> - §3 "Missing" items 3–5 (insight cache, /api/intelligence, per-symbol
+>   news) remain missing — A7, A10, B1 respectively.
+> - G-program state: G7 Driver-1 and Driver-2 closed with production
+>   verdicts (#249, #257/#258, #260: gate MET −29.4%, first-pass grounding
+>   improved); #256 advice-guard production proof filed (round27); E4/NS1
+>   scheduled-run closures pending their pre-registered runs.
+> - **Sequencing authority moved**: `docs/INTELLIGENCE_ROADMAP.md` is now
+>   the master roadmap (founder-ratified 2026-10-08); its §4 fit map below
+>   remains accurate as MODULE design, but its ordering is superseded by
+>   the roadmap's frozen phase sequence.
+
 Written against `origin/main` = `3ef7237` (merge of #231). Mandate: the
 founder's Coder Directions (2026-10-07, 57 sections) §1 — produce an
 architecture inventory showing where each new intelligence capability fits

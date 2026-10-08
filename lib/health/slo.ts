@@ -22,8 +22,24 @@
 /** Jobs whose latest finished_at means "prices were ingested recently". */
 export const PRICE_INGEST_JOBS: readonly string[] = ["quotes_warm"];
 
-/** Jobs whose latest finished_at means "fundamentals were ingested recently". */
-export const FUNDAMENTALS_INGEST_JOBS: readonly string[] = ["ingest_financials"];
+/**
+ * Jobs whose latest finished_at means "fundamentals were ingested recently".
+ * Two real writer identities:
+ *  - "ingest_financials"  -- the quarterly/annual financials route (G6).
+ *  - "nightly_snapshot"   -- the daily consensus snapshot (NS1). The
+ *    pre-registered NS1 acceptance runbook
+ *    (docs/evidence/round26/ns1-acceptance-runbook.md) requires the
+ *    fundamentals "no ingestion recorded yet" reason to CLEAR once the
+ *    first real nightly_snapshot row exists; observed live 2026-10-08
+ *    (first real scheduled row: 896/896, 5.0s) the reason did NOT clear
+ *    -- a blocking health/data-plane disagreement per that runbook. This
+ *    list is the fix; the 96h staleness SLO below now actually applies
+ *    to a live signal (a gate correction, not a weakening).
+ */
+export const FUNDAMENTALS_INGEST_JOBS: readonly string[] = [
+  "ingest_financials",
+  "nightly_snapshot",
+];
 
 /**
  * PROPOSED (D1-10): prices ≤ 1 trading day old. Trading calendar is not

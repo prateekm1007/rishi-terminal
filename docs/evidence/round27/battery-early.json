@@ -1,0 +1,223 @@
+{
+ "label": "early",
+ "at": "2026-10-08T09:43:35.085Z",
+ "version": {
+  "sha": "2d74e064b2c45d6630dc94220861231f57c1b037",
+  "now": "2026-10-08T09:42:48.648Z",
+  "node": "v24.21.0"
+ },
+ "threshold": {
+  "universe": 896,
+  "targetFresh": 807
+ },
+ "sqlUniverseFresh": 822,
+ "sqlRawFresh": 829,
+ "healthEquities": {
+  "fresh": 822,
+  "total": 896,
+  "coverage": 0.9174107142857143
+ },
+ "healthAgreement": true,
+ "lastPriceIngestAt": "2026-10-08 09:28:28.84+00",
+ "healthReasons": [
+  "fundamentals: no ingestion recorded yet"
+ ],
+ "ingestionLog": {
+  "n": 145,
+  "last": "2026-10-08 09:28:28.84+00"
+ },
+ "controls": {
+  "BANKBARODA": {
+   "status": "CACHED",
+   "price": 234.48,
+   "observedAt": "2026-10-08T09:42:12+00:00",
+   "source": "yahoo-bulk"
+  },
+  "RELIANCE": {
+   "status": "CACHED",
+   "price": 1175.2,
+   "observedAt": "2026-10-08T09:42:18+00:00",
+   "source": "yahoo-bulk"
+  },
+  "TCS": {
+   "status": "CACHED",
+   "price": 2076,
+   "observedAt": "2026-10-08T09:42:18+00:00",
+   "source": "yahoo-bulk"
+  },
+  "BAJAJAUTO": {
+   "status": "CACHED",
+   "price": 9675,
+   "observedAt": "2026-10-08T09:42:13+00:00",
+   "source": "yahoo-bulk"
+  },
+  "AMARAJABAT": {
+   "status": "CACHED",
+   "price": 721.25,
+   "observedAt": "2026-10-08T09:42:13+00:00",
+   "source": "yahoo-bulk"
+  },
+  "MEGH": {
+   "status": "CACHED",
+   "price": 57.6,
+   "observedAt": "2026-10-08T09:42:14+00:00",
+   "source": "yahoo-bulk"
+  },
+  "NARAYANA": {
+   "status": "CACHED",
+   "price": 1695.8,
+   "observedAt": "2026-10-08T09:42:14+00:00",
+   "source": "yahoo-bulk"
+  },
+  "SONATASOFT": {
+   "status": "CACHED",
+   "price": 240.6,
+   "observedAt": "2026-10-08T09:42:16+00:00",
+   "source": "yahoo-bulk"
+  },
+  "BRAINBEES": {
+   "status": "CACHED",
+   "price": 168.64,
+   "observedAt": "2026-10-08T09:42:12+00:00",
+   "source": "yahoo-bulk"
+  },
+  "GANESHHOUC": {
+   "status": "CACHED",
+   "price": 690.6,
+   "observedAt": "2026-10-08T09:41:54+00:00",
+   "source": "yahoo-bulk"
+  },
+  "SOMDISTILL": {
+   "status": "CACHED",
+   "price": 70.54,
+   "observedAt": "2026-10-08T09:42:14+00:00",
+   "source": "yahoo-bulk"
+  },
+  "TECHNO": {
+   "status": "CACHED",
+   "price": 942.5,
+   "observedAt": "2026-10-08T09:42:14+00:00",
+   "source": "yahoo-bulk"
+  },
+  "SANDUMANG": {
+   "status": "CACHED",
+   "price": 181.2,
+   "observedAt": "2026-10-08T09:42:13+00:00",
+   "source": "yahoo-bulk"
+  },
+  "ELDECO": {
+   "status": "CACHED",
+   "price": 762.85,
+   "observedAt": "2026-10-08T09:40:31+00:00",
+   "source": "yahoo-bulk"
+  },
+  "JSLHISAR": {
+   "status": "CACHED",
+   "price": 706.2,
+   "observedAt": "2026-10-08T09:42:13+00:00",
+   "source": "yahoo-bulk"
+  },
+  "LAXMIMACH": {
+   "status": "CACHED",
+   "price": 16350,
+   "observedAt": "2026-10-08T09:41:07+00:00",
+   "source": "yahoo-bulk"
+  },
+  "NAMINDIA": {
+   "status": "CACHED",
+   "price": 1037.5,
+   "observedAt": "2026-10-08T09:42:14+00:00",
+   "source": "yahoo-bulk"
+  },
+  "LTIM": {
+   "status": "UNAVAILABLE",
+   "price": null,
+   "observedAt": null,
+   "source": null
+  },
+  "CENTURYTEX": {
+   "status": "UNAVAILABLE",
+   "price": null,
+   "observedAt": null,
+   "source": null
+  }
+ },
+ "sweep": {
+  "priced": {
+   "live": 2,
+   "cached": 833
+  },
+  "freshServed": 822,
+  "unavailable": [
+   "ADANITRANS",
+   "AKZOINDIA",
+   "ALLSEC",
+   "AROHAN",
+   "BALLARPUR",
+   "BARBEQUE",
+   "BECKBIES",
+   "BOOKMYSHOW",
+   "BRAHMASTRA",
+   "CENTURYTEX",
+   "COSMOFILMS",
+   "DRONEAERO",
+   "GATI",
+   "GUJGASLTD",
+   "HBLPOWER",
+   "HIL",
+   "HOVS",
+   "IBREALEST",
+   "IBULHSGFIN",
+   "IIFLSEC",
+   "INFIBEAM",
+   "ISEC",
+   "ISMT",
+   "ITDCEM",
+   "JBCHEMPHAR",
+   "JMCPROJECT",
+   "JMTAUTOLTD",
+   "JPASSOCIAT",
+   "KALPATPOWR",
+   "KALYANAJW",
+   "KAPIL",
+   "KNESL",
+   "KSOLV",
+   "KWALITY",
+   "LINGFORGER",
+   "LTIM",
+   "MAHINDCIE",
+   "MANGCHEFER",
+   "MEDHA",
+   "MERCK",
+   "NAINITAL",
+   "PTON",
+   "RADICON",
+   "RANEENGINE",
+   "RRVL",
+   "SELAN",
+   "SEQUENT",
+   "SHREYASHIP",
+   "SHRIRAMEPC",
+   "SMLISUZU",
+   "SUVENPHAR",
+   "SUVIDHAFIN",
+   "SWANENERGY",
+   "TATAMOTORS",
+   "TCNSBRANDS",
+   "TIPSIND",
+   "TMVFINANCE",
+   "UJJIVAN",
+   "WABCO",
+   "WELSPUNIND",
+   "ZUARIGLOB"
+  ],
+  "unavailableCount": 61
+ },
+ "pass": {
+  "freshness": true,
+  "healthAgreement": true,
+  "bankbarodaFresh": true,
+  "unavailableHonest": true
+ },
+ "wallMs": 48817
+}

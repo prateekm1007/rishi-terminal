@@ -41,7 +41,7 @@ import { buildDeterministicVerifiedSurface } from "./evidence";
 import { callOpenAiCompatible } from "./providers/openaiCompatible";
 import { callGemini } from "./providers/gemini";
 import { executeAiTool, AI_TOOL_NAMES, toolRequestTurn, type AiToolDeps, type AiToolOutcome } from "./tools";
-import { detectFinancialDataIntent, intentSeedTool, countRegistrySymbols } from "./financialIntent";
+import { detectFinancialDataIntent, intentSeedTool, intentSeedTools, countRegistrySymbols } from "./financialIntent";
 import type { FinancialDataIntent } from "./financialIntent";
 import { evaluatePhilosophyProse } from "./philosophyGuard";
 
@@ -669,18 +669,30 @@ async function runGroundedLoop(
     ? { financial: false }
     : detectFinancialDataIntent(args.message);
   const intentSeed = !hasInitialEvidence ? intentSeedTool(args.message) : null;
-  // G7 driver 2: the PURE price-comparison batch seed (intentSeed carrying
-  // a plural `symbols` arg) is consumed PRE-EMPTIVELY — the deterministic,
-  // model-independent removal of the measured serial per-symbol round-trips
-  // (founder round-26 direction 8). Every other seed stays REACTIVE exactly
-  // as round-3 shipped it (a well-behaved model pays zero overhead); the
-  // zero-tool-engagement enforcement below still re-uses the same seed.
-  // The canary probe seed wins over everything (it exercises the FULL loop).
-  const preEmptiveBatchSeed =
-    intentSeed && typeof intentSeed.args === "object" && intentSeed.args !== null && "symbols" in intentSeed.args
-      ? intentSeed
-      : null;
-  let pendingSeed: { tool: string; args: unknown } | null = args.probeSeedToolCall ?? preEmptiveBatchSeed;
+  // G7 driver 2 (reconciliation of #257 + #258, founder round-27
+  // directions 8-10): a multi-symbol financial data ask seeds its
+  // canonical evidence UPFRONT — before the first provider completion —
+  // collapsing the measured serial per-symbol tool-request round trips
+  // (every extra symbol costs one full provider completion) into one
+  // evidence-complete synthesis pass. The seed plan is ONE rule
+  // (intentSeedTools): a PURE price-comparison ask seeds ONE batched
+  // getPrices call (#257); any other multi-symbol data ask seeds each of
+  // the first two named symbols' canonical tool (#258) — the cap preserves
+  // the model's 4-call budget (at least two requests remain).
+  // Evidence prefetch, NOT a fast path: multi-symbol asks can never take
+  // the deterministic singleton surface (the singleton gate requires
+  // exactly one symbol), so the model still synthesizes and its structured
+  // answer still runs the full grounding validation. The probe seed is
+  // mutually exclusive (a probed request exists to exercise the un-seeded
+  // full loop); hasInitialEvidence requests seed nothing (their evidence
+  // package is already complete). intentSeed (single or batch) remains
+  // the reactive zero-tool backstop's seed and the singleton gate's key,
+  // unchanged.
+  const intentSeeds =
+    !hasInitialEvidence && !args.probeSeedToolCall ? intentSeedTools(args.message) : [];
+  const pendingSeeds: Array<{ tool: string; args: unknown }> = args.probeSeedToolCall
+    ? [args.probeSeedToolCall]
+    : [...intentSeeds];
 
   // §5/§7 (round 3): ONE bounded final-answer repair. When the model's
   // final structured reply fails the contract (schema, grounding, or a
@@ -824,11 +836,12 @@ async function runGroundedLoop(
   };
 
   for (;;) {
-    if (pendingSeed) {
-      const seed = pendingSeed;
-      pendingSeed = null;
-      await executeAndInject(seed);
-      continue;
+    if (pendingSeeds.length > 0) {
+      const seed = pendingSeeds.shift();
+      if (seed) {
+        await executeAndInject(seed);
+        continue;
+      }
     }
     // ── G7 driver 1: serve the deterministic singleton outcome BEFORE any
     // post-tool completion. One completion serves the class (the initial

@@ -14,7 +14,7 @@
  * for symbol-specific market data — it never classifies anything else.
  */
 import { describe, it, expect } from "vitest";
-import { detectFinancialDataIntent, intentSeedTool } from "@/lib/ai/financialIntent";
+import { detectFinancialDataIntent, intentSeedTool, intentSeedTools } from "@/lib/ai/financialIntent";
 
 describe("financial-data intent detector — the conjunction rule", () => {
   it("symbol + price term -> financial (the canonical case)", () => {
@@ -433,5 +433,47 @@ describe("G7 audit — valuation-advice wording never seeds a tool (target price
     const f = detectFinancialDataIntent("Is RELIANCE at a fair price?");
     expect(f.financial).toBe(true);
     expect(f.symbol).toBe("RELIANCE");
+  });
+});
+
+// ── Directive-7 re-audit (2026-10-08, after the driver-2 reconciliation):
+// the compound advice+data wording the #256 comment always CLAIMED to
+// cover ("price and should I buy?") did not match the advice vocabulary —
+// the probe on pre-reconciliation main seeded getPrices for exactly that
+// wording and fast-pathed it (a bare price card for an advice ask). The
+// valuation family also leaked through word forms ("overvalued" /
+// "undervalued" are invisible to \bvaluation\b). The vocabulary now
+// covers the compound forms; these pins are the regression gate for the
+// whole class, at BOTH seed layers (the reactive single seed and the
+// driver-2 upfront seed plan).
+describe("G7 re-audit — compound advice+data wording never seeds (either layer)", () => {
+  it("compound advice+data asks seed NOTHING through intentSeedTool", () => {
+    expect(intentSeedTool("What is RELIANCE's price and should I buy it?")).toBeNull();
+    expect(intentSeedTool("Is RELIANCE worth buying at the current price?")).toBeNull();
+    expect(intentSeedTool("Is it a good time to buy TCS at this price?")).toBeNull();
+    expect(intentSeedTool("Is RELIANCE overvalued at the current price?")).toBeNull();
+    expect(intentSeedTool("Is INFY undervalued at today's price?")).toBeNull();
+    expect(intentSeedTool("Should I buy TCS or INFY at current prices?")).toBeNull();
+  });
+
+  it("compound advice+data asks seed NOTHING through intentSeedTools (the driver-2 upfront plan)", () => {
+    expect(intentSeedTools("What is RELIANCE's price and should I buy it?")).toEqual([]);
+    expect(intentSeedTools("Is RELIANCE worth buying at the current price?")).toEqual([]);
+    expect(intentSeedTools("Is RELIANCE overvalued at the current price?")).toEqual([]);
+    expect(intentSeedTools("Should I buy TCS or INFY at current prices?")).toEqual([]);
+  });
+
+  it("the detector still flags compound advice+data asks as financial (the zero-tool backstop keeps biting)", () => {
+    const t = detectFinancialDataIntent("What is RELIANCE's price and should I buy it?");
+    expect(t.financial).toBe(true);
+    expect(t.symbol).toBe("RELIANCE");
+    const v = detectFinancialDataIntent("Is RELIANCE overvalued at the current price?");
+    expect(v.financial).toBe(true);
+    expect(v.symbol).toBe("RELIANCE");
+  });
+
+  it("bare 'cheaper' is a legitimate fundamentals comparison and KEEPS its seeds (control)", () => {
+    expect(intentSeedTool("Which is cheaper on P/E: SBIN or HDFCBANK?")?.tool).toBe("getFinancials");
+    expect(intentSeedTools("Which is cheaper on P/E: SBIN or HDFCBANK?")).toHaveLength(2);
   });
 });

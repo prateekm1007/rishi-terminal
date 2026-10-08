@@ -649,7 +649,7 @@ DECLARE
     'users','alerts','backtest_results','badges','fno_strategies','portfolios',
     'transactions','watchlist','chat_usage','screens','portfolio_imports',
     'portfolio_positions','alerts_triggers','alerts_events','alerts_rate_limit',
-    'alerts_preferences'
+    'alerts_preferences','user_visit_state'
   ];
 BEGIN
   -- every real user_id table is expected
@@ -681,3 +681,82 @@ END
 $$;
 
 \echo '── L5-02 invariants: all passed'
+
+\echo '── X3-05b: user_visit_state is private to its owner'
+-- Behavioral proof for the INT-A6 substrate (migration 031): the
+-- last-visit cursor is user-private data — user B cannot read,
+-- update, delete or forge user A's cursor rows; user A's own CRUD
+-- works; a re-visit is an UPDATE through the (user_id, symbol)
+-- UNIQUE cursor, never a second history system (rule 14).
+DO $$
+DECLARE
+  user_a uuid := gen_random_uuid();
+  user_b uuid := gen_random_uuid();
+  seen int;
+BEGIN
+  -- Two auth users; the handle_new_user trigger (migration 002)
+  -- creates their public.users rows — inserting there again would
+  -- collide on the PK.
+  INSERT INTO auth.users (id, email) VALUES
+    (user_a, 'a-x305b@example.test'),
+    (user_b, 'b-x305b@example.test');
+
+  INSERT INTO public.user_visit_state (user_id, symbol, last_visited_at)
+    VALUES (user_a, 'RELIANCE', NOW() - INTERVAL '2 days');
+
+  SET LOCAL ROLE authenticated;
+
+  -- As user B: SELECT must not see A's cursor row.
+  PERFORM set_config('request.jwt.claim.sub', user_b::text, true);
+  SELECT count(*) INTO seen FROM public.user_visit_state WHERE user_id = user_a;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-05b FAILED: user B READ user A''s visit cursor (% rows)', seen;
+  END IF;
+
+  -- As user B: UPDATE must not touch A's cursor row.
+  UPDATE public.user_visit_state SET last_visited_at = NOW() WHERE user_id = user_a;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-05b FAILED: user B UPDATED user A''s visit cursor (% rows)', seen;
+  END IF;
+
+  -- As user B: DELETE must not remove A's cursor row.
+  DELETE FROM public.user_visit_state WHERE user_id = user_a;
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 0 THEN
+    RAISE EXCEPTION 'X3-05b FAILED: user B DELETED user A''s visit cursor (% rows)', seen;
+  END IF;
+
+  -- As user B: INSERT for A's user_id must be rejected (WITH CHECK).
+  BEGIN
+    INSERT INTO public.user_visit_state (user_id, symbol) VALUES (user_a, 'TCS');
+    RAISE EXCEPTION 'X3-05b FAILED: user B INSERTED a visit cursor owned by user A';
+  EXCEPTION
+    WHEN insufficient_privilege OR check_violation THEN
+      NULL; -- expected: RLS WITH CHECK violation
+  END;
+
+  -- As user A: own row IS reachable (the policies scope, not block).
+  PERFORM set_config('request.jwt.claim.sub', user_a::text, true);
+  SELECT count(*) INTO seen FROM public.user_visit_state WHERE symbol = 'RELIANCE';
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'X3-05b FAILED: user A cannot READ own visit cursor (% rows)', seen;
+  END IF;
+
+  -- A re-visit is an UPDATE; the 024 touch_updated_at trigger fires.
+  UPDATE public.user_visit_state SET last_visited_at = NOW() WHERE symbol = 'RELIANCE';
+  GET DIAGNOSTICS seen = ROW_COUNT;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'X3-05b FAILED: user A cannot UPDATE own visit cursor (% rows)', seen;
+  END IF;
+  SELECT count(*) INTO seen FROM public.user_visit_state
+    WHERE symbol = 'RELIANCE' AND updated_at >= last_visited_at;
+  IF seen <> 1 THEN
+    RAISE EXCEPTION 'X3-05b FAILED: updated_at trigger did not fire on the re-visit';
+  END IF;
+
+  RESET ROLE;
+END
+$$;
+
+\echo '── X3-05b invariants: all passed'

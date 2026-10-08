@@ -95,6 +95,9 @@ INSERT INTO alerts_rate_limit (user_id, hour_bucket, delivered)
 VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-10-07T03', 1);
 INSERT INTO alerts_preferences (user_id)
 VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+-- user_visit_state (INT-A6, migration 031): the last-visit cursor.
+INSERT INTO user_visit_state (user_id, symbol)
+VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'RELIANCE');
 
 -- ── 2. Positive control BEFORE deletion (B-18: a zero assertion
 --       without a proven non-zero before it is vacuous) ──────────

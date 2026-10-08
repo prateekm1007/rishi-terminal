@@ -116,3 +116,53 @@ beyond what is pasted.
 
 Next roadmap item: INT-A7 (Insight cache / deterministic change key),
 from exact main `5afa7b882f8ca7d857127f4ee00e713bf08f19ae`.
+
+
+## Amendment (2026-10-09, round 31 — substrate completion, PR #279)
+
+Stated plainly: PRs #276/#277 raced this work. #276 merged from head
+`8053a76` minutes before the substrate commits reached the same branch
+(the push was fast-forwarded after the merge head locked), and #277
+closed the roadmap row on a delta-engine-only scope. The founder's A6
+direction (2026-10-09, verbatim) is: "A6 ChangeSince (includes the
+user_visit_state migration + coverage-registry registration)". The
+substrate was not in main. PR #279 completes exactly that scope.
+
+What landed in #279 (rebased onto exact `8e3cb09`):
+
+- Pre-registration appended to `docs/intelligence/changeSince.md`
+  ("Substrate pre-registration: user_visit_state") BEFORE the migration
+  or its tests (commit `d8fdd8d`).
+- Fail-first `test/intelligenceVisitState.test.ts` — RED observed 8/8
+  failing on the pre-implementation tree (commit `c6eba1a`): registry
+  entry absent, migration absent, CI wiring absent.
+- Implementation (commit `364af29`): `lib/db/migrations/031_user_visit_state.sql`
+  (screens-class RLS, UNIQUE (user_id, symbol) upsert cursor, inline
+  `REFERENCES users(id) ON DELETE CASCADE`), `lib/account/coverage.ts`
+  registry entry (`cascade-via-users`), `rls_invariants.sql`
+  L5_02_EXPECTED + X3-05b behavioral block, `account_deletion_invariants.sql`
+  fixture row.
+
+Gate bite (rule 24, first-hand, restored): the cascade clause mutation
+(`REFERENCES users(id) ON DELETE CASCADE` → no CASCADE) failed BOTH the
+G1 end-state parser (`every deletion claim is backed by a LIVE
+mechanism`) and the A6 schema pin:
+
+```
+ Test Files  1 failed (2)
+      Tests  2 failed | 14 passed (16)
+```
+
+Restore: `Tests 16 passed (16)`.
+
+Full battery on `364af29`: tsc 0; eslint 0 errors, ratchet 283 holds;
+vitest **178 files / 1932 tests ALL PASSING** (1919 + 8 substrate + 5
+from the #272-era counts); encoding green. CI applies 031 in the
+Postgres-16 harness and runs the live L5-02 registry-equality, the
+X3-05b owner/other-user/anon behavior, and the G1 erasure sweep.
+
+Merge SHA, CI run, production apply (G1 sanctioned migration-apply path,
+pre-apply PITR timestamp per DR.md), and read-only production
+verification are appended in the final closeout docs update after #279
+merges — this file's section 6/7 numbers remain valid for the delta
+engine exactly as written.

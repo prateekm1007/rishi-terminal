@@ -101,6 +101,6 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION public.insight_cache_write(TEXT, TEXT, TEXT, JSONB)
-  FROM anon, authenticated;
+  FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.insight_cache_read_hit(TEXT)
-  FROM anon, authenticated;
+  FROM PUBLIC, anon, authenticated;

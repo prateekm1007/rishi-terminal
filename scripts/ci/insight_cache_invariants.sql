@@ -143,6 +143,12 @@ begin
   if has_table_privilege('authenticated', 'public.insight_cache', 'INSERT') then
     raise exception 'icache: authenticated can INSERT insight_cache';
   end if;
+  if has_function_privilege('public', 'public.insight_cache_write(TEXT,TEXT,TEXT,JSONB)', 'EXECUTE') then
+    raise exception 'icache: PUBLIC can EXECUTE insight_cache_write (the default function grant was not revoked)';
+  end if;
+  if has_function_privilege('public', 'public.insight_cache_read_hit(TEXT)', 'EXECUTE') then
+    raise exception 'icache: PUBLIC can EXECUTE insight_cache_read_hit (the default function grant was not revoked)';
+  end if;
   if has_function_privilege('anon', 'public.insight_cache_write(TEXT,TEXT,TEXT,JSONB)', 'EXECUTE') then
     raise exception 'icache: anon can EXECUTE insight_cache_write';
   end if;

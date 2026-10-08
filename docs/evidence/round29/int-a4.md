@@ -132,6 +132,56 @@ reconstructed history — the source is this session's authored content),
 `BOM: false`, validator green. Disclosed here rather than silently
 cleaned; the root cause is tooling method, not content.
 
-## 7. Closeout — CI, merge, production SHA, production probe (appended post-deploy)
+## 7. Closeout — CI, merge, production SHA, production probe
 
-FILLED AFTER MERGE + DEPLOY. Never rewrite sections 1–6.
+PR #270 (`INT-A4 deterministic materiality engine`,
+`feat/int-a4-materiality` @ `ceddd8172ec6afa30af9fb3a073f1d5a7ca88d3e`).
+
+CI on the exact head (run 37818135593, all green):
+
+```
+Playwright smoke (blocking since round 2)              pass  2m23s
+Lighthouse gate (U3 — measured-score floors, ratchet)  pass  5m15s
+Docker Space image (E1)                                pass  1m29s
+Lint, typecheck, test, validate                        pass  2m14s
+Migrations & RLS invariants (Postgres 16)              pass  30s
+Vercel Preview Comments                                pass
+```
+
+Merge via the sanctioned guard (`scripts/ci/merge-guard.py --pr 270`,
+exit 0), all six gates raw:
+
+```
+[gate 0] GET /pulls/270 -> HTTP 200, state=open base=main mergeable_state=clean
+[gate 1] origin/main tip (read #1) = 4052a0d6dd3a55cb61fed5a8fd971c5c07f7953c
+[gate 2] merge-base == main tip — branch is current with main
+[gate 3] six check-runs on ceddd8172ec6: all completed/success
+[gate 4] deployCadence.mjs --pr -> exit 0 (cadence PASS, ~140 min since #263)
+[gate 5] origin/main tip (read #2) = 4052a0d6dd3a55cb61fed5a8fd971c5c07f7953c (unmoved)
+[gate 6] PUT /pulls/270/merge (sha=ceddd8172ec6) -> HTTP 200
+         {"sha": "361706f3a84f1e8a4c6f806015f9a18948020880", "merged": true}
+```
+
+Production (Vercel auto-deploy on the main push):
+
+```
+GET https://rishi-terminal.vercel.app/api/version
+{"sha":"361706f3a84f1e8a4c6f806015f9a18948020880","now":"2026-10-08T17:51:24.436Z","node":"v24.21.0"}
+```
+
+origin/main == /api/version sha == `361706f` — the C6 tuple holds.
+
+```
+GET https://rishi-terminal.vercel.app/api/health
+{"status":"ok","db":true,...,"asOf":"2026-10-08T17:51:38.035Z"}
+post-deploy-smoke workflow: success (run 37819729508, 17:51:02Z, 14s)
+```
+
+Honest scope note: the engine has no production consumer yet by design
+(wiring arrives with A7/A9/A10) — so the production probe is the
+deployment-identity tuple plus the 39-test real execution of the engine,
+not a served materiality verdict. No production number is claimed beyond
+what is pasted above.
+
+A4 is CLOSED: code + fail-first + regression + CI + merged + deployed +
+exact SHA + real production identity + evidence. Next: A5 Thesis.

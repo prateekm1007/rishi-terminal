@@ -87,8 +87,8 @@ the exit gate, repair only what is missing, advance.**
 | Phase 0 | **CLOSED 2026-10-08** — G7 Driver-1/2 closed (#249, #257+#258, #260 verdict: gate MET −29.4%, mechanism verified); #256 behavioral proof CLOSED (round27 evidence; defect found → #262 root fix + live verification); E4 CLOSED (#265: both batteries 822/896 ≥ 807, 27/27 scheduled runs, zero manual dispatch); NS1 CLOSED (first real scheduled run 2026-10-08: 896/896 rows in 5.012 s, exactly one `ingestion_log` record, delivery-deviation + runbook health-clause error recorded — `docs/evidence/round26/ns1-production-proof.md`); PA2 production ingestion proof CLOSED (26,593 real transitions, idempotent, chained, RLS deny-all) | **Advance to Phase A substrate (A3 next)** |
 | A1 RishiInsight | Merged #247 (`e88dd14`): `lib/intelligence/types.ts` — zod-validated, closed vocabularies (5 status / 3 confidence / 3 materiality / 5 model roles / 20-feature registry), honesty couplings, 28 fail-first tests | **Existing — audit/close. Contract complete (code+tests+CI+merged+deployed). Runtime consumers arrive at A8+ by design; no rebuild** |
 | A2 Temporal Memory | Merged #253: migration 030 + `lib/intelligence/stateLog.ts` + quote-cache hook. Production ingestion PROVEN live (round27 evidence) | **Existing — CLOSED** (ingestion proof filed; reader consumers are A6+) |
-| A3 Events | Branch `feat/pa3-event-model` @ `29ac1ba`: event vocabulary (14 categories) + projection — **NOT on main**; the branch ALSO carries the materiality engine | **Next true substrate item — re-partition the branch: INT-A3 = event projection only** |
-| A4 Materiality | Same PA3 branch (`assessMateriality`, declared v1 thresholds, provenance caps) — bundled with A3 against the one-item-one-PR rule | **Second PR from the same branch: INT-A4 = the materiality engine (`lib/intelligence/materiality.ts` per the inventory's original design)** |
+| A3 Events | **CLOSED 2026-10-08** — merged #263 (`6c61d4ae`, deployed, exact production SHA verified). Strict-audited per round-28 directions 5–7: one hard gap found (seed source-state projected instead of refused) and root-fixed IN the PR (RED→GREEN); entropy guard strengthened to the exact 13-key closed set; byte-stability pinned. Closeout: `docs/evidence/round28/int-a3-closeout.md` | **Done — consumers arrive at A4+** |
+| A4 Materiality | BLOCKED on the founder's threshold confirmation (see standing blocked items). Architecture decided: `A3 event → deterministic threshold engine → material/non-material`; location `lib/intelligence/materiality.ts` + `docs/intelligence/materiality.md` + fail-first tests incl. the economic invariant (non-material → zero AI spend). Two competing pre-registrations exist (directive-10 statistical rules vs the PA3 branch's static v1) — the coder does not choose | **FOUNDER DECISION NEEDED before the task starts** |
 | A5 Thesis | Does not exist | Depends on A3/A4 |
 | A6 ChangeSince | Does not exist | Depends on A2/A3 |
 | A7 Insight cache / change key | Does not exist | Depends on A3/A4 |
@@ -148,3 +148,22 @@ the exit gate, repair only what is missing, advance.**
 - **G7 future drivers** (serial financials compositions, repair stage):
   pre-registered iteration, founder-authorized only (the #260 verdict's
   recorded candidate).
+- **A4 materiality thresholds** (raised 2026-10-08, round 28): the
+  founder must confirm the numerical thresholds before INT-A4 starts.
+  Two competing pre-registrations exist — the founder's round-28
+  statistical proposal (price ≥ 3σ of 20-day daily returns OR ≥ 4%
+  intraday; volume ≥ 3× 20-day median; technical regime over 2 sessions;
+  portfolio ≥ 2pp) vs the PA3 branch's static v1 (5%/2%, 5pp/2pp, 50%/20%).
+  Statistical rules require 20-day baselines the temporal memory only
+  began accumulating 2026-10-07 (~2026-11-03 readiness; fail-closed until
+  then). Escalation with recommended default (the directive-10 statistical
+  rules verbatim, fail-closed on insufficient baselines): #263 thread,
+  `docs/evidence/round28/int-a3-closeout.md` links it. A5+ are blocked
+  behind A4.
+- **NS1 health semantics** (raised 2026-10-08, round 28): does the
+  nightly consensus snapshot (computed from the static seed registry)
+  count as "fundamentals ingestion" for `/api/health`? #267 (merged)
+  says yes; #266's evidence says the label lies (rule 2) and the G6
+  honest-null state should be restored. Recommended default: `git revert
+  e5e75b76`. Escalation on the #267 thread. Phase 0 closure is unaffected
+  either way.

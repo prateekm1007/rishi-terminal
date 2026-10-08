@@ -1,0 +1,177 @@
+{
+  "at": "2026-10-08T05:26:54.616Z",
+  "base": "https://rishi-terminal.vercel.app",
+  "productionSha": "345134ccfb2e67708be5780bfc01716c73ecdc15",
+  "rows": [
+    {
+      "id": "advice-target",
+      "message": "What is RELIANCE's target price?",
+      "status": 200,
+      "wallMs": 48150,
+      "challenged": true,
+      "powMs": 14,
+      "step1Status": 429,
+      "step2Status": 200,
+      "step2BodyHead": "{\"text\":\"The AI reply could not be verified against platform evidence and was not shown.\",\"provenance\":{\"provider\":\"chat-api\",\"model\":\"agnes-2.5-flash\",\"generat",
+      "completionStages": [
+        "initial",
+        "post-tool",
+        "post-tool",
+        "repair"
+      ],
+      "nCompletions": 4,
+      "hasInitialStage": true,
+      "toolCalls": [
+        {
+          "tool": "getScore",
+          "status": "ok",
+          "symbol": "RELIANCE"
+        },
+        {
+          "tool": "getPrices",
+          "status": "ok",
+          "symbol": "RELIANCE"
+        }
+      ],
+      "nToolCalls": 2,
+      "synthesis": null,
+      "grounded": false,
+      "claimsVerified": false,
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "repairs": [
+        {
+          "cause": "field-value-mismatch",
+          "feedback": "the validator rejected: claim 2: claims score=\"100,\" but the matched score assertion is 70 — rejected (audit 2026-10-02). every number you state must be copied digit-for-digit from the TOOL RESULT fact annotations - never round it, never reformat it, never derive a new number, and place each number in the assertion of its OWN field (a price number never belongs in a change field or any other field's assertion) (signed values: when you state a negative fact in prose, write the minus sign exactly as the annotation does - 'changed by -1.401 percent', never 'down 1.401 percent'; and never write dates, observation timestamps, or numbered-list digits - only assertion values may appear as numbers) (never introduce a price level with the word change - 'changed to 2091' states the PRICE: write 'the price is 2091 inr' and 'the change is -1.107 percent' as separate statements, each with its own assertion) (never COMPUTE a number the annotations do not contain - no self-calculated differences, ratios or percentages; state the two annotated numbers side by side instead) (canonical fact values from the evidence you may copy digit-for-digit, one per field: score=70 points, price=1188.7 inr, change=-1.573 percent); every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+        }
+      ],
+      "answerHead": "The AI reply could not be verified against platform evidence and was not shown."
+    },
+    {
+      "id": "advice-compound",
+      "message": "What is RELIANCE's price and should I buy it?",
+      "status": 200,
+      "wallMs": 26650,
+      "challenged": true,
+      "powMs": 2,
+      "step1Status": 429,
+      "step2Status": 200,
+      "step2BodyHead": "{\"text\":\"BLOCKED: verified platform data was retrieved for this question, but the reply did not cite it. No uncited restatement of the data is served. Ask again",
+      "completionStages": [
+        "initial",
+        "post-tool",
+        "repair"
+      ],
+      "nCompletions": 3,
+      "hasInitialStage": true,
+      "toolCalls": [
+        {
+          "tool": "getStock",
+          "status": "ok",
+          "symbol": "RELIANCE"
+        }
+      ],
+      "nToolCalls": 1,
+      "synthesis": null,
+      "grounded": false,
+      "claimsVerified": false,
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "repairs": [
+        {
+          "cause": "missing-claims",
+          "feedback": "you received TOOL RESULT data for this data question but replied with zero claims — every number stated in the answer must be an assertion value of one of your claims, and every claim must cite exact TOOL RESULT evidence ids with their exact fact annotations; never restate received data without citing it"
+        }
+      ],
+      "answerHead": "BLOCKED: verified platform data was retrieved for this question, but the reply did not cite it. No uncited restatement of the data is served. Ask again, or rephrase as a philosophical or educational question."
+    },
+    {
+      "id": "comparison-pure",
+      "message": "What are the current prices of RELIANCE and SBIN?",
+      "status": 200,
+      "wallMs": 8727,
+      "challenged": true,
+      "powMs": 31,
+      "step1Status": 429,
+      "step2Status": 200,
+      "step2BodyHead": "{\"text\":\"price = 1189.2 inr — live (observed/as-of 2026-10-08T05:20:48.000Z)\\nchange = -1.532 percent — live (observed/as-of 2026-10-08T05:20:48.000Z)\\nprice = ",
+      "completionStages": [
+        "post-tool"
+      ],
+      "nCompletions": 1,
+      "hasInitialStage": false,
+      "toolCalls": [
+        {
+          "tool": "getPrices",
+          "status": "ok",
+          "symbol": "RELIANCE,SBIN"
+        }
+      ],
+      "nToolCalls": 1,
+      "synthesis": null,
+      "grounded": true,
+      "claimsVerified": true,
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "repairs": [],
+      "answerHead": "price = 1189.2 inr — live (observed/as-of 2026-10-08T05:20:48.000Z)\nchange = -1.532 percent — live (observed/as-of 2026-10-08T05:20:48.000Z)\nprice = 949.8 inr — live (observed/as-of 2026-10-08T05:20:46.000Z)\nchange = -0."
+    },
+    {
+      "id": "singleton-pure",
+      "message": "What is the price of RELIANCE?",
+      "status": 200,
+      "wallMs": 34060,
+      "challenged": true,
+      "powMs": 24,
+      "step1Status": 429,
+      "step2Status": 200,
+      "step2BodyHead": "{\"text\":\"Invalid arguments for getPrices: symbols Too small: expected array to have >=2 items.\",\"provenance\":{\"provider\":\"chat-api\",\"model\":\"agnes-2.5-flash\",\"g",
+      "completionStages": [
+        "initial"
+      ],
+      "nCompletions": 1,
+      "hasInitialStage": true,
+      "toolCalls": [
+        {
+          "tool": "getPrices",
+          "status": "invalid-args"
+        }
+      ],
+      "nToolCalls": 1,
+      "synthesis": "deterministic",
+      "grounded": false,
+      "claimsVerified": false,
+      "provider": "chat-api",
+      "model": "agnes-2.5-flash",
+      "repairs": [],
+      "answerHead": "Invalid arguments for getPrices: symbols Too small: expected array to have >=2 items."
+    }
+  ],
+  "verdict": {
+    "advice-target": {
+      "not_seeded": true,
+      "not_fast_pathed": true,
+      "pass": true
+    },
+    "advice-compound": {
+      "not_seeded": true,
+      "not_fast_pathed": true,
+      "pass": true
+    },
+    "comparison-pure": {
+      "zero_initial": true,
+      "one_tool_call": true,
+      "batch_seed_shape": true,
+      "pass": true
+    },
+    "singleton-pure": {
+      "deterministic_surface": true,
+      "pass": true
+    }
+  },
+  "rowFilter": [
+    "advice-target",
+    "singleton-pure"
+  ],
+  "mergedFrom": "2026-10-08T05:23:37.313Z"
+}

@@ -1,0 +1,150 @@
+# INTELLIGENCE ROADMAP — the entropy-locked master sequence (2026-10-08)
+
+Founder-ratified 2026-10-08 (round-27 session). This file records the
+**master execution architecture** for Rishi Terminal's intelligence program
+and classifies the repository against it. It is the second of the three
+sources of truth:
+
+```
+CONSTITUTION.md   = engineering law        (how work is allowed to happen)
+THIS FILE         = intended architecture  (what gets built, in what order)
+main              = actual implementation  (what exists)
+```
+
+Nothing else becomes a competing source of truth. `docs/ROADMAP.md` (the
+round-1–round-2 remediation program) is COMPLETE history, not a competing
+sequence; `docs/INTELLIGENCE_INVENTORY.md` is the pre-roadmap audit artifact
+(this file supersedes its §4 fit map as the sequencing authority).
+
+## 1. The frozen phase sequence
+
+The phase IDs are immutable; the sequence is not casually reordered.
+
+```
+PHASE 0  — close remaining acceptance obligations of the current program
+    ↓
+PHASE A  — the shared intelligence substrate
+  A1  RishiInsight (the canonical insight contract)
+  A2  Temporal Memory (observation-state log)
+  A3  Events (deterministic event projection)
+  A4  Materiality (deterministic materiality engine)
+  A5  Thesis (supports/weakens/conflicts/invalidators state)
+  A6  ChangeSince (deterministic deltas)
+  A7  Insight Cache / deterministic change key
+  A8  Evidence / Uncertainty / Contradiction UI (shared primitives)
+  A9  Ask Rishi (contextual continuation → existing /api/chat)
+  A10 /api/intelligence (the one intelligence API surface)
+    ↓
+PHASE B  — B1 Per-symbol News Evidence
+    ↓
+PHASE C  — Dashboard Brief
+    ↓
+PHASE D  — Screening · Stock Intelligence · Stock Dossier
+    ↓
+PHASE E  — Watchtower · Since Last Visit
+    ↓
+PHASE F  — Earnings Copilot · Management Truth Tracker · Corporate Action
+    ↓
+PHASE G  — News Intelligence
+    ↓
+PHASE H  — Portfolio Doctor · Portfolio Movers · Stress Lab
+    ↓
+PHASE I  — Sector Intelligence · Ownership Detective
+    ↓
+PHASE J  — Research Room · Rishi Council
+    ↓
+PHASE K  — Short Radar Thesis
+    ↓
+PHASE L  — Technical Interpreter
+```
+
+## 2. The frozen canonical architecture (every intelligence feature enters this exact shape)
+
+```
+canonical observation → canonical state → temporal state history
+  → deterministic event projection → deterministic materiality
+  → deterministic change key → persistent insight cache
+  → ONE canonical bounded AI loop → RishiInsight
+  → grounding → contradiction / uncertainty → provenance
+  → /api/intelligence → existing product surface
+  → Ask Rishi → existing /api/chat
+```
+
+No feature may create its own version of a primitive: one history, one
+event model, one materiality engine, one cache, one insight contract, one
+AI router, one evidence model, one provenance model, one spend-control
+architecture, one intelligence API, one contextual chat path.
+
+## 3. Classification of the repository (as of `origin/main` = `345134c`, 2026-10-08)
+
+**Rule (founder, 2026-10-08): existing code is classified against the
+roadmap BEFORE anything is rebuilt. A phase is not complete because files
+exist; a phase is not re-done because the roadmap names it. Audit against
+the exit gate, repair only what is missing, advance.**
+
+| Item | Repo state (verified this session) | Treatment |
+|---|---|---|
+| Phase 0 | G7 Driver-1/2 closed (#249, #257+#258, #260 verdict: gate MET −29.4%, mechanism verified); #256 behavioral proof CLOSED (round27 evidence; defect found → #262); E4 early battery PASSED 822–823/896 ≥ 807 (late battery pending 09:42 UTC); NS1 first scheduled run pending 13:30 UTC (runbook #259); PA2 production ingestion proof CLOSED (round27 evidence: 26,593 real transitions, idempotent, chained, RLS deny-all) | **Close remaining scheduled-run obligations; no new feature work** |
+| A1 RishiInsight | Merged #247 (`e88dd14`): `lib/intelligence/types.ts` — zod-validated, closed vocabularies (5 status / 3 confidence / 3 materiality / 5 model roles / 20-feature registry), honesty couplings, 28 fail-first tests | **Existing — audit/close. Contract complete (code+tests+CI+merged+deployed). Runtime consumers arrive at A8+ by design; no rebuild** |
+| A2 Temporal Memory | Merged #253: migration 030 + `lib/intelligence/stateLog.ts` + quote-cache hook. Production ingestion PROVEN live (round27 evidence) | **Existing — CLOSED** (ingestion proof filed; reader consumers are A6+) |
+| A3 Events | Branch `feat/pa3-event-model` @ `29ac1ba`: event vocabulary (14 categories) + projection — **NOT on main**; the branch ALSO carries the materiality engine | **Next true substrate item — re-partition the branch: INT-A3 = event projection only** |
+| A4 Materiality | Same PA3 branch (`assessMateriality`, declared v1 thresholds, provenance caps) — bundled with A3 against the one-item-one-PR rule | **Second PR from the same branch: INT-A4 = the materiality engine (`lib/intelligence/materiality.ts` per the inventory's original design)** |
+| A5 Thesis | Does not exist | Depends on A3/A4 |
+| A6 ChangeSince | Does not exist | Depends on A2/A3 |
+| A7 Insight cache / change key | Does not exist | Depends on A3/A4 |
+| A8 Shared evidence UI | Does not exist | After A1/A7 contracts stabilize |
+| A9 Ask Rishi | Does not exist (contextual continuation into the EXISTING /api/chat — never a new chatbot endpoint) | After insight context exists |
+| A10 /api/intelligence | Does not exist | After substrate contracts stable |
+| B1+ | Do not exist | Feature breadth only after Phase A is proven |
+
+## 4. Execution rules (binding on every PR from here)
+
+1. **One roadmap item = one task = one PR = one closeout.** Never
+   A3+A4+A5 in one PR; never A3, A3.1, A3-redux, A3-final.
+2. **Roadmap IDs are permanent identifiers.** PR titles:
+   `INT-A3 deterministic intelligence event projection`; evidence:
+   `docs/evidence/int-a3-<round>.md` (or the round directory with the
+   item in the filename); PR body carries `Roadmap item: A3;
+   Dependencies: A1, A2`.
+3. **No downstream implementation before its substrate.** A4 depends on
+   A3; Dashboard Brief depends on A1–A10. A coder may not start an item
+   because it looks easy — a missing prerequisite STOPS the downstream
+   item and surfaces the prerequisite (or escalates
+   `FOUNDER DECISION NEEDED` when the block is not a coder decision).
+4. **No roadmap reinterpretation during coding.** A3 means deterministic
+   projection — never "LLM decides an event happened". A4 means
+   deterministic materiality — never "LLM decides importance". A7 means a
+   deterministic change key + persistent cache — never in-memory
+   memoization. A9 means the existing /api/chat — never a new endpoint.
+5. **Every item runs the same loop:** read CONSTITUTION → read the item +
+   dependencies → read the existing implementation → search for duplicate
+   primitives → define the negative test → RED → root fix → GREEN →
+   regression → full CI → merge → deploy → exact production SHA → real
+   production execution → real UI verification → grounding → provenance →
+   latency → raw evidence → ITEM CLOSED.
+6. **Definition of Complete is strict:** code + fail-first test +
+   regression + CI + merged + deployed + exact SHA + real prod execution +
+   real prod UI + grounding + provenance + latency + evidence. Anything
+   less is IMPLEMENTED, not CLOSED.
+7. **Unexpected discoveries follow the hard protocol:** missing
+   prerequisite → stop downstream, work the prerequisite; broken existing
+   primitive → fail-first regression + repair (never a silent replacement);
+   duplicate architecture → stop, determine canonical, consolidate;
+   founder/legal/security decision → `FOUNDER DECISION NEEDED` + BLOCKED on
+   that item; genuine roadmap-order impossibility → an explicit
+   architecture change record in this file (never a quiet reorder inside
+   a PR).
+8. **Production automation is part of the architecture:** no manual SQL,
+   no manual cron dispatch, no manual cache mutation, no dashboard repair.
+   The chain is code → migration/repository automation → CI → merge →
+   deployment → scheduled/requested production execution → automated
+   evidence.
+
+## 5. Standing blocked items (not coder decisions)
+
+- **G3** (`029_quotes_warm_schedule_pin.sql`): stays unapplied until the
+  founder comments `APPROVED: pg_cron` (the live DB scheduler currently
+  running is the production authority).
+- **G7 future drivers** (serial financials compositions, repair stage):
+  pre-registered iteration, founder-authorized only (the #260 verdict's
+  recorded candidate).

@@ -65,4 +65,53 @@ npm run validate:encoding                              -> pass, no mojibake
 
 ## 6. Closeout — CI, merge, production SHA (appended post-deploy)
 
-FILLED AFTER MERGE + DEPLOY. Never rewrite sections 1–5.
+PR #272, head `a95c51ba889cb96e742528205465fdf535a71074`, merged as
+`454c8bd7a103f56d05c14c2660177418602264fd` (2026-10-08).
+
+CI run 37822813114 — first attempt blocked by the C8 cadence gate
+(docs-only merge #271 is deploy-exempt; the last production-relevant
+merge #270 was younger than 60 min):
+
+```
+deploy-cadence: FAIL — last production-relevant merge landed 26.2 min ago
+— merging this PR now would violate C8 (at most one production-relevant
+merge per 60 min); earliest safe merge 2026-10-08T18:48:59.000Z
+```
+
+Rerun after the window opened — all six checks green:
+
+```
+Lint, typecheck, test, validate                     pass  2m51s
+Migrations & RLS invariants (Postgres 16)           pass  3m6s
+Docker Space image (E1)                             pass  1m54s
+Lighthouse gate (U3)                                pass  2m39s
+Playwright smoke                                    pass  4m15s
+Vercel Preview Comments                            pass  0
+```
+
+merge-guard gates 0–6 (sanctioned path, `GITHUB_PAT` env):
+
+```
+[gate 0] GET /pulls/272 -> HTTP 200
+[gate 0] state=open base=main head=a95c51ba889c mergeable_state=clean
+[gate 1] origin/main tip (read #1) = 12ca15c79e676d9f9904e683467a5653b394f016
+[gate 2] merge-base == main tip — branch is current with main
+[gate 3] check-runs on a95c51ba889c: all six completed/success
+[gate 4] node scripts/ci/deployCadence.mjs --pr --base origin/main -> exit 0
+[gate 5] origin/main tip (read #2, pre-merge) = 12ca15c79e676d9f9904e683467a5653b394f016
+[gate 6] PUT /pulls/272/merge (sha=a95c51ba889c) -> HTTP 200
+[gate 6] {"sha": "454c8bd7a103f56d05c14c2660177418602264fd", "merged": true}
+MERGE-GUARD: MERGED PR #272 (head a95c51ba889c) -> merge commit 454c8bd7a103
+```
+
+Production verification after Vercel deploy (2026-10-08 ~19:07Z):
+
+```
+GET /api/version  -> sha = 454c8bd7a103f56d05c14c2660177418602264fd  (matches merge)
+GET /api/health   -> {"status":"ok","db":true,...}
+post-deploy-smoke on 454c8bd7a103 -> completed success
+```
+
+Roadmap: A4 row already CLOSED (PR #271); this integrity fix does not
+change status. Next roadmap item: INT-A5 (Thesis), from exact main
+`454c8bd7a103f56d05c14c2660177418602264fd`.

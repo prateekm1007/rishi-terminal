@@ -14,6 +14,12 @@
  * imports it, and nothing on the table computes or fetches per row
  * (the 896-row universe triggers zero chain reads and zero
  * intelligence requests on render).
+ *
+ * Styling: INLINE (the ScreenerClient control convention — this tree
+ * has no utility-CSS pipeline; a class-only touch target would render
+ * unstyled and fail the WCAG 2.2 target-size gate, which the CI smoke
+ * proved with real bite). The 28 px box MEETS the 24 px minimum by
+ * construction.
  */
 
 type Props = {
@@ -27,7 +33,24 @@ export function IntelligenceBadge({ symbol, onOpen }: Props) {
   return (
     <button
       type="button"
-      className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-full border border-gray-700 px-2 align-middle text-[10px] font-mono font-bold text-gray-400 transition hover:border-yellow-600 hover:text-yellow-500"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 28,
+        minWidth: 28,
+        padding: '0 8px',
+        borderRadius: 999,
+        border: '1px solid var(--border)',
+        background: 'transparent',
+        color: 'var(--text-muted)',
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: '0.04em',
+        cursor: 'pointer',
+        verticalAlign: 'middle',
+      }}
       data-intelligence-badge={symbol}
       aria-label={`Open Rishi intelligence for ${symbol}`}
       title={`Rishi intelligence for ${symbol}`}

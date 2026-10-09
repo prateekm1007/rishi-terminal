@@ -33,6 +33,16 @@
 -- for anon/authenticated. The service role (server routes only) reads
 -- and writes; no client-facing surface queries this table directly,
 -- and the two functions are not executable by the client roles.
+--
+-- FUNCTION GRANTS (audit fix 2026-10-09, before first production
+-- application — DR.md fix-forward): REVOKE from PUBLIC also removes
+-- the default EXECUTE from service_role, the ONE role the app's
+-- getAdminSupabase() uses. The 019/022 precedent pairs every
+-- PUBLIC/anon/authenticated revocation with an explicit service_role
+-- grant so the write/read path never depends on platform-default
+-- privileges (the CI harness's ALTER DEFAULT PRIVILEGES grants would
+-- otherwise mask the omission — production platform defaults are NOT
+-- guaranteed to match).
 -- ============================================================
 
 CREATE TABLE public.insight_cache (
@@ -104,3 +114,9 @@ REVOKE ALL ON FUNCTION public.insight_cache_write(TEXT, TEXT, TEXT, JSONB)
   FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.insight_cache_read_hit(TEXT)
   FROM PUBLIC, anon, authenticated;
+-- The app path is service_role only (getAdminSupabase): the explicit
+-- grant pairs with the revocations above — the 019/022 pattern.
+GRANT EXECUTE ON FUNCTION public.insight_cache_write(TEXT, TEXT, TEXT, JSONB)
+  TO service_role;
+GRANT EXECUTE ON FUNCTION public.insight_cache_read_hit(TEXT)
+  TO service_role;

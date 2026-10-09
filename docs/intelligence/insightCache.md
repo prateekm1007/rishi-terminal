@@ -83,7 +83,14 @@ changeKeyOf({ feature, subject, changeIds }) =
 `insight_cache(change_key 64-hex UNIQUE, feature, subject, payload
 jsonb-object, generated_at, hit_count >= 0, last_hit_at)` — RLS
 enabled with NO policies; `REVOKE ALL ... FROM anon, authenticated`
-(the 030 pattern). DB-side checks: `change_key` length 64, payload a
+(the 030 pattern); the two functions are `REVOKE ... FROM PUBLIC, anon,
+authenticated` **plus an explicit `GRANT EXECUTE ... TO service_role`**
+(the 019/022 pattern — audit fix 2026-10-09 BEFORE first production
+application, per DR.md fix-forward: revoking PUBLIC also removes the
+default EXECUTE from service_role, the ONE role `getAdminSupabase()`
+uses, and the app path must never depend on platform-default
+privileges; the CI harness's own default function grants would mask an
+omission, disclosed in the invariant's honest-limit note). DB-side checks: `change_key` length 64, payload a
 jsonb object (never a JSON null), `hit_count >= 0`. The closed feature
 registry is enforced at the write boundary in TS (the DB keeps length
 checks so a registry addition is a TS-enum + test change, not a

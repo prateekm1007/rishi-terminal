@@ -163,6 +163,14 @@ export const EVIDENCE_FIXTURES = {
     whyItMatters: "The unknown stays unknown — the surface says so plainly.",
     whatChanged: [],
     invalidators: [],
+    /** A4 excluded-verdict breakdown (2026-10-10 repair): counts of the
+     * materiality engine's actual non-material verdicts — the honest
+     * "observations occurred, none qualified" state. */
+    excludedVerdicts: [
+      { reason: "below-threshold", count: 12 },
+      { reason: "insufficient-history", count: 7 },
+      { reason: "seed-derived", count: 3 },
+    ],
     evidence: [],
     contradictions: [],
     uncertainty: [],

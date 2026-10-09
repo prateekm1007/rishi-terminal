@@ -115,6 +115,9 @@ export interface ChainScaffold {
   whyItMatters: string;
   whatChanged: Array<{ field: string; change: string }>;
   invalidators: string[];
+  /** A4 excluded-verdict counts by reason (deterministic, display-side
+   *  disclosure; absent when no verdicts were excluded). */
+  excludedVerdicts: Array<{ reason: string; count: number }>;
   evidence: InsightEvidenceItem[];
   contradictions: InsightContradiction[];
   uncertainty: string[];
@@ -362,6 +365,21 @@ function composeScaffold(args: {
     (item) => `${item.eventId} invalidates the tracked premise (${item.category}:${item.field}).`,
   );
 
+  // A4 excluded-verdict breakdown — counts of the materiality engine's
+  // actual non-material verdicts, grouped by reason, sorted by reason
+  // ascending (deterministic order; no clocks). COUNTS ONLY: excluded
+  // transitions never enter the ledger (the display boundary stays a
+  // summary, never a second evidence system).
+  const excludedCounts = new Map<string, number>();
+  for (const v of verdicts) {
+    if (!aiSpendAllowed(v)) {
+      excludedCounts.set(v.reason, (excludedCounts.get(v.reason) ?? 0) + 1);
+    }
+  }
+  const excludedVerdicts = [...excludedCounts.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([reason, count]) => ({ reason, count }));
+
   const scaffold: ChainScaffold = {
     feature: CHAIN_FEATURE,
     subject,
@@ -374,6 +392,7 @@ function composeScaffold(args: {
     whyItMatters,
     whatChanged,
     invalidators,
+    excludedVerdicts,
     evidence,
     contradictions,
     uncertainty,
@@ -471,6 +490,9 @@ export function assembleInsightArtifact(
     whyItMatters: scaffold.whyItMatters,
     whatChanged: scaffold.whatChanged,
     invalidators: scaffold.invalidators,
+    ...(scaffold.excludedVerdicts.length > 0
+      ? { excludedVerdicts: scaffold.excludedVerdicts }
+      : {}),
     evidence: scaffold.evidence,
     contradictions: scaffold.contradictions,
     uncertainty,
@@ -605,6 +627,9 @@ export async function runIntelligenceChain(input: {
       whyItMatters: scaffold.whyItMatters,
       whatChanged: scaffold.whatChanged,
       invalidators: scaffold.invalidators,
+      ...(scaffold.excludedVerdicts.length > 0
+        ? { excludedVerdicts: scaffold.excludedVerdicts }
+        : {}),
       evidence: scaffold.evidence,
       contradictions: scaffold.contradictions,
       uncertainty: scaffold.uncertainty,

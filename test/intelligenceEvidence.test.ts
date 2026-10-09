@@ -237,3 +237,190 @@ describe("the thin primitives — JSX renders closed states only", () => {
     expect(html).toContain('data-insight-badge="modelStatus">deterministic<');
   });
 });
+
+/**
+ * INT-A8 shared-surface repair (2026-10-10) — the presentation defect
+ * the D2 production legs exposed: the semantic A8 classes had ZERO
+ * selectors in globals.css (default bullets, unstyled prose), the A1
+ * prose (summary / whyItMatters / whatChanged) never reached the
+ * screen, and the empty-evidence wording implied no observations
+ * occurred. Pre-registration: docs/intelligence/evidence.md (the gap
+ * record + the repair), evidence: docs/evidence/round39/.
+ *
+ * Rule 21 fail-first: on the pre-repair tree these pins fail — the
+ * mapping lacks the prose fields, the ThesisProse
+ * primitives do not exist, the empty-evidence wording is the old
+ * "No evidence recorded.", and the excluded-verdict breakdown is
+ * absent (the raw RED output is in docs/evidence/round39/).
+ */
+
+describe("INT-A8 repair — the mapping carries the A1 prose verbatim", () => {
+  it("summary and whyItMatters pass through the mapping UNTOUCHED (no interpretation, no truncation)", () => {
+    const view = buildEvidenceView(DETERMINISTIC) as EvidenceView;
+    expect(view.summary).toBe(DETERMINISTIC.summary);
+    expect(view.whyItMatters).toBe(DETERMINISTIC.whyItMatters);
+  });
+
+  it("excludedVerdicts pass through as deterministic {reason, count} rows (never ledger entries)", () => {
+    const view = buildEvidenceView(MINIMAL) as EvidenceView;
+    expect(Array.isArray(view.excludedVerdicts)).toBe(true);
+    for (const row of view.excludedVerdicts) {
+      expect(typeof row.reason).toBe("string");
+      expect(Number.isInteger(row.count)).toBe(true);
+      expect(row.count).toBeGreaterThan(0);
+    }
+    // The breakdown is COUNTS, never evidence ids — excluded transitions
+    // never enter the ledger (directive 8's hard boundary).
+    const serialized = JSON.stringify(view.excludedVerdicts);
+    expect(serialized).not.toMatch(/evt:|evidence:/);
+  });
+
+  it("defense: an artifact without excludedVerdicts degrades to the empty breakdown (older cache entries)", () => {
+    const without = { ...MINIMAL } as RishiInsight;
+    delete (without as Partial<RishiInsight>).excludedVerdicts;
+    const view = buildEvidenceView(without) as EvidenceView;
+    expect(view.excludedVerdicts).toEqual([]);
+  });
+});
+
+describe("INT-A8 repair — ThesisProse (the shared prose primitive)", () => {
+  it("renders the A1 prose VERBATIM under honest labels (never 'AI-generated')", async () => {
+    const { ThesisProse } = await import("@/components/intelligence/ThesisProse");
+    const view = buildEvidenceView(DETERMINISTIC) as EvidenceView;
+    const html = renderToString(createElement(ThesisProse, { view }));
+    expect(html).toContain("What changed");
+    expect(html).toContain("Why it matters");
+    expect(html).toContain("Field-level changes");
+    expect(html).toContain(DETERMINISTIC.summary);
+    expect(html).toContain(DETERMINISTIC.whyItMatters);
+    expect(html).not.toMatch(/AI[- ]generated|artificial intelligence/i);
+  });
+
+  it("renders the field-level delta lines verbatim (no composed numbers)", async () => {
+    const { ThesisProse } = await import("@/components/intelligence/ThesisProse");
+    const view = buildEvidenceView(CONFLICT) as EvidenceView;
+    const html = renderToString(createElement(ThesisProse, { view }));
+    expect(html).toContain("Field-level changes");
+    expect(html).toContain("price");
+    // React escapes ">" as &gt; in the HTML string — the verbatim
+    // contract is the full delta line (field + old -> new with units).
+    expect(html).toContain("1204.1 inr -&gt; 1210.1 inr");
+  });
+
+  it("renders its honest empty state when the artifact carries no deltas", async () => {
+    const { ThesisProse } = await import("@/components/intelligence/ThesisProse");
+    const view = buildEvidenceView(MINIMAL) as EvidenceView;
+    const html = renderToString(createElement(ThesisProse, { view }));
+    expect(html).toContain("No field-level changes recorded");
+  });
+
+  it("adds no advice strings (the A8 absence pin)", async () => {
+    const { ThesisProse } = await import("@/components/intelligence/ThesisProse");
+    const view = buildEvidenceView(CONFLICT) as EvidenceView;
+    const html = renderToString(createElement(ThesisProse, { view }));
+    expect(html).not.toMatch(/\b(BUY|SELL|HOLD)\b/);
+  });
+});
+
+describe("INT-A8 repair — the empty-evidence state is honest about what occurred", () => {
+  it("says no observations QUALIFIED as material evidence (never that none occurred)", async () => {
+    const { EvidenceList } = await import("@/components/intelligence/EvidenceList");
+    const view = buildEvidenceView(MINIMAL) as EvidenceView;
+    const html = renderToString(createElement(EvidenceList, { view }));
+    expect(html).toContain("No observations qualified as material evidence");
+    expect(html).not.toContain("No evidence recorded.");
+  });
+
+  it("exposes the deterministic excluded-verdict breakdown with data attributes (never parsed UI text)", async () => {
+    const { EvidenceList } = await import("@/components/intelligence/EvidenceList");
+    const view = buildEvidenceView(MINIMAL) as EvidenceView;
+    const html = renderToString(createElement(EvidenceList, { view }));
+    expect(html).toContain("data-insight-excluded-verdicts");
+    for (const row of (MINIMAL as RishiInsight & { excludedVerdicts?: { reason: string; count: number }[] }).excludedVerdicts ?? []) {
+      expect(html).toContain(`data-insight-excluded-reason="${row.reason}"`);
+      expect(html).toContain(`>${row.count}<`);
+    }
+  });
+});
+
+describe("INT-A8 repair — the shared CSS contract (centralized selectors)", () => {
+  const CSS = readFileSync("app/globals.css", "utf8");
+
+  it("globals.css carries selectors for the semantic A8 classes (the 2026-10-09 zero-selector defect)", () => {
+    for (const selector of [
+      ".insight-surface",
+      ".insight-surface__badges",
+      ".insight-badge",
+      ".insight-surface__provenance",
+      ".insight-surface__title",
+      ".insight-surface__empty",
+      ".insight-surface__list",
+      ".insight-surface__item",
+      ".insight-surface__text",
+      ".insight-surface__facts",
+      ".insight-fact",
+      ".insight-fact__value",
+      ".insight-fact__provenance",
+      ".insight-surface--evidence",
+      ".insight-surface--uncertainty",
+      ".insight-surface--contradictions",
+      ".insight-surface--thesis",
+      ".insight-surface__what-changed",
+      ".insight-surface__excluded",
+    ]) {
+      expect(CSS).toContain(`${selector} {`);
+    }
+  });
+
+  it("the badge row and the lists kill the browser default bullets (the screenshot defect)", () => {
+    for (const selector of [".insight-surface__badges", ".insight-surface__list", ".insight-surface__facts", ".insight-surface__what-changed", ".insight-surface__excluded"]) {
+      const block = CSS.split(`${selector} {`)[1]?.split("}")[0] ?? "";
+      expect(block).toContain("list-style: none");
+    }
+    // Grouped badges: the row is a flex group, not a stacked default list.
+    const badges = CSS.split(".insight-surface__badges {")[1]?.split("}")[0] ?? "";
+    expect(badges).toContain("display: flex");
+  });
+
+  it("all three product surfaces render the shared primitives (no independent redesigns)", () => {
+    for (const surface of [
+      "components/dashboard/DashboardBrief.tsx",
+      "components/stock/IntelligencePanel.tsx",
+      "components/screener/IntelligenceDrawer.tsx",
+    ]) {
+      const src = readFileSync(surface, "utf8");
+      expect(src).toContain("<ReadyComposition");
+    }
+  });
+
+  it("DashboardBrief composes no invented explanation in JSX (the artifact's own prose speaks)", () => {
+    const src = readFileSync("components/dashboard/DashboardBrief.tsx", "utf8");
+    expect(src).not.toContain("Deterministic composition of the observation chain for this subject.");
+  });
+});
+
+describe("INT-A8 repair — the ONE canonical ready composition", () => {
+  it("ReadyComposition renders the A8 closed set in the A8 order (one definition, three surfaces)", async () => {
+    const src = readFileSync("components/intelligence/ReadyComposition.tsx", "utf8");
+    const order = [
+      "<InsightBadges",
+      "<ProvenanceLine",
+      "<ThesisProse",
+      "<ContradictionBanner",
+      "<EvidenceList",
+      "<UncertaintyBlock",
+    ];
+    let last = -1;
+    for (const primitive of order) {
+      const at = src.indexOf(primitive);
+      expect(at, `${primitive} must be present in ReadyComposition`).toBeGreaterThan(-1);
+      expect(at, `${primitive} must come after the previous primitive (the A8 order)`).toBeGreaterThan(last);
+      last = at;
+    }
+    // No interpretation, no fetch, no parser — the composition is a
+    // thin renderer over the mapping's view.
+    expect(src).not.toMatch(/fetch\(/);
+    expect(src).not.toMatch(/parseRishiInsight/);
+    expect(src).not.toContain('from "zod"');
+  });
+});

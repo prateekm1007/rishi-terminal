@@ -33,17 +33,19 @@
  * pins capability=thesis.
  */
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
 import type { RishiInsight } from "@/lib/intelligence/types";
 import { buildEvidenceView, type EvidenceView } from "@/lib/intelligence/evidence";
-import {
-  ContradictionBanner,
-  EvidenceList,
-  InsightBadges,
-  ProvenanceLine,
-  UncertaintyBlock,
-} from "@/components/intelligence";
+// The ONE canonical ready-state composition (the A8 closed set in the
+// A8 order), mounted lazily — the C1 bundle pattern: the ready state
+// is client-only by construction, so ssr:false changes zero SSR output
+// while keeping the composition out of the page's first-load JS.
+const ReadyComposition = dynamic(
+  () => import("@/components/intelligence/ReadyComposition").then((m) => m.ReadyComposition),
+  { ssr: false },
+);
 
 type BriefState =
   | { phase: "loading" }
@@ -122,29 +124,19 @@ export function DashboardBrief({ subject }: { subject: string }) {
       }}>
         Rishi Intelligence — {subject}
       </h2>
-      <p style={{
-        fontSize: "12px",
-        color: "var(--text-muted)",
-        margin: "0 0 16px 0",
-      }}>
-        Deterministic composition of the observation chain for this subject.
-      </p>
+      {/* 2026-10-10 repair: no invented JSX explanation here — the
+          artifact's own prose (ThesisProse) and the provenance line
+          speak; a human-typed subtitle competed with both. */}
       {state.phase === "loading" && (
         <p className="insight-surface__empty">Resolving intelligence...</p>
       )}
       {state.phase === "unavailable" && (
-        <p className="insight-surface__empty" data-dashboard-brief="unavailable">
+        <p className="insight-surface__empty" data-brief-unavailable>
           Intelligence is not available for this subject right now.
         </p>
       )}
       {state.phase === "ready" && (
-        <>
-          <InsightBadges badges={state.view.badges} />
-          <ProvenanceLine view={state.view} />
-          <ContradictionBanner view={state.view} />
-          <EvidenceList view={state.view} />
-          <UncertaintyBlock view={state.view} />
-        </>
+        <ReadyComposition view={state.view} />
       )}
     </section>
   );

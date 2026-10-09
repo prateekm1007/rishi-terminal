@@ -4,6 +4,12 @@
  * the closed states of lib/intelligence/evidence.ts (the ONE mapping;
  * this component owns no interpretation). House pattern (DataValue,
  * P0-06): server-component safe, data-* audit attributes.
+ *
+ * Empty-evidence state (2026-10-10 repair): says no observations
+ * QUALIFIED as material evidence in the window — never that none
+ * occurred — and exposes the A4 excluded-verdict breakdown (counts by
+ * reason, straight from the artifact; never parsed UI text, never
+ * ledger rows).
  */
 
 import type { EvidenceView } from "@/lib/intelligence/evidence";
@@ -13,7 +19,26 @@ export function EvidenceList({ view }: { view: EvidenceView }) {
     <section className="insight-surface insight-surface--evidence" aria-label="Evidence">
       <h3 className="insight-surface__title">Evidence</h3>
       {view.evidence.rows.length === 0 ? (
-        <p className="insight-surface__empty">No evidence recorded.</p>
+        <div>
+          <p className="insight-surface__empty">
+            No observations qualified as material evidence in the observation
+            window.
+          </p>
+          {view.excludedVerdicts.length > 0 ? (
+            <ul className="insight-surface__excluded" data-insight-excluded-verdicts>
+              {view.excludedVerdicts.map((v) => (
+                <li
+                  key={v.reason}
+                  className="insight-surface__excluded-item"
+                  data-insight-excluded-reason={v.reason}
+                >
+                  <span className="insight-surface__excluded-reason">{v.reason}</span>
+                  <span className="insight-surface__excluded-count">{v.count}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       ) : (
         <ul className="insight-surface__list">
           {view.evidence.rows.map((row) => (

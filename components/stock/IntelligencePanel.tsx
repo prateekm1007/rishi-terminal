@@ -28,17 +28,19 @@
  * ~2026-11-03); this panel pins capability=thesis.
  */
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
 import type { RishiInsight } from "@/lib/intelligence/types";
 import { buildEvidenceView, type EvidenceView } from "@/lib/intelligence/evidence";
-import {
-  ContradictionBanner,
-  EvidenceList,
-  InsightBadges,
-  ProvenanceLine,
-  UncertaintyBlock,
-} from "@/components/intelligence";
+// The ONE canonical ready-state composition (the A8 closed set in the
+// A8 order), mounted lazily — the C1 bundle pattern: the ready state
+// is client-only by construction, so ssr:false changes zero SSR output
+// while keeping the composition out of the page's first-load JS.
+const ReadyComposition = dynamic(
+  () => import("@/components/intelligence/ReadyComposition").then((m) => m.ReadyComposition),
+  { ssr: false },
+);
 
 type PanelState =
   | { phase: "loading" }
@@ -105,18 +107,12 @@ export function IntelligencePanel({ subject }: { subject: string }) {
         <p className="insight-surface__empty">Resolving intelligence...</p>
       )}
       {state.phase === "unavailable" && (
-        <p className="insight-surface__empty" data-intelligence-panel="unavailable">
+        <p className="insight-surface__empty" data-intelligence-unavailable>
           Intelligence is not available for this subject right now.
         </p>
       )}
       {state.phase === "ready" && (
-        <>
-          <InsightBadges badges={state.view.badges} />
-          <ProvenanceLine view={state.view} />
-          <ContradictionBanner view={state.view} />
-          <EvidenceList view={state.view} />
-          <UncertaintyBlock view={state.view} />
-        </>
+        <ReadyComposition view={state.view} />
       )}
     </section>
   );

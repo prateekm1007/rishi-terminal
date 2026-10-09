@@ -41,17 +41,19 @@
  * by its own pre-registered change — never silently.
  */
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
 import type { RishiInsight } from "@/lib/intelligence/types";
 import { buildEvidenceView, type EvidenceView } from "@/lib/intelligence/evidence";
-import {
-  ContradictionBanner,
-  EvidenceList,
-  InsightBadges,
-  ProvenanceLine,
-  UncertaintyBlock,
-} from "@/components/intelligence";
+// The ONE canonical ready-state composition (the A8 closed set in the
+// A8 order), mounted lazily — the C1 bundle pattern: the ready state
+// is client-only by construction, so ssr:false changes zero SSR output
+// while keeping the composition out of the page's first-load JS.
+const ReadyComposition = dynamic(
+  () => import("@/components/intelligence/ReadyComposition").then((m) => m.ReadyComposition),
+  { ssr: false },
+);
 
 type DrawerState =
   | { phase: "loading" }
@@ -169,26 +171,19 @@ export function IntelligenceDrawer({
           </button>
         </div>
         {state.phase === "loading" && (
-          <p className="insight-surface__empty" style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-            Resolving intelligence...
-          </p>
+          <p className="insight-surface__empty">Resolving intelligence...</p>
         )}
         {state.phase === "unavailable" && (
           <p
             className="insight-surface__empty"
-            style={{ color: 'var(--text-muted)', fontSize: 13 }}
-            data-intelligence-drawer="unavailable"
+            data-intelligence-drawer-state="unavailable"
           >
             Intelligence is not available for this subject right now.
           </p>
         )}
         {state.phase === "ready" && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-intelligence-drawer="ready">
-            <InsightBadges badges={state.view.badges} />
-            <ProvenanceLine view={state.view} />
-            <ContradictionBanner view={state.view} />
-            <EvidenceList view={state.view} />
-            <UncertaintyBlock view={state.view} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-intelligence-drawer-state="ready">
+            <ReadyComposition view={state.view} />
           </div>
         )}
       </div>

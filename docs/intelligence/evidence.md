@@ -115,3 +115,54 @@ No mounting on product surfaces; no `/api/intelligence` (A10); no
 Ask-Rishi wiring (A9); no new fetching/caching/model calls; no
 redesign of existing insight displays (`RishiGrid`, `LensInsights`
 untouched).
+
+---
+
+## 2026-10-10 gap record + repair pre-registration (INT-A8 shared-surface)
+
+**The gap (found in production, D2 legs 2026-10-09):** the A8
+components rendered semantic class names (`insight-surface*`,
+`insight-badge`, `insight-fact*`) that `app/globals.css` never
+defined — zero matching selectors. Every A8 surface (B1 panel, C1
+brief, D2 drawer, the fixture route) fell back to browser defaults:
+disc bullets on the badge row and every list, unstyled prose, no
+hierarchy. Compounding it, the A1 prose contract (`summary`,
+`whyItMatters`, `whatChanged`) never reached the screen — the mapping
+did not carry it and no primitive rendered it — and the empty-evidence
+wording ("No evidence recorded.") implied no observations occurred,
+when the truth was that A4 verdicts had excluded them all.
+
+**The repair (one PR, scoped):**
+
+1. **Centralized selectors** in `app/globals.css` for the existing
+   semantic A8 classes — one shared definition, no per-surface
+   overrides, no independent redesigns in `DashboardBrief`,
+   `IntelligencePanel`, `IntelligenceDrawer`. The D2 badge/drawer
+   chrome stays inline (the #300 decision — this tree has no
+   utility-CSS pipeline); everything inside the composition rides the
+   shared selectors.
+2. **The A1 prose renders verbatim** through the shared contract: the
+   mapping carries `summary` / `whyItMatters` (plus the already-carried
+   `whatChanged`), and two new shared primitives render them under
+   fixed labels ("What changed", "Why it matters", "Field-level
+   changes"). No composed numbers in JSX, no invented explanations,
+   never an AI-generated label on deterministic prose (the provenance
+   line owns that coupling).
+3. **Honest empty-evidence state**: "No observations qualified as
+   material evidence in the observation window." plus the
+   deterministic A4 excluded-verdict breakdown — counts by reason
+   composed by the chain into the artifact (new optional A1 field
+   `excludedVerdicts`), rendered with data attributes, never parsed
+   from UI text, never ledger rows.
+4. **Regression tests reproducing the screenshot defects**
+   (`test/smoke/a8-shared-surface.spec.ts`): computed-style
+   assertions on all three product surfaces (no default bullets,
+   grouped flex badges, deliberate hierarchy, visible summary /
+   whatChanged, honest unknown/low/no-model states unchanged, no
+   invented facts or advice) with positive controls, plus the vitest
+   pins in `test/intelligenceEvidence.test.ts` (13 new pins, RED
+   first on the pre-repair tree).
+
+**Non-goals (unchanged):** no new fetching, no second parser, no
+ledger changes, no threshold changes, no generated-insight surface
+(still A4-gated), no redesign of the D2 chrome.

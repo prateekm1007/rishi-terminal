@@ -220,6 +220,20 @@ export const RishiInsightSchema = z
       .max(24),
     /** WHAT WOULD INVALIDATE IT. */
     invalidators: z.array(z.string().min(1).max(300)).max(10),
+    /** A4 excluded-verdict breakdown — deterministic counts by reason,
+     * composed by the chain from the materiality engine's ACTUAL verdicts
+     * (display-side disclosure of why the ledger is empty; never a second
+     * evidence system, never ledger rows). Optional: artifacts cached
+     * before the field existed render without the breakdown. */
+    excludedVerdicts: z
+      .array(
+        z.object({
+          reason: z.string().min(1).max(40),
+          count: z.number().int().min(1).max(100000),
+        }),
+      )
+      .max(14)
+      .optional(),
     evidence: z.array(InsightEvidenceItemSchema).max(32),
     contradictions: z.array(InsightContradictionSchema).max(8),
     /** WHAT IS UNCERTAIN — model-or-server stated, always labelled. */

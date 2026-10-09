@@ -83,20 +83,13 @@ describe("INT-C1 the dashboard brief component (the second real product surface)
     expect(src).toContain("import type { RishiInsight }");
     expect(src).toContain("buildEvidenceView");
     expect(src).toContain("@/components/intelligence");
-    for (const primitive of [
-      "<InsightBadges",
-      "<ProvenanceLine",
-      "<ContradictionBanner",
-      "<EvidenceList",
-      "<UncertaintyBlock",
-    ]) {
-      expect(src).toContain(primitive);
-    }
+    expect(src).toContain("<ReadyComposition");
+    expect(src).toContain('import("@/components/intelligence/ReadyComposition")');
   });
 
   it("carries the honest unavailable state and discloses its subject (never a fake artifact, never a fallback word)", () => {
     const src = source(BRIEF);
-    expect(src).toContain('data-dashboard-brief="unavailable"');
+    expect(src).toContain('data-brief-unavailable');
     expect(src).toContain("data-dashboard-brief-subject");
   });
 

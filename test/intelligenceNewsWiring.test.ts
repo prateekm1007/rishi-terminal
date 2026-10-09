@@ -176,20 +176,13 @@ describe("INT-B1 the stock-page intelligence panel (the first real product surfa
     expect(src).toContain("import type { RishiInsight }");
     expect(src).toContain('buildEvidenceView');
     expect(src).toContain("@/components/intelligence");
-    for (const primitive of [
-      "<InsightBadges",
-      "<ProvenanceLine",
-      "<ContradictionBanner",
-      "<EvidenceList",
-      "<UncertaintyBlock",
-    ]) {
-      expect(src).toContain(primitive);
-    }
+    expect(src).toContain("<ReadyComposition");
+    expect(src).toContain('import("@/components/intelligence/ReadyComposition")');
   });
 
   it("carries the honest unavailable state (never a fake artifact, never a fallback word)", () => {
     const src = source(PANEL);
-    expect(src).toContain('data-intelligence-panel="unavailable"');
+    expect(src).toContain('data-intelligence-unavailable');
   });
 
   it("adds no investment advice strings (the A8 absence pin, display-side)", () => {

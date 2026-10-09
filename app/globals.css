@@ -1511,3 +1511,163 @@ body.theme-dark {
 .mobile-sidebar {
   animation: slideInLeft 0.2s ease;
 }
+
+/* ── INT-A8: the shared insight surface (2026-10-10 repair) ───────────
+   The presentation defect the D2 production legs exposed: components
+   rendered the semantic A8 class names while globals.css carried ZERO
+   matching selectors — the browser fell back to default bullets and
+   unstyled prose on every surface (B1 panel, C1 brief, D2 drawer, the
+   fixture route). One shared definition, centralized here; NO
+   per-surface overrides and NO independent redesigns — the A8
+   composition must look identical everywhere it mounts. The D2 badge
+   and drawer CHROME stay inline (the #300 decision — that tree has no
+   utility-CSS pipeline); everything INSIDE the composition rides these
+   selectors. */
+
+.insight-surface {
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  background: rgba(17, 24, 39, 0.45);
+  margin-top: 14px;
+}
+
+.insight-surface--evidence { border-left-color: var(--gold-dark); }
+.insight-surface--uncertainty { border-left-color: var(--purple); }
+.insight-surface--contradictions {
+  border-left-color: var(--red);
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.06);
+}
+.insight-surface--thesis { border-left-color: var(--gold); }
+
+.insight-surface__title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* Grouped badges: a flex row of pills — never the browser's stacked
+   default-bullet list (the screenshot defect). */
+.insight-surface__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 6px 0;
+}
+
+.insight-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: rgba(17, 24, 39, 0.8);
+  white-space: nowrap;
+}
+
+.insight-surface__provenance {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0 0 4px 0;
+}
+
+.insight-surface__empty {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Deliberate hierarchy: sections carry a small-caps mono title; rows
+   carry a quiet left rule; nothing renders as a default bullet. */
+.insight-surface__list { list-style: none; padding: 0; margin: 0; }
+
+.insight-surface__item {
+  padding: 8px 0 8px 12px;
+  border-left: 2px solid var(--border-subtle);
+}
+
+.insight-surface__text {
+  font-size: 13px;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.insight-surface__facts { list-style: none; padding: 0; margin: 6px 0 0 0; }
+
+.insight-fact { font-size: 12px; color: var(--text-secondary); }
+.insight-fact + .insight-fact { margin-top: 4px; }
+.insight-fact__value { font-family: var(--font-mono); color: var(--text-primary); }
+.insight-fact__provenance { color: var(--text-ghost); margin-left: 8px; font-size: 11px; }
+
+.insight-surface__section + .insight-surface__section { margin-top: 12px; }
+
+/* The A1 prose (directive 2026-10-10): summary and whyItMatters render
+   VERBATIM as labelled content — the artifact's own words, never a
+   JSX-composed explanation, never labelled AI-generated (the
+   provenance line owns that coupling). */
+.insight-surface__summary {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.insight-surface__why {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Field-level delta lines (deterministic old -> new; the numbers come
+   from evidence[], never the model, never the JSX). */
+.insight-surface__what-changed { list-style: none; padding: 0; margin: 0; }
+
+.insight-surface__what-changed-item {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.insight-surface__what-changed-field {
+  font-family: var(--font-mono);
+  color: var(--gold-light);
+  min-width: 90px;
+}
+
+.insight-surface__what-changed-change {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+/* A4 excluded-verdict breakdown (the honest empty-evidence state):
+   counts by reason — observations occurred, none qualified as
+   material evidence. */
+.insight-surface__excluded { list-style: none; padding: 0; margin: 10px 0 0 0; }
+
+.insight-surface__excluded-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 3px 0;
+  border-bottom: 1px dashed var(--border-subtle);
+}
+
+.insight-surface__excluded-count { color: var(--text-secondary); }

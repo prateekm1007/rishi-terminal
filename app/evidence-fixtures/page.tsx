@@ -22,6 +22,7 @@ import {
   UncertaintyBlock,
   ProvenanceLine,
   InsightBadges,
+  ThesisProse,
 } from "@/components/intelligence";
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default function EvidenceFixturesPage() {
             <h2>{name}</h2>
             <InsightBadges badges={view.badges} />
             <ProvenanceLine view={view} />
+            <ThesisProse view={view} />
             <ContradictionBanner view={view} />
             <EvidenceList view={view} />
             <UncertaintyBlock view={view} />

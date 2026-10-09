@@ -35,9 +35,18 @@ test.describe("evidence-fixtures route (A8)", () => {
     expect(html).toContain("bounded-model synthesis");
     expect(html).toContain("openai");
 
-    // honest empty states
+    // honest empty states (2026-10-10 repair: the empty-evidence state
+    // says no observations QUALIFIED — the minimal fixture's excluded
+    // breakdown proves observations occurred; the whatChanged prose
+    // and the A1 summary/whyItMatters render verbatim).
     expect(html).toContain("No stated uncertainties");
-    expect(html).toContain("No evidence recorded.");
+    expect(html).toContain("No observations qualified as material evidence in the observation window.");
+    expect(html).toContain("No field-level changes recorded");
+    expect(html).toContain("What changed");
+    expect(html).toContain("Why it matters");
+    expect(html).toContain("Field-level changes");
+    expect(html).toContain("Nothing observed in this window.");
+    expect(html).toContain('data-insight-excluded-reason="below-threshold"');
 
     // badges carry exact vocabulary words
     expect(html).toContain('data-insight-badge="status">conflict<');

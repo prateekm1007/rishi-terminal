@@ -33,6 +33,11 @@
  *   - uncertainty / invalidators / next investigations: verbatim
  *     lists — never investment advice (the suite pins the absence of
  *     advice strings).
+ *   - prose passthrough (2026-10-10 repair): summary, whyItMatters and
+ *     the whatChanged delta lines reach the display VERBATIM — this
+ *     mapping adds nothing, trims nothing, composes no numbers; the
+ *     excludedVerdicts breakdown carries A4's actual verdict COUNTS by
+ *     reason (never ledger rows, never ids).
  */
 
 import type { RishiInsight } from "./types";
@@ -60,6 +65,14 @@ export interface ContradictionItemView {
 export interface EvidenceView {
   evidence: { rows: EvidenceRowView[] };
   whatChanged: { field: string; change: string }[];
+  /** A1 prose, verbatim (directive 2026-10-10: the deterministic
+   *  artifact's own words reach the screen; this mapping adds
+   *  nothing, trims nothing). */
+  summary: string;
+  whyItMatters: string;
+  /** A4 excluded-verdict counts by reason (display-side disclosure;
+   *  counts only — never ledger rows). */
+  excludedVerdicts: { reason: string; count: number }[];
   contradiction: {
     banner: boolean;
     items: ContradictionItemView[];
@@ -150,6 +163,17 @@ export function buildEvidenceView(insight: RishiInsight): EvidenceView {
 
   return {
     evidence: { rows },
+    summary: typeof insight.summary === "string" ? insight.summary : "",
+    whyItMatters: typeof insight.whyItMatters === "string" ? insight.whyItMatters : "",
+    excludedVerdicts: (Array.isArray(insight.excludedVerdicts)
+      ? insight.excludedVerdicts
+      : []
+    )
+      .filter(
+        (v): v is { reason: string; count: number } =>
+          typeof v?.reason === "string" && Number.isInteger(v?.count) && v.count > 0,
+      )
+      .map((v) => ({ reason: v.reason, count: v.count })),
     whatChanged: (Array.isArray(insight.whatChanged) ? insight.whatChanged : []).map((w) => ({
       field: w.field,
       change: w.change,

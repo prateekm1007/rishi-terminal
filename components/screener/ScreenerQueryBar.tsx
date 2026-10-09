@@ -5,6 +5,16 @@
 // the browser: the server route parses + evaluates it (that is the
 // product decision in the roadmap text), and this component only renders
 // results/errors.
+//
+// INT-D1 (pre-registration: docs/intelligence/screening.md): an explicit
+// two-way mode toggle — Expression | Natural language. No magic
+// auto-detection of which grammar the user typed (honest UI). In natural
+// mode the request carries mode:'natural' and the active-query line shows
+// "understood as: <translated expression>" VERBATIM — the route echoes
+// exactly what filter ran. `active` always holds the CANONICAL EXPRESSION
+// (in natural mode: the route's translated `query`), so saved screens and
+// CSV export stay replayable by the expression engine regardless of the
+// mode that produced them — a saved screen replays in expression mode.
 
 import { useCallback, useEffect, useState } from 'react';
 import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
@@ -22,18 +32,30 @@ interface Props {
   onQueryResult: (rows: ScreenerPickerRow[] | null, q: string | null) => void;
 }
 
-const EXAMPLES = [
-  'pe > 0 and roe > 15',
-  'sector = "Banking" and de < 1',
-  'consensus is not null and consensus >= 75',
-  'mktcap > 10000 and revcagr > 10',
-];
+const EXAMPLES: Record<QueryMode, string[]> = {
+  expression: [
+    'pe > 0 and roe > 15',
+    'sector = "Banking" and de < 1',
+    'consensus is not null and consensus >= 75',
+    'mktcap > 10000 and revcagr > 10',
+  ],
+  natural: [
+    'market cap above 50000 crore and roe above 15',
+    'banks and debt below 1',
+    'rishi score at least 75 excluding pharma',
+    'consensus has no data',
+  ],
+};
+
+type QueryMode = 'expression' | 'natural';
 
 export function ScreenerQueryBar({ onQueryResult }: Props) {
   const [q, setQ] = useState('');
+  const [mode, setMode] = useState<QueryMode>('expression');
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [active, setActive] = useState<string | null>(null);
+  const [ranNatural, setRanNatural] = useState(false);
   const [count, setCount] = useState<number | null>(null);
 
   const [saved, setSaved] = useState<SavedScreen[]>([]);
@@ -69,29 +91,44 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
     return () => clearTimeout(t);
   }, [loadSaved]);
 
-  async function runQuery(query: string) {
+  async function runQuery(query: string, runMode: QueryMode = mode) {
     setRunning(true);
     setError(null);
     try {
       const res = await fetch('/api/screener/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: query }),
+        // Natural mode is EXPLICIT — the route translates and echoes the
+        // interpreted expression; expression mode stays byte-compatible.
+        body: JSON.stringify(runMode === 'natural' ? { q: query, mode: 'natural' } : { q: query }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
         setError(data.error?.message ?? 'query failed');
         return;
       }
-      setActive(query);
+      // `active` = the canonical expression. Natural mode: the route's
+      // TRANSLATED expression (saved screens + CSV export stay
+      // replayable); expression mode: the typed expression itself.
+      const canonical = typeof data.query === 'string' ? data.query : query;
+      setActive(canonical);
+      setRanNatural(runMode === 'natural');
       setCount(data.count);
       // The API rows are a superset of the picker shape; extra fields are ignored.
-      onQueryResult(data.rows as ScreenerPickerRow[], query);
+      onQueryResult(data.rows as ScreenerPickerRow[], canonical);
     } catch {
       setError('network error — try again');
     } finally {
       setRunning(false);
     }
+  }
+
+  function switchMode(next: QueryMode) {
+    if (next === mode) return;
+    setMode(next);
+    // The pending error came from the OTHER grammar — keeping it after a
+    // mode switch would misattribute it.
+    setError(null);
   }
 
   function clearQuery() {
@@ -141,6 +178,28 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
     <div style={{ marginBottom: 28 }}>
       <div style={labelStyle}>CUSTOM QUERY — SERVER-SIDE ENGINE (SAFE PARSER, NO EVAL)</div>
 
+      <div
+        role="group"
+        aria-label="Query mode"
+        data-screener-mode={mode}
+        style={{ display: 'inline-flex', gap: 0, marginBottom: 8, borderRadius: 10, overflow: 'hidden', outline: '1px solid rgba(51,65,85,0.6)' }}
+      >
+        {(['expression', 'natural'] as QueryMode[]).map((m) => (
+          <button
+            key={m}
+            onClick={() => switchMode(m)}
+            aria-pressed={mode === m}
+            style={{
+              padding: '7px 14px', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700,
+              background: mode === m ? 'rgba(212,175,55,0.15)' : 'rgba(15,23,42,0.6)',
+              color: mode === m ? '#D4AF37' : 'var(--text-muted)',
+            }}
+          >
+            {m === 'expression' ? 'Expression' : 'Natural language'}
+          </button>
+        ))}
+      </div>
+
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <input
           value={q}
@@ -148,7 +207,11 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
           onKeyDown={(e) => {
             if (e.key === 'Enter' && q.trim()) runQuery(q.trim());
           }}
-          placeholder='e.g. pe > 0 and roe > 15 and sector = "Banking"'
+          placeholder={
+            mode === 'natural'
+              ? 'e.g. market cap above 50000 crore and roe above 15'
+              : 'e.g. pe > 0 and roe > 15 and sector = "Banking"'
+          }
           spellCheck={false}
           style={{
             flex: '1 1 420px', minWidth: 260, padding: '10px 14px', borderRadius: 10,
@@ -194,9 +257,20 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
       </div>
 
       <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-        fields: pe roe mktcap de revcagr fcf consensus tensionSpread symbol name sector category dataQuality ·
-        operators: &gt; &gt;= &lt; &lt;= = != and or not ( ) · examples:{' '}
-        {EXAMPLES.map((ex, i) => (
+        {mode === 'expression' ? (
+          <>
+            fields: pe roe mktcap de revcagr fcf consensus tensionSpread symbol name sector category dataQuality ·
+            operators: &gt; &gt;= &lt; &lt;= = != and or not ( ) ·
+          </>
+        ) : (
+          <>
+            try: return on equity · price to earnings · market cap · debt · revenue growth · free cash flow · rishi score ·
+            council tension · comparisons: above, below, at least, at most, between X and Y · sectors: banks, pharma,
+            software, energy… ·
+          </>
+        )}
+        examples:{' '}
+        {EXAMPLES[mode].map((ex, i) => (
           <span key={ex}>
             {i > 0 && ' · '}
             <a
@@ -224,14 +298,26 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
       )}
 
       {active && !error && (
-        <div style={{
-          marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
-          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)',
-          color: 'var(--accent-green)', fontFamily: 'monospace',
-          display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
-        }}>
+        <div
+          style={{
+            marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
+            background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)',
+            color: 'var(--accent-green)', fontFamily: 'monospace',
+            display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
+          }}
+          // Production-leg contract: in natural mode the DOM carries the
+          // TRANSLATED expression that actually ran (C1 transparency —
+          // the user sees the interpretation, never a black box).
+          data-screener-understood={ranNatural ? active : undefined}
+        >
           <span>{count} stocks match</span>
-          <code style={{ color: 'var(--text-muted)' }}>{active}</code>
+          {ranNatural ? (
+            <span>
+              understood as: <code style={{ color: 'var(--text-muted)' }}>{active}</code>
+            </span>
+          ) : (
+            <code style={{ color: 'var(--text-muted)' }}>{active}</code>
+          )}
           {signedIn && (
             <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
               <input
@@ -284,8 +370,11 @@ export function ScreenerQueryBar({ onQueryResult }: Props) {
                 <button
                   title={s.query}
                   onClick={() => {
+                    // Saved screens are EXPRESSIONS regardless of the mode
+                    // that produced them — replay in expression mode.
+                    setMode('expression');
                     setQ(s.query);
-                    runQuery(s.query);
+                    runQuery(s.query, 'expression');
                   }}
                   style={{
                     border: 'none', background: 'none', cursor: 'pointer', color: '#D4AF37',

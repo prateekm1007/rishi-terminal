@@ -140,6 +140,15 @@ export async function writeCachedInsight(
  * the counter). A miss is null: the unknown stays unknown (rule 16).
  * Failures throw (the caller decides how loudly to log — the A2
  * reader precedent).
+ *
+ * Production-shape repair (INT-A9 leg, 2026-10-09): the deployed
+ * function returns an ALL-NULL ROW OBJECT on a miss
+ * ({"id":null,"change_key":null,…}) — the atomic UPDATE…RETURNING's
+ * no-match row — not SQL null. The reader normalizes it to null so
+ * the pinned miss semantics hold end-to-end (a miss is a miss, never
+ * a fabricated record with a null payload). Fail-first regression:
+ * test/intelligenceChatContext.test.ts pins the exact production
+ * shape (RED on the pre-repair reader).
  */
 export async function readCachedInsight(
   changeKey: string,
@@ -149,7 +158,14 @@ export async function readCachedInsight(
   });
   if (error) throw new Error(error.message);
   const row = (data as Record<string, unknown> | null) ?? null;
-  if (!row) return null;
+  if (
+    !row ||
+    typeof row !== "object" ||
+    typeof row.change_key !== "string" ||
+    row.change_key.length === 0
+  ) {
+    return null;
+  }
   return {
     changeKey: String(row.change_key),
     feature: String(row.feature),

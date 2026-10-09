@@ -251,6 +251,14 @@ export function buildInsightContextBlock(insight: RishiInsight, changeKey: strin
   }
   lines.push(state);
   lines.push(`summary: ${insight.summary}`);
+  if (insight.evidence.length > 0) {
+    lines.push(
+      "artifact evidence ids (THE artifact's own items in the VERIFIED CONTEXT " +
+        "list — when speaking about this artifact, cite THESE ids and copy each " +
+        "value digit-for-digit from that item's own fact annotation):",
+    );
+    for (const e of insight.evidence) lines.push(`- ${e.id}`);
+  }
   if (insight.whatChanged.length > 0) {
     lines.push("WHAT CHANGED (deterministic deltas):");
     for (const c of insight.whatChanged) lines.push(`- ${c.field}: ${c.change}`);

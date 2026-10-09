@@ -20,8 +20,11 @@
  *      absence check) passes the SERVER-resolved Stock-of-the-Day
  *      symbol; the mount imports no intelligence module.
  *   3. The exact-surface scan: the set of surfaces fetching
- *      /api/intelligence across app/lib/components is EXACTLY the two
- *      declared product surfaces (B1 panel + C1 brief) — a third
+ *      /api/intelligence across app/lib/components is EXACTLY the
+ *      declared product surfaces. Originally the two (B1 panel + C1
+ *      brief); INT-D2 GROWS the declared set in its own PR to the
+ *      three {B1 panel, C1 brief, D2 drawer} (declared, never silent
+ *      — the D2 pre-registration names this exact growth) — a fourth
  *      undeclared consumer breaks the build.
  */
 import { describe, expect, it } from "vitest";
@@ -121,7 +124,7 @@ describe("INT-C1 the mount (positive control — B-18)", () => {
 });
 
 describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
-  it("the set of surfaces fetching /api/intelligence is EXACTLY the two declared product surfaces", () => {
+  it("the set of surfaces fetching /api/intelligence is EXACTLY the three declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer)", () => {
     const files = [
       ...walk(join(ROOT, "app")),
       ...walk(join(ROOT, "lib")),
@@ -132,6 +135,7 @@ describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
     );
     expect(consumers.map(rel).sort()).toEqual([
       "components/dashboard/DashboardBrief.tsx",
+      "components/screener/IntelligenceDrawer.tsx",
       "components/stock/IntelligencePanel.tsx",
     ]);
   });

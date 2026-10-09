@@ -1,0 +1,641 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/intelligenceScreenerDrawer.test.ts (9 tests | 9 failed) 23ms
+   ❯ INT-D2 the per-row intelligence badge (the opener) (2)
+     × exists as a presentational opener: NO fetch, no intelligence imports, no chain 6ms
+     × carries no computed intelligence value and no advice (static label only) 1ms
+   ❯ INT-D2 the intelligence drawer (the B1 pattern, one subject at a time) (5)
+     × exists as a client component that fetches ONLY /api/intelligence with capability=thesis 1ms
+     × aborts the in-flight fetch on close/switch (AbortController) with the 12 s bounded wait 1ms
+     × renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client) 0ms
+     × carries the honest states and discloses its subject (never a fake artifact, never a fallback word) 0ms
+     × adds no investment advice strings (the A8 absence pin, display-side) 0ms
+   ❯ INT-D2 the wiring (badge in the row, drawer mounted once) (2)
+     × StockTable renders the badge per row and imports NO intelligence module (never the drawer) 7ms
+     × ScreenerClient mounts the drawer ONCE via next/dynamic (ssr:false) and imports no intelligence module 4ms
+ ❯ test/intelligenceDashboardBrief.test.ts (7 tests | 1 failed) 31ms
+   ✓ INT-C1 the dashboard brief component (the second real product surface) (4)
+     ✓ exists as a client component that fetches ONLY /api/intelligence with capability=thesis 2ms
+     ✓ renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client) 1ms
+     ✓ carries the honest unavailable state and discloses its subject (never a fake artifact, never a fallback word) 0ms
+     ✓ adds no investment advice strings (the A8 absence pin, display-side) 0ms
+   ✓ INT-C1 the mount (positive control — B-18) (2)
+     ✓ the dashboard tail mounts the brief with the SERVER-resolved Stock-of-the-Day symbol 0ms
+     ✓ the mount imports no intelligence module (no chain, no registry, no parser) 0ms
+   ❯ INT-C1 the exact-surface scan (N surfaces, ONE route) (1)
+     × the set of surfaces fetching /api/intelligence is EXACTLY the three declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer) 25ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/intelligenceDashboardBrief.test.ts > INT-C1 the exact-surface scan (N surfaces, ONE route) > the set of surfaces fetching /api/intelligence is EXACTLY the three declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer)
+AssertionError: expected [ …(2) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+  [
+    "components/dashboard/DashboardBrief.tsx",
+-   "components/screener/IntelligenceDrawer.tsx",
+    "components/stock/IntelligencePanel.tsx",
+  ]
+
+ ❯ test/intelligenceDashboardBrief.test.ts:136:39
+    134|       /fetch\([^)]*\/api\/intelligence/.test(readFileSync(f, "utf8")),
+    135|     );
+    136|     expect(consumers.map(rel).sort()).toEqual([
+       |                                       ^
+    137|       "components/dashboard/DashboardBrief.tsx",
+    138|       "components/screener/IntelligenceDrawer.tsx",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the per-row intelligence badge (the opener) > exists as a presentational opener: NO fetch, no intelligence imports, no chain
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/intelligenceScreenerDrawer.test.ts:51:43
+     49| describe("INT-D2 the per-row intelligence badge (the opener)", () => {
+     50|   it("exists as a presentational opener: NO fetch, no intelligence imp…
+     51|     expect(existsSync(join(ROOT, BADGE))).toBe(true);
+       |                                           ^
+     52|     const src = source(BADGE);
+     53|     // An OPENER, not a signal: the badge fetches NOTHING — the page
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the per-row intelligence badge (the opener) > carries no computed intelligence value and no advice (static label only)
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/screener/IntelligenceBadge.tsx'
+ ❯ source test/intelligenceScreenerDrawer.test.ts:41:10
+     39|
+     40| function source(relativePath: string): string {
+     41|   return readFileSync(join(ROOT, relativePath), "utf8");
+       |          ^
+     42| }
+     43|
+ ❯ test/intelligenceScreenerDrawer.test.ts:65:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the intelligence drawer (the B1 pattern, one subject at a time) > exists as a client component that fetches ONLY /api/intelligence with capability=thesis
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/intelligenceScreenerDrawer.test.ts:79:44
+     77| describe("INT-D2 the intelligence drawer (the B1 pattern, one subject …
+     78|   it("exists as a client component that fetches ONLY /api/intelligence…
+     79|     expect(existsSync(join(ROOT, DRAWER))).toBe(true);
+       |                                            ^
+     80|     const src = source(DRAWER);
+     81|     expect(src.startsWith("'use client'")).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the intelligence drawer (the B1 pattern, one subject at a time) > aborts the in-flight fetch on close/switch (AbortController) with the 12 s bounded wait
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/screener/IntelligenceDrawer.tsx'
+ ❯ source test/intelligenceScreenerDrawer.test.ts:41:10
+     39|
+     40| function source(relativePath: string): string {
+     41|   return readFileSync(join(ROOT, relativePath), "utf8");
+       |          ^
+     42| }
+     43|
+ ❯ test/intelligenceScreenerDrawer.test.ts:98:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the intelligence drawer (the B1 pattern, one subject at a time) > renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client)
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/screener/IntelligenceDrawer.tsx'
+ ❯ source test/intelligenceScreenerDrawer.test.ts:41:10
+     39|
+     40| function source(relativePath: string): string {
+     41|   return readFileSync(join(ROOT, relativePath), "utf8");
+       |          ^
+     42| }
+     43|
+ ❯ test/intelligenceScreenerDrawer.test.ts:109:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the intelligence drawer (the B1 pattern, one subject at a time) > carries the honest states and discloses its subject (never a fake artifact, never a fallback word)
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/screener/IntelligenceDrawer.tsx'
+ ❯ source test/intelligenceScreenerDrawer.test.ts:41:10
+     39|
+     40| function source(relativePath: string): string {
+     41|   return readFileSync(join(ROOT, relativePath), "utf8");
+       |          ^
+     42| }
+     43|
+ ❯ test/intelligenceScreenerDrawer.test.ts:131:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the intelligence drawer (the B1 pattern, one subject at a time) > adds no investment advice strings (the A8 absence pin, display-side)
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/screener/IntelligenceDrawer.tsx'
+ ❯ source test/intelligenceScreenerDrawer.test.ts:41:10
+     39|
+     40| function source(relativePath: string): string {
+     41|   return readFileSync(join(ROOT, relativePath), "utf8");
+       |          ^
+     42| }
+     43|
+ ❯ test/intelligenceScreenerDrawer.test.ts:138:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the wiring (badge in the row, drawer mounted once) > StockTable renders the badge per row and imports NO intelligence module (never the drawer)
+AssertionError: expected '"use client";\n\n// N1 (round 3): the…' to contain '<IntelligenceBadge'
+
+- Expected
++ Received
+
+- <IntelligenceBadge
++ "use client";
++
++ // N1 (round 3): the table receives the server-generated slim rows —
++ // consensus, category, and the free display fields come precomputed;
++ // live prices and live fundamentals overlay client-side as before.
++ // No scoring engine, no seed dataset in the bundle (the old topRishi /
++ // topRishiScore enrichment was computed here and never rendered —
++ // dropped as dead code).
++ import { useState, useMemo } from "react";
++ import Link from "next/link";
++ import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
++
++ import { useBulkFundamentals } from '@/hooks/useFundamentals';
++ import { useLivePrices } from '@/hooks/useLivePrices';
++ import { DataValue } from '@/components/DataValue';
++ import { overlaySourced, type Sourced } from '@/lib/types/sourced';
++
++ interface Props {
++   stocks: ScreenerPickerRow[];
++ }
++
++ type SortKey = "symbol" | "livePrice" | "pe" | "roe" | "mktcap" | "consensus" | "change24h";
++
++ interface Row extends ScreenerPickerRow {
++   /** null = no live quote — em dash shown; seed price is NEVER displayed (T14). */
++   livePrice: number | null;
++   change24h: number | null;
++ }
++
++ /**
++  * P0-06 (N7): seed-baseline metric with live overlay, as a Sourced. The
++  * slim row carries the seed baseline; a live fundamental from the bulk
++  * fetch overlays it under the field's admissibility rule (G5: the canonical
++  * field key makes zero/negative legitimate observations admissible).
++  */
++ function metricSourced(
++   seedValue: number,
++   liveValue: number | null | undefined,
++   live: { source?: string; lastUpdated?: string | null } | undefined,
++   field: string,
++ ): Sourced<number> {
++   return overlaySourced(
++     { value: seedValue, source: "seed", asOf: null },
++     liveValue,
++     live?.source,
++     live?.lastUpdated ?? null,
++     field,
++   );
++ }
++
++ /** The consensus score: seed-derived while the dataset is a placeholder. */
++ function scoreSourced(consensus: number | null): Sourced<number> {
++   return { value: consensus, source: "seed", asOf: null };
++ }
++
++ export function StockTable({ stocks }: Props) {
++   const dark = true;
++
++   const [search, setSearch] = useState("");
++   const [sectorFilter, setSectorFilter] = useState("All");
++   const [sortKey, setSortKey] = useState<SortKey>("consensus");
++   const [sortDesc, setSortDesc] = useState(true);
++
++   const stockSymbols = useMemo(() => stocks.map(s => s.symbol), [stocks]);
++
++   const { prices } = useLivePrices(stockSymbols);
++
++   const { fundamentals: bulkFund } = useBulkFundamentals(stockSymbols);
++
++   const enrichedStocks = useMemo<Row[]>(() => {
++     return stocks.map(stock => {
++       // T14: seed price is never rendered as live — null when feed is down
++       const livePrice = prices[stock.symbol]?.price ?? null;
++       const change24h = prices[stock.symbol]?.change ?? null;
++       return {
++         ...stock,
++         livePrice,
++         change24h,
++       };
++     });
++   }, [stocks, prices]);
++
++   const sectors = useMemo(() => {
++     const unique = new Set(stocks.map(s => s.sector));
++     return ["All", ...Array.from(unique).sort()];
++   }, [stocks]);
++
++   const filtered = useMemo(() => {
++     let result = [...enrichedStocks];
++     if (search) {
++       const q = search.toLowerCase();
++       result = result.filter(s =>
++         s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
++       );
++     }
++     if (sectorFilter !== "All") {
++       result = result.filter(s => s.sector === sectorFilter);
++     }
++     result.sort((a, b) => {
++       if (sortKey === "symbol") {
++         return sortDesc
++           ? String(b.symbol).localeCompare(String(a.symbol))
++           : String(a.symbol).localeCompare(String(b.symbol));
++       }
++       // T11: null (Insufficient Data) values always sort last
++       const av = a[sortKey] as number | null;
++       const bv = b[sortKey] as number | null;
++       const aNull = av === null || !Number.isFinite(av);
++       const bNull = bv === null || !Number.isFinite(bv);
++       if (aNull && bNull) return 0;
++       if (aNull) return 1;   // nulls last
++       if (bNull) return -1;
++       return sortDesc ? (bv as number) - (av as number) : (av as number) - (bv as number);
++     });
++     return result;
++   }, [enrichedStocks, search, sectorFilter, sortKey, sortDesc]);
++
++   const handleSort = (key: SortKey) => {
++     if (sortKey === key) setSortDesc(!sortDesc);
++     else {
++       setSortKey(key);
++       setSortDesc(true);
++     }
++   };
++
++   const sortIcon = (key: SortKey) =>
++     sortKey !== key ? "↕" : sortDesc ? "↓" : "↑";
++
++   const changeColor = (change: number) => {
++     if (change > 0) return dark ? "text-emerald-400" : "text-green-700";
++     if (change < 0) return dark ? "text-red-400" : "text-red-700";
++     return dark ? "text-gray-400" : "text-gray-600";
++   };
++
++   const categoryBadge = (cat: string) => {
++     if (cat === "STRONG BUY")
++       return dark
++         ? "bg-emerald-900/40 text-emerald-400 border-emerald-800"
++         : "bg-green-100 text-green-800 border-green-300";
++     if (cat === "BUY")
++       return dark
++         ? "bg-blue-900/40 text-blue-400 border-blue-800"
++         : "bg-blue-100 text-blue-800 border-blue-300";
++     if (cat === "HOLD")
++       return dark
++         ? "bg-amber-900/40 text-amber-400 border-amber-800"
++         : "bg-amber-100 text-amber-800 border-amber-300";
++     return dark
++       ? "bg-red-900/40 text-red-400 border-red-800"
++       : "bg-red-100 text-red-800 border-red-300";
++   };
++
++   return (
++     <div className="w-full">
++       {/* Search & Filter */}
++       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
++         <input
++           type="text"
++           placeholder="Search symbols or company names..."
++           value={search}
++           onChange={e => setSearch(e.target.value)}
++           className={`rounded-lg border px-4 py-2 text-sm font-mono transition ${
++             dark
++               ? "border-gray-700 bg-gray-900/50 text-gray-100 placeholder-gray-500"
++               : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
++           }`}
++         />
++         {/* Audit retest 2026-10-02 (C.3): label-less select failed Lighthouse
++             select-name — a screen reader announced nothing for this filter. */}
++         <select
++           value={sectorFilter}
++           onChange={e => setSectorFilter(e.target.value)}
++           aria-label="Filter by sector"
++           className={`rounded-lg border px-4 py-2 text-sm font-mono transition ${
++             dark
++               ? "border-gray-700 bg-gray-900/50 text-gray-100"
++               : "border-gray-300 bg-white text-gray-900"
++           }`}
++         >
++           {sectors.map(s => (
++             <option key={s} value={s}>
++               {s}
++             </option>
++           ))}
++         </select>
++       </div>
++
++       {/* Table */}
++       <div className="overflow-x-auto rounded-lg border border-gray-700">
++         <table className="w-full text-sm">
++           <thead
++             className={dark ? "bg-gray-900/50 border-gray-700" : "bg-gray-100 border-gray-300"}
++           >
++             <tr className="border-b">
++               <th className="px-4 py-3 text-left font-mono font-semibold text-gray-400">
++                 SYMBOL
++               </th>
++               <th className="px-4 py-3 text-left font-mono font-semibold text-gray-400">
++                 NAME
++               </th>
++               <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("livePrice")}>
++                 PRICE {sortIcon("livePrice")}
++               </th>
++               <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("change24h")}>
++                 24H {sortIcon("change24h")}
++               </th>
++               <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("pe")}>
++                 PE {sortIcon("pe")}
++               </th>
++               <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("roe")}>
++                 ROE {sortIcon("roe")}
++               </th>
++               <th className="px-4 py-3 text-right font-mono font-semibold text-gray-400 cursor-pointer" onClick={() => handleSort("consensus")}>
++                 SCORE {sortIcon("consensus")}
++               </th>
++             </tr>
++           </thead>
++           <tbody>
++             {filtered.map((stock, idx) => (
++               <tr
++                 key={stock.symbol}
++                 className={`border-b transition ${
++                   dark
++                     ? "border-gray-800 hover:bg-gray-900/30"
++                     : "border-gray-200 hover:bg-gray-50"
++                 }`}
++               >
++                 <td className="px-4 py-3 font-mono font-bold text-yellow-500">
++                   <Link href={`/stock/${stock.symbol}`} className="hover:underline">
++                     {stock.symbol}
++                   </Link>
++                 </td>
++                 <td className={`px-4 py-3 font-mono text-sm ${dark ? "text-gray-300" : "text-gray-700"}`}>
++                   {stock.name}
++                 </td>
++                 <td
++                   className="px-4 py-3 text-right font-mono font-semibold text-yellow-500"
++                   title={stock.livePrice !== null ? "Live price" : "Live price unavailable \u2014 seed prices are never shown as current"}
++                 >
++                   {stock.livePrice !== null ? stock.livePrice.toFixed(2) : "\u2014"}
++                 </td>
++                 <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h ?? 0)}`} title={stock.change24h !== null ? "Live 24h change" : "Live change unavailable"}>
++                   {stock.change24h !== null ? (stock.change24h > 0 ? "+" : "") + stock.change24h.toFixed(2) + "%" : "\u2014"}
++                 </td>
++                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
++                   <DataValue sourced={metricSourced(stock.pe, bulkFund[stock.symbol]?.pe, bulkFund[stock.symbol], "pe")} digits={1} unit="x" />
++                 </td>
++                 <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
++                   <DataValue sourced={metricSourced(stock.roe, bulkFund[stock.symbol]?.roe, bulkFund[stock.symbol], "roe")} digits={1} unit="%" />
++                 </td>
++                 <td className="px-4 py-3 text-right">
++                   <span
++                     className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
++                   >
++                     <DataValue sourced={scoreSourced(stock.consensus)} digits={0} />
++                   </span>
++                 </td>
++               </tr>
++             ))}
++           </tbody>
++         </table>
++       </div>
++
++       {filtered.length === 0 && (
++         <div className={`text-center py-8 ${dark ? "text-gray-500" : "text-gray-400"}`}>
++           No stocks found matching your criteria.
++         </div>
++       )}
++     </div>
++   );
++ }
++
+
+ ❯ test/intelligenceScreenerDrawer.test.ts:146:17
+    144|   it("StockTable renders the badge per row and imports NO intelligence…
+    145|     const src = source(TABLE);
+    146|     expect(src).toContain("<IntelligenceBadge");
+       |                 ^
+    147|     expect(src).toContain("symbol={stock.symbol}");
+    148|     // The badge is a presentational affordance; the drawer is NOT
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-D2 the wiring (badge in the row, drawer mounted once) > ScreenerClient mounts the drawer ONCE via next/dynamic (ssr:false) and imports no intelligence module
+AssertionError: expected '\'use client\';\n\n// N1 (round 3): t…' to contain 'next/dynamic'
+
+- Expected
++ Received
+
+- next/dynamic
++ 'use client';
++
++ // N1 (round 3): the interactive half of /screener. Receives the
++ // server-generated slim index (free fields only) as RSC props — no
++ // STOCKS, no engine. Preset filters, stat pills, search and sorting all
++ // operate on the slim rows; per-Rishi verdicts stay behind the
++ // tier-gated /api/rishis/[symbol] route.
++ import { useState, useMemo } from 'react';
++ import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
++ import { StockTable } from '@/components/screener/StockTable';
++ import { ScreenerQueryBar } from '@/components/screener/ScreenerQueryBar';
++ import { useLanguage } from '@/lib/language';
++ import { SCREENER_PRESETS, applyFilters } from '@/lib/screener/presets';
++ import SeedDataBanner from '@/components/shared/SeedDataBanner';
++ import Link from 'next/link';
++
++ interface Props {
++   rows: ScreenerPickerRow[];
++ }
++
++ export function ScreenerClient({ rows }: Props) {
++   const { t, locale } = useLanguage();
++   const [activePreset, setActivePreset] = useState<string | null>(null);
++   // X3-05: custom-expression results (server-evaluated). Null = the
++   // expression mode is off; a custom query takes precedence over the
++   // presets until cleared, because the user's explicit query is the
++   // most recent intent. The API's rows are a superset of the picker
++   // shape (extra fields are ignored at runtime).
++   const [queryRows, setQueryRows] = useState<ScreenerPickerRow[] | null>(null);
++
++   const filteredStocks = useMemo(() => {
++     if (queryRows) return queryRows;
++     if (!activePreset) return rows;
++     const preset = SCREENER_PRESETS.find(p => p.id === activePreset);
++     if (!preset) return rows;
++     return applyFilters(rows, preset.filters);
++   }, [rows, activePreset, queryRows]);
++
++   const activePresetData = SCREENER_PRESETS.find(p => p.id === activePreset);
++
++   const STAT_PILLS = useMemo(() => {
++     // Round-5 audit (finding 1): the "STRONG BUY" pill counted a raw
++     // pe>0 && roe>15 proxy — 440 rows (47% of the universe) — which had
++     // nothing to do with the engine's verdicts and made the threshold
++     // meaningless. It now counts the consensus engine's own buy-side
++     // categories (>= 75 = High Conviction / Legendary), and LARGE CAP is
++     // the actual definition (top 100 by market cap), both over
++     // dataQuality-OK rows only.
++     const okRows = rows.filter(s => s.dataQuality === 'OK');
++     const largeCapCount = [...okRows]
++       .sort((a, b) => b.mktcap - a.mktcap)
++       .slice(0, 100)
++       .filter(s => s.mktcap > 0).length;
++     return [
++     { label: t('screener.strongBuy'),  count: okRows.filter(s => s.consensus !== null && s.consensus >= 75).length, color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)',  title: 'Consensus >= 75 (High Conviction / Legendary bands)' },
++     { label: t('screener.valuePlays'), count: okRows.filter(s => s.pe < 20 && s.pe > 0).length,  color: 'var(--accent-gold)',  bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)',  title: 'P/E below 20 with positive earnings' },
++     { label: t('screener.largeCap'),   count: largeCapCount,       color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)', title: 'Top 100 by market cap (AMFI definition)' },
++     { label: t('screener.highROE'),    count: okRows.filter(s => s.roe > 25).length,              color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)',  title: 'ROE above 25%' },
++     { label: t('screener.debtFree'),   count: okRows.filter(s => s.de < 0.3).length,             color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)', title: 'Debt-to-equity below 0.3' },
++     ];
++   }, [t, locale, rows]);
++
++   return (
++     <main className="page-bg">
++
++       <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)', padding: '40px 24px' }}>
++         <div style={{ maxWidth: 1400, margin: '0 auto' }}>
++
++           <p className="page-breadcrumb">
++             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</Link>
++             <span style={{ margin: '0 8px' }}>&rsaquo;</span>
++             <span>SCREENER</span>
++           </p>
++
++           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 32 }}>
++             <div>
++               <h1 className="page-title" style={{ fontSize: 42, marginBottom: 8 }}>
++                 {t('screener.title')}
++               </h1>
++               <p className="page-subtitle" style={{ maxWidth: 520 }}>
++                 {activePresetData ? (
++                   <><strong style={{ color: '#D4AF37' }}>{activePresetData.emoji} {activePresetData.name}:</strong> {activePresetData.description}</>
++                 ) : (
++                   `Filter ${rows.length} Indian stocks by Rishi wisdom — Buffett Mode, Damani Mode, Graham Mode, Short Mode & more`
++                 )}
++               </p>
++             </div>
++
++             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160, textAlign: 'center' }}>
++               <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 8 }}>
++                 {activePreset || queryRows ? 'FILTERED' : 'TOTAL COVERAGE'}
++               </div>
++               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
++                 {filteredStocks.length}
++               </div>
++               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
++                 {activePreset ? 'stocks matching' : 'NSE / BSE stocks'}
++               </div>
++             </div>
++           </div>
++
++           <div style={{ marginBottom: 28 }}>
++             <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 10 }}>
++               RISHI SCREENING MODES
++             </div>
++             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
++               <button
++                 onClick={() => setActivePreset(null)}
++                 style={{
++                   padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
++                   background: !activePreset ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
++                   outline: !activePreset ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
++                   color: !activePreset ? '#D4AF37' : 'var(--text-muted)',
++                   fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
++                 }}
++               >
++                 All Stocks
++               </button>
++               {SCREENER_PRESETS.map(preset => (
++                 <button
++                   key={preset.id}
++                   onClick={() => setActivePreset(preset.id === activePreset ? null : preset.id)}
++                   style={{
++                     padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
++                     background: activePreset === preset.id ? 'rgba(212,175,55,0.12)' : 'rgba(31,41,59,0.6)',
++                     outline: activePreset === preset.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(51,65,85,0.4)',
++                     color: activePreset === preset.id ? '#D4AF37' : 'var(--text-muted)',
++                     fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
++                     display: 'flex', alignItems: 'center', gap: 5,
++                   }}
++                 >
++                   <span>{preset.emoji}</span>
++                   <span>{preset.name}</span>
++                 </button>
++               ))}
++             </div>
++           </div>
++
++           <ScreenerQueryBar
++             onQueryResult={(resultRows) => {
++               setQueryRows(resultRows);
++               if (resultRows) setActivePreset(null);
++             }}
++           />
++
++           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
++             {STAT_PILLS.map(stat => (
++               <div key={stat.label} title={stat.title} style={{ background: stat.bg, border: '1px solid ' + stat.border, borderRadius: 10, padding: '12px 16px' }}>
++                 <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1 }}>
++                   {stat.label.toUpperCase()}
++                 </div>
++                 <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
++                   {stat.count}
++                 </div>
++               </div>
++             ))}
++           </div>
++         </div>
++       </div>
++
++       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
++         <SeedDataBanner suffix="all fundamentals on this page are illustrative placeholders" />
++         <StockTable stocks={filteredStocks} />
++       </div>
++
++     </main>
++   );
++ }
++
+
+ ❯ test/intelligenceScreenerDrawer.test.ts:162:17
+    160|   it("ScreenerClient mounts the drawer ONCE via next/dynamic (ssr:fals…
+    161|     const src = source(CLIENT);
+    162|     expect(src).toContain("next/dynamic");
+       |                 ^
+    163|     expect(src).toContain("ssr: false");
+    164|     expect((src.match(/<IntelligenceDrawer/g) ?? []).length).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  10 failed | 6 passed (16)
+   Start at  17:56:17
+   Duration  380ms (tests 40%, transform 38%, import 9%, setup 8%, worker 5%)
+

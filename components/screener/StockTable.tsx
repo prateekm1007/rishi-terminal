@@ -236,9 +236,13 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
                   <Link href={`/stock/${stock.symbol}`} className="hover:underline">
                     {stock.symbol}
                   </Link>
-                  {/* INT-D2: the opener rides the row — a row without a
-                      resolvable symbol renders no badge (defensive,
-                      honest). */}
+                </td>
+                {/* INT-D2: the opener rides the row in its own cell —
+                    a 28 px touch target with 32 px clearance to the
+                    symbol link (the WCAG 2.2 target-size/offset gate).
+                    A row without a resolvable symbol renders no badge
+                    (defensive, honest). */}
+                <td className="px-2 py-3 text-left">
                   {onOpenIntelligence && stock.symbol ? (
                     <IntelligenceBadge symbol={stock.symbol} onOpen={onOpenIntelligence} />
                   ) : null}

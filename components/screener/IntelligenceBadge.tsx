@@ -27,7 +27,7 @@ export function IntelligenceBadge({ symbol, onOpen }: Props) {
   return (
     <button
       type="button"
-      className="ml-2 inline-block rounded-full border border-gray-700 px-2 py-0.5 align-middle text-[10px] font-mono font-bold text-gray-400 transition hover:border-yellow-600 hover:text-yellow-500"
+      className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-full border border-gray-700 px-2 align-middle text-[10px] font-mono font-bold text-gray-400 transition hover:border-yellow-600 hover:text-yellow-500"
       data-intelligence-badge={symbol}
       aria-label={`Open Rishi intelligence for ${symbol}`}
       title={`Rishi intelligence for ${symbol}`}

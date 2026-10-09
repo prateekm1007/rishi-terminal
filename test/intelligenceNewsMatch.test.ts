@@ -6,9 +6,10 @@
  * any evaluation). Rule 21 fail-first: on the pre-module tree this file
  * fails at import (modules missing) — the A3..A10 precedent.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 
 import { matchNewsForSymbol, stableNewsIdOf } from "@/lib/intelligence/newsMatch";
+import { buildNewsEvidenceDeps } from "@/lib/intelligence/newsEvidence";
 
 const ITEM = (over: Record<string, unknown> = {}) => ({
   id: "feed-1-0-1700000000000",
@@ -94,5 +95,100 @@ describe("INT-B1 closed rules (deterministic, fail-closed)", () => {
     expect(a).toMatch(/^[0-9a-f]{64}$/);
     const moved = stableNewsIdOf(ITEM({ url: "https://example.com/other" }) as never);
     expect(moved).not.toBe(a);
+  });
+
+  it("the stable id keeps the headline in the identity (a '#' link never collapses distinct headlines)", () => {
+    const a = stableNewsIdOf(ITEM({ url: "#" }) as never);
+    const b = stableNewsIdOf(ITEM({ url: "#", headline: "A different headline entirely" }) as never);
+    expect(a).not.toBe(b);
+  });
+});
+
+describe("INT-B1 the ONE deps pass (buildNewsEvidenceDeps — fetch, match, project; fail-closed)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const WIRE_ITEM = (over: Record<string, unknown> = {}) => ({
+    id: "feed-1-0-1700000000000",
+    headline: "RELIANCE Industries announces capex plan",
+    summary: "Capex details inside.",
+    source: "ET Corporate",
+    category: "Corporate",
+    subCategory: "Corporate",
+    time: "10:00 IST",
+    minutesAgo: 30,
+    impact: "NEUTRAL",
+    tags: ["RELIANCE"],
+    isBreaking: false,
+    isTrending: false,
+    region: "INDIA",
+    url: "https://example.com/reliance-1",
+    pubDate: "2026-10-09T05:30:00.000Z",
+    ...over,
+  });
+
+  const stubFetch = (body: string, status = 200) =>
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(body, { status })),
+    );
+
+  it("projects matched items into the deps shape with the STABLE id and the verbatim feed impact", async () => {
+    stubFetch(JSON.stringify({ news: [WIRE_ITEM()] }));
+    const deps = await buildNewsEvidenceDeps("RELIANCE", "https://app.test");
+    expect(deps).toHaveLength(1);
+    expect(deps[0]?.id).toBe(stableNewsIdOf(WIRE_ITEM() as never));
+    expect(deps[0]?.headline).toContain("RELIANCE");
+    expect(deps[0]?.source).toBe("ET Corporate");
+    expect(deps[0]?.pubDate).toBe("2026-10-09T05:30:00.000Z");
+    expect(deps[0]?.impact).toBe("NEUTRAL");
+    // The ONE fetcher was called exactly once, at /api/news.
+    const fetchMock = vi.mocked(fetch);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0]?.[0])).toContain("/api/news");
+  });
+
+  it("resolves the company name from the ONE registry (a name-only match still attributes)", async () => {
+    stubFetch(
+      JSON.stringify({
+        news: [WIRE_ITEM({ headline: "Analysts weigh Reliance Industries capex outlook", tags: ["markets"] })],
+      }),
+    );
+    const deps = await buildNewsEvidenceDeps("RELIANCE", "https://app.test");
+    expect(deps).toHaveLength(1);
+  });
+
+  it("a fetch failure is an EMPTY deps array (the honest unavailable note — never a fabricated item)", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      throw new Error("network down");
+    }));
+    expect(await buildNewsEvidenceDeps("RELIANCE", "https://app.test")).toEqual([]);
+  });
+
+  it("a non-OK response is an EMPTY deps array", async () => {
+    stubFetch("nope", 500);
+    expect(await buildNewsEvidenceDeps("RELIANCE", "https://app.test")).toEqual([]);
+  });
+
+  it("non-JSON is an EMPTY deps array (the pre-registration fail-closed table)", async () => {
+    stubFetch("<html>not json</html>");
+    expect(await buildNewsEvidenceDeps("RELIANCE", "https://app.test")).toEqual([]);
+  });
+
+  it("a malformed item is refused individually; the well-formed rest still match (never a half-attributed citation)", async () => {
+    stubFetch(
+      JSON.stringify({
+        news: [
+          WIRE_ITEM({ url: 42 }), // wrong shape — dropped at the boundary
+          WIRE_ITEM({ headline: "TCS wins a large deal", url: "https://example.com/tcs-1", tags: [] }),
+        ],
+      }),
+    );
+    const deps = await buildNewsEvidenceDeps("RELIANCE", "https://app.test");
+    expect(deps).toHaveLength(0);
+    const tcsDeps = await buildNewsEvidenceDeps("TCS", "https://app.test");
+    expect(tcsDeps).toHaveLength(1);
+    expect(tcsDeps[0]?.headline).toContain("TCS");
   });
 });

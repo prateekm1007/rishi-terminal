@@ -213,6 +213,14 @@ async function refundQuota(userId: string): Promise<void> {
 // SAME data state as the initial evidence (byte-identical items/ids).
 import { buildAiEvidencePackage, createCanonicalStockState } from '@/lib/ai/evidence';
 
+// INT-B1 (per-symbol news evidence): the ONE deps pass feeds the
+// assembler's existing EvidenceDeps.news slot from the matched market
+// feed (the ONE /api/news fetcher). Fail-closed: a failed feed arrives
+// as an empty deps array — the honest unavailable note. No second
+// pipeline, no AI-side attribution (pre-registration:
+// docs/intelligence/newsEvidence.md).
+import { buildNewsEvidenceDeps } from '@/lib/intelligence/newsEvidence';
+
 // INT-A9 (Ask Rishi): server-resolved insight context — the client
 // supplies ONLY the deterministic A7 change key; the insight is resolved
 // through the ONE persistent cache, validated through the ONE A1 parser,
@@ -530,7 +538,10 @@ export async function POST(req: NextRequest) {
     // every tool call inside generateEvidenceGroundedAnswer reuse it.
     stockState = createCanonicalStockState();
     const evidenceStart = Date.now();
-    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol, {}, stockState) : null;
+    // INT-B1: the news deps pass runs INSIDE the refund-protected region
+    // (a throw here must not consume a quota unit without the provider).
+    const newsDeps = symbol ? await buildNewsEvidenceDeps(symbol, req.url) : [];
+    const evidencePackage = symbol ? await buildAiEvidencePackage(symbol, { news: newsDeps }, stockState) : null;
     evidenceMs = Date.now() - evidenceStart;
     evidence = evidencePackage?.items ?? [];
     // INT-A9: the artifact's evidence joins the canonical array

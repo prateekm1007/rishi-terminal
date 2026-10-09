@@ -155,6 +155,23 @@ begin
   if has_function_privilege('authenticated', 'public.insight_cache_read_hit(TEXT)', 'EXECUTE') then
     raise exception 'icache: authenticated can EXECUTE insight_cache_read_hit';
   end if;
+
+  -- 8b. The app path must hold EXECUTE: getAdminSupabase() connects as
+  --     service_role, and 032 pairs its PUBLIC revocation with an
+  --     explicit service_role grant (the 019/022 pattern) so the write/
+  --     read path never depends on platform-default privileges.
+  --     HONEST LIMIT: this harness's ALTER DEFAULT PRIVILEGES grants
+  --     functions to service_role anyway, so this assertion cannot bite
+  --     on a MISSING 032 grant here — it bites on any future explicit
+  --     REVOKE-side regression (the same masking is why 019/022 carry
+  --     explicit grants). The production-side proof is the live
+  --     service-role rpc call in the A7 production leg.
+  if not has_function_privilege('service_role', 'public.insight_cache_write(TEXT,TEXT,TEXT,JSONB)', 'EXECUTE') then
+    raise exception 'icache: service_role (the app path) cannot EXECUTE insight_cache_write';
+  end if;
+  if not has_function_privilege('service_role', 'public.insight_cache_read_hit(TEXT)', 'EXECUTE') then
+    raise exception 'icache: service_role (the app path) cannot EXECUTE insight_cache_read_hit';
+  end if;
 end $$;
 
 -- Cleanup (service role): the fixture rows leave no trace.

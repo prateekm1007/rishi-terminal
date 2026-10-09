@@ -250,11 +250,20 @@ function composeScaffold(args: {
 }): ChainScaffold {
   const { subject, nowIso, events, verdicts, thesis, changeSince, changeKey, rows } = args;
 
-  // Window: the oldest recorded observation through the caller's clock
-  // (clamped so an out-of-order clock can never invert the window).
+  // Window: the oldest recorded observation through the caller's clock.
+  // Row timestamps arrive in the reader's verbatim form (PostgREST emits
+  // "+00:00" offsets); the A1 contract's window fields demand the UTC
+  // "Z" form — normalized through the caller clock here (production-shape
+  // repair, 2026-10-09: an unparseable stamp degrades the window to the
+  // caller clock; it never fabricates a past).
   const recordedAsc = orderedRows(rows).map((r) => r.recordedAt);
   const oldest = recordedAsc.length > 0 ? recordedAsc[0] : nowIso;
-  const windowFrom = oldest <= nowIso ? oldest : nowIso;
+  const oldestMs = Date.parse(oldest);
+  const nowMsRef = Date.parse(nowIso);
+  const windowFrom =
+    Number.isFinite(oldestMs) && Number.isFinite(nowMsRef) && oldestMs <= nowMsRef
+      ? new Date(oldestMs).toISOString()
+      : nowIso;
 
   // Status (deterministic mapping of the A5 ledger):
   //   conflicts -> "conflict" (the biconditional holds by construction);

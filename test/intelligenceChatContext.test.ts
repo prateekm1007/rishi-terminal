@@ -257,6 +257,18 @@ describe("INT-A9 context rendering rule (buildInsightContextBlock)", () => {
     expect(block).toContain("investigation, not financial advice");
   });
 
+  it("names the artifact's OWN evidence ids with the citation instruction (production-leg finding)", () => {
+    const block = buildInsightContextBlock(INSIGHT, REF);
+    expect(block).toContain("artifact evidence ids");
+    expect(block).toContain("- price:RELIANCE:window-close");
+    expect(block).toContain("cite THESE ids");
+  });
+
+  it("omits the evidence-id list for an evidence-less artifact (empty stays empty)", () => {
+    const block = buildInsightContextBlock({ ...INSIGHT, evidence: [] }, REF);
+    expect(block).not.toContain("artifact evidence ids");
+  });
+
   it("discloses provider and model ONLY for bounded-model artifacts (never a fake model label)", () => {
     const bounded: RishiInsight = {
       ...INSIGHT,
@@ -330,6 +342,34 @@ describe("INT-A9 evidence merge (mergeInsightEvidence)", () => {
     expect(mergeInsightEvidence([], insightItems)).toEqual(insightItems);
     expect(mergeInsightEvidence(packageItems, [])).toEqual(packageItems);
     expect(mergeInsightEvidence([], [])).toEqual([]);
+  });
+});
+
+describe("INT-A9/A7 reader production-shape repair (miss handling)", () => {
+  // Production finding (2026-10-09, INT-A9 leg): the deployed
+  // insight_cache_read_hit returns an ALL-NULL ROW OBJECT on a miss —
+  // {"id":null,"change_key":null,...} — not SQL null. The A7 pinned
+  // contract is "miss -> null (the unknown stays unknown)"; the reader
+  // must normalize the null-row to null, otherwise the route refuses
+  // 422 (invalid-payload) where the pre-registered table demands 404
+  // (not-found). Fail-first: on the pre-repair reader this pin fails
+  // with a garbage record.
+  it("normalizes the production all-null miss row to null (not-found, never invalid-payload)", async () => {
+    readHit = {
+      data: {
+        id: null, change_key: null, feature: null, subject: null,
+        payload: null, generated_at: null, hit_count: null, last_hit_at: null,
+      },
+      error: null,
+    };
+    const res = await resolveChatInsightContext(REF, { requestedSymbol: null, nowMs: NOW });
+    expect(res.refusal).toEqual({ kind: "not-found" });
+  });
+
+  it("treats a non-object read result as a miss (fail closed to not-found, not a fabricated record)", async () => {
+    readHit = { data: [], error: null };
+    const res = await resolveChatInsightContext(REF, { requestedSymbol: null, nowMs: NOW });
+    expect(res.refusal).toEqual({ kind: "not-found" });
   });
 });
 

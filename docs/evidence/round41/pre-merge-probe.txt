@@ -1,0 +1,30 @@
+[PASS] deploy-gate: /api/version sha=12be644e2f218ee64764d626b1bfea132aedd82c expected=12be644e2f218ee64764d626b1bfea132aedd82c
+[PASS] thesis-positive: status=200 ok=True wallMs=1860 routeTimings={"wallMs": 1546, "chainMs": 1180}
+[FAIL] uncertainty-breakdown: 1 line(s): TOTAL-LINE-WRONG; refusal-lines=[] pinned-order=ok; lines=1 bound<=10=ok
+[PASS] prose-fields: summary=196ch whyItMatters=249ch whatChanged=0 item(s)
+[PASS] determinism: all composed fields identical across calls (clock fields excluded)
+[PASS] honest-badges: {"status": "unknown", "confidence": "low", "materiality": "low", "modelStatus": "deterministic"}
+[PASS] no-model-label: provenance={"synthesisPath": "deterministic", "changeKey": "a5fe1425…"}
+[PASS] refusal-unknown-subject: status=400 body=Unknown symbol
+[PASS] refusal-bad-capability: status=400 body=Invalid capability
+[PASS] refusal-missing-subject: status=400 body=Unknown symbol
+[PASS] honest-404: capability=insight status=404 (A4 window not open; zero AI spend)
+[PASS] latency: edge-wall=883ms route-timings={"wallMs": 558, "chainMs": 434}
+[PASS] fixture-route: status=200 bytes=60815 wall=108ms
+
+==== SUMMARY ====
+PASS  deploy-gate
+PASS  thesis-positive
+FAIL  uncertainty-breakdown
+PASS  prose-fields
+PASS  determinism
+PASS  honest-badges
+PASS  no-model-label
+PASS  refusal-unknown-subject
+PASS  refusal-bad-capability
+PASS  refusal-missing-subject
+PASS  honest-404
+PASS  latency
+PASS  fixture-route
+
+12/13 legs PASS — FAILURES: ['uncertainty-breakdown']

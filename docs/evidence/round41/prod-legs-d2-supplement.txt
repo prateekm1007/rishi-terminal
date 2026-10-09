@@ -1,0 +1,11 @@
+
+Running 3 tests using 1 worker
+
+(node:6582) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/3] scripts/a8pres/d2-supplement.spec.ts:29:7 › INT-D2 supplement production legs › L1+L2: breadth zero-fetch on /stocks; ONE thesis fetch + A8 composition on drawer open
+[2/3] scripts/a8pres/d2-supplement.spec.ts:72:7 › INT-D2 supplement production legs › L3+L5: badge computed box >= 24x24 and real styling
+[3/3] scripts/a8pres/d2-supplement.spec.ts:86:7 › INT-D2 supplement production legs › L4: mid-flight close aborts the fetch; reopening another row re-keys with no stale subject
+  3 passed (1.4m)

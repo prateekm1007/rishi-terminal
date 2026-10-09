@@ -1,0 +1,5 @@
+UNCERTAINTY BREAKDOWN (live aea75f6a):
+ - 885 observed transition(s) did not qualify as material evidence in this window and are excluded from the ledger.
+ - 885 transition(s) were refused fail-closed by the materiality engine (non-comparable).
+
+summary: CANBK: thesis: state=UNCLEAR (support=0, weaken=0, conflicts=0, invalidators=0, directionless=0, excluded=885). changeSince: state=CHANGED (fieldsTracked=3, fie

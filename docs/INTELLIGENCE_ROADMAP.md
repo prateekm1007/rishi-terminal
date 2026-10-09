@@ -86,9 +86,16 @@ Phase 0 and A1–A10 **CLOSED** (Phase A complete, as of `origin/main` =
 2026-10-09 — the first real product surface is live on the stock page);
 **C1 CLOSED** (as of `origin/main` = `f89549a`, 2026-10-09 — the
 dashboard mounts the ONE surface for the deterministic Stock-of-the-Day
-subject); next: Phase D (Screening · Stock Intelligence · Stock
-Dossier) by their own pre-registrations. The
-baseline `345134c` is recorded for audit lineage only.
+subject); **Phase D PRE-REGISTERED 2026-10-09** (on `origin/main` =
+`e8db343`) — the three frozen Phase D items carry their binding
+contracts, committed before any evaluation: INT-D1 Screening
+(`docs/intelligence/screening.md`), INT-D2 Stock Intelligence
+(`docs/intelligence/stockIntelligence.md`), INT-D3 Stock Dossier
+(`docs/intelligence/stockDossier.md`); implementation proceeds one
+item = one PR in the frozen order, each PR honoring its
+pre-registration. The intelligence surfaces remain honest-missing
+until the A4 baseline window (~2026-11-03) opens insight generation.
+The baseline `345134c` is recorded for audit lineage only.
 
 **Rule (founder, 2026-10-08): existing code is classified against the
 roadmap BEFORE anything is rebuilt. A phase is not complete because files

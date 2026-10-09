@@ -459,3 +459,58 @@ describe("INT-A10 single-caller pins (static source scans, app/lib/components)",
     ]);
   });
 });
+
+// ── production-shape repair (INT-A10 production leg, 2026-10-09) ────────────
+// The deployed thesis leg returned 503: PostgREST returns row timestamps
+// with a "+00:00" offset, and the A1 contract's z.string().datetime()
+// (window fields) accepts ONLY the "Z" form — the deterministic artifact
+// refused and the chain threw. The live rows are honest; the window must
+// be normalized to the contract's UTC form without losing a millisecond.
+
+describe("INT-A10 chain over PRODUCTION row shapes (PostgREST +00:00 timestamps)", () => {
+  it("an all-+00:00 history still composes a contract-valid deterministic artifact", async () => {
+    rowsByField = {
+      price: materialPriceHistory().map((r) => {
+        const row = r as Record<string, unknown>;
+        return {
+          ...row,
+          observedAt: String(row.observedAt).replace("Z", "+00:00"),
+          recordedAt: String(row.recordedAt).replace("Z", "+00:00"),
+        };
+      }),
+    };
+    const out = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    expect(out.refusal).toBeNull();
+    if (!out.insight) throw new Error("expected insight (the artifact must parse, not throw)");
+    expect(out.insight.observationWindow.from.endsWith("Z")).toBe(true);
+    expect(out.insight.observationWindow.to.endsWith("Z")).toBe(true);
+    expect(out.insight.provenance.changeKey).toMatch(/^[0-9a-f]{64}$/);
+    // evidence facts keep the upstream's verbatim offset form (G4B: the
+    // upstream clock is carried verbatim; only the contract's own window
+    // fields are normalized to the UTC form the A1 schema demands)
+    expect(out.insight.evidence[0]?.facts?.[0]?.observedAt).toContain("+00:00");
+  });
+
+  it("an unparseable recordedAt degrades the window to the caller clock, never fabricates", async () => {
+    rowsByField = {
+      price: [
+        {
+          entity: "RELIANCE",
+          field: "price",
+          observedAt: null,
+          source: "yahoo",
+          unit: "inr",
+          sourceState: "live",
+          oldValue: null,
+          newValue: 1210.1,
+          changeId: "c-x",
+          recordedAt: "not-a-timestamp",
+        },
+      ],
+    };
+    const out = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    expect(out.refusal).toBeNull();
+    expect(out.insight?.observationWindow.from).toBe(new Date(NOW).toISOString());
+    expect(out.insight?.observationWindow.to).toBe(new Date(NOW).toISOString());
+  });
+});

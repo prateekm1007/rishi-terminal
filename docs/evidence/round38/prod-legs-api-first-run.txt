@@ -1,0 +1,22 @@
+# INT-D1 production legs — 2026-10-09T17:30:12.335Z — base https://rishi-terminal.vercel.app
+  /api/version → {"sha":"b3499a1a1e23a3a34f2c2674c007234d39c0ff97","now":"2026-10-09T17:30:13.521Z","node":"v24.21.0"}
+  PASS — deployed SHA == expected main tip (got b3499a1a1e23a3a34f2c2674c007234d39c0ff97 expected b3499a1a1e23a3a34f2c2674c007234d39c0ff97)
+  natural → HTTP 200 wallMs 1357
+  PASS — natural 200
+  FAIL — translated echo (((mktcap > 50000) and (roe > 15)))
+  PASS — natural shape has query field
+  expression parity → HTTP 200 wallMs 878
+  PASS — expression 200
+  PASS — row count parity (natural == expression) (natural 276 vs expression 276)
+  PASS — row set parity
+  PASS — expression mode keys byte-compatible (["count","elapsedMs","ok","rows"])
+  PASS — expression mode has NO query echo
+  refusal → HTTP 400
+  PASS — refusal 400
+  PASS — refusal names the supported vocabulary (cannot guess a number from "huge" — give an exact value — supported in natural mode: field)
+  PASS — refusal carries the user token
+  PASS — empty input refuses 400
+  /stocks TTFB warm — p50 96 ms (min 75 / max 933)
+  natural wallMs 1357 · expression wallMs 878 · count 276
+
+1 LEG(S) FAILED

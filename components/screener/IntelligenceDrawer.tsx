@@ -30,6 +30,11 @@
  *     (the mount re-keys the drawer per subject, so each instance
  *     fetches exactly one subject).
  *
+ * Styling: INLINE (the ScreenerClient control convention — this tree
+ * has no utility-CSS pipeline; the overlay/panel geometry must be
+ * real, not class-hoped). Colors come from the globals.css design
+ * tokens.
+ *
  * Honest scope note: capability=thesis is pinned — the deterministic
  * artifact, available for every subject today. The generated-insight
  * upgrade waits for the A4 baseline window (~2026-11-03) and arrives
@@ -108,39 +113,77 @@ export function IntelligenceDrawer({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-6"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.6)',
+        padding: 24,
+      }}
       role="dialog"
       aria-label={`Rishi intelligence for ${subject}`}
       data-intelligence-drawer={state.phase}
       data-intelligence-drawer-subject={subject}
     >
-      <div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-t-xl border border-gray-700 bg-gray-950 p-5 shadow-2xl sm:rounded-xl">
-        <div className="mb-4 flex items-center justify-between gap-4">
+      <div
+        style={{
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          width: '100%',
+          maxWidth: 640,
+          borderRadius: 12,
+          border: '1px solid var(--border)',
+          background: 'var(--bg-primary)',
+          padding: 20,
+          boxShadow: 'var(--shadow-3)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 16 }}>
           <div>
-            <h2 className="text-sm font-mono font-bold tracking-wide text-yellow-500">
+            <h2 style={{ margin: 0, color: 'var(--gold)', fontSize: 14, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: '0.08em' }}>
               RISHI INTELLIGENCE
             </h2>
-            <p className="mt-0.5 font-mono text-xs text-gray-400">{subject}</p>
+            <p style={{ margin: '4px 0 0', fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: 'var(--text-secondary)' }}>
+              {subject}
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close intelligence drawer"
-            className="rounded border border-gray-700 px-2 py-1 font-mono text-xs text-gray-400 transition hover:border-gray-500 hover:text-gray-200"
+            style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
           >
             Close
           </button>
         </div>
         {state.phase === "loading" && (
-          <p className="insight-surface__empty">Resolving intelligence...</p>
+          <p className="insight-surface__empty" style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+            Resolving intelligence...
+          </p>
         )}
         {state.phase === "unavailable" && (
-          <p className="insight-surface__empty" data-intelligence-drawer="unavailable">
+          <p
+            className="insight-surface__empty"
+            style={{ color: 'var(--text-muted)', fontSize: 13 }}
+            data-intelligence-drawer="unavailable"
+          >
             Intelligence is not available for this subject right now.
           </p>
         )}
         {state.phase === "ready" && (
-          <div className="space-y-4" data-intelligence-drawer="ready">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-intelligence-drawer="ready">
             <InsightBadges badges={state.view.badges} />
             <ProvenanceLine view={state.view} />
             <ContradictionBanner view={state.view} />

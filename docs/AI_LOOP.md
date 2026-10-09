@@ -177,6 +177,24 @@ BLOCKED — never silently downgraded to context-only. The chat route's
 (directive 9): non-equity instruments seed the instrument package
 (price observation + non-equity note) instead of the equity package.
 
+## Server-resolved insight context (INT-A9, 2026-10-09)
+
+Ask Rishi is a contextual continuation of THIS loop, never a second
+chat path. The client sends only the deterministic A7 change key
+(`insightRef`, 64-hex) — never an insight object. The route resolves
+the reference server-side through the persistent insight cache
+(A7), validates the artifact through the ONE A1 parser, and refuses
+closed (400/403/404/410/422/503, before any quota consumption) when
+the reference is malformed, missing, stale, unauthorized, or
+invalid. On success the insight's FACTS (its `evidence[]` items —
+the ONE `AiEvidenceItem` shape) join the canonical evidence array
+(dedupe by id, package-first), so claims about the insight ground
+against server-owned evidence ids exactly like every other fact;
+the insight's PROSE rides a server-composed, labelled context block
+in the system prompt — context, not instructions, never evidence by
+itself. `provenance.insightContext` discloses the anchor on the
+wire. Pre-registration: `docs/intelligence/chatContext.md`.
+
 ## Canonical tool-state consistency (Commit M7)
 
 The L1 defect this closed: `getFinancials` fetched live fundamentals

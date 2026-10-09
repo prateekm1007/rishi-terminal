@@ -51,7 +51,6 @@ function rel(f: string): string {
 
 const BRIEF = "components/dashboard/DashboardBrief.tsx";
 const TAIL = "components/dashboard/DashboardTail.tsx";
-const PANEL = "components/stock/IntelligencePanel.tsx";
 
 describe("INT-C1 the dashboard brief component (the second real product surface)", () => {
   it("exists as a client component that fetches ONLY /api/intelligence with capability=thesis", () => {

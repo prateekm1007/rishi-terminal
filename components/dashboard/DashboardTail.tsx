@@ -19,6 +19,7 @@ import { DataValue } from '@/components/DataValue'; // P0-06: provenance for dis
 import { overlaySourced } from '@/lib/types/sourced';
 import SeedDataBanner from '@/components/shared/SeedDataBanner'; // R1: honest placeholder-data label
 import { shortRadarStatusLine } from '@/lib/modelStatus'; // round 20: the model-status contract is the ONLY wording source
+import { DashboardBrief } from './DashboardBrief'; // INT-C1: the ONE intelligence surface for the day's pick
 
 const C = {
   text:      '#F8FAFC',
@@ -236,6 +237,12 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
         </div>
         </div>
       </div>
+
+      {/* INT-C1: the dashboard brief — the ONE intelligence surface
+          (/api/intelligence) for the server-resolved pick, rendered
+          through the A8 primitives. No subject here → no brief (the
+          disabled panel above already explains the ranked trio). */}
+      <DashboardBrief subject={stockOfDay.symbol} />
 
       {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
       <div style={{ marginBottom:"48px" }}>

@@ -156,7 +156,7 @@ describe("INT-B1 the stock-page intelligence panel (the first real product surfa
     expect(existsSync(join(ROOT, PANEL))).toBe(true);
     const src = source(PANEL);
     expect(src.startsWith("'use client'")).toBe(true);
-    const fetchCalls = src.match(/fetch\(`[^`]*`/g) ?? [];
+    const fetchCalls = src.match(/fetch\(\s*`[^`]*`/g) ?? [];
     expect(fetchCalls.length).toBeGreaterThan(0);
     for (const call of fetchCalls) {
       expect(call).toContain("/api/intelligence?capability=thesis");
@@ -166,9 +166,14 @@ describe("INT-B1 the stock-page intelligence panel (the first real product surfa
     expect(src).not.toMatch(/lib\/intelligence\/chain/);
   });
 
-  it("renders through the A1 parse and the A8 primitives (the closed composition)", () => {
+  it("renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client)", () => {
     const src = source(PANEL);
-    expect(src).toContain('parseRishiInsight');
+    // The A1 parse is the SERVER boundary's job (the A10 pinned
+    // parse-or-refuse contract); a client-side re-parse would ship the
+    // full zod graph (~90 kB gzip) against the fatal 200 kB page budget.
+    expect(src).not.toContain("parseRishiInsight");
+    expect(src).not.toContain('from "zod"');
+    expect(src).toContain("import type { RishiInsight }");
     expect(src).toContain('buildEvidenceView');
     expect(src).toContain("@/components/intelligence");
     for (const primitive of [

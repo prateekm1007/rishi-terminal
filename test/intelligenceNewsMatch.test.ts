@@ -107,6 +107,7 @@ describe("INT-B1 closed rules (deterministic, fail-closed)", () => {
 describe("INT-B1 the ONE deps pass (buildNewsEvidenceDeps — fetch, match, project; fail-closed)", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   const WIRE_ITEM = (over: Record<string, unknown> = {}) => ({
@@ -164,6 +165,15 @@ describe("INT-B1 the ONE deps pass (buildNewsEvidenceDeps — fetch, match, proj
       throw new Error("network down");
     }));
     expect(await buildNewsEvidenceDeps("RELIANCE", "https://app.test")).toEqual([]);
+  });
+
+  it("no parseable request origin is an EMPTY deps array (fail-closed before any fetch)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_ORIGIN", "");
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    expect(await buildNewsEvidenceDeps("RELIANCE", undefined)).toEqual([]);
+    expect(await buildNewsEvidenceDeps("RELIANCE", "not-a-url")).toEqual([]);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("a non-OK response is an EMPTY deps array", async () => {

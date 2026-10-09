@@ -76,6 +76,7 @@ import {
 } from "@/lib/ai/evidence";
 import { generateEvidenceGroundedAnswer } from "@/lib/ai/router";
 import { mergeInsightEvidence } from "@/lib/intelligence/evidenceMerge";
+import { buildNewsEvidenceDeps } from "@/lib/intelligence/newsEvidence";
 import { isIntelligenceCapability } from "@/lib/intelligence/capabilities";
 import {
   assembleInsightArtifact,
@@ -285,7 +286,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // One canonical observation state per request: the package below and
     // every tool call inside the loop reuse it (the chat route's M7 rule).
     const stockState = createCanonicalStockState();
-    const evidencePackage = await buildAiEvidencePackage(subject, {}, stockState);
+    // INT-B1: the ONE news deps pass (matched /api/news items) joins the
+    // canonical package before the merge — a failed feed arrives as an
+    // empty deps array (the honest unavailable note; fail-closed).
+    const newsDeps = await buildNewsEvidenceDeps(subject, req.url);
+    const evidencePackage = await buildAiEvidencePackage(subject, { news: newsDeps }, stockState);
     // The chain's own evidence items join the canonical array
     // package-first (the A9 merge — ONE merge implementation, reused).
     const evidence = mergeInsightEvidence(

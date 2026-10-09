@@ -19,8 +19,9 @@
 //   score:<symbol>:<engine-version>:<observation-state>  (closed vocabulary:
 //                              <asOf> | seed-derived | live-undated |
 //                              live-mixed-observation | mixed-provenance)
-//   news:<stable-id>          (class supported; per-symbol wiring pending —
-//                              the honest unavailable note is emitted instead)
+//   news:<stable-id>          (INT-B1: the match layer's content-derived
+//                              stable id; zero matched items → the honest
+//                              unavailable note)
 //
 // `null` is a real state (constitution art. 3/16): an upstream that disclosed
 // no observation time yields an id fragment saying so — never a fabricated
@@ -64,11 +65,22 @@ function toResolverFundamentals(ff: FullFundamentals): Parameters<typeof resolve
 export interface EvidenceDeps {
   getFundamentals?: (symbol: string) => Promise<FullFundamentals | null>;
   getPrice?: (symbol: string) => ReturnType<typeof fetchLivePrice>;
-  /** News items where a per-symbol surface already exists. None does today
-   *  (the /api/news RSS pipeline is market-level), so production omits this
-   *  and the package carries an explicit unavailable note — auditable, not
-   *  silent. */
-  news?: Array<{ id: string; headline: string; summary: string; source: string; pubDate: string }>;
+  /** Per-symbol news evidence, fed by the ONE deps pass
+   *  (lib/intelligence/newsEvidence.ts — the INT-B1 wiring) in the chat
+   *  and intelligence generation paths; each entry's id IS the
+   *  content-derived stable id (the assembler emits news:<stable-id>).
+   *  The feed's impact label is carried VERBATIM as FEED-provided —
+   *  never recomputed here; Rishi materiality is A4's exclusive engine.
+   *  A failed feed fetch arrives as an EMPTY array: the package then
+   *  carries the explicit unavailable note — auditable, not silent. */
+  news?: Array<{
+    id: string;
+    headline: string;
+    summary: string;
+    source: string;
+    pubDate: string;
+    impact?: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
+  }>;
 }
 
 /** Budget for the live fundamentals fetch — the chat path must stay bounded. */
@@ -444,7 +456,9 @@ export function buildNewsItems(
   if (news && news.length > 0) {
     return news.map(n => ({
       id: `news:${n.id}`,
-      text: `News: "${n.headline}" — ${n.summary} (source: ${n.source}, published: ${n.pubDate}).`,
+      text:
+        `News: "${n.headline}" — ${n.summary} (source: ${n.source}, published: ${n.pubDate}` +
+        `${n.impact ? `, feed impact: ${n.impact}` : ""}).`,
     }));
   }
   return [{

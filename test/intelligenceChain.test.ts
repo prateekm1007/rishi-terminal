@@ -11,10 +11,13 @@
  * (modules missing) — the A3..A9 precedent for a new contract module.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 
 // ── switchable seams: A2 history + A7 cache rpc ──
 let historyRows: unknown[] = [];
+/** Per-field history seam (implementation-commit tests): when non-null it
+ *  wins over the flat seam so multi-field chains see field-scoped rows. */
+let rowsByField: Record<string, unknown[]> | null = null;
 let readHit: { data: unknown; error: { message: string } | null } = { data: null, error: null };
 let writeCalls: Array<Record<string, unknown>> = [];
 
@@ -38,13 +41,21 @@ vi.mock("@/lib/intelligence/stateLog", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/intelligence/stateLog")>();
   return {
     ...actual,
-    readStateHistory: vi.fn(async () => historyRows),
+    readStateHistory: vi.fn(
+      async (_entity: string, field: string) =>
+        rowsByField ? (rowsByField[field] ?? []) : historyRows,
+    ),
   };
 });
 
 import { INTELLIGENCE_CAPABILITIES } from "@/lib/intelligence/capabilities";
-import { runIntelligenceChain } from "@/lib/intelligence/chain";
+import {
+  assembleInsightArtifact,
+  runIntelligenceChain,
+  type ChainScaffold,
+} from "@/lib/intelligence/chain";
 import { changeKeyOf } from "@/lib/intelligence/insightCache";
+import type { RishiInsight } from "@/lib/intelligence/types";
 
 // NOTE (scope-honest fail-first): this commit pins the closed registry,
 // the deterministic thesis path, determinism, the empty-history honest
@@ -81,6 +92,7 @@ function row(
 
 beforeEach(() => {
   historyRows = [];
+  rowsByField = null;
   readHit = { data: null, error: null };
   writeCalls = [];
 });
@@ -162,5 +174,288 @@ describe("INT-A10 no-second-path pins (static source scans)", () => {
     const capSrc = readFileSync("lib/intelligence/capabilities.ts", "utf8");
     expect(capSrc).not.toContain("Date.now(");
     expect(capSrc).not.toContain("Math.random(");
+  });
+});
+
+// ── implementation-commit pins (the material + generation contract) ────────
+
+/** 21 flat daily closes then one +4.9% intraday transition (the A4
+ *  price-intraday leg fires without needing a baseline). */
+function materialPriceHistory(): unknown[] {
+  const rows: unknown[] = [];
+  let prev: number | null = null;
+  for (let i = 0; i < 22; i++) {
+    const day = new Date(Date.parse("2026-09-15T10:00:00.000Z") + i * 86_400_000)
+      .toISOString()
+      .slice(0, 11);
+    const value = i < 21 ? 1000 + i : 1070;
+    const observedAt = `${day}10:00:00.000Z`;
+    rows.push({
+      entity: "RELIANCE",
+      field: "price",
+      observedAt,
+      source: "yahoo",
+      unit: "inr",
+      sourceState: "live",
+      oldValue: prev,
+      newValue: value,
+      changeId: `c-${i}`,
+      recordedAt: observedAt,
+    });
+    prev = value;
+  }
+  return rows;
+}
+
+/** A contract-valid cached artifact for the hit leg. */
+function cachedArtifact(changeKey: string): RishiInsight {
+  return {
+    id: `insight:stock-intelligence:RELIANCE:${changeKey.slice(0, 12)}`,
+    feature: "stock-intelligence",
+    subject: "RELIANCE",
+    generatedAt: "2026-10-08T00:00:00.000Z",
+    observationWindow: { from: T0, to: T1 },
+    status: "ok",
+    confidence: "high",
+    materiality: "high",
+    summary: "Cached deterministic ledger for the hit leg.",
+    whyItMatters: "A hit must serve the stored artifact through the ONE parser.",
+    whatChanged: [{ field: "price", change: "1020 -> 1070 inr" }],
+    invalidators: [],
+    evidence: [
+      {
+        id: "evt:PRICE:c-21",
+        text: "price (price, yahoo): 1020 -> 1070 inr",
+        facts: [
+          { field: "price", value: 1070, unit: "inr", source: "live", observedAt: T1 },
+        ],
+      },
+    ],
+    contradictions: [],
+    uncertainty: [],
+    nextInvestigations: [],
+    provenance: { synthesisPath: "deterministic", changeKey },
+    modelStatus: "deterministic",
+  };
+}
+
+describe("INT-A10 material chain (the A4 gate OPENS and the handoff is complete)", () => {
+  it("a 4.9% intraday transition is material: the insight handoff carries scaffold, changeKey and the A4 verdicts", async () => {
+    rowsByField = { price: materialPriceHistory() };
+    const out = await runIntelligenceChain({ capability: "insight", subject: "RELIANCE", nowMs: NOW });
+    expect(out.refusal).toBeNull();
+    expect(out.material).toBe(true);
+    expect(out.changeKey).toMatch(/^[0-9a-f]{64}$/);
+    expect(out.generation).not.toBeNull();
+    const gen = out.generation!;
+    expect(gen.changeKey).toBe(out.changeKey);
+    expect(gen.feature).toBe("stock-intelligence");
+    expect(gen.subject).toBe("RELIANCE");
+    // The scaffold is deterministic-complete: A4-mapped materiality, the
+    // live evidence item for the material transition, thesis-derived status.
+    expect(gen.scaffold.materiality).toBe("high");
+    expect(gen.scaffold.status).toBe("ok");
+    expect(gen.scaffold.confidence).toBe("high");
+    expect(gen.scaffold.modelStatus).toBe("deterministic");
+    expect(gen.scaffold.evidence).toHaveLength(1);
+    expect(gen.scaffold.evidence[0]?.id).toBe("evt:PRICE:c-21");
+    expect(gen.scaffold.evidence[0]?.facts?.[0]?.value).toBe(1070);
+    expect(gen.scaffold.evidence[0]?.facts?.[0]?.source).toBe("live");
+    expect(gen.scaffold.provenance.changeKey).toBe(out.changeKey);
+    expect(gen.scaffold.provenance.synthesisPath).toBe("deterministic");
+    // whatChanged carries the verbatim typed-fact line
+    expect(gen.scaffold.whatChanged).toEqual([
+      { field: "price", change: "1020 -> 1070 inr" },
+    ]);
+    // NOTHING was cached or written on the handoff path
+    expect(writeCalls).toHaveLength(0);
+  });
+
+  it("a cache HIT serves the stored artifact through the ONE parser (zero generation, zero writes)", async () => {
+    rowsByField = { price: materialPriceHistory() };
+    const key = changeKeyOf({
+      feature: "stock-intelligence",
+      subject: "RELIANCE",
+      changeIds: Array.from({ length: 22 }, (_, i) => `c-${i}`),
+    })!;
+    const payload = cachedArtifact(key);
+    readHit = {
+      data: {
+        change_key: key,
+        feature: "stock-intelligence",
+        subject: "RELIANCE",
+        payload,
+        generated_at: T0,
+        hit_count: 3,
+        last_hit_at: null,
+      },
+      error: null,
+    };
+    const out = await runIntelligenceChain({ capability: "insight", subject: "RELIANCE", nowMs: NOW });
+    expect(out.refusal).toBeNull();
+    expect(out.cached).toBe(true);
+    expect(out.insight).toEqual(payload);
+    expect(out.generation).toBeNull();
+    expect(writeCalls).toHaveLength(0);
+  });
+
+  it("a malformed stored payload is a MISS (parse-or-serve): the material chain falls through to the handoff", async () => {
+    rowsByField = { price: materialPriceHistory() };
+    const key = changeKeyOf({
+      feature: "stock-intelligence",
+      subject: "RELIANCE",
+      changeIds: Array.from({ length: 22 }, (_, i) => `c-${i}`),
+    })!;
+    readHit = {
+      data: {
+        change_key: key,
+        feature: "stock-intelligence",
+        subject: "RELIANCE",
+        payload: { broken: true },
+        generated_at: T0,
+        hit_count: 3,
+        last_hit_at: null,
+      },
+      error: null,
+    };
+    const out = await runIntelligenceChain({ capability: "insight", subject: "RELIANCE", nowMs: NOW });
+    expect(out.cached).toBe(false);
+    expect(out.insight).toBeNull();
+    expect(out.generation).not.toBeNull();
+    expect(writeCalls).toHaveLength(0);
+  });
+});
+
+describe("INT-A10 pure prose assembler (the A1 boundary refuses, never edits)", () => {
+  it("grounded model prose fills ONLY the prose families; provenance carries the full trio", async () => {
+    rowsByField = { price: materialPriceHistory() };
+    const chain = await runIntelligenceChain({ capability: "insight", subject: "RELIANCE", nowMs: NOW });
+    const scaffold = chain.generation!.scaffold as ChainScaffold;
+    const artifact = assembleInsightArtifact(scaffold, {
+      answer: "The cited transition shows a material price move (evt:PRICE:c-21).",
+      provider: "openai-compatible",
+      model: "attested-model",
+      synthesizedAtMs: NOW + 1_000,
+      claimsVerified: true,
+      claimCount: 1,
+      uncertainties: ["Whether the next session confirms the move", "", "x".repeat(301)],
+    });
+    expect(artifact).not.toBeNull();
+    expect(artifact!.modelStatus).toBe("model-grounded");
+    expect(artifact!.provenance.synthesisPath).toBe("bounded-model");
+    expect(artifact!.provenance.provider).toBe("openai-compatible");
+    expect(artifact!.provenance.model).toBe("attested-model");
+    expect(artifact!.provenance.synthesizedAt).toBeDefined();
+    expect(artifact!.provenance.changeKey).toBe(chain.changeKey);
+    // model touched ONLY the prose families
+    expect(artifact!.summary).toBe(
+      "The cited transition shows a material price move (evt:PRICE:c-21).",
+    );
+    expect(artifact!.uncertainty).toEqual(["Whether the next session confirms the move"]);
+    expect(artifact!.whyItMatters).toBe(scaffold.whyItMatters);
+    expect(artifact!.whatChanged).toEqual(scaffold.whatChanged);
+    expect(artifact!.materiality).toBe(scaffold.materiality);
+    // oversized/empty uncertainty lines are dropped by the boundary, never edited
+    expect(artifact!.uncertainty.every((u) => u.length <= 300)).toBe(true);
+  });
+
+  it("unvalidated synthesis is labelled model-unvalidated and cannot reach high confidence", async () => {
+    rowsByField = { price: materialPriceHistory() };
+    const chain = await runIntelligenceChain({ capability: "insight", subject: "RELIANCE", nowMs: NOW });
+    const scaffold = chain.generation!.scaffold as ChainScaffold;
+    const artifact = assembleInsightArtifact(scaffold, {
+      answer: "Ungrounded prose.",
+      provider: "openai-compatible",
+      model: "attested-model",
+      synthesizedAtMs: NOW + 1_000,
+      claimsVerified: false,
+      claimCount: 0,
+      uncertainties: [],
+    });
+    expect(artifact).not.toBeNull();
+    expect(artifact!.modelStatus).toBe("model-unvalidated");
+    expect(artifact!.confidence).toBe("low");
+  });
+
+  it("the T52 invariant: claimsVerified with zero claims is NOT grounded", async () => {
+    rowsByField = { price: materialPriceHistory() };
+    const chain = await runIntelligenceChain({ capability: "insight", subject: "RELIANCE", nowMs: NOW });
+    const scaffold = chain.generation!.scaffold as ChainScaffold;
+    const artifact = assembleInsightArtifact(scaffold, {
+      answer: "Prose without claims.",
+      provider: "p",
+      model: "m",
+      synthesizedAtMs: NOW + 1_000,
+      claimsVerified: true,
+      claimCount: 0,
+      uncertainties: [],
+    });
+    expect(artifact!.modelStatus).toBe("model-unvalidated");
+  });
+
+  it("an over-contract summary is REFUSED at the boundary (never served, never cached)", async () => {
+    rowsByField = { price: materialPriceHistory() };
+    const chain = await runIntelligenceChain({ capability: "insight", subject: "RELIANCE", nowMs: NOW });
+    const scaffold = chain.generation!.scaffold as ChainScaffold;
+    const artifact = assembleInsightArtifact(scaffold, {
+      answer: "y".repeat(1300),
+      provider: "p",
+      model: "m",
+      synthesizedAtMs: NOW + 1_000,
+      claimsVerified: true,
+      claimCount: 1,
+      uncertainties: [],
+    });
+    expect(artifact).toBeNull();
+  });
+});
+
+describe("INT-A10 single-caller pins (static source scans, app/lib/components)", () => {
+  const ROOT = process.cwd();
+
+  function walk(dir: string, out: string[] = []): string[] {
+    for (const entry of readdirSync(dir)) {
+      const p = `${dir}/${entry}`;
+      const s = statSync(p);
+      if (s.isDirectory()) walk(p, out);
+      else out.push(p);
+    }
+    return out;
+  }
+
+  it("the ONE loop has exactly the sanctioned callers (chat, intelligence, the secret-gated probe)", () => {
+    const files = [
+      ...walk(`${ROOT}/app`),
+      ...walk(`${ROOT}/lib`),
+      ...walk(`${ROOT}/components`),
+    ].filter((f) => f.endsWith(".ts") || f.endsWith(".tsx"));
+    const importers = files.filter((f) =>
+      /import\s*\{[^}]*generateEvidenceGroundedAnswer/.test(readFileSync(f, "utf8")),
+    );
+    const expected = [
+      "app/api/chat/route.ts",
+      "app/api/intelligence/route.ts",
+      // Pre-existing, documented, secret-gated verification surface (the
+      // GenerateArgs probe-seed contract) — not a product synthesis path.
+      "app/api/probe/ai-loop/route.ts",
+    ];
+    expect(
+      importers.map((f) => f.slice(ROOT.length + 1)).sort(),
+    ).toEqual([...expected].sort());
+  });
+
+  it("the chain runner has exactly ONE consumer: the intelligence route", () => {
+    const files = [
+      ...walk(`${ROOT}/app`),
+      ...walk(`${ROOT}/lib`),
+      ...walk(`${ROOT}/components`),
+    ].filter((f) => f.endsWith(".ts") || f.endsWith(".tsx"));
+    const importers = files.filter((f) => {
+      if (f.endsWith("lib/intelligence/chain.ts")) return false;
+      return /intelligence\/chain|from "\.\/chain"/.test(readFileSync(f, "utf8"));
+    });
+    expect(importers.map((f) => f.slice(ROOT.length + 1))).toEqual([
+      "app/api/intelligence/route.ts",
+    ]);
   });
 });

@@ -281,31 +281,7 @@ export function buildInsightContextBlock(insight: RishiInsight, changeKey: strin
   return lines.join("\n") + "\n";
 }
 
-/**
- * Merge the artifact's evidence items into the canonical evidence
- * array. Pure and order-stable: package items keep their positions and
- * win id collisions (the live package observation is the fresher
- * state); unseen insight items append in artifact order. The user's
- * message and history NEVER enter this array — both sides are
- * server-assembled.
- */
-export function mergeInsightEvidence(
-  packageItems: AiEvidenceItem[],
-  insightItems: AiEvidenceItem[],
-): AiEvidenceItem[] {
-  const seen = new Set<string>();
-  const out: AiEvidenceItem[] = [];
-  for (const item of packageItems) {
-    if (!seen.has(item.id)) {
-      seen.add(item.id);
-      out.push(item);
-    }
-  }
-  for (const item of insightItems) {
-    if (!seen.has(item.id)) {
-      seen.add(item.id);
-      out.push(item);
-    }
-  }
-  return out;
-}
+// NOTE (INT-A10): mergeInsightEvidence moved verbatim to
+// lib/intelligence/evidenceMerge.ts — its own module home — so the
+// chat-context module keeps its ONE-consumer pin while the intelligence
+// route reuses the ONE merge implementation.

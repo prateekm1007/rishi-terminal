@@ -220,10 +220,12 @@ import { buildAiEvidencePackage, createCanonicalStockState } from '@/lib/ai/evid
 // Pre-registration: docs/intelligence/chatContext.md.
 import {
   insightRefusalResponse,
-  mergeInsightEvidence,
   resolveChatInsightContext,
   type ChatInsightContext,
 } from '@/lib/intelligence/chatContext';
+// INT-A10: the ONE package-first evidence merge lives in its own module
+// (moved verbatim out of chatContext — the ONE-consumer pin holds).
+import { mergeInsightEvidence } from '@/lib/intelligence/evidenceMerge';
 
 interface HistoryTurn {
   role: 'user' | 'assistant';

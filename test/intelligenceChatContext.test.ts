@@ -35,10 +35,12 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
 import {
   INSIGHT_CONTEXT_MAX_AGE_MS,
   buildInsightContextBlock,
-  mergeInsightEvidence,
   parseInsightRef,
   resolveChatInsightContext,
 } from "@/lib/intelligence/chatContext";
+// INT-A10: mergeInsightEvidence moved verbatim to its own module home;
+// the merge pins below run unchanged against it.
+import { mergeInsightEvidence } from "@/lib/intelligence/evidenceMerge";
 import { changeKeyOf } from "@/lib/intelligence/insightCache";
 import type { AiEvidenceItem } from "@/lib/ai/schemas";
 import type { RishiInsight } from "@/lib/intelligence/types";

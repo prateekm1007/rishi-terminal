@@ -350,6 +350,20 @@ export const ChatWireSchema = z.object({
      *  server's own (no post-tool model synthesis ran for this request).
      *  Absent/"model" for the standard loop. Router-set only. */
     synthesis: z.enum(["model", "deterministic"]).optional(),
+    /** INT-A9 (Ask Rishi): present only when the request anchored to a
+     *  cached insight. Server-resolved disclosure (change key, feature,
+     *  subject, honesty badges) — never client-supplied. Plain chat
+     *  omits the field. */
+    insightContext: z
+      .object({
+        changeKey: z.string(),
+        feature: z.string(),
+        subject: z.string(),
+        insightStatus: z.string(),
+        modelStatus: z.string(),
+        synthesisPath: z.string(),
+      })
+      .optional(),
   }),
 });
 

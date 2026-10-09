@@ -76,9 +76,12 @@ import { POST } from "@/app/api/chat/route";
 import { changeKeyOf } from "@/lib/intelligence/insightCache";
 import type { RishiInsight } from "@/lib/intelligence/types";
 
-const NOW = Date.parse("2026-10-08T00:00:00.000Z");
-const T0 = "2026-10-07T04:00:00.000Z";
-const T1 = "2026-10-07T09:30:00.000Z";
+// The route reads the REAL clock (the route owns Date.now()), so the
+// fixture's timestamps are computed fresh per run: the base artifact is
+// one hour old (comfortably inside the pre-registered window) and the
+// stale leg is pinned to a date that stays past any window.
+const T1 = new Date(Date.now() - 3_600_000).toISOString();
+const T0 = new Date(Date.parse(T1) - 5.5 * 3_600_000).toISOString();
 
 const INSIGHT: RishiInsight = {
   id: "insight:chat-context:RELIANCE:ctx-2026-10-07",
@@ -247,7 +250,7 @@ describe("INT-A9 fail-closed refusals (all before any consumption)", () => {
     ["status stale -> 410", { ...BASE, insightRef: REF }, { status: 410, error: "Insight is stale" }, () => { readHit = rowFor({ ...INSIGHT, status: "stale" }); }],
     ["older than the window -> 410", { ...BASE, insightRef: REF }, { status: 410, error: "Insight is stale" }, () => { readHit = rowFor({ ...INSIGHT, generatedAt: "2026-09-01T00:00:00.000Z" }, { generated_at: "2026-09-01T00:00:00.000Z" }); }],
     ["portfolio subject -> 403", { ...BASE, insightRef: REF }, { status: 403, error: "Insight context not available for chat" }, () => { readHit = rowFor({ ...INSIGHT, subject: "portfolio:abc" }, { subject: "portfolio:abc" }); }],
-    ["symbol mismatch -> 400", { personaId: "warren", message: "What changed here?", symbol: "TCS", insightRef: REF }, { status: 400, error: "Insight does not match the requested symbol" }, () => { readHit = rowFor(INSIGHT); }],
+    ["symbol mismatch -> 400", { personaId: "buffett", message: "What changed here?", symbol: "TCS", insightRef: REF }, { status: 400, error: "Insight does not match the requested symbol" }, () => { readHit = rowFor(INSIGHT); }],
   ];
 
   for (const [name, body, expected, arrange] of CASES) {
@@ -325,7 +328,9 @@ describe("INT-A9 no-second-endpoint / single-consumer pins (static source scans)
     const importers = files.filter((f) => {
       if (f.endsWith("lib/intelligence/chatContext.ts")) return false;
       const src = readFileSync(f, "utf8");
-      return src.includes("intelligence/chatContext");
+      // ANY reference counts (a relative "./chatContext" import must not
+      // escape the pin) — a second consumer is a review-stopping defect.
+      return /chatContext/.test(src);
     });
     expect(importers).toEqual([join(ROOT, "app/api/chat/route.ts")]);
   });
@@ -334,7 +339,7 @@ describe("INT-A9 no-second-endpoint / single-consumer pins (static source scans)
     const routeFiles = walk(join(ROOT, "app/api")).filter((f) => f.endsWith("route.ts"));
     const offenders = routeFiles.filter((f) => {
       const src = readFileSync(f, "utf8");
-      return src.includes("intelligence/chatContext") && !f.endsWith(join("app/api/chat/route.ts"));
+      return /chatContext/.test(src) && !f.endsWith(join("app/api/chat/route.ts"));
     });
     expect(offenders).toEqual([]);
   });

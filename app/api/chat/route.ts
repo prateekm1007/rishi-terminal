@@ -213,6 +213,18 @@ async function refundQuota(userId: string): Promise<void> {
 // SAME data state as the initial evidence (byte-identical items/ids).
 import { buildAiEvidencePackage, createCanonicalStockState } from '@/lib/ai/evidence';
 
+// INT-A9 (Ask Rishi): server-resolved insight context — the client
+// supplies ONLY the deterministic A7 change key; the insight is resolved
+// through the ONE persistent cache, validated through the ONE A1 parser,
+// and anchored into THIS loop (never a second endpoint or provider path).
+// Pre-registration: docs/intelligence/chatContext.md.
+import {
+  insightRefusalResponse,
+  mergeInsightEvidence,
+  resolveChatInsightContext,
+  type ChatInsightContext,
+} from '@/lib/intelligence/chatContext';
+
 interface HistoryTurn {
   role: 'user' | 'assistant';
   content: string;
@@ -264,6 +276,12 @@ export async function POST(req: NextRequest) {
     history?: unknown;
     message?: unknown;
     challenge?: unknown;
+    // INT-A9 (Ask Rishi): the deterministic A7 change key (64-hex) —
+    // the ONLY client-supplied piece of the insight context. The
+    // insight itself is resolved server-side and refused closed when
+    // the reference is malformed, missing, stale, unauthorized or
+    // invalid (docs/intelligence/chatContext.md).
+    insightRef?: unknown;
   };
   try {
     body = await req.json();
@@ -316,6 +334,32 @@ export async function POST(req: NextRequest) {
     symbol = resolved;
   }
 
+  // ── INT-A9 (Ask Rishi): server-resolved insight context ──
+  // The client supplies ONLY the deterministic A7 change key. The
+  // insight itself — its evidence, its prose, its provenance — is
+  // resolved server-side through the persistent cache and validated
+  // through the ONE A1 parser. Every refusal fails closed in this
+  // validation region: nothing is consumed, nothing reserved (N4).
+  // An absent reference is plain chat; a present one anchors it.
+  let insightContext: ChatInsightContext | null = null;
+  if (body.insightRef != null) {
+    const resolution = await resolveChatInsightContext(body.insightRef, {
+      requestedSymbol: symbol,
+      nowMs: Date.now(),
+    });
+    if (resolution.refusal || !resolution.context) {
+      const refusal = resolution.refusal ?? ({ kind: "unavailable" } as const);
+      console.error('[chat] insight context refused:', refusal.kind);
+      const { status, error } = insightRefusalResponse(refusal);
+      return NextResponse.json({ error }, { status });
+    }
+    insightContext = resolution.context;
+    // Contextual continuation: without an explicit symbol the insight's
+    // canonical subject anchors the conversation (the resolver has
+    // already refused a disagreeing explicit symbol).
+    if (!symbol) symbol = insightContext.symbol;
+  }
+
   // Prompt selection: the concise stock-page variant is EQUITY-analysis
   // wording ("analyzing a stock") and is therefore used for stock symbols
   // only — a documented stock-only decision (directive 10 audit), not a
@@ -324,7 +368,14 @@ export async function POST(req: NextRequest) {
   // input string, so 'Buffett' and 'buffett' reached two different
   // prompts for the same persona.)
   const symbolIsStock = symbol !== null && Object.prototype.hasOwnProperty.call(STOCKS, symbol);
-  const systemPrompt = symbolIsStock && persona.stockPrompt ? persona.stockPrompt : persona.systemPrompt;
+  const baseSystemPrompt =
+    symbolIsStock && persona.stockPrompt ? persona.stockPrompt : persona.systemPrompt;
+  // INT-A9: the server-composed, labelled context block rides AFTER the
+  // persona prompt — context, not instructions (the block carries its own
+  // framing rules; user text never enters it).
+  const systemPrompt = insightContext
+    ? baseSystemPrompt + insightContext.contextBlock
+    : baseSystemPrompt;
 
   const rawHistory = Array.isArray(body.history) ? body.history : [];
   if (rawHistory.length > MAX_HISTORY_TURNS) {
@@ -480,6 +531,10 @@ export async function POST(req: NextRequest) {
     const evidencePackage = symbol ? await buildAiEvidencePackage(symbol, {}, stockState) : null;
     evidenceMs = Date.now() - evidenceStart;
     evidence = evidencePackage?.items ?? [];
+    // INT-A9: the artifact's evidence joins the canonical array
+    // (package-first dedupe) — claims about the insight ground against
+    // server-owned evidence ids exactly like every other fact.
+    if (insightContext) evidence = mergeInsightEvidence(evidence, insightContext.evidenceItems);
   } catch (e) {
     console.error('[chat] evidence assembly failed:', e instanceof Error ? e.message : e);
     await refundQuota(quotaIdentity);
@@ -526,6 +581,8 @@ export async function POST(req: NextRequest) {
   //    route decorates the router's stage timings with its own wall and
   //    evidence-assembly durations before serving.
   const wire = toChatWire(answer);
+  // INT-A9: the anchor is disclosed on the wire (auditable provenance).
+  if (insightContext) wire.provenance.insightContext = insightContext.disclosure;
   if (answer.timings) {
     wire.provenance.timings = {
       ...answer.timings,

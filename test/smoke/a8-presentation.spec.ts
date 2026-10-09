@@ -145,32 +145,18 @@ test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is 
   });
 
   test("the drawer's close button has a designed visible focus state (keyboard)", async ({ page }) => {
+    // Deterministic returning-user state BEFORE navigation: the first-visit
+    // disclaimer is localStorage-gated (LegalDisclaimer reads
+    // 'rishi_disclaimer_v2'); pre-seeding it means the modal never mounts
+    // and can never intercept the badge click (the CI flake this replaces).
+    await page.addInitScript(() => window.localStorage.setItem("rishi_disclaimer_v2", "accepted"));
     await page.goto("/stocks", { waitUntil: "networkidle" });
-    const accept = page.getByRole("button", { name: /I UNDERSTAND/i });
-    if ((await accept.count()) > 0 && (await accept.first().isVisible().catch(() => false))) {
-      await accept.first().click();
-      await page.waitForTimeout(800);
-    }
-    // The first-visit disclaimer can finish mounting between the check and
-    // the click — open with the production-legs pattern: accept, retry the
-    // badge click until the drawer attaches (the drawer is the SUBJECT of
-    // this test; a dismissal race must not mask the focus assertion).
     const badge = page.locator("[data-intelligence-badge]").first();
     // scope to the dialog element: the inner unavailable <p> also carries
     // the data attribute (the DOM contract discloses the phase on both).
     const drawer = page.locator('[role="dialog"][data-intelligence-drawer]');
-    for (let attempt = 0; attempt < 3; attempt++) {
-      await badge.click();
-      try {
-        await drawer.waitFor({ state: "attached", timeout: 4_000 });
-        break;
-      } catch {
-        if ((await accept.count()) > 0 && (await accept.first().isVisible().catch(() => false))) {
-          await accept.first().click();
-          await page.waitForTimeout(800);
-        }
-      }
-    }
+    await badge.click();
+    await drawer.waitFor({ state: "attached", timeout: 15_000 });
     await expect(drawer).toBeVisible();
     // establish keyboard modality, then focus the close control: the
     // designed rule (scoped to the drawer panel) must produce a solid,

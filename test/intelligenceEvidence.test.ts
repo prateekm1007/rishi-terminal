@@ -119,15 +119,23 @@ describe("buildEvidenceView — the ONE presentational mapping", () => {
     expect(boundedView.provenance.model?.model).toBeTruthy();
     expect(boundedView.provenance.model?.synthesizedAt).toBeTruthy();
 
-    // bounded-model missing ANY of the trio: the display refuses the partial trio
+    // the A1 schema itself refuses a partial trio (bounded-model requires
+    // provider+model+synthesizedAt — the contract's honesty coupling)…
     const partial = parseRishiInsight({
       ...EVIDENCE_FIXTURES.boundedModelProvenance,
       provenance: { synthesisPath: "bounded-model", provider: "openai" },
     });
-    expect(partial).not.toBeNull(); // the contract allows provider-only provenance…
-    const partialView = buildEvidenceView(partial as RishiInsight) as EvidenceView;
+    expect(partial).toBeNull();
+    // …and the mapping still defends at the display boundary (a JS caller
+    // can hand it anything): a partial trio renders no model label.
+    const partialHacked = {
+      ...(BOUNDED as RishiInsight),
+      provenance: { synthesisPath: "bounded-model", provider: "openai" },
+    } as unknown as RishiInsight;
+    const partialView = buildEvidenceView(partialHacked) as EvidenceView;
     expect(partialView.provenance.modelInvolved).toBe(true);
-    expect(partialView.provenance.model).toBeNull(); // …but never a partial model label
+    expect(partialView.provenance.model).toBeNull();
+    expect(partialView.provenance.label).toContain("disclosure unavailable");
   });
 
   it("badges render the exact closed vocabulary words", () => {

@@ -51,10 +51,12 @@ vi.mock("@/lib/intelligence/stateLog", async (importOriginal) => {
 import { INTELLIGENCE_CAPABILITIES } from "@/lib/intelligence/capabilities";
 import {
   assembleInsightArtifact,
+  NON_MATERIAL_REFUSAL_ORDER,
   runIntelligenceChain,
   type ChainScaffold,
 } from "@/lib/intelligence/chain";
 import { changeKeyOf } from "@/lib/intelligence/insightCache";
+import { MATERIALITY_REASONS } from "@/lib/intelligence/materiality";
 import type { RishiInsight } from "@/lib/intelligence/types";
 
 // NOTE (scope-honest fail-first): this commit pins the closed registry,
@@ -512,5 +514,76 @@ describe("INT-A10 chain over PRODUCTION row shapes (PostgREST +00:00 timestamps)
     expect(out.refusal).toBeNull();
     expect(out.insight?.observationWindow.from).toBe(new Date(NOW).toISOString());
     expect(out.insight?.observationWindow.to).toBe(new Date(NOW).toISOString());
+  });
+});
+
+// ── INT-A8-PRES: the deterministic per-reason exclusion breakdown ──────────
+// Pre-registration: docs/intelligence/evidencePresentation.md (PR #301).
+// The chain replaces the conflated sentence with a deterministic
+// per-reason breakdown derived from A4's ACTUAL verdicts (verdict.reason
+// — never parsed from text, never invented): one total line, then one
+// line per OBSERVED non-material reason, below-threshold distinguished
+// from the fail-closed refusals. The A1 schema is untouched (the carrier
+// stays string[]; max 10 lines, each <= 300 chars).
+
+describe("INT-A8-PRES deterministic uncertainty — the per-reason exclusion breakdown", () => {
+  it("a non-material chain accounts its exclusions from the actual verdicts: total line + one line per observed reason", async () => {
+    rowsByField = { price: [row("c-1", T0, 1204.1, null), row("c-2", T1, 1204.2, 1204.1)] };
+    const out = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    expect(out.refusal).toBeNull();
+    if (!out.insight) throw new Error("expected insight");
+    const u = out.insight.uncertainty;
+    const nonMaterial = out.verdicts.filter((v) => v.verdict !== "material");
+    if (nonMaterial.length === 0) {
+      expect(u).toEqual([]);
+      return;
+    }
+    // Line 1: the total, worded as EXCLUSION by verdict — never absence.
+    expect(u[0]).toBe(
+      `${nonMaterial.length} observed transition(s) did not qualify as material evidence in this window and are excluded from the ledger.`,
+    );
+    // One line per OBSERVED reason, derived here from the SAME verdicts.
+    const below = nonMaterial.filter((v) => v.reason === "below-threshold").length;
+    const expected: string[] = [];
+    if (below > 0) {
+      expected.push(`${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
+    }
+    for (const reason of NON_MATERIAL_REFUSAL_ORDER) {
+      const n = nonMaterial.filter((v) => v.reason === reason).length;
+      if (n > 0) expected.push(`${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
+    }
+    expect(u.slice(1)).toEqual(expected);
+  });
+
+  it("the breakdown is deterministic: identical chain state -> identical uncertainty lines", async () => {
+    rowsByField = { price: [row("c-1", T0, 1204.1, null), row("c-2", T1, 1204.2, 1204.1)] };
+    const a = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    const b = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    expect(JSON.stringify(a.insight?.uncertainty)).toBe(JSON.stringify(b.insight?.uncertainty));
+  });
+
+  it("no line implies observations did not occur (the wording names exclusion, never absence)", async () => {
+    rowsByField = { price: [row("c-1", T0, 1204.1, null), row("c-2", T1, 1204.2, 1204.1)] };
+    const out = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    for (const line of out.insight?.uncertainty ?? []) {
+      expect(line).not.toMatch(/no (observations|transitions)/i);
+      // the old conflated sentence never returns
+      expect(line).not.toContain("(or were refused fail-closed)");
+    }
+  });
+
+  it("the breakdown fits the A1 bound with no truncation: 1 total + 1 below-threshold + 8 refusal reasons = 10 (static pin)", () => {
+    // The closed A4 vocabulary, split exactly as the chain emits it.
+    expect(MATERIALITY_REASONS.length).toBe(14);
+    const materialReasons = ["price-sigma", "price-intraday", "volume-surge", "technical-regime", "portfolio-shift"];
+    expect(new Set(MATERIALITY_REASONS).size).toBe(MATERIALITY_REASONS.length);
+    expect([...MATERIALITY_REASONS].sort()).toEqual(
+      [...materialReasons, "below-threshold", ...NON_MATERIAL_REFUSAL_ORDER].sort(),
+    );
+    expect(NON_MATERIAL_REFUSAL_ORDER).toHaveLength(8);
+    // 1 (total) + 1 (below-threshold) + 8 (refusals) = 10 == the A1 max.
+    expect(1 + 1 + NON_MATERIAL_REFUSAL_ORDER.length).toBeLessThanOrEqual(10);
+    // A future A4 vocabulary change that would overflow FAILS here.
+    expect(1 + 1 + NON_MATERIAL_REFUSAL_ORDER.length + (14 - MATERIALITY_REASONS.length - 0)).toBeLessThanOrEqual(10);
   });
 });

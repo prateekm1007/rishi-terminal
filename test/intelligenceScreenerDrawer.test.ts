@@ -118,6 +118,7 @@ describe("INT-D2 the intelligence drawer (the B1 pattern, one subject at a time)
     expect(src).toContain("@/components/intelligence");
     for (const primitive of [
       "<InsightBadges",
+      "<InsightSummary",
       "<ProvenanceLine",
       "<ContradictionBanner",
       "<EvidenceList",

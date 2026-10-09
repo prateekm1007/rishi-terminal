@@ -8,3 +8,4 @@ export { ContradictionBanner } from "./ContradictionBanner";
 export { UncertaintyBlock } from "./UncertaintyBlock";
 export { ProvenanceLine } from "./ProvenanceLine";
 export { InsightBadges } from "./InsightBadges";
+export { InsightSummary } from "./InsightSummary";

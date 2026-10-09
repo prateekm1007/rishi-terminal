@@ -178,6 +178,7 @@ describe("INT-B1 the stock-page intelligence panel (the first real product surfa
     expect(src).toContain("@/components/intelligence");
     for (const primitive of [
       "<InsightBadges",
+      "<InsightSummary",
       "<ProvenanceLine",
       "<ContradictionBanner",
       "<EvidenceList",

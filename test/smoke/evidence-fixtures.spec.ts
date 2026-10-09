@@ -35,9 +35,19 @@ test.describe("evidence-fixtures route (A8)", () => {
     expect(html).toContain("bounded-model synthesis");
     expect(html).toContain("openai");
 
-    // honest empty states
+    // honest empty states (INT-A8-PRES wording: exclusion by verdict, never absence)
     expect(html).toContain("No stated uncertainties");
-    expect(html).toContain("No evidence recorded.");
+    expect(html).toContain(
+      "No observed transition qualified as material evidence in this window — the ledger records only material events.",
+    );
+
+    // INT-A8-PRES: the artifact's prose fields render verbatim under their labels
+    expect(html).toContain("Summary");
+    expect(html).toContain("The price moved during the window; both sources agree.");
+    expect(html).toContain("Why it matters");
+    expect(html).toContain("An agreed price move is the baseline every downstream judgement starts from.");
+    expect(html).toContain("What changed");
+    expect(html).toContain("price: 3100.0 inr -&gt; 3105.5 inr");
 
     // badges carry exact vocabulary words
     expect(html).toContain('data-insight-badge="status">conflict<');

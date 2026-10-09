@@ -2,8 +2,8 @@
  "note": "bundle ratchet baseline (E6-02, restored by C3). Values are gzip kB of first-load JS measured from the HTML script tags of a production build (module-capable browser, nomodule excluded — B4 measurement). Founder Round 16: the ratchet fails on any increase beyond +2 kB AND the 200 kB hard budget stays fatal alongside it. Re-lock only with --update-baseline after a passing, non-regressing run.",
  "toleranceKb": 2,
  "measuredKb": {
-  "/": 159.0361328125,
-  "/stocks": 161.9951171875,
-  "/stock/[symbol]": 169.236328125
+  "/": 159.0908203125,
+  "/stocks": 162.859375,
+  "/stock/[symbol]": 171.1845703125
  }
 }

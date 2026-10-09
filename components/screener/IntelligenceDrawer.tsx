@@ -49,6 +49,7 @@ import {
   ContradictionBanner,
   EvidenceList,
   InsightBadges,
+  InsightSummary,
   ProvenanceLine,
   UncertaintyBlock,
 } from "@/components/intelligence";
@@ -185,6 +186,7 @@ export function IntelligenceDrawer({
         {state.phase === "ready" && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }} data-intelligence-drawer="ready">
             <InsightBadges badges={state.view.badges} />
+            <InsightSummary view={state.view} />
             <ProvenanceLine view={state.view} />
             <ContradictionBanner view={state.view} />
             <EvidenceList view={state.view} />

@@ -22,6 +22,7 @@ import {
   UncertaintyBlock,
   ProvenanceLine,
   InsightBadges,
+  InsightSummary,
 } from "@/components/intelligence";
 
 export const metadata: Metadata = {
@@ -50,6 +51,7 @@ export default function EvidenceFixturesPage() {
           <section key={name} data-fixture={name}>
             <h2>{name}</h2>
             <InsightBadges badges={view.badges} />
+            <InsightSummary view={view} />
             <ProvenanceLine view={view} />
             <ContradictionBanner view={view} />
             <EvidenceList view={view} />

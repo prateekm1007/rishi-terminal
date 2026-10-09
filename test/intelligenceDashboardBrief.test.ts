@@ -85,6 +85,7 @@ describe("INT-C1 the dashboard brief component (the second real product surface)
     expect(src).toContain("@/components/intelligence");
     for (const primitive of [
       "<InsightBadges",
+      "<InsightSummary",
       "<ProvenanceLine",
       "<ContradictionBanner",
       "<EvidenceList",

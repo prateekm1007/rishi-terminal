@@ -126,7 +126,12 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        # 2026-10-10: mirror.gcr.io (Google's official Docker Hub
+        # read-through cache) — identical image bytes, no unauthenticated
+        # rate limit. The GitHub runner pool's Docker Hub limits
+        # exhausted twice in one evening (runs 37990755997, 37991607464:
+        # `toomanyrequests` at container init, before any repo code ran).
+        image: mirror.gcr.io/library/postgres:16
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: rishi_test
@@ -239,6 +244,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # 2026-10-10: Docker Hub unauthenticated pull limits exhausted the
+      # GitHub runner pool twice in one evening (runs 37990755997,
+      # 37991607464 — `node:22-slim` / `postgres:16` HEAD requests
+      # answered 429 BEFORE any repo code ran). mirror.gcr.io is Google's
+      # official read-through cache of Docker Hub: identical image bytes,
+      # no unauthenticated rate limit. The Dockerfile keeps its canonical
+      # `FROM node:22-slim` (the HF Space build stays on Docker Hub); the
+      # CI job pre-seeds the local tag so `docker build` resolves it
+      # locally instead of hitting the registry.
+      - name: Pre-pull the base image from the mirror (Docker Hub rate-limit bypass)
+        run: |
+          docker pull mirror.gcr.io/library/node:22-slim
+          docker tag mirror.gcr.io/library/node:22-slim node:22-slim
 
       - name: Build the Space image (placeholder args — identical to the HF build)
         run: |

@@ -176,21 +176,15 @@ describe("INT-B1 the stock-page intelligence panel (the first real product surfa
     expect(src).toContain("import type { RishiInsight }");
     expect(src).toContain('buildEvidenceView');
     expect(src).toContain("@/components/intelligence");
-    for (const primitive of [
-      "<InsightBadges",
-      "<InsightSummary",
-      "<ProvenanceLine",
-      "<ContradictionBanner",
-      "<EvidenceList",
-      "<UncertaintyBlock",
-    ]) {
-      expect(src).toContain(primitive);
-    }
+    // The canonical composition: the surface mounts ReadyComposition
+    // (the pre-registered six steps, defined once) — not its own inline
+    // copy of the sequence (rule 14; no independent redesigns).
+    expect(src).toContain("<ReadyComposition");
   });
 
   it("carries the honest unavailable state (never a fake artifact, never a fallback word)", () => {
     const src = source(PANEL);
-    expect(src).toContain('data-intelligence-panel="unavailable"');
+    expect(src).toContain('data-intelligence-unavailable');
   });
 
   it("adds no investment advice strings (the A8 absence pin, display-side)", () => {

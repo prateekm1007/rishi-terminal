@@ -16,14 +16,7 @@ import type { Metadata } from "next";
 import { parseRishiInsight } from "@/lib/intelligence/types";
 import { buildEvidenceView } from "@/lib/intelligence/evidence";
 import { EVIDENCE_FIXTURES } from "@/lib/intelligence/evidenceFixtures";
-import {
-  EvidenceList,
-  ContradictionBanner,
-  UncertaintyBlock,
-  ProvenanceLine,
-  InsightBadges,
-  InsightSummary,
-} from "@/components/intelligence";
+import { ReadyComposition } from "@/components/intelligence/ReadyComposition";
 
 export const metadata: Metadata = {
   title: "Evidence fixtures (internal verification)",
@@ -50,12 +43,7 @@ export default function EvidenceFixturesPage() {
         return (
           <section key={name} data-fixture={name}>
             <h2>{name}</h2>
-            <InsightBadges badges={view.badges} />
-            <InsightSummary view={view} />
-            <ProvenanceLine view={view} />
-            <ContradictionBanner view={view} />
-            <EvidenceList view={view} />
-            <UncertaintyBlock view={view} />
+            <ReadyComposition view={view} />
           </section>
         );
       })}

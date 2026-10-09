@@ -116,23 +116,17 @@ describe("INT-D2 the intelligence drawer (the B1 pattern, one subject at a time)
     expect(src).toContain("import type { RishiInsight }");
     expect(src).toContain("buildEvidenceView");
     expect(src).toContain("@/components/intelligence");
-    for (const primitive of [
-      "<InsightBadges",
-      "<InsightSummary",
-      "<ProvenanceLine",
-      "<ContradictionBanner",
-      "<EvidenceList",
-      "<UncertaintyBlock",
-    ]) {
-      expect(src).toContain(primitive);
-    }
+    // The canonical composition: the surface mounts ReadyComposition
+    // (the pre-registered six steps, defined once) — not its own inline
+    // copy of the sequence (rule 14; no independent redesigns).
+    expect(src).toContain("<ReadyComposition");
   });
 
   it("carries the honest states and discloses its subject (never a fake artifact, never a fallback word)", () => {
     const src = source(DRAWER);
-    expect(src).toContain('data-intelligence-drawer="unavailable"');
+    expect(src).toContain('data-intelligence-drawer-state="unavailable"');
     expect(src).toContain("data-intelligence-drawer-subject");
-    expect(src).toContain("data-intelligence-drawer=\"ready\"");
+    expect(src).toContain("data-intelligence-drawer-state=\"ready\"");
   });
 
   it("adds no investment advice strings (the A8 absence pin, display-side)", () => {

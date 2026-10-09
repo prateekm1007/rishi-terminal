@@ -113,3 +113,49 @@ describe("INT-A8-PRES — globals.css is the canonical owner of the shared A8 se
     expect(css).toMatch(/\[data-intelligence-drawer\] :focus-visible/);
   });
 });
+
+describe("INT-A8-PRES follow-up — the ONE canonical composition (rule 14)", () => {
+  it("ReadyComposition renders the pre-registered six steps in order; the surfaces mount it, not their own copies", () => {
+    const src = readFileSync("components/intelligence/ReadyComposition.tsx", "utf8");
+    const order = [
+      "<InsightBadges",
+      "<InsightSummary",
+      "<ProvenanceLine",
+      "<ContradictionBanner",
+      "<EvidenceList",
+      "<UncertaintyBlock",
+    ];
+    let last = -1;
+    for (const primitive of order) {
+      const at = src.indexOf(primitive);
+      expect(at, `${primitive} must be present in ReadyComposition`).toBeGreaterThan(-1);
+      expect(at, `${primitive} must come after the previous step (the declared order)`).toBeGreaterThan(last);
+      last = at;
+    }
+    expect(src).not.toMatch(/fetch\(/);
+    expect(src).not.toMatch(/parseRishiInsight/);
+    expect(src).not.toContain('from "zod"');
+    for (const surface of [
+      "components/dashboard/DashboardBrief.tsx",
+      "components/stock/IntelligencePanel.tsx",
+      "components/screener/IntelligenceDrawer.tsx",
+    ]) {
+      const s = readFileSync(surface, "utf8");
+      expect(s, `${surface} mounts the canonical composition`).toContain("<ReadyComposition");
+      expect(s, `${surface} carries no inline copy of the six-step sequence`).not.toContain("<InsightBadges badges=");
+    }
+    // The fixture route renders the same composition (direct import —
+    // its SSR assertions require server rendering).
+    expect(readFileSync("app/evidence-fixtures/page.tsx", "utf8")).toContain("<ReadyComposition");
+  });
+
+  it("the inner state markers no longer collide with the surface phase attributes (the two-element ambiguity)", () => {
+    // The surface-level phase attribute is unambiguous everywhere: the
+    // nested state markers carry their own names.
+    expect(readFileSync("components/stock/IntelligencePanel.tsx", "utf8")).not.toContain('data-intelligence-panel="unavailable"');
+    expect(readFileSync("components/dashboard/DashboardBrief.tsx", "utf8")).not.toContain('data-dashboard-brief="unavailable"');
+    expect(readFileSync("components/screener/IntelligenceDrawer.tsx", "utf8")).not.toMatch(/data-intelligence-drawer="(unavailable|ready)"/);
+    expect(readFileSync("components/stock/IntelligencePanel.tsx", "utf8")).toContain("data-intelligence-unavailable");
+    expect(readFileSync("components/screener/IntelligenceDrawer.tsx", "utf8")).toContain('data-intelligence-drawer-state="ready"');
+  });
+});

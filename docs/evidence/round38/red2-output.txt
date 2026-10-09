@@ -1,0 +1,28 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/screener.nl.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/screener.nl.test.ts [ test/screener.nl.test.ts ]
+Error: Cannot find package '@/lib/screener/nl' imported from /home/z/rishi-terminal/test/screener.nl.test.ts
+ ❯ test/screener.nl.test.ts:250:1
+    248| // -------------------------------------------------------------------…
+    249|
+    250| import { nlToQuery, SECTOR_SYNONYMS } from "@/lib/screener/nl";
+       | ^
+    251| import { parseQuery } from "@/lib/screener/parser";
+    252| import { STOCKS } from "@/data/stocks";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  17:10:36
+   Duration  187ms (transform 54%, setup 27%, worker 18%, environment 1%)
+

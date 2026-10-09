@@ -59,6 +59,12 @@ export interface ContradictionItemView {
 
 export interface EvidenceView {
   evidence: { rows: EvidenceRowView[] };
+  /** The artifact's own summary prose, verbatim (INT-A8-PRES) — the
+   *  deterministic layer composed it or the bounded loop validated it;
+   *  the mapping interprets nothing. Missing at the display boundary
+   *  degrades to the em dash (never a fallback word). */
+  summary: string;
+  whyItMatters: string;
   whatChanged: { field: string; change: string }[];
   contradiction: {
     banner: boolean;
@@ -150,6 +156,11 @@ export function buildEvidenceView(insight: RishiInsight): EvidenceView {
 
   return {
     evidence: { rows },
+    // Prose fields (INT-A8-PRES): verbatim or the em dash — the same
+    // boundary discipline as the badges. No interpretation, no advice,
+    // never a model label (the provenance line is the honesty carrier).
+    summary: typeof insight.summary === "string" ? insight.summary : EM_DASH,
+    whyItMatters: typeof insight.whyItMatters === "string" ? insight.whyItMatters : EM_DASH,
     whatChanged: (Array.isArray(insight.whatChanged) ? insight.whatChanged : []).map((w) => ({
       field: w.field,
       change: w.change,

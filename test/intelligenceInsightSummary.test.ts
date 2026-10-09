@@ -43,7 +43,7 @@ describe("<InsightSummary> — the artifact's prose, verbatim and labelled", () 
     const view = buildEvidenceView(DETERMINISTIC);
     const html = renderToString(createElement(InsightSummary, { view }));
     expect(html).toContain("What changed");
-    expect(html).toContain("price: 3100.0 inr -> 3105.5 inr");
+    expect(html).toContain("price: 3100.0 inr -&gt; 3105.5 inr");
   });
 
   it("an empty whatChanged renders the honest empty state, never a fabricated change", async () => {

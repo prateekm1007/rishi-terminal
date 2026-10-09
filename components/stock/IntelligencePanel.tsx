@@ -36,6 +36,7 @@ import {
   ContradictionBanner,
   EvidenceList,
   InsightBadges,
+  InsightSummary,
   ProvenanceLine,
   UncertaintyBlock,
 } from "@/components/intelligence";
@@ -112,6 +113,7 @@ export function IntelligencePanel({ subject }: { subject: string }) {
       {state.phase === "ready" && (
         <>
           <InsightBadges badges={state.view.badges} />
+          <InsightSummary view={state.view} />
           <ProvenanceLine view={state.view} />
           <ContradictionBanner view={state.view} />
           <EvidenceList view={state.view} />

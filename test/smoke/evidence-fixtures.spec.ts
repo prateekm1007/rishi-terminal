@@ -47,7 +47,7 @@ test.describe("evidence-fixtures route (A8)", () => {
     expect(html).toContain("Why it matters");
     expect(html).toContain("An agreed price move is the baseline every downstream judgement starts from.");
     expect(html).toContain("What changed");
-    expect(html).toContain("price: 3100.0 inr -> 3105.5 inr");
+    expect(html).toContain("price: 3100.0 inr -&gt; 3105.5 inr");
 
     // badges carry exact vocabulary words
     expect(html).toContain('data-insight-badge="status">conflict<');

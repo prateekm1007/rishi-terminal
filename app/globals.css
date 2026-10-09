@@ -1511,3 +1511,136 @@ body.theme-dark {
 .mobile-sidebar {
   animation: slideInLeft 0.2s ease;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Intelligence presentation (INT-A8-PRES) — the shared selectors for the
+   semantic A8 classes the five primitives render. Canonical owner: the
+   shared layer (docs/intelligence/evidencePresentation.md, PR #301);
+   surfaces patch nothing and no dead utility classes exist. Vocabulary
+   mirrors the design system's .badge pill and the surface tokens.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The section block (ContradictionBanner / EvidenceList / UncertaintyBlock /
+   InsightSummary) — bordered elevated surface with the app's spacing rhythm. */
+.insight-surface {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+
+/* The summary block sits first in the composition: tighten its top margin
+   against the badge row above it. */
+.insight-surface--summary {
+  margin-top: 8px;
+}
+
+/* Title hierarchy inside the shared composition. */
+.insight-surface__title {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 10px 0 4px;
+}
+
+/* Clean lists: no browser bullets, no default padding. */
+.insight-surface__list {
+  list-style: none;
+  margin: 4px 0;
+  padding: 0;
+}
+
+.insight-surface__item {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0;
+}
+
+.insight-surface__text {
+  margin: 2px 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Facts: label/value rows with the provenance sub-line. */
+.insight-surface__facts {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.insight-fact {
+  list-style: none;
+  margin: 2px 0;
+}
+
+.insight-fact__value {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.insight-fact__provenance {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+/* The honest empty state — visibly part of the surface, never a stray
+   bare paragraph. */
+.insight-surface__empty {
+  margin: 6px 0;
+  padding: 8px 10px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* The provenance disclosure line — the single honesty carrier. */
+.insight-surface__provenance {
+  margin: 8px 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+/* The badge row: a real horizontal pill row (grouped, wrapping) — the
+   vocabulary mirrors the design system's .badge. */
+.insight-surface__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.insight-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Designed visible focus for every interactive control inside the mounted
+   intelligence surfaces (the shared composition block and the drawer
+   panel) — scoped, never a global restyle (INT-A8-PRES fix contract). */
+.insight-surface :focus-visible,
+[data-intelligence-drawer] :focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}

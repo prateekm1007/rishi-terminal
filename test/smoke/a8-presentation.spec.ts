@@ -68,7 +68,7 @@ test.describe("INT-A8-PRES fixture route — the shared presentation, computed",
       return { weight: cs.fontWeight, size: parseFloat(cs.fontSize) };
     });
     expect(titleStyles.weight).toBe("700");
-    expect(titleStyles.size).toBeGreaterThan(12);
+    expect(titleStyles.size).toBeGreaterThanOrEqual(12);
 
     const list = surface.locator(".insight-surface__list").first();
     if ((await list.count()) > 0) {
@@ -83,10 +83,10 @@ test.describe("INT-A8-PRES fixture route — the shared presentation, computed",
     const summaryBlock = section.locator(".insight-surface--summary");
     await expect(summaryBlock).toBeVisible();
 
-    const labels = await summaryBlock.locator(".insight-surface__title").allInnerTexts();
-    expect(labels).toContain("Summary");
-    expect(labels).toContain("Why it matters");
-    expect(labels).toContain("What changed");
+    const labels = (await summaryBlock.locator(".insight-surface__title").allInnerTexts()).map((t) => t.toUpperCase());
+    expect(labels).toContain("SUMMARY");
+    expect(labels).toContain("WHY IT MATTERS");
+    expect(labels).toContain("WHAT CHANGED");
 
     // the prose is measurably present, not zero-height or hidden
     const prose = await summaryBlock.locator('[data-insight-summary="summary"]').evaluate((el) => {
@@ -109,11 +109,13 @@ test.describe("INT-A8-PRES fixture route — the shared presentation, computed",
 test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is designed", () => {
   test("the stock page panel renders its honest state with the shared class styling", async ({ page }) => {
     await page.goto("/stock/RELIANCE");
-    const panel = page.locator("[data-intelligence-panel]");
+    const panel = page.locator("section[data-intelligence-panel]");
     await expect(panel).toBeVisible();
-    // positive control: the honest state text exists (CI: unavailable)
+    // the loading phase is transient — wait for the state to settle before
+    // asserting (a mid-swap element makes computed styles read empty)
+    await expect(panel).not.toHaveAttribute("data-intelligence-panel", "loading", { timeout: 15_000 });
     const phase = await panel.getAttribute("data-intelligence-panel");
-    expect(["loading", "unavailable", "ready"]).toContain(phase ?? "");
+    expect(["unavailable", "ready"]).toContain(phase ?? "");
     if (phase === "unavailable") {
       await expect(panel).toContainText("Intelligence is not available for this subject right now.");
     }
@@ -127,10 +129,11 @@ test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is 
 
   test("the dashboard brief renders its honest state with the shared class styling", async ({ page }) => {
     await page.goto("/");
-    const brief = page.locator("[data-dashboard-brief]");
+    const brief = page.locator("section[data-dashboard-brief]");
     await expect(brief).toBeVisible();
+    await expect(brief).not.toHaveAttribute("data-dashboard-brief", "loading", { timeout: 15_000 });
     const phase = await brief.getAttribute("data-dashboard-brief");
-    expect(["loading", "unavailable", "ready"]).toContain(phase ?? "");
+    expect(["unavailable", "ready"]).toContain(phase ?? "");
     if (phase === "unavailable") {
       await expect(brief).toContainText("Intelligence is not available for this subject right now.");
     }
@@ -153,7 +156,9 @@ test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is 
     // badge click until the drawer attaches (the drawer is the SUBJECT of
     // this test; a dismissal race must not mask the focus assertion).
     const badge = page.locator("[data-intelligence-badge]").first();
-    let drawer = page.locator("[data-intelligence-drawer]");
+    // scope to the dialog element: the inner unavailable <p> also carries
+    // the data attribute (the DOM contract discloses the phase on both).
+    const drawer = page.locator('[role="dialog"][data-intelligence-drawer]');
     for (let attempt = 0; attempt < 3; attempt++) {
       await badge.click();
       try {

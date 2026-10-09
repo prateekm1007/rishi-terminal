@@ -13,7 +13,10 @@ export function EvidenceList({ view }: { view: EvidenceView }) {
     <section className="insight-surface insight-surface--evidence" aria-label="Evidence">
       <h3 className="insight-surface__title">Evidence</h3>
       {view.evidence.rows.length === 0 ? (
-        <p className="insight-surface__empty">No evidence recorded.</p>
+        <p className="insight-surface__empty">
+        No observed transition qualified as material evidence in this window — the ledger
+        records only material events.
+      </p>
       ) : (
         <ul className="insight-surface__list">
           {view.evidence.rows.map((row) => (

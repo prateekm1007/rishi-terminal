@@ -75,6 +75,27 @@ import {
 } from "./types";
 import type { IntelligenceCapability } from "./capabilities";
 
+/**
+ * The closed order of A4's non-material REFUSAL reasons (INT-A8-PRES) —
+ * the reasons a transition is refused fail-closed by the materiality
+ * engine, in MATERIALITY_REASONS' declaration order. The ONE remaining
+ * non-material reason, "below-threshold" (evaluated, not qualified), is
+ * emitted separately by the deterministic breakdown — below-threshold
+ * and the refusals are different facts and the interface says so.
+ * Mechanically bound to A4's vocabulary by the suite's static pin (the
+ * 9+1 <= 10 A1 bound): any drift on either side fails there.
+ */
+export const NON_MATERIAL_REFUSAL_ORDER = [
+  "missing-input",
+  "insufficient-history",
+  "invalid-input",
+  "seed-derived",
+  "unavailable-input",
+  "non-comparable",
+  "stale",
+  "no-threshold-for-category",
+] as const;
+
 /** The A1 evidence item shape (the contract's own element type — no
  *  second definition). */
 type InsightEvidenceItem = RishiInsight["evidence"][number];
@@ -349,15 +370,35 @@ function composeScaffold(args: {
 
   // Prose: fixed deterministic templates — one honest paragraph each, no
   // model involvement (the artifact discloses exactly what it is).
-  const nonMaterialCount = verdicts.filter((v) => !aiSpendAllowed(v)).length;
+  const nonMaterial = verdicts.filter((v) => !aiSpendAllowed(v));
   const summary = `${subject}: ${thesis.detail}. ${changeSince.detail}.`;
   const whyItMatters = `Deterministic composition of the observation chain for ${subject}: the ledger counts only transitions the materiality engine classified as material, so the state above is computed, not opined. Totals: ${changeSince.totals.transitionsSince} recorded transition(s) across ${changeSince.totals.fieldsTracked} tracked field(s).`;
-  const uncertainty =
-    nonMaterialCount > 0
-      ? [
-          `${nonMaterialCount} observed transition(s) did not meet any pre-registered materiality threshold (or were refused fail-closed) and are excluded from the ledger.`,
-        ]
-      : [];
+  // INT-A8-PRES: the per-reason exclusion breakdown, derived from A4's
+  // ACTUAL verdicts (verdict.reason — read verbatim, never parsed from
+  // text, never invented): one total line, then one line per OBSERVED
+  // non-material reason, below-threshold distinguished from the
+  // fail-closed refusals. Worst case (all 8 refusal reasons observed)
+  // is 1 total + 1 below-threshold + 8 refusal lines = 10, exactly the
+  // A1 uncertainty bound — pinned statically in the suite so a future
+  // A4 vocabulary change that would overflow fails there. The carrier
+  // stays string[] (the A1 schema is untouched; old cached artifacts
+  // remain valid).
+  const byReason = new Map<string, number>();
+  for (const v of nonMaterial) byReason.set(v.reason, (byReason.get(v.reason) ?? 0) + 1);
+  const uncertainty: string[] = [];
+  if (nonMaterial.length > 0) {
+    uncertainty.push(
+      `${nonMaterial.length} observed transition(s) did not qualify as material evidence in this window and are excluded from the ledger.`,
+    );
+    const below = byReason.get("below-threshold") ?? 0;
+    if (below > 0) {
+      uncertainty.push(`${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
+    }
+    for (const reason of NON_MATERIAL_REFUSAL_ORDER) {
+      const n = byReason.get(reason);
+      if (n) uncertainty.push(`${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
+    }
+  }
   const invalidators = thesis.invalidators.map(
     (item) => `${item.eventId} invalidates the tracked premise (${item.category}:${item.field}).`,
   );

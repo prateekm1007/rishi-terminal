@@ -1,0 +1,1481 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/screener.nl.test.ts (17 tests | 10 failed) 645ms
+   ❯ INT-D1 route — the ONE query route grows an explicit mode field in place (8)
+     ✓ expression mode (the default): the 200 shape is byte-compatible — exactly the four pre-D1 keys, no query echo 563ms
+     ✓ mode missing and mode unknown both fall back to the pinned byte-compatible expression default 20ms
+     × natural mode: 200 carries the TRANSLATED expression in `query` (the interpretation is never a black box) 6ms
+     × natural mode rows EQUAL a direct expression query of the same translated string (parity) 1ms
+     × natural mode refusal: unknown/ambiguous intent → 400 whose safe message names the supported vocabulary (rule 10) 3ms
+     ✓ natural mode empty/whitespace input refuses with nothing run 1ms
+     ✓ the route's compute defense is unchanged (per-IP 120 / 60 s) 1ms
+     × the route wires the natural mode through nlToQuery — the ONE translation — and fail-closes if a translation ever fails parseQuery 4ms
+   ❯ INT-D1 UI — the explicit two-way mode toggle and the understood-as line (5)
+     × the query bar has an explicit Expression | Natural language toggle (no auto-detection) 3ms
+     × natural mode posts mode:'natural' to the ONE query route 1ms
+     × natural mode shows the translated expression verbatim: 'understood as:' 3ms
+     × saved screens store the TRANSLATED expression and replay in expression mode 1ms
+     ✓ CSV export keeps using the canonical expression 0ms
+   ❯ INT-D1 static pins — no second mapper, no second endpoint, one registry, pure module (4)
+     × nlToQuery is defined EXACTLY once in the repo (lib/screener/nl.ts) — a second mapper breaks the build 36ms
+     × lib/screener/nl.ts is pure and imports ONLY from './parser' (one field registry — Constitution 14) 1ms
+     ✓ the screener API keeps EXACTLY its two endpoints — the NL mode adds no second query route (rule 14) 1ms
+     ✓ the UI query bar never gains a second fetch target for queries 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 route — the ONE query route grows an explicit mode field in place > natural mode: 200 carries the TRANSLATED expression in `query` (the interpretation is never a black box)
+AssertionError: expected 400 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 400
+
+ ❯ test/screener.nl.test.ts:104:24
+    102|     const { POST } = await import("@/app/api/screener/query/route");
+    103|     const res = await POST(makeReq({ q: "market cap above 50000 crore"…
+    104|     expect(res.status).toBe(200);
+       |                        ^
+    105|     const body = await res.json();
+    106|     expect(body.ok).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 route — the ONE query route grows an explicit mode field in place > natural mode rows EQUAL a direct expression query of the same translated string (parity)
+AssertionError: expected 400 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 400
+
+ ❯ test/screener.nl.test.ts:118:24
+    116|
+    117|     const res = await POST(makeReq({ q: "roe above 15 and debt below 1…
+    118|     expect(res.status).toBe(200);
+       |                        ^
+    119|     const body = await res.json();
+    120|     expect(body.ok).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 route — the ONE query route grows an explicit mode field in place > natural mode refusal: unknown/ambiguous intent → 400 whose safe message names the supported vocabulary (rule 10)
+AssertionError: expected 'unknown field "huge" — allowed: pe, r…' to contain 'supported'
+
+Expected: "supported"
+Received: "unknown field "huge" — allowed: pe, roe, mktcap, de, revcagr, fcf, consensus, tensionSpread, symbol, name, sector, category, dataQuality"
+
+ ❯ test/screener.nl.test.ts:137:17
+    135|     // Names the supported vocabulary (fixed lists only + the user's o…
+    136|     // tokens — no internals, rule 10).
+    137|     expect(msg).toContain("supported");
+       |                 ^
+    138|     expect(msg).toContain("huge");
+    139|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 route — the ONE query route grows an explicit mode field in place > the route wires the natural mode through nlToQuery — the ONE translation — and fail-closes if a translation ever fails parseQuery
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/screener.nl.test.ts:156:47
+    154|
+    155|   it("the route wires the natural mode through nlToQuery — the ONE tra…
+    156|     expect(existsSync(join(ROOT, NL_MODULE))).toBe(true);
+       |                                               ^
+    157|     const src = source(ROUTE);
+    158|     expect(src).toContain("nlToQuery");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 UI — the explicit two-way mode toggle and the understood-as line > the query bar has an explicit Expression | Natural language toggle (no auto-detection)
+AssertionError: expected '\'use client\';\n\n// X3-05 (Round 14…' to match /data-screener-mode/
+
+- Expected:
+/data-screener-mode/
+
++ Received:
+"'use client';
+
+// X3-05 (Round 14 A6): the screener query bar — expression input, server
+// evaluation, saved screens and CSV export. The expression NEVER runs in
+// the browser: the server route parses + evaluates it (that is the
+// product decision in the roadmap text), and this component only renders
+// results/errors.
+
+import { useCallback, useEffect, useState } from 'react';
+import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
+
+interface SavedScreen {
+  id: string;
+  name: string;
+  query: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Props {
+  /** Rows matching the active expression (null = expression mode off). */
+  onQueryResult: (rows: ScreenerPickerRow[] | null, q: string | null) => void;
+}
+
+const EXAMPLES = [
+  'pe > 0 and roe > 15',
+  'sector = \"Banking\" and de < 1',
+  'consensus is not null and consensus >= 75',
+  'mktcap > 10000 and revcagr > 10',
+];
+
+export function ScreenerQueryBar({ onQueryResult }: Props) {
+  const [q, setQ] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
+  const [count, setCount] = useState<number | null>(null);
+
+  const [saved, setSaved] = useState<SavedScreen[]>([]);
+  const [saveName, setSaveName] = useState('');
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  const loadSaved = useCallback(async () => {
+    try {
+      const res = await fetch('/api/screens');
+      if (res.status === 401) {
+        setSignedIn(false);
+        setSaved([]);
+        return;
+      }
+      const data = await res.json();
+      if (data.ok) {
+        setSignedIn(true);
+        setSaved(data.screens);
+      }
+    } catch {
+      // Network hiccup: leave the list as-is (the panel shows nothing
+      // misleading — an empty list only appears after a 200).
+    }
+  }, []);
+
+  useEffect(() => {
+    // Async deferral: setState only ever runs in the fetch continuation,
+    // never synchronously during the effect.
+    const t = setTimeout(() => {
+      loadSaved();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [loadSaved]);
+
+  async function runQuery(query: string) {
+    setRunning(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/screener/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: query }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setError(data.error?.message ?? 'query failed');
+        return;
+      }
+      setActive(query);
+      setCount(data.count);
+      // The API rows are a superset of the picker shape; extra fields are ignored.
+      onQueryResult(data.rows as ScreenerPickerRow[], query);
+    } catch {
+      setError('network error — try again');
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  function clearQuery() {
+    setActive(null);
+    setCount(null);
+    setError(null);
+    setQ('');
+    onQueryResult(null, null);
+  }
+
+  async function saveScreen() {
+    if (!active) return;
+    setSaveMsg(null);
+    try {
+      const res = await fetch('/api/screens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: saveName, q: active }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setSaveMsg(data.error ?? 'could not save');
+        return;
+      }
+      setSaveName('');
+      setSaveMsg('saved');
+      loadSaved();
+    } catch {
+      setSaveMsg('network error');
+    }
+  }
+
+  async function deleteScreen(id: string) {
+    try {
+      await fetch(`/api/screens/${id}`, { method: 'DELETE' });
+      loadSaved();
+    } catch {
+      // list refresh on next mount; the row stays until then
+    }
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 10,
+  };
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={labelStyle}>CUSTOM QUERY — SERVER-SIDE ENGINE (SAFE PARSER, NO EVAL)</div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && q.trim()) runQuery(q.trim());
+          }}
+          placeholder='e.g. pe > 0 and roe > 15 and sector = \"Banking\"'
+          spellCheck={false}
+          style={{
+            flex: '1 1 420px', minWidth: 260, padding: '10px 14px', borderRadius: 10,
+            border: '1px solid rgba(51,65,85,0.6)', background: 'rgba(15,23,42,0.6)',
+            color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13, outline: 'none',
+          }}
+        />
+        <button
+          onClick={() => q.trim() && runQuery(q.trim())}
+          disabled={running || !q.trim()}
+          style={{
+            padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: 'rgba(212,175,55,0.15)', outline: '1px solid rgba(212,175,55,0.4)',
+            color: '#D4AF37', fontSize: 12, fontWeight: 700,
+            opacity: running || !q.trim() ? 0.5 : 1,
+          }}
+        >
+          {running ? 'RUNNING…' : 'RUN QUERY'}
+        </button>
+        {active && (
+          <>
+            <a
+              href={`/api/screener/export?q=${encodeURIComponent(active)}`}
+              style={{
+                padding: '10px 16px', borderRadius: 10, textDecoration: 'none',
+                background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
+                color: '#94A3B8', fontSize: 12, fontWeight: 700,
+              }}
+            >
+              EXPORT CSV
+            </a>
+            <button
+              onClick={clearQuery}
+              style={{
+                padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: 'rgba(31,41,59,0.6)', color: 'var(--text-muted)', fontSize: 12, fontWeight: 700,
+              }}
+            >
+              CLEAR
+            </button>
+          </>
+        )}
+      </div>
+
+      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+        fields: pe roe mktcap de revcagr fcf consensus tensionSpread symbol name sector category dataQuality ·
+        operators: &gt; &gt;= &lt; &lt;= = != and or not ( ) · examples:{' '}
+        {EXAMPLES.map((ex, i) => (
+          <span key={ex}>
+            {i > 0 && ' · '}
+            <a
+              href=\"#\"
+              onClick={(e) => {
+                e.preventDefault();
+                setQ(ex);
+              }}
+              style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}
+            >
+              {ex}
+            </a>
+          </span>
+        ))}
+      </div>
+
+      {error && (
+        <div style={{
+          marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
+          background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)',
+          color: '#F87171', fontFamily: 'monospace',
+        }}>
+          QUERY ERROR — {error}
+        </div>
+      )}
+
+      {active && !error && (
+        <div style={{
+          marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
+          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)',
+          color: 'var(--accent-green)', fontFamily: 'monospace',
+          display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
+        }}>
+          <span>{count} stocks match</span>
+          <code style={{ color: 'var(--text-muted)' }}>{active}</code>
+          {signedIn && (
+            <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+              <input
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder=\"screen name\"
+                maxLength={60}
+                style={{
+                  padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(51,65,85,0.6)',
+                  background: 'rgba(15,23,42,0.6)', color: 'var(--text-primary)',
+                  fontFamily: 'monospace', fontSize: 11, width: 140,
+                }}
+              />
+              <button
+                onClick={saveScreen}
+                disabled={!saveName.trim()}
+                style={{
+                  padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  background: 'rgba(212,175,55,0.15)', color: '#D4AF37',
+                  fontSize: 11, fontWeight: 700, opacity: saveName.trim() ? 1 : 0.5,
+                }}
+              >
+                SAVE
+              </button>
+              {saveMsg && <span style={{ color: 'var(--text-muted)' }}>{saveMsg}</span>}
+            </span>
+          )}
+        </div>
+      )}
+
+      {signedIn === false && (
+        <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-muted)' }}>
+          Sign in to save screens. Queries and CSV export work without an account.
+        </div>
+      )}
+
+      {saved.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <div style={labelStyle}>SAVED SCREENS</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {saved.map((s) => (
+              <span
+                key={s.id}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '6px 6px 6px 12px', borderRadius: 10,
+                  background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
+                }}
+              >
+                <button
+                  title={s.query}
+                  onClick={() => {
+                    setQ(s.query);
+                    runQuery(s.query);
+                  }}
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer', color: '#D4AF37',
+                    fontSize: 12, fontWeight: 700, fontFamily: 'monospace',
+                  }}
+                >
+                  {s.name}
+                </button>
+                <button
+                  onClick={() => deleteScreen(s.id)}
+                  title=\"delete screen\"
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)',
+                    fontSize: 12, lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+"
+
+ ❯ test/screener.nl.test.ts:168:17
+    166|   it("the query bar has an explicit Expression | Natural language togg…
+    167|     const src = source(QUERY_BAR);
+    168|     expect(src).toMatch(/data-screener-mode/);
+       |                 ^
+    169|     expect(src).toContain("Natural language");
+    170|     expect(src).toContain("Expression");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 UI — the explicit two-way mode toggle and the understood-as line > natural mode posts mode:'natural' to the ONE query route
+AssertionError: expected '\'use client\';\n\n// X3-05 (Round 14…' to match /mode:\s*['"]natural['"]|runQuery\([^)…/
+
+- Expected:
+/mode:\s*['"]natural['"]|runQuery\([^)]*['"]natural['"]\)/
+
++ Received:
+"'use client';
+
+// X3-05 (Round 14 A6): the screener query bar — expression input, server
+// evaluation, saved screens and CSV export. The expression NEVER runs in
+// the browser: the server route parses + evaluates it (that is the
+// product decision in the roadmap text), and this component only renders
+// results/errors.
+
+import { useCallback, useEffect, useState } from 'react';
+import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
+
+interface SavedScreen {
+  id: string;
+  name: string;
+  query: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Props {
+  /** Rows matching the active expression (null = expression mode off). */
+  onQueryResult: (rows: ScreenerPickerRow[] | null, q: string | null) => void;
+}
+
+const EXAMPLES = [
+  'pe > 0 and roe > 15',
+  'sector = \"Banking\" and de < 1',
+  'consensus is not null and consensus >= 75',
+  'mktcap > 10000 and revcagr > 10',
+];
+
+export function ScreenerQueryBar({ onQueryResult }: Props) {
+  const [q, setQ] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
+  const [count, setCount] = useState<number | null>(null);
+
+  const [saved, setSaved] = useState<SavedScreen[]>([]);
+  const [saveName, setSaveName] = useState('');
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  const loadSaved = useCallback(async () => {
+    try {
+      const res = await fetch('/api/screens');
+      if (res.status === 401) {
+        setSignedIn(false);
+        setSaved([]);
+        return;
+      }
+      const data = await res.json();
+      if (data.ok) {
+        setSignedIn(true);
+        setSaved(data.screens);
+      }
+    } catch {
+      // Network hiccup: leave the list as-is (the panel shows nothing
+      // misleading — an empty list only appears after a 200).
+    }
+  }, []);
+
+  useEffect(() => {
+    // Async deferral: setState only ever runs in the fetch continuation,
+    // never synchronously during the effect.
+    const t = setTimeout(() => {
+      loadSaved();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [loadSaved]);
+
+  async function runQuery(query: string) {
+    setRunning(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/screener/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: query }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setError(data.error?.message ?? 'query failed');
+        return;
+      }
+      setActive(query);
+      setCount(data.count);
+      // The API rows are a superset of the picker shape; extra fields are ignored.
+      onQueryResult(data.rows as ScreenerPickerRow[], query);
+    } catch {
+      setError('network error — try again');
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  function clearQuery() {
+    setActive(null);
+    setCount(null);
+    setError(null);
+    setQ('');
+    onQueryResult(null, null);
+  }
+
+  async function saveScreen() {
+    if (!active) return;
+    setSaveMsg(null);
+    try {
+      const res = await fetch('/api/screens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: saveName, q: active }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setSaveMsg(data.error ?? 'could not save');
+        return;
+      }
+      setSaveName('');
+      setSaveMsg('saved');
+      loadSaved();
+    } catch {
+      setSaveMsg('network error');
+    }
+  }
+
+  async function deleteScreen(id: string) {
+    try {
+      await fetch(`/api/screens/${id}`, { method: 'DELETE' });
+      loadSaved();
+    } catch {
+      // list refresh on next mount; the row stays until then
+    }
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 10,
+  };
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={labelStyle}>CUSTOM QUERY — SERVER-SIDE ENGINE (SAFE PARSER, NO EVAL)</div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && q.trim()) runQuery(q.trim());
+          }}
+          placeholder='e.g. pe > 0 and roe > 15 and sector = \"Banking\"'
+          spellCheck={false}
+          style={{
+            flex: '1 1 420px', minWidth: 260, padding: '10px 14px', borderRadius: 10,
+            border: '1px solid rgba(51,65,85,0.6)', background: 'rgba(15,23,42,0.6)',
+            color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13, outline: 'none',
+          }}
+        />
+        <button
+          onClick={() => q.trim() && runQuery(q.trim())}
+          disabled={running || !q.trim()}
+          style={{
+            padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: 'rgba(212,175,55,0.15)', outline: '1px solid rgba(212,175,55,0.4)',
+            color: '#D4AF37', fontSize: 12, fontWeight: 700,
+            opacity: running || !q.trim() ? 0.5 : 1,
+          }}
+        >
+          {running ? 'RUNNING…' : 'RUN QUERY'}
+        </button>
+        {active && (
+          <>
+            <a
+              href={`/api/screener/export?q=${encodeURIComponent(active)}`}
+              style={{
+                padding: '10px 16px', borderRadius: 10, textDecoration: 'none',
+                background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
+                color: '#94A3B8', fontSize: 12, fontWeight: 700,
+              }}
+            >
+              EXPORT CSV
+            </a>
+            <button
+              onClick={clearQuery}
+              style={{
+                padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: 'rgba(31,41,59,0.6)', color: 'var(--text-muted)', fontSize: 12, fontWeight: 700,
+              }}
+            >
+              CLEAR
+            </button>
+          </>
+        )}
+      </div>
+
+      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+        fields: pe roe mktcap de revcagr fcf consensus tensionSpread symbol name sector category dataQuality ·
+        operators: &gt; &gt;= &lt; &lt;= = != and or not ( ) · examples:{' '}
+        {EXAMPLES.map((ex, i) => (
+          <span key={ex}>
+            {i > 0 && ' · '}
+            <a
+              href=\"#\"
+              onClick={(e) => {
+                e.preventDefault();
+                setQ(ex);
+              }}
+              style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}
+            >
+              {ex}
+            </a>
+          </span>
+        ))}
+      </div>
+
+      {error && (
+        <div style={{
+          marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
+          background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)',
+          color: '#F87171', fontFamily: 'monospace',
+        }}>
+          QUERY ERROR — {error}
+        </div>
+      )}
+
+      {active && !error && (
+        <div style={{
+          marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
+          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)',
+          color: 'var(--accent-green)', fontFamily: 'monospace',
+          display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
+        }}>
+          <span>{count} stocks match</span>
+          <code style={{ color: 'var(--text-muted)' }}>{active}</code>
+          {signedIn && (
+            <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+              <input
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder=\"screen name\"
+                maxLength={60}
+                style={{
+                  padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(51,65,85,0.6)',
+                  background: 'rgba(15,23,42,0.6)', color: 'var(--text-primary)',
+                  fontFamily: 'monospace', fontSize: 11, width: 140,
+                }}
+              />
+              <button
+                onClick={saveScreen}
+                disabled={!saveName.trim()}
+                style={{
+                  padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  background: 'rgba(212,175,55,0.15)', color: '#D4AF37',
+                  fontSize: 11, fontWeight: 700, opacity: saveName.trim() ? 1 : 0.5,
+                }}
+              >
+                SAVE
+              </button>
+              {saveMsg && <span style={{ color: 'var(--text-muted)' }}>{saveMsg}</span>}
+            </span>
+          )}
+        </div>
+      )}
+
+      {signedIn === false && (
+        <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-muted)' }}>
+          Sign in to save screens. Queries and CSV export work without an account.
+        </div>
+      )}
+
+      {saved.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <div style={labelStyle}>SAVED SCREENS</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {saved.map((s) => (
+              <span
+                key={s.id}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '6px 6px 6px 12px', borderRadius: 10,
+                  background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
+                }}
+              >
+                <button
+                  title={s.query}
+                  onClick={() => {
+                    setQ(s.query);
+                    runQuery(s.query);
+                  }}
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer', color: '#D4AF37',
+                    fontSize: 12, fontWeight: 700, fontFamily: 'monospace',
+                  }}
+                >
+                  {s.name}
+                </button>
+                <button
+                  onClick={() => deleteScreen(s.id)}
+                  title=\"delete screen\"
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)',
+                    fontSize: 12, lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+"
+
+ ❯ test/screener.nl.test.ts:177:17
+    175|   it("natural mode posts mode:'natural' to the ONE query route", () =>…
+    176|     const src = source(QUERY_BAR);
+    177|     expect(src).toMatch(/mode:\s*['"]natural['"]|runQuery\([^)]*['"]na…
+       |                 ^
+    178|     expect(src).toContain("/api/screener/query");
+    179|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 UI — the explicit two-way mode toggle and the understood-as line > natural mode shows the translated expression verbatim: 'understood as:'
+AssertionError: expected '\'use client\';\n\n// X3-05 (Round 14…' to contain 'understood as:'
+
+- Expected
++ Received
+
+- understood as:
++ 'use client';
++
++ // X3-05 (Round 14 A6): the screener query bar — expression input, server
++ // evaluation, saved screens and CSV export. The expression NEVER runs in
++ // the browser: the server route parses + evaluates it (that is the
++ // product decision in the roadmap text), and this component only renders
++ // results/errors.
++
++ import { useCallback, useEffect, useState } from 'react';
++ import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
++
++ interface SavedScreen {
++   id: string;
++   name: string;
++   query: string;
++   created_at: string;
++   updated_at: string;
++ }
++
++ interface Props {
++   /** Rows matching the active expression (null = expression mode off). */
++   onQueryResult: (rows: ScreenerPickerRow[] | null, q: string | null) => void;
++ }
++
++ const EXAMPLES = [
++   'pe > 0 and roe > 15',
++   'sector = "Banking" and de < 1',
++   'consensus is not null and consensus >= 75',
++   'mktcap > 10000 and revcagr > 10',
++ ];
++
++ export function ScreenerQueryBar({ onQueryResult }: Props) {
++   const [q, setQ] = useState('');
++   const [error, setError] = useState<string | null>(null);
++   const [running, setRunning] = useState(false);
++   const [active, setActive] = useState<string | null>(null);
++   const [count, setCount] = useState<number | null>(null);
++
++   const [saved, setSaved] = useState<SavedScreen[]>([]);
++   const [saveName, setSaveName] = useState('');
++   const [saveMsg, setSaveMsg] = useState<string | null>(null);
++   const [signedIn, setSignedIn] = useState<boolean | null>(null);
++
++   const loadSaved = useCallback(async () => {
++     try {
++       const res = await fetch('/api/screens');
++       if (res.status === 401) {
++         setSignedIn(false);
++         setSaved([]);
++         return;
++       }
++       const data = await res.json();
++       if (data.ok) {
++         setSignedIn(true);
++         setSaved(data.screens);
++       }
++     } catch {
++       // Network hiccup: leave the list as-is (the panel shows nothing
++       // misleading — an empty list only appears after a 200).
++     }
++   }, []);
++
++   useEffect(() => {
++     // Async deferral: setState only ever runs in the fetch continuation,
++     // never synchronously during the effect.
++     const t = setTimeout(() => {
++       loadSaved();
++     }, 0);
++     return () => clearTimeout(t);
++   }, [loadSaved]);
++
++   async function runQuery(query: string) {
++     setRunning(true);
++     setError(null);
++     try {
++       const res = await fetch('/api/screener/query', {
++         method: 'POST',
++         headers: { 'Content-Type': 'application/json' },
++         body: JSON.stringify({ q: query }),
++       });
++       const data = await res.json();
++       if (!res.ok || !data.ok) {
++         setError(data.error?.message ?? 'query failed');
++         return;
++       }
++       setActive(query);
++       setCount(data.count);
++       // The API rows are a superset of the picker shape; extra fields are ignored.
++       onQueryResult(data.rows as ScreenerPickerRow[], query);
++     } catch {
++       setError('network error — try again');
++     } finally {
++       setRunning(false);
++     }
++   }
++
++   function clearQuery() {
++     setActive(null);
++     setCount(null);
++     setError(null);
++     setQ('');
++     onQueryResult(null, null);
++   }
++
++   async function saveScreen() {
++     if (!active) return;
++     setSaveMsg(null);
++     try {
++       const res = await fetch('/api/screens', {
++         method: 'POST',
++         headers: { 'Content-Type': 'application/json' },
++         body: JSON.stringify({ name: saveName, q: active }),
++       });
++       const data = await res.json();
++       if (!res.ok || !data.ok) {
++         setSaveMsg(data.error ?? 'could not save');
++         return;
++       }
++       setSaveName('');
++       setSaveMsg('saved');
++       loadSaved();
++     } catch {
++       setSaveMsg('network error');
++     }
++   }
++
++   async function deleteScreen(id: string) {
++     try {
++       await fetch(`/api/screens/${id}`, { method: 'DELETE' });
++       loadSaved();
++     } catch {
++       // list refresh on next mount; the row stays until then
++     }
++   }
++
++   const labelStyle: React.CSSProperties = {
++     fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 10,
++   };
++
++   return (
++     <div style={{ marginBottom: 28 }}>
++       <div style={labelStyle}>CUSTOM QUERY — SERVER-SIDE ENGINE (SAFE PARSER, NO EVAL)</div>
++
++       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
++         <input
++           value={q}
++           onChange={(e) => setQ(e.target.value)}
++           onKeyDown={(e) => {
++             if (e.key === 'Enter' && q.trim()) runQuery(q.trim());
++           }}
++           placeholder='e.g. pe > 0 and roe > 15 and sector = "Banking"'
++           spellCheck={false}
++           style={{
++             flex: '1 1 420px', minWidth: 260, padding: '10px 14px', borderRadius: 10,
++             border: '1px solid rgba(51,65,85,0.6)', background: 'rgba(15,23,42,0.6)',
++             color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13, outline: 'none',
++           }}
++         />
++         <button
++           onClick={() => q.trim() && runQuery(q.trim())}
++           disabled={running || !q.trim()}
++           style={{
++             padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
++             background: 'rgba(212,175,55,0.15)', outline: '1px solid rgba(212,175,55,0.4)',
++             color: '#D4AF37', fontSize: 12, fontWeight: 700,
++             opacity: running || !q.trim() ? 0.5 : 1,
++           }}
++         >
++           {running ? 'RUNNING…' : 'RUN QUERY'}
++         </button>
++         {active && (
++           <>
++             <a
++               href={`/api/screener/export?q=${encodeURIComponent(active)}`}
++               style={{
++                 padding: '10px 16px', borderRadius: 10, textDecoration: 'none',
++                 background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
++                 color: '#94A3B8', fontSize: 12, fontWeight: 700,
++               }}
++             >
++               EXPORT CSV
++             </a>
++             <button
++               onClick={clearQuery}
++               style={{
++                 padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
++                 background: 'rgba(31,41,59,0.6)', color: 'var(--text-muted)', fontSize: 12, fontWeight: 700,
++               }}
++             >
++               CLEAR
++             </button>
++           </>
++         )}
++       </div>
++
++       <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
++         fields: pe roe mktcap de revcagr fcf consensus tensionSpread symbol name sector category dataQuality ·
++         operators: &gt; &gt;= &lt; &lt;= = != and or not ( ) · examples:{' '}
++         {EXAMPLES.map((ex, i) => (
++           <span key={ex}>
++             {i > 0 && ' · '}
++             <a
++               href="#"
++               onClick={(e) => {
++                 e.preventDefault();
++                 setQ(ex);
++               }}
++               style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}
++             >
++               {ex}
++             </a>
++           </span>
++         ))}
++       </div>
++
++       {error && (
++         <div style={{
++           marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
++           background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)',
++           color: '#F87171', fontFamily: 'monospace',
++         }}>
++           QUERY ERROR — {error}
++         </div>
++       )}
++
++       {active && !error && (
++         <div style={{
++           marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
++           background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)',
++           color: 'var(--accent-green)', fontFamily: 'monospace',
++           display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
++         }}>
++           <span>{count} stocks match</span>
++           <code style={{ color: 'var(--text-muted)' }}>{active}</code>
++           {signedIn && (
++             <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
++               <input
++                 value={saveName}
++                 onChange={(e) => setSaveName(e.target.value)}
++                 placeholder="screen name"
++                 maxLength={60}
++                 style={{
++                   padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(51,65,85,0.6)',
++                   background: 'rgba(15,23,42,0.6)', color: 'var(--text-primary)',
++                   fontFamily: 'monospace', fontSize: 11, width: 140,
++                 }}
++               />
++               <button
++                 onClick={saveScreen}
++                 disabled={!saveName.trim()}
++                 style={{
++                   padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
++                   background: 'rgba(212,175,55,0.15)', color: '#D4AF37',
++                   fontSize: 11, fontWeight: 700, opacity: saveName.trim() ? 1 : 0.5,
++                 }}
++               >
++                 SAVE
++               </button>
++               {saveMsg && <span style={{ color: 'var(--text-muted)' }}>{saveMsg}</span>}
++             </span>
++           )}
++         </div>
++       )}
++
++       {signedIn === false && (
++         <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-muted)' }}>
++           Sign in to save screens. Queries and CSV export work without an account.
++         </div>
++       )}
++
++       {saved.length > 0 && (
++         <div style={{ marginTop: 14 }}>
++           <div style={labelStyle}>SAVED SCREENS</div>
++           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
++             {saved.map((s) => (
++               <span
++                 key={s.id}
++                 style={{
++                   display: 'inline-flex', alignItems: 'center', gap: 6,
++                   padding: '6px 6px 6px 12px', borderRadius: 10,
++                   background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
++                 }}
++               >
++                 <button
++                   title={s.query}
++                   onClick={() => {
++                     setQ(s.query);
++                     runQuery(s.query);
++                   }}
++                   style={{
++                     border: 'none', background: 'none', cursor: 'pointer', color: '#D4AF37',
++                     fontSize: 12, fontWeight: 700, fontFamily: 'monospace',
++                   }}
++                 >
++                   {s.name}
++                 </button>
++                 <button
++                   onClick={() => deleteScreen(s.id)}
++                   title="delete screen"
++                   style={{
++                     border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)',
++                     fontSize: 12, lineHeight: 1,
++                   }}
++                 >
++                   ×
++                 </button>
++               </span>
++             ))}
++           </div>
++         </div>
++       )}
++     </div>
++   );
++ }
++
+
+ ❯ test/screener.nl.test.ts:183:17
+    181|   it("natural mode shows the translated expression verbatim: 'understo…
+    182|     const src = source(QUERY_BAR);
+    183|     expect(src).toContain("understood as:");
+       |                 ^
+    184|   });
+    185|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 UI — the explicit two-way mode toggle and the understood-as line > saved screens store the TRANSLATED expression and replay in expression mode
+AssertionError: expected '\'use client\';\n\n// X3-05 (Round 14…' to match /runQuery\(s\.query,\s*['"]expression[…/
+
+- Expected:
+/runQuery\(s\.query,\s*['"]expression['"]\)/
+
++ Received:
+"'use client';
+
+// X3-05 (Round 14 A6): the screener query bar — expression input, server
+// evaluation, saved screens and CSV export. The expression NEVER runs in
+// the browser: the server route parses + evaluates it (that is the
+// product decision in the roadmap text), and this component only renders
+// results/errors.
+
+import { useCallback, useEffect, useState } from 'react';
+import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
+
+interface SavedScreen {
+  id: string;
+  name: string;
+  query: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Props {
+  /** Rows matching the active expression (null = expression mode off). */
+  onQueryResult: (rows: ScreenerPickerRow[] | null, q: string | null) => void;
+}
+
+const EXAMPLES = [
+  'pe > 0 and roe > 15',
+  'sector = \"Banking\" and de < 1',
+  'consensus is not null and consensus >= 75',
+  'mktcap > 10000 and revcagr > 10',
+];
+
+export function ScreenerQueryBar({ onQueryResult }: Props) {
+  const [q, setQ] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
+  const [count, setCount] = useState<number | null>(null);
+
+  const [saved, setSaved] = useState<SavedScreen[]>([]);
+  const [saveName, setSaveName] = useState('');
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  const loadSaved = useCallback(async () => {
+    try {
+      const res = await fetch('/api/screens');
+      if (res.status === 401) {
+        setSignedIn(false);
+        setSaved([]);
+        return;
+      }
+      const data = await res.json();
+      if (data.ok) {
+        setSignedIn(true);
+        setSaved(data.screens);
+      }
+    } catch {
+      // Network hiccup: leave the list as-is (the panel shows nothing
+      // misleading — an empty list only appears after a 200).
+    }
+  }, []);
+
+  useEffect(() => {
+    // Async deferral: setState only ever runs in the fetch continuation,
+    // never synchronously during the effect.
+    const t = setTimeout(() => {
+      loadSaved();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [loadSaved]);
+
+  async function runQuery(query: string) {
+    setRunning(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/screener/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: query }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setError(data.error?.message ?? 'query failed');
+        return;
+      }
+      setActive(query);
+      setCount(data.count);
+      // The API rows are a superset of the picker shape; extra fields are ignored.
+      onQueryResult(data.rows as ScreenerPickerRow[], query);
+    } catch {
+      setError('network error — try again');
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  function clearQuery() {
+    setActive(null);
+    setCount(null);
+    setError(null);
+    setQ('');
+    onQueryResult(null, null);
+  }
+
+  async function saveScreen() {
+    if (!active) return;
+    setSaveMsg(null);
+    try {
+      const res = await fetch('/api/screens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: saveName, q: active }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setSaveMsg(data.error ?? 'could not save');
+        return;
+      }
+      setSaveName('');
+      setSaveMsg('saved');
+      loadSaved();
+    } catch {
+      setSaveMsg('network error');
+    }
+  }
+
+  async function deleteScreen(id: string) {
+    try {
+      await fetch(`/api/screens/${id}`, { method: 'DELETE' });
+      loadSaved();
+    } catch {
+      // list refresh on next mount; the row stays until then
+    }
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.12em', marginBottom: 10,
+  };
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={labelStyle}>CUSTOM QUERY — SERVER-SIDE ENGINE (SAFE PARSER, NO EVAL)</div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && q.trim()) runQuery(q.trim());
+          }}
+          placeholder='e.g. pe > 0 and roe > 15 and sector = \"Banking\"'
+          spellCheck={false}
+          style={{
+            flex: '1 1 420px', minWidth: 260, padding: '10px 14px', borderRadius: 10,
+            border: '1px solid rgba(51,65,85,0.6)', background: 'rgba(15,23,42,0.6)',
+            color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: 13, outline: 'none',
+          }}
+        />
+        <button
+          onClick={() => q.trim() && runQuery(q.trim())}
+          disabled={running || !q.trim()}
+          style={{
+            padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: 'rgba(212,175,55,0.15)', outline: '1px solid rgba(212,175,55,0.4)',
+            color: '#D4AF37', fontSize: 12, fontWeight: 700,
+            opacity: running || !q.trim() ? 0.5 : 1,
+          }}
+        >
+          {running ? 'RUNNING…' : 'RUN QUERY'}
+        </button>
+        {active && (
+          <>
+            <a
+              href={`/api/screener/export?q=${encodeURIComponent(active)}`}
+              style={{
+                padding: '10px 16px', borderRadius: 10, textDecoration: 'none',
+                background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
+                color: '#94A3B8', fontSize: 12, fontWeight: 700,
+              }}
+            >
+              EXPORT CSV
+            </a>
+            <button
+              onClick={clearQuery}
+              style={{
+                padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: 'rgba(31,41,59,0.6)', color: 'var(--text-muted)', fontSize: 12, fontWeight: 700,
+              }}
+            >
+              CLEAR
+            </button>
+          </>
+        )}
+      </div>
+
+      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+        fields: pe roe mktcap de revcagr fcf consensus tensionSpread symbol name sector category dataQuality ·
+        operators: &gt; &gt;= &lt; &lt;= = != and or not ( ) · examples:{' '}
+        {EXAMPLES.map((ex, i) => (
+          <span key={ex}>
+            {i > 0 && ' · '}
+            <a
+              href=\"#\"
+              onClick={(e) => {
+                e.preventDefault();
+                setQ(ex);
+              }}
+              style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}
+            >
+              {ex}
+            </a>
+          </span>
+        ))}
+      </div>
+
+      {error && (
+        <div style={{
+          marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
+          background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)',
+          color: '#F87171', fontFamily: 'monospace',
+        }}>
+          QUERY ERROR — {error}
+        </div>
+      )}
+
+      {active && !error && (
+        <div style={{
+          marginTop: 10, padding: '10px 14px', borderRadius: 10, fontSize: 12,
+          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)',
+          color: 'var(--accent-green)', fontFamily: 'monospace',
+          display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center',
+        }}>
+          <span>{count} stocks match</span>
+          <code style={{ color: 'var(--text-muted)' }}>{active}</code>
+          {signedIn && (
+            <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+              <input
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder=\"screen name\"
+                maxLength={60}
+                style={{
+                  padding: '4px 8px', borderRadius: 6, border: '1px solid rgba(51,65,85,0.6)',
+                  background: 'rgba(15,23,42,0.6)', color: 'var(--text-primary)',
+                  fontFamily: 'monospace', fontSize: 11, width: 140,
+                }}
+              />
+              <button
+                onClick={saveScreen}
+                disabled={!saveName.trim()}
+                style={{
+                  padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  background: 'rgba(212,175,55,0.15)', color: '#D4AF37',
+                  fontSize: 11, fontWeight: 700, opacity: saveName.trim() ? 1 : 0.5,
+                }}
+              >
+                SAVE
+              </button>
+              {saveMsg && <span style={{ color: 'var(--text-muted)' }}>{saveMsg}</span>}
+            </span>
+          )}
+        </div>
+      )}
+
+      {signedIn === false && (
+        <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-muted)' }}>
+          Sign in to save screens. Queries and CSV export work without an account.
+        </div>
+      )}
+
+      {saved.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          <div style={labelStyle}>SAVED SCREENS</div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {saved.map((s) => (
+              <span
+                key={s.id}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '6px 6px 6px 12px', borderRadius: 10,
+                  background: 'rgba(31,41,59,0.6)', outline: '1px solid rgba(51,65,85,0.4)',
+                }}
+              >
+                <button
+                  title={s.query}
+                  onClick={() => {
+                    setQ(s.query);
+                    runQuery(s.query);
+                  }}
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer', color: '#D4AF37',
+                    fontSize: 12, fontWeight: 700, fontFamily: 'monospace',
+                  }}
+                >
+                  {s.name}
+                </button>
+                <button
+                  onClick={() => deleteScreen(s.id)}
+                  title=\"delete screen\"
+                  style={{
+                    border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)',
+                    fontSize: 12, lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+"
+
+ ❯ test/screener.nl.test.ts:193:17
+    191|     // Loading a saved screen runs it in expression mode — saved scree…
+    192|     // expressions regardless of the mode that produced them.
+    193|     expect(src).toMatch(/runQuery\(s\.query,\s*['"]expression['"]\)/);
+       |                 ^
+    194|   });
+    195|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 static pins — no second mapper, no second endpoint, one registry, pure module > nlToQuery is defined EXACTLY once in the repo (lib/screener/nl.ts) — a second mapper breaks the build
+AssertionError: expected [] to deeply equal [ 'lib/screener/nl.ts' ]
+
+- Expected
++ Received
+
+- [
+-   "lib/screener/nl.ts",
+- ]
++ []
+
+ ❯ test/screener.nl.test.ts:215:59
+    213|       return /(\bfunction\s+nlToQuery\b|\bconst\s+nlToQuery\b|\bnlToQu…
+    214|     });
+    215|     expect(definers.map((f) => f.slice(ROOT.length + 1))).toEqual(["li…
+       |                                                           ^
+    216|   });
+    217|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  test/screener.nl.test.ts > INT-D1 static pins — no second mapper, no second endpoint, one registry, pure module > lib/screener/nl.ts is pure and imports ONLY from './parser' (one field registry — Constitution 14)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/screener.nl.test.ts:219:47
+    217|
+    218|   it("lib/screener/nl.ts is pure and imports ONLY from './parser' (one…
+    219|     expect(existsSync(join(ROOT, NL_MODULE))).toBe(true);
+       |                                               ^
+    220|     const src = source(NL_MODULE);
+    221|     const imports = src.match(/^\s*import\s[^;]+;$/gm) ?? [];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 7 passed (17)
+   Start at  17:07:44
+   Duration  846ms (tests 90%, transform 8%, import 1%, setup 1%)
+

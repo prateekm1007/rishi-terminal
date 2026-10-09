@@ -75,7 +75,15 @@ event model, one materiality engine, one cache, one insight contract, one
 AI router, one evidence model, one provenance model, one spend-control
 architecture, one intelligence API, one contextual chat path.
 
-## 3. Classification of the repository (as of `origin/main` = `345134c`, 2026-10-08)
+## 3. Classification of the repository
+
+**Snapshot label (repaired 2026-10-09):** the classification below was
+first drawn against the historical baseline `origin/main` = `345134c`
+(2026-10-08) and is maintained forward row by row as items close — the
+rows, not the baseline, are the live status. Currently: Phase 0 and
+A1–A8 **CLOSED** (as of `origin/main` = `8139411`, 2026-10-09); A9 in
+progress; A10 next. The baseline `345134c` is recorded for audit
+lineage only.
 
 **Rule (founder, 2026-10-08): existing code is classified against the
 roadmap BEFORE anything is rebuilt. A phase is not complete because files

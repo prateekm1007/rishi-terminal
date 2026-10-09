@@ -14,9 +14,16 @@ import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { DataValue } from '@/components/DataValue';
 import { overlaySourced, type Sourced } from '@/lib/types/sourced';
+import { IntelligenceBadge } from '@/components/screener/IntelligenceBadge';
 
 interface Props {
   stocks: ScreenerPickerRow[];
+  /** INT-D2: opening a row's intelligence drawer. The badge is a
+   *  presentational affordance — the table itself imports NO
+   *  intelligence module and fetches NOTHING (the ONE intelligence
+   *  request happens on drawer open, ONE subject at a time, in the
+   *  drawer ScreenerClient mounts once via next/dynamic ssr:false). */
+  onOpenIntelligence?: (symbol: string) => void;
 }
 
 type SortKey = "symbol" | "livePrice" | "pe" | "roe" | "mktcap" | "consensus" | "change24h";
@@ -53,7 +60,7 @@ function scoreSourced(consensus: number | null): Sourced<number> {
   return { value: consensus, source: "seed", asOf: null };
 }
 
-export function StockTable({ stocks }: Props) {
+export function StockTable({ stocks, onOpenIntelligence }: Props) {
   const dark = true;
 
   const [search, setSearch] = useState("");
@@ -229,6 +236,16 @@ export function StockTable({ stocks }: Props) {
                   <Link href={`/stock/${stock.symbol}`} className="hover:underline">
                     {stock.symbol}
                   </Link>
+                </td>
+                {/* INT-D2: the opener rides the row in its own cell —
+                    a 28 px touch target with 32 px clearance to the
+                    symbol link (the WCAG 2.2 target-size/offset gate).
+                    A row without a resolvable symbol renders no badge
+                    (defensive, honest). */}
+                <td className="px-2 py-3 text-left">
+                  {onOpenIntelligence && stock.symbol ? (
+                    <IntelligenceBadge symbol={stock.symbol} onOpen={onOpenIntelligence} />
+                  ) : null}
                 </td>
                 <td className={`px-4 py-3 font-mono text-sm ${dark ? "text-gray-300" : "text-gray-700"}`}>
                   {stock.name}

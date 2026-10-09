@@ -6,6 +6,7 @@
 // operate on the slim rows; per-Rishi verdicts stay behind the
 // tier-gated /api/rishis/[symbol] route.
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
 import { StockTable } from '@/components/screener/StockTable';
 import { ScreenerQueryBar } from '@/components/screener/ScreenerQueryBar';
@@ -13,6 +14,15 @@ import { useLanguage } from '@/lib/language';
 import { SCREENER_PRESETS, applyFilters } from '@/lib/screener/presets';
 import SeedDataBanner from '@/components/shared/SeedDataBanner';
 import Link from 'next/link';
+
+// INT-D2: the intelligence drawer rides a dynamic ssr:false chunk (the
+// C1 bundle pattern) — the drawer code adds ZERO first-load JS to
+// /stocks (the 162.0 kB ratchet). Mounted ONCE below; the badge in the
+// table only opens it for the clicked row's SERVER-rendered symbol.
+const IntelligenceDrawer = dynamic(
+  () => import('@/components/screener/IntelligenceDrawer').then(m => m.IntelligenceDrawer),
+  { ssr: false },
+);
 
 interface Props {
   rows: ScreenerPickerRow[];
@@ -27,6 +37,11 @@ export function ScreenerClient({ rows }: Props) {
   // most recent intent. The API's rows are a superset of the picker
   // shape (extra fields are ignored at runtime).
   const [queryRows, setQueryRows] = useState<ScreenerPickerRow[] | null>(null);
+  // INT-D2: the ONE drawer subject — null = closed. Opening another row
+  // re-keys the drawer (the last-opened subject wins, no state bleed);
+  // closing nulls it and aborts the in-flight request (the drawer's
+  // unmount cleanup).
+  const [intelligenceSubject, setIntelligenceSubject] = useState<string | null>(null);
 
   const filteredStocks = useMemo(() => {
     if (queryRows) return queryRows;
@@ -160,8 +175,16 @@ export function ScreenerClient({ rows }: Props) {
 
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
         <SeedDataBanner suffix="all fundamentals on this page are illustrative placeholders" />
-        <StockTable stocks={filteredStocks} />
+        <StockTable stocks={filteredStocks} onOpenIntelligence={setIntelligenceSubject} />
       </div>
+
+      {intelligenceSubject && (
+        <IntelligenceDrawer
+          key={intelligenceSubject}
+          subject={intelligenceSubject}
+          onClose={() => setIntelligenceSubject(null)}
+        />
+      )}
 
     </main>
   );

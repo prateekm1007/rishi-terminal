@@ -6,6 +6,18 @@
 // the full methodology — so it lives here, outside the server-only
 // engine modules (lib/consensus/**). lib/consensus/weights.ts imports
 // it for the engine (single source of truth maintained).
+//
+// RISHI-COUNT (2026-10-10) — the documented 20-vs-21 boundary:
+// the SCORING COUNCIL is 20 personas; the /rishis ROSTER is 21 (the
+// full registry, since chanos/soros got marketing cards). The ONE
+// persona on the roster but not in the council is CHANOS: he is a chat
+// persona, not a scorer — his short-side forensic methodology has no
+// long-only scoring implementation. Soros IS a council member (weight
+// 2.0, Master). This membership is a METHODOLOGY decision, pinned by
+// test/rishiCount.unification.test.ts (registry-minus-council must be
+// exactly {chanos}); adding chanos as a scorer is a separate
+// methodology change that rides in its own PR with the founder, never
+// inside a display fix.
 
 import type { RishiWeight } from '../consensus/types';
 

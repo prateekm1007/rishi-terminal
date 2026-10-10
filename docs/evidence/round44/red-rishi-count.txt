@@ -1,0 +1,132 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/rishiCount.unification.test.ts (8 tests | 6 failed) 20ms
+   ❯ RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed (8)
+     × the /rishis roster is 21 personas — ALL_RISHIS equals MARKETING_PERSONAS (the 19-split is closed) 7ms
+     × chanos and soros carry render-complete marketing cards (every field /rishis renders) 2ms
+     × every locale's roster-facing count copy says 21 (hero highlight + wisdom banner; en is gu's runtime fallback) 2ms
+     × the hardcoded metadata says 21 legendary investors — layout (title/og/twitter) and manifest, zero '20 legendary' left 1ms
+     × the count-bearing dead locale keys are deleted from EVERY locale (live neighbours stay) 1ms
+     × the /pricing roster copy equals the ACTUAL roster length (copy-vs-data drift gate) 2ms
+     ✓ the documented council exclusion holds: 20 scorers, every name canonical, registry-minus-council is EXACTLY {chanos} 2ms
+     ✓ the client projection mirror stays field-exact for all 21 marketing cards (G10 split invariant) 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/rishiCount.unification.test.ts > RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed > the /rishis roster is 21 personas — ALL_RISHIS equals MARKETING_PERSONAS (the 19-split is closed)
+AssertionError: expected 19 to be 21 // Object.is equality
+
+- Expected
++ Received
+
+- 21
++ 19
+
+ ❯ test/rishiCount.unification.test.ts:109:39
+    107| describe("RISHI-COUNT — one concept, one number: the roster is 21 ever…
+    108|   it("the /rishis roster is 21 personas — ALL_RISHIS equals MARKETING_…
+    109|     expect(MARKETING_PERSONAS.length).toBe(21);
+       |                                       ^
+    110|     expect(ALL_RISHIS.length).toBe(21);
+    111|     expect(new Set(ALL_RISHIS.map(r => r.id))).toEqual(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/rishiCount.unification.test.ts > RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed > chanos and soros carry render-complete marketing cards (every field /rishis renders)
+TypeError: .toMatch() expects to receive a string, but got undefined
+ ❯ test/rishiCount.unification.test.ts:126:37
+    124|       // app/rishis/page.tsx renders: rank badge, label, origin, bestF…
+    125|       // quote, bio, formula (+ emoji/name carried by the identity fie…
+    126|       expect(p!.rank, `${id}.rank`).toMatch(/^(Legend|Master)$/);
+       |                                     ^
+    127|       expect(p!.label, `${id}.label non-empty`).toBeTruthy();
+    128|       expect(p!.bio, `${id}.bio non-empty`).toBeTruthy();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/rishiCount.unification.test.ts > RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed > every locale's roster-facing count copy says 21 (hero highlight + wisdom banner; en is gu's runtime fallback)
+AssertionError: bn.dashboard.heroWisdomHighlight must carry the 21 count, got: ২০ জন কিংবদন্তি বিনিয়োগকারী: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/rishiCount.unification.test.ts:157:11
+    155|           countPattern.test(value),
+    156|           `${locale}.${key} must carry the 21 count, got: ${value}`,
+    157|         ).toBe(true);
+       |           ^
+    158|       }
+    159|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/rishiCount.unification.test.ts > RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed > the hardcoded metadata says 21 legendary investors — layout (title/og/twitter) and manifest, zero '20 legendary' left
+AssertionError: app/layout.tsx must describe 21 legendary investors: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/rishiCount.unification.test.ts:171:9
+    169|         src.includes("21 legendary investors") || src.includes("21 Leg…
+    170|         `${file} must describe 21 legendary investors`,
+    171|       ).toBe(true);
+       |         ^
+    172|       expect(
+    173|         /20 legendary/i.test(src),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/rishiCount.unification.test.ts > RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed > the count-bearing dead locale keys are deleted from EVERY locale (live neighbours stay)
+AssertionError: bn still carries the dead count key common.exploreAllRishis (unreferenced since the survey; delete, never re-translate): expected 'সকল ২০ জন ঋষি অন্বেষণ করুন' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"সকল ২০ জন ঋষি অন্বেষণ করুন"
+
+ ❯ test/rishiCount.unification.test.ts:185:11
+    183|           localeString(locale, key),
+    184|           `${locale} still carries the dead count key ${key} (unrefere…
+    185|         ).toBeUndefined();
+       |           ^
+    186|       }
+    187|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/rishiCount.unification.test.ts > RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed > the /pricing roster copy equals the ACTUAL roster length (copy-vs-data drift gate)
+AssertionError: expected 21 to be 19 // Object.is equality
+
+- Expected
++ Received
+
+- 19
++ 21
+
+ ❯ test/rishiCount.unification.test.ts:205:33
+    203|     const claimed = copy!.match(/All (\d+) Rishis/);
+    204|     expect(claimed, "copy carries the 'All N Rishis' form").toBeTruthy…
+    205|     expect(Number(claimed![1])).toBe(ALL_RISHIS.length);
+       |                                 ^
+    206|     // The same claim is shipped in every locale (pseudo decorates wit…
+    207|     // bracket/padding convention — compare the COUNT, not the bytes).
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 2 passed (8)
+   Start at  12:55:43
+   Duration  244ms (transform 59%, import 18%, tests 16%, setup 4%, worker 3%)
+

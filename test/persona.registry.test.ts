@@ -70,9 +70,9 @@ describe("P0 persona registry — structural invariants (no drift possible)", ()
     }
   });
 
-  it("INVARIANT: ALL_RISHIS is exactly the marketing (ranked) roster — same 19 as before", () => {
+  it("INVARIANT: ALL_RISHIS is exactly the marketing (ranked) roster — all 21 since RISHI-COUNT", () => {
     expect(new Set(ALL_RISHIS.map(r => r.id))).toEqual(new Set(MARKETING_PERSONAS.map(p => p.id)));
-    expect(ALL_RISHIS.length).toBe(19);
+    expect(ALL_RISHIS.length).toBe(21);
   });
 
   it("aliases are generated from the registry and cover id, short name and full name", () => {

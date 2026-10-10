@@ -4,7 +4,6 @@
     "error": "Error",
     "search": "Search stocks - TITAN, INFY, RELIANCE, TCS...",
     "viewAll": "View All",
-    "exploreAllRishis": "Explore All 20 Rishis",
     "back": "Back",
     "close": "Close",
     "export": "Export",
@@ -26,7 +25,6 @@
   },
   "header": {
     "title": "RISHI TERMINAL",
-    "subtitle": "20 RISHIS - STOCKS - CRYPTO - FOREX - COMMODITIES - BONDS",
     "investmentWisdomOS": "INVESTMENT WISDOM OS",
     "wisdomOverHype": "Wisdom over hype.",
     "time": "IST",
@@ -34,7 +32,6 @@
   },
   "dashboard": {
     "stockOfDay": "STOCK OF THE DAY",
-    "rishiConsensus": "20 RISHI CONSENSUS",
     "viewFullAnalysis": "VIEW FULL RISHI ANALYSIS",
     "wisdomOfDay": "RISHI WISDOM OF THE DAY",
     "masterInvestor": "Master Investor",
@@ -48,7 +45,7 @@
     "timeAgoMinutesSuffix": "m ago",
     "timeAgoSecondsSuffix": "s ago",
     "priceUnavailable": "Price unavailable",
-    "heroWisdomHighlight": "20 legendary investors",
+    "heroWisdomHighlight": "21 legendary investors",
     "heroWisdomPrefix": "Wisdom from ",
     "heroTagline": "SACRED INVESTMENT INTELLIGENCE · v4.4",
     "liveMarketData": "Live Market Data",
@@ -89,7 +86,6 @@
     "bullishRishis": "Bullish Rishis",
     "bearishRishis": "Bearish Rishis",
     "philosophyRadar": "Philosophy Radar",
-    "allRishiScores": "All 20 Rishi Scores",
     "peerComparison": "Peer Comparison",
     "analystRecommendations": "Analyst Recommendations",
     "quarterlyPerformance": "Quarterly Performance",
@@ -104,7 +100,6 @@
   },
   "screener": {
     "title": "Stocks",
-    "subtitle": "Indian stocks analyzed through 20 Rishi perspectives. Click any stock for the full deep-dive.",
     "totalCoverage": "TOTAL COVERAGE",
     "nseBseStocks": "NSE + BSE Stocks",
     "strongBuy": "Strong Buy",
@@ -385,7 +380,6 @@
     "graph": "Graph",
     "rishiWisdom": "Rishi Wisdom",
     "change24h": "24h Change",
-    "wisdomDesc": "20 Philosophers",
     "price": "Price",
     "volume": "Volume",
     "viewAll20": "View All 20",
@@ -532,7 +526,7 @@
       "allMarkets": "All Markets"
     },
     "wisdom": {
-      "title": "20 Legendary Investors",
+      "title": "21 Legendary Investors",
       "body": "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — timeless frameworks applied to every stock in our universe. Long and Short thesis. Every day.",
       "bodyHighlight": "scoring every stock",
       "exploreBtn": "Explore All Rishis"

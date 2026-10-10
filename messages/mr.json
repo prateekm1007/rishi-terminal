@@ -4,7 +4,6 @@
     "error": "त्रुटी",
     "search": "स्टॉक शोधा — TITAN, INFY, RELIANCE, TCS...",
     "viewAll": "सर्व पहा",
-    "exploreAllRishis": "सर्व २० ऋषी शोधा",
     "back": "मागे",
     "close": "बंद करा",
     "export": "एक्सपोर्ट",
@@ -25,7 +24,6 @@
   },
   "header": {
     "title": "RISHI TERMINAL",
-    "subtitle": "२० ऋषी - स्टॉक - क्रिप्टो - फॉरेक्स - कमोडिटी - बॉन्ड",
     "investmentWisdomOS": "गुंतवणूक ज्ञान OS",
     "wisdomOverHype": "हायपवर ज्ञान.",
     "time": "IST",
@@ -33,7 +31,6 @@
   },
   "dashboard": {
     "stockOfDay": "आजचा स्टॉक",
-    "rishiConsensus": "२० ऋषी आमसंमती",
     "viewFullAnalysis": "संपूर्ण ऋषी विश्लेषण पहा",
     "wisdomOfDay": "आजचे ऋषी ज्ञान",
     "masterInvestor": "मास्टर गुंतवणूकदार",
@@ -46,7 +43,7 @@
     "timeAgoMinutesSuffix": "मिनिटांपूर्वी",
     "timeAgoSecondsSuffix": "सेकंदांपूर्वी",
     "priceUnavailable": "किंमत उपलब्ध नाही",
-    "heroWisdomHighlight": "२० दंतकथा गुंतवणूकदार",
+    "heroWisdomHighlight": "२१ दंतकथा गुंतवणूकदार",
     "heroWisdomPrefix": "ज्ञान देणारे — ",
     "heroTagline": "पवित्र गुंतवणूक बुद्धिमत्ता · v4.4",
     "liveMarketData": "थेट बाजार डेटा",
@@ -87,7 +84,6 @@
     "bullishRishis": "बुलिश ऋषी",
     "bearishRishis": "बेअरिश ऋषी",
     "philosophyRadar": "तत्त्वज्ञान रडार",
-    "allRishiScores": "सर्व २० ऋषी स्कोअर",
     "peerComparison": "समकक्ष तुलना",
     "analystRecommendations": "विश्लेषकांच्या शिफारसी",
     "quarterlyPerformance": "त्रैमासिक कामगिरी",
@@ -102,7 +98,6 @@
   },
   "screener": {
     "title": "स्टॉक्स",
-    "subtitle": "२० ऋषी दृष्टिकोनातून विश्लेषित भारतीय स्टॉक. संपूर्ण सखोल विश्लेषणासाठी कोणत्याही स्टॉकवर क्लिक करा.",
     "totalCoverage": "एकूण कव्हरेज",
     "nseBseStocks": "NSE + BSE स्टॉक",
     "strongBuy": "स्ट्रॉन्ग बाय",
@@ -384,7 +379,6 @@
     "graph": "ग्राफ",
     "rishiWisdom": "ऋषी ज्ञान",
     "change24h": "२४ तासांचा बदल",
-    "wisdomDesc": "२० तत्त्वज्ञ",
     "price": "किंमत",
     "volume": "व्हॉल्यूम",
     "viewAll20": "सर्व २० पहा",
@@ -531,7 +525,7 @@
       "allMarkets": "सर्व बाजार"
     },
     "wisdom": {
-      "title": "२० दंतकथा गुंतवणूकदार",
+      "title": "२१ दंतकथा गुंतवणूकदार",
       "body": "बफेट, ग्रॅहम, लिंच, दामानी, झुंझुनवाला, चानोस — आपल्या विश्वातील प्रत्येक स्टॉकवर लागू केलेले कालजयी फ्रेमवर्क. लॉन्ग आणि शॉर्ट थीसिस. दररोज.",
       "bodyHighlight": "प्रत्येक स्टॉक स्कोअर करत आहेत",
       "exploreBtn": "सर्व ऋषी शोधा"

@@ -492,7 +492,22 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "fullName": "Jim Chanos",
     "emoji": "🐻",
     "color": "#EF4444",
-    "philosophy": "Forensic accounting. Short overvalued. Narrative vs reality."
+    "rank": "Master",
+    "philosophy": "Forensic accounting. Short overvalued. Narrative vs reality.",
+    "label": "Forensic Short Seller",
+    "bio": "Forensic accountant who built his name shorting Enron. Finds where the narrative diverges from the numbers.",
+    "formula": "Overvaluation (25%) + Deteriorating Fundamentals (25%) + Accounting Red Flags (25%) + Catalyst Timing (25%)",
+    "bestFor": [
+      "Short Ideas",
+      "Forensic",
+      "Skepticism"
+    ],
+    "quote": "Being early is the same as being wrong in shorts.",
+    "famousPicks": [
+      "Enron (short)"
+    ],
+    "category": "Stock",
+    "origin": "Global"
   },
   {
     "id": "soros",
@@ -500,6 +515,21 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "fullName": "George Soros",
     "emoji": "🌊",
     "color": "#A78BFA",
-    "philosophy": "Reflexivity. Macro overlay. Trend following with macro conviction."
+    "rank": "Master",
+    "philosophy": "Reflexivity. Macro overlay. Trend following with macro conviction.",
+    "label": "Reflexivity Macro",
+    "bio": "The reflexivist. Trades macro inflections where price action feeds back into fundamentals.",
+    "formula": "Macro Cycle (20%) + Reflexivity (20%) + Policy Shift (20%) + Trend Stage (20%) + Capital Flows (20%)",
+    "bestFor": [
+      "Macro",
+      "Trends",
+      "Currencies"
+    ],
+    "quote": "It's not whether you're right or wrong, but how much you make when you're right and how much you lose when you're wrong.",
+    "famousPicks": [
+      "British Pound (1992 short)"
+    ],
+    "category": "Stock",
+    "origin": "Global"
   }
 ];

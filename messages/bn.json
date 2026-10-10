@@ -4,7 +4,6 @@
     "error": "ত্রুটি",
     "search": "স্টক খুঁজুন — TITAN, INFY, RELIANCE, TCS...",
     "viewAll": "সব দেখুন",
-    "exploreAllRishis": "সকল ২০ জন ঋষি অন্বেষণ করুন",
     "back": "ফিরুন",
     "close": "বন্ধ করুন",
     "export": "রপ্তানি",
@@ -25,7 +24,6 @@
   },
   "header": {
     "title": "RISHI TERMINAL",
-    "subtitle": "২০ ঋষি - স্টক - ক্রিপ্টো - ফরেক্স - কমোডিটি - বন্ড",
     "investmentWisdomOS": "বিনিয়োগ জ্ঞান ওএস",
     "wisdomOverHype": "হাইপের ঊর্ধ্বে জ্ঞান।",
     "time": "IST",
@@ -33,7 +31,6 @@
   },
   "dashboard": {
     "stockOfDay": "আজকের স্টক",
-    "rishiConsensus": "২০ ঋষি ঐকমত্য",
     "viewFullAnalysis": "সম্পূর্ণ ঋষি বিশ্লেষণ দেখুন",
     "wisdomOfDay": "আজকের ঋষি জ্ঞান",
     "masterInvestor": "মাস্টার বিনিয়োগকারী",
@@ -46,7 +43,7 @@
     "timeAgoMinutesSuffix": "মিনিট আগে",
     "timeAgoSecondsSuffix": "সেকেন্ড আগে",
     "priceUnavailable": "মূল্য পাওয়া যাচ্ছে না",
-    "heroWisdomHighlight": "২০ জন কিংবদন্তি বিনিয়োগকারী",
+    "heroWisdomHighlight": "২১ জন কিংবদন্তি বিনিয়োগকারী",
     "heroWisdomPrefix": "জ্ঞান প্রদানকারী — ",
     "heroTagline": "পবিত্র বিনিয়োগ বুদ্ধিমত্তা · v4.4",
     "liveMarketData": "লাইভ বাজার ডেটা",
@@ -87,7 +84,6 @@
     "bullishRishis": "বুলিশ ঋষি",
     "bearishRishis": "বেয়ারিশ ঋষি",
     "philosophyRadar": "দর্শন রাডার",
-    "allRishiScores": "সকল ২০ ঋষি স্কোর",
     "peerComparison": "সমকক্ষ তুলনা",
     "analystRecommendations": "বিশ্লেষকের সুপারিশ",
     "quarterlyPerformance": "ত্রৈমাসিক কর্মক্ষমতা",
@@ -102,7 +98,6 @@
   },
   "screener": {
     "title": "স্টক",
-    "subtitle": "২০ ঋষি দৃষ্টিকোণ থেকে বিশ্লেষিত ভারতীয় স্টক। সম্পূর্ণ গভীর বিশ্লেষণের জন্য যেকোনো স্টকে ক্লিক করুন।",
     "totalCoverage": "মোট কভারেজ",
     "nseBseStocks": "NSE + BSE স্টক",
     "strongBuy": "স্ট্রং বাই",
@@ -384,7 +379,6 @@
     "graph": "গ্রাফ",
     "rishiWisdom": "ঋষি জ্ঞান",
     "change24h": "২৪ ঘণ্টার পরিবর্তন",
-    "wisdomDesc": "২০ জন দার্শনিক",
     "price": "মূল্য",
     "volume": "ভলিউম",
     "viewAll20": "সব ২০ জন দেখুন",
@@ -531,7 +525,7 @@
       "allMarkets": "সকল বাজার"
     },
     "wisdom": {
-      "title": "২০ জন কিংবদন্তি বিনিয়োগকারী",
+      "title": "২১ জন কিংবদন্তি বিনিয়োগকারী",
       "body": "বাফেট, গ্রাহাম, লিঞ্চ, দামানি, ঝুঞ্ঝুনওয়ালা, চ্যানোস — আমাদের মহাবিশ্বের প্রতিটি স্টকে প্রয়োগ করা কালজয়ী কাঠামো। লং ও শর্ট থিসিস। প্রতিদিন।",
       "bodyHighlight": "প্রতিটি স্টক স্কোর করছেন",
       "exploreBtn": "সকল ঋষি অন্বেষণ করুন"

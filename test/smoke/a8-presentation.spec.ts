@@ -110,10 +110,16 @@ test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is 
   test("the stock page panel renders its honest state with the shared class styling", async ({ page }) => {
     await page.goto("/stock/RELIANCE");
     const panel = page.locator("section[data-intelligence-panel]");
-    await expect(panel).toBeVisible();
+    // EXACTLY ONE panel (the mount contract) — settled before the phase
+    // asserts: under loaded runners a hydration swap can transiently show
+    // the SSR section and the client section together; the count gate
+    // absorbs the torn frame while still FAILING on any persistent double
+    // mount (stronger than a first() selector would be — no masking).
+    await expect(panel).toHaveCount(1, { timeout: 15_000 });
     // the loading phase is transient — wait for the state to settle before
     // asserting (a mid-swap element makes computed styles read empty)
     await expect(panel).not.toHaveAttribute("data-intelligence-panel", "loading", { timeout: 15_000 });
+    await expect(panel).toBeVisible();
     const phase = await panel.getAttribute("data-intelligence-panel");
     expect(["unavailable", "ready"]).toContain(phase ?? "");
     if (phase === "unavailable") {
@@ -130,8 +136,12 @@ test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is 
   test("the dashboard brief renders its honest state with the shared class styling", async ({ page }) => {
     await page.goto("/");
     const brief = page.locator("section[data-dashboard-brief]");
-    await expect(brief).toBeVisible();
+    // EXACTLY ONE brief, settled (the same torn-frame discipline as the
+    // stock panel above — the brief mounts client-side via the ssr:false
+    // tail chunk, so the section exists only after hydration).
+    await expect(brief).toHaveCount(1, { timeout: 15_000 });
     await expect(brief).not.toHaveAttribute("data-dashboard-brief", "loading", { timeout: 15_000 });
+    await expect(brief).toBeVisible();
     const phase = await brief.getAttribute("data-dashboard-brief");
     expect(["unavailable", "ready"]).toContain(phase ?? "");
     if (phase === "unavailable") {

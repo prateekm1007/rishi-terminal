@@ -83,21 +83,15 @@ describe("INT-C1 the dashboard brief component (the second real product surface)
     expect(src).toContain("import type { RishiInsight }");
     expect(src).toContain("buildEvidenceView");
     expect(src).toContain("@/components/intelligence");
-    for (const primitive of [
-      "<InsightBadges",
-      "<InsightSummary",
-      "<ProvenanceLine",
-      "<ContradictionBanner",
-      "<EvidenceList",
-      "<UncertaintyBlock",
-    ]) {
-      expect(src).toContain(primitive);
-    }
+    // The canonical composition: the surface mounts ReadyComposition
+    // (the pre-registered six steps, defined once) — not its own inline
+    // copy of the sequence (rule 14; no independent redesigns).
+    expect(src).toContain("<ReadyComposition");
   });
 
   it("carries the honest unavailable state and discloses its subject (never a fake artifact, never a fallback word)", () => {
     const src = source(BRIEF);
-    expect(src).toContain('data-dashboard-brief="unavailable"');
+    expect(src).toContain('data-brief-unavailable');
     expect(src).toContain("data-dashboard-brief-subject");
   });
 

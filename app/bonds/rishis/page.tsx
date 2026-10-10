@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
 
-export const metadata = {
-  title: 'Forex Rishis — Rishi Terminal',
-  description: 'Currency trading wisdom from legendary macro investors',
-};
+export const metadata = routeMetadata({
+  path: "/bonds/rishis",
+  title: "Forex Rishis — Rishi Terminal",
+  description: "Currency trading wisdom from legendary macro investors",
+});
 
 const FOREX_RISHIS = [
   {

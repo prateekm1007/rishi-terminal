@@ -1,13 +1,13 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { listMethodologyDocs } from '@/lib/methodology';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
 
-export const metadata: Metadata = {
-  title: 'Methodology | Rishi Terminal',
-  description:
-    'How every Rishi score is computed: inputs, formulas, thresholds, rationale, failure modes and non-applicable sectors.',
-};
+export const metadata = routeMetadata({
+  path: "/methodology",
+  title: "Methodology | Rishi Terminal",
+  description: "How every Rishi score is computed: inputs, formulas, thresholds, rationale, failure modes and non-applicable sectors.",
+});
 
 /**
  * S2-01 (Round 13): the public methodology index. Statically generated
@@ -44,9 +44,7 @@ export default async function MethodologyPage() {
               }}
             >
               <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{doc.title}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                /{doc.slug}
-              </span>
+
             </Link>
           ))}
         </div>

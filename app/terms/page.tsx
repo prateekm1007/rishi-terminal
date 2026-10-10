@@ -1,10 +1,11 @@
-import { Metadata } from 'next';
 import Link from 'next/link';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
 
-export const metadata: Metadata = {
-  title: 'Terms of Service | Rishi Terminal',
-  description: 'The terms that govern use of Rishi Terminal.',
-};
+export const metadata = routeMetadata({
+  path: "/terms",
+  title: "Terms of Service | Rishi Terminal",
+  description: "The terms that govern use of Rishi Terminal.",
+});
 
 /**
  * Round-5 audit (finding 9): the sign-in page referenced a "Terms of

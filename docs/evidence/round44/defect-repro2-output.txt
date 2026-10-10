@@ -1,0 +1,179 @@
+=== REDIRECT CHECK (no-follow) ===
+  /screener: HTTP 308 location=/stocks
+  /stocks: HTTP 200 location=(none)
+
+=== /stocks ROW ANALYSIS ===
+  total <tr>: 897
+  SBIN row (raw, 700 chars): <tr class="border-b transition border-gray-800 hover:bg-gray-900/30"><td class="px-4 py-3 font-mono font-bold text-yellow-500"><a class="hover:underline" href="/stock/SBIN">SBIN</a></td><td class="px-2 py-3 text-left"><button type="button" style="display:inline-flex;align-items:center;justify-content:center;height:28px;min-width:28px;padding:0 8px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-family:&#x27;JetBrains Mono&#x27;, monospace;font-size:10px;font-weight:700;letter-spacing:0.04em;cursor:pointer;vertical-align:middle" data-intelligence-badge="SBIN" aria-label="Open Rishi intelligence for SBIN" title="Rishi intelligence for SBIN
+  STRONG BUY (case-insens) occurrences: 2
+  Strong Buy (title case): 1
+  LARGE CAP (case-insens): 2
+  Large Cap (title case): 1
+  rows containing SUNPHARMA: 1
+  rows containing RAYMOND: 1
+  rows containing RAYMOND2: 1
+  rows containing NAUKRI: 1
+  rows containing HGINFRA: 1
+  rows containing ANURAS: 1
+  rows containing KALYANKJIL: 1
+  rows containing KALYANAJW: 1
+  rows containing CONCOR: 1
+  rows containing ANANDRATHI: 1
+  rows containing COLPAL: 1
+  rows containing TASTYBITE: 1
+  rows containing RVNL: 1
+  rows containing JISLJALEQS: 1
+  rows containing GPIL: 1
+  rows containing KAPIL: 1
+  rows containing BNRSEC: 1
+  rows containing KAMOPAINTS: 1
+  rows containing KNESL: 1
+  rows containing DFL: 1
+  rows containing RADICON: 1
+  rows containing WINDMACHIN: 1
+
+=== /stock/SBIN intelligence + wisdom + missed targets ===
+  around 'Rishi Intelligence': "lligence-subject=\"SBIN\" aria-label=\"Rishi intelligence\"><h2 class=\"stock-intelligence-panel__title\">Rishi Intelligence</h2><p class=\"insight-surface__empty\">Resolving intelligence...</p></section><section data-dossier-insight=\"loading\" data-dossier-subject=\"SBIN\" aria-label=\"Rishi stock dossier\"></section><!--$--><!--/$--></div><script>$RB=[];$RV=function(a){$RT=performance.now();for(var b=0;b<a.length;b+=2){var c=a[b],e=a[b+1];null!==e.parentNode&&e.parentNode.removeChild(e);var f=c.parentNode;"
+  around 'Wisdom': "olumn;align-items:flex-start;gap:2px\"><span>Rishi Wisdom</span><span style=\"font-size:9px;letter-spacing:0.5px;opacity:0.6;font-weight:400\">All 20 Philosopher Scores</span></button></div></div></div><div class=\"content-wrapper\" style=\"padding:28px 24px\"><div style=\"display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start\"><div style=\"min-width:0;display:flex;flex-direction:column;ga"
+  Kacholia comps: (absent)
+  Greenblatt comps: Greenblatt model signals HOLD. Score of 66 -- not cheap enough to buy aggressively, not expensive enough to exit. earnings yield + ROIC remains acceptable.\",\"event\":\"hold\"},{\"rishi\":\"George Soros\",\"date\":\"2025-07
+  Greenblatt EY comp: (not found)
+  Greenblatt ROC comp: (not found)
+
+=== /pulse literals ===
+  '6.92': 0 occurrences
+  '7.08': 1 occurrences
+  '6.25': 1 occurrences
+  'repo': 3 occurrences
+  'Repo': 1 occurrences
+  'spread': 1 occurrences
+  'Gold': 0 occurrences
+  'gold': 12 occurrences
+  '4,209': 0 occurrences
+  'yield': 2 occurrences
+  'soften': 0 occurrences
+  'G-Sec': 3 occurrences
+  around +8bps: " Spread over repo at 83bps — historically tight.</div><div style=\"font-size:10px;color:var(--text-muted);margin-top:10px;font-family:var(--font-mono)\">As of<!-- --> <!-- -->Jun 2026<!-- --> · <!-- -->+8bps in 30 days</div></div><div class=\"card-unified\" style=\"padding:16px\"><div style=\"display:flex;"
+  around repo: "t Pulse — India macro dashboard | Rishi Terminal</title><meta name=\"description\" content=\"CPI, WPI, repo rate, G-Sec yields, GDP and money supply with regime analysis. Macro data is reference-labelled with per-row as-of dates.\"/><link rel=\"manifest\" href=\"/manifest.webmanifest\"/><link rel=\"canonical"
+
+=== /bonds literals ===
+  '7.08': 1 occurrences
+  '6.92': 0 occurrences
+  '10Y': 16 occurrences
+  '10Y G-Sec': 2 occurrences
+  'T-bill': 0 occurrences
+  'duration': 1 occurrences
+  'Matured': 0 occurrences
+  'matured': 0 occurrences
+  'AA+': 2 occurrences
+  'SDL': 19 occurrences
+  'Reliance': 2 occurrences
+  'HDFC': 3 occurrences
+  around 7.08: "ospace\">G-Sec</span></td><td style=\"text-align:right;padding:16px 24px;font-weight:700;font-size:16px;color:var(--accent-gold);font-family:monospace\">7.08<!-- -->%<span title=\"Static reference yield — live yield unavailable\" style=\"display:inline-blo"
+  around duration: "M\\\",\\\"avgDuration\\\":\\\"AVG DURATION\\\",\\\"sortBy\\\":\\\"SORT BY\\\",\\\"name\\\":\\\"NAME\\\",\\\"type\\\":\\\"TYPE\\\",\\\"coupon\\\":\\\"COUPON\\\",\\\"duration\\\":\\\"DURATION\\\",\\\"price\\\":\\\"PRICE\\\",\\\"rating\\\":\\\"RATING\\\",\\\"spread\\\":\\\"SPREAD\\\",\\\"usTreasuries\\\":\\\"US Treasuries\\\"}},\\\"children\\\":[\\\"$\\\",\\\"$L8\\\",null,{\\"
+
+=== /forex literals ===
+  'Live currency': 2 occurrences
+  'JPY': 2 occurrences
+  'USD/JPY': 0 occurrences
+  'JPY/USD': 0 occurrences
+  'REFERENCE': 14 occurrences
+  '24H': 3 occurrences
+  '0.0000': 0 occurrences
+  around JPY: "0;color:var(--text-primary);font-size:16px;margin-bottom:4px;display:flex;align-items:center\"><span>USD<!-- -->/<!-- -->JPY</span><span title=\"Static reference rate — live quote unavailable\" style=\"display:inline-block;font-size:8px;font-weight:700;letter-spacing:1px;font-family:monospace;color:#D4AF37;background:rgba("
+  around Live: "le=\"font-size:13px;color:var(--text-secondary);max-width:480px;line-height:1.6\">Live currency markets with macro analysis from legendary traders</p></div><div style=\"background:var(--bg-card);border:1px solid var(--border-primary);border-ra"
+
+=== /commodities literals ===
+  '52W': 20 occurrences
+  '2,200': 2 occurrences
+  '2,750': 1 occurrences
+  '4,209': 0 occurrences
+  'MCX': 16 occurrences
+  'Fear': 0 occurrences
+  'Greed': 0 occurrences
+  '\$': 0 occurrences
+  'Gold': 5 occurrences
+  around 52W: "x;color:var(--text-muted);font-family:monospace;margin-bottom:4px\"><span>$<!-- -->2,200</span><span>52W RANGE</span><span>$<!-- -->2,750</span></div><div style=\"height:3px;background:var(--bg-secondary);border-radius:2px\"><div style=\"height:100%;border-radius:2px;width:81.81818181818183%;background:"
+  around MCX: "s | Rishi Terminal</title><meta name=\"description\" content=\"MCX and global commodity reference data analysed through commodity Rishi frameworks.\"/><link rel=\"manifest\" href=\"/manifest.webmanifest\"/><link rel=\"canonical\" href=\"https://rishi-terminal.vercel.app/"
+
+=== / dashboard ===
+  'Portfolio' nearby href: (no href in preceding 250 chars)
+  'Watchlist' nearby href: (no href in preceding 250 chars)
+  'Compare' nearby href: (no href in preceding 250 chars)
+  'dominance': absent
+  '4,209' nearby href: (no href in preceding 250 chars)
+  'Observation time' nearby href: (no href in preceding 250 chars)
+  'Fear': absent
+  'Greed': absent
+  gold context: Gold / oz
+
+=== /news ===
+  first '--' context: "cript></head><body class=\"theme-blue\" style=\"margin:0;padding:0;overflow-x:hidden\"><div hidden=\"\"><!--$--><!--/$--></div><script>\n          (function() {\n            try {\n              var theme = lo"
+  nav marker old-shell (Screener link): false
+  canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/news"/>
+  og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+  title tag: <title>Market Intelligence — live news | Rishi Terminal</title>
+
+=== metadata across routes ===
+  /:
+    title: <title>Rishi Terminal - Sacred Investment Intelligence</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  /stocks:
+    title: <title>Stocks — India equities | Rishi Terminal</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/stocks"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  /news:
+    title: <title>Market Intelligence — live news | Rishi Terminal</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/news"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  /rishis:
+    title: <title>Chat with Rishis — AI simulation | Rishi Terminal</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/rishis"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  /pulse:
+    title: <title>Market Pulse — India macro dashboard | Rishi Terminal</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/pulse"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  /forex:
+    title: <title>Forex — USD/INR, majors and crosses | Rishi Terminal</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/forex"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  /commodities:
+    title: <title>Commodities — gold, silver, crude, base metals | Rishi Terminal</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/commodities"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+  /bonds:
+    title: <title>Bonds — G-Secs, SDLs, corporates, US Treasuries | Rishi Terminal</title>
+    canonical: <link rel="canonical" href="https://rishi-terminal.vercel.app/bonds"/>
+    og:title: <meta property="og:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+    og:url: <meta property="og:url" content="https://rishi-terminal.vercel.app"/>
+    twitter:title: <meta name="twitter:title" content="Rishi Terminal - Sacred Investment Intelligence"/>
+
+=== /pricing + /rishis counts ===
+  pricing '21' context: "2px\"><span style=\"font-size:20px\">🧘</span><span style=\"font-size:13px;color:var(--text-secondary);line-height:1.5\">All 21 Rishis — every persona, every verdict</span></div><div class=\"card-sacred\" style=\"padding:20px;display:flex;align-items:center;gap:12px\"><span style=\"font-si"
+  /rishis personas present: 18 -> Buffett,Munger,Lynch,Klarman,Marks,Templeton,Fisher,Schloss,Pabrai,Kedia,Damani,Porinju,Kacholia,Jhunjhunwala,Agrawal,Maheshwari,Greenblatt,Graham
+  /stocks 'top-5' context: "uities by consensus score, valuation, quality and leverage. Free tier shows the top-5 Rishi verdicts.\"/><link rel=\"manifest\" href=\"/manifest.webmanifest\"/><link rel=\"canonical\" href=\"https://rishi-ter"
+
+=== /methodology leaks ===
+  'S2-' occurrences: 4
+  'basant' occurrences: 9
+  first S2 context: "href=\"/methodology/README\"><span style=\"font-size:14px;color:var(--text-primary)\">Methodology docs (S2-01)</span><span style=\"font-size:11px;color:var(--text-muted);font-family:var(--font-mono)\">/<!--"
+
+=== probe2 complete ===

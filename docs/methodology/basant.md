@@ -1,4 +1,4 @@
-# Basant Maheshwari — Consumption Growth (Basant Maheshwari)
+# Basant Maheshwari — Consumption Growth
 
 Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/basant.ts`
 

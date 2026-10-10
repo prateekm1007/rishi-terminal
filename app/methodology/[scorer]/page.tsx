@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { listMethodologyDocs, getMethodologyDoc, METHODOLOGY_REQUIRED_HEADINGS } from '@/lib/methodology';
 import { parseInline } from '@/lib/methodology/markdown';
+import { SITE_URL } from "@/lib/seo/site";
 
 export const revalidate = 3600;
 
@@ -20,8 +21,18 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { scorer } = await params;
   const doc = await getMethodologyDoc(scorer);
+  // WP1: the doc URL names itself — the canonical was the site root and
+  // og inherited the generic defaults.
+  const canonicalUrl = `${SITE_URL}/methodology/${scorer}`;
+  const title = doc ? `${doc.title} | Rishi Terminal Methodology` : 'Methodology | Rishi Terminal';
+  const description = doc
+    ? `${doc.title} — the inputs, formula, thresholds and known failure modes of the Rishi score.`
+    : 'How every Rishi score is computed.';
   return {
-    title: doc ? `${doc.title} | Rishi Terminal Methodology` : 'Methodology | Rishi Terminal',
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: { title, description, url: canonicalUrl, type: 'article' },
   };
 }
 

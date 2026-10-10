@@ -7,6 +7,7 @@ import { encodeSlimIndex } from '@/lib/transport/slimWire';
 import { LabContent } from '@/components/lab/LabContent';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { compare, holdings, intel, overview } from '@/messages/en.json';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
 
 // X4 (Round 11): the lab tab namespaces arrive from the server as RSC
 // props (flight payload) instead of riding the client bundle — see the
@@ -15,10 +16,11 @@ import { compare, holdings, intel, overview } from '@/messages/en.json';
 // recorded in test/bundleBoundary.language.test.ts's known-missing list.)
 
 // Round-5 audit (finding 18): per-page title/description.
-export const metadata = {
+export const metadata = routeMetadata({
+  path: "/lab",
   title: "Portfolio Lab — compare, watchlist, journal | Rishi Terminal",
   description: "Compare stocks side by side, track a watchlist and keep notes.",
-};
+});
 
 export default function PortfolioLabPage() {
   // R16 C5: the lab tabs DO read verdict summaries (topBull.full,

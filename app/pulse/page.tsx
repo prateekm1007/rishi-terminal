@@ -259,10 +259,16 @@ export default function MarketPulsePage() {
     const run = async () => {
       try {
         const res = await fetch('/api/pulse/currency', { cache: 'no-store' });
-        if (!res.ok) return;
+        // Honest state on failure (the founder pin, 2026-10-10): the !ok
+        // path used to return WITHOUT setting the state, stranding the
+        // block on the perpetual "Fetching live currency rates…" promise
+        // (pinned by test/smoke/honestHydration.spec.ts's forced-503 leg)
+        if (!res.ok) { if (!cancelled) setCurrencies([]); return; }
         const data = await res.json();
         if (!cancelled) setCurrencies(data?.currencies || []);
-      } catch {}
+      } catch {
+        if (!cancelled) setCurrencies([]);
+      }
     };
     run();
     const t = setInterval(run, 120000);
@@ -611,9 +617,20 @@ export default function MarketPulsePage() {
                   stayed null and the map produced nothing). An explicit
                   unavailable state beats a silently blank section. */}
               {(currencies === null) ? (
-                <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  Fetching live currency rates…
-                </div>
+                <>
+                  <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    Fetching live currency rates…
+                  </div>
+                  {/* Without JS this promise could never resolve (the macro
+                      tab is the DEFAULT tab, so the string IS the no-JS
+                      first render) — the noscript disclosure is the honest
+                      unavailable state (founder pin, 2026-10-10). */}
+                  <noscript>
+                    <div style={{ padding: '0 16px 20px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                      JavaScript is off — live currency rates cannot load, and nothing is shown rather than made-up numbers.
+                    </div>
+                  </noscript>
+                </>
               ) : currencies.length === 0 || currencies.every((c: { error?: boolean }) => c.error) ? (
                 <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                   Live currency rates unavailable right now — nothing is shown rather than made-up numbers.

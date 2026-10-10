@@ -111,6 +111,9 @@ describe("INT-A8-PRES — globals.css is the canonical owner of the shared A8 se
   it("the :focus-visible rule is scoped to the mounted intelligence surfaces (never a global restyle)", () => {
     expect(css).toMatch(/\.insight-surface :focus-visible/);
     expect(css).toMatch(/\[data-intelligence-drawer\] :focus-visible/);
+    // the D2 per-row opener is a mounted intelligence surface too — the
+    // founder pin (2026-10-10) caught it falling to the browser default
+    expect(css).toMatch(/\[data-intelligence-badge\]:focus-visible/);
   });
 });
 

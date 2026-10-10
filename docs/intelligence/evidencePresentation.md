@@ -122,3 +122,28 @@ rewritten; the gap is recorded HERE.
   (computed-style assertions in a real browser against the deployed
   pages), the no-material case explains the exclusion breakdown, and
   the honest unknown/low/low/deterministic states are unchanged.
+
+## Amendment (INT-RECONCILE, 2026-10-10) — the breakdown states its partition
+
+The founder audit (2026-10-10 directives 5+6) found the shipped breakdown
+wording ambiguous: the artifact carried the TOTAL non-material count and
+the single observed refusal class with the SAME number (928/928) and no
+stated relation, which reads as a double-count. The partition itself was
+verified exact (disjoint and complete by construction — every
+non-material verdict carries exactly one reason; the per-reason counts
+sum to the total). This amendment, riding the same contract:
+
+- every breakdown line after the total is prefixed "Of those excluded:"
+  (the INT-A8-REC wording, merged in #306) so the
+  subset relation is explicit (the per-reason classes partition the
+  total line's count; they are never additive with it);
+- the total line, the summary's `excluded=` ledger count, and the
+  verdict partition reconcile exactly (pinned by test — the counts are
+  derived from A4's verdicts, never adjusted to match);
+- `whyItMatters` states each total with its own scope (in-window
+  transitions, window-start baseline rows, projected events) and, when
+  nothing qualified as material, explains that `whatChanged` and the
+  evidence ledger are empty by A4 verdict — never by data loss.
+
+The A1 schema, the line-count bound (1 + 1 + 8 ≤ 10), and the carrier
+(`string[]`) are untouched; historical evidence files stand unchanged.

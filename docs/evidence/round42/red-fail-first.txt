@@ -1,0 +1,66 @@
+   ✓ INT-A10 closed capability registry (1)
+     ✓ is exactly the Phase-A set (mechanical gate against invented capability ids) 2ms
+   ✓ INT-A10 chain runner (deterministic composition of the ONE substrate) (3)
+     ✓ composes A2→A3→A4→A5→A6→A7 over live rows and returns a contract-valid deterministic artifact 7ms
+     ✓ is deterministic: identical chain state → identical changeKey and identical artifact bytes 1ms
+     ✓ the empty-history state is honest `unknown`, never fabricated 1ms
+   ✓ INT-A10 A4 economic gate (non-material → zero AI spend) (1)
+     ✓ a non-material verdict refuses generation: no router call, honest 404 refusal from the runner 1ms
+   ✓ INT-A10 cache cycle through the ONE A7 path (1)
+     ✓ a shapeless cache read result is a miss, never a fabricated artifact 0ms
+   ✓ INT-A10 no-second-path pins (static source scans) (2)
+     ✓ the chain imports no provider module and no router (deterministic by construction) 0ms
+     ✓ the chain and registry keep no clock and no randomness 0ms
+   ✓ INT-A10 material chain (the A4 gate OPENS and the handoff is complete) (3)
+     ✓ a 4.9% intraday transition is material: the insight handoff carries scaffold, changeKey and the A4 verdicts 2ms
+     ✓ a cache HIT serves the stored artifact through the ONE parser (zero generation, zero writes) 2ms
+     ✓ a malformed stored payload is a MISS (parse-or-serve): the material chain falls through to the handoff 1ms
+   ✓ INT-A10 pure prose assembler (the A1 boundary refuses, never edits) (4)
+     ✓ grounded model prose fills ONLY the prose families; provenance carries the full trio 1ms
+     ✓ unvalidated synthesis is labelled model-unvalidated and cannot reach high confidence 1ms
+     ✓ the T52 invariant: claimsVerified with zero claims is NOT grounded 1ms
+     ✓ an over-contract summary is REFUSED at the boundary (never served, never cached) 1ms
+   ✓ INT-A10 single-caller pins (static source scans, app/lib/components) (2)
+     ✓ the ONE loop has exactly the sanctioned callers (chat, intelligence, the secret-gated probe) 18ms
+     ✓ the chain runner has exactly ONE consumer: the intelligence route 16ms
+   ✓ INT-A10 chain over PRODUCTION row shapes (PostgREST +00:00 timestamps) (2)
+     ✓ an all-+00:00 history still composes a contract-valid deterministic artifact 1ms
+     ✓ an unparseable recordedAt degrades the window to the caller clock, never fabricates 0ms
+     × a non-material chain accounts its exclusions from the actual verdicts: total line + one line per observed reason 7ms
+     ✓ the breakdown is deterministic: identical chain state -> identical uncertainty lines 1ms
+     ✓ no line implies observations did not occur (the wording names exclusion, never absence) 0ms
+     × INT-RECONCILE: an empty ledger with recorded transitions is EXPLAINED by verdicts in whyItMatters 5ms
+     ✓ the breakdown fits the A1 bound with no truncation: 1 total + 1 below-threshold + 8 refusal reasons = 10 (static pin) 0ms
+   ✓ buildQuoteTransitions — the deterministic delta layer (6)
+     ✓ a first observation carries old = null for every real field (an honest beginning, never a zero) 3ms
+     ✓ an unchanged field produces NO transition (a re-observation is not a change) 0ms
+     ✓ carries the OLD value from the previous observation into each transition 0ms
+     ✓ a null new value is never a transition (the writer only appends real values) 0ms
+     ✓ an undisclosed observation time maps to the live-undated source state (never fabricated) 0ms
+     ✓ deterministic: the same inputs always build the same transitions 0ms
+   ✓ changeIdOf — deterministic, idempotent identity (3)
+     ✓ the same transition maps to the same id 1ms
+     ✓ a different value, clock or field changes the id (corrections are appendable) 0ms
+     ✓ a null observation clock is a distinct, honest identity component 0ms
+   ✓ appendStateTransitions — idempotent upsert contract (3)
+     ✓ sends ONE upsert with onConflict change_id + ignoreDuplicates (retry collapses) 5ms
+     ✓ an empty batch is a no-op (no round trip) 1ms
+     ✓ a DB error is RETURNED, never thrown (the price path logs and continues) 2ms
+     × stores NUMBERS as jsonb numbers, never stringified (the upsert payload is inspected verbatim) 10ms
+     ✓ a first observation still writes SQL NULL old_value (an honest beginning, never an encoded 'null') 8ms
+     × legacy jsonb STRINGS decode to typed values (the exact inverse of the pre-repair encoding) 6ms
+     × an encoded string VALUE decodes to the string (numbers are not the only legacy shape) 3ms
+     ✓ native jsonb numbers pass through verbatim (post-repair rows) 1ms
+     ✓ a native jsonb string that is NOT valid JSON passes through verbatim (future text fields) 1ms
+     × SQL NULL old_value stays null (never a fabricated zero) 2ms
+   ✓ compatibility — the state log feeds the item-1 insight contract (1)
+     ✓ a persisted transition can back an evidence item + whatChanged line of a valid RishiInsight 5ms
+     × a material intraday move on string-encoded rows is MATERIAL and projects into whatChanged/evidence (no silent drop) 13ms
+     × the all-refused production shape (the BANKBARODA signature): empty by VERDICT, explained, and every count reconciles 6ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ Test Files  3 failed (3)
+      Tests  8 failed | 38 passed (46)
+   Start at  00:30:52
+   Duration  939ms (import 45%, transform 27%, tests 24%, setup 2%, worker 2%)
+

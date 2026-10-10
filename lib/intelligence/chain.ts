@@ -372,17 +372,40 @@ function composeScaffold(args: {
   // model involvement (the artifact discloses exactly what it is).
   const nonMaterial = verdicts.filter((v) => !aiSpendAllowed(v));
   const summary = `${subject}: ${thesis.detail}. ${changeSince.detail}.`;
-  const whyItMatters = `Deterministic composition of the observation chain for ${subject}: the ledger counts only transitions the materiality engine classified as material, so the state above is computed, not opined. Totals: ${changeSince.totals.transitionsSince} recorded transition(s) across ${changeSince.totals.fieldsTracked} tracked field(s).`;
+  // INT-RECONCILE: the totals sentence states each count with its OWN
+  // scope so the reader can reconcile the summary's adjacent numbers
+  // (e.g. excluded=928 events vs transitionsSince=925) without composed
+  // arithmetic: the in-window transitions (A6: rows strictly after the
+  // window start), the window-start baseline rows (rows AT the oldest
+  // recorded timestamp — the warmer's batch write shape), and the
+  // projected events (A3's 1:1 non-seed projection). When nothing
+  // qualified as material, the empty whatChanged/evidence ledger is
+  // EXPLAINED BY VERDICT — never left to read as a projection loss.
+  const boundaryRowCount =
+    recordedAsc.length > 0
+      ? rows.filter((r) => r.recordedAt === recordedAsc[0]).length
+      : 0;
+  const whyItMatters =
+    `Deterministic composition of the observation chain for ${subject}: the ledger counts only transitions the materiality engine classified as material, so the state above is computed, not opined. ` +
+    `Totals: ${changeSince.totals.transitionsSince} in-window transition(s) across ${changeSince.totals.fieldsTracked} tracked field(s), ${boundaryRowCount} window-start baseline row(s), ${events.length} projected event(s).` +
+    (kept.length === 0 && events.length > 0
+      ? ` No event qualified as material, so whatChanged and the evidence ledger are empty by A4 verdict, never by data loss — the exclusion breakdown under uncertainty accounts for every event.`
+      : "");
   // INT-A8-PRES: the per-reason exclusion breakdown, derived from A4's
   // ACTUAL verdicts (verdict.reason — read verbatim, never parsed from
   // text, never invented): one total line, then one line per OBSERVED
-  // non-material reason, below-threshold distinguished from the
-  // fail-closed refusals. Worst case (all 8 refusal reasons observed)
-  // is 1 total + 1 below-threshold + 8 refusal lines = 10, exactly the
-  // A1 uncertainty bound — pinned statically in the suite so a future
-  // A4 vocabulary change that would overflow fails there. The carrier
-  // stays string[] (the A1 schema is untouched; old cached artifacts
-  // remain valid).
+  // non-material reason, each prefixed "Of those," so the breakdown
+  // states its partition relation — the per-reason classes are a
+  // disjoint, complete partition of the total line's count, never
+  // additive with it (the INT-RECONCILE repair: the founder's 928/928
+  // audit — two lines citing the same number read as a double-count
+  // until the subset relation is explicit). Below-threshold stays
+  // distinguished from the fail-closed refusals. Worst case (all 8
+  // refusal reasons observed) is 1 total + 1 below-threshold + 8
+  // refusal lines = 10, exactly the A1 uncertainty bound — pinned
+  // statically in the suite so a future A4 vocabulary change that
+  // would overflow fails there. The carrier stays string[] (the A1
+  // schema is untouched; old cached artifacts remain valid).
   const byReason = new Map<string, number>();
   for (const v of nonMaterial) byReason.set(v.reason, (byReason.get(v.reason) ?? 0) + 1);
   const uncertainty: string[] = [];

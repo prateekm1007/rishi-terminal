@@ -1,0 +1,61 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/pulse.moodVocabulary.test.ts (6 tests | 2 failed) 31ms
+   ❯ PULSE-MOOD — every page-own /pulse readout is descriptive, never positioning advice (6)
+     ✓ the widened scan bites: every positioning pattern detects its pre-fix vocabulary (positive control, B-18/C5) 2ms
+     ✓ the locale subtree scanner bites: advice vocabulary in a pulse locale value is detected (positive control) 0ms
+     × the positioning vocabulary is absent from the WHOLE pulse page source (widened, direction 4) 6ms
+     × the four descriptive mood readouts are present verbatim in the pulse page 1ms
+     ✓ the widened phrase scan covers every string in the English-script locale pulse subtrees 18ms
+     ✓ every locale that carries a pulse section keeps it free of the old council-line key (PULSE-ADVICE regression hold) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pulse.moodVocabulary.test.ts > PULSE-MOOD — every page-own /pulse readout is descriptive, never positioning advice > the positioning vocabulary is absent from the WHOLE pulse page source (widened, direction 4)
+AssertionError: positioning vocabulary present in app/pulse/page.tsx: /use selective positioning/i: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/pulse.moodVocabulary.test.ts:160:9
+    158|         pattern.test(PULSE_PAGE),
+    159|         `positioning vocabulary present in app/pulse/page.tsx: ${patte…
+    160|       ).toBe(false);
+       |         ^
+    161|     }
+    162|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/pulse.moodVocabulary.test.ts > PULSE-MOOD — every page-own /pulse readout is descriptive, never positioning advice > the four descriptive mood readouts are present verbatim in the pulse page
+AssertionError: missing descriptive mood readout: Mixed signals across breadth and momentum readings.: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/pulse.moodVocabulary.test.ts:166:92
+    164|   it("the four descriptive mood readouts are present verbatim in the p…
+    165|     for (const readout of DESCRIPTIVE_MOOD_READOUTS) {
+    166|       expect(PULSE_PAGE.includes(readout), `missing descriptive mood r…
+       |                                                                                            ^
+    167|     }
+    168|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  09:50:30
+   Duration  179ms (tests 42%, transform 39%, setup 7%, import 7%, worker 5%)
+

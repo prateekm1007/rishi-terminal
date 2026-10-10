@@ -99,9 +99,12 @@ test.describe("INT-A8-PRES fixture route — the shared presentation, computed",
     expect(prose.h).toBeGreaterThan(0);
 
     // the honest what-changed empty state renders for an empty ledger
+    // (INT-A8-REC: the exclusion truth, never an absence claim)
     const emptySection = page.locator('[data-fixture="emptyUncertainty"]');
     if ((await emptySection.count()) > 0) {
-      await expect(emptySection).toContainText("No tracked change in the window.");
+      await expect(emptySection).toContainText(
+        "No observed transition qualified as material evidence in this window — the ledger records no field change.",
+      );
     }
   });
 });

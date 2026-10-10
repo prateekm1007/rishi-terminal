@@ -33,7 +33,7 @@ export function InsightSummary({ view }: { view: EvidenceView }) {
       <h3 className="insight-surface__title">What changed</h3>
       {view.whatChanged.length === 0 ? (
         <p className="insight-surface__empty" data-insight-summary="whatChanged-empty">
-          No tracked change in the window.
+          No observed transition qualified as material evidence in this window — the ledger records no field change.
         </p>
       ) : (
         <ul className="insight-surface__list" data-insight-summary="whatChanged">

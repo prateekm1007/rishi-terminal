@@ -543,16 +543,75 @@ describe("INT-A8-PRES deterministic uncertainty — the per-reason exclusion bre
       `${nonMaterial.length} observed transition(s) did not qualify as material evidence in this window and are excluded from the ledger.`,
     );
     // One line per OBSERVED reason, derived here from the SAME verdicts.
+    // Each breakdown line names itself as a PARTITION of the total (the
+    // INT-A8-REC reconciliation: two bare 928s read as a double count;
+    // "Of those excluded" binds every breakdown line to line 1's total).
     const below = nonMaterial.filter((v) => v.reason === "below-threshold").length;
     const expected: string[] = [];
     if (below > 0) {
-      expected.push(`${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
+      expected.push(`Of those excluded: ${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
     }
     for (const reason of NON_MATERIAL_REFUSAL_ORDER) {
       const n = nonMaterial.filter((v) => v.reason === reason).length;
-      if (n > 0) expected.push(`${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
+      if (n > 0) expected.push(`Of those excluded: ${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
     }
     expect(u.slice(1)).toEqual(expected);
+  });
+
+  it("INT-A8-REC reconciliation: summary excluded == uncertainty total == the sum of the breakdown lines == observed minus material (all from the SAME verdicts)", async () => {
+    rowsByField = { price: [row("c-1", T0, 1204.1, null), row("c-2", T1, 1204.2, 1204.1)] };
+    const out = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    expect(out.refusal).toBeNull();
+    const art = out.insight;
+    if (!art) throw new Error("expected insight");
+    const nonMaterial = out.verdicts.filter((v) => v.verdict !== "material");
+    const material = out.verdicts.filter((v) => v.verdict === "material");
+    // the summary's own excluded counter (A5's detail string)
+    const m = /excluded=(\d+)/.exec(art.summary);
+    if (!m) throw new Error("summary carries no excluded counter");
+    const summaryExcluded = Number(m[1]);
+    // the uncertainty total (line 1) and the breakdown lines' counts
+    const u = art.uncertainty;
+    if (nonMaterial.length === 0) {
+      expect(u).toEqual([]);
+      expect(summaryExcluded).toBe(0);
+      return;
+    }
+    const total = Number(/^(\d+) observed/.exec(u[0])?.[1] ?? NaN);
+    expect(Number.isFinite(total)).toBe(true);
+    let breakdownSum = 0;
+    for (const line of u.slice(1)) {
+      const n = /^Of those excluded: (\d+) transition/.exec(line);
+      if (!n) throw new Error(`breakdown line does not bind to the total: ${line}`);
+      breakdownSum += Number(n[1]);
+    }
+    // THE RECONCILIATION — every counter derives from the SAME verdicts:
+    expect(summaryExcluded).toBe(nonMaterial.length);
+    expect(total).toBe(nonMaterial.length);
+    expect(breakdownSum).toBe(total);
+    // the ledger boundary: material events are NOT in the excluded count;
+    // evidence (uncapped below the A1 32) carries exactly the material ones
+    if (material.length <= 32) {
+      expect(art.evidence.length).toBe(material.length);
+    }
+    expect(material.length + summaryExcluded).toBe(out.verdicts.length);
+  });
+
+  it("INT-A8-REC the whatChanged projection is verdict-backed: a refused delta yields NO field line (the empty state is the verdicts' verdict, not a projection loss)", async () => {
+    // a delta the engine refuses: with a 2-row history the baselines are
+    // short, so the delta is refused fail-closed (insufficient-history) —
+    // the specific refusal class does not matter, the projection rule does:
+    // only MATERIAL events ever reach whatChanged/evidence.
+    rowsByField = { price: [row("c-1", T0, 1204.1, null), row("c-2", T1, 1204.10001, 1204.1)] };
+    const refused = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    expect(refused.insight).not.toBeNull();
+    const rm = /excluded=(\d+)/.exec(refused.insight!.summary);
+    expect(Number(rm?.[1] ?? 0)).toBe(refused.verdicts.filter((v) => v.verdict !== "material").length);
+    if (refused.verdicts.every((v) => v.verdict !== "material")) {
+      expect(refused.insight!.whatChanged).toEqual([]);
+      expect(refused.insight!.evidence).toEqual([]);
+      expect(refused.insight!.uncertainty.length).toBeGreaterThan(0);
+    }
   });
 
   it("the breakdown is deterministic: identical chain state -> identical uncertainty lines", async () => {

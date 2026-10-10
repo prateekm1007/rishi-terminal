@@ -49,7 +49,13 @@ describe("<InsightSummary> — the artifact's prose, verbatim and labelled", () 
   it("an empty whatChanged renders the honest empty state, never a fabricated change", async () => {
     const view = buildEvidenceView({ ...DETERMINISTIC, whatChanged: [] } as unknown as RishiInsight);
     const html = renderToString(createElement(InsightSummary, { view }));
-    expect(html).toContain("No tracked change in the window.");
+    // INT-A8-REC: the empty state states the EXCLUSION truth (the list is
+    // material-backed; empty means no transition qualified) — never an
+    // absence claim that CHANGED-state totals would contradict.
+    expect(html).toContain(
+      "No observed transition qualified as material evidence in this window — the ledger records no field change.",
+    );
+    expect(html).not.toContain("No tracked change in the window.");
   });
 
   it("carries the audit data attributes and the summary block class", async () => {

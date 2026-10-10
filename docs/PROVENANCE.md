@@ -15,7 +15,7 @@ decision on "India equities only until G-C". Hiding them from nav and
 returning a "not available yet" state is BLOCKED: FD-3 — not the
 coder's call (Constitution art. 31).
 
-Snapshot: 2026-10-09 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 18
+Snapshot: 2026-10-10 · seed: 5 · sourced: 12 · static-editorial: 1 · none: 18
 
 | Route | Classification | Seed label | Notes |
 |---|---|---|---|

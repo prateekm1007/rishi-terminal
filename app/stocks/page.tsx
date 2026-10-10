@@ -11,6 +11,7 @@ import { toScreenerRows } from '@/lib/transport/slimWire';
 import { ScreenerClient } from '@/components/screener/ScreenerClient';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { screener } from '@/messages/en.json';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
 
 // X4 (Round 11): the stocks namespace arrives from the server (see the
 // homepage's note) — the page carries only its own strings. The message
@@ -19,14 +20,11 @@ import { screener } from '@/messages/en.json';
 // product name now).
 
 // Round-5 audit (finding 18): per-page title/description.
-export const metadata = {
+export const metadata = routeMetadata({
+  path: "/stocks",
   title: "Stocks — India equities | Rishi Terminal",
   description: "Browse and screen India equities by consensus score, valuation, quality and leverage. Free tier shows the top-5 Rishi verdicts.",
-  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
-  // SR (2026-10-06): the canonical route is /stocks; /screener 308-redirects
-  // here (next.config.ts redirects — query strings preserved by Next.js).
-  alternates: { canonical: "/stocks" },
-};
+});
 
 export default function StocksPage() {
   // R16 C5: the stocks surface renders/filters FLAT fields only (table

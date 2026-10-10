@@ -1,0 +1,110 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/intelligenceChain.test.ts (25 tests | 2 failed) 65ms
+   ✓ INT-A10 closed capability registry (1)
+     ✓ is exactly the Phase-A set (mechanical gate against invented capability ids) 2ms
+   ✓ INT-A10 chain runner (deterministic composition of the ONE substrate) (3)
+     ✓ composes A2→A3→A4→A5→A6→A7 over live rows and returns a contract-valid deterministic artifact 7ms
+     ✓ is deterministic: identical chain state → identical changeKey and identical artifact bytes 1ms
+     ✓ the empty-history state is honest `unknown`, never fabricated 0ms
+   ✓ INT-A10 A4 economic gate (non-material → zero AI spend) (1)
+     ✓ a non-material verdict refuses generation: no router call, honest 404 refusal from the runner 1ms
+   ✓ INT-A10 cache cycle through the ONE A7 path (1)
+     ✓ a shapeless cache read result is a miss, never a fabricated artifact 0ms
+   ✓ INT-A10 no-second-path pins (static source scans) (2)
+     ✓ the chain imports no provider module and no router (deterministic by construction) 0ms
+     ✓ the chain and registry keep no clock and no randomness 0ms
+   ✓ INT-A10 material chain (the A4 gate OPENS and the handoff is complete) (3)
+     ✓ a 4.9% intraday transition is material: the insight handoff carries scaffold, changeKey and the A4 verdicts 2ms
+     ✓ a cache HIT serves the stored artifact through the ONE parser (zero generation, zero writes) 2ms
+     ✓ a malformed stored payload is a MISS (parse-or-serve): the material chain falls through to the handoff 1ms
+   ✓ INT-A10 pure prose assembler (the A1 boundary refuses, never edits) (4)
+     ✓ grounded model prose fills ONLY the prose families; provenance carries the full trio 1ms
+     ✓ unvalidated synthesis is labelled model-unvalidated and cannot reach high confidence 1ms
+     ✓ the T52 invariant: claimsVerified with zero claims is NOT grounded 1ms
+     ✓ an over-contract summary is REFUSED at the boundary (never served, never cached) 2ms
+   ✓ INT-A10 single-caller pins (static source scans, app/lib/components) (2)
+     ✓ the ONE loop has exactly the sanctioned callers (chat, intelligence, the secret-gated probe) 15ms
+     ✓ the chain runner has exactly ONE consumer: the intelligence route 16ms
+   ✓ INT-A10 chain over PRODUCTION row shapes (PostgREST +00:00 timestamps) (2)
+     ✓ an all-+00:00 history still composes a contract-valid deterministic artifact 1ms
+     ✓ an unparseable recordedAt degrades the window to the caller clock, never fabricates 0ms
+   ❯ INT-A8-PRES deterministic uncertainty — the per-reason exclusion breakdown (6)
+     × a non-material chain accounts its exclusions from the actual verdicts: total line + one line per observed reason 7ms
+     × INT-A8-REC reconciliation: summary excluded == uncertainty total == the sum of the breakdown lines == observed minus material (all from the SAME verdicts) 1ms
+     ✓ INT-A8-REC the whatChanged projection is verdict-backed: a refused delta yields NO field line (the empty state is the verdicts' verdict, not a projection loss) 1ms
+     ✓ the breakdown is deterministic: identical chain state -> identical uncertainty lines 0ms
+     ✓ no line implies observations did not occur (the wording names exclusion, never absence) 0ms
+     ✓ the breakdown fits the A1 bound with no truncation: 1 total + 1 below-threshold + 8 refusal reasons = 10 (static pin) 0ms
+ ❯ test/intelligenceInsightSummary.test.ts (6 tests | 1 failed) 25ms
+   ❯ <InsightSummary> — the artifact's prose, verbatim and labelled (6)
+     ✓ renders the summary and whyItMatters paragraphs verbatim under their labels 8ms
+     ✓ renders the whatChanged lines verbatim (field: change — the deterministic layer's own strings) 1ms
+     × an empty whatChanged renders the honest empty state, never a fabricated change 12ms
+     ✓ carries the audit data attributes and the summary block class 1ms
+     ✓ never labels the deterministic prose AI-generated and never advises 1ms
+     ✓ the barrel exports exactly the six closed primitives (the composition's canonical order pinned at the barrel) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/intelligenceChain.test.ts > INT-A8-PRES deterministic uncertainty — the per-reason exclusion breakdown > a non-material chain accounts its exclusions from the actual verdicts: total line + one line per observed reason
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "Of those excluded: 1 transition(s) were refused fail-closed by the materiality engine (missing-input).",
+-   "Of those excluded: 1 transition(s) were refused fail-closed by the materiality engine (non-comparable).",
++   "1 transition(s) were refused fail-closed by the materiality engine (missing-input).",
++   "1 transition(s) were refused fail-closed by the materiality engine (non-comparable).",
+  ]
+
+ ❯ test/intelligenceChain.test.ts:558:24
+    556|       if (n > 0) expected.push(`Of those excluded: ${n} transition(s) …
+    557|     }
+    558|     expect(u.slice(1)).toEqual(expected);
+       |                        ^
+    559|   });
+    560|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/intelligenceChain.test.ts > INT-A8-PRES deterministic uncertainty — the per-reason exclusion breakdown > INT-A8-REC reconciliation: summary excluded == uncertainty total == the sum of the breakdown lines == observed minus material (all from the SAME verdicts)
+Error: breakdown line does not bind to the total: 1 transition(s) were refused fail-closed by the materiality engine (missing-input).
+ ❯ test/intelligenceChain.test.ts:585:21
+    583|     for (const line of u.slice(1)) {
+    584|       const n = /^Of those excluded: (\d+) transition/.exec(line);
+    585|       if (!n) throw new Error(`breakdown line does not bind to the tot…
+       |                     ^
+    586|       breakdownSum += Number(n[1]);
+    587|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/intelligenceInsightSummary.test.ts > <InsightSummary> — the artifact's prose, verbatim and labelled > an empty whatChanged renders the honest empty state, never a fabricated change
+AssertionError: expected '<section class="insight-surface insig…' to contain 'No observed transition qualified as m…'
+
+Expected: "No observed transition qualified as material evidence in this window — the ledger records no field change."
+Received: "<section class="insight-surface insight-surface--summary" aria-label="Summary"><h3 class="insight-surface__title">Summary</h3><p class="insight-surface__text" data-insight-summary="summary">The price moved during the window; both sources agree.</p><h3 class="insight-surface__title">Why it matters</h3><p class="insight-surface__text" data-insight-summary="whyItMatters">An agreed price move is the baseline every downstream judgement starts from.</p><h3 class="insight-surface__title">What changed</h3><p class="insight-surface__empty" data-insight-summary="whatChanged-empty">No tracked change in the window.</p></section>"
+
+ ❯ test/intelligenceInsightSummary.test.ts:55:18
+     53|     // material-backed; empty means no transition qualified) — never an
+     54|     // absence claim that CHANGED-state totals would contradict.
+     55|     expect(html).toContain(
+       |                  ^
+     56|       "No observed transition qualified as material evidence in this w…
+     57|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 28 passed (31)
+   Start at  00:27:20
+   Duration  664ms (transform 39%, import 38%, tests 20%, setup 2%, worker 1%)
+

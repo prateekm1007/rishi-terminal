@@ -89,3 +89,19 @@ dossier section with the surrounding sections unchanged (B1 panel, council);
 capability=insight endpoint keeps its designed 404 (zero spend, endpoint
 unchanged); the B1/C1/D2 surfaces still render; hydrated real-browser
 screenshots.
+
+## Hydrated real-browser screenshots (C6, captured on deployed `0e200a1e`)
+
+In `screens/` (captured 16:47Z, Playwright Chromium, live DOM after hydration):
+
+- `screens/stock-page-after-removal.png` — `/stock/RELIANCE`: the B1 panel READY
+  (70/100 consensus), the Rishi Council and the surrounding sections render
+  unchanged, and NO dossier section exists anywhere on the page (live DOM:
+  `data-dossier-insight` sections=0, aria-label "Rishi stock dossier"=0).
+- `screens/stock-page-after-removal-full.png` — the full page, otherwise intact.
+- `screens/stocks-d2-intact.png` — `/stocks` with all 896 D2 openers (substrate).
+
+Raw capture log: `LIVE DOM positive control: B1 panel settled with phase="ready"`;
+`LIVE DOM after hydration: data-dossier-insight sections=0, aria-label dossier=0`;
+`LIVE DOM positive control: council visible=true`; `LIVE DOM /stocks:
+data-intelligence-badge openers=896`.

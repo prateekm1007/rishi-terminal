@@ -10,7 +10,6 @@ import { detectArchetype, HISTORICAL_PARALLELS } from '@/lib/wisdom/historicalPa
 // R4-04: consensus + dissent + verified levers, computed once per regeneration
 import { buildCouncil } from '@/lib/consensus/council';
 import { RishiCouncil } from '@/components/stock/RishiCouncil';
-import { IntelligencePanel } from '@/components/stock/IntelligencePanel';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
@@ -183,10 +182,6 @@ export default async function StockPage({ params }: StockPageProps) {
         parallel={parallel}
       />
       <RishiCouncil council={council} />
-      {/* INT-B1: the first real product surface — the stock page consumes
-          the ONE /api/intelligence surface through the A8 primitives
-          (client-side fetch; no page imports the chain runner). */}
-      <IntelligencePanel key={key} subject={key} />
     </NamespaceProvider>
   );
 }

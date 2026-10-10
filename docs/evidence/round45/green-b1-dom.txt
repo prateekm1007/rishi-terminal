@@ -1,0 +1,25 @@
+[WebServer] (node:12757) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:12771) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] [rateLimit] exception (failing open): Missing Supabase URL or service-role key environment variables
+[WebServer] [quoteCache] batch read failed: Missing Supabase URL or service-role key environment variables
+  ✓  1 test/smoke/b1-panel-removed.spec.ts:23:7 › INT-B1 stock-page surface REMOVED per founder order (2026-10-10) › the stock page carries NO Rishi Intelligence section — the surrounding page renders unchanged (687ms)
+[WebServer] [rateLimit] exception (failing open): Missing Supabase URL or service-role key environment variables
+[WebServer] [quoteCache] batch read failed: Missing Supabase URL or service-role key environment variables
+[WebServer] [Screener] fetch error for RELIANCE: [TypeError: fetch failed] {
+[WebServer]   [cause]: AggregateError: 
+[WebServer]       at ignore-listed frames {
+[WebServer]     code: 'ECONNREFUSED',
+[WebServer]     [errors]: [ [Error], [Error] ]
+[WebServer]   }
+[WebServer] }
+[WebServer] [NSE] RELIANCE: HTTP 403
+[WebServer] [Yahoo] RELIANCE: HTTP 401
+[WebServer] [Yahoo-Bulk] Failed to fetch ADANITRANS after .NS + .BO
+  ✓  2 test/smoke/dossier-removed.spec.ts:24:7 › INT-D3 REMOVED per founder order (2026-10-10) › the stock page carries NO dossier section — the council renders unchanged (the B1 panel joined the removal the same round) (498ms)
+
+  2 passed (2.4s)

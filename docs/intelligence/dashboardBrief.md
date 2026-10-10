@@ -1,5 +1,12 @@
 # C1 Dashboard Brief — the dashboard mounts the ONE surface (pre-registration)
 
+> **Amended 2026-10-10 (rule 30):** the B1 stock-page panel cited below as the
+> surviving first surface was REMOVED from `/stock/[symbol]` by the founder's
+> explicit order (round 45, after the D3 dossier removal) — see
+> `docs/evidence/round45/b1-removal.md`. The C1 brief described here SURVIVES
+> (with the D2 drawer, one of the two remaining declared surfaces). The text
+> below is the historical pre-registration, preserved verbatim.
+
 Roadmap item C1 ("PHASE C — Dashboard Brief"; frozen rule 3: "Dashboard
 Brief depends on A1–A10"). Dependencies: A1 (contract), A8 (evidence
 primitives), A10 (the ONE intelligence API), B1 (the mounted-surface

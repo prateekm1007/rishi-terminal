@@ -1,0 +1,56 @@
+# GREEN battery — B1 stock-page surface removal (round 45), branch fix/b1-panel-removal, tree = origin/main 3b63a11 + the removal edits
+# Each block: command, real exit code, real output lines (trimmed with [...] where verbose). Full logs in this directory where noted.
+
+[1] npx tsc --noEmit
+TSC_EXIT=0  (no output)
+
+[2] npx eslint . && node scripts/eslintRatchet.mjs
+ESLINT_EXIT=0
+ESLint ratchet: 0 errors, 283 warnings (total 283)
+Baseline: 283
+Ratchet holds. Reduce the count to lower the bar.
+
+[3] npx vitest run   (full log: green-b1-vitest.txt)
+ Test Files  198 passed (198)
+      Tests  2201 passed (2201)
+VITEST_EXIT=0
+
+[4] npm run validate:encoding
+ENC=0
+
+[5] npx tsx --conditions react-server scripts/validateStocksImpl.ts
+STOCKS=0
+
+[6] npx tsx --conditions react-server scripts/scoreParityImpl.ts
+PARITY=0
+
+[7] npm run build
+BUILD=0
+
+[8] npm run verify:isr
+ISR=0
+
+[9] npm run bundle:budget (trimmed to the /stock rows)
+── bundleBudget (200 kB budgets — founder-confirmed in Round-15 B4; first-load = scripts a module-capable browser downloads, nomodule polyfills excluded) ──
+route                first-load   budget   ratchet   verdict
+/stocks                 163.2 kB    200 kB   162.9 kB   OK  (9 scripts)
+/stock/[symbol]         169.6 kB    200 kB   171.2 kB   OK  (11 scripts)
+BUNDLE=0
+
+[10] npm run aiLoopAudit
+AILOOP=0
+
+[11] npm run routeAudit
+ROUTE=0
+
+[12] git ls-files | grep -E '(^|/)\.env'
+.env.example
+
+[13] npx playwright test test/smoke/b1-panel-removed.spec.ts test/smoke/dossier-removed.spec.ts   (raw: green-b1-dom.txt)
+  2 passed (2.4s)
+GREEN_DOM_EXIT=0
+
+[14] a8-presentation dashboard-brief leg on this tree: 1 failed (19.4s poll)
+PRE-EXISTENCE PROOF: the SAME leg fails on the CLEAN base tree (origin/main 3b63a11, stash-verified): BASE_EXIT=1.
+Cause: this sandbox's broken upstream egress (Yahoo 401 / NSE 403 / ETIMEDOUT in the webServer log) stalls the / SSR past the 20s settled-state poll.
+CI passed this exact spec 5/5 yesterday (#325 merge run). The leg is untouched by this diff; CI re-runs the full battery on the PR.

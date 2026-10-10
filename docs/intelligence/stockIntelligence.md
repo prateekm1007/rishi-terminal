@@ -1,5 +1,12 @@
 # INT-D2 Stock Intelligence — the per-row intelligence drawer (pre-registration)
 
+> **Amended 2026-10-10 (rule 30):** the B1 stock-page panel cited below as the
+> untouched first surface was REMOVED from `/stock/[symbol]` by the founder's
+> explicit order (round 45, after the D3 dossier removal) — see
+> `docs/evidence/round45/b1-removal.md`. The D2 drawer described here SURVIVES
+> (with the C1 brief, one of the two remaining declared surfaces). The text
+> below is the historical pre-registration, preserved verbatim.
+
 Roadmap item D2 ("PHASE D — Screening · Stock Intelligence · Stock
 Dossier", second item in the frozen order — the position-within-phase
 id scheme of B1/C1). Dependencies: A1 (contract), A8 (evidence

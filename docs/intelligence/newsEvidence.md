@@ -1,5 +1,14 @@
 # B1 Per-symbol News Evidence — the first real product surface (pre-registration)
 
+> **PARTIALLY SUPERSEDED 2026-10-10 (rule 30):** the news-evidence SUBSTRATE this
+> pre-registration describes (the matching rule, the stable evidence id, the deps
+> pass feeding the chain) stays intact and green — but the PRODUCT SURFACE it
+> mounted (the stock-page `IntelligencePanel` section headed "Rishi Intelligence")
+> was REMOVED from `/stock/[symbol]` by the founder's explicit order (round 45,
+> the second removal after the D3 dossier). The removal record, the revert range,
+> and the substrate-intact verification live in `docs/evidence/round45/b1-removal.md`.
+> The text below is the historical pre-registration, preserved verbatim.
+
 Roadmap item B1 ("PHASE B — B1 Per-symbol News Evidence"), the first
 Phase-B item: Phase A is proven (A1–A10 CLOSED; the A10 closeout row
 ends "the first real product surface mounts at B1"). Dependencies: A1

@@ -1,0 +1,31 @@
+[WebServer] (node:8962) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:8976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 test/smoke/b1-panel-removed.spec.ts:23:7 › INT-B1 stock-page surface REMOVED per founder order (2026-10-10) › the stock page carries NO Rishi Intelligence section — the surrounding page renders unchanged (582ms)
+
+
+  1) test/smoke/b1-panel-removed.spec.ts:23:7 › INT-B1 stock-page surface REMOVED per founder order (2026-10-10) › the stock page carries NO Rishi Intelligence section — the surrounding page renders unchanged 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      39 |     // (Pre-removal each was 1 — the SSR skeleton, its aria label, and the
+      40 |     // "Rishi Intelligence" h2; the RED.)
+    > 41 |     expect(await page.locator("section[data-intelligence-panel]").count()).toBe(0);
+         |                                                                            ^
+      42 |     expect(await page.locator('[aria-label="Rishi intelligence"]').count()).toBe(0);
+      43 |     expect(await page.getByText("Rishi Intelligence", { exact: true }).count()).toBe(0);
+      44 |
+        at /home/z/rishi-terminal/test/smoke/b1-panel-removed.spec.ts:41:76
+
+    Error Context: test-results/smoke-b1-panel-removed-INT-f30dd-ding-page-renders-unchanged/error-context.md
+
+  1 failed
+    test/smoke/b1-panel-removed.spec.ts:23:7 › INT-B1 stock-page surface REMOVED per founder order (2026-10-10) › the stock page carries NO Rishi Intelligence section — the surrounding page renders unchanged 
+EXIT=1

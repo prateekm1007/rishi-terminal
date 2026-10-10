@@ -40,15 +40,36 @@ export const FEAR_GREED_INDEX = {
   previousMonth: 52,
 };
 
+// ── Market dominance — DERIVED from the caps, never typed ─────────────────
+// CRYPTO-DOM (founder direction 5a, 2026-10-10): the typed 58.2
+// contradicted the dataset's own caps ($1.95T BTC / $2.74865T total =
+// 70.96% at 1 dp; the founder's 70.9 used the rounded $2.75T total).
+// One source of truth (C4): the caps. The derivation is pinned by
+// test/crypto.dominance.test.ts, whose source scan fails on any
+// numeric dominance literal in this file.
+const TOTAL_MARKET_CAP = CRYPTO_ASSETS.reduce((sum, c) => sum + c.marketCap, 0);
+
+const capOf = (symbol: string) =>
+  CRYPTO_ASSETS.find((c) => c.symbol === symbol)?.marketCap ?? 0;
+
+/** An asset's share of the dataset's total market cap, in % at 1 dp. */
+export function assetDominance(symbol: string): number {
+  return Math.round((capOf(symbol) / TOTAL_MARKET_CAP) * 1000) / 10;
+}
+
 export const MARKET_DOMINANCE = {
-  btc: 58.2,
-  eth: 18.5,
-  bnb: 3.8,
-  others: 19.5,
+  btc: assetDominance('BTC'),
+  eth: assetDominance('ETH'),
+  bnb: assetDominance('BNB'),
+  others: Math.round(
+    ((TOTAL_MARKET_CAP - capOf('BTC') - capOf('ETH') - capOf('BNB')) /
+      TOTAL_MARKET_CAP) *
+      1000,
+  ) / 10,
 };
 
 export function getCryptoMetrics() {
-  const totalMarketCap = CRYPTO_ASSETS.reduce((sum, c) => sum + c.marketCap, 0);
+  const totalMarketCap = TOTAL_MARKET_CAP;
   const totalVolume = CRYPTO_ASSETS.reduce((sum, c) => sum + c.volume24h, 0);
   const avgChange24h = CRYPTO_ASSETS.reduce((sum, c) => sum + c.change24h, 0) / CRYPTO_ASSETS.length;
   const avgRSI = Math.round(CRYPTO_ASSETS.reduce((sum, c) => sum + c.rsi, 0) / CRYPTO_ASSETS.length);
@@ -70,17 +91,21 @@ export interface CryptoOnChain {
   activeAddresses?: number;  // daily active addresses (thousands)
 }
 
+// On-chain dominance is DERIVED from the caps (CRYPTO-DOM) — the same
+// single source of truth as MARKET_DOMINANCE; every other field here is
+// the static reference dataset it always was (honestly labeled at the
+// rendering sites).
 export const CRYPTO_ONCHAIN: Record<string, CryptoOnChain> = {
-  BTC:   { dominance: 58.2, fundingRate: 0.012, openInterest: 32.5, exchangeNetflow: -42.0, mvrv: 2.1, activeAddresses: 950 },
-  ETH:   { dominance: 18.5, fundingRate: 0.009, openInterest: 14.2, exchangeNetflow: -180.0, mvrv: 1.6, tvl: 58.0, activeAddresses: 480 },
-  BNB:   { dominance: 3.8,  fundingRate: 0.005, openInterest: 0.9,  exchangeNetflow: 12.0,  mvrv: 1.4, tvl: 5.2,  activeAddresses: 210 },
-  SOL:   { dominance: 4.6,  fundingRate: 0.021, openInterest: 3.8,  exchangeNetflow: -310.0, mvrv: 2.8, tvl: 9.5,  activeAddresses: 1250 },
-  ADA:   { dominance: 1.6,  fundingRate: 0.004, openInterest: 0.5,  exchangeNetflow: 45.0,  mvrv: 1.1, tvl: 0.4,  activeAddresses: 65 },
-  AVAX:  { dominance: 0.7,  fundingRate: 0.015, openInterest: 0.6,  exchangeNetflow: -22.0, mvrv: 1.3, tvl: 1.3,  activeAddresses: 48 },
-  DOT:   { dominance: 0.6,  fundingRate: 0.002, openInterest: 0.3,  exchangeNetflow: 18.0,  mvrv: 0.9, tvl: 0.2,  activeAddresses: 32 },
-  POL:   { dominance: 0.3,  fundingRate: 0.011, openInterest: 0.4,  exchangeNetflow: -65.0, mvrv: 1.2, tvl: 0.9,  activeAddresses: 410 },
-  LINK:  { dominance: 0.7,  fundingRate: 0.008, openInterest: 0.7,  exchangeNetflow: -15.0, mvrv: 1.5, tvl: 0.6,  activeAddresses: 38 },
-  UNI:   { dominance: 0.5,  fundingRate: 0.006, openInterest: 0.3,  exchangeNetflow: 8.0,   mvrv: 1.2, tvl: 4.8,  activeAddresses: 22 },
-  AAVE:  { dominance: 0.2,  fundingRate: 0.014, openInterest: 0.25, exchangeNetflow: -4.5,  mvrv: 1.7, tvl: 11.2, activeAddresses: 9 },
-  SKY:   { dominance: 0.1,  fundingRate: 0.007, openInterest: 0.1,  exchangeNetflow: -1.2,  mvrv: 1.4, tvl: 5.4,  activeAddresses: 4 },
+  BTC:   { dominance: assetDominance('BTC'), fundingRate: 0.012, openInterest: 32.5, exchangeNetflow: -42.0, mvrv: 2.1, activeAddresses: 950 },
+  ETH:   { dominance: assetDominance('ETH'), fundingRate: 0.009, openInterest: 14.2, exchangeNetflow: -180.0, mvrv: 1.6, tvl: 58.0, activeAddresses: 480 },
+  BNB:   { dominance: assetDominance('BNB'), fundingRate: 0.005, openInterest: 0.9,  exchangeNetflow: 12.0,  mvrv: 1.4, tvl: 5.2,  activeAddresses: 210 },
+  SOL:   { dominance: assetDominance('SOL'), fundingRate: 0.021, openInterest: 3.8,  exchangeNetflow: -310.0, mvrv: 2.8, tvl: 9.5,  activeAddresses: 1250 },
+  ADA:   { dominance: assetDominance('ADA'), fundingRate: 0.004, openInterest: 0.5,  exchangeNetflow: 45.0,  mvrv: 1.1, tvl: 0.4,  activeAddresses: 65 },
+  AVAX:  { dominance: assetDominance('AVAX'), fundingRate: 0.015, openInterest: 0.6,  exchangeNetflow: -22.0, mvrv: 1.3, tvl: 1.3,  activeAddresses: 48 },
+  DOT:   { dominance: assetDominance('DOT'), fundingRate: 0.002, openInterest: 0.3,  exchangeNetflow: 18.0,  mvrv: 0.9, tvl: 0.2,  activeAddresses: 32 },
+  POL:   { dominance: assetDominance('POL'), fundingRate: 0.011, openInterest: 0.4,  exchangeNetflow: -65.0, mvrv: 1.2, tvl: 0.9,  activeAddresses: 410 },
+  LINK:  { dominance: assetDominance('LINK'), fundingRate: 0.008, openInterest: 0.7,  exchangeNetflow: -15.0, mvrv: 1.5, tvl: 0.6,  activeAddresses: 38 },
+  UNI:   { dominance: assetDominance('UNI'), fundingRate: 0.006, openInterest: 0.3,  exchangeNetflow: 8.0,   mvrv: 1.2, tvl: 4.8,  activeAddresses: 22 },
+  AAVE:  { dominance: assetDominance('AAVE'), fundingRate: 0.014, openInterest: 0.25, exchangeNetflow: -4.5,  mvrv: 1.7, tvl: 11.2, activeAddresses: 9 },
+  SKY:   { dominance: assetDominance('SKY'), fundingRate: 0.007, openInterest: 0.1,  exchangeNetflow: -1.2,  mvrv: 1.4, tvl: 5.4,  activeAddresses: 4 },
 };

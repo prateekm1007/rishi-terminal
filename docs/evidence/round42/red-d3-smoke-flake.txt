@@ -1,0 +1,43 @@
+# INT-D3 smoke bite — 2026-10-10T05:23Z, CI run 38027087184 (docs PR #312,
+# the FIRST CI run of the committed dossier.spec.ts on a docs-only diff;
+# same code tree as #310's green run 15 minutes earlier). The transient
+# double-mount race: the toHaveCount(1) gate passed, a second
+# section[data-intelligence-panel] (both "loading") mounted before the
+# separate not.toHaveAttribute assertion ran. The R43 panel/brief specs
+# were hardened to the ATOMIC settled-state poll for exactly this class;
+# the new dossier spec missed that hardening. Fix: the same atomic poll.
+Server]     code: 'ETIMEDOUT',
+2026-10-10T05:23:45.5087588Z [WebServer]     [errors]: [ [Error], [Error] ]
+2026-10-10T05:23:45.5088235Z [WebServer]   }
+2026-10-10T05:23:45.5088722Z [WebServer] }
+2026-10-10T05:23:45.5500494Z [WebServer] [Yahoo] SANDUMANG: HTTP 401
+2026-10-10T05:23:47.1336320Z ················F······························
+2026-10-10T05:23:47.1342693Z 
+2026-10-10T05:23:47.1351938Z   1) test/smoke/dossier.spec.ts:21:7 › INT-D3 dossier — the honest pre-window state on the stock page › the B1 panel renders; the dossier section is ABSENT with the ONE insight fetch 404ing and no affordance 
+2026-10-10T05:23:47.1353141Z 
+2026-10-10T05:23:47.1353886Z     Error: expect(locator).not.toHaveAttribute(expected) failed
+2026-10-10T05:23:47.1354322Z 
+2026-10-10T05:23:47.1354732Z     Locator: locator('section[data-intelligence-panel]')
+2026-10-10T05:23:47.1355271Z     Expected: not "loading"
+2026-10-10T05:23:47.1368738Z     Error: strict mode violation: locator('section[data-intelligence-panel]') resolved to 2 elements:
+2026-10-10T05:23:47.1371079Z         1) <section aria-label="Rishi intelligence" class="stock-intelligence-panel" data-intelligence-panel="loading" data-intelligence-subject="RELIANCE">…</section> aka getByRole('region', { name: 'Rishi intelligence' })
+2026-10-10T05:23:47.1373396Z         2) <section aria-label="Rishi intelligence" class="stock-intelligence-panel" data-intelligence-panel="loading" data-intelligence-subject="RELIANCE">…</section> aka getByLabel('Rishi intelligence').nth(1)
+2026-10-10T05:23:47.1374319Z 
+2026-10-10T05:23:47.1374416Z     Call log:
+2026-10-10T05:23:47.1374920Z       - Expect "not toHaveAttribute" locator('section[data-intelligence-panel]') with timeout 15000ms
+2026-10-10T05:23:47.1375550Z       - waiting for locator('section[data-intelligence-panel]')
+2026-10-10T05:23:47.1376047Z 
+2026-10-10T05:23:47.1376054Z 
+2026-10-10T05:23:47.1376306Z       32 |     const panel = page.locator("section[data-intelligence-panel]");
+2026-10-10T05:23:47.1376816Z       33 |     await expect(panel).toHaveCount(1, { timeout: 15_000 });
+2026-10-10T05:23:47.1377447Z     > 34 |     await expect(panel).not.toHaveAttribute("data-intelligence-panel", "loading", { timeout: 15_000 });
+2026-10-10T05:23:47.1377967Z          |                             ^
+2026-10-10T05:23:47.1378234Z       35 |
+2026-10-10T05:23:47.1378705Z       36 |     // the dossier section exists for verification and carries the honest
+2026-10-10T05:23:47.1379363Z       37 |     // phase. The DOM/network coherence is the pin: "absent" ⟺ the route's
+2026-10-10T05:23:47.1379974Z         at /home/runner/work/rishi-terminal/rishi-terminal/test/smoke/dossier.spec.ts:34:29
+2026-10-10T05:23:47.1380323Z 
+2026-10-10T05:23:47.1380746Z     Error Context: test-results/smoke-dossier-INT-D3-dossi-13d04-ch-404ing-and-no-affordance/error-context.md
+2026-10-10T05:23:47.1381231Z 
+2026-10-10T05:23:47.1381340Z   1 failed
+2026-10-10T05:23:47.1382321Z     test/smoke/dossier.spec.ts:21:7 › IN

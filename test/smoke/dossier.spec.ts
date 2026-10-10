@@ -28,19 +28,38 @@ test.describe("INT-D3 dossier — the honest pre-window state on the stock page"
 
     await page.goto("/stock/RELIANCE");
 
-    // positive control FIRST: the always-on B1 thesis panel is present
+    // positive control FIRST: the always-on B1 thesis panel is present.
+    // The ATOMIC settled-state poll (the R43 discipline the panel/brief
+    // specs already carry; the two-step form raced in CI — run 38027087184:
+    // the toHaveCount(1) gate passed, a transient second "loading" panel
+    // mounted before the separate attribute assertion ran). count==1 AND
+    // phase settled are evaluated atomically per poll, so a transient
+    // hydration double is absorbed while a PERSISTENT double or a stuck
+    // loading state still fails the gate — strictly stronger than either
+    // half alone.
     const panel = page.locator("section[data-intelligence-panel]");
-    await expect(panel).toHaveCount(1, { timeout: 15_000 });
-    await expect(panel).not.toHaveAttribute("data-intelligence-panel", "loading", { timeout: 15_000 });
+    await expect(async () => {
+      const count = await panel.count();
+      expect(count).toBe(1);
+      const panelPhase = await panel.getAttribute("data-intelligence-panel");
+      expect(panelPhase === "loading").toBe(false);
+      expect(["ready", "unavailable"]).toContain(panelPhase ?? "");
+    }).toPass({ timeout: 20_000 });
 
     // the dossier section exists for verification and carries the honest
     // phase. The DOM/network coherence is the pin: "absent" ⟺ the route's
     // designed 404 (no artifact exists — production's pre-window state);
     // "error" ⟺ any other failure (an env-less CI server cannot reach the
     // cache and fails closed — the distinction the contract demands).
+    // The same ATOMIC settled-state poll — a persistent double or a stuck
+    // loading state fails; a transient hydration frame does not.
     const dossier = page.locator("section[data-dossier-insight]");
-    await expect(dossier).toHaveCount(1, { timeout: 15_000 });
-    await expect(dossier).not.toHaveAttribute("data-dossier-insight", "loading", { timeout: 15_000 });
+    await expect(async () => {
+      const count = await dossier.count();
+      expect(count).toBe(1);
+      const dossierPhase = await dossier.getAttribute("data-dossier-insight");
+      expect(dossierPhase === "loading").toBe(false);
+    }).toPass({ timeout: 20_000 });
     const phase = await dossier.getAttribute("data-dossier-insight");
     expect(["absent", "error", "ready"]).toContain(phase ?? "");
     expect(await dossier.getAttribute("data-dossier-subject")).toBe("RELIANCE");

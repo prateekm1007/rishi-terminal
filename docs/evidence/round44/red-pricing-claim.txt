@@ -1,0 +1,59 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/pricingClaim.honesty.test.ts (4 tests | 2 failed) 11ms
+   ❯ PRICING-CLAIM — the free-tier chat chip describes the shipped per-reply behavior (4)
+     × the overclaim 'verified, grounded answers' is absent from every locale's pricing chip 8ms
+     × the chip describes the per-reply grounding provenance in every locale 1ms
+     ✓ positive control: the chat UI actually renders per-reply grounding labels (the copy must never exceed this) 1ms
+     ✓ bite control: the overclaim detector catches the pre-fix string (B-18/C5) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pricingClaim.honesty.test.ts > PRICING-CLAIM — the free-tier chat chip describes the shipped per-reply behavior > the overclaim 'verified, grounded answers' is absent from every locale's pricing chip
+AssertionError: bn still carries the overclaim: AI Rishi chat with verified, grounded answers: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/pricingClaim.honesty.test.ts:68:9
+     66|         value!.includes(OVERCLAIM),
+     67|         `${locale} still carries the overclaim: ${value}`,
+     68|       ).toBe(false);
+       |         ^
+     69|     }
+     70|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/pricingClaim.honesty.test.ts > PRICING-CLAIM — the free-tier chat chip describes the shipped per-reply behavior > the chip describes the per-reply grounding provenance in every locale
+AssertionError: bn chip must describe the shipped behavior (per-answer grounding provenance): AI Rishi chat with verified, grounded answers: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/pricingClaim.honesty.test.ts:78:9
+     76|         value!.includes(REPLACEMENT),
+     77|         `${locale} chip must describe the shipped behavior (${REPLACEM…
+     78|       ).toBe(true);
+       |         ^
+     79|     }
+     80|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  13:05:11
+   Duration  159ms (transform 52%, tests 22%, setup 10%, import 10%, worker 7%)
+

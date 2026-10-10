@@ -1,0 +1,73 @@
+# RED — fix/pulse-descriptive-council (2026-10-10): the advice-vocabulary scan and the descriptive-framing pin both fail on the pre-fix tree (the prescriptive strings are live in the source and SSR — production-verified: 'Stay barbell' / 'Keep cash' in the deployed /pulse HTML).
+# command: npx vitest run test/pulseCouncilDescriptive.test.ts
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/pulseCouncilDescriptive.test.ts (2 tests | 2 failed) 10ms
+   ❯ pulse council readout — descriptive, never prescriptive (2)
+     × carries no advice vocabulary in any branch 7ms
+     × states each branch as a readout of the council's stances 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pulseCouncilDescriptive.test.ts > pulse council readout — descriptive, never prescriptive > carries no advice vocabulary in any branch
+AssertionError: expected 'const councilReco =\n    consensus.sp…' not to contain 'Stay barbell'
+
+- Expected
++ Received
+
+- Stay barbell
++ const councilReco =
++     consensus.spread >= 55
++       ? 'High uncertainty. Avoid leverage, prioritize balance-sheet strength, and size positions conservatively.'
++       : consensus.avgAgreement >= 65
++       ? 'Consensus tilts constructive. Prefer quality compounders + domestic cyclicals with strong cashflows.'
++       : 'Mixed regime. Stay barbell: quality defensives + selective cyclicals. Keep cash for volatility.';
++
++   
+
+ ❯ test/pulseCouncilDescriptive.test.ts:57:23
+     55|       "add exposure",
+     56|     ]) {
+     57|       expect(src).not.toContain(banned);
+       |                       ^
+     58|     }
+     59|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/pulseCouncilDescriptive.test.ts > pulse council readout — descriptive, never prescriptive > states each branch as a readout of the council's stances
+AssertionError: expected 'const councilReco =\n    consensus.sp…' to contain 'the council\'s stances diverge widely'
+
+- Expected
++ Received
+
+- the council's stances diverge widely
++ const councilReco =
++     consensus.spread >= 55
++       ? 'High uncertainty. Avoid leverage, prioritize balance-sheet strength, and size positions conservatively.'
++       : consensus.avgAgreement >= 65
++       ? 'Consensus tilts constructive. Prefer quality compounders + domestic cyclicals with strong cashflows.'
++       : 'Mixed regime. Stay barbell: quality defensives + selective cyclicals. Keep cash for volatility.';
++
++   
+
+ ❯ test/pulseCouncilDescriptive.test.ts:65:17
+     63|     // the descriptive framing is pinned per branch: the readout repor…
+     64|     // what the stances say, never what the user should do
+     65|     expect(src).toContain("the council's stances diverge widely");
+       |                 ^
+     66|     expect(src).toContain("most stances screen constructive");
+     67|     expect(src).toContain("the stances split between quality defensive…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  06:41:24
+   Duration  159ms (transform 50%, tests 21%, setup 11%, import 11%, worker 7%)
+

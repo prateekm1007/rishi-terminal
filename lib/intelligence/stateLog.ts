@@ -97,9 +97,35 @@ export function changeIdOf(t: {
     .digest("hex");
 }
 
-/** Stable JSON encoding for jsonb values (key order deterministic). */
-function jsonOf(v: unknown): string {
-  return JSON.stringify(v ?? null);
+/**
+ * Decode a jsonb value at the read boundary (INT-RECONCILE).
+ *
+ * Legacy rows (the pre-2026-10-10 writer) store the JSON TEXT of the
+ * value (the retired write encoding was JSON.stringify(value)): numbers
+ * arrive back as strings, and A4's legs refuse to scale a string
+ * (fail-closed, correct per their own contract — the all-non-comparable
+ * production degradation this decode repairs; 160,200 rows verified
+ * string-typed read-only on 2026-10-10). The decode is the EXACT
+ * inverse of that encoding — a string that parses as JSON decodes to
+ * its value; anything else passes through verbatim (native jsonb
+ * numbers/objects/booleans from the repaired writer, and genuine text
+ * values from future writers that are not valid JSON).
+ *
+ * Residual ambiguity (documented, bounded): a future NATIVE text value
+ * that happens to be valid JSON of another type (e.g. the text "123")
+ * would decode to that type. The quote-path fields are numbers or SQL
+ * NULL by construction, so the ambiguity cannot touch the intelligence
+ * chain; a text-field writer that cares names its values unambiguously.
+ *
+ * Deterministic and total; never guesses, never throws.
+ */
+function decodeLegacyJsonbValue(v: unknown): unknown {
+  if (typeof v !== "string") return v;
+  try {
+    return JSON.parse(v) as unknown;
+  } catch {
+    return v;
+  }
 }
 
 /** The quote path's closed field/unit map — the ONLY fields the price
@@ -183,8 +209,12 @@ export async function appendStateTransitions(
     source: t.source,
     unit: t.unit,
     source_state: t.sourceState,
-    old_value: t.oldValue === null ? null : jsonOf(t.oldValue),
-    new_value: jsonOf(t.newValue),
+    // INT-RECONCILE: values cross the JSONB boundary NATIVELY — numbers
+    // as jsonb numbers, objects as jsonb objects, null old_value as SQL
+    // NULL. The pre-repair writer stringified every value (jsonOf),
+    // which the reader's legacy decode now reverses for old rows.
+    old_value: t.oldValue ?? null,
+    new_value: t.newValue ?? null,
   }));
   const { data, error } = await getAdminSupabase()
     .from("observation_state_log")
@@ -245,8 +275,10 @@ function rowToStateLogRow(r: Record<string, unknown>): StateLogRow {
     source: String(r.source),
     unit: String(r.unit),
     sourceState: String(r.source_state) as StateSourceState,
-    oldValue: r.old_value == null ? null : (r.old_value as unknown),
-    newValue: r.new_value as unknown,
+    // INT-RECONCILE: legacy string-encoded values decode here; native
+    // values pass through verbatim (see decodeLegacyJsonbValue).
+    oldValue: r.old_value == null ? null : decodeLegacyJsonbValue(r.old_value),
+    newValue: decodeLegacyJsonbValue(r.new_value),
   };
 }
 

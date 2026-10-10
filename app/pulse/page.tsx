@@ -389,12 +389,17 @@ export default function MarketPulsePage() {
   const regime = MACRO_REGIME;
   const brief = getDailyBrief();
 
-  const councilReco =
+  // PULSE-ADVICE (founder direction, 2026-10-10): a DESCRIPTIVE regime
+  // readout — what the council's readings say, never what the user
+  // should do. The investigation-not-advice contract; the prescriptive
+  // positioning vocabulary of the old wording is pinned absent by
+  // test/pulse.adviceVocabulary.test.ts.
+  const regimeRead =
     consensus.spread >= 55
-      ? 'High uncertainty. Avoid leverage, prioritize balance-sheet strength, and size positions conservatively.'
+      ? 'High disagreement: the lenses read the current regime very differently across indicators.'
       : consensus.avgAgreement >= 65
-      ? 'Consensus tilts constructive. Prefer quality compounders + domestic cyclicals with strong cashflows.'
-      : 'Mixed regime. Stay barbell: quality defensives + selective cyclicals. Keep cash for volatility.';
+      ? 'The readings converge on a constructive view of the current regime.'
+      : "A mixed read: the lenses diverge across the current regime's indicators.";
 
   const tabs: { key: PulseTab; label: string; emoji: string }[] = [
     { key: 'overview', label: t('pulse.tabs.overview'), emoji: '📊' },
@@ -481,7 +486,7 @@ export default function MarketPulsePage() {
           </div>
 
           <div style={{ marginTop: 14, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            <span style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>{t('pulse.councilRecommends')}</span> {councilReco}
+            <span style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>{t('pulse.councilRegimeRead')}</span> {regimeRead}
           </div>
         </div>
 

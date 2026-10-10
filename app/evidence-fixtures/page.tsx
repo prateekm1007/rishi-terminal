@@ -16,7 +16,9 @@ import type { Metadata } from "next";
 import { parseRishiInsight } from "@/lib/intelligence/types";
 import { buildEvidenceView } from "@/lib/intelligence/evidence";
 import { EVIDENCE_FIXTURES } from "@/lib/intelligence/evidenceFixtures";
+import { changeKeyOf } from "@/lib/intelligence/insightCache";
 import { ReadyComposition } from "@/components/intelligence/ReadyComposition";
+import { AskRishi } from "@/components/stock/AskRishi";
 
 export const metadata: Metadata = {
   title: "Evidence fixtures (internal verification)",
@@ -24,6 +26,27 @@ export const metadata: Metadata = {
 };
 
 export default function EvidenceFixturesPage() {
+  // INT-D3 mount verification (founder direction, 2026-10-10): the Ask
+  // Rishi affordance's ready-state mount needs a changeKey-bearing
+  // artifact, and the live stock page honestly renders the dossier ABSENT
+  // pre-window (the designed 404). The sanctioned fixture surface proves
+  // the mount instead: the ONE deterministic change key (the A7
+  // derivation — never a hand-rolled key) computed over the A1-parsed
+  // conflict fixture anchors the REAL affordance component. Asking posts
+  // to the ONE /api/chat; a fixture key resolves no artifact, so the
+  // route refuses and the refusal renders as the refusal it is — an
+  // answer from a fixture key would be seed data standing in for live
+  // intelligence, and the CI pin fails the tree that ever allows it.
+  const mountRaw = EVIDENCE_FIXTURES.conflictWithContradictions;
+  const mountInsight = parseRishiInsight(mountRaw);
+  const mountKey = mountInsight
+    ? changeKeyOf({
+        feature: mountInsight.feature,
+        subject: mountInsight.subject,
+        changeIds: mountInsight.evidence.map((item) => item.id),
+      })
+    : null;
+
   return (
     <main>
       <h1>Evidence / Uncertainty / Contradiction — closed-state fixtures</h1>
@@ -47,6 +70,19 @@ export default function EvidenceFixturesPage() {
           </section>
         );
       })}
+      {mountInsight && mountKey && (
+        <section data-fixture-ask-rishi>
+          <h2>Ask Rishi affordance mount (INT-D3 verification)</h2>
+          <p className="insight-surface__empty">
+            Fixture mount verification: the reference below is the ONE deterministic
+            change key over the canned conflictWithContradictions fixture (the A7
+            derivation). Asking posts to the ONE /api/chat; the route will refuse
+            it — a fixture key resolves no artifact — and the refusal renders as
+            the refusal it is. Seed data never answers.
+          </p>
+          <AskRishi changeKey={mountKey} symbol={mountInsight.subject} />
+        </section>
+      )}
     </main>
   );
 }

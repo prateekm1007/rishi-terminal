@@ -1,0 +1,46 @@
+# RED — fix/int-d3-fixture-mount (2026-10-10): the D3 affordance-mount pin captured failing on the pre-extension tree (the section does not exist); the 3 pre-existing fixture pins pass (the byte-compat baseline).
+# command: npx playwright test test/smoke/evidence-fixtures.spec.ts
+[WebServer] (node:8569) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:8583) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/smoke/evidence-fixtures.spec.ts:12:7 › evidence-fixtures route (A8) › renders every closed state over the canned fixtures (122ms)
+  ✓  2 test/smoke/evidence-fixtures.spec.ts:56:7 › evidence-fixtures route (A8) › absence pins: no advice strings, no fetching states, no refusal sections (16ms)
+  ✓  3 test/smoke/evidence-fixtures.spec.ts:64:7 › evidence-fixtures route (A8) › the route is non-indexed: metadata robots + robots.txt disallow (29ms)
+[WebServer] [quoteCache] batch peek failed: Missing Supabase URL or service-role key environment variables
+  ✘  4 test/smoke/evidence-fixtures.spec.ts:83:7 › evidence-fixtures route (A8) › the D3 affordance mount: idle contract, honest refusal, never answered (15.3s)
+
+
+  1) test/smoke/evidence-fixtures.spec.ts:83:7 › evidence-fixtures route (A8) › the D3 affordance mount: idle contract, honest refusal, never answered 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('section[data-fixture-ask-rishi]')
+    Expected: 1
+    Received: 0
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('section[data-fixture-ask-rishi]') with timeout 15000ms
+      - waiting for locator('section[data-fixture-ask-rishi]')
+        33 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      84 |     await page.goto("/evidence-fixtures");
+      85 |     const mount = page.locator("section[data-fixture-ask-rishi]");
+    > 86 |     await expect(mount).toHaveCount(1, { timeout: 15_000 });
+         |                         ^
+      87 |
+      88 |     const ask = mount.locator("[data-ask-rishi]");
+      89 |     await expect(ask).toHaveCount(1);
+        at /home/z/rishi-terminal/test/smoke/evidence-fixtures.spec.ts:86:25
+
+    Error Context: test-results/smoke-evidence-fixtures-ev-b640e-nest-refusal-never-answered/error-context.md
+
+  1 failed
+    test/smoke/evidence-fixtures.spec.ts:83:7 › evidence-fixtures route (A8) › the D3 affordance mount: idle contract, honest refusal, never answered 
+  3 passed (16.9s)

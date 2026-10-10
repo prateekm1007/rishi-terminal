@@ -1,0 +1,11 @@
+# HYD-PINS GREEN — same command on the fixed tree:
+# RANKINGS_ENABLED=true npx playwright test test/smoke/hydration-pins.spec.ts test/smoke/ssr-content.spec.ts
+# EXIT=0 — 7 passed (25.1s). Full suite: 52/52.
+  ✓  1 test/smoke/hydration-pins.spec.ts:28:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /news settles to hydrated headlines or an explicit honest empty state (6.5s)
+  ✓  2 test/smoke/hydration-pins.spec.ts:60:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /pulse FX settles to labelled live FX or the honest unavailable state (815ms)
+  ✓  3 test/smoke/hydration-pins.spec.ts:89:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /pulse FX resolves to the honest unavailable state when the route fails (failure-driven, never stranded) (343ms)
+  ✓  4 test/smoke/hydration-pins.spec.ts:106:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /stocks Rishi affordance: accessible name, >= 28px target, designed visible keyboard focus (16.1s)
+  ✓  5 test/smoke/ssr-content.spec.ts:41:5 › stock page serves the content sections in the raw SSR HTML (42ms)
+  ✓  6 test/smoke/ssr-content.spec.ts:50:5 › Y4 null-not-zero holds in the SSR HTML of a bank page (positive + negative control) (16ms)
+  ✓  7 test/smoke/ssr-content.spec.ts:77:5 › HYD-PINS: /pulse first byte carries the honest FX state, never a stranding fetch promise (9ms)
+  7 passed (25.1s)

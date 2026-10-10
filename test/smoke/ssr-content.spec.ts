@@ -64,3 +64,26 @@ test("Y4 null-not-zero holds in the SSR HTML of a bank page (positive + negative
   expect(html).not.toContain("Promoter Hold0.0%");
   expect(html).not.toContain("D/E Ratio0.0x");
 });
+
+// HYD-PINS (founder direction, 2026-10-10): the /pulse first byte must
+// not strand at a loading promise. The macro tab is the DEFAULT tab and
+// the currency section's transient "Fetching live currency rates…" used
+// to be the SSR state — a no-JS client (or a crawler) saw an indefinite
+// "Fetching…" that can never resolve. The first-byte contract now: the
+// raw HTML carries the HONEST unavailable state (live FX needs the
+// browser's fetch), never the stranding loading text. Fail-first: the
+// pre-fix raw HTML contained the stranding marker (RED capture in
+// docs/evidence/round43/red-hyd-pins.txt).
+test("HYD-PINS: /pulse first byte carries the honest FX state, never a stranding fetch promise", async ({ request }) => {
+  const res = await request.get("/pulse");
+  expect(res.status()).toBe(200);
+  const html = await res.text();
+  // positive control FIRST (B-18): the currency section itself is in the
+  // first byte (the macro tab is the default tab) — the section's stable
+  // heading rides the RSC payload.
+  expect(html).toContain("CURRENCY IMPACT");
+  // the stranding loading promise must be gone from the raw HTML
+  expect(html).not.toContain("Fetching live currency rates");
+  // the honest no-JS state is present verbatim
+  expect(html).toContain("Live currency rates unavailable right now");
+});

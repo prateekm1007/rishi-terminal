@@ -4,7 +4,6 @@
     "error": "त्रुटि",
     "search": "शेयर खोजें — TITAN, INFY, RELIANCE, TCS...",
     "viewAll": "सभी देखें",
-    "exploreAllRishis": "सभी 20 ऋषियों का अन्वेषण करें",
     "back": "वापस",
     "close": "बंद करें",
     "export": "निर्यात करें",
@@ -26,7 +25,6 @@
   },
   "header": {
     "title": "ऋषि टर्मिनल",
-    "subtitle": "20 ऋषि — शेयर — क्रिप्टो — विदेशी मुद्रा — वस्तुएं — बॉन्ड",
     "investmentWisdomOS": "निवेश ज्ञान ऑपरेटिंग सिस्टम",
     "wisdomOverHype": "प्रचार से ऊपर ज्ञान।",
     "time": "IST",
@@ -34,7 +32,6 @@
   },
   "dashboard": {
     "stockOfDay": "आज का शेयर",
-    "rishiConsensus": "20 ऋषि सर्वसम्मति",
     "viewFullAnalysis": "पूर्ण ऋषि विश्लेषण देखें",
     "wisdomOfDay": "आज का ऋषि ज्ञान",
     "masterInvestor": "मास्टर निवेशक",
@@ -48,7 +45,7 @@
     "timeAgoMinutesSuffix": " मिनट पहले",
     "timeAgoSecondsSuffix": " सेकंड पहले",
     "priceUnavailable": "कीमत उपलब्ध नहीं है",
-    "heroWisdomHighlight": "20 महान निवेशकों",
+    "heroWisdomHighlight": "21 महान निवेशकों",
     "heroWisdomPrefix": "ज्ञान ",
     "heroTagline": "पवित्र निवेश इंटेलिजेंस · v4.4",
     "liveMarketData": "लाइव मार्केट डेटा",
@@ -89,7 +86,6 @@
     "bullishRishis": "तेजी वाले ऋषि",
     "bearishRishis": "मंदी वाले ऋषि",
     "philosophyRadar": "दर्शन रडार",
-    "allRishiScores": "सभी 20 ऋषि स्कोर",
     "peerComparison": "सहकर्मी तुलना",
     "analystRecommendations": "विश्लेषक सिफारिशें",
     "quarterlyPerformance": "त्रैमासिक प्रदर्शन",
@@ -104,7 +100,6 @@
   },
   "screener": {
     "title": "स्टॉक्स",
-    "subtitle": "20 ऋषि दृष्टिकोण से भारतीय शेयरों का विश्लेषण।",
     "totalCoverage": "कुल कवरेज",
     "nseBseStocks": "NSE + BSE शेयर",
     "strongBuy": "मजबूत खरीद",
@@ -385,7 +380,6 @@
     "graph": "ग्राफ",
     "rishiWisdom": "ऋषि ज्ञान",
     "change24h": "24 घंटे परिवर्तन",
-    "wisdomDesc": "20 दार्शनिक",
     "price": "मूल्य",
     "volume": "मात्रा",
     "viewAll20": "सभी 20 देखें",
@@ -532,7 +526,7 @@
       "allMarkets": "सभी बाजार"
     },
     "wisdom": {
-      "title": "20 महान निवेशक",
+      "title": "21 महान निवेशक",
       "body": "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — हमारे ब्रह्मांड के हर स्टॉक पर लागू कालजयी फ्रेमवर्क। लॉन्ग और शॉर्ट थीसिस। हर दिन।",
       "bodyHighlight": "हर स्टॉक को स्कोर",
       "exploreBtn": "सभी ऋषियों का अन्वेषण करें"

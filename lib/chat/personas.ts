@@ -60,8 +60,9 @@ function toCard(p: PersonaDisplay): Persona {
   };
 }
 
-/** The /rishis roster — the ranked marketing personas (the same 19 as
- *  before the registry; chanos/soros never had marketing cards). */
+/** The /rishis roster — all 21 marketing personas (RISHI-COUNT
+ *  unification, 2026-10-10: chanos/soros carry cards, closing the 19-vs-21
+ *  roster/registry split). */
 export const ALL_RISHIS: Persona[] = PERSONA_DISPLAY
   .filter(p => p.rank !== undefined)
   .map(toCard);

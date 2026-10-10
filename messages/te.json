@@ -4,7 +4,6 @@
     "error": "లోపం",
     "search": "స్టాక్లు వెతకండి — TITAN, INFY, RELIANCE, TCS...",
     "viewAll": "అన్నీ చూడండి",
-    "exploreAllRishis": "అన్ని 20 ఋషులను అన్వేషించండి",
     "back": "వెనుకకు",
     "close": "మూసివేయండి",
     "export": "ఎగుమతి",
@@ -25,7 +24,6 @@
   },
   "header": {
     "title": "RISHI TERMINAL",
-    "subtitle": "20 ఋషులు - స్టాక్స్ - క్రిప్టో - ఫారెక్స్ - కమోడిటీలు - బాండ్లు",
     "investmentWisdomOS": "పెట్టుబడి జ్ఞాన OS",
     "wisdomOverHype": "హైప్ కంటే జ్ఞానం.",
     "time": "IST",
@@ -33,7 +31,6 @@
   },
   "dashboard": {
     "stockOfDay": "నేటి స్టాక్",
-    "rishiConsensus": "20 ఋషుల ఏకాభిప్రాయం",
     "viewFullAnalysis": "పూర్తి ఋషి విశ్లేషణ చూడండి",
     "wisdomOfDay": "నేటి ఋషి జ్ఞానం",
     "masterInvestor": "మాస్టర్ పెట్టుబడిదారు",
@@ -46,7 +43,7 @@
     "timeAgoMinutesSuffix": "నిమిషాల క్రితం",
     "timeAgoSecondsSuffix": "సెకన్ల క్రితం",
     "priceUnavailable": "ధర అందుబాటులో లేదు",
-    "heroWisdomHighlight": "20 మహాన పెట్టుబడిదారులు",
+    "heroWisdomHighlight": "21 మహాన పెట్టుబడిదారులు",
     "heroWisdomPrefix": "జ్ఞానం ప్రసాదించేవారు — ",
     "heroTagline": "పవిత్ర పెట్టుబడి బుద్ధిమత్త · v4.4",
     "liveMarketData": "లైవ్ మార్కెట్ డేటా",
@@ -87,7 +84,6 @@
     "bullishRishis": "బుల్లిష్ ఋషులు",
     "bearishRishis": "బేరిష్ ఋషులు",
     "philosophyRadar": "తత్వశాస్త్ర రాడార్",
-    "allRishiScores": "అన్ని 20 ఋషి స్కోర్లు",
     "peerComparison": "పీర్ పోలిక",
     "analystRecommendations": "విశ్లేషకుల సిఫార్సులు",
     "quarterlyPerformance": "త్రైమాసిక పనితీరు",
@@ -102,7 +98,6 @@
   },
   "screener": {
     "title": "స్టాక్స్",
-    "subtitle": "20 ఋషుల దృక్కోణం నుండి విశ్లేషించబడిన భారతీయ స్టాక్స్. పూర్తి లోతైన విశ్లేషణ కోసం ఏదైనా స్టాక్‌పై క్లిక్ చేయండి.",
     "totalCoverage": "మొత్తం కవరేజ్",
     "nseBseStocks": "NSE + BSE స్టాక్స్",
     "strongBuy": "స్ట్రాంగ్ బై",
@@ -384,7 +379,6 @@
     "graph": "గ్రాఫ్",
     "rishiWisdom": "ఋషి జ్ఞానం",
     "change24h": "24 గంటల మార్పు",
-    "wisdomDesc": "20 తత్వవేత్తలు",
     "price": "ధర",
     "volume": "వాల్యూమ్",
     "viewAll20": "అందరి 20 మందిని చూడండి",
@@ -531,7 +525,7 @@
       "allMarkets": "అన్ని మార్కెట్లు"
     },
     "wisdom": {
-      "title": "20 మహాన పెట్టుబడిదారులు",
+      "title": "21 మహాన పెట్టుబడిదారులు",
       "body": "బఫెట్, గ్రాహం, లించ్, దామనీ, జుంఝున్‌వాలా, చానోస్ — మా విశ్వంలోని ప్రతి స్టాక్‌కు వర్తించే శాశ్వత ఫ్రేమ్‌వర్క్‌లు. లాంగ్ మరియు షార్ట్ థీసిస్. ప్రతి రోజూ.",
       "bodyHighlight": "ప్రతి స్టాక్‌ను స్కోర్ చేస్తున్నారు",
       "exploreBtn": "అన్ని ఋషులను అన్వేషించండి"

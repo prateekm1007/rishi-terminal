@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Rishi Terminal — Sacred Investment Intelligence',
     short_name: 'Rishi Terminal',
-    description: 'AI-powered investment wisdom from 20 legendary investors',
+    description: 'AI-powered investment wisdom from 21 legendary investors',
     id: '/',
     start_url: '/',
     display: 'standalone',

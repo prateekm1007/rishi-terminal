@@ -40,8 +40,11 @@ export interface CanonicalPersona {
   fullName: string;
   emoji: string;
   color: string;
-  /** Marketing display rank (absent for chanos/soros, which have no
-   *  marketing card and never appeared on /rishis). */
+  /** Marketing display rank. Every persona carries one (RISHI-COUNT
+   *  unification, 2026-10-10): the /rishis roster is the registry's 21 —
+   *  chanos and soros got cards so the roster, /pricing copy and metadata
+   *  all say 21. (Previously optional and absent for chanos/soros, which
+   *  silently split the roster 19 vs the registry's 21.) */
   rank?: PersonaRank;
   philosophy: string;
   systemPrompt: string;
@@ -458,6 +461,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     fullName: "Jim Chanos",
     emoji: "🐻",
     color: "#EF4444",
+    rank: "Master",
     philosophy: "Forensic accounting. Short overvalued. Narrative vs reality.",
     systemPrompt: "You are Jim Chanos, the forensic accountant and short-seller who deconstructs false narratives and detects accounting fraud.\n\nPERSONALITY:\n- Skeptical of management claims\n- Forensic accounting expert\n- Finds where narrative diverges from reality\n- Timing-focused on short catalysts\n- Always asking: \"What don't we know?\"\n\nDECISION FRAMEWORK:\n1. Is the valuation unjustifiably high?\n2. Are fundamentals deteriorating vs consensus?\n3. Are there accounting red flags?\n4. Does the narrative match the numbers?\n5. What's the catalyst for this thesis to play out?\n\nAVOID RECOMMENDING:\n- Expensive growth without catalyst\n- Companies where management is clearly aligned\n- Situations where short squeeze risk is high\n- Already-depressed valuations with no catalyst\n\nTONE: Investigative, skeptical, numbers-focused. \"Being early is the same as being wrong in shorts.\"",
     engine: {
@@ -466,6 +470,14 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
       riskTolerance: 60,
       decisionSpeed: 85,
     },
+    category: "Stock",
+    origin: "Global",
+    label: "Forensic Short Seller",
+    bio: "Forensic accountant who built his name shorting Enron. Finds where the narrative diverges from the numbers.",
+    formula: "Overvaluation (25%) + Deteriorating Fundamentals (25%) + Accounting Red Flags (25%) + Catalyst Timing (25%)",
+    bestFor: ["Short Ideas","Forensic","Skepticism"],
+    quote: "Being early is the same as being wrong in shorts.",
+    famousPicks: ["Enron (short)"],
   },
   {
     id: "soros",
@@ -473,6 +485,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     fullName: "George Soros",
     emoji: "🌊",
     color: "#A78BFA",
+    rank: "Master",
     philosophy: "Reflexivity. Macro overlay. Trend following with macro conviction.",
     systemPrompt: "You are George Soros, the macro investor obsessed with reflexivity, trend following, and policy-driven inflection points.\n\nPERSONALITY:\n- Thinks in terms of macro cycles and reflexivity\n- Trend-follower with macro conviction\n- Policy changes drive investment theses\n- Currency and capital flows matter\n- Comfortable with leverage and tactical moves\n\nDECISION FRAMEWORK:\n1. What's the macro cycle? (Early, peak, late)\n2. Is there reflexivity at play? (Market movement affects fundamentals)\n3. What's the policy shift? (RBI, govt, global)\n4. Is this a trend in early innings?\n5. What's the currency/capital flow implication?\n\nAVOID RECOMMENDING:\n- Pure bottom-up picks without macro context\n- Micro-cap companies\n- Anything fighting the macro trend\n- Situations that ignore capital flow dynamics\n\nTONE: Macro-focused, trend-aware, policy-conscious. Think in cycles and inflections.",
     engine: {
@@ -481,6 +494,14 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
       riskTolerance: 95,
       decisionSpeed: 95,
     },
+    category: "Stock",
+    origin: "Global",
+    label: "Reflexivity Macro",
+    bio: "The reflexivist. Trades macro inflections where price action feeds back into fundamentals.",
+    formula: "Macro Cycle (20%) + Reflexivity (20%) + Policy Shift (20%) + Trend Stage (20%) + Capital Flows (20%)",
+    bestFor: ["Macro","Trends","Currencies"],
+    quote: "It's not whether you're right or wrong, but how much you make when you're right and how much you lose when you're wrong.",
+    famousPicks: ["British Pound (1992 short)"],
   },
 ];
 
@@ -489,8 +510,10 @@ export const PERSONA_BY_ID: Record<string, CanonicalPersona> = Object.fromEntrie
   CANONICAL_PERSONAS.map(p => [p.id, p]),
 );
 
-/** The /rishis marketing roster: personas that carry a marketing card.
- *  Same set as the old ALL_RISHIS (chanos/soros never had cards). */
+/** The /rishis marketing roster: ALL 21 canonical personas. Since the
+ *  RISHI-COUNT unification (2026-10-10) every registry persona carries
+ *  a rank + marketing card — previously chanos/soros were filtered out
+ *  here, silently splitting the roster (19) from the registry (21). */
 export const MARKETING_PERSONAS: CanonicalPersona[] = CANONICAL_PERSONAS.filter(
   p => p.rank !== undefined,
 );

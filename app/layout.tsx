@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
-  description: "AI-powered investment wisdom from 20 legendary investors",
+  description: "AI-powered investment wisdom from 21 legendary investors",
   alternates: {
     canonical: '/',
   },
@@ -33,12 +33,12 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     url: SITE_URL,
     title: "Rishi Terminal - Sacred Investment Intelligence",
-    description: "AI-powered investment wisdom from 20 legendary investors",
+    description: "AI-powered investment wisdom from 21 legendary investors",
   },
   twitter: {
     card: "summary",
     title: "Rishi Terminal - Sacred Investment Intelligence",
-    description: "AI-powered investment wisdom from 20 legendary investors",
+    description: "AI-powered investment wisdom from 21 legendary investors",
   },
 };
 

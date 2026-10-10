@@ -1,0 +1,393 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/intelligenceStockDossier.test.ts (11 tests | 11 failed) 46ms
+   ❯ INT-D3 the dossier (the compiled dossier on the stock page) (4)
+     × exists as a client component that fetches ONLY /api/intelligence with capability=insight 7ms
+     × imports no chain module, no parser, no zod; renders no advice strings 1ms
+     × the absence discipline: 404 -> 'absent', anything else non-OK -> 'error', verifiably different, both visually nothing 1ms
+     × the affordance mounts ONLY on a changeKey-bearing artifact 0ms
+   ❯ INT-D3 Ask Rishi (the FIRST affordance mount over the ONE chat path) (4)
+     × exists as a client component that fetches ONLY /api/chat 1ms
+     × sends the bounded payload: personaId + message + insightRef + symbol — nothing else 0ms
+     × renders refusals AS the refusal they are (the error text verbatim) and disables the empty submit 0ms
+     × imports no intelligence module beyond types 0ms
+   ❯ INT-D3 the mount (scored-surface branch, after the B1 panel) (2)
+     × the stock page mounts the dossier directly after the B1 IntelligencePanel, passing the server-resolved symbol 5ms
+     × the InsufficientDataRecord branch mounts NO dossier (no intelligence claims on a page that promises none) 1ms
+   ❯ INT-D3 the exact-surface scan grows to EXACTLY the four declared product surfaces (1)
+     × the set of surfaces fetching /api/intelligence is EXACTLY {B1 panel, C1 brief, D2 drawer, D3 dossier} 27ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 the dossier (the compiled dossier on the stock page) > exists as a client component that fetches ONLY /api/intelligence with capability=insight
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/intelligenceStockDossier.test.ts:77:45
+     75| describe("INT-D3 the dossier (the compiled dossier on the stock page)"…
+     76|   it("exists as a client component that fetches ONLY /api/intelligence…
+     77|     expect(existsSync(join(ROOT, DOSSIER))).toBe(true);
+       |                                             ^
+     78|     const s = src(DOSSIER);
+     79|     expect(s).toContain("'use client'");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 the dossier (the compiled dossier on the stock page) > imports no chain module, no parser, no zod; renders no advice strings
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/stock/IntelligenceDossier.tsx'
+ ❯ src test/intelligenceStockDossier.test.ts:72:10
+     70|
+     71| function src(path: string): string {
+     72|   return readFileSync(join(ROOT, path), "utf8");
+       |          ^
+     73| }
+     74|
+ ❯ test/intelligenceStockDossier.test.ts:89:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 the dossier (the compiled dossier on the stock page) > the absence discipline: 404 -> 'absent', anything else non-OK -> 'error', verifiably different, both visually nothing
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/stock/IntelligenceDossier.tsx'
+ ❯ src test/intelligenceStockDossier.test.ts:72:10
+     70|
+     71| function src(path: string): string {
+     72|   return readFileSync(join(ROOT, path), "utf8");
+       |          ^
+     73| }
+     74|
+ ❯ test/intelligenceStockDossier.test.ts:98:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 the dossier (the compiled dossier on the stock page) > the affordance mounts ONLY on a changeKey-bearing artifact
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/stock/IntelligenceDossier.tsx'
+ ❯ src test/intelligenceStockDossier.test.ts:72:10
+     70|
+     71| function src(path: string): string {
+     72|   return readFileSync(join(ROOT, path), "utf8");
+       |          ^
+     73| }
+     74|
+ ❯ test/intelligenceStockDossier.test.ts:110:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 Ask Rishi (the FIRST affordance mount over the ONE chat path) > exists as a client component that fetches ONLY /api/chat
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/intelligenceStockDossier.test.ts:120:46
+    118| describe("INT-D3 Ask Rishi (the FIRST affordance mount over the ONE ch…
+    119|   it("exists as a client component that fetches ONLY /api/chat", () =>…
+    120|     expect(existsSync(join(ROOT, ASKRISHI))).toBe(true);
+       |                                              ^
+    121|     const s = src(ASKRISHI);
+    122|     expect(s).toContain("'use client'");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 Ask Rishi (the FIRST affordance mount over the ONE chat path) > sends the bounded payload: personaId + message + insightRef + symbol — nothing else
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/stock/AskRishi.tsx'
+ ❯ src test/intelligenceStockDossier.test.ts:72:10
+     70|
+     71| function src(path: string): string {
+     72|   return readFileSync(join(ROOT, path), "utf8");
+       |          ^
+     73| }
+     74|
+ ❯ test/intelligenceStockDossier.test.ts:128:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 Ask Rishi (the FIRST affordance mount over the ONE chat path) > renders refusals AS the refusal they are (the error text verbatim) and disables the empty submit
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/stock/AskRishi.tsx'
+ ❯ src test/intelligenceStockDossier.test.ts:72:10
+     70|
+     71| function src(path: string): string {
+     72|   return readFileSync(join(ROOT, path), "utf8");
+       |          ^
+     73| }
+     74|
+ ❯ test/intelligenceStockDossier.test.ts:140:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 Ask Rishi (the FIRST affordance mount over the ONE chat path) > imports no intelligence module beyond types
+Error: ENOENT: no such file or directory, open '/home/z/rishi-terminal/components/stock/AskRishi.tsx'
+ ❯ src test/intelligenceStockDossier.test.ts:72:10
+     70|
+     71| function src(path: string): string {
+     72|   return readFileSync(join(ROOT, path), "utf8");
+       |          ^
+     73| }
+     74|
+ ❯ test/intelligenceStockDossier.test.ts:150:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 the mount (scored-surface branch, after the B1 panel) > the stock page mounts the dossier directly after the B1 IntelligencePanel, passing the server-resolved symbol
+AssertionError: expected 'import { notFound, permanentRedirect …' to contain 'IntelligenceDossier'
+
+- Expected
++ Received
+
+- IntelligenceDossier
++ import { notFound, permanentRedirect } from 'next/navigation';
++ import type { Metadata } from 'next';
++ import { STOCKS } from '../../../data/stocks';
++ import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
++ import { sanitizeConsensus } from '@/lib/consensus/sanitize';
++ // A1 (Round 14): the wisdom rail's historical parallel is resolved on the
++ // server per regeneration — the dataset and detector no longer ship in
++ // the client bundle.
++ import { detectArchetype, HISTORICAL_PARALLELS } from '@/lib/wisdom/historicalParallels';
++ // R4-04: consensus + dissent + verified levers, computed once per regeneration
++ import { buildCouncil } from '@/lib/consensus/council';
++ import { RishiCouncil } from '@/components/stock/RishiCouncil';
++ import { IntelligencePanel } from '@/components/stock/IntelligencePanel';
++ import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
++ import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
++ import { generateStockDetail } from '../../../data/stockDetails';
++ import { serveCachedQuotes } from '@/lib/quotePath'; // X3+Y1+Y2: SSR peek — the last cached quotes, read-only
++ import { marketState } from '@/lib/marketHours'; // Y3: server-disclosed NSE state for the observation label
++ import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically; Y2: peer entries
++ import { StockPageClient } from '../../../components/stock/StockPageClient';
++ import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
++ import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
++ // `stock as stockNs`: this page's OWN `stock` binding (the resolved Stock
++ // record) shadows the namespace identifier inside the component scope —
++ // the alias keeps the two apart.
++ import { stock as stockNs, chart, kg, rishiGrid } from '../../../messages/en.json';
++
++ // X4 (Round 11): the stock page's dictionary namespaces arrive from the
++ // server via <NamespaceProvider> (see the homepage's note) — the heaviest
++ // route keeps only its own strings in the flight payload.
++
++ // Y1 (Round 12): stock pages are ISR again (revalidate 60 s). The X3
++ // force-dynamic render answered the W5 stale-bake defect by making every
++ // first byte pay a server render — the measured cost on production was
++ // warm page TTFB p95 ~0.36 s (above the 300 ms acceptance), with
++ // cache-control: no-store on every response. The Y1 contract:
++ //   - the 916-page universe pre-renders at build (generateStaticParams);
++ //   - the build phase fetches NOTHING (CI has no database) — the bake
++ //     carries the honest "price unavailable" state;
++ //   - every ISR regeneration (at most 60 s apart, under traffic) re-peeks
++ //     the shared quote cache for this symbol AND its peers (Y2: ONE
++ //     batch read, never a vendor fetch) so the served HTML carries the
++ //     last cached observations with their own "as of" labels;
++ //   - the client hook still refreshes on mount (its /api/prices call is
++ //     what warms the cache).
++ // A stale or missing observation is LABELLED as such by the tile (X3
++ // states; Y3 honest labels) — never presented as fresh (Rule 3).
++
++
++ // Round-5 audit (finding 18): every stock page shared the site-default
++ // <title> — 916 pages of duplicated metadata. Each page now names its
++ // stock, sector and headline scores. Follow-up: INCOMPLETE records get a
++ // title/description that matches the insufficient-data page they render —
++ // the metadata must not promise scores the page no longer shows.
++ // Audit M6/B.3 (retest 2026-10-02): per-symbol canonical + Open Graph —
++ // aliases 308 to the canonical symbol, and the canonical link makes each
++ // company exactly one indexable URL; og gives WhatsApp/X/LinkedIn unfurls.
++ export async function generateMetadata({ params }: StockPageProps): Promise<Metadata> {
++   const { symbol } = await params;
++   const key = symbol.toUpperCase();
++   const canonicalSym = resolveTickerSymbol(key) ?? key;
++   const stock = STOCKS[canonicalSym];
++   if (!stock) {
++     return { title: `Stock not found | Rishi Terminal` };
++   }
++   // Percent-encode: J&KBANK/M&M/M&MFIN carry & — the encoded canonical
++   // matches the sitemap URL form exactly (both forms serve the same page).
++   const ogUrl = `/stock/${encodeURIComponent(canonicalSym)}`;
++   if (getStockScore(stock).dataQuality === "INCOMPLETE") {
++     const title = `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`;
++     const description = `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`;
++     return {
++       title,
++       description,
++       alternates: { canonical: ogUrl },
++       openGraph: { title, description, url: ogUrl, type: "article" },
++     };
++   }
++   const title = `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`;
++   const description = `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`;
++   return {
++     title,
++     description,
++     alternates: { canonical: ogUrl },
++     openGraph: { title, description, url: ogUrl, type: "article" },
++   };
++ }
++
++ export const revalidate = 60;
++
++ export async function generateStaticParams() {
++   return Object.keys(STOCKS).map((symbol) => ({ symbol }));
++ }
++
++ interface StockPageProps {
++   params: Promise<{ symbol: string }>;
++ }
++
++ export default async function StockPage({ params }: StockPageProps) {
++   const { symbol } = await params;
++   const key = symbol.toUpperCase();
++
++   // T12: renamed/legacy symbols get a permanent (308) redirect to the
++   // canonical NSE symbol so saved links and share URLs keep working.
++   const canonical = resolveTickerSymbol(key);
++   if (canonical && canonical !== key) {
++     permanentRedirect(`/stock/${encodeURIComponent(canonical)}`);
++   }
++
++   const stock = STOCKS[key];
++
++   if (!stock) notFound();
++
++   const consensus = getStockScore(stock);
++
++   // Round-5 audit (findings 1, 8): an internally inconsistent record
++   // (impossible P/E-0-with-profit etc.) renders NO scored surface — no
++   // verdicts, no QVPS, no debate graph, no technical-edge signals.
++   // Rankings were gated in this same round; this gates the page itself.
++   if (consensus.dataQuality === 'INCOMPLETE') {
++     return <InsufficientDataRecord stock={stock} />;
++   }
++
++   // Commit M3 (free access): the RSC payload carries the FULL verdict set
++   // for every visitor — the seeker slice and the paid upgrade path are
++   // gone. The embedded set is the complete council, publicly, for everyone.
++   const sanitized = sanitizeConsensus(consensus);
++   // R4-04: the council is server-computed once per regeneration — the
++   // lever paths were verified by re-running the scorers (council.ts) and
++   // re-verified by the acceptance test over the whole universe.
++   const council = buildCouncil(stock, sanitized.verdicts);
++   const stockDetail = generateStockDetail(stock);
++
++   // N1 (round 3): every engine call happens here, on the server. The
++   // client components below receive RESULTS — the resolved seed-baseline
++   // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
++   // both QVPS modes, and the knowledge graph for the FULL verdict set.
++   const resolved = resolveStockMetrics(key);
++   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
++   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
++   // A1: the historical parallel for the wisdom rail — server-resolved;
++   // null renders the honest "no parallels detected" state.
++   const archetypeKey = detectArchetype(stock);
++   const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
++
++   // X3+Y1+Y2: the SSR price peek — ONE read-only batch read of the shared
++   // quote cache at ISR REGENERATION (skipped in the build phase: builds
++   // fetch nothing, hermetically) covering the symbol AND its comparison
++   // peers, so the peer table prices exist in the first byte instead of
++   // “—” (the founder's Y2 defect list). Misses are omitted and the client
++   // hook fills them (its /api/prices call also warms the cache).
++   const peerSymbols = stockDetail.peers.map((p) => p.symbol);
++   const peeked = isBuildPhase() ? {} : await serveCachedQuotes([key, ...peerSymbols]);
++   const initialQuote = peeked[key] ?? null;
++   // Y2 follow-up: the SELF symbol stays in the mapped peer prices too — the
++   // peer table's highlighted self row renders the same cached observation
++   // the hero shows, instead of "—" until client hydration. One peek, one
++   // mapping, no second read; misses are still omitted (honest "—").
++   const initialPeerPrices: Record<string, InitialPriceEntry> = {};
++   for (const [sym, q] of Object.entries(peeked)) {
++     const mapped = toPriceData(q);
++     if (mapped) initialPeerPrices[sym] = mapped;
++   }
++
++   // Y3: the NSE session state at regeneration, frozen into the ISR HTML
++   // and refreshed on the next regen (same lifecycle as the quote peek).
++   // Pure computation (no I/O) — safe in the build phase, where it bakes
++   // the build-time state until the first regeneration replaces it.
++   const initialMarket = marketState();
++
++   return (
++     <NamespaceProvider ns={{ stock: stockNs, chart, kg, rishiGrid }}>
++       <StockPageClient
++         stock={stock}
++         consensus={sanitized}
++         detail={stockDetail}
++         resolved={resolved}
++         qvpsDual={qvpsDual}
++         eliteGraph={eliteGraph}
++         initialQuote={initialQuote}
++         initialPeerPrices={initialPeerPrices}
++         initialMarket={initialMarket}
++         parallel={parallel}
++       />
++       <RishiCouncil council={council} />
++       {/* INT-B1: the first real product surface — the stock page consumes
++           the ONE /api/intelligence surface through the A8 primitives
++           (client-side fetch; no page imports the chain runner). */}
++       <IntelligencePanel key={key} subject={key} />
++     </NamespaceProvider>
++   );
++ }
++
+
+ ❯ test/intelligenceStockDossier.test.ts:163:15
+    161|   it("the stock page mounts the dossier directly after the B1 Intellig…
+    162|     const s = readFileSync(PAGE, "utf8");
+    163|     expect(s).toContain("IntelligenceDossier");
+       |               ^
+    164|     const panelIdx = s.indexOf("<IntelligencePanel");
+    165|     const dossierIdx = s.indexOf("<IntelligenceDossier");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 the mount (scored-surface branch, after the B1 panel) > the InsufficientDataRecord branch mounts NO dossier (no intelligence claims on a page that promises none)
+AssertionError: expected -1 to be greater than -1
+ ❯ test/intelligenceStockDossier.test.ts:177:26
+    175|     const dossierMount = s.indexOf("<IntelligenceDossier");
+    176|     expect(insufficientBranch).toBeGreaterThan(-1);
+    177|     expect(dossierMount).toBeGreaterThan(-1);
+       |                          ^
+    178|     // the early-return branch closes before any dossier mount exists
+    179|     const branchReturn = s.indexOf("return <InsufficientDataRecord sto…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  test/intelligenceStockDossier.test.ts > INT-D3 the exact-surface scan grows to EXACTLY the four declared product surfaces > the set of surfaces fetching /api/intelligence is EXACTLY {B1 panel, C1 brief, D2 drawer, D3 dossier}
+AssertionError: expected [ …(3) ] to deeply equal [ …(4) ]
+
+- Expected
++ Received
+
+  [
+    "components/dashboard/DashboardBrief.tsx",
+    "components/screener/IntelligenceDrawer.tsx",
+-   "components/stock/IntelligenceDossier.tsx",
+    "components/stock/IntelligencePanel.tsx",
+  ]
+
+ ❯ test/intelligenceStockDossier.test.ts:195:39
+    193|       /fetch\([^)]*\/api\/intelligence/.test(readFileSync(f, "utf8")),
+    194|     );
+    195|     expect(consumers.map(rel).sort()).toEqual([
+       |                                       ^
+    196|       "components/dashboard/DashboardBrief.tsx",
+    197|       "components/screener/IntelligenceDrawer.tsx",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed (11)
+   Start at  01:38:06
+   Duration  229ms (tests 50%, transform 34%, import 6%, setup 5%, worker 4%)
+

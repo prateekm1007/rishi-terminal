@@ -156,6 +156,159 @@ describe("appendStateTransitions — idempotent upsert contract", () => {
   });
 });
 
+// ── INT-RECONCILE: value fidelity at the JSONB boundary ─────────────────────
+// The founder audit (2026-10-10, directives 5+6) traced the all-refused
+// production state to this boundary: the writer stored
+// JSON.stringify(value) — a STRING — into the JSONB columns, the reader
+// returned it verbatim, and A4 correctly refused to scale strings (every
+// leg abstained non-comparable; the statistical thresholds never
+// evaluated a number — 160,200 rows verified string-typed on
+// production). These tests pin the round trip: numbers out, numbers
+// back — legacy string rows decode, native rows pass through verbatim.
+
+describe("appendStateTransitions — values cross the JSONB boundary natively (INT-RECONCILE)", () => {
+  it("stores NUMBERS as jsonb numbers, never stringified (the upsert payload is inspected verbatim)", async () => {
+    vi.resetModules();
+    const upsert = vi.fn().mockReturnValue({
+      upsert: vi.fn().mockReturnValue({
+        select: vi.fn().mockResolvedValue({ data: [{ change_id: "x" }], error: null }),
+      }),
+    });
+    vi.doMock("@/lib/services/supabaseAdmin", () => ({
+      getAdminSupabase: () => ({ from: () => upsert() }),
+    }));
+    const { appendStateTransitions: append } = await import("@/lib/intelligence/stateLog");
+    const prev = quote({ observedAt: T0, price: 1204.1, change: -0.9, volume24h: 500000, refreshedAt: T0 });
+    const r = await append(buildQuoteTransitions("RELIANCE", prev, quote()));
+    expect(r.error).toBeNull();
+    const rows = upsert.mock.results[0].value.upsert.mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >;
+    expect(rows).toHaveLength(3);
+    const price = rows.find((row) => row.field === "price") as Record<string, unknown>;
+    // jsonb typeof(new_value) must be 'number', not 'string'
+    expect(price.new_value).toBe(1210.1);
+    expect(typeof price.new_value).toBe("number");
+    expect(price.old_value).toBe(1204.1);
+    expect(typeof price.old_value).toBe("number");
+    const change = rows.find((row) => row.field === "change") as Record<string, unknown>;
+    expect(change.new_value).toBe(-0.618);
+    expect(typeof change.new_value).toBe("number");
+    const volume = rows.find((row) => row.field === "volume24h") as Record<string, unknown>;
+    expect(volume.new_value).toBe(582125);
+    expect(typeof volume.new_value).toBe("number");
+  });
+
+  it("a first observation still writes SQL NULL old_value (an honest beginning, never an encoded 'null')", async () => {
+    vi.resetModules();
+    const upsert = vi.fn().mockReturnValue({
+      upsert: vi.fn().mockReturnValue({
+        select: vi.fn().mockResolvedValue({ data: [{ change_id: "x" }], error: null }),
+      }),
+    });
+    vi.doMock("@/lib/services/supabaseAdmin", () => ({
+      getAdminSupabase: () => ({ from: () => upsert() }),
+    }));
+    const { appendStateTransitions: append } = await import("@/lib/intelligence/stateLog");
+    await append(buildQuoteTransitions("RELIANCE", null, quote()));
+    const rows = upsert.mock.results[0].value.upsert.mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >;
+    for (const row of rows) {
+      expect(row.old_value).toBeNull();
+    }
+  });
+});
+
+describe("readStateHistory — the legacy string encoding decodes at the boundary (INT-RECONCILE)", () => {
+  /** PostgREST row shape (snake_case) with per-test values. */
+  function pgRow(over: Record<string, unknown>): Record<string, unknown> {
+    return {
+      change_id: "chg-1",
+      entity: "stock:RELIANCE",
+      field: "price",
+      observed_at: "2026-10-08T10:00:00+00:00",
+      recorded_at: "2026-10-08T10:00:01+00:00",
+      source: "yahoo-bulk",
+      unit: "inr",
+      source_state: "live",
+      old_value: "1000",
+      new_value: "1070",
+      ...over,
+    };
+  }
+
+  async function importReaderWithRows(rows: Record<string, unknown[]>) {
+    vi.resetModules();
+    vi.doMock("@/lib/services/supabaseAdmin", () => ({
+      getAdminSupabase: () => ({
+        from: () => ({
+          select: () => ({
+            eq: () => ({
+              eq: (_n2: string, field: string) => ({
+                order: () => ({
+                  limit: async () => ({ data: rows[field] ?? [], error: null }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      }),
+    }));
+    return import("@/lib/intelligence/stateLog");
+  }
+
+  it("legacy jsonb STRINGS decode to typed values (the exact inverse of the pre-repair encoding)", async () => {
+    const { readStateHistory: read } = await importReaderWithRows({
+      price: [pgRow({})],
+    });
+    const rows = await read("stock:RELIANCE", "price");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.newValue).toBe(1070);
+    expect(typeof rows[0]?.newValue).toBe("number");
+    expect(rows[0]?.oldValue).toBe(1000);
+    expect(typeof rows[0]?.oldValue).toBe("number");
+    // identity + provenance carried verbatim
+    expect(rows[0]?.changeId).toBe("chg-1");
+    expect(rows[0]?.sourceState).toBe("live");
+    expect(rows[0]?.recordedAt).toBe("2026-10-08T10:00:01+00:00");
+  });
+
+  it("an encoded string VALUE decodes to the string (numbers are not the only legacy shape)", async () => {
+    const { readStateHistory: read } = await importReaderWithRows({
+      regime: [pgRow({ field: "regime", old_value: null, new_value: '"bull"' })],
+    });
+    const rows = await read("stock:RELIANCE", "regime");
+    expect(rows[0]?.newValue).toBe("bull");
+  });
+
+  it("native jsonb numbers pass through verbatim (post-repair rows)", async () => {
+    const { readStateHistory: read } = await importReaderWithRows({
+      price: [pgRow({ old_value: 1000, new_value: 1070 })],
+    });
+    const rows = await read("stock:RELIANCE", "price");
+    expect(rows[0]?.newValue).toBe(1070);
+    expect(typeof rows[0]?.newValue).toBe("number");
+  });
+
+  it("a native jsonb string that is NOT valid JSON passes through verbatim (future text fields)", async () => {
+    const { readStateHistory: read } = await importReaderWithRows({
+      regime: [pgRow({ field: "regime", old_value: null, new_value: "bull-run" })],
+    });
+    const rows = await read("stock:RELIANCE", "regime");
+    expect(rows[0]?.newValue).toBe("bull-run");
+  });
+
+  it("SQL NULL old_value stays null (never a fabricated zero)", async () => {
+    const { readStateHistory: read } = await importReaderWithRows({
+      price: [pgRow({ old_value: null })],
+    });
+    const rows = await read("stock:RELIANCE", "price");
+    expect(rows[0]?.oldValue).toBeNull();
+    expect(rows[0]?.newValue).toBe(1070);
+  });
+});
+
 describe("compatibility — the state log feeds the item-1 insight contract", () => {
   it("a persisted transition can back an evidence item + whatChanged line of a valid RishiInsight", () => {
     const prev = quote({ observedAt: T0, price: 1204.1, refreshedAt: T0 });

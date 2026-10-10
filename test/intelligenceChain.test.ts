@@ -546,13 +546,26 @@ describe("INT-A8-PRES deterministic uncertainty — the per-reason exclusion bre
     const below = nonMaterial.filter((v) => v.reason === "below-threshold").length;
     const expected: string[] = [];
     if (below > 0) {
-      expected.push(`${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
+      expected.push(`Of those, ${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
     }
     for (const reason of NON_MATERIAL_REFUSAL_ORDER) {
       const n = nonMaterial.filter((v) => v.reason === reason).length;
-      if (n > 0) expected.push(`${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
+      if (n > 0) expected.push(`Of those, ${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
     }
     expect(u.slice(1)).toEqual(expected);
+    // INT-RECONCILE: the breakdown states its partition relation — every
+    // breakdown line is a subset of the total, never additive with it.
+    for (const line of u.slice(1)) {
+      expect(line.startsWith("Of those, ")).toBe(true);
+    }
+    // and the partition is exact: per-reason counts sum to the total.
+    const reasonSum = [...new Set(nonMaterial.map((v) => v.reason))].reduce(
+      (acc, reason) => acc + nonMaterial.filter((v) => v.reason === reason).length,
+      0,
+    );
+    expect(reasonSum).toBe(nonMaterial.length);
+    // the summary's ledger count and the uncertainty total reconcile.
+    expect(out.thesis.detail).toContain(`excluded=${nonMaterial.length}`);
   });
 
   it("the breakdown is deterministic: identical chain state -> identical uncertainty lines", async () => {
@@ -570,6 +583,24 @@ describe("INT-A8-PRES deterministic uncertainty — the per-reason exclusion bre
       // the old conflated sentence never returns
       expect(line).not.toContain("(or were refused fail-closed)");
     }
+  });
+
+  it("INT-RECONCILE: an empty ledger with recorded transitions is EXPLAINED by verdicts in whyItMatters", async () => {
+    // All-non-material numeric rows (the honest insufficient-history
+    // state): whatChanged/evidence stay empty BY DESIGN, and the
+    // artifact must say so — never leave the emptiness unexplained.
+    rowsByField = { price: [row("c-1", T0, 1204.1, null), row("c-2", T1, 1204.2, 1204.1)] };
+    const out = await runIntelligenceChain({ capability: "thesis", subject: "RELIANCE", nowMs: NOW });
+    expect(out.insight?.whatChanged).toEqual([]);
+    expect(out.insight?.evidence).toEqual([]);
+    expect(out.insight?.status).toBe("unknown");
+    expect(out.insight?.whyItMatters).toContain(
+      "whatChanged and the evidence ledger are empty by A4 verdict, never by data loss",
+    );
+    // the totals sentence states each count with its own scope
+    expect(out.insight?.whyItMatters).toMatch(
+      /Totals: \d+ in-window transition\(s\) across \d+ tracked field\(s\), \d+ window-start baseline row\(s\), \d+ projected event\(s\)\./,
+    );
   });
 
   it("the breakdown fits the A1 bound with no truncation: 1 total + 1 below-threshold + 8 refusal reasons = 10 (static pin)", () => {

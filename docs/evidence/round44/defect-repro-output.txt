@@ -1,0 +1,240 @@
+
+##### / -> HTTP 200 (70625 bytes)
+
+##### /stocks -> HTTP 200 (1890431 bytes)
+
+##### /screener -> HTTP 200 (1890431 bytes)
+
+##### /stock/SBIN -> HTTP 200 (182871 bytes)
+
+##### /news -> HTTP 200 (61014 bytes)
+
+##### /rishis -> HTTP 200 (50021 bytes)
+
+##### /pulse -> HTTP 200 (47902 bytes)
+
+##### /forex -> HTTP 200 (58574 bytes)
+
+##### /commodities -> HTTP 200 (65027 bytes)
+
+##### /bonds -> HTTP 200 (61216 bytes)
+
+##### /pricing -> HTTP 200 (35897 bytes)
+
+##### /methodology -> HTTP 200 (54927 bytes)
+
+##### /lab -> HTTP 200 (485918 bytes)
+
+=== D1a: /stocks screener counts ===
+  STRONG BUY occurrences: 1
+  LARGE CAP occurrences: 1
+  title: Stocks — India equities | Rishi Terminal
+  data rows (tr): 897
+  SBIN row extract: undefined
+
+=== D1b: /screener counts ===
+  status: 200
+  STRONG BUY occurrences: 1
+  LARGE CAP occurrences: 1
+  title: Stocks — India equities | Rishi Terminal
+  SBIN row extract: undefined
+
+=== D1c+D3+D4: /stock/SBIN verdict block ===
+  title: State Bank of India (SBIN) — Rishi scores &amp; fundamentals | Rishi Terminal
+  ~ scores &amp; fundamentals | Rishi Terminal
+  ~ consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field."/>
+  ~ scores &amp; fundamentals | Rishi Terminal"/>
+  ~ consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field."/>
+  ~ consensus, QVPS, metrics and verdicts on this page are illustrative placeholders
+  ~ Consensus
+  ~ Consensus
+  ~ QVPS 57/100 – Hold, mixed signals
+  ~ Consensus &amp; Dissent
+  ~ scorer)
+  ~ scorer)
+  ~ scores \u0026 fundamentals | Rishi Terminal\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"State Bank of I
+  ~ consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.\"}],[\"$\",\"link\",\"2
+  ~ scores \u0026 fundamentals | Rishi Terminal\"}],[\"$\",\"meta\",\"5\",{\"property\":\"og:description\",\"content\":\"State Ba
+  ~ consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.\"}],[\"$\",\"meta\",\"6
+  ~ Consensus\",\"technicals\":\"Technicals\",\"technicalsDesc\":\"Price Action \u0026 Indicators\",\"rishiWisdom\":\"Rishi Wisdom\",
+  ~ consensusScore\":\"Consensus Score\",\"consensus\":\"Consensus\",\"top6Rishis\":\"Top 6 Rishis\",\"topRishiScores\":\"TOP RISHI S
+  ~ consensusArchitecture\":\"Consensus Architecture\"},\"rishiGrid\":{\"legend\":\"Legend\",\"master\":\"Master\",\"specialist\":\"S
+  ~ consensusWeight\":\"Consensus weight\"}},\"children\":[[\"$\",\"$L23\",null,{\"stock\":{\"symbol\":\"SBIN\",\"name\":\"State Bank
+  ~ consensus\":{\"consensus\":80,\"category\":\"High Conviction Quality\",\"dataQuality\":\"OK\",\"tension\":\"Moderate Disagreement
+  ~ scoresCount\":20,\"topBull\":{\"name\":\"Seth Klarman\",\"full\":\"Seth Klarman\",\"label\":\"Asymmetric Safety\",\"score\":1
+  ~ score\":53},\"verdicts\":[{\"name\":\"Seth Klarman\",\"full\":\"Seth Klarman\",\"label\":\"Asymmetric Safety\",\"score\":100,
+  ~ scoreRaw\":100,\"origin\":\"Global\",\"comps\":[{\"label\":\"Downside Protection\",\"v\":100,\"wt\":40,\"detail\":\"Debt 0\"}
+  ~ score\":98,\"scoreRaw\":98.22321428571428,\"origin\":\"Global\",\"comps\":[{\"label\":\"Low Risk\",\"v\":100,\"wt\":25,\"deta
+  ~ score\":96,\"scoreRaw\":95.5,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"Growth\",\"v\":100,\"wt\":25,\"detail\":\"14% rev\
+  ~ score 96. Excellent compounder\"},{\"name\":\"Lynch\",\"full\":\"Peter Lynch\",\"label\":\"GARP\",\"score\":95,\"scoreRaw\":9
+  ~ scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)\"}],\"insight\":\"PEG 0.50 · EPS CAGR 20% · Rev 14%. P
+  ~ score\":93,\"scoreRaw\":92.5,\"origin\":\"Global\",\"comps\":[{\"label\":\"Cycle Position\",\"v\":100,\"wt\":30,\"detail\":\"
+  ~ score\":90,\"scoreRaw\":89.64755813953488,\"origin\":\"Global\",\"comps\":[{\"label\":\"Maximum Pessimism\",\"v\":100,\"wt\":
+  ~ score\":89,\"scoreRaw\":88.5295542635659,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"Contrarian\",\"v\":100,\"wt\":30,\"det
+  ~ score\":87,\"scoreRaw\":86.6,\"origin\":\"Global\",\"comps\":[{\"label\":\"Inversion Check\",\"v\":100,\"wt\":25,\"detail\":\
+  ~ score\":83,\"scoreRaw\":83.345,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"Margin Visibility\",\"v\":100,\"wt\":25,\"detail
+  ~ score\":82,\"scoreRaw\":82.47539682539683,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"Growth Composite\",\"v\":100,\"wt\":2
+  ~ scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)\"}],\"insight\":\"P/CF 7.7x · 14% rev CAGR · 57.5% pro
+  ~ score\":78,\"scoreRaw\":78.08392857142857,\"origin\":\"Global\",\"comps\":[{\"label\":\"Management Quality\",\"v\":100,\"wt\"
+  ~ score\":77,\"scoreRaw\":76.94186046511629,\"origin\":\"Global\",\"comps\":[{\"label\":\"Zero Debt\",\"v\":100,\"wt\":30,\"det
+  ~ score\":75,\"scoreRaw\":75,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"Promoter Skin\",\"v\":100,\"wt\":30,\"detail\":\"57.
+  ~ scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)\"},{\"label\":\"Small-Cap Size\",\"v\":0,\"wt\":15,\"d
+  ~ score\":72,\"scoreRaw\":72.19856115107913,\"origin\":\"Global\",\"comps\":[{\"label\":\"Economic Moat\",\"v\":100,\"wt\":25,\
+  ~ scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)\"},{\"label\":\"Owner Earnings Yield\",\"v\":0.9928057
+  ~ score\":69,\"scoreRaw\":68.676,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"Manageable (Debt)\",\"v\":100,\"wt\":20,\"detail
+  ~ score\":66,\"scoreRaw\":66.45714285714286,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"Zero-Debt Filter\",\"v\":100,\"wt\":3
+  ~ scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)\"},{\"label\":\"Cash Flow Predictability\",\"v\":2.285
+  ~ score\":66,\"scoreRaw\":65.94724220623502,\"origin\":\"Global\",\"comps\":[{\"label\":\"Earnings Yield\",\"v\":79.13669064748
+  ~ score\":54,\"scoreRaw\":54.125,\"origin\":\"Global\",\"comps\":[{\"label\":\"Leverage Tolerance\",\"v\":100,\"wt\":15,\"detai
+  ~ score\":53,\"scoreRaw\":53.4375,\"origin\":\"Global\",\"comps\":[{\"label\":\"P/E Value\",\"v\":100,\"wt\":25,\"detail\":\"P/
+  ~ score\":null,\"scoreRaw\":null,\"origin\":\"Bharat\",\"comps\":[{\"label\":\"EPS Consistency\",\"v\":100,\"wt\":35,\"detail\"
+  ~ score\":57.33333333333333,\"weight\":0.25,\"weighted\":14.333333333333332,\"confidence\":0.6666666666666666,\"signals\":[{\"l
+  ~ score\":42,\"weight\":0.22,\"weighted\":9.24,\"confidence\":0.4,\"signals\":[{\"label\":\"P/E vs Sector\",\"value\":\"10.0x (
+  ~ score\":61.5,\"weight\":0.18,\"weighted\":11.07,\"confidence\":0.75,\"signals\":[{\"label\":\"Revenue CAGR 3Y\",\"value\":\"1
+  ~ score\":50,\"weight\":0.15,\"weighted\":7.5,\"confidence\":0.7,\"signals\":[{\"label\":\"Sector Moat\",\"value\":\"Moderate (
+  ~ score\":60,\"weight\":0.12,\"weighted\":7.199999999999999,\"confidence\":0.8,\"signals\":[],\"redFlags\":[]},{\"id\":\"sentim
+  ~ score\":50,\"weight\":0.08,\"weighted\":4,\"confidence\":0.75,\"signals\":[],\"redFlags\":[]}],\"totalWeighted\":53.343333333
+  ~ QVPS 57/100 – Hold, mixed signals\",\"commentary\":\"A mixed picture. Some pillars of the business are sound while others ra
+  ~ score\":0,\"weight\":0.35,\"weighted\":0,\"confidence\":0.85,\"signals\":[{\"label\":\"P/E vs Sector\",\"value\":\"10.0x (sec
+  ~ score\":0,\"weight\":0.4,\"weighted\":0,\"confidence\":0.8,\"signals\":[],\"redFlags\":[]},{\"id\":\"governanceRisk\",\"name\
+  ~ score\":0,\"weight\":0.25,\"weighted\":0,\"confidence\":0.75,\"signals\":[],\"redFlags\":[]},{\"id\":\"moatDestruction\",\"na
+  ~ score\":0,\"weight\":0,\"weighted\":0,\"confidence\":0.75,\"signals\":[],\"redFlags\":[]},{\"id\":\"growthMirage\",\"name\":\
+  ~ score\":0,\"weight\":0,\"weighted\":0,\"confidence\":0.65,\"signals\":[],\"redFlags\":[]},{\"id\":\"catalyst\",\"name\":\"Cat
+  ~ score\":0,\"weight\":0,\"weighted\":0,\"confidence\":0.7,\"signals\":[],\"redFlags\":[]}],\"totalWeighted\":0,\"trendMultipli
+  ~ QVPS short 0/100 – Tactical short opportunity\",\"commentary\":\"A tactical short opportunity based on valuation excess and 
+  ~ score\":100,\"reasoning\":\"Through my deep value lens, State Bank of India shows clear merit. The Downside Protection scores
+  ~ score\":98,\"reasoning\":\"Through my asymmetric bet lens, State Bank of India shows clear merit. The Low Risk scores 100/100
+  ~ score\":96,\"reasoning\":\"Through my QGLP framework lens, State Bank of India shows clear merit. The Growth scores 100/100 -
+  ~ score 96. Excellent compounder\",\"philosophy\":\"\\\"Score this on Quality, Growth, Longevity, Price.\\\" -- In State Bank o
+  ~ score\":95,\"reasoning\":\"Through my GARP lens, State Bank of India shows clear merit. The PEG Ratio scores 100/100 -- PEG 0
+  ~ score\":93,\"reasoning\":\"Through my risk assessment lens, State Bank of India shows clear merit. The Cycle Position scores 
+  ~ consensus miss about this?\\\" -- In State Bank of India's case, the answer supports investment at current levels. My risk assess
+  ~ score\":90,\"reasoning\":\"Through my fundamental lens, State Bank of India shows clear merit. The Maximum Pessimism scores 1
+  ~ score\":89,\"reasoning\":\"Through my contrarian value lens, State Bank of India shows clear merit. The Contrarian scores 100
+  ~ score\":87,\"reasoning\":\"Through my mental models lens, State Bank of India shows clear merit. The Inversion Check scores 1
+  ~ score\":83,\"reasoning\":\"Through my narrative investing lens, State Bank of India shows clear merit. The Margin Visibility 
+  ~ scores 100/100 -- OPM 42%. With ROE of 18% and a PE of 10x, the sectoral tailwinds + management argument is compelling. India
+  ~ score\":82,\"reasoning\":\"Through my India macro lens, State Bank of India shows clear merit. The Growth Composite scores 10
+  ~ score\":78,\"reasoning\":\"Through my scuttlebutt lens, State Bank of India shows clear merit. The Management Quality scores 
+  ~ score\":77,\"reasoning\":\"Through my fundamental lens, State Bank of India shows clear merit. The Zero Debt scores 100/100 -
+  ~ score\":75,\"reasoning\":\"Through my smallcap discovery lens, State Bank of India shows clear merit. The Promoter Skin score
+  ~ score\":72,\"reasoning\":\"Through my quality moat lens, State Bank of India shows clear merit. The Economic Moat scores 100/
+  ~ score\":69,\"reasoning\":\"Applying my momentum value approach, State Bank of India sits at a crossroads. The price action + 
+  ~ score\":66,\"reasoning\":\"Applying my patient compounding approach, State Bank of India sits at a crossroads. The essential 
+  ~ score\":66,\"reasoning\":\"Applying my magic formula approach, State Bank of India sits at a crossroads. The earnings yield +
+  ~ score\":54,\"reasoning\":\"Applying my reflexivity approach, State Bank of India sits at a crossroads. The market perception 
+  ~ score\":53,\"reasoning\":\"Applying my margin of safety approach, State Bank of India sits at a crossroads. The price vs intr
+  ~ score\":100,\"trigger\":\"Downside Protection\",\"context\":\"Seth Klarman model triggers BUY. deep value score: 100/100. Pri
+  ~ score\":98,\"trigger\":\"Low Risk\",\"context\":\"Mohnish Pabrai model triggers BUY. asymmetric bet score: 98/100. Primary dr
+  ~ score\":96,\"trigger\":\"Growth\",\"context\":\"Raamdeo Agrawal model triggers BUY. QGLP framework score: 96/100. Primary dri
+  ~ score\":95,\"trigger\":\"PEG Ratio\",\"context\":\"Peter Lynch model triggers BUY. GARP score: 95/100. Primary driver: PEG Ra
+  ~ score\":93,\"trigger\":\"Cycle Position\",\"context\":\"Howard Marks model triggers BUY. risk assessment score: 93/100. Prima
+  ~ score\":90,\"trigger\":\"Maximum Pessimism\",\"context\":\"John Templeton model triggers BUY. fundamental score: 90/100. Prim
+  ~ score\":89,\"trigger\":\"Contrarian\",\"context\":\"Porinju Veliyath model triggers BUY. contrarian value score: 89/100. Prim
+  ~ score\":87,\"trigger\":\"Inversion Check\",\"context\":\"Charlie Munger model triggers BUY. mental models score: 87/100. Prim
+  ~ score\":83,\"trigger\":\"Margin Visibility\",\"context\":\"Basant Maheshwari model triggers BUY. narrative investing score: 8
+  ~ score\":82,\"trigger\":\"Growth Composite\",\"context\":\"Rakesh Jhunjhunwala model triggers BUY. India macro score: 82/100. 
+  ~ score\":78,\"trigger\":\"Management Quality\",\"context\":\"Philip Fisher model signals HOLD. Score of 78 -- not cheap enough
+  ~ score\":77,\"trigger\":\"Zero Debt\",\"context\":\"Walter Schloss model signals HOLD. Score of 77 -- not cheap enough to buy 
+  ~ score\":75,\"trigger\":\"Promoter Skin\",\"context\":\"Ashish Kacholia model signals HOLD. Score of 75 -- not cheap enough to
+  ~ score\":72,\"trigger\":\"Economic Moat\",\"context\":\"Warren Buffett model signals HOLD. Score of 72 -- not cheap enough to 
+  ~ score\":69,\"trigger\":\"Manageable (Debt)\",\"context\":\"Vijay Kedia model signals HOLD. Score of 69 -- not cheap enough to
+  ~ score\":66,\"trigger\":\"Zero-Debt Filter\",\"context\":\"Radhakishan Damani model signals HOLD. Score of 66 -- not cheap eno
+  ~ score\":66,\"trigger\":\"Earnings Yield\",\"context\":\"Joel Greenblatt model signals HOLD. Score of 66 -- not cheap enough t
+  ~ score\":54,\"trigger\":\"Leverage Tolerance\",\"context\":\"George Soros model issues CAUTION. Score 54/100 -- market percept
+  ~ score\":53,\"trigger\":\"P/E Value\",\"context\":\"Benjamin Graham model issues CAUTION. Score 53/100 -- price vs intrinsic v
+  ~ consensus\":{\"overall\":80,\"bullCount\":14,\"bearCount\":0,\"neutralCount\":5},\"epistemic\":{\"disagreementIndex\":0.417384596
+  ~ score\":100,\"signal\":\"STRONG_BUY\",\"confidence\":0.75},\"Mohnish Pabrai\":{\"score\":98,\"signal\":\"STRONG_BUY\",\"confi
+  ~ score\":96,\"signal\":\"STRONG_BUY\",\"confidence\":0.75},\"Peter Lynch\":{\"score\":95,\"signal\":\"STRONG_BUY\",\"confidenc
+  ~ score\":93,\"signal\":\"STRONG_BUY\",\"confidence\":0.75},\"John Templeton\":{\"score\":90,\"signal\":\"STRONG_BUY\",\"confid
+  ~ score\":89,\"signal\":\"STRONG_BUY\",\"confidence\":0.75},\"Charlie Munger\":{\"score\":87,\"signal\":\"STRONG_BUY\",\"confid
+  ~ score\":83,\"signal\":\"STRONG_BUY\",\"confidence\":0.75},\"Rakesh Jhunjhunwala\":{\"score\":82,\"signal\":\"STRONG_BUY\",\"c
+  ~ score\":78,\"signal\":\"BUY\",\"confidence\":0.75},\"Walter Schloss\":{\"score\":77,\"signal\":\"BUY\",\"confidence\":0.75},\
+  ~ score\":75,\"signal\":\"BUY\",\"confidence\":0.75},\"Warren Buffett\":{\"score\":72,\"signal\":\"BUY\",\"confidence\":0.75},\
+  ~ score\":69,\"signal\":\"BUY\",\"confidence\":0.75},\"Radhakishan Damani\":{\"score\":66,\"signal\":\"BUY\",\"confidence\":0.7
+  ~ score\":66,\"signal\":\"BUY\",\"confidence\":0.75},\"George Soros\":{\"score\":54,\"signal\":\"NEUTRAL\",\"confidence\":0.75}
+  ~ score\":53,\"signal\":\"NEUTRAL\",\"confidence\":0.75}},\"conflictPairs\":[{\"philosophy1\":\"Seth Klarman\",\"philosophy2\":
+  ~ scoreDelta\":47,\"reason\":\"Seth Klarman sees strong merit while Benjamin Graham sees significant risk.\"}],\"contextualInst
+  ~ Consensus \u0026 Dissent\"}],[\"$\",\"span\",null,{\"style\":{\"fontSize\":11,\"color\":\"var(--text-muted)\",\"fontFamily\":\"va
+  ~ scorer)\"}]]}],false]}]]}]\n"])
+  ~ scorer)\"}]]}],false]}]]}]\n"])
+  metric D/E : D/E · OPM · FCF yield
+  metric OPM : OPM · FCF yield
+  metric NCAV : NCAV 69.62x — crowd wrong?
+  metric ROE : ROE
+  'Resolving intelligence' present: true
+  section error: Cannot read properties of undefined (reading 'replace')
+
+=== D2: shell/nav + metadata per route ===
+  /: nav->/screener=false nav->/stocks=true
+    title: Rishi Terminal - Sacred Investment Intelligence
+    canonical: undefined
+  section error: Cannot read properties of undefined (reading 'slice')
+
+=== D6: /screener invalid + duplicate tickers ===
+  PRESENT: RAYMOND2
+  PRESENT: NAUKRI
+  PRESENT: KALYANKJIL
+  PRESENT: KALYANAJW
+  PRESENT: CONCOR
+  PRESENT: ANANDRATHI
+  PRESENT: COLPAL
+  PRESENT: TASTYBITE
+  PRESENT: RVNL
+  PRESENT: JISLJALEQS
+  PRESENT: GPIL
+
+=== D7: Rishi counts + pricing copy ===
+  /rishis title: Chat with Rishis — AI simulation | Rishi Terminal
+  /rishis Soros present: false
+  /rishis card-ish count (h3): 0
+  /pricing Soros present: false
+  /pricing 'free' occurrences: 11
+  /pricing 20/21 mentions: 21
+  /stocks 'top-5'|top 5: true
+
+=== D8: /pulse macro facts ===
+  spread claim: undefined
+  softening: (absent)
+  bps mentions: 25bps | 25bps | 8bps | 83bps | +8bps
+  section error: Cannot read properties of undefined (reading 'replace')
+
+=== D8b: /bonds facts ===
+  10Y: undefined
+  matured Aug 2026: 
+  2Y duration row: undefined
+  header counts: Maturity
+  AA ratings: 3 occurrences of AA/AA+
+
+=== D9+D17: /forex and /commodities ===
+  'Live currency markets': undefined
+  REFERENCE count: 14
+  JPY/USD: (absent)
+  gold 52W: undefined
+  '$' on commodities: 172
+  MCX extract: undefined
+
+=== D11+D12+D16: dashboard / crypto / news ===
+  links to /lab: 4
+  Portfolio/Watchlist/Compare: Portfolio Lab | Portfolio | Watchlist | Compare | Portfolio Lab\",\"markets\":\"MARKETS\",\"crypto\
+  'Observation time': undefined
+  gold price: undefined
+  BTC dominance: (absent)
+  /news '--' ticker: 235 occurrences of --
+  /news headline count (article): 0
+
+=== D13+D14: taxonomy + methodology ===
+  taxonomy Agri+variant present: true false
+  taxonomy Defence+variant present: true false
+  taxonomy Jewellery+variant present: true false
+  taxonomy Realty+variant present: true true
+  FinTech present: false | Fintech present: true
+  S2-01 leak: undefined
+  /basant slug leak: undefined
+
+=== D15: chat widget markers ===
+  /: 'Agnes' present: false | 'or life' present: false | 'Powered by': (absent)
+  /pricing: 'Agnes' present: false | 'or life' present: false | 'Powered by': (absent)
+  /stock/SBIN: 'Agnes' present: false | 'or life' present: false | 'Powered by': (absent)
+
+##### probe complete

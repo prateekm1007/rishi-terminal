@@ -1,4 +1,4 @@
-# Dispersion — the disagreement metric (S2-06)
+# Dispersion — the disagreement metric
 
 **Definition.** For one stock, `dispersion` is the **population standard
 deviation** of the valid Rishi verdicts:

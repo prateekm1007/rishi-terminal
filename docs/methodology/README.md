@@ -1,4 +1,4 @@
-# Methodology docs (S2-01)
+# Methodology docs
 
 One document per registered consensus scorer, named by the DERIVED slug of
 the scorer's canonical name (kebab-case — the same names

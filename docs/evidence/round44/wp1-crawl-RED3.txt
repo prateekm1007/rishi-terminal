@@ -1,0 +1,40 @@
+--   /screener -> 308 /stocks
+FAIL /stocks: generic og:title
+FAIL /stocks: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /news: generic og:title
+FAIL /news: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /rishis: generic og:title
+FAIL /rishis: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /pulse: generic og:title
+FAIL /pulse: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /forex: generic og:title
+FAIL /forex: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /commodities: generic og:title
+FAIL /commodities: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /bonds: generic og:title
+FAIL /bonds: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /bonds/IN10YS: canonical https://rishi-terminal.vercel.app/bonds does not match route
+FAIL /bonds/IN10YS: generic og:title
+FAIL /bonds/IN10YS: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /crypto: generic og:title
+FAIL /crypto: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /pricing: generic og:title
+FAIL /pricing: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /methodology: canonical https://rishi-terminal.vercel.app does not match route
+FAIL /methodology: generic og:title
+FAIL /methodology: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /methodology/graham: canonical https://rishi-terminal.vercel.app does not match route
+FAIL /methodology/graham: generic og:title
+FAIL /methodology/graham: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /lab: canonical https://rishi-terminal.vercel.app does not match route
+FAIL /lab: generic og:title
+FAIL /lab: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /privacy: canonical https://rishi-terminal.vercel.app does not match route
+FAIL /privacy: generic og:title
+FAIL /privacy: og:url https://rishi-terminal.vercel.app does not match route
+FAIL /terms: canonical https://rishi-terminal.vercel.app does not match route
+FAIL /terms: generic og:title
+FAIL /terms: og:url https://rishi-terminal.vercel.app does not match route
+
+routes checked: 20 (of 21; redirects excluded)
+WP1 ROUTE-CRAWL: FAIL (36 failures)

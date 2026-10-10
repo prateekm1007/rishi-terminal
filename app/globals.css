@@ -1638,9 +1638,14 @@ body.theme-dark {
 
 /* Designed visible focus for every interactive control inside the mounted
    intelligence surfaces (the shared composition block and the drawer
-   panel) — scoped, never a global restyle (INT-A8-PRES fix contract). */
+   panel) — scoped, never a global restyle (INT-A8-PRES fix contract).
+   HYD-PINS (2026-10-10): extended to the /stocks per-row Rishi badge —
+   the intelligence AFFORDANCE is not inside a surface, and its visible
+   keyboard focus was only the browser default. One more scoped selector,
+   same designed state; pinned by test/smoke/hydration-pins.spec.ts. */
 .insight-surface :focus-visible,
-[data-intelligence-drawer] :focus-visible {
+[data-intelligence-drawer] :focus-visible,
+[data-intelligence-badge]:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }

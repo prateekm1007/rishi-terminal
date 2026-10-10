@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { WorldMarketsGrid } from '../../components/markets/WorldMarketsGrid';
 import Link from 'next/link';
 import { useLanguage } from '../../lib/language';
@@ -110,6 +110,12 @@ function StatBox({ label, value, sub, color, onClick }: {
   );
 }
 
+// HYD-PINS: the no-op subscription for the mounted-gate hydration
+// detector — the snapshot never changes post-mount (false exists only
+// server-side / pre-hydration; true only client-side), so there is
+// nothing to subscribe to.
+const noopSubscribe = () => () => {};
+
 function SectionTitle({ emoji, title, color = 'var(--accent-gold)' }: { emoji: string; title: string; color?: string }) {
   return (
     <div className="section-header">
@@ -173,10 +179,26 @@ export default function MarketPulsePage() {
 
   const [prices, setPrices] = useState<Record<string, any> | null>(null);
   const [breadth, setBreadth] = useState<any | null>(null);
+  // HYD-PINS (founder direction, 2026-10-10): currencies === null means
+  // "not yet resolved". Two stranding modes are closed here: (1) the SSR
+  // first byte used to render the transient "Fetching…" text — a no-JS
+  // client could never resolve it (fxStarted gates the transient to the
+  // POST-HYDRATION moment only; the first byte carries the honest
+  // unavailable state, pinned by test/smoke/ssr-content.spec.ts);
+  // (2) a failed fetch (non-OK / network) used to leave null forever —
+  // every failure path now resolves to the empty array so the honest
+  // unavailable state renders (pinned by the failure-injection leg in
+  // test/smoke/hydration-pins.spec.ts). Never a fabricated rate.
   const [currencies, setCurrencies] = useState<any[] | null>(null);
   const [blocks, setBlocks] = useState<any | null>(null);
 
   const [hist30d, setHist30d] = useState<number | null>(null);
+  // The mounted gate — the canonical hydration detector
+  // (useSyncExternalStore with distinct server/client snapshots): SSR and
+  // the pre-hydration paint see false, the hydrated client sees true. No
+  // setState-in-effect (the ratchet's react-hooks/set-state-in-effect
+  // warning), no extra render.
+  const fxStarted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const [liveContext, setLiveContext] = useState<{
     breadthBullish?: number;
     derivativesSignal?: number;
@@ -259,10 +281,18 @@ export default function MarketPulsePage() {
     const run = async () => {
       try {
         const res = await fetch('/api/pulse/currency', { cache: 'no-store' });
-        if (!res.ok) return;
+        // HYD-PINS: a non-OK response resolves to the honest unavailable
+        // state ([]), never a stranded "Fetching…" — the 120 s poll may
+        // still recover it ("right now" stays true).
+        if (!res.ok) {
+          if (!cancelled) setCurrencies([]);
+          return;
+        }
         const data = await res.json();
         if (!cancelled) setCurrencies(data?.currencies || []);
-      } catch {}
+      } catch {
+        if (!cancelled) setCurrencies([]);
+      }
     };
     run();
     const t = setInterval(run, 120000);
@@ -611,9 +641,18 @@ export default function MarketPulsePage() {
                   stayed null and the map produced nothing). An explicit
                   unavailable state beats a silently blank section. */}
               {(currencies === null) ? (
-                <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  Fetching live currency rates…
-                </div>
+                fxStarted ? (
+                  <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    Fetching live currency rates…
+                  </div>
+                ) : (
+                  /* HYD-PINS: the pre-hydration (no-JS) first byte — live
+                     FX needs the browser's fetch; the honest state, never
+                     a stranding loading promise. */
+                  <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                    Live currency rates unavailable right now — nothing is shown rather than made-up numbers.
+                  </div>
+                )
               ) : currencies.length === 0 || currencies.every((c: { error?: boolean }) => c.error) ? (
                 <div style={{ padding: '20px 16px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                   Live currency rates unavailable right now — nothing is shown rather than made-up numbers.

@@ -1,0 +1,93 @@
+# HYD-PINS fail-first capture — 2026-10-10, on the pre-fix tree
+# (fix/hyd-pins-fx-firstbyte at origin/main d2d14ab, fixes stashed;
+# clean lifecycle: rm -rf .next -> npm run build -> the config's own
+# webServer). Command: RANKINGS_ENABLED=true npx playwright test
+# test/smoke/hydration-pins.spec.ts test/smoke/ssr-content.spec.ts
+#
+# RED 3 failed / 4 passed — exactly the three fix-dependent pins:
+#   1. the FX failure-injection leg: the route 503s -> the pre-fix tree
+#      STRANDS at "Fetching live currency rates..." (the unavailable text
+#      never renders; currencies stays null on non-OK/catch);
+#   2. the badge focus leg: outlineStyle "auto" (browser default) vs the
+#      designed "solid" — the badge sits outside .insight-surface and the
+#      drawer, so the scoped rule never covered it;
+#   3. the /pulse first-byte gate: the raw SSR HTML contains the
+#      stranding "Fetching live currency rates" (the macro tab is the
+#      DEFAULT tab; a no-JS client can never resolve it).
+# The 4 passes pin existing correct behavior (the /news settled state,
+# the /pulse FX settle, the two pre-existing ssr-content tests).
+#
+# GREEN (same command, fixes applied): 7/7 passed (25.1s). The first
+# GREEN attempt used setFxStarted(true) inside the effect and was
+# rejected by the ESLint ratchet (react-hooks/set-state-in-effect, +1
+# over the 283 baseline — never weakened); replaced with the canonical
+# useSyncExternalStore hydration detector (server snapshot false /
+# client snapshot true), ratchet back to exactly 283.
+#
+# Full battery on the fixed tree: tsc 0; eslint 0 errors / 283 warnings
+# (ratchet exact); vitest 194 files / 2155 tests; build 0; ISR PASS
+# (896 baked routes); bundle 159.4 / 163.2 / 171.6 kB all OK; encoding
+# PASS; stocks 896 all gates; parity 0 mismatches; FULL smoke suite
+# 52/52 (workers=1).
+#
+# Production legs (SMOKE_BASE_URL=production, 2026-10-10 ~07:05Z on
+# d2d14ab, pre-deploy): /news settled hydrated PASS; /pulse FX settle
+# PASS; the /stocks badge leg passed name + geometry and failed ONLY
+# the designed outline assertion ("auto" — the fix is not deployed yet,
+# the expected pre-deploy state). The fix-dependent legs' production
+# proof runs post-deploy and is recorded as the standing follow-up leg.
+
+Running 7 tests using 1 worker
+
+  ✓  1 test/smoke/hydration-pins.spec.ts:28:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /news settles to hydrated headlines or an explicit honest empty state (5.5s)
+  ✓  2 test/smoke/hydration-pins.spec.ts:60:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /pulse FX settles to labelled live FX or the honest unavailable state (769ms)
+  ✘  3 test/smoke/hydration-pins.spec.ts:89:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /pulse FX resolves to the honest unavailable state when the route fails (failure-driven, never stranded) (15.4s)
+  ✘  4 test/smoke/hydration-pins.spec.ts:106:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /stocks Rishi affordance: accessible name, >= 28px target, designed visible keyboard focus (19.6s)
+  ✓  5 test/smoke/ssr-content.spec.ts:41:5 › stock page serves the content sections in the raw SSR HTML (57ms)
+  ✓  6 test/smoke/ssr-content.spec.ts:50:5 › Y4 null-not-zero holds in the SSR HTML of a bank page (positive + negative control) (56ms)
+  ✘  7 test/smoke/ssr-content.spec.ts:77:5 › HYD-PINS: /pulse first byte carries the honest FX state, never a stranding fetch promise (19ms)
+
+
+  1) test/smoke/hydration-pins.spec.ts:89:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /pulse FX resolves to the honest unavailable state when the route fails (failure-driven, never stranded) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('.card-unified').filter({ hasText: 'CURRENCY IMPACT' }).first().getByText('Live currency rates unavailable right now')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('.card-unified').filter({ hasText: 'CURRENCY IMPACT' }).first().getByText('Live currency rates unavailable right now') with timeout 15000ms
+      - waiting for locator('.card-unified').filter({ hasText: 'CURRENCY IMPACT' }).first().getByText('Live currency rates unavailable right now')
+
+
+       99 |     const fxCard = page.locator(".card-unified").filter({ hasText: "CURRENCY IMPACT" }).first();
+      100 |     await expect(fxCard).toBeVisible({ timeout: 20_000 });
+    > 101 |     await expect(fxCard.getByText("Live currency rates unavailable right now")).toBeVisible({ timeout: 15_000 });
+          |                                                                                 ^
+      102 |     // the stranding text is gone once settled
+      103 |     await expect(fxCard.getByText("Fetching live currency rates")).toHaveCount(0);
+      104 |   });
+        at /home/z/rishi-terminal/test/smoke/hydration-pins.spec.ts:101:81
+
+    Error Context: test-results/smoke-hydration-pins-HYD-P-fa00f-lure-driven-never-stranded-/error-context.md
+
+  2) test/smoke/hydration-pins.spec.ts:106:7 › HYD-PINS — hydrated-or-empty states on the real surfaces › /stocks Rishi affordance: accessible name, >= 28px target, designed visible keyboard focus 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "solid"
+    Received: "auto"
+
+      144 |     });
+      145 |     expect(focus.focusVisible).toBe(true);
+    > 146 |     expect(focus.outlineStyle).toBe("solid");
+          |                                ^
+      147 |     expect(focus.outlineWidth).toBeGreaterThanOrEqual(2);
+      148 |   });
+      149 | });
+        at /home/z/rishi-terminal/test/smoke/hydration-pins.spec.ts:146:32
+
+    Error Context: test-results/smoke-hydration-pins-HYD-P-b91e7-gned-visible-keyboard-focus/error-context.md
+

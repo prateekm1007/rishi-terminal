@@ -45,8 +45,8 @@
  *      pre-registration names; declared, never silent).
  */
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join, sep } from "node:path";
 
 const ROOT = process.cwd();
 
@@ -58,14 +58,14 @@ const PAGE = join(ROOT, "app", "stock", "[symbol]", "page.tsx");
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     const p = join(dir, entry);
-    if (require("node:fs").statSync(p).isDirectory()) walk(p, out);
+    if (statSync(p).isDirectory()) walk(p, out);
     else out.push(p);
   }
   return out;
 }
 
 function rel(p: string): string {
-  return p.slice(ROOT.length + 1).split(require("node:path").sep).join("/");
+  return p.slice(ROOT.length + 1).split(sep).join("/");
 }
 
 function src(path: string): string {

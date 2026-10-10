@@ -119,7 +119,7 @@ describe("INT-C1 the mount (positive control — B-18)", () => {
 });
 
 describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
-  it("the set of surfaces fetching /api/intelligence is EXACTLY the three declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer)", () => {
+  it("the set of surfaces fetching /api/intelligence is EXACTLY the four declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer + the INT-D3 dossier)", () => {
     const files = [
       ...walk(join(ROOT, "app")),
       ...walk(join(ROOT, "lib")),
@@ -131,6 +131,7 @@ describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
     expect(consumers.map(rel).sort()).toEqual([
       "components/dashboard/DashboardBrief.tsx",
       "components/screener/IntelligenceDrawer.tsx",
+      "components/stock/IntelligenceDossier.tsx",
       "components/stock/IntelligencePanel.tsx",
     ]);
   });

@@ -390,13 +390,23 @@ function composeScaffold(args: {
     uncertainty.push(
       `${nonMaterial.length} observed transition(s) did not qualify as material evidence in this window and are excluded from the ledger.`,
     );
+    // INT-A8-REC: every breakdown line binds itself to line 1's total —
+    // "Of those excluded" — so the counts read as the PARTITION they are
+    // (below-threshold + the fail-closed refusals == the total) and never
+    // as a second, disjoint population. The numbers are unchanged; only
+    // the binding is made legible. Σ(breakdown) == total holds by
+    // construction (byReason covers every non-material verdict) and is
+    // pinned in the suite alongside the summary's excluded counter (A5's
+    // exclusion set is exactly A4's non-material set on this path — every
+    // A5 exclusion class is pre-refused by A4). Worst case stays
+    // 1 total + 1 below-threshold + 8 refusal lines = 10, the A1 bound.
     const below = byReason.get("below-threshold") ?? 0;
     if (below > 0) {
-      uncertainty.push(`${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
+      uncertainty.push(`Of those excluded: ${below} transition(s) were evaluated and fell below every pre-registered materiality threshold.`);
     }
     for (const reason of NON_MATERIAL_REFUSAL_ORDER) {
       const n = byReason.get(reason);
-      if (n) uncertainty.push(`${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
+      if (n) uncertainty.push(`Of those excluded: ${n} transition(s) were refused fail-closed by the materiality engine (${reason}).`);
     }
   }
   const invalidators = thesis.invalidators.map(

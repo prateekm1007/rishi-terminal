@@ -389,12 +389,17 @@ export default function MarketPulsePage() {
   const regime = MACRO_REGIME;
   const brief = getDailyBrief();
 
+  // Investigation-not-advice (founder direction 2026-10-10): the readout
+  // states what the council's stances SAY — a descriptive regime readout —
+  // never positioning instructions to the user (the pre-fix branches
+  // carried "Stay barbell / Keep cash / Avoid leverage / Prefer / size
+  // positions", pinned banned by test/pulseCouncilDescriptive.test.ts).
   const councilReco =
     consensus.spread >= 55
-      ? 'High uncertainty. Avoid leverage, prioritize balance-sheet strength, and size positions conservatively.'
+      ? 'High dispersion: the council\'s stances diverge widely — balance-sheet strength and conservative sizing are the themes the stances most often cite.'
       : consensus.avgAgreement >= 65
-      ? 'Consensus tilts constructive. Prefer quality compounders + domestic cyclicals with strong cashflows.'
-      : 'Mixed regime. Stay barbell: quality defensives + selective cyclicals. Keep cash for volatility.';
+      ? 'Constructive tilt: most stances screen constructive — quality compounders and domestic cyclicals with strong cashflows are the profiles most often cited.'
+      : 'Mixed regime: the stances split between quality defensives and selective cyclicals, with cash-heavy positioning the hedge most often cited.';
 
   const tabs: { key: PulseTab; label: string; emoji: string }[] = [
     { key: 'overview', label: t('pulse.tabs.overview'), emoji: '📊' },

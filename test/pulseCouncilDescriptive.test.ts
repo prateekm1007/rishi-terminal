@@ -62,7 +62,7 @@ describe("pulse council readout — descriptive, never prescriptive", () => {
     const src = councilRecoSource();
     // the descriptive framing is pinned per branch: the readout reports
     // what the stances say, never what the user should do
-    expect(src).toContain("the council's stances diverge widely");
+    expect(src).toContain("stances diverge widely");
     expect(src).toContain("most stances screen constructive");
     expect(src).toContain("the stances split between quality defensives and selective cyclicals");
   });

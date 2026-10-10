@@ -14,10 +14,13 @@
  *     real flex row (no default bullets), badges are pills, sections
  *     carry the surface block, titles form a hierarchy, the prose
  *     fields are visible under their labels;
- *   - the real surfaces (brief, stock panel, drawer): the honest
+ *   - the real surfaces (brief, drawer): the honest
  *     empty/unavailable states are CLASS-styled (padding from the
  *     shared stylesheet, not browser default) and the drawer's close
- *     button has a DESIGNED :focus-visible state.
+ *     button has a DESIGNED :focus-visible state. [The stock-page
+ *     panel leg was RETIRED 2026-10-10 — the founder's second removal
+ *     order took the B1 panel off /stock/[symbol]; the rendered-page
+ *     absence pins live in test/smoke/b1-panel-removed.spec.ts.]
  *
  * Fail-first: on the pre-implementation tree globals.css carries ZERO
  * insight-surface selectors — every computed-style pin below is
@@ -110,36 +113,16 @@ test.describe("INT-A8-PRES fixture route — the shared presentation, computed",
 });
 
 test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is designed", () => {
-  test("the stock page panel renders its honest state with the shared class styling", async ({ page }) => {
-    await page.goto("/stock/RELIANCE");
-    const panel = page.locator("section[data-intelligence-panel]");
-    // SETTLED-STATE poll (INT-AUTH-ENV hardening): the page settles to
-    // EXACTLY ONE panel with a non-loading phase, as ONE assertion — a
-    // hydration swap can transiently show the SSR section and the client
-    // section together (or none) mid-recovery, so count and phase must be
-    // evaluated ATOMICALLY per poll. A persistent double mount (or a
-    // section that never settles) still FAILS the poll — nothing is
-    // masked, and a transient tear no longer trips strict mode between
-    // two separate assertions.
-    await expect(async () => {
-      const count = await panel.count();
-      expect(count).toBe(1);
-      const phase = await panel.getAttribute("data-intelligence-panel");
-      expect(phase === "loading").toBe(false);
-      expect(["unavailable", "ready"]).toContain(phase ?? "");
-    }).toPass({ timeout: 20_000 });
-    await expect(panel).toBeVisible();
-    const phase = await panel.getAttribute("data-intelligence-panel");
-    if (phase === "unavailable") {
-      await expect(panel).toContainText("Intelligence is not available for this subject right now.");
-    }
-    // the honest state rides the shared class: styled, not browser-default
-    const empty = panel.locator(".insight-surface__empty").first();
-    if ((await empty.count()) > 0) {
-      const pad = await empty.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop));
-      expect(pad).toBeGreaterThan(0);
-    }
-  });
+  // [RETIRED 2026-10-10] the stock-page panel leg ("the stock page panel
+  // renders its honest state with the shared class styling") — the founder's
+  // second product-surface removal order (round 45) took the B1
+  // IntelligencePanel off /stock/[symbol] after the D3 dossier removal (the
+  // page still showed a section headed "Rishi Intelligence"; the founder:
+  // "it s still there remove it"). Rule 23: retirement on removal, never
+  // silent deletion — the leg died WITH its subject; the honest-state
+  // styling discipline continues on the surviving surfaces below (brief,
+  // drawer) and on the fixture route above. Removal record:
+  // docs/evidence/round45/b1-removal.md.
 
   test("the dashboard brief renders its honest state with the shared class styling", async ({ page }) => {
     await page.goto("/");

@@ -21,12 +21,13 @@
  *      fetcher) and resolves company names from the ONE registry.
  *   4. buildNewsItems remains the ONE news→evidence mapping (no parallel
  *      mapping exists anywhere in app/lib/components).
- *   5. The stock-page intelligence panel: 'use client', fetches ONLY
- *      /api/intelligence with capability=thesis, renders through the A8
- *      primitives after the A1 parse, honest unavailable state, no
- *      advice strings, no chain import (the A10 single-consumer pin).
- *   6. The mount (positive control, B-18 lesson: a missing panel passes
- *      any absence check) and the two route deps-pass call sites.
+ *   5. [RETIRED 2026-10-10] the stock-page intelligence panel pins — the
+ *      panel was REMOVED from /stock/[symbol] by the founder's second
+ *      product-surface removal order (round 45; see the retirement note
+ *      at the bottom of this file). Rule 23: retirement on removal,
+ *      never silent deletion.
+ *   6. The two route deps-pass call sites (the mount positive control
+ *      retired with the panel).
  */
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -149,51 +150,17 @@ describe("INT-B1 no-second-path pins (static source scans)", () => {
   });
 });
 
-describe("INT-B1 the stock-page intelligence panel (the first real product surface)", () => {
-  const PANEL = "components/stock/IntelligencePanel.tsx";
-
-  it("exists as a client component that fetches ONLY /api/intelligence with capability=thesis", () => {
-    expect(existsSync(join(ROOT, PANEL))).toBe(true);
-    const src = source(PANEL);
-    expect(src.startsWith("'use client'")).toBe(true);
-    const fetchCalls = src.match(/fetch\(\s*`[^`]*`/g) ?? [];
-    expect(fetchCalls.length).toBeGreaterThan(0);
-    for (const call of fetchCalls) {
-      expect(call).toContain("/api/intelligence?capability=thesis");
-    }
-    // No second surface, no page-side chain consumption.
-    expect(src).not.toMatch(/runIntelligenceChain/);
-    expect(src).not.toMatch(/lib\/intelligence\/chain/);
-  });
-
-  it("renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client)", () => {
-    const src = source(PANEL);
-    // The A1 parse is the SERVER boundary's job (the A10 pinned
-    // parse-or-refuse contract); a client-side re-parse would ship the
-    // full zod graph (~90 kB gzip) against the fatal 200 kB page budget.
-    expect(src).not.toContain("parseRishiInsight");
-    expect(src).not.toContain('from "zod"');
-    expect(src).toContain("import type { RishiInsight }");
-    expect(src).toContain('buildEvidenceView');
-    expect(src).toContain("@/components/intelligence");
-    // The canonical composition: the surface mounts ReadyComposition
-    // (the pre-registered six steps, defined once) — not its own inline
-    // copy of the sequence (rule 14; no independent redesigns).
-    expect(src).toContain("<ReadyComposition");
-  });
-
-  it("carries the honest unavailable state (never a fake artifact, never a fallback word)", () => {
-    const src = source(PANEL);
-    expect(src).toContain('data-intelligence-unavailable');
-  });
-
-  it("adds no investment advice strings (the A8 absence pin, display-side)", () => {
-    const src = source(PANEL);
-    expect(src).not.toMatch(/\b(BUY|SELL|HOLD)\b/);
-  });
-
-  it("is actually mounted on the stock page (positive control — B-18)", () => {
-    const src = source("app/stock/[symbol]/page.tsx");
-    expect(src).toContain("<IntelligencePanel");
-  });
-});
+// INT-B1 the stock-page intelligence panel — RETIRED 2026-10-10. The
+// founder's second product-surface removal order (round 45): after the D3
+// dossier removal the stock page still rendered the section headed "Rishi
+// Intelligence" (the B1 IntelligencePanel mount), and the founder ordered
+// it removed ("it s still there remove it"). Rule 23 permits retirement on
+// removal, never silent deletion: the five panel pins this file carried
+// (component contract + the mount positive control) were retired WITH this
+// justification because their subject — components/stock/
+// IntelligencePanel.tsx and its /stock/[symbol] mount — no longer exists.
+// The news-evidence SUBSTRATE pins (items 1-4) are untouched and stay
+// green. Removal record + revert range: docs/evidence/round45/b1-removal.md.
+// The rendered-page absence pins for the removal live in
+// test/smoke/b1-panel-removed.spec.ts + the INT-B1 describe in
+// test/intelligenceDashboardBrief.test.ts.

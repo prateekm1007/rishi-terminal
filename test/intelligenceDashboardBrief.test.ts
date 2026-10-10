@@ -25,7 +25,12 @@
  *      brief); INT-D2 GROWS the declared set in its own PR to the
  *      three {B1 panel, C1 brief, D2 drawer} (declared, never silent
  *      — the D2 pre-registration names this exact growth) — a fourth
- *      undeclared consumer breaks the build.
+ *      undeclared consumer breaks the build. The founder's round-45
+ *      removal orders then SHRINK the declared set, each in its own
+ *      recorded removal: the D3 dossier first (the scan went to the
+ *      three remaining consumers), then the B1 stock-page panel (the
+ *      scan is now the TWO {C1 brief, D2 drawer}). The pin updates;
+ *      the gate never dies.
  */
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -124,6 +129,9 @@ describe("INT-C1 the mount (positive control — B-18)", () => {
 // only — the substrate stays untouched and green: the chain, the ONE
 // /api/intelligence (capability=insight included), the cache, the A8
 // primitives, the fixture route, and the B1 panel / C1 brief / D2 drawer.
+// [Amended same round: the founder then ordered the B1 stock-page surface
+// removed too — see the INT-B1 describe below; the C1 brief and the D2
+// badge/drawer remain the declared surfaces.]
 //
 // Fail-first in reverse (rule 21): these absence pins were written FIRST
 // and watched FAIL on the mounted tree (the component file existed, the
@@ -142,14 +150,54 @@ describe("INT-D3 REMOVED per founder order (2026-10-10) — the absence pins", (
     // the mount's own comment block went with it
     expect(s).not.toContain("INT-D3");
     // positive control (B-18): the page source still carries the SURVIVING
-    // neighbors — the removal removed one mount, not the page
-    expect(s).toContain("<IntelligencePanel");
+    // neighbors — the removal removed one mount, not the page (the B1 panel
+    // was a positive control here until the founder's second removal order
+    // took it off the page the same round; the surviving shell + council
+    // carry the control now)
+    expect(s).toContain("<StockPageClient");
+    expect(s).toContain("<RishiCouncil");
+  });
+});
+
+// INT-B1 stock-page surface REMOVED — the founder's second removal order
+// (round 45, 2026-10-10): after the D3 dossier removal the stock page STILL
+// rendered a section headed "Rishi Intelligence" (the B1 IntelligencePanel
+// mount), and the founder ordered it removed ("it s still there remove it").
+// Product surface only — the substrate stays untouched and green: the news-
+// evidence substrate (newsMatch + the deps pass feeding the chain), the
+// chain, the ONE /api/intelligence (capability=thesis included), the cache,
+// the A8 primitives, the fixture route, the C1 brief, and the D2 badge/
+// drawer.
+//
+// Fail-first in reverse (rule 21): these absence pins were written FIRST
+// and watched FAIL on the mounted tree (the component file existed, the
+// page mounted it, the exact-surface scan saw three consumers); then the
+// removal landed; then they passed. Raw RED + GREEN: docs/evidence/round45/.
+describe("INT-B1 stock-page surface REMOVED per founder order (2026-10-10) — the absence pins", () => {
+  const PAGE = "app/stock/[symbol]/page.tsx";
+
+  it("the panel component file is DELETED (dead code after the mount removal — rule 17)", () => {
+    expect(existsSync(join(ROOT, "components/stock/IntelligencePanel.tsx"))).toBe(false);
+  });
+
+  it("the stock page no longer imports, mounts, or wires the intelligence panel", () => {
+    const s = source(PAGE);
+    expect(s).not.toContain("IntelligencePanel");
+    // the mount's own comment block went with it
+    expect(s).not.toContain("INT-B1");
+    // the page consumes NO intelligence surface client-side anymore — the
+    // remaining consumers are the C1 brief (dashboard) and the D2 drawer
+    // (screener), pinned by the exact-surface scan below
+    expect(s).not.toContain("/api/intelligence");
+    // positive control (B-18): the page source still carries the SURVIVING
+    // sections — the removal removed one mount, not the page
+    expect(s).toContain("<StockPageClient");
     expect(s).toContain("<RishiCouncil");
   });
 });
 
 describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
-  it("the set of surfaces fetching /api/intelligence is EXACTLY the three declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer) — the declared set SHRANK from four in the founder-ordered D3 removal (declared, never silent)", () => {
+  it("the set of surfaces fetching /api/intelligence is EXACTLY the two declared product surfaces (C1 brief + the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; declared, never silent)", () => {
     const files = [
       ...walk(join(ROOT, "app")),
       ...walk(join(ROOT, "lib")),
@@ -161,7 +209,6 @@ describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
     expect(consumers.map(rel).sort()).toEqual([
       "components/dashboard/DashboardBrief.tsx",
       "components/screener/IntelligenceDrawer.tsx",
-      "components/stock/IntelligencePanel.tsx",
     ]);
   });
 });

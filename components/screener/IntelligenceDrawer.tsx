@@ -6,8 +6,11 @@
  * docs/intelligence/stockIntelligence.md (committed BEFORE any
  * evaluation).
  *
- * The B1 panel pattern verbatim (components/stock/
- * IntelligencePanel.tsx), breadth-adjusted:
+ * The pre-registered surface pattern (docs/intelligence/
+ * stockIntelligence.md), breadth-adjusted (the B1 stock-page panel that
+ * pioneered it was REMOVED from /stock/[symbol] by the founder's round-45
+ * order — see docs/evidence/round45/b1-removal.md; the pattern lives on
+ * here and in the C1 brief):
  *   - fetches THE ONE intelligence API for the ONE opened subject,
  *     user-initiated on drawer open — the table fetches NOTHING on
  *     render (no per-row fetching for the 896-row universe; no burst-

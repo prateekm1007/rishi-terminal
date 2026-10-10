@@ -141,7 +141,6 @@ describe("INT-A8-PRES follow-up — the ONE canonical composition (rule 14)", ()
     expect(src).not.toContain('from "zod"');
     for (const surface of [
       "components/dashboard/DashboardBrief.tsx",
-      "components/stock/IntelligencePanel.tsx",
       "components/screener/IntelligenceDrawer.tsx",
     ]) {
       const s = readFileSync(surface, "utf8");
@@ -155,11 +154,12 @@ describe("INT-A8-PRES follow-up — the ONE canonical composition (rule 14)", ()
 
   it("the inner state markers no longer collide with the surface phase attributes (the two-element ambiguity)", () => {
     // The surface-level phase attribute is unambiguous everywhere: the
-    // nested state markers carry their own names.
-    expect(readFileSync("components/stock/IntelligencePanel.tsx", "utf8")).not.toContain('data-intelligence-panel="unavailable"');
+    // nested state markers carry their own names. (The B1 stock-page panel
+    // pins here were retired 2026-10-10 — the founder's second removal
+    // order took the panel off /stock/[symbol]; the surviving surfaces
+    // carry the pin.)
     expect(readFileSync("components/dashboard/DashboardBrief.tsx", "utf8")).not.toContain('data-dashboard-brief="unavailable"');
     expect(readFileSync("components/screener/IntelligenceDrawer.tsx", "utf8")).not.toMatch(/data-intelligence-drawer="(unavailable|ready)"/);
-    expect(readFileSync("components/stock/IntelligencePanel.tsx", "utf8")).toContain("data-intelligence-unavailable");
     expect(readFileSync("components/screener/IntelligenceDrawer.tsx", "utf8")).toContain('data-intelligence-drawer-state="ready"');
   });
 });

@@ -1,0 +1,290 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/intelligenceDashboardBrief.test.ts (15 tests | 3 failed) 43ms
+   ✓ INT-C1 the dashboard brief component (the second real product surface) (4)
+     ✓ exists as a client component that fetches ONLY /api/intelligence with capability=thesis 2ms
+     ✓ renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client) 0ms
+     ✓ carries the honest unavailable state and discloses its subject (never a fake artifact, never a fallback word) 0ms
+     ✓ adds no investment advice strings (the A8 absence pin, display-side) 0ms
+   ✓ INT-C1 the mount (positive control — B-18) (2)
+     ✓ the dashboard tail mounts the brief with the SERVER-resolved Stock-of-the-Day symbol 0ms
+     ✓ the mount imports no intelligence module (no chain, no registry, no parser) 1ms
+   ✓ INT-D3 REMOVED per founder order (2026-10-10) — the absence pins (2)
+     ✓ the dossier component file is DELETED (dead code after the mount removal — rule 17) 0ms
+     ✓ the stock page no longer imports, mounts, or wires the dossier section 0ms
+   ❯ INT-B1 stock-page surface REMOVED per founder order (2026-10-10) — the absence pins (2)
+     × the panel component file is DELETED (dead code after the mount removal — rule 17) 6ms
+     × the stock page no longer imports, mounts, or wires the intelligence panel 8ms
+   ❯ INT-C1 the exact-surface scan (N surfaces, ONE route) (1)
+     × the set of surfaces fetching /api/intelligence is EXACTLY the two declared product surfaces (C1 brief + the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; declared, never silent) 21ms
+   ✓ Ask Rishi (the affordance component contract — the stock-page mount is REMOVED per founder order, 2026-10-10; the component and its contract SURVIVE with the fixture route as the mounted consumer) (4)
+     ✓ exists as a client component that fetches ONLY /api/chat 0ms
+     ✓ sends the bounded payload: personaId + message + insightRef + symbol — nothing else 0ms
+     ✓ renders refusals AS the refusal they are (the error text verbatim) and disables the empty submit 0ms
+     ✓ imports no intelligence module beyond types 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/intelligenceDashboardBrief.test.ts > INT-B1 stock-page surface REMOVED per founder order (2026-10-10) — the absence pins > the panel component file is DELETED (dead code after the mount removal — rule 17)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/intelligenceDashboardBrief.test.ts:169:78
+    167|
+    168|   it("the panel component file is DELETED (dead code after the mount r…
+    169|     expect(existsSync(join(ROOT, "components/stock/IntelligencePanel.t…
+       |                                                                              ^
+    170|   });
+    171|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/intelligenceDashboardBrief.test.ts > INT-B1 stock-page surface REMOVED per founder order (2026-10-10) — the absence pins > the stock page no longer imports, mounts, or wires the intelligence panel
+AssertionError: expected 'import { notFound, permanentRedirect …' not to contain 'IntelligencePanel'
+
+- Expected
++ Received
+
+- IntelligencePanel
++ import { notFound, permanentRedirect } from 'next/navigation';
++ import type { Metadata } from 'next';
++ import { STOCKS } from '../../../data/stocks';
++ import { getStockScore, resolveStockMetrics, calculateQvpsDual } from '@/lib/scoring'; // T10: single scoring surface
++ import { sanitizeConsensus } from '@/lib/consensus/sanitize';
++ // A1 (Round 14): the wisdom rail's historical parallel is resolved on the
++ // server per regeneration — the dataset and detector no longer ship in
++ // the client bundle.
++ import { detectArchetype, HISTORICAL_PARALLELS } from '@/lib/wisdom/historicalParallels';
++ // R4-04: consensus + dissent + verified levers, computed once per regeneration
++ import { buildCouncil } from '@/lib/consensus/council';
++ import { RishiCouncil } from '@/components/stock/RishiCouncil';
++ import { IntelligencePanel } from '@/components/stock/IntelligencePanel';
++ import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
++ import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
++ import { generateStockDetail } from '../../../data/stockDetails';
++ import { serveCachedQuotes } from '@/lib/quotePath'; // X3+Y1+Y2: SSR peek — the last cached quotes, read-only
++ import { marketState } from '@/lib/marketHours'; // Y3: server-disclosed NSE state for the observation label
++ import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically; Y2: peer entries
++ import { StockPageClient } from '../../../components/stock/StockPageClient';
++ import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
++ import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
++ // `stock as stockNs`: this page's OWN `stock` binding (the resolved Stock
++ // record) shadows the namespace identifier inside the component scope —
++ // the alias keeps the two apart.
++ import { stock as stockNs, chart, kg, rishiGrid } from '../../../messages/en.json';
++
++ // X4 (Round 11): the stock page's dictionary namespaces arrive from the
++ // server via <NamespaceProvider> (see the homepage's note) — the heaviest
++ // route keeps only its own strings in the flight payload.
++
++ // Y1 (Round 12): stock pages are ISR again (revalidate 60 s). The X3
++ // force-dynamic render answered the W5 stale-bake defect by making every
++ // first byte pay a server render — the measured cost on production was
++ // warm page TTFB p95 ~0.36 s (above the 300 ms acceptance), with
++ // cache-control: no-store on every response. The Y1 contract:
++ //   - the 916-page universe pre-renders at build (generateStaticParams);
++ //   - the build phase fetches NOTHING (CI has no database) — the bake
++ //     carries the honest "price unavailable" state;
++ //   - every ISR regeneration (at most 60 s apart, under traffic) re-peeks
++ //     the shared quote cache for this symbol AND its peers (Y2: ONE
++ //     batch read, never a vendor fetch) so the served HTML carries the
++ //     last cached observations with their own "as of" labels;
++ //   - the client hook still refreshes on mount (its /api/prices call is
++ //     what warms the cache).
++ // A stale or missing observation is LABELLED as such by the tile (X3
++ // states; Y3 honest labels) — never presented as fresh (Rule 3).
++
++
++ // Round-5 audit (finding 18): every stock page shared the site-default
++ // <title> — 916 pages of duplicated metadata. Each page now names its
++ // stock, sector and headline scores. Follow-up: INCOMPLETE records get a
++ // title/description that matches the insufficient-data page they render —
++ // the metadata must not promise scores the page no longer shows.
++ // Audit M6/B.3 (retest 2026-10-02): per-symbol canonical + Open Graph —
++ // aliases 308 to the canonical symbol, and the canonical link makes each
++ // company exactly one indexable URL; og gives WhatsApp/X/LinkedIn unfurls.
++ export async function generateMetadata({ params }: StockPageProps): Promise<Metadata> {
++   const { symbol } = await params;
++   const key = symbol.toUpperCase();
++   const canonicalSym = resolveTickerSymbol(key) ?? key;
++   const stock = STOCKS[canonicalSym];
++   if (!stock) {
++     return { title: `Stock not found | Rishi Terminal` };
++   }
++   // Percent-encode: J&KBANK/M&M/M&MFIN carry & — the encoded canonical
++   // matches the sitemap URL form exactly (both forms serve the same page).
++   const ogUrl = `/stock/${encodeURIComponent(canonicalSym)}`;
++   if (getStockScore(stock).dataQuality === "INCOMPLETE") {
++     const title = `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`;
++     const description = `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`;
++     return {
++       title,
++       description,
++       alternates: { canonical: ogUrl },
++       openGraph: { title, description, url: ogUrl, type: "article" },
++     };
++   }
++   const title = `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`;
++   const description = `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`;
++   return {
++     title,
++     description,
++     alternates: { canonical: ogUrl },
++     openGraph: { title, description, url: ogUrl, type: "article" },
++   };
++ }
++
++ export const revalidate = 60;
++
++ export async function generateStaticParams() {
++   return Object.keys(STOCKS).map((symbol) => ({ symbol }));
++ }
++
++ interface StockPageProps {
++   params: Promise<{ symbol: string }>;
++ }
++
++ export default async function StockPage({ params }: StockPageProps) {
++   const { symbol } = await params;
++   const key = symbol.toUpperCase();
++
++   // T12: renamed/legacy symbols get a permanent (308) redirect to the
++   // canonical NSE symbol so saved links and share URLs keep working.
++   const canonical = resolveTickerSymbol(key);
++   if (canonical && canonical !== key) {
++     permanentRedirect(`/stock/${encodeURIComponent(canonical)}`);
++   }
++
++   const stock = STOCKS[key];
++
++   if (!stock) notFound();
++
++   const consensus = getStockScore(stock);
++
++   // Round-5 audit (findings 1, 8): an internally inconsistent record
++   // (impossible P/E-0-with-profit etc.) renders NO scored surface — no
++   // verdicts, no QVPS, no debate graph, no technical-edge signals.
++   // Rankings were gated in this same round; this gates the page itself.
++   if (consensus.dataQuality === 'INCOMPLETE') {
++     return <InsufficientDataRecord stock={stock} />;
++   }
++
++   // Commit M3 (free access): the RSC payload carries the FULL verdict set
++   // for every visitor — the seeker slice and the paid upgrade path are
++   // gone. The embedded set is the complete council, publicly, for everyone.
++   const sanitized = sanitizeConsensus(consensus);
++   // R4-04: the council is server-computed once per regeneration — the
++   // lever paths were verified by re-running the scorers (council.ts) and
++   // re-verified by the acceptance test over the whole universe.
++   const council = buildCouncil(stock, sanitized.verdicts);
++   const stockDetail = generateStockDetail(stock);
++
++   // N1 (round 3): every engine call happens here, on the server. The
++   // client components below receive RESULTS — the resolved seed-baseline
++   // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
++   // both QVPS modes, and the knowledge graph for the FULL verdict set.
++   const resolved = resolveStockMetrics(key);
++   const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
++   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
++   // A1: the historical parallel for the wisdom rail — server-resolved;
++   // null renders the honest "no parallels detected" state.
++   const archetypeKey = detectArchetype(stock);
++   const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
++
++   // X3+Y1+Y2: the SSR price peek — ONE read-only batch read of the shared
++   // quote cache at ISR REGENERATION (skipped in the build phase: builds
++   // fetch nothing, hermetically) covering the symbol AND its comparison
++   // peers, so the peer table prices exist in the first byte instead of
++   // “—” (the founder's Y2 defect list). Misses are omitted and the client
++   // hook fills them (its /api/prices call also warms the cache).
++   const peerSymbols = stockDetail.peers.map((p) => p.symbol);
++   const peeked = isBuildPhase() ? {} : await serveCachedQuotes([key, ...peerSymbols]);
++   const initialQuote = peeked[key] ?? null;
++   // Y2 follow-up: the SELF symbol stays in the mapped peer prices too — the
++   // peer table's highlighted self row renders the same cached observation
++   // the hero shows, instead of "—" until client hydration. One peek, one
++   // mapping, no second read; misses are still omitted (honest "—").
++   const initialPeerPrices: Record<string, InitialPriceEntry> = {};
++   for (const [sym, q] of Object.entries(peeked)) {
++     const mapped = toPriceData(q);
++     if (mapped) initialPeerPrices[sym] = mapped;
++   }
++
++   // Y3: the NSE session state at regeneration, frozen into the ISR HTML
++   // and refreshed on the next regen (same lifecycle as the quote peek).
++   // Pure computation (no I/O) — safe in the build phase, where it bakes
++   // the build-time state until the first regeneration replaces it.
++   const initialMarket = marketState();
++
++   return (
++     <NamespaceProvider ns={{ stock: stockNs, chart, kg, rishiGrid }}>
++       <StockPageClient
++         stock={stock}
++         consensus={sanitized}
++         detail={stockDetail}
++         resolved={resolved}
++         qvpsDual={qvpsDual}
++         eliteGraph={eliteGraph}
++         initialQuote={initialQuote}
++         initialPeerPrices={initialPeerPrices}
++         initialMarket={initialMarket}
++         parallel={parallel}
++       />
++       <RishiCouncil council={council} />
++       {/* INT-B1: the first real product surface — the stock page consumes
++           the ONE /api/intelligence surface through the A8 primitives
++           (client-side fetch; no page imports the chain runner). */}
++       <IntelligencePanel key={key} subject={key} />
++     </NamespaceProvider>
++   );
++ }
++
+
+ ❯ test/intelligenceDashboardBrief.test.ts:174:19
+    172|   it("the stock page no longer imports, mounts, or wires the intellige…
+    173|     const s = source(PAGE);
+    174|     expect(s).not.toContain("IntelligencePanel");
+       |                   ^
+    175|     // the mount's own comment block went with it
+    176|     expect(s).not.toContain("INT-B1");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/intelligenceDashboardBrief.test.ts > INT-C1 the exact-surface scan (N surfaces, ONE route) > the set of surfaces fetching /api/intelligence is EXACTLY the two declared product surfaces (C1 brief + the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; declared, never silent)
+AssertionError: expected [ …(3) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+    "components/dashboard/DashboardBrief.tsx",
+    "components/screener/IntelligenceDrawer.tsx",
++   "components/stock/IntelligencePanel.tsx",
+  ]
+
+ ❯ test/intelligenceDashboardBrief.test.ts:198:39
+    196|       /fetch\([^)]*\/api\/intelligence/.test(readFileSync(f, "utf8")),
+    197|     );
+    198|     expect(consumers.map(rel).sort()).toEqual([
+       |                                       ^
+    199|       "components/dashboard/DashboardBrief.tsx",
+    200|       "components/screener/IntelligenceDrawer.tsx",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 12 passed (15)
+   Start at  17:22:51
+   Duration  217ms (tests 43%, transform 40%, import 8%, setup 6%, worker 3%)
+
+EXIT=1

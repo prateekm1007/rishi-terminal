@@ -12,16 +12,16 @@
  * docs/evidence/round45/.
  *
  * Positive control FIRST (B-18 — a missing section passes any absence
- * check): the B1 thesis panel above and the Rishi Council render
- * unchanged — the removal took one section, not the page. The panel uses
- * the ATOMIC settled-state poll (the R43 discipline the panel/brief
- * specs carry; a transient hydration double is absorbed while a
- * PERSISTENT double or a stuck loading state still fails).
+ * check): the Rishi Council renders unchanged — the removal took one
+ * section, not the page. [The B1 thesis panel was the original first
+ * positive control; the founder's second removal order the same round
+ * took the panel off the page too — its absence pins now live in
+ * test/smoke/b1-panel-removed.spec.ts.]
  */
 import { test, expect } from "@playwright/test";
 
 test.describe("INT-D3 REMOVED per founder order (2026-10-10)", () => {
-  test("the stock page carries NO dossier section — the B1 panel and council render unchanged", async ({ page }) => {
+  test("the stock page carries NO dossier section — the council renders unchanged (the B1 panel joined the removal the same round)", async ({ page }) => {
     const insightCalls: string[] = [];
     page.on("response", (r) => {
       if (r.url().includes("/api/intelligence") && r.url().includes("capability=insight")) {
@@ -31,20 +31,11 @@ test.describe("INT-D3 REMOVED per founder order (2026-10-10)", () => {
 
     await page.goto("/stock/RELIANCE");
 
-    // positive control FIRST: the always-on B1 thesis panel is present
-    // and settled (atomic poll — count==1 AND phase settled per pass).
-    const panel = page.locator("section[data-intelligence-panel]");
-    await expect(async () => {
-      const count = await panel.count();
-      expect(count).toBe(1);
-      const panelPhase = await panel.getAttribute("data-intelligence-panel");
-      expect(panelPhase === "loading").toBe(false);
-      expect(["ready", "unavailable"]).toContain(panelPhase ?? "");
-    }).toPass({ timeout: 20_000 });
-
-    // second positive control: the surrounding sections render unchanged
+    // positive control FIRST: the surrounding sections render unchanged
     // (council present — the removal removed ONE section, not the page;
-    // the heading is RishiCouncil.tsx's "Rishi Council — Consensus & Dissent").
+    // the heading is RishiCouncil.tsx's "Rishi Council — Consensus & Dissent".
+    // The B1 panel was the original first control until the founder's
+    // second removal order took it off the page the same round.)
     await expect(page.getByText("Rishi Council — Consensus & Dissent")).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PIN: no dossier section skeleton anywhere in the DOM.

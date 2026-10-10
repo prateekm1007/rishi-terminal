@@ -102,3 +102,15 @@ open-time; no other commit belongs to this item).
   (council, commentary, peers) render; `/api/intelligence?capability=thesis`
   still 200; C1 brief + D2 badge still render on their own pages; hydrated
   screenshots.
+
+## Post-merge legs (appended 2026-10-10 — the section pre-declared above)
+
+- **Merged**: PR #329, head `fc3ffffa26ff…` → merge commit `dba83dd26b393b406c4435d1a79c64e3bcadf01d`, merge-guard gates 0–6 PASS (all five blocking checks success on the exact head; cadence 69.9 min after #326 PRICING-CLAIM, which had merged mid-flight and moved this branch's earliest safe merge — the stale-base refusal + rebase onto `e0921a1c` + full battery re-run on the rebased head are recorded in the PR body). CI history on this PR: three cadence bites honored (55.7 min, 58.8 min — reruns fired early; 18:08Z attempt before the moved window) before the in-window run went five-green. Raw RED/GREEN committed above; the PR thread carries the Appendix C template, the novelty row, and the C6 comment.
+- **Deployed**: `/api/version` = `dba83dd26b39…` verified 19:12:20Z.
+- **Live (C6)** — raw output in the PR thread (session-local `scripts/round45/c6-b1-live-probe-output.txt` + `c6-b1-hydrated-legs-output.txt`):
+  - SSR: `Rishi Intelligence` strings = 0, `data-intelligence-panel` = 0, `aria-label="Rishi intelligence"` = 0 on `/stock/RELIANCE` (deployed bytes, 184,739 B).
+  - Positive controls: council present; `/api/intelligence?capability=thesis&subject=RELIANCE` → 200 ok:true; `/stocks` openers = 896; dashboard served.
+  - Hydrated (Playwright Chromium, exit 0): stock page ZERO panel sections + ZERO "Rishi Intelligence" headings post-hydration; council visible; C1 brief settles `phase=ready` on `/`; D2 opener visible on `/stocks`.
+  - Substrate: `/evidence-fixtures` 200 (A8 + Ask Rishi mount alive); `capability=insight` → designed 404 (zero spend, endpoint unchanged).
+  - Correction disclosed (rule 1): the probe's leg 5b byte heuristic was an invented threshold and wrong by construction (the A1 B-24 slim + the ssr:false tail chunk make SSR bytes the wrong instrument for the brief) — replaced by the hydrated leg B1; the probe's honest exit code (1, on that heuristic leg) is quoted in the PR thread alongside the correcting run.
+- **Screenshots** (this directory, `screens/`): `b1-removal-stock.png` (stock page, no Rishi Intelligence section, council visible), `b1-removal-home.png` (dashboard brief ready), `b1-removal-stocks.png` (D2 opener).

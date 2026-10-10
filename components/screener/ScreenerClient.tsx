@@ -84,7 +84,12 @@ export function ScreenerClient({ rows }: Props) {
           <p className="page-breadcrumb">
             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI</Link>
             <span style={{ margin: '0 8px' }}>&rsaquo;</span>
-            <span>SCREENER</span>
+            {/* BCRUMB (founder direction 3, 2026-10-10): the canonical
+                route's breadcrumb names the canonical page — /screener
+                308-redirects here; the stale SCREENER label belonged to
+                the pre-canonical era. Route-crawl pinned by
+                test/smoke/breadcrumb.spec.ts. */}
+            <span>STOCKS</span>
           </p>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24, marginBottom: 32 }}>

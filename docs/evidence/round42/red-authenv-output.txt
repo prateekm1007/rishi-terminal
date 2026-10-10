@@ -1,0 +1,313 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/authProviderEnv.test.ts (3 tests | 3 failed) 8ms
+   ❯ INT-AUTH-ENV the root auth provider fails closed on missing browser env (3)
+     × createClient() is guarded: a missing-env throw resolves the honest signed-out state, never an unhandled rejection 5ms
+     × a getSession infrastructure failure resolves the honest signed-out state (never a fake session, never a crash) 1ms
+     × signOut degrades honestly without browser env (nothing to sign out of) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/authProviderEnv.test.ts > INT-AUTH-ENV the root auth provider fails closed on missing browser env > createClient() is guarded: a missing-env throw resolves the honest signed-out state, never an unhandled rejection
+AssertionError: expected '\'use client\';\n\nimport { createCon…' to match /try\s*\{[\s\S]*?createClient\(\);[\s\…/
+
+- Expected:
+/try\s*\{[\s\S]*?createClient\(\);[\s\S]*?\}\s*catch/
+
++ Received:
+"'use client';
+
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type { Session, User } from '@supabase/supabase-js';
+
+interface AuthContextValue {
+  session: Session | null;
+  user: User | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue>({
+  session: null,
+  user: null,
+  loading: true,
+  signOut: async () => {},
+});
+
+export function useSupabaseAuth(): AuthContextValue {
+  return useContext(AuthContext);
+}
+
+/**
+ * Client auth context backed by Supabase Auth (remediation T5).
+ *
+ * Replaces the next-auth SessionProvider. NOTE: the tier exposed here is
+ * display-only — the server always re-reads the tier from public.users via
+ * lib/auth/session.ts, so a tampered client value grants nothing.
+ *
+ * U3 (founder round 7): the browser client (@supabase/supabase-js, ~66 kB
+ * gzip) was statically imported here — inside the ROOT layout — so it rode
+ * the first-load script set of EVERY route. This provider is the only
+ * client surface that needs it on non-auth pages, and it needs it only
+ * AFTER hydration (session starts null + loading=true either way), so the
+ * client is dynamic-imported inside the effect. The chunk loads async after
+ * first paint; auth pages (sign-in/callback) keep the eager static import.
+ * Pinned by test/bundleBoundary.test.ts.
+ */
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      if (cancelled) return;
+      const supabase = createClient();
+
+      supabase.auth.getSession().then(({ data }) => {
+        if (cancelled) return;
+        setSession(data.session);
+        setLoading(false);
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          setSession(newSession);
+          setLoading(false);
+        },
+      );
+      unsubscribe = () => subscription.unsubscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
+
+  const value = useMemo<AuthContextValue>(() => ({
+    session,
+    user: session?.user ?? null,
+    loading,
+    signOut: async () => {
+      const { createClient } = await import('@/lib/supabase/client');
+      await createClient().auth.signOut();
+    },
+  }), [session, loading]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+"
+
+ ❯ test/authProviderEnv.test.ts:38:15
+     36|     // the guard exists around client CREATION (not around the whole i…
+     37|     // the import itself cannot throw a config error)
+     38|     expect(s).toMatch(/try\s*\{[\s\S]*?createClient\(\);[\s\S]*?\}\s*c…
+       |               ^
+     39|     // the catch RESOLVES the loading state (the honest signed-out ren…
+     40|     // instead of rethrowing or leaving loading=true forever
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/authProviderEnv.test.ts > INT-AUTH-ENV the root auth provider fails closed on missing browser env > a getSession infrastructure failure resolves the honest signed-out state (never a fake session, never a crash)
+AssertionError: expected '\'use client\';\n\nimport { createCon…' to match /getSession\(\)[\s\S]*?\.catch\(\(\)\s…/
+
+- Expected:
+/getSession\(\)[\s\S]*?\.catch\(\(\)\s*=>\s*\{[\s\S]*?setLoading\(false\)/
+
++ Received:
+"'use client';
+
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import type { Session, User } from '@supabase/supabase-js';
+
+interface AuthContextValue {
+  session: Session | null;
+  user: User | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue>({
+  session: null,
+  user: null,
+  loading: true,
+  signOut: async () => {},
+});
+
+export function useSupabaseAuth(): AuthContextValue {
+  return useContext(AuthContext);
+}
+
+/**
+ * Client auth context backed by Supabase Auth (remediation T5).
+ *
+ * Replaces the next-auth SessionProvider. NOTE: the tier exposed here is
+ * display-only — the server always re-reads the tier from public.users via
+ * lib/auth/session.ts, so a tampered client value grants nothing.
+ *
+ * U3 (founder round 7): the browser client (@supabase/supabase-js, ~66 kB
+ * gzip) was statically imported here — inside the ROOT layout — so it rode
+ * the first-load script set of EVERY route. This provider is the only
+ * client surface that needs it on non-auth pages, and it needs it only
+ * AFTER hydration (session starts null + loading=true either way), so the
+ * client is dynamic-imported inside the effect. The chunk loads async after
+ * first paint; auth pages (sign-in/callback) keep the eager static import.
+ * Pinned by test/bundleBoundary.test.ts.
+ */
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      if (cancelled) return;
+      const supabase = createClient();
+
+      supabase.auth.getSession().then(({ data }) => {
+        if (cancelled) return;
+        setSession(data.session);
+        setLoading(false);
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          setSession(newSession);
+          setLoading(false);
+        },
+      );
+      unsubscribe = () => subscription.unsubscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
+
+  const value = useMemo<AuthContextValue>(() => ({
+    session,
+    user: session?.user ?? null,
+    loading,
+    signOut: async () => {
+      const { createClient } = await import('@/lib/supabase/client');
+      await createClient().auth.signOut();
+    },
+  }), [session, loading]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+"
+
+ ❯ test/authProviderEnv.test.ts:48:15
+     46|     const s = src();
+     47|     // the session read carries its own catch that resolves loading
+     48|     expect(s).toMatch(/getSession\(\)[\s\S]*?\.catch\(\(\)\s*=>\s*\{[\…
+       |               ^
+     49|   });
+     50|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/authProviderEnv.test.ts > INT-AUTH-ENV the root auth provider fails closed on missing browser env > signOut degrades honestly without browser env (nothing to sign out of)
+AssertionError: expected 'signOut: async () => {},\n});\n\nexpo…' to match /try\s*\{[\s\S]*?createClient\(\)\.aut…/
+
+- Expected:
+/try\s*\{[\s\S]*?createClient\(\)\.auth\.signOut\(\);[\s\S]*?\}\s*catch/
+
++ Received:
+"signOut: async () => {},
+});
+
+export function useSupabaseAuth(): AuthContextValue {
+  return useContext(AuthContext);
+}
+
+/**
+ * Client auth context backed by Supabase Auth (remediation T5).
+ *
+ * Replaces the next-auth SessionProvider. NOTE: the tier exposed here is
+ * display-only — the server always re-reads the tier from public.users via
+ * lib/auth/session.ts, so a tampered client value grants nothing.
+ *
+ * U3 (founder round 7): the browser client (@supabase/supabase-js, ~66 kB
+ * gzip) was statically imported here — inside the ROOT layout — so it rode
+ * the first-load script set of EVERY route. This provider is the only
+ * client surface that needs it on non-auth pages, and it needs it only
+ * AFTER hydration (session starts null + loading=true either way), so the
+ * client is dynamic-imported inside the effect. The chunk loads async after
+ * first paint; auth pages (sign-in/callback) keep the eager static import.
+ * Pinned by test/bundleBoundary.test.ts.
+ */
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    import('@/lib/supabase/client').then(({ createClient }) => {
+      if (cancelled) return;
+      const supabase = createClient();
+
+      supabase.auth.getSession().then(({ data }) => {
+        if (cancelled) return;
+        setSession(data.session);
+        setLoading(false);
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          setSession(newSession);
+          setLoading(false);
+        },
+      );
+      unsubscribe = () => subscription.unsubscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
+
+  const value = useMemo<AuthContextValue>(() => ({
+    session,
+    user: session?.user ?? null,
+    loading,
+    signOut: async () => {
+      const { createClient } = await import('@/lib/supabase/client');
+      await createClient().auth.signOut();
+    },
+  }), [session, loading]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+"
+
+ ❯ test/authProviderEnv.test.ts:54:26
+     52|     const s = src();
+     53|     const signOutBlock = s.slice(s.indexOf("signOut: async"));
+     54|     expect(signOutBlock).toMatch(/try\s*\{[\s\S]*?createClient\(\)\.au…
+       |                          ^
+     55|   });
+     56| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  02:03:32
+   Duration  167ms (transform 54%, tests 17%, setup 12%, import 10%, worker 7%)
+

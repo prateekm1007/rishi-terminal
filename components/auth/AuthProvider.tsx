@@ -47,12 +47,31 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     import('@/lib/supabase/client').then(({ createClient }) => {
       if (cancelled) return;
-      const supabase = createClient();
+      // C2 fail closed (INT-AUTH-ENV): missing browser env (NEXT_PUBLIC_*)
+      // is a CONFIG failure — the honest state is signed-out (loading
+      // resolves, the tree renders), NEVER a thrown error inside the
+      // hydration window. createBrowserClient throws on missing URL/key;
+      // left unguarded that rejection fired on EVERY env-less page load
+      // (CI, previews) and could abort React's hydration recovery mid-swap
+      // — the intermittent two-section tear the smoke suite caught twice
+      // on loaded runners (2026-10-09/10). The server remains the
+      // authority: a degraded browser auth context grants nothing.
+      let supabase;
+      try {
+        supabase = createClient();
+      } catch {
+        if (!cancelled) setLoading(false);
+        return;
+      }
 
       supabase.auth.getSession().then(({ data }) => {
         if (cancelled) return;
         setSession(data.session);
         setLoading(false);
+      }).catch(() => {
+        // infrastructure failure (auth endpoint unreachable): the honest
+        // signed-out state — never a crashed tree, never a fake session
+        if (!cancelled) setLoading(false);
       });
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -75,8 +94,13 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     user: session?.user ?? null,
     loading,
     signOut: async () => {
-      const { createClient } = await import('@/lib/supabase/client');
-      await createClient().auth.signOut();
+      try {
+        const { createClient } = await import('@/lib/supabase/client');
+        await createClient().auth.signOut();
+      } catch {
+        // fail closed: without browser env there is nothing to sign out of
+        // (the honest state is already signed-out)
+      }
     },
   }), [session, loading]);
 

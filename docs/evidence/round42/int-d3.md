@@ -115,14 +115,66 @@ fired).
   `prod-legs-309-ttfb.txt` — measured on the #309 deploy the same
   night): warm p50 0.328 s / p95 0.342 s; no regression signal.
 
+## The hydrated-dossier proof (the closeout's load-bearing wall)
+
+The `/stock/[symbol]` SSR markdown shows only "Resolving
+intelligence…" — the dossier and the B1 panel hydrate client-side by
+design — so the absent-state legs above cannot prove the surface
+renders. Founder direction (2026-10-10) made the browser-level proof
+the closeout's load-bearing wall; the legs were added to this PR
+before merge (raw: `prod-legs-312-hydrated-dossier.txt`, visual:
+`prod-dossier-hydrated.png`; production serving `d2d14ab…`, whose
+`app/` surfaces are byte-identical to the `42fc24e…` closeout merge —
+#313 touched test/ + docs/ only):
+
+- **Leg 1 — the hydrated dossier renders on the deployed stock page**
+  (route-fulfilled, 200 OK): the B1 panel renders from the REAL
+  production thesis 200 FIRST (positive control, unintercepted); the
+  dossier settles `data-dossier-insight="ready"` through the ONE
+  insight fetch (fulfilled with the LIVE production thesis artifact
+  for the same subject — a REAL, contract-valid deterministic artifact
+  carrying a REAL 64-hex changeKey; instrument disclosure in the raw
+  file: A4's fail-closed pre-window 404 is NOT weakened or bypassed,
+  and this leg does not claim a production-served generated insight);
+  the artifact's real summary prose renders as visible content inside
+  the A8 composition; the Ask Rishi affordance mounts with count 1 and
+  its accessible name, anchored on the real changeKey; exactly ONE
+  insight fetch was fulfilled. VLM verification of the screenshot
+  confirms: badges + summary + Totals + "Of those excluded" partition
+  all rendered, the Ask Rishi header and input visible, and NO loading
+  spinner or "Resolving" placeholder anywhere.
+- **Leg 2 — the Ask contract end-to-end on production**: submitting a
+  question sends EXACTLY the bounded payload
+  `{personaId, message, insightRef, symbol}` to the REAL `/api/chat`
+  (64-hex reference, page symbol, the route's own default persona);
+  the production route resolves the reference server-side and FAILS
+  CLOSED with the A9 named refusal — `404 "Insight not available"`
+  (the fulfilled artifact's thesis changeKey is not a
+  production insight-cache key) — which the affordance renders
+  VERBATIM (`data-ask-rishi="refused"`), never reworded. Zero AI
+  spend: the refusal fires in the validation region before any
+  challenge, quota or reservation (N4).
+
+Both founder audit findings were ALSO independently re-verified on the
+current deploy `d2d14ab…` (the #312 reconcile legs ran on `fd6e8c0…`;
+raw re-verification: `prod-legs-312-reconcile-reverify.txt` — 14/14
+assertions PASS across BANKBARODA + CANBK: the "Of those excluded:"
+partition binds exactly (total == Σ(breakdown), class census
+`insufficient-history` only, `non-comparable` 0), and the empty
+`whatChanged`/`evidence` against `CHANGED` is verdict-explained with
+the totals arithmetic reconciling (transitions + baselines == events
+== excluded)).
+
 ## Standing obligation (post-window)
 
 The first REAL generated insight artifact at the ~2026-11-03 A4 window
 gets a standing post-window production leg: the dossier's ready state
-(`data-dossier-insight="ready"`), the Ask affordance mounted on the
-artifact's changeKey, the end-to-end generation through the ONE
-`/api/chat`, and the spend accounting. Recorded here and in the roadmap
-row; the unlock needs NO code change and NO redeploy.
+(`data-dossier-insight="ready"`) from a PRODUCTION-SERVED artifact,
+the Ask affordance answering end-to-end through the ONE `/api/chat`,
+and the spend accounting. The route-fulfilled legs above prove the
+deployed ready path with a real artifact; what remains owed at the
+window is the production-served generation itself. Recorded here and
+in the roadmap row; the unlock needs NO code change and NO redeploy.
 
 ## Boundary audit (founder direction 3, verified this session)
 

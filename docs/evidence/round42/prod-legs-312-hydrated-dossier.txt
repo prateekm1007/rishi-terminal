@@ -1,0 +1,48 @@
+# INT-D3 hydrated-dossier + Ask Rishi production legs — 2026-10-10T06:28Z,
+# production serving d2d14ab7b3d825d026ab01263c948b4eeb39a430 (the #313
+# merge; app/ surfaces byte-identical to the #310 merge 42fc24e the closeout
+# rode — #313 touched test/ + docs/ only).
+#
+# WHY THESE LEGS EXIST (founder direction, 2026-10-10): the closeout's
+# load-bearing wall. The /stock/[symbol] SSR markdown shows only
+# "Resolving intelligence..." (the dossier + panel hydrate client-side by
+# design), so the ABSENT-state legs alone cannot prove the surface renders.
+# These legs are the browser-level proof that the DEPLOYED stock page
+# renders the hydrated dossier and mounts the Ask Rishi affordance.
+#
+# INSTRUMENT DISCLOSURE (C1): production's capability=insight route 404s
+# for EVERY subject until the ~2026-11-03 A4 baseline window — A4's
+# fail-closed design, NOT weakened or bypassed here. The dossier's ONE
+# insight fetch is therefore ROUTE-FULFILLED with the LIVE production
+# thesis artifact for the same subject (pass-through, verbatim body): a
+# REAL, contract-valid deterministic artifact (the route's own A1
+# parse-or-refuse boundary guarantees the 200 body is a parsed artifact)
+# whose provenance carries a REAL 64-hex changeKey. What this proves: the
+# DEPLOYED CLIENT BUNDLE's ready path on the production origin. What it
+# does NOT claim: a production-served generated insight — the first REAL
+# artifact render remains the standing post-window obligation. The
+# absent-state legs (prod-legs-310-browser.txt) prove the unfulfilled
+# network truth; together these are the unlock-mechanics proof.
+#
+# Command: npx playwright test -c scripts/d3legs/playwright.config.ts
+# (session-local spec at scripts/d3legs/dossier-hydrated.spec.ts; the
+# returning-visitor pre-seed rishi_disclaimer_v2=accepted per the #302
+# pattern so the first-visit legal modal never mounts).
++ date -u
+Sat Oct 10 06:28:12 UTC 2026
++ curl -s https://rishi-terminal.vercel.app/api/version
+{"sha":"d2d14ab7b3d825d026ab01263c948b4eeb39a430","now":"2026-10-10T06:28:13.093Z","node":"v24.21.0"}+ echo 
+
++ cd /home/z/rishi-terminal
++ npx playwright test -c scripts/d3legs/playwright.config.ts
+
+Running 2 tests using 1 worker
+
+(node:2619) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 scripts/d3legs/dossier-hydrated.spec.ts:72:7 › INT-D3 hydrated dossier — production legs (route-fulfilled live artifact) › leg 1 — the hydrated dossier renders and the Ask Rishi affordance mounts on the deployed stock page (3.2s)
+  ✓  2 scripts/d3legs/dossier-hydrated.spec.ts:150:7 › INT-D3 hydrated dossier — production legs (route-fulfilled live artifact) › leg 2 — the Ask affordance sends the bounded triple; the production route's named refusal renders verbatim (4.8s)
+
+  2 passed (8.6s)
++ echo EXIT_CODE=0
+EXIT_CODE=0

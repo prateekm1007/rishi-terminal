@@ -1,0 +1,29 @@
+# INT-RECONCILE re-verification on the CURRENT deploy — 2026-10-10T06:28Z,
+# production serving d2d14ab7b3d825d026ab01263c948b4eeb39a430 (the #312
+# legs ran on fd6e8c0; this independently re-proves both founder audit
+# findings on the live SHA — direction 6: verify, do not assume).
+#
+# Command: python3 /home/z/my-project/scripts/d3-reconcile-reverify.py
+# Finding 1 (928/928): the uncertainty breakdown must partition the
+#   excluded total exactly, derived from A4's verdict classes.
+# Finding 2 (empty whatChanged/evidence vs CHANGED): the emptiness must
+#   be verdict-driven with the totals arithmetic reconciling.
+deployed sha: d2d14ab7b3d825d026ab01263c948b4eeb39a430 at 2026-10-10T06:28:55.253Z
+--- subject BANKBARODA ---
+[PASS] totals sentence present: True
+[PASS] arithmetic: 925+3==928==excluded(928); transitions match summary (925)
+[PASS] empty-by-verdict explanation present and scoped
+[PASS] exactly one total line: 1
+[PASS] partition line(s) bound by 'Of those excluded:': 1
+[PASS] partition binds to the total: total=928 sum(breakdown)=928 classes={'insufficient-history': 928}
+[PASS] ledger empty while changeSince=CHANGED: whatChanged=0 evidence=0 (explained by verdicts above)
+--- subject CANBK ---
+[PASS] totals sentence present: True
+[PASS] arithmetic: 882+3==885==excluded(885); transitions match summary (882)
+[PASS] empty-by-verdict explanation present and scoped
+[PASS] exactly one total line: 1
+[PASS] partition line(s) bound by 'Of those excluded:': 1
+[PASS] partition binds to the total: total=885 sum(breakdown)=885 classes={'insufficient-history': 885}
+[PASS] ledger empty while changeSince=CHANGED: whatChanged=0 evidence=0 (explained by verdicts above)
+
+RESULT: ALL PASS

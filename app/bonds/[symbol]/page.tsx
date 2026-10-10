@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { BONDS } from "@/data/bonds";
+import { SITE_URL } from "@/lib/seo/site";
 import { BondDetailClient } from "@/components/bonds/BondDetailClient";
 import { NamespaceProvider } from "@/components/shared/NamespaceProvider";
 import { chart } from "@/messages/en.json";
@@ -33,9 +34,20 @@ export async function generateMetadata({
     return { title: "Bond Not Found" };
   }
 
+  // WP1 (founder round 2026-10-10): the detail URL names itself — the
+  // canonical was the parent /bonds section and og inherited the site-root
+  // defaults. Absolute form matches the U5 pinned detail-page convention.
+  const canonicalUrl = `${SITE_URL}/bonds/${encodeURIComponent(bond.symbol)}`;
   return {
     title: `${bond.name} - Bond Analysis | Rishi Terminal`,
     description: `${bond.name} bond analysis`,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `${bond.name} - Bond Analysis | Rishi Terminal`,
+      description: `${bond.name} bond analysis`,
+      url: canonicalUrl,
+      type: "article",
+    },
   };
 }
 

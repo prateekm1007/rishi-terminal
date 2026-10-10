@@ -1,10 +1,11 @@
-import { Metadata } from 'next';
 import Link from 'next/link';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy | Rishi Terminal',
-  description: 'What data Rishi Terminal collects, where it lives, and what never happens to it.',
-};
+export const metadata = routeMetadata({
+  path: "/privacy",
+  title: "Privacy Policy | Rishi Terminal",
+  description: "What data Rishi Terminal collects, where it lives, and what never happens to it.",
+});
 
 /**
  * Round-5 audit (finding 9): the sign-in page claimed "Your data is

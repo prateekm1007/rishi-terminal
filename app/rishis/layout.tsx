@@ -1,13 +1,12 @@
-import { Metadata } from 'next';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
 
 // Round-5 audit (finding 18): client pages cannot export metadata —
 // this server layout carries the per-route title/description.
-export const metadata: Metadata = {
+export const metadata = routeMetadata({
+  path: "/rishis",
   title: "Chat with Rishis — AI simulation | Rishi Terminal",
-  description: "AI-simulated investment personas for education — fictional interpretations, not the real persons. Not investment advice.",
-  // Audit M6/B.3: one canonical URL per route (metadataBase resolves it).
-  alternates: { canonical: "/rishis" },
-};
+  description: "Chat with AI simulations of 20 legendary investors about any stock in the universe.",
+});
 
 export default function RouteLayout({ children }: { children: React.ReactNode }) {
   return children;

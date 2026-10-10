@@ -7,6 +7,13 @@ import { toScreenerRows } from '@/lib/transport/slimWire';
 import { ChatClient } from '@/components/chat/ChatClient';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { chat } from '@/messages/en.json';
+import { routeMetadata } from "@/lib/seo/routeMetadata";
+
+export const metadata = routeMetadata({
+  path: "/chat",
+  title: "Chat with Rishis — AI simulation | Rishi Terminal",
+  description: "AI-powered investment wisdom from 20 legendary investors.",
+});
 
 // X4 (Round 11): the chat namespace arrives from the server as an RSC prop
 // (flight payload) instead of riding the client bundle — see the homepage's

@@ -8,6 +8,13 @@ import type { ReactNode } from "react";
 import { NamespaceProvider } from "@/components/shared/NamespaceProvider";
 import { alerts } from "@/messages/en.json";
 
+import { routeMetadata } from "@/lib/seo/routeMetadata";
+export const metadata = routeMetadata({
+  path: "/alerts",
+  title: "Price Alerts | Rishi Terminal",
+  description: "Set price alerts on universe stocks.",
+});
+
 export default function AlertsLayout({ children }: { children: ReactNode }) {
   return <NamespaceProvider ns={{ alerts }}>{children}</NamespaceProvider>;
 }

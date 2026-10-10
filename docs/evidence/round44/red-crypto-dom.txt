@@ -1,0 +1,99 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/crypto.dominance.test.ts (6 tests | 4 failed) 11ms
+   ❯ CRYPTO-DOM — dominance is derived from the caps, never typed (6)
+     ✓ the source scan bites: the typed-literal patterns detect the pre-fix lines (positive control, B-18/C5) 1ms
+     × MARKET_DOMINANCE equals the caps' math (btc, eth, bnb, others) 5ms
+     × the caps' math pins the known values — btc 71.0, eth 16.9 (1 dp) 1ms
+     × every CRYPTO_ONCHAIN dominance equals its asset's caps math 1ms
+     × no numeric dominance literal is typed anywhere in data/crypto.ts (never typed) 1ms
+     ✓ positive control: the dataset the derivation reads actually carries caps (B-18) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/crypto.dominance.test.ts > CRYPTO-DOM — dominance is derived from the caps, never typed > MARKET_DOMINANCE equals the caps' math (btc, eth, bnb, others)
+AssertionError: expected 58.2 to be 70.9 // Object.is equality
+
+- Expected
++ Received
+
+- 70.9
++ 58.2
+
+ ❯ test/crypto.dominance.test.ts:58:34
+     56|
+     57|   it("MARKET_DOMINANCE equals the caps' math (btc, eth, bnb, others)",…
+     58|     expect(MARKET_DOMINANCE.btc).toBe(derived(capOf("BTC")));
+       |                                  ^
+     59|     expect(MARKET_DOMINANCE.eth).toBe(derived(capOf("ETH")));
+     60|     expect(MARKET_DOMINANCE.bnb).toBe(derived(capOf("BNB")));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/crypto.dominance.test.ts > CRYPTO-DOM — dominance is derived from the caps, never typed > the caps' math pins the known values — btc 71.0, eth 16.9 (1 dp)
+AssertionError: expected 58.2 to be 71 // Object.is equality
+
+- Expected
++ Received
+
+- 71
++ 58.2
+
+ ❯ test/crypto.dominance.test.ts:68:34
+     66|     // The founder's audit: typed 58.2 vs computed 70.9 (rounded $2.75T
+     67|     // total). The exact caps compute 70.96 -> 71.0 at 1 dp.
+     68|     expect(MARKET_DOMINANCE.btc).toBe(71);
+       |                                  ^
+     69|     expect(MARKET_DOMINANCE.eth).toBe(16.9);
+     70|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/crypto.dominance.test.ts > CRYPTO-DOM — dominance is derived from the caps, never typed > every CRYPTO_ONCHAIN dominance equals its asset's caps math
+AssertionError: BTC on-chain dominance must equal the caps' math: expected 58.2 to be 70.9 // Object.is equality
+
+- Expected
++ Received
+
+- 70.9
++ 58.2
+
+ ❯ test/crypto.dominance.test.ts:75:67
+     73|     for (const [symbol, onchain] of Object.entries(CRYPTO_ONCHAIN)) {
+     74|       expect(onchain.dominance,
+     75|         `${symbol} on-chain dominance must equal the caps' math`).toBe…
+       |                                                                   ^
+     76|     }
+     77|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/crypto.dominance.test.ts > CRYPTO-DOM — dominance is derived from the caps, never typed > no numeric dominance literal is typed anywhere in data/crypto.ts (never typed)
+AssertionError: a numeric literal is assigned to a MARKET_DOMINANCE field — derive it from the caps: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/crypto.dominance.test.ts:81:94
+     79|   it("no numeric dominance literal is typed anywhere in data/crypto.ts…
+     80|     expect(TYPED_MARKET_DOMINANCE.test(SOURCE),
+     81|       "a numeric literal is assigned to a MARKET_DOMINANCE field — der…
+       |                                                                                              ^
+     82|     expect(TYPED_ONCHAIN_DOMINANCE.test(SOURCE),
+     83|       "a numeric literal is assigned to an on-chain dominance field — …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  10:00:24
+   Duration  186ms (transform 66%, tests 15%, import 8%, setup 7%, worker 4%)
+

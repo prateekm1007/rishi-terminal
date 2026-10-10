@@ -118,8 +118,38 @@ describe("INT-C1 the mount (positive control — B-18)", () => {
   });
 });
 
+// INT-D3 REMOVED — the founder's product-surface removal order (round 45,
+// 2026-10-10): the stock-page "Rishi Intelligence — <SYMBOL>" dossier
+// section (the D3 mount) is REMOVED from /stock/[symbol]. Product surface
+// only — the substrate stays untouched and green: the chain, the ONE
+// /api/intelligence (capability=insight included), the cache, the A8
+// primitives, the fixture route, and the B1 panel / C1 brief / D2 drawer.
+//
+// Fail-first in reverse (rule 21): these absence pins were written FIRST
+// and watched FAIL on the mounted tree (the component file existed, the
+// page mounted it, the exact-surface scan saw four consumers); then the
+// removal landed; then they passed. Raw RED + GREEN: docs/evidence/round45/.
+describe("INT-D3 REMOVED per founder order (2026-10-10) — the absence pins", () => {
+  const PAGE = "app/stock/[symbol]/page.tsx";
+
+  it("the dossier component file is DELETED (dead code after the mount removal — rule 17)", () => {
+    expect(existsSync(join(ROOT, "components/stock/IntelligenceDossier.tsx"))).toBe(false);
+  });
+
+  it("the stock page no longer imports, mounts, or wires the dossier section", () => {
+    const s = source(PAGE);
+    expect(s).not.toContain("IntelligenceDossier");
+    // the mount's own comment block went with it
+    expect(s).not.toContain("INT-D3");
+    // positive control (B-18): the page source still carries the SURVIVING
+    // neighbors — the removal removed one mount, not the page
+    expect(s).toContain("<IntelligencePanel");
+    expect(s).toContain("<RishiCouncil");
+  });
+});
+
 describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
-  it("the set of surfaces fetching /api/intelligence is EXACTLY the four declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer + the INT-D3 dossier)", () => {
+  it("the set of surfaces fetching /api/intelligence is EXACTLY the three declared product surfaces (B1 panel + C1 brief + the INT-D2 drawer) — the declared set SHRANK from four in the founder-ordered D3 removal (declared, never silent)", () => {
     const files = [
       ...walk(join(ROOT, "app")),
       ...walk(join(ROOT, "lib")),
@@ -131,8 +161,57 @@ describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
     expect(consumers.map(rel).sort()).toEqual([
       "components/dashboard/DashboardBrief.tsx",
       "components/screener/IntelligenceDrawer.tsx",
-      "components/stock/IntelligenceDossier.tsx",
       "components/stock/IntelligencePanel.tsx",
     ]);
+  });
+});
+
+describe("Ask Rishi (the affordance component contract — the stock-page mount is REMOVED per founder order, 2026-10-10; the component and its contract SURVIVE with the fixture route as the mounted consumer)", () => {
+  // Moved verbatim from the retired test/intelligenceStockDossier.test.ts
+  // (the D3 mount test file retired by the founder-ordered removal — rule 23
+  // permits retirement on removal, never silent deletion; these four pins
+  // target the SURVIVING component, not the removed section, so they move
+  // rather than die). The mount contract on /evidence-fixtures is pinned by
+  // the fixture suite; these pins keep the component honest at the source.
+  const ASKRISHI = "components/stock/AskRishi.tsx";
+
+  it("exists as a client component that fetches ONLY /api/chat", () => {
+    expect(existsSync(join(ROOT, ASKRISHI))).toBe(true);
+    const s = source(ASKRISHI);
+    expect(s).toContain("'use client'");
+    expect(s).toContain("/api/chat");
+    expect(s).not.toContain("/api/intelligence");
+  });
+
+  it("sends the bounded payload: personaId + message + insightRef + symbol — nothing else", () => {
+    const s = source(ASKRISHI);
+    expect(s).toContain("insightRef");
+    expect(s).toContain("symbol");
+    expect(s).toContain("personaId");
+    expect(s).toContain("message");
+    // no history replay, no challenge field, no system prompt construction
+    expect(s).not.toMatch(/history\s*:/);
+    expect(s).not.toContain("challenge");
+    expect(s).not.toMatch(/systemPrompt|system_prompt/);
+  });
+
+  it("renders refusals AS the refusal they are (the error text verbatim) and disables the empty submit", () => {
+    const s = source(ASKRISHI);
+    // the response's error text is rendered verbatim — never reworded
+    expect(s).toMatch(/error/);
+    // the empty-input gate
+    expect(s).toMatch(/disabled/);
+    // one-shot: no conversation state machine (no message array state)
+    expect(s).not.toMatch(/useState<.*\[\].*>/);
+  });
+
+  it("imports no intelligence module beyond types", () => {
+    const s = source(ASKRISHI);
+    const imports = s.match(/from ["'][^"']+["']/g) ?? [];
+    for (const imp of imports) {
+      if (imp.includes("lib/intelligence")) {
+        expect(imp).toContain("types");
+      }
+    }
   });
 });

@@ -11,7 +11,6 @@ import { detectArchetype, HISTORICAL_PARALLELS } from '@/lib/wisdom/historicalPa
 import { buildCouncil } from '@/lib/consensus/council';
 import { RishiCouncil } from '@/components/stock/RishiCouncil';
 import { IntelligencePanel } from '@/components/stock/IntelligencePanel';
-import { IntelligenceDossier } from '@/components/stock/IntelligenceDossier';
 import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
@@ -188,11 +187,6 @@ export default async function StockPage({ params }: StockPageProps) {
           the ONE /api/intelligence surface through the A8 primitives
           (client-side fetch; no page imports the chain runner). */}
       <IntelligencePanel key={key} subject={key} />
-      {/* INT-D3: the compiled dossier — the generated-insight section
-          (capability=insight, the pre-window honest-absent state) + the
-          FIRST Ask Rishi affordance mount. Pre-registration:
-          docs/intelligence/stockDossier.md. */}
-      <IntelligenceDossier symbol={key} />
     </NamespaceProvider>
   );
 }

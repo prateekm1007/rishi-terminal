@@ -1,5 +1,10 @@
 # INT-D3 Stock Dossier — the compiled dossier on /stock/[symbol] (pre-registration)
 
+> **SUPERSEDED 2026-10-10 (rule 30):** the product surface this pre-registration describes was
+> REMOVED from `/stock/[symbol]` by the founder's explicit order (round 45) — the removal record, the
+> revert range, and the substrate-intact verification live in `docs/evidence/round45/d3-removal.md`.
+> The text below is the historical pre-registration, preserved verbatim.
+
 Roadmap item D3 ("PHASE D — Screening · Stock Intelligence · Stock
 Dossier", third item in the frozen order — the position-within-phase
 id scheme of B1/C1). Dependencies: A1 (contract), A7 (change key),

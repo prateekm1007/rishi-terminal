@@ -1,0 +1,22 @@
+[PASS] 1-deploy-gate: /api/version sha=42fc24e9ac2b36b0ca75263bf26320bcd5acbff4 expected=42fc24e9ac2b36b0ca75263bf26320bcd5acbff4
+[PASS] 2-thesis-regression: status=200 ok=True wall=3210ms
+[PASS] 2b-thesis-deterministic: composed fields identical across two calls
+[PASS] 3-designed-404: capability=insight status=404 (the honest pre-window state; zero AI spend; the dossier renders ABSENT)
+[PASS] 4-chat-forged-ref: status=400 body=Invalid insight reference wall=697ms (refused before generation — zero spend)
+[PASS] 5-chat-missing-msg: status=400 body=Message is required
+[PASS] 6-chat-bad-persona: status=400 body=Unknown persona
+[PASS] 7-latency: edge-wall=1197ms route-timings={"wallMs": 875, "chainMs": 762}
+[PASS] 8-stocks-page: status=200 bytes=1890423 wall=2687ms
+
+==== SUMMARY ====
+PASS  1-deploy-gate
+PASS  2-thesis-regression
+PASS  2b-thesis-deterministic
+PASS  3-designed-404
+PASS  4-chat-forged-ref
+PASS  5-chat-missing-msg
+PASS  6-chat-bad-persona
+PASS  7-latency
+PASS  8-stocks-page
+
+9/9 legs PASS

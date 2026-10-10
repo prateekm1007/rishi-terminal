@@ -1,0 +1,28 @@
+[PASS] 1-deploy-gate: /api/version sha=fd6e8c06b6d3c3b363ef9c983dee0828fac11eb8 expected=fd6e8c06b6d3c3b363ef9c983dee0828fac11eb8
+[PASS] 2-summary-scope: status=200 changeSince state=CHANGED transitionsSince=882 wall=1555ms
+[PASS] 3-reconciliation: total=885 Σ(breakdown)=885 material(evidence)=0 totals(transitions,fields,baselines,events)=(882, 3, 3, 885) total==Σ:True events==material+total:True transitions+baselines==events:True
+[PASS] 4-partition-binding: 1 breakdown line(s) all bound to the total; unrecognized=0
+[PASS] 5-refusal-honesty: class-census={"insufficient-history": 885} non-comparable=0 insufficient-history=885 dominant-non-comparable=False
+[PASS] 6-empty-by-verdict: explanation-present=True totals-scoped=True totals=(882, 3, 3, 885)
+[PASS] 7-field-lines: ABSENT-BY-VERDICT: state=CHANGED transitionsSince=882 with classes={"insufficient-history": 885} — the absence is accounted for by A4 verdicts, not projection loss
+[PASS] 8-determinism: all composed fields identical across calls
+[PASS] 9-refusal-unknown-subject: status=400 body=Unknown symbol
+[PASS] 9-refusal-bad-capability: status=400 body=Invalid capability
+[PASS] 9-refusal-missing-subject: status=400 body=Unknown symbol
+[PASS] 10-honest-404: capability=insight status=404 (A4 window not open; zero AI spend)
+
+==== SUMMARY ====
+PASS  1-deploy-gate
+PASS  2-summary-scope
+PASS  3-reconciliation
+PASS  4-partition-binding
+PASS  5-refusal-honesty
+PASS  6-empty-by-verdict
+PASS  7-field-lines
+PASS  8-determinism
+PASS  9-refusal-unknown-subject
+PASS  9-refusal-bad-capability
+PASS  9-refusal-missing-subject
+PASS  10-honest-404
+
+12/12 legs PASS

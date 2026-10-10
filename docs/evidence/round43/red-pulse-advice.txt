@@ -1,0 +1,107 @@
+# PULSE-ADVICE fail-first capture — 2026-10-10, on the pre-fix tree
+# (branch fix/pulse-advice-wording at origin/main d2d14ab, before the
+# wording/key change). Command: npx vitest run
+# test/pulse.adviceVocabulary.test.ts. The bite control passes (the
+# scan detects the embedded pre-fix vocabulary); the four content pins
+# fail exactly as designed: the advice vocabulary is present in the
+# page source, the descriptive readouts are missing, the label is
+# still the old prescriptive key.
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/pulse.adviceVocabulary.test.ts (5 tests | 4 failed) 13ms
+   ❯ PULSE-ADVICE — the council line is an investigation readout, not advice (5)
+     ✓ the scan bites: every advice pattern detects the pre-fix strings (positive control, B-18/C5) 2ms
+     × the advice vocabulary is absent from the pulse page source 6ms
+     × the descriptive regime readouts are present verbatim in the pulse page 1ms
+     × the label is the descriptive regime read through the new key (old key gone) 1ms
+     × every locale that carries a pulse section carries the descriptive label, advice-free 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pulse.adviceVocabulary.test.ts > PULSE-ADVICE — the council line is an investigation readout, not advice > the advice vocabulary is absent from the pulse page source
+AssertionError: advice vocabulary present in app/pulse/page.tsx: /stay barbell/i: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/pulse.adviceVocabulary.test.ts:133:9
+    131|         pattern.test(PULSE_PAGE),
+    132|         `advice vocabulary present in app/pulse/page.tsx: ${pattern}`,
+    133|       ).toBe(false);
+       |         ^
+    134|     }
+    135|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/pulse.adviceVocabulary.test.ts > PULSE-ADVICE — the council line is an investigation readout, not advice > the descriptive regime readouts are present verbatim in the pulse page
+AssertionError: missing descriptive readout: High disagreement: the lenses read the current regime very differently across indicators.: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/pulse.adviceVocabulary.test.ts:139:87
+    137|   it("the descriptive regime readouts are present verbatim in the puls…
+    138|     for (const readout of DESCRIPTIVE_READOUTS) {
+    139|       expect(PULSE_PAGE.includes(readout), `missing descriptive readou…
+       |                                                                                       ^
+    140|     }
+    141|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/pulse.adviceVocabulary.test.ts > PULSE-ADVICE — the council line is an investigation readout, not advice > the label is the descriptive regime read through the new key (old key gone)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/pulse.adviceVocabulary.test.ts:144:64
+    142|
+    143|   it("the label is the descriptive regime read through the new key (ol…
+    144|     expect(PULSE_PAGE.includes(`t('pulse.${NEW_LABEL_KEY}')`)).toBe(tr…
+       |                                                                ^
+    145|     expect(PULSE_PAGE.includes(`pulse.${OLD_LABEL_KEY}`)).toBe(false);
+    146|     const en = loadLocale("en") as { pulse: Record<string, string> };
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/pulse.adviceVocabulary.test.ts > PULSE-ADVICE — the council line is an investigation readout, not advice > every locale that carries a pulse section carries the descriptive label, advice-free
+AssertionError: bn must carry pulse.councilRegimeRead: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/pulse.adviceVocabulary.test.ts:159:9
+    157|         typeof label === "string" && label.length > 0,
+    158|         `${locale} must carry pulse.${NEW_LABEL_KEY}`,
+    159|       ).toBe(true);
+       |         ^
+    160|       expect(
+    161|         catalog.pulse[OLD_LABEL_KEY],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  06:32:47
+   Duration  180ms (transform 55%, tests 21%, setup 10%, import 9%, worker 5%)
+
+exit=1

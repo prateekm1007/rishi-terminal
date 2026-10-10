@@ -1,0 +1,12 @@
+
+Running 5 tests using 1 worker
+
+(node:6630) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test/smoke/a8-presentation.spec.ts:30:7 › INT-A8-PRES fixture route — the shared presentation, computed › badges are a grouped pill row with no default bullets; sections and titles carry the hierarchy (1.2s)
+  ✓  2 test/smoke/a8-presentation.spec.ts:80:7 › INT-A8-PRES fixture route — the shared presentation, computed › the prose fields are visible labelled content: Summary / Why it matters / What changed (481ms)
+  ✓  3 test/smoke/a8-presentation.spec.ts:113:7 › INT-A8-PRES real surfaces — honest states are styled, focus is designed › the stock page panel renders its honest state with the shared class styling (6.6s)
+  ✓  4 test/smoke/a8-presentation.spec.ts:144:7 › INT-A8-PRES real surfaces — honest states are styled, focus is designed › the dashboard brief renders its honest state with the shared class styling (2.5s)
+  ✓  5 test/smoke/a8-presentation.spec.ts:170:7 › INT-A8-PRES real surfaces — honest states are styled, focus is designed › the drawer's close button has a designed visible focus state (keyboard) (25.0s)
+
+  5 passed (36.6s)

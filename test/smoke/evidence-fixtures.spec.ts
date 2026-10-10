@@ -69,4 +69,58 @@ test.describe("evidence-fixtures route (A8)", () => {
     const robotsText = await robots.text();
     expect(robotsText).toContain("Disallow: /evidence-fixtures");
   });
+
+  // INT-D3 mount verification (founder direction, 2026-10-10): the Ask
+  // Rishi affordance's READY-STATE mount proven on the sanctioned fixture
+  // surface — the live stock page honestly renders it ABSENT pre-window
+  // (the designed 404), so the mount contract is verified here: the ONE
+  // deterministic change key (the A7 derivation) over the parsed fixture
+  // anchors the affordance; asking posts to the ONE /api/chat; a fixture
+  // key resolves no artifact, so the honest terminal state is the
+  // route's refusal rendered verbatim (CI: "Chat unavailable" — no
+  // pepper; production: "Insight not available") — NEVER an answer, and
+  // never seed data standing in for a live artifact.
+  test("the D3 affordance mount: idle contract, honest refusal, never answered", async ({ page }) => {
+    // the disclaimer is localStorage-gated (LegalDisclaimer reads
+    // 'rishi_disclaimer_v2'); pre-seeding it means the modal never mounts
+    // and cannot intercept the submit click (the same harness rule the
+    // a8-presentation spec carries since the R42 disclaimer-race fix).
+    await page.addInitScript(() => window.localStorage.setItem("rishi_disclaimer_v2", "accepted"));
+    await page.goto("/evidence-fixtures");
+    const mount = page.locator("section[data-fixture-ask-rishi]");
+    await expect(mount).toHaveCount(1, { timeout: 15_000 });
+
+    const ask = mount.locator("[data-ask-rishi]");
+    await expect(ask).toHaveCount(1);
+    await expect(ask).toHaveAttribute("data-ask-rishi", "idle");
+
+    // the accessible contract: the labelled composer (the textarea's
+    // accessible name comes from its label element)
+    await expect(mount.locator("#ask-rishi-input")).toHaveAccessibleName("Ask Rishi about this insight");
+
+    // the honesty caption: names the fixture key and the expected refusal
+    await expect(mount).toContainText("fixture");
+    await expect(mount).toContainText("will refuse");
+
+    // empty input disables the submit (nothing sent)
+    const submit = mount.getByRole("button", { name: "Ask" });
+    await expect(submit).toBeDisabled();
+
+    // an ask lands in an honest terminal state — refused (the route's
+    // error verbatim in the role=alert) or unavailable. NEVER "answered":
+    // a fixture key must never produce content on any environment.
+    await mount.locator("#ask-rishi-input").fill("What changed in this fixture?");
+    await submit.click();
+    let terminal = "";
+    await expect(async () => {
+      terminal = (await ask.getAttribute("data-ask-rishi")) ?? "";
+      expect(["refused", "unavailable"]).toContain(terminal);
+    }).toPass({ timeout: 20_000 });
+    expect(terminal).not.toBe("answered");
+    if (terminal === "refused") {
+      const refusal = mount.locator("[data-ask-rishi-refusal]");
+      await expect(refusal).toBeVisible();
+      expect((await refusal.textContent()) ?? "").not.toBe("");
+    }
+  });
 });

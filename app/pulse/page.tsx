@@ -386,12 +386,17 @@ export default function MarketPulsePage() {
 
     let m = 'NEUTRAL';
     let color = 'var(--amber)';
-    let description = 'Mixed signals. Use selective positioning.';
+    // PULSE-MOOD (founder direction 4, 2026-10-10): descriptive mood
+    // readouts only — what the readings show, never what the user
+    // should do. The positioning vocabulary of the old wording is
+    // pinned absent across the whole page by
+    // test/pulse.moodVocabulary.test.ts.
+    let description = 'Mixed signals across breadth and momentum readings.';
 
     if (score >= 70) { m = 'BULLISH'; color = 'var(--green)'; description = 'Broad strength and positive momentum.'; }
-    else if (score >= 55) { m = 'CAUTIOUSLY BULLISH'; color = '#34D399'; description = 'Positive bias, but stay selective.'; }
-    else if (score <= 30) { m = 'BEARISH'; color = 'var(--red)'; description = 'Risk-off conditions. Reduce beta.'; }
-    else if (score <= 45) { m = 'CAUTIOUSLY BEARISH'; color = '#FB923C'; description = 'Weak undertone. Prefer defensives.'; }
+    else if (score >= 55) { m = 'CAUTIOUSLY BULLISH'; color = '#34D399'; description = 'Positive bias with uneven individual readings.'; }
+    else if (score <= 30) { m = 'BEARISH'; color = 'var(--red)'; description = 'Risk-off conditions across risk assets.'; }
+    else if (score <= 45) { m = 'CAUTIOUSLY BEARISH'; color = '#FB923C'; description = 'Weak undertone with defensive sectors holding better.'; }
 
     return { mood: m, score, color, description };
   }, [breadth, prices]);

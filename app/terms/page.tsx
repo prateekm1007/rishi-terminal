@@ -39,7 +39,7 @@ export default function TermsPage() {
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
               Nothing on this site is investment advice, a recommendation, or an offer to buy or sell any
               security. We are not a SEBI-registered investment adviser or research analyst. Scores, verdicts,
-              &ldquo;Stock of the Day&rdquo;, &ldquo;Top Buys&rdquo; and &ldquo;Short Radar&rdquo; surfaces are
+              &ldquo;Stock of the Day&rdquo;, &ldquo;Top Ranked&rdquo; and &ldquo;Deterioration Radar&rdquo; surfaces are
               outputs of deterministic models over datasets that are labelled per field as LIVE, REFERENCE or
               UNAVAILABLE — reference data is illustrative and not current. Verify everything from official
               sources and consult a SEBI-registered advisor before acting.

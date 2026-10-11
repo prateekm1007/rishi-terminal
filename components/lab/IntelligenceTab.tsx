@@ -21,7 +21,7 @@ function scoreColor(s: number): string {
 }
 
 function scoreLabel(s: number): string {
-  return s >= 75 ? 'High Conviction' : s >= 55 ? 'Balanced' : s >= 35 ? 'Conflict' : 'Avoid';
+  return s >= 75 ? 'High Conviction' : s >= 55 ? 'Balanced' : s >= 35 ? 'Conflict' : 'Low Conviction';
 }
 
 function spreadLabel(spread: number): string {

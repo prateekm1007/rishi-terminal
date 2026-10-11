@@ -29,7 +29,7 @@ function categorize(score: number): string {
   if (score >= 55) return "Balanced Risk-Reward";
   if (score >= 45) return "Speculative with Merit";
   if (score >= 35) return "High Philosophical Conflict";
-  return "Avoid - Low Rishi Conviction";
+  return "Low Conviction - Weak Framework Support";
 }
 
 function analyzeTension(scores: RishiScore[]): { label: string; spread: number } {

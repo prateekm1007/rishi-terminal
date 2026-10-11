@@ -94,6 +94,6 @@ export function scoreNemish(s: Stock, ctx?: ScoringContext): RishiScore {
     ],
     insight: insufficient
       ? 'Insufficient data \u2014 placeholder zeros in the Steady Compounder pillars (EPS growth / debt / management / valuation), no verdict.'
-      : `Boring steady. EPS ${s.epscagr}% \u00b7 Debt ${s.de} \u00b7 P/E ${s.pe}. ${total >= 75 ? 'Long term hold' : 'Not ready'}`,
+      : `Boring steady. EPS ${s.epscagr}% \u00b7 Debt ${s.de} \u00b7 P/E ${s.pe}. ${total >= 75 ? 'Multi-year compounder profile' : 'Not ready'}`,
   };
 }

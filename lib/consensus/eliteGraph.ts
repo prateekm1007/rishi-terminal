@@ -28,7 +28,7 @@ export interface TechnicalEdgeEntry {
   peerComparison: { top3Avg: number; bottom3Avg: number; };
   rishiRelevance: Array<{
     rishi: string;
-    signal: 'STRONG BUY' | 'BUY' | 'HOLD' | 'SELL';
+    signal: 'STRONGLY FAVORABLE' | 'FAVORABLE' | 'BALANCED' | 'UNFAVORABLE';
     reason: string;
   }>;
   insight: string;
@@ -157,7 +157,7 @@ function buildTechnicalEdge(stock: Stock, scores: RishiScore[]): TechnicalEdgeEn
        const sc = r.score as number;
        return {
          rishi: r.full,
-         signal: outperforming ? (sc > 75 ? 'STRONG BUY' : 'BUY') : (sc < 45 ? 'SELL' : 'HOLD'),
+         signal: outperforming ? (sc > 75 ? 'STRONGLY FAVORABLE' : 'FAVORABLE') : (sc < 45 ? 'UNFAVORABLE' : 'BALANCED'),
          reason: `Based on ${p.lens}, this ${metric} profile ${outperforming ? 'supports' : 'challenges'} the thesis.`
        };
     });
@@ -244,7 +244,7 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
       buy_signal: `${rishi.full} model triggers BUY. ${p.lens} score: ${rishi.score}/100. Primary driver: ${topComp?.label || 'overall quality'}. ${topComp?.detail || rishi.insight}`,
       hold:       `${rishi.full} model signals HOLD. Score of ${rishi.score} -- not cheap enough to buy aggressively, not expensive enough to exit. ${p.keyFocus} remains acceptable.`,
       warning:    `${rishi.full} model issues CAUTION. Score ${rishi.score}/100 -- ${p.keyFocus} deteriorating. Requires fresh catalyst before re-entry.`,
-      sell_signal:`${rishi.full} model triggers REDUCE. Score ${rishi.score}/100 -- ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
+      sell_signal:`${rishi.full} model reads deterioration. Score ${rishi.score}/100 -- ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
     };
 
     events.push({

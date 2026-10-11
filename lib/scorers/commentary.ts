@@ -15,7 +15,7 @@ const LEGENDARY_LONG = [
 ];
 
 const HIGH_CONVICTION_LONG = [
-  "This stock passes Buffett's primary filter – it is a good business at a fair price. The competitive position is defensible, free cash flow is real and growing, and the balance sheet is clean. The investor who buys quality and waits is almost always rewarded.",
+  "This stock passes Buffett's primary filter – it is a good business at a fair price. The competitive position is defensible, free cash flow is real and growing, and the balance sheet is clean. Quality held patiently has historically been rewarded.",
   "Lynch would classify this as a stalwart with growth characteristics. Revenue visibility is high, the sector tailwind is structural, and the management has proven it can allocate capital wisely. Patience here will likely be well-rewarded.",
 ];
 
@@ -24,7 +24,7 @@ const STRONG_LONG = [
 ];
 
 const WATCHLIST_LONG = [
-  "Worthy of a watchlist position. The business quality is reasonable, but valuation or governance concerns warrant patience. A better entry point, or evidence of improving fundamentals, would make this significantly more compelling.",
+  "Watchlist-grade quality. The business quality is reasonable, but valuation or governance concerns warrant patience. A better valuation point, or evidence of improving fundamentals, would make this significantly more compelling.",
 ];
 
 // Round-5 audit (findings 2–3): a NEUTRAL / Hold verdict used to fall
@@ -42,16 +42,16 @@ const AVOID_LONG = [
 // ── Short Commentary Templates ────────────────────────────────
 
 const LEGENDARY_SHORT = [
-  "This is a Chanos-grade short thesis. The combination of peak-cycle valuation, deteriorating fundamentals, aggressive accounting, and governance concerns creates a setup where multiple things need to go right for the bulls – and only one needs to go wrong. The margin of safety for shorts is wide.",
-  "Burry would recognise this structure. The market is pricing in a version of the future that the current operating reality does not support. When the narrative collides with the fundamentals, the adjustment is typically violent. The short thesis here is not speculative – it is anchored in the numbers.",
+  "This is a Chanos-grade deterioration thesis. The combination of peak-cycle valuation, deteriorating fundamentals, aggressive accounting, and governance concerns creates a setup where multiple things need to go right for the bulls – and only one needs to go wrong. The downside asymmetry is wide.",
+  "Burry would recognise this structure. The market is pricing in a version of the future that the current operating reality does not support. When the narrative collides with the fundamentals, the adjustment is typically violent. The deterioration read here is not speculative – it is anchored in the numbers.",
 ];
 
 const HIGH_CONVICTION_SHORT = [
-  "A high-conviction short with clear catalysts. Overvaluation is extreme, the competitive position is eroding, and the promoter's actions suggest they know more than they are communicating to the market. Einhorn would call this a 'show me' situation – and the showing is not going well.",
+  "A high-conviction deterioration read with clear catalysts. Overvaluation is extreme, the competitive position is eroding, and the promoter's actions suggest they know more than they are communicating to the market. Einhorn would call this a 'show me' situation – and the showing is not going well.",
 ];
 
 const TACTICAL_SHORT = [
-  "A tactical short opportunity based on valuation excess and near-term catalyst risk. Not a structural thesis, but the risk-reward for a short position is attractive in the current context. Position sizing should be conservative given liquidity and potential squeeze risk.",
+  "An early deterioration signal based on valuation excess and near-term catalyst risk. Not a structural thesis, but the downside asymmetry is notable in the current context. Liquidity and squeeze risk warrant conservative sizing on any expression.",
 ];
 
 // ── Commentary Generator ──────────────────────────────────────
@@ -99,21 +99,21 @@ export function generateHeadline(
     // (Rishi Merit System v1) right next to this, and two unlabeled numbers
     // read as contradictory scores for the same stock.
     if (conviction === "LEGENDARY") 
-      return `${sym} QVPS ${s}/100 – A rare, legendary long opportunity`;
+      return `${sym} QVPS ${s}/100 – A rare, exceptional quality profile`;
     if (conviction === "HIGH_CONVICTION") 
-      return `${sym} QVPS ${s}/100 – High conviction buy`;
+      return `${sym} QVPS ${s}/100 – High conviction favorable read`;
     if (conviction === "STRONG") 
       return `${sym} QVPS ${s}/100 – Strong fundamentals`;
     if (conviction === "WATCHLIST") 
-      return `${sym} QVPS ${s}/100 – Add to watchlist, await better entry`;
+      return `${sym} QVPS ${s}/100 – Watchlist-grade, valuation ahead of quality`;
     if (conviction === "NEUTRAL") 
       return `${sym} QVPS ${s}/100 – Hold, mixed signals`;
-    return `${sym} QVPS ${s}/100 – Avoid`;
+    return `${sym} QVPS ${s}/100 – Weak framework support`;
   } else {
     if (conviction === "LEGENDARY_SHORT") 
-      return `${sym} QVPS short ${s}/100 – Legendary short thesis`;
+      return `${sym} QVPS short ${s}/100 – Severe deterioration thesis`;
     if (conviction === "HIGH_CONVICTION_SHORT") 
-      return `${sym} QVPS short ${s}/100 – High conviction short`;
-    return `${sym} QVPS short ${s}/100 – Tactical short opportunity`;
+      return `${sym} QVPS short ${s}/100 – Marked deterioration`;
+    return `${sym} QVPS short ${s}/100 – Early deterioration signal`;
   }
 }

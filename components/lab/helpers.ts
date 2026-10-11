@@ -44,7 +44,7 @@ export const scoreColor = (s: number): string =>
   s >= 75 ? '#22C55E' : s >= 55 ? '#D4AF37' : '#EF4444';
 
 export const scoreLabel = (s: number): string =>
-  s >= 75 ? 'High Conviction' : s >= 55 ? 'Balanced' : s >= 35 ? 'Conflict' : 'Avoid';
+  s >= 75 ? 'High Conviction' : s >= 55 ? 'Balanced' : s >= 35 ? 'Conflict' : 'Low Conviction';
 
 function dateOnlyFromAny(x: any): string | null {
   if (typeof x === 'string') {

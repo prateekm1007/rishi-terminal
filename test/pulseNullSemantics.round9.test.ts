@@ -160,9 +160,12 @@ describe("/api/pulse/blocks — no fabricated zeros, sides, or timestamps", () =
     // RED on main: change ?? 0.
     expect(bySymbol.NOSIDE.change).toBeNull();
     expect(bySymbol.NOSIDE.changePct).toBeNull();
-    // The heuristic still works when the observation exists.
-    expect(bySymbol.UPSIDE.side).toBe("BUY");
-    expect(bySymbol.DOWNSIDE.side).toBe("SELL");
+    // The heuristic still works when the observation exists. Round-47
+    // P0-6 re-pin (founder order 2026-10-11: remove buy/sell advice
+    // wording): the side vocabulary is now descriptive — ACCUMULATION /
+    // DISTRIBUTION — never transaction advice.
+    expect(bySymbol.UPSIDE.side).toBe("ACCUMULATION");
+    expect(bySymbol.DOWNSIDE.side).toBe("DISTRIBUTION");
     expect(bySymbol.UPSIDE.change).toBeCloseTo(3.1, 6);
   });
 

@@ -35,7 +35,7 @@ function scoreDisp(s: number | null) {
   return s === null ? '—' : String(s);
 }
 function signalColor(signal: string) {
-  if (signal === 'BUY' || signal === 'STRONG BUY') return '#22C55E';
+  if (signal === 'FAVORABLE' || signal === 'STRONGLY FAVORABLE' || signal === 'POSITIVE' || signal === 'UPTREND') return '#22C55E';
   if (signal === 'SELL') return '#EF4444';
   return '#D4AF37';
 }
@@ -385,7 +385,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   ? (recordQuality === 'seed' || recordQuality === 'missing'
                       ? 'No Verdict — the indicator inputs are static reference data'
                       : 'No Verdict — no valid scorer results')
-                  : avgScore >= 75 ? 'Strong Buy — Supercycle Conditions Present' : avgScore >= 55 ? 'Moderate Opportunity — Selective Accumulation' : 'Caution — Wait for Better Entry'}
+                  : avgScore >= 75 ? 'High conviction — supercycle conditions present' : avgScore >= 55 ? 'Moderate read — selective conditions' : 'Caution — weak conditions'}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (

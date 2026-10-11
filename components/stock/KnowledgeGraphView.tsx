@@ -128,19 +128,19 @@ function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
   const outperforming = delta > 0;
   const percentile = comp.percentile ?? 65;
 
-  let signal = "HOLD";
+  let signal = "BALANCED";
   let color = "#D4AF37";
 
   const strength = Math.abs(delta) * (percentile / 100);
 
   if (outperforming && strength > 25) {
-    signal = "STRONG BUY";
+    signal = "STRONGLY FAVORABLE";
     color = "#22C55E";
   } else if (outperforming && strength > 12) {
-    signal = "BUY";
+    signal = "FAVORABLE";
     color = "#22C55E";
   } else if (!outperforming && strength > 20) {
-    signal = "SELL";
+    signal = "UNFAVORABLE";
     color = "#EF4444";
   }
 

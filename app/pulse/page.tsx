@@ -1040,15 +1040,15 @@ export default function MarketPulsePage() {
                           <td style={{ textAlign: 'right' }}>
                             {d.side ? (
                               <span style={{
-                                background: d.side === 'BUY' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-                                border: '1px solid ' + (d.side === 'BUY' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'),
-                                color: d.side === 'BUY' ? 'var(--green)' : 'var(--red)',
+                                background: d.side === 'ACCUMULATION' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                                border: '1px solid ' + (d.side === 'ACCUMULATION' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'),
+                                color: d.side === 'ACCUMULATION' ? 'var(--green)' : 'var(--red)',
                                 borderRadius: 6,
                                 padding: '4px 12px',
                                 fontSize: 10,
                                 fontWeight: 700
                               }}>
-                                {d.side}
+                                {d.side === 'ACCUMULATION' ? 'ACCUMULATION' : 'DISTRIBUTION'}
                               </span>
                             ) : (
                               <span style={{ color: 'var(--text-muted)', fontSize: 10, fontWeight: 700 }}>—</span>

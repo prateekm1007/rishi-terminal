@@ -39,6 +39,6 @@ export function scoreMunger(input: Stock, ctx?: ScoringContext): RishiScore {
       { label: 'Lollapalooza Effect', v: lollaS, wt: 25, detail: `ROE ${s.roe}% + ROCE ${s.roce}% convergence` },
       { label: 'Patience Filter', v: patienceS, wt: 20, detail: `Promoter ${s.promo}% commitment` },
     ],
-    insight: `ROCE ${s.roce}% · ROE ${s.roe}% · D/E ${s.de.toFixed(2)}. ${inversionS === 0 ? 'Munger would avoid — fails inversion test.' : total >= 75 ? 'Wonderful business to own forever.' : 'Too complex or mediocre.'}`
+    insight: `ROCE ${s.roce}% · ROE ${s.roe}% · D/E ${s.de.toFixed(2)}. ${inversionS === 0 ? 'Fails the inversion test — the failure modes are visible.' : total >= 75 ? 'Wonderful business to own forever.' : 'Too complex or mediocre.'}`
   };
 }

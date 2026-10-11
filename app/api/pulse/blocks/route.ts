@@ -46,10 +46,12 @@ export async function GET() {
           : null;
 
       const pchange = d.pchange ?? null;
+      // P0-6: descriptive block-deal readout vocabulary (accumulation vs
+      // distribution), never transaction advice.
       const side =
         pchange === null ? null :
-        pchange > 0 ? 'BUY' :
-        pchange < 0 ? 'SELL' : null;
+        pchange > 0 ? 'ACCUMULATION' :
+        pchange < 0 ? 'DISTRIBUTION' : null;
 
       const time = d.lastUpdateTime
         ? d.lastUpdateTime.split(' ')[1]?.slice(0, 5) ?? '--:--'

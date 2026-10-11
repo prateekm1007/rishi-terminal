@@ -39,7 +39,7 @@ export function scoreJimRogers(c: CommodityData): RishiScore {
   return {
     name: 'Jim Rogers',
     full: 'Jim Rogers',
-    label: 'Long Commodity Cycles',
+    label: 'Multi-Year Commodity Cycles',
     score: Math.round(total),
     origin: 'Commodity',
     comps: [

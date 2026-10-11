@@ -140,7 +140,7 @@ export const STRATEGY_TEMPLATES: StrategyTemplate[] = [
     name: "Short Strangle",
     category: "neutral",
     description: "Sell OTM call + OTM put. Profit from time decay in range-bound markets.",
-    rishiTag: "Chanos Short Vol",
+    rishiTag: "Volatility Decay",
     maxRisk: "undefined",
     buildLegs: (spot, ls) => {
       const atm = Math.round(spot / 100) * 100;

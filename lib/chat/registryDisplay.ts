@@ -45,7 +45,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "formula": "P/CF (25%) + Growth (25%) + Quality (20%) + Conviction (20%) + Sentiment (10%)",
     "bestFor": [
       "Growth",
-      "Long Term",
+      "Multi-Year",
       "Large Cap"
     ],
     "quote": "I am a firm believer in the India story.",
@@ -136,7 +136,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "emoji": "🔥",
     "color": "#D4AF37",
     "rank": "Master",
-    "philosophy": "Buy when there is maximum pessimism. Contrarian investing creates real alpha.",
+    "philosophy": "Maximum pessimism is where mispricing lives. Contrarian patience creates real alpha.",
     "label": "Contrarian Deep Value",
     "bio": "Finds value in beaten-down stocks others have abandoned. Specializes in turnarounds.",
     "formula": "Contrarian (30%) + Management (25%) + Undervalue (25%) + Catalyst (20%)",
@@ -189,7 +189,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "bio": "Boring, steady businesses that compound for decades. Consistency over excitement.",
     "formula": "EPS Growth (35%) + Debt-Free (30%) + Management Quality (20%) + Valuation (15%)",
     "bestFor": [
-      "Long Hold",
+      "Multi-Year Hold",
       "Boring Business",
       "Compounder"
     ],
@@ -237,7 +237,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "formula": "ROE (30%) + Economic Moat (25%) + Earnings Power (20%) + Management (15%) + Price (10%)",
     "bestFor": [
       "Quality",
-      "Long Term",
+      "Multi-Year",
       "Moat"
     ],
     "quote": "Wonderful company at fair price beats fair company at wonderful price.",
@@ -256,7 +256,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "emoji": "📚",
     "color": "#D4AF37",
     "rank": "Legend",
-    "philosophy": "Buy at a significant discount to intrinsic value. Mr. Market is your servant, not master.",
+    "philosophy": "A significant discount to intrinsic value is the entry criterion. Mr. Market is your servant, not master.",
     "label": "Deep Value",
     "bio": "Father of value investing. Margin of safety is his central concept.",
     "formula": "NCAV (40%) + P/E Below Market (25%) + Low Debt (20%) + Earnings Stability (15%)",
@@ -303,14 +303,14 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "emoji": "🦉",
     "color": "#8B5CF6",
     "rank": "Legend",
-    "philosophy": "Inversion thinking. Avoid stupidity. Multidisciplinary approach.",
+    "philosophy": "Inversion thinking. Mistake avoidance. Multidisciplinary approach.",
     "label": "Mental Models",
     "bio": "Buffett partner. Inversion, latticework of mental models, and multidisciplinary thinking.",
     "formula": "Circle of Competence (30%) + Inversion (25%) + Quality Business (25%) + Fair Price (20%)",
     "bestFor": [
       "Quality",
       "Mental Models",
-      "Long Term"
+      "Multi-Year"
     ],
     "quote": "Invert, always invert.",
     "famousPicks": [
@@ -381,7 +381,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "bestFor": [
       "Growth",
       "Quality Management",
-      "Long Term"
+      "Multi-Year"
     ],
     "quote": "The person with the right information beats the person with the right advice.",
     "famousPicks": [
@@ -398,7 +398,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "emoji": "🔄",
     "color": "#D4AF37",
     "rank": "Master",
-    "philosophy": "Buy when others are scared, sell when others are greedy. Most important thing is risk.",
+    "philosophy": "Others' fear and greed create the mispricing. The most important thing is risk.",
     "label": "Risk Cycle",
     "bio": "Oaktree Capital founder. Market cycle expert. Understanding risk is his superpower.",
     "formula": "Cycle Position (30%) + Margin of Safety (25%) + Risk Asymmetry (25%) + Sentiment (20%)",
@@ -455,7 +455,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Global",
       "Deep Value"
     ],
-    "quote": "The best time to buy is at the point of maximum pessimism.",
+    "quote": "Maximum pessimism is historically where the best entries cluster.",
     "famousPicks": [
       "Japan 1980s",
       "Various global bargains"
@@ -470,7 +470,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "emoji": "💎",
     "color": "#D4AF37",
     "rank": "Master",
-    "philosophy": "Buy cheap, diversify widely, and wait for less cheap.",
+    "philosophy": "Cheapness with wide diversification, then patience.",
     "label": "Cigar Butt",
     "bio": "Graham student. 16%+ annual returns for 45+ years. Pure statistical value investor.",
     "formula": "Price-to-Book (40%) + Zero Debt (30%) + Insider Buying (20%) + Low PE (10%)",
@@ -479,7 +479,7 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Low Risk",
       "Diversified"
     ],
-    "quote": "We buy cheap stocks and wait for them to become less cheap.",
+    "quote": "Cheap stocks, held until they become less cheap.",
     "famousPicks": [
       "Statistically cheap stocks"
     ],
@@ -493,12 +493,12 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
     "emoji": "🐻",
     "color": "#EF4444",
     "rank": "Master",
-    "philosophy": "Forensic accounting. Short overvalued. Narrative vs reality.",
-    "label": "Forensic Short Seller",
+    "philosophy": "Forensic accounting. Overvaluation focus. Narrative vs reality.",
+    "label": "Forensic Analyst",
     "bio": "Forensic accountant who built his name shorting Enron. Finds where the narrative diverges from the numbers.",
     "formula": "Overvaluation (25%) + Deteriorating Fundamentals (25%) + Accounting Red Flags (25%) + Catalyst Timing (25%)",
     "bestFor": [
-      "Short Ideas",
+      "Deterioration Reads",
       "Forensic",
       "Skepticism"
     ],

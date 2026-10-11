@@ -142,16 +142,16 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
     return dark ? "text-gray-400" : "text-gray-600";
   };
 
+  // P0-6 (round 47): badge keyed on the REAL consensus categories
+  // (lib/consensus/engine.ts categorize) — the old STRONG BUY / BUY /
+  // HOLD branches matched a vocabulary that no row has carried since the
+  // round-5 categorize rewrite (dead branches, rule 17).
   const categoryBadge = (cat: string) => {
-    if (cat === "STRONG BUY")
+    if (cat === "Legendary Compounder" || cat === "High Conviction Quality")
       return dark
         ? "bg-emerald-900/40 text-emerald-400 border-emerald-800"
         : "bg-green-100 text-green-800 border-green-300";
-    if (cat === "BUY")
-      return dark
-        ? "bg-blue-900/40 text-blue-400 border-blue-800"
-        : "bg-blue-100 text-blue-800 border-blue-300";
-    if (cat === "HOLD")
+    if (cat === "Classic Value Opportunity" || cat === "Balanced Risk-Reward")
       return dark
         ? "bg-amber-900/40 text-amber-400 border-amber-800"
         : "bg-amber-100 text-amber-800 border-amber-300";

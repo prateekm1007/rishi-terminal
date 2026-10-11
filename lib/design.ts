@@ -55,17 +55,17 @@ export const radii = {
 
 export function getScoreColors(score: number, mode: "LONG" | "SHORT") {
   if (mode === "SHORT") {
-    if (score >= 85) return { primary: colors.red,    glow: colors.redGlow,    label: "Legendary Short" };
-    if (score >= 75) return { primary: "#F97316",     glow: "rgba(249,115,22,0.2)", label: "High Conviction Short" };
-    if (score >= 65) return { primary: colors.amber,  glow: "rgba(245,158,11,0.2)", label: "Tactical Short" };
-    return { primary: colors.textMuted, glow: "transparent", label: "Dangerous Short" };
+    if (score >= 85) return { primary: colors.red,    glow: colors.redGlow,    label: "Severe Deterioration" };
+    if (score >= 75) return { primary: "#F97316",     glow: "rgba(249,115,22,0.2)", label: "Marked Deterioration" };
+    if (score >= 65) return { primary: colors.amber,  glow: "rgba(245,158,11,0.2)", label: "Early Deterioration" };
+    return { primary: colors.textMuted, glow: "transparent", label: "Critical Deterioration" };
   }
   if (score >= 90) return { primary: colors.gold,    glow: colors.goldGlow,    label: "Legendary" };
   if (score >= 80) return { primary: colors.green,   glow: colors.greenGlow,   label: "High Conviction" };
   if (score >= 70) return { primary: "#4ADE80",      glow: colors.greenGlow,   label: "Strong" };
   if (score >= 60) return { primary: colors.amber,   glow: "rgba(245,158,11,0.2)", label: "Watchlist" };
   if (score >= 50) return { primary: colors.textSecondary, glow: "transparent", label: "Neutral" };
-  return { primary: colors.red, glow: colors.redGlow, label: "Avoid" };
+  return { primary: colors.red, glow: colors.redGlow, label: "Low Conviction" };
 }
 
 export const gradients = {

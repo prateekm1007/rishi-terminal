@@ -13,7 +13,7 @@ export type ConvictionBand =
 
 export type Grade =
   | "Legendary" | "Outstanding" | "Excellent"
-  | "Good"      | "Fair"        | "Speculative" | "Avoid";
+  | "Good"      | "Fair"        | "Speculative" | "Weak";
 
 // ── Stock Metrics (Input) ─────────────────────────────────────
 
@@ -208,7 +208,27 @@ export function getGrade(score: number): Grade {
   if (score >= 60) return "Good";
   if (score >= 50) return "Fair";
   if (score >= 40) return "Speculative";
-  return "Avoid";
+  return "Weak";
+}
+
+/**
+ * Round-47 P0-6 (founder order 2026-10-11: "Remove buy, sell and advice
+ * wording from the UI"): the ONE descriptive render map for the action
+ * vocabulary. The ActionType KEYS stay (internal, stable, tested) but no
+ * surface renders them raw — `actionLabel` is the only sanctioned way to
+ * turn an action into UI text, and every label is DESCRIPTIVE of what the
+ * frameworks conclude, never imperative of what the reader should do.
+ */
+export function actionLabel(action: ActionType): string {
+  switch (action) {
+    case "STRONG_BUY": return "Strongly Favorable";
+    case "BUY": return "Favorable";
+    case "HOLD": return "Balanced";
+    case "REDUCE": return "Unfavorable";
+    case "SELL": return "Strongly Unfavorable";
+    case "STRONG_SHORT": return "Severe Deterioration";
+    case "SHORT": return "Deterioration";
+  }
 }
 
 export function getAction(score: number, mode: ScoreMode): ActionType {

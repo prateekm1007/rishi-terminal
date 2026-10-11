@@ -27,18 +27,38 @@
  *      ssr:false (the C1 bundle pattern — zero first-load JS on
  *      /stocks); the subject is the SERVER-rendered row symbol.
  *
- * The exact-surface scan itself lives in
- * test/intelligenceDashboardBrief.test.ts and GROWS to the three
- * declared surfaces in the same PR (declared, never silent).
+ * The exact-surface scan itself LIVES IN THIS FILE since the C1 brief's
+ * removal (round 45, 2026-10-11 — the founder's third removal order took
+ * the dashboard brief off the dashboard): this file pins the ONE remaining
+ * declared product surface. The scan's history: grew to the four declared
+ * surfaces across B1/C1/D2/D3; then SHRANK across the founder-ordered
+ * removals, each in its own recorded removal — the D3 dossier (→ three),
+ * the B1 stock-page panel (→ two), the C1 dashboard brief (→ ONE, this
+ * file). The pin updates; the gate never dies.
  */
 import { describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join, sep } from "node:path";
 
 const ROOT = process.cwd();
 
+/** The A10 single-caller scan's traversal, reused verbatim. */
+function walk(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir)) {
+    const p = join(dir, entry);
+    const s = statSync(p);
+    if (s.isDirectory()) walk(p, out);
+    else out.push(p);
+  }
+  return out;
+}
+
 function source(relativePath: string): string {
   return readFileSync(join(ROOT, relativePath), "utf8");
+}
+
+function rel(f: string): string {
+  return f.slice(ROOT.length + 1).split(sep).join("/");
 }
 
 const BADGE = "components/screener/IntelligenceBadge.tsx";
@@ -202,5 +222,152 @@ describe("INT-C1 dashboard brief REMOVED per founder order (2026-10-11) — the 
     // sections — the removal removed one mount, not the tail
     expect(s).toContain("TOP BUY SIGNALS");
     expect(s).toContain("<SectionHeader");
+  });
+});
+
+// INT-D3 REMOVED — the founder's product-surface removal order (round 45,
+// 2026-10-10): the stock-page "Rishi Intelligence — <SYMBOL>" dossier
+// section (the D3 mount) is REMOVED from /stock/[symbol]. Product surface
+// only — the substrate stays untouched and green: the chain, the ONE
+// /api/intelligence (capability=insight included), the cache, the A8
+// primitives, the fixture route, and the surviving declared surfaces.
+// [Amended same round: the founder then ordered the B1 stock-page surface
+// removed too — see the INT-B1 describe below; and the C1 dashboard brief
+// removed the next day (2026-10-11) — see the INT-C1 describe above.]
+//
+// Fail-first in reverse (rule 21): these absence pins were written FIRST
+// and watched FAIL on the mounted tree (the component file existed, the
+// page mounted it, the exact-surface scan saw four consumers); then the
+// removal landed; then they passed. Raw RED + GREEN: docs/evidence/round45/.
+// [Moved verbatim from the retired test/intelligenceDashboardBrief.test.ts
+// when the C1 removal retired that file — rule 23: the pins target
+// SURVIVING surfaces (the stock page), so they move rather than die.]
+describe("INT-D3 REMOVED per founder order (2026-10-10) — the absence pins", () => {
+  const PAGE = "app/stock/[symbol]/page.tsx";
+
+  it("the dossier component file is DELETED (dead code after the mount removal — rule 17)", () => {
+    expect(existsSync(join(ROOT, "components/stock/IntelligenceDossier.tsx"))).toBe(false);
+  });
+
+  it("the stock page no longer imports, mounts, or wires the dossier section", () => {
+    const s = source(PAGE);
+    expect(s).not.toContain("IntelligenceDossier");
+    // the mount's own comment block went with it
+    expect(s).not.toContain("INT-D3");
+    // positive control (B-18): the page source still carries the SURVIVING
+    // neighbors — the removal removed one mount, not the page (the B1 panel
+    // was a positive control here until the founder's second removal order
+    // took it off the page the same round; the surviving shell + council
+    // carry the control now)
+    expect(s).toContain("<StockPageClient");
+    expect(s).toContain("<RishiCouncil");
+  });
+});
+
+// INT-B1 stock-page surface REMOVED — the founder's second removal order
+// (round 45, 2026-10-10): after the D3 dossier removal the stock page STILL
+// rendered a section headed "Rishi Intelligence" (the B1 IntelligencePanel
+// mount), and the founder ordered it removed ("it s still there remove it").
+// Product surface only — the substrate stays untouched and green: the news-
+// evidence substrate (newsMatch + the deps pass feeding the chain), the
+// chain, the ONE /api/intelligence (capability=thesis included), the cache,
+// the A8 primitives, the fixture route, and the D2 badge/drawer.
+//
+// Fail-first in reverse (rule 21): these absence pins were written FIRST
+// and watched FAIL on the mounted tree (the component file existed, the
+// page mounted it, the exact-surface scan saw three consumers); then the
+// removal landed; then they passed. Raw RED + GREEN: docs/evidence/round45/.
+// [Moved verbatim from the retired test/intelligenceDashboardBrief.test.ts
+// when the C1 removal retired that file — rule 23: the pins target
+// SURVIVING surfaces (the stock page), so they move rather than die.]
+describe("INT-B1 stock-page surface REMOVED per founder order (2026-10-10) — the absence pins", () => {
+  const PAGE = "app/stock/[symbol]/page.tsx";
+
+  it("the panel component file is DELETED (dead code after the mount removal — rule 17)", () => {
+    expect(existsSync(join(ROOT, "components/stock/IntelligencePanel.tsx"))).toBe(false);
+  });
+
+  it("the stock page no longer imports, mounts, or wires the intelligence panel", () => {
+    const s = source(PAGE);
+    expect(s).not.toContain("IntelligencePanel");
+    // the mount's own comment block went with it
+    expect(s).not.toContain("INT-B1");
+    // the page consumes NO intelligence surface client-side anymore — the
+    // remaining consumer is the D2 drawer (screener), pinned by the
+    // exact-surface scan below
+    expect(s).not.toContain("/api/intelligence");
+    // positive control (B-18): the page source still carries the SURVIVING
+    // sections — the removal removed one mount, not the page
+    expect(s).toContain("<StockPageClient");
+    expect(s).toContain("<RishiCouncil");
+  });
+});
+
+describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
+  it("the set of surfaces fetching /api/intelligence is EXACTLY the one remaining declared product surface (the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; now the C1 dashboard brief, round 45, 2026-10-11: 'remove the whole Rishi Intelligence segment'; declared, never silent)", () => {
+    const files = [
+      ...walk(join(ROOT, "app")),
+      ...walk(join(ROOT, "lib")),
+      ...walk(join(ROOT, "components")),
+    ].filter((f) => f.endsWith(".ts") || f.endsWith(".tsx"));
+    const consumers = files.filter((f) =>
+      /fetch\([^)]*\/api\/intelligence/.test(readFileSync(f, "utf8")),
+    );
+    expect(consumers.map(rel).sort()).toEqual([
+      "components/screener/IntelligenceDrawer.tsx",
+    ]);
+  });
+});
+
+describe("Ask Rishi (the affordance component contract — the stock-page mount is REMOVED per founder order, 2026-10-10; the component and its contract SURVIVE with the fixture route as the mounted consumer)", () => {
+  // Moved verbatim from the retired test/intelligenceStockDossier.test.ts
+  // (the D3 mount test file retired by the founder-ordered removal — rule 23
+  // permits retirement on removal, never silent deletion; these four pins
+  // target the SURVIVING component, not the removed section, so they move
+  // rather than die). Moved again verbatim from the retired
+  // test/intelligenceDashboardBrief.test.ts when the founder's third
+  // removal order (2026-10-11) retired that file. The mount contract on
+  // /evidence-fixtures is pinned by the fixture suite; these pins keep the
+  // component honest at the source.
+  const ASKRISHI = "components/stock/AskRishi.tsx";
+
+  it("exists as a client component that fetches ONLY /api/chat", () => {
+    expect(existsSync(join(ROOT, ASKRISHI))).toBe(true);
+    const s = source(ASKRISHI);
+    expect(s).toContain("'use client'");
+    expect(s).toContain("/api/chat");
+    expect(s).not.toContain("/api/intelligence");
+  });
+
+  it("sends the bounded payload: personaId + message + insightRef + symbol — nothing else", () => {
+    const s = source(ASKRISHI);
+    expect(s).toContain("insightRef");
+    expect(s).toContain("symbol");
+    expect(s).toContain("personaId");
+    expect(s).toContain("message");
+    // no history replay, no challenge field, no system prompt construction
+    expect(s).not.toMatch(/history\s*:/);
+    expect(s).not.toContain("challenge");
+    expect(s).not.toMatch(/systemPrompt|system_prompt/);
+  });
+
+  it("renders refusals AS the refusal they are (the error text verbatim) and disables the empty submit", () => {
+    const s = source(ASKRISHI);
+    // the response's error text is rendered verbatim — never reworded
+    expect(s).toMatch(/error/);
+    // the empty-input gate
+    expect(s).toMatch(/disabled/);
+    // one-shot: no conversation state machine (no message array state)
+    expect(s).not.toMatch(/useState<.*\[\].*>/);
+  });
+
+  it("imports no intelligence module beyond types", () => {
+    const s = source(ASKRISHI);
+    const imports = s.match(/from ["'][^"']+["']/g) ?? [];
+    for (const imp of imports) {
+      if (imp.includes("lib/intelligence")) {
+        expect(imp).toContain("types");
+      }
+    }
   });
 });

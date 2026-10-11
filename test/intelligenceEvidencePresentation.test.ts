@@ -140,7 +140,6 @@ describe("INT-A8-PRES follow-up — the ONE canonical composition (rule 14)", ()
     expect(src).not.toMatch(/parseRishiInsight/);
     expect(src).not.toContain('from "zod"');
     for (const surface of [
-      "components/dashboard/DashboardBrief.tsx",
       "components/screener/IntelligenceDrawer.tsx",
     ]) {
       const s = readFileSync(surface, "utf8");
@@ -156,9 +155,9 @@ describe("INT-A8-PRES follow-up — the ONE canonical composition (rule 14)", ()
     // The surface-level phase attribute is unambiguous everywhere: the
     // nested state markers carry their own names. (The B1 stock-page panel
     // pins here were retired 2026-10-10 — the founder's second removal
-    // order took the panel off /stock/[symbol]; the surviving surfaces
-    // carry the pin.)
-    expect(readFileSync("components/dashboard/DashboardBrief.tsx", "utf8")).not.toContain('data-dashboard-brief="unavailable"');
+    // order took the panel off /stock/[symbol]; the C1 dashboard brief
+    // entry was retired 2026-10-11 — the founder's third removal order took
+    // the brief off the dashboard; the surviving surface carries the pin.)
     expect(readFileSync("components/screener/IntelligenceDrawer.tsx", "utf8")).not.toMatch(/data-intelligence-drawer="(unavailable|ready)"/);
     expect(readFileSync("components/screener/IntelligenceDrawer.tsx", "utf8")).toContain('data-intelligence-drawer-state="ready"');
   });

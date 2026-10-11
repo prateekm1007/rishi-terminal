@@ -1,5 +1,12 @@
 # C1 Dashboard Brief — the dashboard mounts the ONE surface (pre-registration)
 
+> **SUPERSEDED 2026-10-11 (rule 30):** the product surface this pre-registration
+> describes was REMOVED from the dashboard by the founder's explicit order (round 45,
+> third removal order — "remove the whole Rishi Intelligence segment", after the D3
+> dossier and B1 panel removals) — the removal record, the revert range, and the
+> substrate-intact verification live in `docs/evidence/round45/c1-removal.md`.
+> The amendment below and the text after it are historical, preserved verbatim.
+
 > **Amended 2026-10-10 (rule 30):** the B1 stock-page panel cited below as the
 > surviving first surface was REMOVED from `/stock/[symbol]` by the founder's
 > explicit order (round 45, after the D3 dossier removal) — see

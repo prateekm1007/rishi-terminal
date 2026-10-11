@@ -1,0 +1,29 @@
+# GREEN battery on the C1 removal tree — trimmed to exit codes + key lines
+== tsc ==
+TSC_EXIT=0
+== lint ==
+
+LINT_EXIT=0
+== isr ==
+ISR manifest gate: PASS — / initialRevalidateSeconds=60s, /stock/[symbol] template present, 896 baked stock routes (cap 60s)
+ISR_EXIT=0
+== bundle ==
+Ratchet: fails on increase beyond +2 kB, and the 200 kB hard budget stays fatal alongside it (C3, founder Round 16).
+BUNDLE_EXIT=0
+== aiLoop ==
+AILOOP_EXIT=0
+== route ==
+ROUTE_EXIT=0
+== encoding ==
+ENC_EXIT=0
+== stocks ==
+STOCKS_EXIT=0
+== parity ==
+PARITY_EXIT=0
+== vitest ==
+ Test Files  198 passed (198)
+      Tests  2201 passed (2201)
+== env ==
+.env.example
+== branch ==
+branch-check: PASS (fix/c1-brief-removal) — 1 token(s) [C1-BRIEF-REMOVAL], 1 commit(s) audited against f7dd4dbb7967

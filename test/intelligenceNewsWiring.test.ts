@@ -163,4 +163,6 @@ describe("INT-B1 no-second-path pins (static source scans)", () => {
 // green. Removal record + revert range: docs/evidence/round45/b1-removal.md.
 // The rendered-page absence pins for the removal live in
 // test/smoke/b1-panel-removed.spec.ts + the INT-B1 describe in
-// test/intelligenceDashboardBrief.test.ts.
+// test/intelligenceScreenerDrawer.test.ts (the describe moved there when
+// the founder's third removal order — the C1 dashboard brief, 2026-10-11 —
+// retired test/intelligenceDashboardBrief.test.ts).

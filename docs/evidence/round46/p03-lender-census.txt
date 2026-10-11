@@ -1,0 +1,5 @@
+stdout | test/p03.measure.evidence.test.ts > P0-3 evidence measurement > measures the newly-refused lender rows for Nemish
+lender rows: 84
+nemish nulls now: 296
+newly refused by the gate (no placeholder pillar): 48
+by sector: {"NBFC":31,"Finance":5,"Banking":12}

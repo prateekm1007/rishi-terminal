@@ -152,11 +152,12 @@ describe("X6 — engine-level contract (every entry path agrees)", () => {
     }
   });
 
-  it("the seed universe pins the honest null count: 248 of 896 stocks have a placeholder zero in a Nemish pillar", () => {
+  it("the seed universe pins the honest null count: 296 of 896 stocks refuse a Nemish verdict", () => {
     // Pinning the exact count: it may only change when the SEED changes
-    // (a deliberate, reviewed act) or the pillar set changes — never
-    // silently. Measured on main @ 0a56ad1: epscagr=0 (19) ∪ de=0 (145)
-    // ∪ promo=0 (66) ∪ pe=0 (73) = 259 of 916. G5 (round 23) merged ten
+    // (a deliberate, reviewed act), the pillar set changes, or a refusal
+    // contract changes — never silently. Measured on main @ 0a56ad1:
+    // epscagr=0 (19) ∪ de=0 (145) ∪ promo=0 (66) ∪ pe=0 (73) = 259 of
+    // 916. G5 (round 23) merged ten
     // duplicate rows out of the registry (916 -> 906); five of the removed
     // bogus rows carried a placeholder zero in a Nemish pillar, so the
     // honest null count moved 259 -> 254. G5 round-24 merged ten relic
@@ -164,10 +165,14 @@ describe("X6 — engine-level contract (every entry path agrees)", () => {
     // carried a placeholder zero (GMRINFRA pe, IIFLWAM de, JSWISPL pe,
     // MAGMA pe/promo/epscagr, MCXINDIA promo, TV18BRDCST pe), so the
     // honest null count moved 254 -> 248. Re-measured on the relic tree:
-    // 248 nulls of 896 rows.
+    // 248 nulls of 896 rows. P0-3 (founder audit 2026-10-11, "banks must
+    // not be scored on D/E/OPM/FCF/P-NCAV/current-ratio") moved it 248 ->
+    // 296: the 48 lender rows (Banking/NBFC/Finance) whose D/E was an
+    // observed seed value with no placeholder pillar now refuse on the
+    // sector gate — D/E does not exist for their balance sheets.
     const all = Object.values(STOCKS);
     const nulls = all.filter((s) => scoreNemish(s).score === null).length;
-    expect(nulls).toBe(248);
+    expect(nulls).toBe(296);
     expect(all.length).toBe(896);
   });
 

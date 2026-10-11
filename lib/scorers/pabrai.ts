@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, noVerdictScore, observed, sectorRefusal, unknownAmong } from './verdictGuards';
 
 /**
  * W4 (founder round-10) saturation fix: every component was a STEP
@@ -27,6 +27,12 @@ import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from 
  *   - Uncertainty discount: 100 at P/E 10 → 0 at 40 (was flat 100 <= 20)
  */
 export function scorePabrai(input: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-3 (founder audit 2026-10-11): THE SECTOR GATE — a lender row is
+  // never scored on the metrics its sector does not have (D/E, OPM,
+  // FCF, P/NCAV, current ratio); Greenblatt refuses lenders entirely.
+  const p03Refusal = sectorRefusal(input, "Pabrai");
+  if (p03Refusal) return p03Refusal;
+
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
   const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Pabrai"].required, ctx);

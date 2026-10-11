@@ -1,0 +1,12 @@
+PASS | deploy: /api/version == merge SHA | 791c7b6db7c2d144b2134e6fbf4d53601bbd8fd2
+PASS | SBIN flight: Greenblatt lender-formula refusal present
+PASS | SBIN flight: Buffett OPM inapplicability refusal present
+PASS | SBIN flight: Lynch FCF inapplicability refusal present
+PASS | SBIN flight: Graham refusal switched to the sector reason
+PASS | SBIN flight: the pre-fix EY/ROC insight ABSENT
+PASS | RELIANCE flight: Greenblatt EY/ROC insight still present (non-lender positive control)
+PASS | RELIANCE SSR: honest NO VERDICT record present
+PASS | SBIN SSR: honest NO VERDICT record present
+PASS | /stocks 200 | 200
+
+TOTAL: 10 legs | PASS 10 | FAIL 0

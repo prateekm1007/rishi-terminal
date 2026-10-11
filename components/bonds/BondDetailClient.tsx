@@ -4,6 +4,7 @@ import type { Bond } from '../../data/bonds';
 import { usePrice } from '../../hooks/useLivePrices';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
 import type { UniversalAsset } from '../../lib/types/asset';
+import { dataQualityFromAssetInputs, verdictsAllowed } from '../../lib/dataQuality';
 
 function scoreColor(v: number) {
   return v >= 75 ? '#22C55E' : v >= 55 ? '#D4AF37' : '#EF4444';
@@ -74,6 +75,19 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
   const overall = Math.round(
     (durationScore + creditScore + spreadScore) / 3
   );
+
+  // P0-5 (round 47, founder order: every surface calls the ONE verdict
+  // gate): the bond-rishi heuristic scores read duration, credit and
+  // spread from the STATIC bond registry (data/bonds.ts); a live price
+  // observation cannot make the verdict inputs live. Mixed provenance
+  // rolls up to "seed" — no verdict until live-sourced inputs land.
+  const bondQuality = dataQualityFromAssetInputs({
+    price: { source: hasLivePrice ? 'live' : 'reference', value: displayPrice },
+    duration: { source: 'reference', value: bond.duration },
+    ytm: { source: 'reference', value: bond.ytm },
+    spread: { source: 'reference', value: bond.spread ?? null },
+  });
+  const verdictsAllowedHere = verdictsAllowed(bondQuality);
 
   const bondRishis = [
     {
@@ -237,10 +251,15 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
           <div style={{
             fontSize:32,
             fontWeight:700,
-            color:scoreColor(overall)
+            color: verdictsAllowedHere ? scoreColor(overall) : '#94A3B8'
           }}>
-            {overall}
+            {verdictsAllowedHere ? overall : '—'}
           </div>
+          {!verdictsAllowedHere && (
+            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>
+              No Verdict — the duration, credit and spread inputs are static reference data.
+            </div>
+          )}
         </div>
       </div>
     
@@ -304,10 +323,14 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
                   <div style={{ fontSize: 16, fontWeight: 700 }}>{r.name}</div>
                   <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{r.tag}</div>
                 </div>
-                <div style={{ fontSize: 26, fontWeight: 700, color: scoreColor(r.score) }}>{r.score}</div>
+                <div style={{ fontSize: 26, fontWeight: 700, color: verdictsAllowedHere ? scoreColor(r.score) : '#94A3B8' }}>{verdictsAllowedHere ? r.score : '—'}</div>
               </div>
-              <div style={{ marginTop: 10, fontSize: 11, color: scoreColor(r.score), fontWeight: 700, letterSpacing: 0.6 }}>{r.signal}</div>
-              <div style={{ marginTop: 8, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>{r.thesis}</div>
+              <div style={{ marginTop: 10, fontSize: 11, color: verdictsAllowedHere ? scoreColor(r.score) : '#94A3B8', fontWeight: 700, letterSpacing: 0.6 }}>{verdictsAllowedHere ? r.signal : 'NO VERDICT — SEED DATA'}</div>
+              <div style={{ marginTop: 8, fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                {verdictsAllowedHere
+                  ? r.thesis
+                  : 'No verdict — this framework reads duration, credit and spread from the static reference registry. Verdicts return when live-sourced bond inputs land.'}
+              </div>
             </div>
           ))}
         </div>

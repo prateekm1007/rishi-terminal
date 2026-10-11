@@ -31,7 +31,7 @@ the live evidence. Phase 0 is NOT fully closed.
 
 | Task | Status | Evidence / notes |
 |---|---|---|
-| D1-01 Vendor and licence decision | 🚫 FD-1 | **BLOCKED: FD-1** — vendor/licensing/budget is the founder's irreversible call (rule 31 / C10); the coder must not select a vendor coder-side. Founder task. Blocks D1-04/D1-05 (and D1-08's secondary source). |
+| D1-01 Vendor and licence decision | 🟡 (moved 2026-10-11) | **FD-1 MOVED (founder licensing research + directive 2026-10-11):** the free-official route is DECIDED — NSE archives (EQUITY_L.csv ticker master; EOD prices after the terms check, one request/day), RBI DBIE macro, filings/IR company facts for the Nifty 100 launch universe (`docs/DATA_SOURCES.md` §6). Price-based scores are own-use-only until NSE answers in writing (the price-license gate, PR #349). Two enquiries drafted for the founder to send (NSE Data & Analytics: EOD display, non-display licence for valuation ratios, costs; Angel One: public display of the SmartAPI feed, exchange licence). STAYS 🟡 until the written answers arrive and a paid vendor decision (if any) is taken — display rights are the founder's irreversible call (rule 31). Blocks D1-04/D1-05 (and D1-08's secondary source). |
 | D1-02 ISIN-keyed security master ★ | 🟡 (was ✅ — round 4 found binding defects) | **Q3:** direct symbol matches trusted symbol equality; the auditor found 5 wrong-company bindings and 12 renames; the implemented gate found 4 more wrong bindings (KALYANI, SUNDARAM, SUVEN, VSTL). Remediation (PR #28, applied live): name-agreement gate (`lib/db/nameAgreement.ts`), migration 014 (`NAME_MISMATCH`), `name_overrides.json` with 55 sourced decisions, 8 seed records removed (944→936), 4 seed names updated, CI `D1-02.7` + validator V5–V7; validator V1–V7 all PASS against live. Stays 🟡 until the auditor re-verifies. |
 | D1-03 Corporate actions + adjusted prices | ⬜ | Depends D1-02 (remediation in review, 🟡) — but real action *data* needs the vendor (D1-01). Schema+adjustment math can start. |
 | D1-04 Price ingestion (EOD) ★ | 🚫 FD-1 | Vendor adapter. |
@@ -39,7 +39,7 @@ the live evidence. Phase 0 is NOT fully closed.
 | D1-06 Shareholding ingestion | ⬜ | Depends D1-05. |
 | D1-07 Validation rules + quarantine | ⬜ | Rules engine is vendor-independent; can start against D1-05's schema. |
 | D1-08 Reconciliation vs second source | ⬜ | Needs D1-04+D1-05 data. |
-| D1-09 Universe: Nifty 500 done properly ★ | ⬜ | Depends D1-02 (🟡, remediation in review) + D1-04/05/07/08. |
+| D1-09 Universe: Nifty 500 done properly ★ | 🟡 | **Launch universe DECIDED 2026-10-11 (founder-delegated): NIFTY 100** — `docs/DATA_SOURCES.md` §6 (rationale: the largest manually-maintainable set for filings/IR facts with source+date per value; 50 too thin for the council; 500 stays the end state). Rebuild base: NSE EQUITY_L.csv. Depends D1-02 (🟡) + the data routing above. |
 | D1-10 Freshness SLOs + alerting | 🟡 | Probe + health `degraded` semantics live (N8); UI stale banners live (N3). Alerting + SLO docs remain (E6-06 overlap). |
 | D1-11 Retire placeholder seed from user paths | ⬜ | Depends D1-09. |
 | D1-12 Thirty-day unattended run ★ (G-A exit) | ⬜ | Wall-clock; starts when D1-04/D1-05 run. First scheduled cron slot since the production project went fresh: 2026-10-01 13:30 UTC. |

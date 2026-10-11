@@ -357,3 +357,43 @@ structured answer over the batched observations (multi-symbol asks never
 take the deterministic singleton surface). Measured driver: serial
 per-symbol tool requests each cost a full provider completion
 (`docs/evidence/round25/g7-fastpath-corroboration.md`).
+
+---
+
+## 6. The launch-universe decision (delegated, decided 2026-10-11)
+
+The founder delegated the launch-universe and data-routing decision to the
+coder (recorded in the round-46/47 founder replies); the founder's
+licensing message 2026-10-11 sets the zero-cost plan this decision
+implements. This section is the decision record.
+
+**Decision: the launch universe is the NIFTY 100.** Rationale: the
+founder's plan names it as the example universe; 100 rows is the largest
+set whose company facts can be filled manually from public filings and
+investor-relations pages with a stored source URL and date per value (the
+founder's own constraint: "manual at first, but it's clean"); the Nifty 50
+is too thin a base for a 20-framework council and dispersion metrics; the
+Nifty 500 (D1-09's end state) stays the later goal once ingestion is
+automated. Real-time is NOT required for council scores, quarterly
+tripwires or the daily brief — end-of-day suffices (founder's plan).
+
+**Routing per data family (until the written answers arrive):**
+
+| Family | Source | Status |
+|---|---|---|
+| Ticker master | NSE archives equity list (EQUITY_L.csv) — canonical NSE symbols, ISIN-keyed security master (D1-02) preserved | DECIDED; first fetch founder-side (sandbox cannot reach nsearchives: 403) |
+| EOD prices | NSE archives price files — AFTER the website-terms check, one request/day | DECIDED, gated on the terms check + the NSE enquiry answer |
+| Company facts | Public filings + company IR pages, manual, source URL + date stored per value | DECIDED (the founder's manual-first plan) |
+| Macro (10Y yield) | RBI DBIE — ONE official G-sec 10-year redemption-yield series, its date recorded with every value | DECIDED; series pick recorded on first successful fetch (sandbox probe: 418) |
+| News | RBI / SEBI publications, exchange announcements (primary sources first) | DECIDED |
+| Crypto / FX / commodities | Unchanged (CoinGecko / ExchangeRate-API / ECB reference rows in the provider matrix) | unchanged |
+
+**Every value carries source + date** (the founder's plan: "label every
+value with its source and date"). No "real-time", "live", or "intraday"
+claim is made anywhere for this data.
+
+**Price-based scores remain own-use only** until NSE's written answer
+arrives — enforced mechanically by the price-license gate
+(`lib/licensing.ts`, PR #349). The two enquiries (NSE Data & Analytics;
+Angel One) are drafted for the founder to send
+(`docs/DATA_PROVIDER_MATRIX.md`, "The 2026-10-11 licensing review").

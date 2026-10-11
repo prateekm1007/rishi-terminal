@@ -1,6 +1,6 @@
 # Seth Klarman — Asymmetric Safety (Seth Klarman)
 
-Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/sethklarman.ts`
+Tier: **Master** · consensus weight: **2.0**
 
 Downside first, then asymmetric upside: protection of capital before the
 size of the payoff.

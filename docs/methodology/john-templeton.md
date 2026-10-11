@@ -1,6 +1,6 @@
 # John Templeton — Maximum Pessimism (John Templeton)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/templeton.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 Buy at the point of maximum pessimism: distress multiples, book discounts,
 quality, and small size.

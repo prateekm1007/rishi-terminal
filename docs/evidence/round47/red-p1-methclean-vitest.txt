@@ -1,0 +1,380 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/methodologyClean.zero.test.ts (10 tests | 5 failed) 29ms
+   ❯ P1 — methodology pages clean (public render honesty) (10)
+     × the parser joins multi-line list items (the truncated-sentence root cause) 8ms
+     ✓ a continuation after a closed list starts a NEW paragraph (not the old item) 1ms
+     × no internal roadmap/audit IDs remain in the PUBLIC docs 2ms
+     × no repo file paths remain in the public docs 3ms
+     × the [scorer] page renders no build metadata (sections-count footer, source path) 7ms
+     × the index page renders no build-time metadata line and lists only servable docs 3ms
+     ✓ self-canonical on each methodology page (index + scorer detail) 1ms
+     ✓ positive controls: every scorer doc keeps its six required sections (B-18) 2ms
+     ✓ the multi-line bullet on greenblatt renders whole (the production defect) 1ms
+     ✓ the patterns bite (embedded pre-fix defects must match — C5) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/methodologyClean.zero.test.ts > P1 — methodology pages clean (public render honesty) > the parser joins multi-line list items (the truncated-sentence root cause)
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "**First bullet:** its continuation line joins the same item, never a later paragraph.",
++   "**First bullet:** its continuation line",
+    "Second bullet.",
+  ]
+
+ ❯ test/methodologyClean.zero.test.ts:64:47
+     62|     const ul = blocks.find((b) => b.type === "ul");
+     63|     expect(ul).toBeDefined();
+     64|     expect((ul as { items: string[] }).items).toEqual([
+       |                                               ^
+     65|       "**First bullet:** its continuation line joins the same item, ne…
+     66|       "Second bullet.",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/methodologyClean.zero.test.ts > P1 — methodology pages clean (public render honesty) > no internal roadmap/audit IDs remain in the PUBLIC docs
+AssertionError: expected [ 'buffett.md: S2-05', …(21) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "buffett.md: S2-05",
++   "buffett.md: FD-1",
++   "damani.md: T11",
++   "dispersion.md: T11",
++   "greenblatt.md: scorerHealth",
++   "greenblatt.md: Y4",
++   "greenblatt.md: FD-1",
++   "howard-marks.md: FD-1",
++   "kacholia.md: X6",
++   "kacholia.md: FD-1",
++   "kedia.md: X6",
++   "lynch.md: FD-1",
++   "munger.md: X6",
++   "munger.md: FD-1",
++   "nemish.md: X6",
++   "nemish.md: X6",
++   "nemish.md: T11",
++   "nemish.md: G5",
++   "nemish.md: FD-1",
++   "philip-fisher.md: FD-1",
++   "raamdeo.md: S2-05",
++   "raamdeo.md: S2-05",
++ ]
+
+ ❯ test/methodologyClean.zero.test.ts:97:18
+     95|       }
+     96|     }
+     97|     expect(hits).toEqual([]);
+       |                  ^
+     98|   });
+     99|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/methodologyClean.zero.test.ts > P1 — methodology pages clean (public render honesty) > no repo file paths remain in the public docs
+AssertionError: expected [ …(48) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "basant.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/basant.ts`",
++   "basant.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/basant.ts`",
++   "buffett.md:3: Tier: **Legend** · consensus weight: **3.0** · code: `lib/scorers/buffett.ts`",
++   "buffett.md:3: Tier: **Legend** · consensus weight: **3.0** · code: `lib/scorers/buffett.ts`",
++   "damani.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/damani.ts`",
++   "damani.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/damani.ts`",
++   "dispersion.md:11: (`lib/consensus/orchestrator.ts`). Null verdicts — \"insufficient data\"",
++   "dispersion.md:11: (`lib/consensus/orchestrator.ts`). Null verdicts — \"insufficient data\"",
++   "dispersion.md:15: **Normative source:** `lib/consensus/dispersion.ts` (pure function);",
++   "dispersion.md:15: **Normative source:** `lib/consensus/dispersion.ts` (pure function);",
++   "dispersion.md:47: `test/consensus.dispersion.test.ts`: unanimous → 0; adding spread raises",
++   "dispersion.md:47: `test/consensus.dispersion.test.ts`: unanimous → 0; adding spread raises",
++   "graham.md:3: Tier: **Legend** · consensus weight: **2.5** · code: `lib/scorers/graham.ts`",
++   "graham.md:3: Tier: **Legend** · consensus weight: **2.5** · code: `lib/scorers/graham.ts`",
++   "greenblatt.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/greenblatt",
++   "greenblatt.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/greenblatt",
++   "howard-marks.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/howardmarks.ts",
++   "howard-marks.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/howardmarks.ts",
++   "jhunjhunwala.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/jhunjhunwala.t",
++   "jhunjhunwala.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/jhunjhunwala.t",
++   "john-templeton.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/templeton.",
++   "john-templeton.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/templeton.",
++   "kacholia.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/kacholia.t",
++   "kacholia.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/kacholia.t",
++   "kedia.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/kedia.ts`",
++   "kedia.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/kedia.ts`",
++   "lynch.md:3: Tier: **Legend** · consensus weight: **2.5** · code: `lib/scorers/lynch.ts`",
++   "lynch.md:3: Tier: **Legend** · consensus weight: **2.5** · code: `lib/scorers/lynch.ts`",
++   "munger.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/munger.ts`",
++   "munger.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/munger.ts`",
++   "nemish.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/nemish.ts`",
++   "nemish.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/nemish.ts`",
++   "pabrai.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/pabrai.ts`",
++   "pabrai.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/pabrai.ts`",
++   "pabrai.md:42: boundaries pinned by test/scorerBoundaries.test.ts.",
++   "pabrai.md:42: boundaries pinned by test/scorerBoundaries.test.ts.",
++   "philip-fisher.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/philipfish",
++   "philip-fisher.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/philipfish",
++   "porinju.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/porinju.ts",
++   "porinju.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/porinju.ts",
++   "raamdeo.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/raamdeo.ts",
++   "raamdeo.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/raamdeo.ts",
++   "seth-klarman.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/sethklarman.ts",
++   "seth-klarman.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/sethklarman.ts",
++   "soros.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/soros.ts`",
++   "soros.md:3: Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/soros.ts`",
++   "walter-schloss.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/schloss.ts",
++   "walter-schloss.md:3: Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/schloss.ts",
++ ]
+
+ ❯ test/methodologyClean.zero.test.ts:112:18
+    110|       }
+    111|     }
+    112|     expect(hits).toEqual([]);
+       |                  ^
+    113|   });
+    114|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/methodologyClean.zero.test.ts > P1 — methodology pages clean (public render honesty) > the [scorer] page renders no build metadata (sections-count footer, source path)
+AssertionError: expected 'import type { Metadata } from \'next\…' not to contain 'required sections present'
+
+- Expected
++ Received
+
+- required sections present
++ import type { Metadata } from 'next';
++ import Link from 'next/link';
++ import { notFound } from 'next/navigation';
++
++ import { listMethodologyDocs, getMethodologyDoc, METHODOLOGY_REQUIRED_HEADINGS } from '@/lib/methodology';
++ import { parseInline } from '@/lib/methodology/markdown';
++ import { SITE_URL } from "@/lib/seo/site";
++
++ export const revalidate = 3600;
++
++ interface Props {
++   params: Promise<{ scorer: string }>;
++ }
++
++ export async function generateStaticParams() {
++   const docs = await listMethodologyDocs();
++   return docs.map((d) => ({ scorer: d.slug }));
++ }
++
++ export async function generateMetadata({ params }: Props): Promise<Metadata> {
++   const { scorer } = await params;
++   const doc = await getMethodologyDoc(scorer);
++   const canonicalUrl = `${SITE_URL}/methodology/${scorer}`;
++   const title = doc ? `${doc.title} | Rishi Terminal Methodology` : 'Methodology | Rishi Terminal';
++   const description = doc
++     ? `${doc.title} — the inputs, formula, thresholds and known failure modes of the Rishi score.`
++     : 'How every Rishi score is computed.';
++   return {
++     title,
++     description,
++     alternates: { canonical: canonicalUrl },
++     openGraph: { title, description, url: canonicalUrl, type: 'article' },
++   };
++ }
++
++ function Inline({ text }: { text: string }) {
++   return (
++     <>
++       {parseInline(text).map((span, i) =>
++         span.kind === 'strong' ? (
++           <strong key={i}>{span.text}</strong>
++         ) : span.kind === 'code' ? (
++           <code key={i} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.92em', color: 'var(--accent-gold)' }}>
++             {span.text}
++           </code>
++         ) : (
++           <span key={i}>{span.text}</span>
++         ),
++       )}
++     </>
++   );
++ }
++
++ export default async function MethodologyDocPage({ params }: Props) {
++   const { scorer } = await params;
++   const doc = await getMethodologyDoc(scorer);
++   if (!doc) notFound();
++
++   const covered = METHODOLOGY_REQUIRED_HEADINGS.filter((h) => doc.headings.includes(h));
++
++   return (
++     <main className="page-bg">
++       <div className="page-content page-header" style={{ maxWidth: 860, margin: '0 auto', paddingBottom: 64 }}>
++         <Link href="/methodology" className="back-link">← All methodology</Link>
++         <div className="card-unified" style={{ padding: 28, marginTop: 20 }}>
++           {doc.blocks.map((block, i) => {
++             if (block.type === 'h1') {
++               return (
++                 <h1 key={i} style={{ fontSize: 22, color: 'var(--accent-gold)', marginBottom: 8 }}>{block.text}</h1>
++               );
++             }
++             if (block.type === 'h2') {
++               return (
++                 <h2 key={i} style={{ fontSize: 16, color: 'var(--accent-gold)', margin: '22px 0 8px' }}>{block.text}</h2>
++               );
++             }
++             if (block.type === 'h3') {
++               return (
++                 <h3 key={i} style={{ fontSize: 14, color: 'var(--text-primary)', margin: '16px 0 6px' }}>{block.text}</h3>
++               );
++             }
++             if (block.type === 'ul') {
++               return (
++                 <ul key={i} style={{ margin: '8px 0', paddingLeft: 20, listStyle: 'disc' }}>
++                   {block.items.map((item, j) => (
++                     <li key={j} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
++                       <Inline text={item} />
++                     </li>
++                   ))}
++                 </ul>
++               );
++             }
++             if (block.type === 'code') {
++               return (
++                 <pre
++                   key={i}
++                   style={{
++                     background: 'rgba(0,0,0,0.35)',
++                     border: '1px solid rgba(255,255,255,0.08)',
++                     borderRadius: 8,
++                     padding: 12,
++                     overflowX: 'auto',
++                     fontSize: 12,
++                     lineHeight: 1.6,
++                     color: 'var(--text-secondary)',
++                     fontFamily: 'var(--font-mono)',
++                   }}
++                 >
++                   {block.text}
++                 </pre>
++               );
++             }
++             return (
++               <p key={i} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: '8px 0' }}>
++                 <Inline text={block.text} />
++               </p>
++             );
++           })}
++         </div>
++
++         <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 14, fontFamily: 'var(--font-mono)' }}>
++           required sections present: {covered.length}/{METHODOLOGY_REQUIRED_HEADINGS.length}
++           {covered.length === METHODOLOGY_REQUIRED_HEADINGS.length ? ' ✓' : ''} · source: docs/methodology/{doc.slug}.md
++         </p>
++       </div>
++     </main>
++   );
++ }
++
+
+ ❯ test/methodologyClean.zero.test.ts:121:22
+    119|       .filter((l) => !l.trim().startsWith("//") && !l.trim().startsWit…
+    120|       .join("\n");
+    121|     expect(code).not.toContain("required sections present");
+       |                      ^
+    122|     expect(code).not.toContain("source: docs/methodology");
+    123|     expect(code).not.toContain("METHODOLOGY_REQUIRED_HEADINGS");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/methodologyClean.zero.test.ts > P1 — methodology pages clean (public render honesty) > the index page renders no build-time metadata line and lists only servable docs
+AssertionError: expected 'import Link from \'next/link\';\n\nim…' not to contain 'generated from the repository at buil…'
+
+- Expected
++ Received
+
+- generated from the repository at build time
++ import Link from 'next/link';
++
++ import { listMethodologyDocs } from '@/lib/methodology';
++ import { routeMetadata } from "@/lib/seo/routeMetadata";
++
++ export const metadata = routeMetadata({
++   path: "/methodology",
++   title: "Methodology | Rishi Terminal",
++   description: "How every Rishi score is computed: inputs, formulas, thresholds, rationale, failure modes and non-applicable sectors.",
++ });
++
++ export default async function MethodologyPage() {
++   const docs = await listMethodologyDocs();
++
++   return (
++     <main className="page-bg">
++       <div className="page-content page-header" style={{ maxWidth: 860, margin: '0 auto', paddingBottom: 64 }}>
++         <Link href="/" className="back-link">← Back to Rishi Terminal</Link>
++         <h1 className="page-title" style={{ color: 'var(--accent-gold)' }}>Methodology</h1>
++         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginTop: 12 }}>
++           What each Rishi score actually computes: the inputs, the formula, the thresholds, the rationale,
++           the known failure modes, and the sectors where the framework does not apply. These documents
++           describe what the code does — the panel is an educational simulation inspired by well-known
++           investors, not the real people, and not investment advice.
++         </p>
++
++         <div className="card-unified" style={{ padding: 20, marginTop: 24 }}>
++           {docs.map((doc) => (
++             <Link
++               key={doc.slug}
++               href={`/methodology/${doc.slug}`}
++               style={{
++                 display: 'flex',
++                 justifyContent: 'space-between',
++                 alignItems: 'baseline',
++                 gap: 12,
++                 padding: '10px 8px',
++                 borderBottom: '1px solid rgba(255,255,255,0.06)',
++                 textDecoration: 'none',
++               }}
++             >
++               <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{doc.title}</span>
++
++             </Link>
++           ))}
++         </div>
++
++         <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 16 }}>
++           {docs.length} documents · generated from the repository at build time.
++         </p>
++       </div>
++     </main>
++   );
++ }
++
+
+ ❯ test/methodologyClean.zero.test.ts:134:22
+    132|       .filter((l) => !l.trim().startsWith("//") && !l.trim().startsWit…
+    133|       .join("\n");
+    134|     expect(code).not.toContain("generated from the repository at build…
+       |                      ^
+    135|     // the loader must exclude the internal README (contributor doc, n…
+    136|     // public page — its slug also fails the [scorer] route's lowercase
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 5 passed (10)
+   Start at  11:23:26
+   Duration  250ms (transform 49%, tests 33%, import 8%, setup 7%, worker 4%)
+
+EXIT=1

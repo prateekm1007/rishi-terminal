@@ -1,9 +1,9 @@
 # Nemish Shah — Steady Compounder (Nemish Shah)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/nemish.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 The steady compounder: consistent EPS, no debt, honest management stakes,
-and a sane multiple. The first scorer with the FULL X6 provenance contract.
+and a sane multiple.
 
 ## Inputs
 
@@ -38,12 +38,11 @@ observation of a downturn, not missing data).
 
 ## Known failure modes
 
-- **Provenance-aware insufficiency (X6):** a seed-placeholder zero in any
-  pillar input (EPS growth / D/E / promoter) makes that pillar insufficient
-  and a four-pillar verdict with a missing pillar is NULL (T11 semantics).
-  On the current seed this nulls 259 of 916 verdicts — including every bank
-  D/E placeholder. A LIVE-sourced zero is a real observation (G5: a
-  genuinely debt-free D/E = 0, a stagnant EPS CAGR = 0) and scores.
+- **Missing inputs yield no verdict:** a placeholder (unobserved) value in
+  any pillar input (EPS growth / D/E / promoter) nulls the whole verdict —
+  including every bank D/E placeholder on the current sample data. A
+  live-sourced zero is a real observation (a genuinely debt-free D/E = 0,
+  a stagnant EPS CAGR = 0) and scores.
 - **P/E ≤ 0 is always insufficient** regardless of provenance: a live P/E
   must be strictly positive to be admissible (0/negative is the provider
   sentinel for "no meaningful earnings"). No input set makes a zero P/E a
@@ -51,5 +50,5 @@ observation of a downturn, not missing data).
 
 ## Sectors where it does not apply
 
-Banks on the placeholder seed (D/E placeholders null the verdict — honest
-but empty until FD-1 lands real fundamentals).
+Banks on the placeholder dataset (D/E placeholders null the verdict —
+honest but empty until real fundamentals arrive).

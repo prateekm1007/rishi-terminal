@@ -1,6 +1,6 @@
 # Pabrai — Dhandho Cloner (Mohnish Pabrai)
 
-Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/pabrai.ts`
+Tier: **Master** · consensus weight: **2.0**
 
 Cloning with owner alignment, low risk, and an uncertainty discount.
 
@@ -37,9 +37,9 @@ prices "low risk" claims that fail to produce cash.
 
 ## Known failure modes
 
-- W4 re-rated the ramps from binary thresholds to graded quantiles (the
-  original flat-100 zones compressed 35.6% of the universe at ≥ 95);
-  boundaries pinned by test/scorerBoundaries.test.ts.
+- The ramps are graded quantiles rather than binary thresholds (at the
+  re-rate, the original flat-100 zones had compressed 35.6% of the
+  then-universe at ≥ 95); the boundaries are pinned by tests.
 - Promoter holdings change with pledges/QIPs; the seed's static values age.
 
 ## Sectors where it does not apply

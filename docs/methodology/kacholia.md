@@ -1,6 +1,6 @@
 # Ashish Kacholia — Whale Small-Cap Hunter (Ashish Kacholia)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/kacholia.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 Small-cap conviction: promoter skin, accelerating earnings, niche dominance,
 and the right size band.
@@ -42,9 +42,8 @@ growth.
 
 ## Known failure modes
 
-- EPS-CAGR placeholders on the seed flow straight into the acceleration
-  pillar (the X6 provenance contract nulls the verdict only where Nemish
-  consumes them; here the seed value is consumed as-is — revisit under FD-1).
+- Unobserved EPS-CAGR values null the verdict rather than flowing into the
+  acceleration pillar — a missing growth rate is never read as a flat one.
 - The 200-3000 Cr band is calibrated to the seed's small-cap regime.
 
 ## Sectors where it does not apply

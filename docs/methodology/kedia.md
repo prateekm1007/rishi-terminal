@@ -1,6 +1,6 @@
 # Vijay Kedia — SMILE Formula (Vijay Kedia)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/kedia.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 Small, manageable debt, innovative margins, emerging growth — with a
 deliberate 20% neutral reserve.
@@ -42,8 +42,8 @@ only some legs are knowable. The framework is a screen, not a valuation.
 
 - The 5000 Cr cap is seed-regime dependent; inflation of the index moves
   the whole band's meaning.
-- Seed D/E placeholders (banks) read as the unknown zero (X6 semantics
-  apply only where a provenance-aware scorer consumes them).
+- Banks: D/E is a required input and is not applicable to lender balance
+  sheets — such rows yield no verdict.
 
 ## Sectors where it does not apply
 

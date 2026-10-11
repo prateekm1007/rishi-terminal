@@ -1,6 +1,6 @@
 # Graham — Deep Value (Benjamin Graham)
 
-Tier: **Legend** · consensus weight: **2.5** · code: `lib/scorers/graham.ts`
+Tier: **Legend** · consensus weight: **2.5**
 
 Balance-sheet-first value: net-current-asset discount, a cheap earnings
 multiple, current-ratio safety and low leverage.

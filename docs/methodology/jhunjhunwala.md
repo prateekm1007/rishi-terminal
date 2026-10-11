@@ -1,6 +1,6 @@
 # Jhunjhunwala — Conviction Multibagger (Rakesh Jhunjhunwala)
 
-Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/jhunjhunwala.ts`
+Tier: **Master** · consensus weight: **2.0**
 
 The growth-compounder composite: a fair price for cash flow, growth that
 shows up in margins, quality returns, and promoter conviction.

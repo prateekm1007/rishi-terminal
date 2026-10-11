@@ -1,6 +1,6 @@
 # Howard Marks — Risk Cycle (Howard Marks)
 
-Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/howardmarks.ts`
+Tier: **Master** · consensus weight: **2.0**
 
 Where in the risk cycle does this price sit: leverage and valuation vs
 safety, asymmetry and size.
@@ -49,7 +49,8 @@ returns.
 
 - Band pillars are step functions; scores jump at the band edges.
 - `bvps <= 0` makes P/B negative — the asymmetry pillar saturates at 100
-  (a value artefact of the data, not an observation; revisit under FD-1).
+  (a value artefact of the data, not an observation — revisit when real
+  fundamentals land).
 
 ## Sectors where it does not apply
 

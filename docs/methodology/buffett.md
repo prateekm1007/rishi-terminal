@@ -1,6 +1,6 @@
 # Buffett — Quality Moat (Warren Buffett)
 
-Tier: **Legend** · consensus weight: **3.0** · code: `lib/scorers/buffett.ts`
+Tier: **Legend** · consensus weight: **3.0**
 
 Owner-earnings quality: durable returns on equity, a wide operating moat, real
 owner earnings relative to market value, and management with skin in the game.
@@ -28,7 +28,7 @@ score   = round(0.30*roeS + 0.25*moatS + 0.20*oeS + 0.15*mgS + 0.10*50)
 ```
 
 The 0.10 term is the published **Neutral Base** (a design constant of 50),
-shown as a component in the breakdown since S2-05.
+shown as a component in the breakdown.
 
 ## Thresholds
 
@@ -49,9 +49,9 @@ base caps how punitive a single missing pillar can be.
 
 - `mktcap = 0` makes the owner-earnings yield undefined → verdict is null
   ("insufficient data"), never 0.
-- On the placeholder seed (FD-1 pending), zero `np`/`dep`/`capex` fields are
-  the documented unknowns, not observations — the seed caps this scorer's
-  honesty until real fundamentals land.
+- On the placeholder dataset, unobserved net-profit, depreciation and capex
+  fields yield no verdict — the sample data caps this scorer's honesty
+  until real fundamentals land.
 - The 70%-of-capex maintenance assumption is a modelling constant, not a
   per-company measurement.
 

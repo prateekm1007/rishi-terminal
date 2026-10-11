@@ -1,6 +1,6 @@
 # Damani — Zero-Debt Fortress (Radhakishan Damani)
 
-Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/damani.ts`
+Tier: **Master** · consensus weight: **2.0**
 
 Defensive quality: no leverage, sustainable returns on capital, predictable
 cash conversion, and a moat that shows up in margins.
@@ -43,8 +43,8 @@ margin pillar is the moat proxy.
 
 - Banks: D/E is structurally high and is the business — the scorer nulls on
   missing inputs but a real bank D/E would misread here.
-- Seed revenue placeholders make the FCF margin meaningless; those records
-  null instead of scoring (T11).
+- Unobserved revenue values make the FCF margin meaningless; those records
+  yield no verdict instead of scoring.
 
 ## Sectors where it does not apply
 

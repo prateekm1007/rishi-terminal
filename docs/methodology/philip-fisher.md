@@ -1,6 +1,6 @@
 # Philip Fisher — Scuttlebutt Growth (Philip Fisher)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/philipfisher.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 Growth worth holding long: insiders with skin, real reinvestment, EPS
 compounding, and a market big enough to matter.
@@ -41,7 +41,8 @@ as a separate field (documented substitution).
 
 - Capex-as-R&D substitute flatters capital-heavy non-R&D businesses and
   undercounts expensed R&D.
-- Seed capex placeholders distort the reinvestment pillar (FD-1 pending).
+- Unobserved capex values null the verdict rather than distorting the
+  reinvestment pillar.
 
 ## Sectors where it does not apply
 

@@ -28,9 +28,17 @@ score  = round(0.50*rocS + 0.50*eyS)
 ## Rationale
 
 The 0.6 multiplier on market cap approximates invested capital when
-book-equity detail is unavailable, keeping the ROC proxy conservative.
+book-equity detail is unavailable. It is a PROXY, and its direction must
+be stated honestly (founder audit 2026-10-11): dividing by 0.6 × mktcap
+reads the ROC ~1.67× HIGHER than a plain earnings yield on the same
+numerator — it INFLATES the ROC pillar, it does not keep it
+conservative. The saturation threshold (25%) partially absorbs the lift,
+and the proxy is disclosed as a proxy on every surface that renders it.
 Both pillars derive from the same numerator (net profit) — the formula
-is intentionally two views of one quantity.
+is intentionally two views of one quantity, which is exactly why the
+ROC view cannot claim more precision than the yield view it rescales.
+The honest reading of the combined score: a smoothed earnings-yield
+rank with a steeper ramp, not a measured return on invested capital.
 
 ## Known failure modes
 

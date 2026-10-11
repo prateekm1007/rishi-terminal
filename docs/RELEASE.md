@@ -380,8 +380,9 @@ retry-sporadically protocol stood down unused.
 ### 2026-10-12 (round 49) — tenth exhaustion; deploy debt recorded
 
 - #346 (P0-8-LIVE-CLAIMS + the RESP-2 News reversal) merged via the
-  merge-guard at 2026-10-12T00:36:42Z (all six gates green on the exact
-  head 00582dc; merge commit 304dc104877b). The merge did NOT auto-fire a
+  merge-guard at 2026-10-12T00:21:27+05:30 (the merge commit's author
+  timestamp, read back from origin/main; all six gates green on the
+  exact head 00582dc; merge commit 304dc104877b). The merge did NOT auto-fire a
   deployment within the observation window (two v6 list reads, 45 s and
   120 s after the merge).
 - **12:00Z-class sanctioned single-shot API retry (policy 4) → HTTP 402

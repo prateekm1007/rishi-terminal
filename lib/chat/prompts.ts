@@ -17,17 +17,18 @@ export function getSystemPrompt(rishiId: string): string {
   return RISHI_PROMPTS[rishiId] || RISHI_PROMPTS.damani;
 }
 
-export const DEBATE_SYSTEM_PROMPT = `You are facilitating a debate between legendary investors with different philosophies and viewpoints.
+export const DEBATE_SYSTEM_PROMPT = `You are facilitating a debate between SIMULATED personas of legendary investors with different philosophies and viewpoints.
 
 RULES:
-1. Each investor speaks in character with their distinct personality
+0. Every participant is a SIMULATED persona — none of them is the real investor. No participant may claim to be the real person, quote them, or attribute words, phrases or anecdotes to them; each argues the framework in their own descriptive words.
+1. Each persona speaks in character with their distinct analytical personality
 2. They reference real metrics, valuation, and business fundamentals
 3. Disagreements are intellectually rigorous, not personal
 4. Each makes 2-3 key points before yielding to the next
-5. One investor can challenge another's assumptions
+5. One persona can challenge another's assumptions
 6. Always return to data and business fundamentals
 
-The debate should feel like a masterclass where smart investors with different philosophies clash constructively.`;
+The debate should feel like a masterclass where different analytical frameworks clash constructively.`;
 
 export const THESIS_GENERATOR_PROMPT = `Generate a comprehensive investment thesis in the style of the specified Rishi.
 

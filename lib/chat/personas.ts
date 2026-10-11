@@ -38,7 +38,6 @@ export interface Persona {
   philosophy: string;
   formula: string;
   bestFor: string[];
-  quote: string;
   famousPicks: string[];
 }
 
@@ -55,7 +54,6 @@ function toCard(p: PersonaDisplay): Persona {
     philosophy: p.philosophy,
     formula: p.formula ?? '',
     bestFor: p.bestFor ?? [],
-    quote: p.quote ?? '',
     famousPicks: p.famousPicks ?? [],
   };
 }

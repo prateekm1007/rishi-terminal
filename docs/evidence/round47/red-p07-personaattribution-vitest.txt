@@ -1,0 +1,1774 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/personaAttribution.zero.test.ts (7 tests | 6 failed) 62ms
+   ❯ P0-7 — real-person quotes and attributions are gone (7)
+     × no quote field or quoted-attribution render exists in the UI tree 44ms
+     × the Jhunjhunwala commentary line is deleted 5ms
+     × the Graham attribution is corrected — margin of safety, not the Buffett 'first rule' 4ms
+     × the Saylor, Rogers, Rule and Yergin subtitles are descriptive (positive control, B-18) 2ms
+     × the guru card renders carry framework text, never quoted speech 4ms
+     ✓ the patterns bite (embedded pre-fix strings must match — C5) 0ms
+     × the dead quote-bearing modules are gone (rule 17) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/personaAttribution.zero.test.ts > P0-7 — real-person quotes and attributions are gone > no quote field or quoted-attribution render exists in the UI tree
+AssertionError: expected [ …(41) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "app/rishis/page.tsx:263: &quot;{selectedRishi.quote}&quot;",
++   "components/stock/WisdomSidebar.tsx:133: &quot;{parallel.quote}&quot;",
++   "lib/chat/registry.ts:89: quote: \"I am a firm believer in the India story.\",",
++   "lib/chat/registry.ts:114: quote: \"Never invest in a business you cannot understand.\",",
++   "lib/chat/registry.ts:133: quote: \"Small caps with high promoter holding are where real wealth is created.\",",
++   "lib/chat/registry.ts:152: quote: \"Market transfers money from the impatient to the patient.\",",
++   "lib/chat/registry.ts:171: quote: \"The best investments come with maximum pessimism.\",",
++   "lib/chat/registry.ts:190: quote: \"Quality plus Growth plus Longevity at Right Price is the mantra.\",",
++   "lib/chat/registry.ts:209: quote: \"Boring businesses compound into fortunes over decades.\",",
++   "lib/chat/registry.ts:228: quote: \"The Indian consumption story is just beginning.\",",
++   "lib/chat/registry.ts:253: quote: \"Wonderful company at fair price beats fair company at wonderful price.\",",
++   "lib/chat/registry.ts:272: quote: \"Margin of safety is the central concept of investment.\",",
++   "lib/chat/registry.ts:341: quote: \"Figure out the value of something and then pay a lot less for it.\",",
++   "lib/chat/registry.ts:379: quote: \"The person with the right information beats the person with the right advice.\",",
++   "lib/chat/registry.ts:398: quote: \"Most people try to find good assets. I try to find good risk/reward.\",",
++   "lib/chat/registry.ts:417: quote: \"The best returns come from situations where downside is minimal.\",",
++   "lib/chat/registry.ts:436: quote: \"The best time to buy is at the point of maximum pessimism.\",",
++   "lib/chat/registry.ts:455: quote: \"We buy cheap stocks and wait for them to become less cheap.\",",
++   "lib/chat/registry.ts:479: quote: \"Being early is the same as being wrong in shorts.\",",
++   "lib/gurus/crypto.ts:31: quote: 'The root problem with conventional currency is all the trust required to make it work.',",
++   "lib/gurus/crypto.ts:41: quote: 'Whereas most technologies tend to automate workers, blockchains automate away trust.',",
++   "lib/gurus/crypto.ts:51: quote: 'Bitcoin is a bank in cyberspace, run by incorruptible software.',",
++   "lib/scorers/commentary.ts:13: \"As Jhunjhunwala would say – this is a business that earns the right to grow. The numbers do not lie",
++   "lib/scorers/commentary.ts:39: \"The numbers tell a cautionary tale. Capital efficiency is poor, the balance sheet is stressed, and ",
++   "lib/wisdom/historicalParallels.ts:32: quote: 'The best businesses are those where the customer cannot do without you.',",
++   "lib/wisdom/historicalParallels.ts:40: quote: 'Price is what you pay, value is what you get - but in cyclicals, both move together.',",
++   "lib/wisdom/historicalParallels.ts:56: quote: 'Time is the friend of the wonderful business, the enemy of the mediocre.',",
++   "lib/wisdom/historicalParallels.ts:72: quote: 'The best investment opportunities are found where others are not looking.',",
++   "lib/wisdom/parallels.ts:46: quote: 'I buy businesses that are boring to most but essential to consumers. Then I wait.',",
++   "lib/wisdom/parallels.ts:51: quote: 'The best business is one with a wide moat that gets wider every year.',",
++   "lib/wisdom/parallels.ts:56: quote: 'Waiting helps you as an investor and a lot of people just cannot stand to wait.',",
++   "lib/wisdom/parallels.ts:78: quote: 'The investor who permits himself to be stampeded by market declines is perversely transformi",
++   "lib/wisdom/parallels.ts:83: quote: 'The biggest investing errors come from psychological factors, not informational ones.',",
++   "lib/wisdom/parallels.ts:88: quote: 'A great business at a fair price is superior to a fair business at a great price.',",
++   "lib/wisdom/parallels.ts:110: quote: 'Price is what you pay. Value is what you get.',",
++   "lib/wisdom/parallels.ts:147: quote: 'Over the long term, it is hard for a stock to earn much better than the business earns.',",
++   "lib/wisdom/parallels.ts:174: quote: 'A great business at a fair price beats a fair business at a great price.',",
++   "lib/wisdom/parallels.ts:179: quote: 'The margin of safety is always dependent on the price paid.',",
++   "lib/wisdom/parallels.ts:184: quote: 'Never forget the six-foot-tall man who drowned in the stream that was five feet deep on aver",
++   "lib/wisdom/parallels.ts:206: quote: 'I look for businesses the market has not discovered yet. Then I wait for the discovery.',",
++   "lib/wisdom/parallels.ts:211: quote: 'The person that turns over the most rocks wins the game.',",
++ ]
+
+ ❯ test/personaAttribution.zero.test.ts:73:18
+     71|       }
+     72|     }
+     73|     expect(hits).toEqual([]);
+       |                  ^
+     74|   });
+     75|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/personaAttribution.zero.test.ts > P0-7 — real-person quotes and attributions are gone > the Jhunjhunwala commentary line is deleted
+AssertionError: expected '// ==================================…' not to contain 'As Jhunjhunwala would say'
+
+- Expected
++ Received
+
+- As Jhunjhunwala would say
++ // ============================================================
++ // RISHI COMMENTARY ENGINE
++ // Generates philosophical commentary in the voice of legends
++ // ============================================================
++
++ import 'server-only';
++
++ import { RishiScoreResult, StockMetrics, ScoreMode } from "./types";
++
++ // ── Long Commentary Templates ────────────────────────────────
++
++ const LEGENDARY_LONG = [
++   "As Jhunjhunwala would say – this is a business that earns the right to grow. The numbers do not lie: capital allocation is exceptional, the moat is widening, and the promoters have meaningful skin in the game. At current valuations, this stock offers what every serious investor seeks – a margin of safety with a growth kicker.",
++   "Damani would recognise this pattern immediately. A consumer franchise with pricing power, consistent return on capital, and conservative management. These businesses, bought patiently, create generational wealth. The market has not yet fully appreciated what the next decade holds.",
++ ];
++
++ const HIGH_CONVICTION_LONG = [
++   "This stock passes Buffett's primary filter – it is a good business at a fair price. The competitive position is defensible, free cash flow is real and growing, and the balance sheet is clean. The investor who buys quality and waits is almost always rewarded.",
++   "Lynch would classify this as a stalwart with growth characteristics. Revenue visibility is high, the sector tailwind is structural, and the management has proven it can allocate capital wisely. Patience here will likely be well-rewarded.",
++ ];
++
++ const STRONG_LONG = [
++   "A solid business with identifiable advantages. The fundamentals are sound, valuation is reasonable, and the growth trajectory is believable. Not without risk, but the risk-reward is tilted favourably for the long-term investor.",
++ ];
++
++ const WATCHLIST_LONG = [
++   "Worthy of a watchlist position. The business quality is reasonable, but valuation or governance concerns warrant patience. A better entry point, or evidence of improving fundamentals, would make this significantly more compelling.",
++ ];
++
++ // Round-5 audit (findings 2–3): a NEUTRAL / Hold verdict used to fall
++ // through to the AVOID template ("The numbers tell a cautionary tale…"),
++ // so healthy records like SBIN (ROE 18%, P/E 10) got stressed-balance-sheet
++ // prose that contradicted the numbers next to it. Hold gets its own text.
++ const NEUTRAL_LONG = [
++   "A mixed picture. Some pillars of the business are sound while others raise fair questions, and at this valuation the risk and reward roughly balance. There is no shame in waiting for the picture to clarify — the market pays for patience, not for forced conviction.",
++ ];
++
++ const AVOID_LONG = [
++   "The numbers tell a cautionary tale. Capital efficiency is poor, the balance sheet is stressed, and the valuation offers no margin of safety. As Graham would remind us – the first rule of investing is: do not lose money. This situation makes that principle difficult to uphold.",
++ ];
++
++ // ── Short Commentary Templates ────────────────────────────────
++
++ const LEGENDARY_SHORT = [
++   "This is a Chanos-grade short thesis. The combination of peak-cycle valuation, deteriorating fundamentals, aggressive accounting, and governance concerns creates a setup where multiple things need to go right for the bulls – and only one needs to go wrong. The margin of safety for shorts is wide.",
++   "Burry would recognise this structure. The market is pricing in a version of the future that the current operating reality does not support. When the narrative collides with the fundamentals, the adjustment is typically violent. The short thesis here is not speculative – it is anchored in the numbers.",
++ ];
++
++ const HIGH_CONVICTION_SHORT = [
++   "A high-conviction short with clear catalysts. Overvaluation is extreme, the competitive position is eroding, and the promoter's actions suggest they know more than they are communicating to the market. Einhorn would call this a 'show me' situation – and the showing is not going well.",
++ ];
++
++ const TACTICAL_SHORT = [
++   "A tactical short opportunity based on valuation excess and near-term catalyst risk. Not a structural thesis, but the risk-reward for a short position is attractive in the current context. Position sizing should be conservative given liquidity and potential squeeze risk.",
++ ];
++
++ // ── Commentary Generator ──────────────────────────────────────
++
++ /**
++  * Deterministic template selection based on score
++  * Prevents hydration mismatches by avoiding Math.random()
++  */
++ function pick(arr: string[], score: number): string {
++   const index = Math.floor(score) % arr.length;
++   return arr[index];
++ }
++
++ export function generateCommentary(
++   result: RishiScoreResult,
++   metrics: StockMetrics
++ ): string {
++   const { conviction, mode, finalScore } = result;
++
++   if (mode === "LONG") {
++     if (conviction === "LEGENDARY") return pick(LEGENDARY_LONG, finalScore);
++     if (conviction === "HIGH_CONVICTION") return pick(HIGH_CONVICTION_LONG, finalScore);
++     if (conviction === "STRONG") return pick(STRONG_LONG, finalScore);
++     if (conviction === "WATCHLIST") return pick(WATCHLIST_LONG, finalScore);
++     if (conviction === "NEUTRAL") return pick(NEUTRAL_LONG, finalScore);
++     return pick(AVOID_LONG, finalScore);
++   } else {
++     if (conviction === "LEGENDARY_SHORT") return pick(LEGENDARY_SHORT, finalScore);
++     if (conviction === "HIGH_CONVICTION_SHORT") return pick(HIGH_CONVICTION_SHORT, finalScore);
++     return pick(TACTICAL_SHORT, finalScore);
++   }
++ }
++
++ export function generateHeadline(
++   result: RishiScoreResult,
++   metrics: StockMetrics
++ ): string {
++   const { conviction, mode, finalScore } = result;
++   const sym = metrics.symbol;
++   const s = finalScore.toFixed(0);
++
++   if (mode === "LONG") {
++     // Round-5 audit (finding 3): the headline must NAME the model (QVPS),
++     // not just "scores X/100" — the stock page shows the panel consensus
++     // (Rishi Merit System v1) right next to this, and two unlabeled numbers
++     // read as contradictory scores for the same stock.
++     if (conviction === "LEGENDARY") 
++       return `${sym} QVPS ${s}/100 – A rare, legendary long opportunity`;
++     if (conviction === "HIGH_CONVICTION") 
++       return `${sym} QVPS ${s}/100 – High conviction buy`;
++     if (conviction === "STRONG") 
++       return `${sym} QVPS ${s}/100 – Strong fundamentals`;
++     if (conviction === "WATCHLIST") 
++       return `${sym} QVPS ${s}/100 – Add to watchlist, await better entry`;
++     if (conviction === "NEUTRAL") 
++       return `${sym} QVPS ${s}/100 – Hold, mixed signals`;
++     return `${sym} QVPS ${s}/100 – Avoid`;
++   } else {
++     if (conviction === "LEGENDARY_SHORT") 
++       return `${sym} QVPS short ${s}/100 – Legendary short thesis`;
++     if (conviction === "HIGH_CONVICTION_SHORT") 
++       return `${sym} QVPS short ${s}/100 – High conviction short`;
++     return `${sym} QVPS short ${s}/100 – Tactical short opportunity`;
++   }
++ }
+
+ ❯ test/personaAttribution.zero.test.ts:78:28
+     76|   it("the Jhunjhunwala commentary line is deleted", () => {
+     77|     const commentary = read("lib/scorers/commentary.ts");
+     78|     expect(commentary).not.toContain("As Jhunjhunwala would say");
+       |                            ^
+     79|     expect(commentary).not.toMatch(/Jhunjhunwala/);
+     80|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/personaAttribution.zero.test.ts > P0-7 — real-person quotes and attributions are gone > the Graham attribution is corrected — margin of safety, not the Buffett 'first rule'
+AssertionError: expected '// ==================================…' not to contain 'the first rule of investing is: do no…'
+
+- Expected
++ Received
+
+- the first rule of investing is: do not lose money
++ // ============================================================
++ // RISHI COMMENTARY ENGINE
++ // Generates philosophical commentary in the voice of legends
++ // ============================================================
++
++ import 'server-only';
++
++ import { RishiScoreResult, StockMetrics, ScoreMode } from "./types";
++
++ // ── Long Commentary Templates ────────────────────────────────
++
++ const LEGENDARY_LONG = [
++   "As Jhunjhunwala would say – this is a business that earns the right to grow. The numbers do not lie: capital allocation is exceptional, the moat is widening, and the promoters have meaningful skin in the game. At current valuations, this stock offers what every serious investor seeks – a margin of safety with a growth kicker.",
++   "Damani would recognise this pattern immediately. A consumer franchise with pricing power, consistent return on capital, and conservative management. These businesses, bought patiently, create generational wealth. The market has not yet fully appreciated what the next decade holds.",
++ ];
++
++ const HIGH_CONVICTION_LONG = [
++   "This stock passes Buffett's primary filter – it is a good business at a fair price. The competitive position is defensible, free cash flow is real and growing, and the balance sheet is clean. The investor who buys quality and waits is almost always rewarded.",
++   "Lynch would classify this as a stalwart with growth characteristics. Revenue visibility is high, the sector tailwind is structural, and the management has proven it can allocate capital wisely. Patience here will likely be well-rewarded.",
++ ];
++
++ const STRONG_LONG = [
++   "A solid business with identifiable advantages. The fundamentals are sound, valuation is reasonable, and the growth trajectory is believable. Not without risk, but the risk-reward is tilted favourably for the long-term investor.",
++ ];
++
++ const WATCHLIST_LONG = [
++   "Worthy of a watchlist position. The business quality is reasonable, but valuation or governance concerns warrant patience. A better entry point, or evidence of improving fundamentals, would make this significantly more compelling.",
++ ];
++
++ // Round-5 audit (findings 2–3): a NEUTRAL / Hold verdict used to fall
++ // through to the AVOID template ("The numbers tell a cautionary tale…"),
++ // so healthy records like SBIN (ROE 18%, P/E 10) got stressed-balance-sheet
++ // prose that contradicted the numbers next to it. Hold gets its own text.
++ const NEUTRAL_LONG = [
++   "A mixed picture. Some pillars of the business are sound while others raise fair questions, and at this valuation the risk and reward roughly balance. There is no shame in waiting for the picture to clarify — the market pays for patience, not for forced conviction.",
++ ];
++
++ const AVOID_LONG = [
++   "The numbers tell a cautionary tale. Capital efficiency is poor, the balance sheet is stressed, and the valuation offers no margin of safety. As Graham would remind us – the first rule of investing is: do not lose money. This situation makes that principle difficult to uphold.",
++ ];
++
++ // ── Short Commentary Templates ────────────────────────────────
++
++ const LEGENDARY_SHORT = [
++   "This is a Chanos-grade short thesis. The combination of peak-cycle valuation, deteriorating fundamentals, aggressive accounting, and governance concerns creates a setup where multiple things need to go right for the bulls – and only one needs to go wrong. The margin of safety for shorts is wide.",
++   "Burry would recognise this structure. The market is pricing in a version of the future that the current operating reality does not support. When the narrative collides with the fundamentals, the adjustment is typically violent. The short thesis here is not speculative – it is anchored in the numbers.",
++ ];
++
++ const HIGH_CONVICTION_SHORT = [
++   "A high-conviction short with clear catalysts. Overvaluation is extreme, the competitive position is eroding, and the promoter's actions suggest they know more than they are communicating to the market. Einhorn would call this a 'show me' situation – and the showing is not going well.",
++ ];
++
++ const TACTICAL_SHORT = [
++   "A tactical short opportunity based on valuation excess and near-term catalyst risk. Not a structural thesis, but the risk-reward for a short position is attractive in the current context. Position sizing should be conservative given liquidity and potential squeeze risk.",
++ ];
++
++ // ── Commentary Generator ──────────────────────────────────────
++
++ /**
++  * Deterministic template selection based on score
++  * Prevents hydration mismatches by avoiding Math.random()
++  */
++ function pick(arr: string[], score: number): string {
++   const index = Math.floor(score) % arr.length;
++   return arr[index];
++ }
++
++ export function generateCommentary(
++   result: RishiScoreResult,
++   metrics: StockMetrics
++ ): string {
++   const { conviction, mode, finalScore } = result;
++
++   if (mode === "LONG") {
++     if (conviction === "LEGENDARY") return pick(LEGENDARY_LONG, finalScore);
++     if (conviction === "HIGH_CONVICTION") return pick(HIGH_CONVICTION_LONG, finalScore);
++     if (conviction === "STRONG") return pick(STRONG_LONG, finalScore);
++     if (conviction === "WATCHLIST") return pick(WATCHLIST_LONG, finalScore);
++     if (conviction === "NEUTRAL") return pick(NEUTRAL_LONG, finalScore);
++     return pick(AVOID_LONG, finalScore);
++   } else {
++     if (conviction === "LEGENDARY_SHORT") return pick(LEGENDARY_SHORT, finalScore);
++     if (conviction === "HIGH_CONVICTION_SHORT") return pick(HIGH_CONVICTION_SHORT, finalScore);
++     return pick(TACTICAL_SHORT, finalScore);
++   }
++ }
++
++ export function generateHeadline(
++   result: RishiScoreResult,
++   metrics: StockMetrics
++ ): string {
++   const { conviction, mode, finalScore } = result;
++   const sym = metrics.symbol;
++   const s = finalScore.toFixed(0);
++
++   if (mode === "LONG") {
++     // Round-5 audit (finding 3): the headline must NAME the model (QVPS),
++     // not just "scores X/100" — the stock page shows the panel consensus
++     // (Rishi Merit System v1) right next to this, and two unlabeled numbers
++     // read as contradictory scores for the same stock.
++     if (conviction === "LEGENDARY") 
++       return `${sym} QVPS ${s}/100 – A rare, legendary long opportunity`;
++     if (conviction === "HIGH_CONVICTION") 
++       return `${sym} QVPS ${s}/100 – High conviction buy`;
++     if (conviction === "STRONG") 
++       return `${sym} QVPS ${s}/100 – Strong fundamentals`;
++     if (conviction === "WATCHLIST") 
++       return `${sym} QVPS ${s}/100 – Add to watchlist, await better entry`;
++     if (conviction === "NEUTRAL") 
++       return `${sym} QVPS ${s}/100 – Hold, mixed signals`;
++     return `${sym} QVPS ${s}/100 – Avoid`;
++   } else {
++     if (conviction === "LEGENDARY_SHORT") 
++       return `${sym} QVPS short ${s}/100 – Legendary short thesis`;
++     if (conviction === "HIGH_CONVICTION_SHORT") 
++       return `${sym} QVPS short ${s}/100 – High conviction short`;
++     return `${sym} QVPS short ${s}/100 – Tactical short opportunity`;
++   }
++ }
+
+ ❯ test/personaAttribution.zero.test.ts:85:28
+     83|     const commentary = read("lib/scorers/commentary.ts");
+     84|     // The misattributed formulation is gone...
+     85|     expect(commentary).not.toContain("the first rule of investing is: …
+       |                            ^
+     86|     // ...and Graham is correctly credited with HIS documented concept.
+     87|     expect(commentary).toContain("As Graham taught, the margin of safe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/personaAttribution.zero.test.ts > P0-7 — real-person quotes and attributions are gone > the Saylor, Rogers, Rule and Yergin subtitles are descriptive (positive control, B-18)
+AssertionError: expected '// lib/gurus/crypto.ts\n// Client-saf…' to contain 'Corporate-treasury framework'
+
+- Expected
++ Received
+
+- Corporate-treasury framework
++ // lib/gurus/crypto.ts
++ // Client-safe METADATA for the crypto guru cards (R3, round 2).
++ //
++ // The guru SCORERS (lib/scorers/crypto/*) are server-side only: they are
++ // imported exclusively by app/api/gurus/route.ts, which computes the
++ // verdicts and tier-slices the response. This module carries only the UI
++ // chrome (names, bios, tags) so the client can render what the server
++ // sends without ever seeing the paid verdict content for a free tier.
++
++ export interface CryptoGuruMeta {
++   id: string;
++   name: string;
++   tag: string;
++   /** Short initials badge for the detail page. */
++   initials: string;
++   bio: string;
++   quote: string;
++   /** One-line focus areas for the detail page. */
++   focus: string;
++   /** Which asset the guru's verdict tracks (matches CRYPTO_ASSETS.symbol). */
++   target: string;
++ }
++
++ export const CRYPTO_GURUS: CryptoGuruMeta[] = [
++   {
++     id: 'satoshi',
++     name: 'Satoshi Bodhi',
++     tag: 'BTC',
++     initials: 'SB',
++     bio: 'Sound money maximalist. Bitcoin as the ultimate store of value. Decentralization above all else.',
++     quote: 'The root problem with conventional currency is all the trust required to make it work.',
++     focus: 'Bitcoin, decentralization, sound money',
++     target: 'BTC',
++   },
++   {
++     id: 'vitalik',
++     name: 'Vitalik Veda',
++     tag: 'ETH',
++     initials: 'VV',
++     bio: 'Protocol fundamentalist. Ethereum as world computer. Scalability, security, decentralization trilemma solver.',
++     quote: 'Whereas most technologies tend to automate workers, blockchains automate away trust.',
++     focus: 'Smart contracts, scalability, DeFi',
++     target: 'ETH',
++   },
++   {
++     id: 'saylor',
++     name: 'Michael Saylor',
++     tag: 'MS',
++     initials: 'MS',
++     bio: 'Corporate Bitcoin maximalist. Digital property thesis. MicroStrategy Bitcoin treasury architect.',
++     quote: 'Bitcoin is a bank in cyberspace, run by incorruptible software.',
++     focus: 'Institutional adoption, digital property',
++     target: 'BTC',
++   },
++ ];
++
+
+ ❯ test/personaAttribution.zero.test.ts:94:25
+     92|     const commodityGurus = read("lib/gurus/commodity.ts");
+     93|     // Saylor: corporate-treasury framework, no quoted speech
+     94|     expect(cryptoGurus).toContain("Corporate-treasury framework");
+       |                         ^
+     95|     expect(cryptoGurus).not.toContain("bank in cyberspace");
+     96|     // Rogers: contrarian cycle timing, no quoted speech
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/personaAttribution.zero.test.ts > P0-7 — real-person quotes and attributions are gone > the guru card renders carry framework text, never quoted speech
+AssertionError: expected '\'use client\';\n\nimport { useState,…' not to contain 'selectedRishi.quote'
+
+- Expected
++ Received
+
+- selectedRishi.quote
++ 'use client';
++
++ import { useState, useRef, useEffect, useMemo } from 'react';
++ import Link from 'next/link';
++ import { useLanguage } from '../../lib/language';
++ import { ALL_RISHIS } from '../../lib/chat/personas';
++
++
++ interface Message {
++   role: 'user' | 'assistant';
++   content: string;
++   timestamp: Date;
++   /** Audit 2026-10-02 (P1): provenance retained with the reply so the UI
++    * can say WHICH provider produced it and whether it is grounded — a
++    * context-only reply must not look like numerically verified analysis
++    * (FD-10 records the open product decision). */
++   provenance?: {
++     provider: string;
++     model: string;
++     grounded: boolean;
++     /** G3 (audit 2026-10-02): "context-only" = only qualitative claims —
++      *  the reply must never read as numerically verified analysis. */
++     groundingMode: 'evidence-context' | 'context-only' | 'structured-claims';
++   };
++ }
++
++ interface ChatHistory {
++   [rishiId: string]: Message[];
++ }
++
++
++
++ const RANK_COLORS: Record<string, string> = {
++   Legend: '#FFD700',
++   Master: '#3B82F6',
++ };
++
++ export default function ChatWithRishisPage() {
++   const { t } = useLanguage();
++   const [selectedRishi, setSelectedRishi] = useState(ALL_RISHIS[0]);
++   const [chatHistories, setChatHistories]   = useState<ChatHistory>({});
++   const [input, setInput]                   = useState('');
++   const [isLoading, setIsLoading]           = useState(false);
++   const [error, setError]                   = useState<string | null>(null);
++   const [search, setSearch]                 = useState('');
++   const messagesEndRef                       = useRef<HTMLDivElement>(null);
++   const inputRef                             = useRef<HTMLTextAreaElement>(null);
++
++   const currentMessages = chatHistories[selectedRishi.id] || [];
++
++   // The most recent assistant reply's actual model (provenance rides on
++   // every reply) — never an invented vendor name. When no reply with
++   // provenance exists yet, the label says so honestly (Commit M7 §4: a
++   // model name is presented only when the server's provenance supplied
++   // it — no hardcoded vendor claims).
++   const lastProvenance = [...currentMessages].reverse().find(m => m.role === 'assistant')?.provenance;
++   const lastModelLabel = lastProvenance
++     ? `${lastProvenance.provider} ${lastProvenance.model}`
++     : 'model: not yet reported';
++
++   const filteredRishis = useMemo(() =>
++     ALL_RISHIS.filter(r =>
++       r.name.toLowerCase().includes(search.toLowerCase()) ||
++       r.label.toLowerCase().includes(search.toLowerCase())
++     ), [search]);
++
++   useEffect(() => {
++     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
++   }, [currentMessages, isLoading]);
++
++   const selectRishi = (rishi: typeof ALL_RISHIS[0]) => {
++     setSelectedRishi(rishi);
++     setInput('');
++     setError(null);
++     setTimeout(() => inputRef.current?.focus(), 100);
++   };
++
++   const sendMessage = async () => {
++     const trimmed = input.trim();
++     if (!trimmed || isLoading) return;
++
++     setError(null);
++     const userMsg: Message = { role: 'user', content: trimmed, timestamp: new Date() };
++
++     const updatedHistory = [...currentMessages, userMsg];
++     setChatHistories(prev => ({ ...prev, [selectedRishi.id]: updatedHistory }));
++     setInput('');
++     setIsLoading(true);
++
++     try {
++       const res = await fetch('/api/chat', {
++         method: 'POST',
++         headers: { 'Content-Type': 'application/json' },
++         body: JSON.stringify({
++           personaId: selectedRishi.id,
++           history: currentMessages,
++           message: trimmed,
++         }),
++       });
++
++       const data = await res.json();
++
++       if (!res.ok) {
++         throw new Error(data.error || `API error: ${res.status}`);
++       }
++
++       if (!data.text) {
++         throw new Error('Empty response from API');
++       }
++
++       const assistantMsg: Message = {
++         role: 'assistant',
++         content: data.text,
++         timestamp: new Date(),
++         provenance: data.provenance ?? undefined,
++       };
++       setChatHistories(prev => ({
++         ...prev,
++         [selectedRishi.id]: [...updatedHistory, assistantMsg],
++       }));
++     } catch (err: unknown) {
++       console.error('Chat error:', err);
++       const errorMessage = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
++       setError(errorMessage);
++       // Remove the user message if API failed
++       setChatHistories(prev => ({ ...prev, [selectedRishi.id]: currentMessages }));
++     } finally {
++       setIsLoading(false);
++       setTimeout(() => inputRef.current?.focus(), 100);
++     }
++   };
++
++   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
++     if (e.key === 'Enter' && !e.shiftKey) {
++       e.preventDefault();
++       sendMessage();
++     }
++   };
++
++   const clearChat = () => {
++     setChatHistories(prev => ({ ...prev, [selectedRishi.id]: [] }));
++     setError(null);
++   };
++
++   const rankColor = RANK_COLORS[selectedRishi.rank] || '#888';
++
++   return (
++     <div style={{ display: 'flex', height: 'calc(100vh - 60px)', background: 'var(--bg-primary)', color: 'var(--text-primary)', overflow: 'hidden' }}>
++
++       {/* ── LEFT PANEL: Rishi List ── */}
++       <div style={{ width: 280, borderRight: '1px solid var(--border-primary)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
++
++         {/* Header */}
++         <div style={{ padding: '16px 14px 10px', borderBottom: '1px solid var(--border-primary)' }}>
++           <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'monospace', marginBottom: 8 }}>
++             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'underline' }}>HOME</Link>
++             {' > '}CHAT WITH RISHIS
++           </div>
++           <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--accent-gold)', marginBottom: 10, letterSpacing: 1 }}>
++             🧘 Chat with Rishis
++           </h1>
++           {/* Round-5 audit (finding 7): persona disclosure. These Rishis are
++               AI simulations — fictional interpretations of real investors,
++               not the real persons and not their views. Saying so next to the
++               chat is the minimum honest labelling. */}
++           <div style={{ fontSize: 9.5, color: 'var(--text-muted)', lineHeight: 1.5, padding: '6px 8px', marginBottom: 8, background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 6, fontFamily: 'monospace' }}>
++             AI SIMULATIONS — fictional interpretations for education, not the real persons. Not investment advice.
++           </div>
++           <input
++             type="text"
++             placeholder="Search rishis..."
++             value={search}
++             onChange={e => setSearch(e.target.value)}
++             style={{
++               width: '100%', padding: '8px 10px', borderRadius: 6, fontSize: 12,
++               background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)',
++               color: 'var(--text-primary)', fontFamily: 'monospace', boxSizing: 'border-box',
++             }}
++           />
++         </div>
++
++         {/* Rishi List */}
++         <div role="region" aria-label="Rishi list" tabIndex={0} style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
++           {filteredRishis.map(rishi => {
++             const isActive  = selectedRishi.id === rishi.id;
++             const hasChat   = (chatHistories[rishi.id] || []).length > 0;
++             const tColor    = RANK_COLORS[rishi.rank] || '#888';
++             return (
++               <div
++                 key={rishi.id}
++                 onClick={() => selectRishi(rishi)}
++                 style={{
++                   display: 'flex', alignItems: 'center', gap: 10,
++                   padding: '10px 14px', cursor: 'pointer',
++                   background: isActive ? 'var(--bg-hover)' : 'transparent',
++                   borderLeft: isActive ? `3px solid ${tColor}` : '3px solid transparent',
++                   transition: 'all 0.15s',
++                 }}
++               >
++                 <span style={{ fontSize: 22, flexShrink: 0 }}>{rishi.emoji}</span>
++                 <div style={{ flex: 1, minWidth: 0 }}>
++                   <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? tColor : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
++                     {rishi.name}
++                   </div>
++                   <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
++                     {rishi.label}
++                   </div>
++                 </div>
++                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3, flexShrink: 0 }}>
++                   <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 10, background: tColor + '20', color: tColor, fontWeight: 700, fontFamily: 'monospace' }}>
++                     {rishi.rank.toUpperCase()}
++                   </span>
++                   {hasChat && (
++                     <span style={{ fontSize: 8, color: '#00BA7C' }}>● active</span>
++                   )}
++                 </div>
++               </div>
++             );
++           })}
++         </div>
++       </div>
++
++       {/* ── RIGHT PANEL: Chat ── */}
++       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
++
++         {/* Chat Header */}
++         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
++           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
++             <span style={{ fontSize: 32 }}>{selectedRishi.emoji}</span>
++             <div>
++               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
++                 <span style={{ fontSize: 16, fontWeight: 800, color: rankColor }}>{selectedRishi.name}</span>
++                 <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 10, background: rankColor + '20', color: rankColor, fontWeight: 700, fontFamily: 'monospace' }}>
++                   {selectedRishi.rank.toUpperCase()}
++                 </span>
++               </div>
++               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>
++                 {selectedRishi.label} · {selectedRishi.origin}
++               </div>
++             </div>
++           </div>
++           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
++             <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', textAlign: 'right' }}>
++               <div>{selectedRishi.bestFor.join(' · ')}</div>
++             </div>
++             {currentMessages.length > 0 && (
++               <button onClick={clearChat} style={{ padding: '5px 12px', borderRadius: 5, background: 'transparent', border: '1px solid var(--border-primary)', color: 'var(--text-muted)', fontSize: 11, cursor: 'pointer', fontFamily: 'monospace' }}>
++                 Clear
++               </button>
++             )}
++           </div>
++         </div>
++
++         {/* Messages */}
++         <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
++
++           {/* Empty state */}
++           {currentMessages.length === 0 && (
++             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: 'var(--text-muted)', padding: '40px 20px' }}>
++               <div style={{ fontSize: 56, marginBottom: 16 }}>{selectedRishi.emoji}</div>
++               <div style={{ fontSize: 18, fontWeight: 700, color: rankColor, marginBottom: 8 }}>{selectedRishi.name}</div>
++               <div style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 420, lineHeight: 1.7, marginBottom: 20 }}>
++                 &quot;{selectedRishi.quote}&quot;
++               </div>
++               <div style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 380, lineHeight: 1.6, marginBottom: 24 }}>
++                 {selectedRishi.bio}
++               </div>
++               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', background: 'var(--bg-secondary)', padding: '12px 20px', borderRadius: 8, maxWidth: 420, lineHeight: 1.7, textAlign: 'left' }}>
++                 <div style={{ marginBottom: 6, color: rankColor, fontWeight: 700 }}>FORMULA</div>
++                 {selectedRishi.formula}
++               </div>
++               <div style={{ marginTop: 20, fontSize: 11, color: 'var(--text-muted)' }}>
++                 Ask anything about stocks, markets, investing, or life ↓
++               </div>
++             </div>
++           )}
++
++           {/* Messages */}
++           {currentMessages.map((msg, idx) => (
++             <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start', gap: 4 }}>
++               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 2 }}>
++                 {msg.role === 'user' ? 'YOU' : selectedRishi.name.toUpperCase()}
++               </div>
++               <div style={{
++                 maxWidth: '75%', padding: '12px 16px', borderRadius: 12,
++                 background: msg.role === 'user'
++                   ? rankColor
++                   : 'var(--bg-secondary)',
++                 color: msg.role === 'user' ? '#000' : 'var(--text-primary)',
++                 fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
++                 borderTopRightRadius: msg.role === 'user' ? 4 : 12,
++                 borderTopLeftRadius: msg.role === 'user' ? 12 : 4,
++                 border: msg.role === 'assistant' ? '1px solid var(--border-subtle)' : 'none',
++               }}>
++                 {msg.content}
++               </div>
++               {msg.role === 'assistant' && msg.provenance && (
++                 <div style={{ fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 3, lineHeight: 1.5 }}>
++                   {msg.provenance.provider}/{msg.provenance.model} ·{' '}
++                   <span style={{ color: msg.provenance.grounded ? 'var(--accent-green)' : 'var(--text-muted)' }}>
++                     {msg.provenance.grounded ? 'evidence-grounded · numbers checked' : 'context-only · not numerically verified'}
++                   </span>
++                 </div>
++               )}
++             </div>
++           ))}
++
++           {/* Typing indicator */}
++           {isLoading && (
++             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
++               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
++                 {selectedRishi.name.toUpperCase()}
++               </div>
++               <div style={{ padding: '12px 16px', borderRadius: 12, borderTopLeftRadius: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
++                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
++                   {[0,1,2].map(i => (
++                     <div key={i} style={{
++                       width: 6, height: 6, borderRadius: '50%', background: rankColor,
++                       animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
++                     }} />
++                   ))}
++                 </div>
++               </div>
++             </div>
++           )}
++           {error && (
++             <div style={{
++               padding: '12px 16px', borderRadius: 8, background: '#1a0000',
++               border: '1px solid #ff4444', color: '#ff6666', fontSize: 12, fontFamily: 'monospace',
++             }}>
++               ⚠️ {error}
++             </div>
++           )}
++           <div ref={messagesEndRef} />
++         </div>
++
++         {/* Input */}
++         <div style={{ padding: '14px 20px', borderTop: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
++           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
++             <textarea
++               ref={inputRef}
++               value={input}
++               onChange={e => setInput(e.target.value)}
++               onKeyDown={handleKeyDown}
++               disabled={isLoading}
++               placeholder={`Ask ${selectedRishi.name} anything... (Enter to send, Shift+Enter for new line)`}
++               rows={2}
++               style={{
++                 flex: 1, padding: '10px 14px', borderRadius: 8, fontSize: 13,
++                 background: 'var(--bg-card)', border: '1px solid var(--border-primary)',
++                 color: 'var(--text-primary)', fontFamily: 'inherit', resize: 'none',
++                 outline: 'none', lineHeight: 1.5,
++               }}
++             />
++             <button
++               onClick={sendMessage}
++               disabled={isLoading || !input.trim()}
++               style={{
++                 padding: '10px 22px', borderRadius: 8, fontWeight: 700, fontSize: 13,
++                 background: isLoading || !input.trim() ? 'var(--bg-hover)' : rankColor,
++                 color: isLoading || !input.trim() ? 'var(--text-muted)' : '#000',
++                 border: 'none', cursor: isLoading || !input.trim() ? 'not-allowed' : 'pointer',
++                 transition: 'all 0.2s', whiteSpace: 'nowrap', height: 'fit-content',
++               }}
++             >
++               {isLoading ? '...' : 'Send →'}
++             </button>
++           </div>
++           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6, fontFamily: 'monospace' }}>
++             {/* Round-5 audit (finding 7): "Agnes 2.5 Flash" was an invented
++                 vendor name. The footer now reports the model that actually
++                 produced the latest reply (provenance from /api/chat), with
++                 the router's real default as fallback. */}
++             Powered by {lastModelLabel} · {currentMessages.length} messages · Chat history preserved per Rishi
++           </div>
++         </div>
++       </div>
++
++       <style>{`
++         @keyframes pulse {
++           0%, 100% { opacity: 0.3; transform: scale(0.8); }
++           50%       { opacity: 1;   transform: scale(1.2); }
++         }
++         ::-webkit-scrollbar { width: 4px; }
++         ::-webkit-scrollbar-track { background: transparent; }
++         ::-webkit-scrollbar-thumb { background: var(--border-primary); border-radius: 2px; }
++       `}</style>
++     </div>
++   );
++ }
++
+
+ ❯ test/personaAttribution.zero.test.ts:115:24
+    113|     // The /rishis empty state renders bio + formula, never a quotation
+    114|     const rishis = read("app/rishis/page.tsx");
+    115|     expect(rishis).not.toContain("selectedRishi.quote");
+       |                        ^
+    116|   });
+    117|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/personaAttribution.zero.test.ts > P0-7 — real-person quotes and attributions are gone > the dead quote-bearing modules are gone (rule 17)
+AssertionError: expected '{\n  "common": {\n    "loading": "Loa…' not to contain 'rishiQuotes'
+
+- Expected
++ Received
+
+- rishiQuotes
++ {
++   "common": {
++     "loading": "Loading...",
++     "error": "Error",
++     "search": "Search stocks - TITAN, INFY, RELIANCE, TCS...",
++     "viewAll": "View All",
++     "back": "Back",
++     "close": "Close",
++     "export": "Export",
++     "save": "Save",
++     "cancel": "Cancel",
++     "delete": "Remove",
++     "edit": "Edit",
++     "add": "Add",
++     "viewDetails": "View Details",
++     "streak": "Streak",
++     "stack": "stack",
++     "rishiScore": "RISHI SCORE",
++     "philosophicalSpread": "PHILOSOPHICAL SPREAD",
++     "keyMetrics": "Key Metrics",
++     "valuationSnapshot": "VALUATION SNAPSHOT",
++     "shareholdingPattern": "Shareholding Pattern",
++     "noDebates": "No philosophical debates detected for this stock",
++     "qvpsScore": "QUALITY-VALUE PILLAR SCORE"
++   },
++   "header": {
++     "title": "RISHI TERMINAL",
++     "investmentWisdomOS": "INVESTMENT WISDOM OS",
++     "wisdomOverHype": "Wisdom over hype.",
++     "time": "IST",
++     "exchanges": "NSE - BSE - MCX - GLOBAL"
++   },
++   "dashboard": {
++     "stockOfDay": "STOCK OF THE DAY",
++     "viewFullAnalysis": "VIEW FULL RISHI ANALYSIS",
++     "wisdomOfDay": "RISHI WISDOM OF THE DAY",
++     "masterInvestor": "Master Investor",
++     "globalMarkets": "GLOBAL MARKETS - CLICK TO EXPLORE",
++     "topBuySignals": "TOP BUY SIGNALS - RISHI CONSENSUS ABOVE 65",
++     "fullScreener": "ALL STOCKS",
++     "notInvestmentAdvice": "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE",
++     "heroWisdomSuffix": ". Dual-mode scoring, short thesis, philosophical insights.",
++     "updatedPrefix": "Updated ",
++     "observationTimeNotDisclosed": "Observation time not disclosed",
++     "timeAgoMinutesSuffix": "m ago",
++     "timeAgoSecondsSuffix": "s ago",
++     "priceUnavailable": "Price unavailable",
++     "heroWisdomHighlight": "21 legendary investors",
++     "heroWisdomPrefix": "Wisdom from ",
++     "heroTagline": "SACRED INVESTMENT INTELLIGENCE · v4.4",
++     "liveMarketData": "Live Market Data",
++     "markets": {
++       "forexDesc": "10 currency pairs",
++       "commoditiesDesc": "Gold, Oil, Metals",
++       "bondsDesc": "G-Secs & Corporate",
++       "economyPlusDesc": "Macro regime & rotation",
++       "compareDesc": "Side-by-side analysis"
++     }
++   },
++   "stock": {
++     "overview": "Overview",
++     "overviewDesc": "Fundamentals & Consensus",
++     "technicals": "Technicals",
++     "technicalsDesc": "Price Action & Indicators",
++     "rishiWisdom": "Rishi Wisdom",
++     "wisdomDesc": "All 20 Philosopher Scores",
++     "consensusScore": "Consensus Score",
++     "consensus": "Consensus",
++     "top6Rishis": "Top 6 Rishis",
++     "topRishiScores": "TOP RISHI SCORES",
++     "topRishiSubtitle": "Highest conviction philosophers on this stock",
++     "viewAll20": "VIEW ALL 20",
++     "keyMetrics": "Key Metrics",
++     "price": "Price",
++     "marketCap": "Market Cap",
++     "peRatio": "P/E Ratio",
++     "roe": "ROE",
++     "debtEquity": "Debt/Equity",
++     "dividend": "Dividend Yield",
++     "priceChart": "Price Chart",
++     "technicalIndicators": "Technical Indicators",
++     "rsi": "RSI",
++     "macd": "MACD",
++     "bollingerBands": "Bollinger Bands",
++     "adx": "ADX",
++     "bullishRishis": "Bullish Rishis",
++     "bearishRishis": "Bearish Rishis",
++     "philosophyRadar": "Philosophy Radar",
++     "peerComparison": "Peer Comparison",
++     "analystRecommendations": "Analyst Recommendations",
++     "quarterlyPerformance": "Quarterly Performance",
++     "shareholdingPattern": "Shareholding Pattern",
++     "knowledgeGraph": "Knowledge Graph",
++     "graphSubtitle": "Relationships, Parallels & Insights",
++     "graph": "GRAPH",
++     "rishiDebate": "Rishi Debate",
++     "historicalParallels": "Historical Parallels",
++     "technicalComparison": "Technical Comparison",
++     "signalTimeline": "Signal Timeline"
++   },
++   "screener": {
++     "title": "Stocks",
++     "totalCoverage": "TOTAL COVERAGE",
++     "nseBseStocks": "NSE + BSE Stocks",
++     "strongBuy": "Strong Buy",
++     "valuePlays": "Value Plays",
++     "largeCap": "Large Cap",
++     "highROE": "High ROE",
++     "debtFree": "Debt-Free",
++     "filters": "Filters",
++     "minConsensus": "Min Consensus",
++     "maxPE": "Max P/E",
++     "minROE": "Min ROE",
++     "sector": "Sector",
++     "allSectors": "All Sectors",
++     "results": "Results",
++     "symbol": "Symbol",
++     "name": "Name",
++     "consensus": "Consensus",
++     "clearFilters": "Clear Filters"
++   },
++   "portfolio": {
++     "title": "My Portfolio",
++     "subtitle": "Track holdings and analyze performance through your custom Rishi lens.",
++     "holdings": "Holdings",
++     "holdingsDesc": "Your positions",
++     "myReturns": "My Returns",
++     "returnsDesc": "Performance & CAGR",
++     "addStock": "Add Holding",
++     "addFirstHolding": "Add First Holding",
++     "addToPortfolio": "Add to Portfolio",
++     "rishiWeights": "Rishi Weights",
++     "weightsHint": "Adjust weights to match your investment philosophy. Changes apply to all consensus scoring.",
++     "noHoldings": "NO HOLDINGS YET",
++     "noHoldingsHint": "Start tracking your portfolio by adding your first holding.",
++     "noData": "NO DATA YET",
++     "noDataHint": "Add holdings to track your historical performance and CAGR.",
++     "stock": "Stock",
++     "shares": "Shares",
++     "avgPrice": "Avg Buy Price",
++     "current": "Current",
++     "pnl": "P&L",
++     "returnPct": "Return %",
++     "rishiScore": "Rishi Score",
++     "invested": "Invested",
++     "currentValue": "Current Value",
++     "totalReturn": "Total Return",
++     "absoluteReturn": "Absolute Return",
++     "cagr": "Portfolio CAGR",
++     "cagrSub": "Compound Annual Growth Rate",
++     "capitalDeployed": "Capital deployed",
++     "markToMarket": "Mark to market",
++     "holdingsCount": "Holdings",
++     "positions": "Positions",
++     "total": "TOTAL",
++     "confirmRemove": "Remove from portfolio?",
++     "chartTitle": "PORTFOLIO VALUE OVER TIME",
++     "chartSubtitle": "Simulated based on current holdings & market drift",
++     "portfolioValue": "Portfolio Value",
++     "costBasis": "Cost Basis",
++     "positionReturns": "POSITION RETURNS",
++     "symbol": "Symbol",
++     "thesisLabel": "INVESTMENT THESIS (OPTIONAL)",
++     "thesisPlaceholder": "Why did you buy this? What is your thesis?",
++     "invalidSymbol": "Invalid stock symbol",
++     "invalidShares": "Shares must be positive",
++     "invalidPrice": "Price must be positive",
++     "invalidWeight": "Weight must be 0-10",
++     "default": "Default",
++     "reset": "Reset",
++     "saveClose": "Save & Close",
++     "buyPrice": "Buy Price",
++     "currentPrice": "Current Price",
++     "gainLoss": "Gain / Loss",
++     "totalInvested": "Total Invested",
++     "totalCurrent": "Total Current Value",
++     "totalGainLoss": "Total Gain / Loss",
++     "returns": "Returns"
++   },
++   "watchlist": {
++     "title": "Watchlist",
++     "subtitle": "Track your favorite stocks with notes and price alerts",
++     "addToWatchlist": "Add to Watchlist",
++     "watching": "WATCHING",
++     "notes": "Notes",
++     "note": "Note",
++     "exportCSV": "Export CSV",
++     "sortBy": "Sort By",
++     "sortRecent": "Recent",
++     "sortScore": "Score",
++     "sortChange": "Change",
++     "added": "Added",
++     "lastUpdated": "Last Updated",
++     "remove": "Remove",
++     "removeFromWatchlist": "Remove from Watchlist",
++     "confirmRemove": "Remove from watchlist?",
++     "rishiScore": "RISHI",
++     "empty": "NO STOCKS IN WATCHLIST",
++     "emptyHint": "Add stocks above to track their Rishi scores and set price alerts.",
++     "notePlaceholder": "Add a note... (e.g. Buy below 3500)"
++   },
++   "rishis": {
++     "title": "The Rishis",
++     "subtitle": "Investment legends across Stocks, Crypto, Commodities, and Forex.",
++     "philosophyDesc": "Each Rishi brings a unique philosophical lens to market analysis.",
++     "compareMode": "Compare Stocks",
++     "catalog": "Catalog",
++     "selectTwo": "Select 2 Rishis to compare",
++     "philosophy": "Philosophy",
++     "origin": "Origin",
++     "stockRishis": "Stock Market Rishis",
++     "cryptoRishis": "Crypto Rishis",
++     "forexRishis": "Forex Rishis",
++     "showing": "Showing",
++     "rishis": "Rishis",
++     "biography": "BIOGRAPHY",
++     "formula": "FORMULA",
++     "famousPicks": "FAMOUS PICKS",
++     "noMatch": "No Rishis match your search",
++     "searchPlaceholder": "Search Rishis...",
++     "stockComparison": "STOCK COMPARISON BY RISHIS",
++     "rishiVerdict": "RISHI VERDICT: WHO WINS?",
++     "deepAnalyze": "Deep Analyze",
++     "tied": "TIED",
++     "wins": "WINS",
++     "all": "All",
++     "deepDive": "Deep Analyze"
++   },
++   "pricing": {
++     "breadcrumb": "WISDOM TIERS",
++     "free": {
++       "title": "Everything Is Free",
++       "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the full stock list, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
++       "price": "Free",
++       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
++       "cta": "Meet the Rishis",
++       "allRishis": "All 21 Rishis — every persona, every verdict",
++       "aiChat": "AI Rishi chat with per-answer grounding provenance",
++       "screener": "All stocks with every filter and field",
++       "portfolio": "Portfolio, watchlist and lab analytics",
++       "knowledgeGraph": "Knowledge graphs and council tension views",
++       "livePrices": "Live prices and market data (where the upstream provides them)",
++       "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
++     }
++   },
++   "news": {
++     "title": "Market Intelligence",
++     "subtitle": "Latest headlines and insights",
++     "breadcrumb": "NEWS",
++     "liveRss": "LIVE RSS",
++     "india": "INDIA",
++     "global": "GLOBAL",
++     "crypto": "CRYPTO",
++     "sports": "SPORTS",
++     "breaking": "BREAKING",
++     "trending": "TRENDING",
++     "hot": "HOT",
++     "live": "LIVE",
++     "latest": "LATEST",
++     "fetchingLive": "Fetching live...",
++     "updated": "Updated",
++     "refresh": "Refresh",
++     "stories": "stories",
++     "saved": "saved",
++     "liveRssActive": "LIVE RSS ACTIVE",
++     "autoRefresh": "Auto-refreshes every 5 minutes",
++     "searchPlaceholder": "Search - RBI, Infosys, Bitcoin, Virat Kohli, IPL...",
++     "all": "ALL",
++     "bullish": "BULLISH",
++     "bearish": "BEARISH",
++     "neutral": "NEUTRAL",
++     "justNow": "just now",
++     "minutesAgo": "m ago",
++     "hoursAgo": "h ago",
++     "daysAgo": "d ago",
++     "via": "via",
++     "readFull": "Read full",
++     "openSource": "Open source",
++     "liveCricket": "LIVE CRICKET",
++     "vs": "vs",
++     "clickToSee": "Click to see sports news",
++     "iplTeams": "IPL 2025 TEAMS",
++     "titles": "titles",
++     "trendingTopics": "TRENDING",
++     "todaysPulse": "TODAY'S PULSE",
++     "total": "Total",
++     "noMatch": "No stories match your filters",
++     "clearFilters": "Clear filters"
++   },
++   "crypto": {
++     "title": "Crypto Markets",
++     "subtitle": "Digital assets analyzed through Satoshi Bodhi, Vitalik Veda, and Michael Saylor philosophies.",
++     "breadcrumb": "CRYPTO",
++     "totalMarketCap": "Total Market Cap",
++     "volume24h": "24h Volume",
++     "avgRsi": "Avg RSI",
++     "sentiment": "Sentiment",
++     "btcDominance": "BTC Dominance",
++     "fearGreed": "Fear & Greed",
++     "fearGreedIndex": "CRYPTO FEAR AND GREED INDEX",
++     "extremeFear": "Extreme Fear",
++     "fear": "Fear",
++     "neutral": "Neutral",
++     "greed": "Greed",
++     "extremeGreed": "Extreme Greed",
++     "yesterday": "Yesterday",
++     "lastWeek": "Last Week",
++     "lastMonth": "Last Month",
++     "cryptoPhilosophers": "CRYPTO PHILOSOPHERS",
++     "allCryptoAssets": "ALL CRYPTO ASSETS - CLICK TO EXPLORE",
++     "asset": "Asset",
++     "price": "Price",
++     "change24h": "24h",
++     "change7d": "7d",
++     "marketCap": "Market Cap",
++     "rsi": "RSI",
++     "macd": "MACD",
++     "moving200d": "200D MA",
++     "above": "ABOVE",
++     "below": "BELOW",
++     "bullish": "BULLISH",
++     "bearish": "BEARISH",
++     "about": "ABOUT",
++     "signatureQuote": "SIGNATURE QUOTE",
++     "currentAnalysis": "CURRENT ANALYSIS",
++     "at": "at"
++   },
++   "commodities": {
++     "title": "Commodity Markets",
++     "subtitle": "Jim Rogers, Rick Rule, Daniel Yergin - supercycles, precious metals, and energy geopolitics.",
++     "breadcrumb": "COMMODITIES",
++     "goldSpot": "Gold Spot",
++     "silverSpot": "Silver Spot",
++     "crudeWti": "Crude WTI",
++     "tracked": "Tracked",
++     "assets": "assets",
++     "commodityPhilosophers": "COMMODITY PHILOSOPHERS",
++     "analyzing": "analyzing",
++     "allCommodities": "ALL COMMODITIES - CLICK TO EXPLORE",
++     "commodity": "Commodity",
++     "price": "Price",
++     "change": "Change",
++     "low52w": "52W Low",
++     "high52w": "52W High",
++     "position52w": "52W Position"
++   },
++   "marketSections": {
++     "crypto": "Crypto",
++     "cryptoTag": "DIGITAL ASSETS",
++     "forex": "Forex",
++     "forexTag": "CURRENCY PAIRS",
++     "commodities": "Commodities",
++     "commoditiesTag": "HARD ASSETS",
++     "bonds": "Bonds",
++     "bondsTag": "FIXED INCOME",
++     "news": "News",
++     "newsTag": "LATEST HEADLINES"
++   },
++   "rishiQuotes": {
++     "buffett1": "The three most important words in investing are margin of safety.",
++     "graham1": "An investment operation promises safety of principal and an adequate return.",
++     "munger1": "The best thing that happens to us is when a great company gets into temporary trouble.",
++     "lynch1": "Know what you own and why you own it.",
++     "jhunjhunwala1": "I believe in buying quality businesses and holding them for the long term.",
++     "soros1": "Markets are constantly in a state of uncertainty and flux. Money is made by discounting the obvious.",
++     "damani1": "Buy businesses that are simple to understand and have a long runway of growth."
++   },
++   "language": {
++     "select": "Language",
++     "english": "English",
++     "hindi": "हिंदी",
++     "gujarati": "ગુજરાતી"
++   },
++   "asset": {
++     "graphSubtitle": "Relationships & Insights",
++     "overview": "Overview",
++     "marketCap": "Market Cap",
++     "technicals": "Technical Analysis",
++     "knowledgeGraph": "Knowledge Graph",
++     "graph": "Graph",
++     "rishiWisdom": "Rishi Wisdom",
++     "change24h": "24h Change",
++     "price": "Price",
++     "volume": "Volume",
++     "viewAll20": "View All 20",
++     "sector": "Sector",
++     "consensus": "Consensus",
++     "topRishiSubtitle": "Philosophical consensus ranking",
++     "topRishiScores": "Top Rishi Scores",
++     "category": "Category",
++     "overviewDesc": "Consensus & Metrics",
++     "technicalsDesc": "Charts & Indicators"
++   },
++   "pulse": {
++     "title": "Economy Plus",
++     "subtitle": "Macro Intelligence · Philosopher Council · Regime Analysis",
++     "backToDashboard": "Dashboard",
++     "marketMood": "MARKET MOOD",
++     "scoreLabel": "Score",
++     "currentMacroRegime": "CURRENT MACRO REGIME",
++     "consensusScore": "CONSENSUS SCORE",
++     "disagreementIndex": "Disagreement Index",
++     "councilRegimeRead": "Council regime read:",
++     "lensLabel": "LENS:",
++     "lensAll": "All",
++     "lensHayek": "Hayek",
++     "lensFriedman": "Friedman",
++     "lensKeynes": "Keynes",
++     "tabs": {
++       "overview": "Overview",
++       "macro": "Macro Regime",
++       "rotation": "Sector Rotation",
++       "evidence": "Evidence",
++       "currency": "Currency",
++       "brief": "Daily Brief",
++       "breadth": "Breadth",
++       "blocks": "Block Deals"
++     },
++     "overview": {
++       "sectorSnapshot": "SECTOR SNAPSHOT (NSE INDICES)",
++       "breadthLabel": "Breadth (A/D)",
++       "blockDealsLabel": "Block Deals",
++       "upSuffix": "up",
++       "downSuffix": "down",
++       "lastLabel": "Last"
++     },
++     "macro": {
++       "historicalAnalog": "Historical Analog",
++       "currencyImpact": "CURRENCY IMPACT – INR SNAPSHOT",
++       "asOfLabel": "As of",
++       "trendLabel": "Trend",
++       "volLabel": "Vol"
++     },
++     "rotation": {
++       "title": "SECTOR ROTATION OUTLOOK",
++       "description": "Scores are regime-based (updated when macro view is updated). Live market data is shown in Overview/Breadth/Currency/Blocks tabs.",
++       "tableHeaders": {
++         "sector": "SECTOR",
++         "hayek": "HAYEK",
++         "friedman": "FRIEDMAN",
++         "keynes": "KEYNES",
++         "consensus": "CONSENSUS",
++         "spread": "SPREAD",
++         "bias": "BIAS",
++         "driver": "KEY MACRO DRIVER"
++       }
++     },
++     "evidence": {
++       "title": "HISTORICAL EVIDENCE ENGINE",
++       "description": "Evidence cards: macro condition → historical outcome. Filtered by lens.",
++       "regimeMatch": "CURRENT REGIME MATCH",
++       "winRate": "WIN RATE",
++       "avg": "AVG",
++       "instances": "N",
++       "conditionLabel": "Condition:",
++       "outcomeLabel": "Outcome:",
++       "confidenceSuffix": "Confidence"
++     },
++     "currency": {
++       "title": "CURRENCY SENSITIVITY MATRIX",
++       "description": "Estimated earnings sensitivity per 1% INR move (heuristic).",
++       "tableHeaders": {
++         "sector": "SECTOR",
++         "rev": "REV",
++         "cost": "COST",
++         "inrWeak": "INR WEAK +1%",
++         "inrStrong": "INR STRONG +1%",
++         "bias": "BIAS",
++         "examples": "EXAMPLES"
++       }
++     },
++     "breadth": {
++       "title": "BREADTH (NSE INDICES SNAPSHOT)",
++       "advancing": "Advancing",
++       "declining": "Declining",
++       "unchanged": "Unchanged",
++       "unknown": "No Data",
++       "adRatio": "A/D Ratio",
++       "sectorMovesTitle": "SECTOR INDEX MOVES (LIVE)",
++       "tableHeaders": {
++         "sector": "Sector",
++         "last": "Last",
++         "change": "% Chg",
++         "high": "High",
++         "low": "Low",
++         "open": "Open",
++         "prevClose": "Prev Close"
++       }
++     },
++     "blocks": {
++       "description": "Live NSE block deal feed.",
++       "tableHeaders": {
++         "symbol": "Symbol",
++         "qty": "Qty",
++         "price": "Price",
++         "value": "Value (Cr)",
++         "change": "Chg %",
++         "side": "Side",
++         "series": "Series"
++       }
++     },
++     "consensus": {
++       "highConviction": "High Conviction",
++       "moderateConviction": "Moderate",
++       "lowConviction": "Low Conviction"
++     }
++   },
++   "dashboard2": {
++     "viewAll": "View All",
++     "fullAnalysis": "Full Analysis",
++     "fullScreener": "All Stocks",
++     "todaySuffix": "today",
++     "rishiScore": "Rishi Score",
++     "rishiConsensus": "Rishi Consensus",
++     "bulls": "Bulls",
++     "bears": "Bears",
++     "viewFullAnalysis": "View Full Analysis",
++     "peLabel": "PE",
++     "roeLabel": "ROE",
++     "oemLabel": "OPM",
++     "sections": {
++       "stockOfTheDay": "Stock of the Day",
++       "topBuySignals": "Top Buy Signals",
++       "shortRadar": "Short Radar",
++       "cryptocurrency": "Cryptocurrency",
++       "allMarkets": "All Markets"
++     },
++     "wisdom": {
++       "title": "21 Legendary Investors",
++       "body": "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — timeless frameworks applied to every stock in our universe. Long and Short thesis. Every day.",
++       "bodyHighlight": "scoring every stock",
++       "exploreBtn": "Explore All Rishis"
++     },
++     "rankingsDisabled": "Ranked picks are disabled",
++     "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Everything else — live prices, the stock list, chat — keeps working."
++   },
++   "chat": {
++     "header": "Chat with Rishis",
++     "debate": "Debate",
++     "solo": "Solo",
++     "askAbout": "Ask",
++     "askTheRishis": "the Rishis",
++     "poweredBy": "Powered by Google Gemini",
++     "personalityDriven": "Personality-driven responses",
++     "thinking": "thinking...",
++     "consultingAI": "Consulting the AI model...",
++     "send": "Send",
++     "quickPrompts": {
++       "view": "What's your view on this stock?",
++       "buyHoldSell": "Should I buy, hold, or sell?",
++       "risks": "What are the biggest risks?",
++       "thesis": "Write a full investment thesis",
++       "changeMind": "What would change your mind?",
++       "valuation": "Is the valuation justified?",
++       "aiUnavailable": "AI unavailable — no answer was generated. Please try again.",
++       "personaLocked": "This Rishi requires a higher tier. Upgrade to continue."
++     },
++     "personaUnavailable": "This Rishi is temporarily unavailable — the roster could not be loaded. Please retry."
++   },
++   "kg": {
++     "close": "CLOSE",
++     "knowledgeGraph": "Knowledge Graph",
++     "macroKnowledgeGraph": "Macro Knowledge Graph",
++     "bullCase": "BULL CASE",
++     "bearCase": "BEAR CASE",
++     "bullishMacro": "BULLISH MACRO",
++     "bearishMacro": "BEARISH MACRO",
++     "noBulls": "No strong bulls at current levels",
++     "noBears": "No strong bears at current levels",
++     "noBullsPrice": "No strong bulls at current price levels",
++     "noBearsPrice": "No strong bears at current price levels",
++     "noBullishSignals": "No bullish signals at current levels",
++     "noBullishMacro": "No bullish macro signals",
++     "noBearishMacro": "No bearish macro signals",
++     "building": "Building knowledge graph...",
++     "comingSoon": "Interactive knowledge graph coming soon",
++     "unavailable": "Knowledge Graph unavailable",
++     "elite": "Elite Knowledge Graph",
++     "consensusArchitecture": "Consensus Architecture"
++   },
++   "overview": {
++     "totalInvested": "Total Invested",
++     "currentValue": "Current Value",
++     "portfolioRishiScore": "Portfolio Rishi Score",
++     "twrrTotal": "TWRR Total",
++     "holdings": "Holdings",
++     "avgHoldingPeriod": "Avg Holding Period",
++     "dailyEnlightenment": "Daily Enlightenment",
++     "sensex": "Sensex",
++     "riskSummary": "Risk Summary",
++     "hhiIndex": "HHI Index",
++     "liquidityRisk": "Liquidity Risk",
++     "governanceRisk": "Governance Risk",
++     "cyclicalExposure": "Cyclical Exposure",
++     "overallRisk": "Overall Risk",
++     "maxDrawdown": "Max Drawdown",
++     "fcfYield": "FCF Yield",
++     "portfolioBull": "Portfolio Bull",
++     "portfolioBear": "Portfolio Bear",
++     "disagreementIndex": "Disagreement Index",
++     "bestPerformer": "Best Performer",
++     "worstPerformer": "Worst Performer",
++     "symbol": "Symbol",
++     "newPortfolioValue": "New Portfolio Value",
++     "newRishiScore": "New Rishi Score",
++     "scoreImpact": "Score Impact"
++   },
++   "compare": {
++     "arenaEmpty": "The Arena is Empty",
++     "stock": "STOCK",
++     "price": "PRICE",
++     "marketCap": "MKT CAP",
++     "score": "SCORE",
++     "tension": "TENSION",
++     "rishi": "RISHI",
++     "winner": "WINNER",
++     "rishiConsensus": "RISHI CONSENSUS",
++     "sector": "SECTOR",
++     "rishiScore": "RISHI SCORE",
++     "category": "CATEGORY",
++     "historicalPerformanceAnalysis": "HISTORICAL PERFORMANCE ANALYSIS",
++     "disagreementIndex": "DISAGREEMENT INDEX"
++   },
++   "intel": {
++     "portfolioDebate": "Portfolio Rishi Debate",
++     "mostBullish": "MOST BULLISH ON PORTFOLIO",
++     "disagreementIndex": "DISAGREEMENT INDEX",
++     "mostBearish": "MOST BEARISH ON PORTFOLIO",
++     "symbol": "Symbol",
++     "spread": "Spread",
++     "knowledgeCoverage": "Knowledge Coverage",
++     "macroRegimeFit": "Macro Regime Fit",
++     "cyclicalExposure": "CYCLICAL EXPOSURE",
++     "defensiveExposure": "DEFENSIVE EXPOSURE"
++   },
++   "holdings": {
++     "symbol": "SYMBOL",
++     "shares": "SHARES",
++     "avgPrice": "AVG PRICE",
++     "purchaseDate": "PURCHASE DATE"
++   },
++   "quarterly": {
++     "title": "Quarterly Results",
++     "revenue": "Revenue",
++     "netProfit": "Net Profit",
++     "margins": "Margins"
++   },
++   "rishiGrid": {
++     "legend": "Legend",
++     "master": "Master",
++     "specialist": "Specialist",
++     "consensusWeight": "Consensus weight"
++   },
++   "analyst": {
++     "avgTargetPrice": "Avg Target Price",
++     "upsidePotential": "Upside Potential"
++   },
++   "chart": {
++     "priceChart": "PRICE CHART",
++     "loading": "Loading…",
++     "loadFailed": "Failed to load data",
++     "noData": "No data for this period"
++   },
++   "epistemic": {
++     "consensusDisagreement": "Consensus Disagreement",
++     "knowledgeGaps": "Knowledge Gaps",
++     "opposingViews": "Opposing Views",
++     "philosophyDivergence": "Philosophy Divergence"
++   },
++   "legal": {
++     "rishiDisclaimer": "All \"Rishis\" shown are",
++     "fictional": "purely fictional interpretations",
++     "inspired": "inspired by the public philosophies"
++   },
++   "nav": {
++     "terminal": "RISHI TERMINAL",
++     "bonds": "BONDS",
++     "forex": "FOREX",
++     "rishis": "RISHIS",
++     "pairs": "PAIRS",
++     "core": "CORE",
++     "dashboard": "Dashboard",
++     "screener": "Stocks",
++     "portfolioLab": "Portfolio Lab",
++     "markets": "MARKETS",
++     "crypto": "Crypto",
++     "commodities": "Commodities",
++     "economyPlus": "Economy Plus",
++     "intelligence": "INTELLIGENCE",
++     "chatWithRishis": "Chat with Rishis",
++     "news": "News",
++     "pricing": "Pricing",
++     "methodology": "Methodology",
++     "compare": "Compare",
++     "portfolio": "Portfolio",
++     "watchlist": "Watchlist",
++     "allRishis": "All Rishis"
++   },
++   "alerts": {
++     "symbol": "SYMBOL",
++     "alertType": "ALERT TYPE",
++     "targetValue": "TARGET VALUE"
++   },
++   "bonds": {
++     "breadcrumb": "BONDS",
++     "title": "BONDS",
++     "subtitle": "Sovereign and corporate debt — reference yields, labelled live where a live quote exists",
++     "totalBonds": "TOTAL BONDS",
++     "sovereignCorporate": "Sovereign & Corporate",
++     "gSecs": "G-SECS",
++     "sdls": "SDLs",
++     "corporate": "CORPORATE",
++     "tBills": "T-BILLS",
++     "avgYtm": "AVG YTM",
++     "avgDuration": "AVG DURATION",
++     "sortBy": "SORT BY",
++     "name": "NAME",
++     "type": "TYPE",
++     "coupon": "COUPON",
++     "duration": "DURATION",
++     "price": "PRICE",
++     "rating": "RATING",
++     "spread": "SPREAD",
++     "usTreasuries": "US Treasuries"
++   },
++   "fno": {
++     "underlying": "UNDERLYING",
++     "strategy": "STRATEGY",
++     "lotSize": "LOT SIZE",
++     "configureStrategy": "Configure your strategy and click Run Backtest",
++     "action": "ACTION",
++     "strike": "STRIKE",
++     "premium": "PREMIUM",
++     "clear": "Clear",
++     "noLegs": "No legs yet",
++     "wisdomDesc1": "Build options strategies with",
++     "wisdomDesc2": "Rishi wisdom",
++     "wisdomDesc3": "Understand your payoff, Greeks, and risk before you execute.",
++     "strategyEdu": "Educational reference: standard strategy definitions with illustrative persona tags. Not live data, not advice."
++   },
++   "forex": {
++     "breadcrumb": "FOREX",
++     "title": "FOREX",
++     "subtitle": "Live currency markets with macro analysis from legendary traders",
++     "pairs": "PAIRS",
++     "inrCrossRates": "INR Cross Rates",
++     "avgVolatility": "AVG VOLATILITY",
++     "volume24h": "24H VOLUME",
++     "usdInrSpot": "USD/INR SPOT",
++     "eurInrSpot": "EUR/INR SPOT",
++     "currencyPairs": "CURRENCY PAIRS",
++     "pair": "PAIR",
++     "spot": "SPOT",
++     "bid": "BID",
++     "ask": "ASK",
++     "spread": "SPREAD",
++     "forward1m": "1M FORWARD",
++     "volatility": "VOLATILITY",
++     "ppp": "PPP",
++     "pppValue": "PPP Value"
++   },
++   "assetDetail": {
++     "tabs": {
++       "overview": "Overview",
++       "overviewDesc": "Price & Fundamentals",
++       "technical": "Technicals",
++       "technicalDesc": "Indicators & Signals",
++       "wisdom": "Rishi Wisdom",
++       "wisdomDesc": "Philosopher Scores & Insights",
++       "wisdomDescCommodity": "Commodity Philosopher Scores",
++       "wisdomDescCrypto": "Crypto Wisdom",
++       "knowledge": "Knowledge Graph",
++       "knowledgeDesc": "Bulls vs Bears & Edge"
++     },
++     "rishis": {
++       "georgesorosName": "George Soros",
++       "georgesorosLens": "Reflexivity",
++       "georgesorosPhilosophy": "Markets are always biased in one direction or another. The key is to find the bias.",
++       "georgesorosBio": "Co-founder of Quantum Fund. Broke the Bank of England. Father of reflexivity theory.",
++       "raydaliName": "Ray Dalio",
++       "raydaliLens": "Debt Cycles",
++       "raydaliPhilosophy": "Understand the machine — interest rates and debt cycles drive all major currency moves.",
++       "raydaliBio": "Founder of Bridgewater. Creator of the economic machine framework. All-weather portfolio pioneer.",
++       "stanleyName": "Stanley Druckenmiller",
++       "stanleyLens": "Macro Momentum",
++       "stanleyPhilosophy": "Earnings don't move the overall market; the Federal Reserve does.",
++       "stanleyBio": "Managed Soros Quantum Fund. Best macro track record in history. Currency and rate specialist.",
++       "jimrogersName": "Jim Rogers",
++       "jimrogersFocus": "Supercycles, physical assets, inflation hedge",
++       "jimrogersPhilosophy": "Buy commodities when nobody wants them. Sell when everybody loves them.",
++       "jimrogersBio": "Co-founded Quantum Fund. Predicted the 2000s commodities supercycle.",
++       "rickruleName": "Rick Rule",
++       "rickruleFocus": "Precious metals, resource scarcity, monetary systems",
++       "rickrulePhilosophy": "Gold is money. Everything else is credit.",
++       "rickruleBio": "CEO of Sprott. Legendary resource sector investor.",
++       "danielyerginName": "Daniel Yergin",
++       "danielyerginFocus": "Energy transitions, geopolitical risk, supply dynamics",
++       "danielyerginPhilosophy": "Oil is the lifeblood of the industrial civilization.",
++       "danielyerginBio": "Pulitzer Prize-winning energy historian. VP at S&P Global.",
++       "satoshibodhiName": "Satoshi Bodhi",
++       "satoshibodhiFocus": "Bitcoin, decentralization, sound money",
++       "satoshibodhiPhilosophy": "The root problem with conventional currency is all the trust required to make it work.",
++       "satoshibodhiBio": "Sound money maximalist. Bitcoin as the ultimate store of value.",
++       "vitalikvedaName": "Vitalik Veda",
++       "vitalikvedaFocus": "Smart contracts, scalability, DeFi",
++       "vitalikvedaPhilosophy": "Whereas most technologies tend to automate workers, blockchains automate away trust.",
++       "vitalikvedaBio": "Protocol fundamentalist. Ethereum as world computer.",
++       "michaelsaylorName": "Michael Saylor",
++       "michaelsaylorFocus": "Institutional adoption, digital property",
++       "michaelsaylorPhilosophy": "Bitcoin is a bank in cyberspace, run by incorruptible software.",
++       "michaelsaylorBio": "Corporate Bitcoin maximalist. MicroStrategy treasury architect."
++     },
++     "metrics": {
++       "carryTrade": "Carry Trade",
++       "carryTradeYield": "Carry Trade Yield",
++       "pppAlignment": "PPP Alignment",
++       "pppDeviation": "PPP Deviation",
++       "volatility": "Volatility",
++       "momentum": "Momentum",
++       "rateDifferential": "Rate Differential",
++       "rsi14": "RSI (14)",
++       "priceVs200dMa": "Price vs 200D MA",
++       "distanceFromAth": "Distance from ATH",
++       "change7d": "7D Change",
++       "range52w": "52W Range Position",
++       "priceVsSma200": "Price vs SMA 200",
++       "momentum1d": "Momentum (1D)"
++     },
++     "labels": {
++       "bidAskSpread": "BID / ASK / SPREAD",
++       "bid": "Bid",
++       "ask": "Ask",
++       "spread": "Spread",
++       "mid": "Mid",
++       "forwardRates": "FORWARD RATES",
++       "oneMonth": "1 Month",
++       "threeMonths": "3 Months",
++       "sixMonths": "6 Months",
++       "twelveMonths": "12 Months",
++       "interestRateDiff": "INTEREST RATE DIFFERENTIAL",
++       "differential": "Differential",
++       "performance": "PERFORMANCE",
++       "oneDayChange": "1 Day",
++       "fromHigh52w": "From 52W High",
++       "fromLow52w": "From 52W Low",
++       "pppAnalysis": "PURCHASING POWER PARITY (PPP)",
++       "spotRate": "Spot Rate",
++       "pppFairValue": "PPP Fair Value",
++       "overUnderValued": "Over/Under Valued",
++       "macroEdge": "MACRO EDGE ANALYSIS",
++       "tradingStats": "24H TRADING STATISTICS",
++       "volume24h": "24h Volume",
++       "liquidity": "Liquidity",
++       "volatilityClass": "Volatility Class",
++       "centralBankPolicy": "CENTRAL BANK POLICY STANCE",
++       "centralBank": "Central Bank",
++       "policyRate": "POLICY RATE",
++       "carryTradeAnalysis": "CARRY TRADE ANALYSIS",
++       "keyMetrics": "KEY METRICS",
++       "currentPrice": "Current Price",
++       "low52w": "52W Low",
++       "high52w": "52W High",
++       "position52w": "52W Position",
++       "category": "Category",
++       "exchange": "Exchange",
++       "range52wTitle": "52-WEEK PRICE RANGE",
++       "rishiInsights": "RISHI INSIGHTS",
++       "technicalSignals": "TECHNICAL SIGNALS",
++       "marketCap": "Market Cap",
++       "moving200d": "200D MA",
++       "fromAth": "From ATH",
++       "macd": "MACD",
++       "analysis": "ANALYSIS",
++       "technicalEdge": "TECHNICAL EDGE",
++       "macroEdgeTitle": "MACRO EDGE",
++       "neutral": "NEUTRAL"
++     },
++     "signals": {
++       "overbought": "OVERBOUGHT",
++       "oversold": "OVERSOLD",
++       "neutral": "NEUTRAL",
++       "buy": "BUY",
++       "sell": "SELL",
++       "above": "ABOVE",
++       "below": "BELOW",
++       "strong": "STRONG",
++       "weak": "WEAK",
++       "bullish": "BULLISH",
++       "bearish": "BEARISH",
++       "hawkish": "HAWKISH",
++       "dovish": "DOVISH",
++       "positiveCarry": "POSITIVE CARRY OPPORTUNITY",
++       "negativeCarry": "NEGATIVE CARRY — REVERSE TRADE",
++       "positive": "POSITIVE",
++       "negative": "NEGATIVE"
++     },
++     "consensus": {
++       "commodity3": "3 COMMODITY RISHI CONSENSUS",
++       "crypto3": "3 CRYPTO RISHI CONSENSUS",
++       "macro3": "3 MACRO RISHI CONSENSUS",
++       "strongBuy": "Strong Buy — Supercycle Conditions Present",
++       "moderate": "Moderate Opportunity — Selective Accumulation",
++       "caution": "Caution — Wait for Better Entry",
++       "strongHodl": "Strong HODL Signal — Sound Money Thesis Intact",
++       "accumulation": "Accumulation Phase — Selective Entry Points",
++       "weakMomentum": "Weak Momentum — Patience Required",
++       "bullishFavor": "Bullish — Macro conditions favor",
++       "neutralMixed": "Neutral — Mixed signals, range-bound likely",
++       "bearishHeadwinds": "Bearish — Macro headwinds for"
++     }
++   }
++ }
++
+
+ ❯ test/personaAttribution.zero.test.ts:132:20
+    130|     // database — all deleted with their consumers verified absent.
+    131|     const en = read("messages/en.json");
+    132|     expect(en).not.toContain("rishiQuotes");
+       |                    ^
+    133|     expect(en).not.toContain("assetDetail");
+    134|     const fileGone = (p: string) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 1 passed (7)
+   Start at  10:19:38
+   Duration  233ms (tests 58%, transform 29%, import 5%, setup 5%, worker 3%)
+
+EXIT=1

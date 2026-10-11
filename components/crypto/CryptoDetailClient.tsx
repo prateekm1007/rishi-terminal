@@ -89,7 +89,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     return {
       name: v.name,
       initials: meta?.initials ?? v.name.slice(0, 2).toUpperCase(),
-      philosophy: meta?.quote ?? '',
+      framework: meta?.framework ?? '',
       focus: meta?.focus ?? '',
       bio: meta?.bio ?? '',
       result: { score: v.score, label: v.label, insight: v.insight ?? '', comps: v.comps ?? [] },
@@ -329,7 +329,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 CRYPTO RISHI CONSENSUS · HEURISTIC REFERENCE</div>
-              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
+              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring). Rishi names mark simulated lenses on public frameworks — Michael Saylor is a real analyst and these scores are NOT his views; Satoshi Bodhi and Vitalik Veda are fictional archetypes.</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore === null ? 'Insufficient Data — fewer than the minimum valid scorers' : avgScore >= 75 ? 'Strong HODL Signal — Sound Money Thesis Intact' : avgScore >= 55 ? 'Accumulation Phase — Selective Entry Points' : 'Weak Momentum — Patience Required'}
@@ -375,7 +375,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                     <span style={{ fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{scoreDisp(r.result.score)}/100</span>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{r.framework}</div>
                 </div>
               ))}
             </div>
@@ -468,7 +468,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{r.result.insight}</p>
                 </div>
                 <div style={{ padding: 14, background: 'rgba(212,175,55,0.05)', borderRadius: 8, borderLeft: '3px solid rgba(212,175,55,0.4)', marginBottom: 16 }}>
-                  <div style={{ fontSize: 10, color: '#D4AF37', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>
+                  <div style={{ fontSize: 10, color: '#D4AF37' }}>{r.framework}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>{r.bio}</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
@@ -504,7 +504,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#22C55E' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.framework}</div>
                   </div>
                 ))}
               </div>
@@ -518,7 +518,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#EF4444' }}>{scoreDisp(r.result.score)}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.philosophy}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.framework}</div>
                   </div>
                 ))}
               </div>

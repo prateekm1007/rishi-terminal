@@ -24,7 +24,8 @@ export type PersonaDisplay = {
   bio?: string;
   formula?: string;
   bestFor?: string[];
-  quote?: string;
+  // P0-7 (round 47): the quote field is REMOVED — no attributed
+  // quotations of real persons render anywhere (founder order).
   famousPicks?: string[];
   category?: string;
   origin?: string;
@@ -48,7 +49,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Multi-Year",
       "Large Cap"
     ],
-    "quote": "I am a firm believer in the India story.",
     "famousPicks": [
       "Titan",
       "Star Health",
@@ -73,7 +73,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Debt-Free",
       "Quality"
     ],
-    "quote": "Never invest in a business you cannot understand.",
     "famousPicks": [
       "DMart",
       "VST Industries"
@@ -97,7 +96,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Hidden Gems",
       "Multibagger"
     ],
-    "quote": "Small caps with high promoter holding are where real wealth is created.",
     "famousPicks": [
       "Vaibhav Global",
       "Newgen Software"
@@ -121,7 +119,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Mid Cap",
       "Emerging"
     ],
-    "quote": "Market transfers money from the impatient to the patient.",
     "famousPicks": [
       "Cera Sanitaryware",
       "Atul Auto"
@@ -145,7 +142,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Turnarounds",
       "Contrarian"
     ],
-    "quote": "The best investments come with maximum pessimism.",
     "famousPicks": [
       "Stove Kraft",
       "Geojit Financial"
@@ -169,7 +165,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Quality Growth",
       "QGLP"
     ],
-    "quote": "Quality plus Growth plus Longevity at Right Price is the mantra.",
     "famousPicks": [
       "Page Industries",
       "Eicher Motors"
@@ -193,7 +188,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Boring Business",
       "Compounder"
     ],
-    "quote": "Boring businesses compound into fortunes over decades.",
     "famousPicks": [
       "V-Guard Industries"
     ],
@@ -216,7 +210,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Growth",
       "India Theme"
     ],
-    "quote": "The Indian consumption story is just beginning.",
     "famousPicks": [
       "Berger Paints",
       "HDFC Bank"
@@ -240,7 +233,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Multi-Year",
       "Moat"
     ],
-    "quote": "Wonderful company at fair price beats fair company at wonderful price.",
     "famousPicks": [
       "Coca-Cola",
       "Apple",
@@ -265,7 +257,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Asset Plays",
       "Safety"
     ],
-    "quote": "Margin of safety is the central concept of investment.",
     "famousPicks": [
       "GEICO"
     ],
@@ -288,7 +279,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Growth",
       "Consumer"
     ],
-    "quote": "Invest in what you know.",
     "famousPicks": [
       "Dunkin Donuts",
       "Chrysler"
@@ -312,7 +302,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Mental Models",
       "Multi-Year"
     ],
-    "quote": "Invert, always invert.",
     "famousPicks": [
       "Costco",
       "Berkshire Hathaway"
@@ -336,7 +325,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Quant",
       "Value"
     ],
-    "quote": "Figure out the value of something and then pay a lot less for it.",
     "famousPicks": [
       "Various - systematic approach"
     ],
@@ -359,7 +347,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Asymmetric",
       "Value"
     ],
-    "quote": "Heads I win, tails I do not lose much.",
     "famousPicks": [
       "Fiat Chrysler",
       "Rain Industries"
@@ -383,7 +370,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Quality Management",
       "Multi-Year"
     ],
-    "quote": "The person with the right information beats the person with the right advice.",
     "famousPicks": [
       "Motorola",
       "Texas Instruments"
@@ -407,7 +393,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Contrarian",
       "Risk Management"
     ],
-    "quote": "Most people try to find good assets. I try to find good risk/reward.",
     "famousPicks": [
       "Distressed debt",
       "High yield bonds"
@@ -431,7 +416,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Asymmetric",
       "Deep Value"
     ],
-    "quote": "The best returns come from situations where downside is minimal.",
     "famousPicks": [
       "Distressed assets",
       "Special situations"
@@ -455,7 +439,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Global",
       "Deep Value"
     ],
-    "quote": "Maximum pessimism is historically where the best entries cluster.",
     "famousPicks": [
       "Japan 1980s",
       "Various global bargains"
@@ -479,7 +462,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Low Risk",
       "Diversified"
     ],
-    "quote": "Cheap stocks, held until they become less cheap.",
     "famousPicks": [
       "Statistically cheap stocks"
     ],
@@ -502,7 +484,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Forensic",
       "Skepticism"
     ],
-    "quote": "Being early is the same as being wrong in shorts.",
     "famousPicks": [
       "Enron (short)"
     ],
@@ -525,7 +506,6 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Trends",
       "Currencies"
     ],
-    "quote": "It's not whether you're right or wrong, but how much you make when you're right and how much you lose when you're wrong.",
     "famousPicks": [
       "British Pound (1992 short)"
     ],

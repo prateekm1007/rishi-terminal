@@ -259,9 +259,6 @@ export default function ChatWithRishisPage() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: 'var(--text-muted)', padding: '40px 20px' }}>
               <div style={{ fontSize: 56, marginBottom: 16 }}>{selectedRishi.emoji}</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: rankColor, marginBottom: 8 }}>{selectedRishi.name}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 420, lineHeight: 1.7, marginBottom: 20 }}>
-                &quot;{selectedRishi.quote}&quot;
-              </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 380, lineHeight: 1.6, marginBottom: 24 }}>
                 {selectedRishi.bio}
               </div>
@@ -270,7 +267,14 @@ export default function ChatWithRishisPage() {
                 {selectedRishi.formula}
               </div>
               <div style={{ marginTop: 20, fontSize: 11, color: 'var(--text-muted)' }}>
-                Ask anything about stocks, markets, investing, or life ↓
+                Ask anything about stocks, markets or investing ↓
+              </div>
+              {/* A11y (axe wcag2aa): 9px text must hold 4.5:1 — the dimmed
+                  muted variant measured 4.37:1 on the dark background. The
+                  full-opacity muted tone passes and keeps the disclosure
+                  quiet. */}
+              <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-muted)', maxWidth: 380, lineHeight: 1.5 }}>
+                Simulated persona — a framework illustration, not the real investor. The chat is unavailable until an approved provider exists.
               </div>
             </div>
           )}

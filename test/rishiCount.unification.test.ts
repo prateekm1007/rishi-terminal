@@ -122,14 +122,16 @@ describe("RISHI-COUNT — one concept, one number: the roster is 21 everywhere i
       const p = CANONICAL_PERSONAS.find(x => x.id === id);
       expect(p, `registry persona ${id}`).toBeDefined();
       // app/rishis/page.tsx renders: rank badge, label, origin, bestFor,
-      // quote, bio, formula (+ emoji/name carried by the identity fields).
+      // bio, formula (+ emoji/name carried by the identity fields).
+      // P0-7 (round 47): the quote field is REMOVED from both types
+      // (founder order 2026-10-11: no attributed quotations of real
+      // persons render anywhere) — its pins are deleted with it.
       expect(p!.rank, `${id}.rank`).toMatch(/^(Legend|Master)$/);
       expect(p!.label, `${id}.label non-empty`).toBeTruthy();
       expect(p!.bio, `${id}.bio non-empty`).toBeTruthy();
       expect(p!.formula, `${id}.formula non-empty`).toBeTruthy();
       expect(Array.isArray(p!.bestFor), `${id}.bestFor array`).toBe(true);
       expect(p!.bestFor!.length, `${id}.bestFor non-empty`).toBeGreaterThan(0);
-      expect(p!.quote, `${id}.quote non-empty`).toBeTruthy();
       expect(p!.origin, `${id}.origin non-empty`).toBeTruthy();
       expect(p!.category, `${id}.category non-empty`).toBeTruthy();
     }
@@ -253,7 +255,6 @@ describe("RISHI-COUNT — one concept, one number: the roster is 21 everywhere i
       expect(d!.label).toBe(p.label);
       expect(d!.bio).toBe(p.bio);
       expect(d!.formula).toBe(p.formula);
-      expect(d!.quote).toBe(p.quote);
       expect(d!.origin).toBe(p.origin);
       expect(d!.category).toBe(p.category);
     }

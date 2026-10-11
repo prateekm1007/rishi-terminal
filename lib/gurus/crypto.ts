@@ -14,7 +14,10 @@ export interface CryptoGuruMeta {
   /** Short initials badge for the detail page. */
   initials: string;
   bio: string;
-  quote: string;
+  /** P0-7 (round 47): the quote field is GONE — no attributed quotations
+   *  of real persons render anywhere (founder order 2026-10-11). The
+   *  card carries a descriptive framework read instead. */
+  framework: string;
   /** One-line focus areas for the detail page. */
   focus: string;
   /** Which asset the guru's verdict tracks (matches CRYPTO_ASSETS.symbol). */
@@ -27,8 +30,8 @@ export const CRYPTO_GURUS: CryptoGuruMeta[] = [
     name: 'Satoshi Bodhi',
     tag: 'BTC',
     initials: 'SB',
-    bio: 'Sound money maximalist. Bitcoin as the ultimate store of value. Decentralization above all else.',
-    quote: 'The root problem with conventional currency is all the trust required to make it work.',
+    bio: 'Sound-money maximalist framework. Bitcoin as a store of value, decentralization above all else.',
+    framework: 'Reads monetary debasement risk, issuance schedule and node decentralization as the value thesis.',
     focus: 'Bitcoin, decentralization, sound money',
     target: 'BTC',
   },
@@ -37,8 +40,8 @@ export const CRYPTO_GURUS: CryptoGuruMeta[] = [
     name: 'Vitalik Veda',
     tag: 'ETH',
     initials: 'VV',
-    bio: 'Protocol fundamentalist. Ethereum as world computer. Scalability, security, decentralization trilemma solver.',
-    quote: 'Whereas most technologies tend to automate workers, blockchains automate away trust.',
+    bio: 'Protocol-fundamentalist framework. Ethereum as a world computer; the scalability-security-decentralization trilemma.',
+    framework: 'Reads fee markets, L2 settlement demand and protocol revenue as the value thesis.',
     focus: 'Smart contracts, scalability, DeFi',
     target: 'ETH',
   },
@@ -47,8 +50,8 @@ export const CRYPTO_GURUS: CryptoGuruMeta[] = [
     name: 'Michael Saylor',
     tag: 'MS',
     initials: 'MS',
-    bio: 'Corporate Bitcoin maximalist. Digital property thesis. MicroStrategy Bitcoin treasury architect.',
-    quote: 'Bitcoin is a bank in cyberspace, run by incorruptible software.',
+    bio: 'Corporate-treasury framework. Bitcoin as digital property; the MicroStrategy balance-sheet strategy popularized the template.',
+    framework: 'Reads institutional adoption, treasury demand and long-duration holding as the value thesis.',
     focus: 'Institutional adoption, digital property',
     target: 'BTC',
   },

@@ -10,7 +10,10 @@ import { RishiScoreResult, StockMetrics, ScoreMode } from "./types";
 // ── Long Commentary Templates ────────────────────────────────
 
 const LEGENDARY_LONG = [
-  "As Jhunjhunwala would say – this is a business that earns the right to grow. The numbers do not lie: capital allocation is exceptional, the moat is widening, and the promoters have meaningful skin in the game. At current valuations, this stock offers what every serious investor seeks – a margin of safety with a growth kicker.",
+  // P0-7 (round 47, founder order): the attributed line is DELETED — no
+  // fabricated speech is attributed to a real (deceased) person. The
+  // unattributed template below carries the same read.
+  "This is a business that earns the right to grow. The numbers do not lie: capital allocation is exceptional, the moat is widening, and the promoters have meaningful skin in the game. At current valuations, this record offers what every framework seeks – a margin of safety with a growth kicker.",
   "Damani would recognise this pattern immediately. A consumer franchise with pricing power, consistent return on capital, and conservative management. These businesses, bought patiently, create generational wealth. The market has not yet fully appreciated what the next decade holds.",
 ];
 
@@ -36,7 +39,11 @@ const NEUTRAL_LONG = [
 ];
 
 const AVOID_LONG = [
-  "The numbers tell a cautionary tale. Capital efficiency is poor, the balance sheet is stressed, and the valuation offers no margin of safety. As Graham would remind us – the first rule of investing is: do not lose money. This situation makes that principle difficult to uphold.",
+  // P0-7 (round 47, founder order): the Graham attribution CORRECTED —
+  // the "first rule: do not lose money" formulation is Buffett's; Graham's
+  // documented central concept (The Intelligent Investor, ch. 20) is the
+  // margin of safety, which is what this template actually invokes.
+  "The numbers tell a cautionary tale. Capital efficiency is poor, the balance sheet is stressed, and the valuation offers no margin of safety. As Graham taught, the margin of safety is the central concept of investment – and this record offers none.",
 ];
 
 // ── Short Commentary Templates ────────────────────────────────

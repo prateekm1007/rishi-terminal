@@ -19,8 +19,6 @@ export interface HistoricalParallel {
   era: string;
   lesson: string;
   rishis: string[];
-  quote: string;
-  author: string;
 }
 
 export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
@@ -29,48 +27,36 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     era: '2005-2015 India Consumption Boom',
     lesson: 'Brand moats combined with patient capital created generational wealth. Companies with pricing power and loyal customers compounded at 25%+ for a decade.',
     rishis: ['Damani', 'Buffett', 'Munger'],
-    quote: 'The best businesses are those where the customer cannot do without you.',
-    author: 'Radhakishan Damani',
   },
   cyclical_value: {
     companies: ['Tata Steel (2018)', 'Hindalco (2020)', 'Vedanta (2019)'],
     era: 'Commodity Downcycle 2018-2020',
     lesson: 'Low P/E ratios in cyclical industries often signal deteriorating fundamentals, not bargains. Wait for the cycle to turn before deploying capital.',
     rishis: ['Graham', 'Marks', 'Klarman'],
-    quote: 'Price is what you pay, value is what you get - but in cyclicals, both move together.',
-    author: 'Howard Marks',
   },
   growth_premium: {
     companies: ['Zomato (2021)', 'Paytm (2021)', 'Nykaa (2021)'],
     era: 'IPO Mania 2021',
     lesson: 'Narratives without profits are speculative bets, not investments. The market eventually demands profitability, regardless of growth rates.',
     rishis: ['Buffett', 'Munger', 'Klarman'],
-    quote: 'Beware of geeks bearing formulas.',
-    author: 'Warren Buffett',
   },
   quality_growth: {
     companies: ['HDFC Bank (2005)', 'TCS (2010)', 'Infosys (2008)'],
     era: 'India Services Export Boom',
     lesson: 'Quality companies with sustainable competitive advantages justify premium valuations. Consistent execution over decades creates wealth.',
     rishis: ['Buffett', 'Lynch', 'Raamdeo'],
-    quote: 'Time is the friend of the wonderful business, the enemy of the mediocre.',
-    author: 'Warren Buffett',
   },
   turnaround: {
     companies: ['Tata Motors (2016)', 'Yes Bank (2020)', 'Suzlon (2018)'],
     era: 'Corporate Turnaround Attempts',
     lesson: 'Turnarounds rarely turn. Broken business models and weak balance sheets usually stay broken despite management promises.',
     rishis: ['Lynch', 'Munger', 'Klarman'],
-    quote: 'Turnarounds seldom turn.',
-    author: 'Peter Lynch',
   },
   smallcap_gem: {
     companies: ['Dixon (2018)', 'IRCTC (2019)', 'Avenue Supermarts (2017)'],
     era: 'Smallcap Discovery Phase',
     lesson: 'Undiscovered smallcaps with strong fundamentals and honest management can deliver multibagger returns as the market recognizes value.',
     rishis: ['Kacholia', 'Porinju', 'Basant'],
-    quote: 'The best investment opportunities are found where others are not looking.',
-    author: 'Ashish Kacholia',
   },
 };
 

@@ -46,7 +46,6 @@
     "heroWisdomHighlight": "21 మహాన పెట్టుబడిదారులు",
     "heroWisdomPrefix": "జ్ఞానం ప్రసాదించేవారు — ",
     "heroTagline": "పవిత్ర పెట్టుబడి బుద్ధిమత్త · v4.4",
-    "liveMarketData": "లైవ్ మార్కెట్ డేటా",
     "markets": {
       "forexDesc": "10 కరెన్సీ జతలు",
       "commoditiesDesc": "బంగారం, నూనె, లోహాలు",
@@ -227,19 +226,18 @@
   "pricing": {
     "breadcrumb": "జ్ఞాన స్థాయిలు",
     "free": {
-      "title": "Everything Is Free",
+      "title": "Free — No Tiers, No Checkout",
       "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
-      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "allRishis": "All 21 Rishis — every persona, every framework",
       "aiChat": "AI Rishi chat with per-answer grounding provenance",
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
       "livePrices": "Delayed equity quotes and live crypto/FX where labelled LIVE",
-      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
-      "_note": "English copy pending translation"
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
     }
   },
   "news": {
@@ -383,7 +381,7 @@
   },
   "pulse": {
     "title": "ఎకానమీ ప్లస్",
-    "subtitle": "మాక్రో ఇంటెలిజెన్స్ · తత్వవేత్తల మండలి · రెజీమ్ విశ్లేషణ",
+    "subtitle": "Macro Intelligence · Philosopher Council · Regime Analysis",
     "backToDashboard": "డ్యాష్‌బోర్డ్",
     "marketMood": "మార్కెట్ మూడ్",
     "scoreLabel": "స్కోర్",
@@ -562,8 +560,6 @@
     "noBullishSignals": "ప్రస్తుత స్థాయిలలో బుల్లిష్ సిగ్నల్స్ లేవు",
     "noBullishMacro": "బుల్లిష్ మాక్రో సిగ్నల్స్ లేవు",
     "noBearishMacro": "బేరిష్ మాక్రో సిగ్నల్స్ లేవు",
-    "building": "జ్ఞాన గ్రాఫ్ నిర్మిస్తోంది...",
-    "comingSoon": "ఇంటరాక్టివ్ జ్ఞాన గ్రాఫ్ త్వరలో వస్తుంది",
     "unavailable": "జ్ఞాన గ్రాఫ్ అందుబాటులో లేదు",
     "elite": "ఎలైట్ జ్ఞాన గ్రాఫ్",
     "consensusArchitecture": "ఏకాభిప్రాయ ఆర్కిటెక్చర్"
@@ -730,7 +726,7 @@
   "forex": {
     "breadcrumb": "ఫారెక్స్",
     "title": "ఫారెక్స్",
-    "subtitle": "పురాణ వర్తకుల నుండి స్థూల విశ్లేషణతో ప్రత్యక్ష కరెన్సీ మార్కెట్లు",
+    "subtitle": "కరెన్సీ మార్కెట్లు మరియు మేక్రో లెన్స్ — LIVE గా గుర్తించబడిన జతలలో ప్రత్యక్ష రేట్లు, మిగిలిన వాటిలో రిఫరెన్స్ డేటా",
     "pairs": "జతలు",
     "inrCrossRates": "INR క్రాస్ రేట్లు",
     "avgVolatility": "సగటు వోలాటిలిటీ",

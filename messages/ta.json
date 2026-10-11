@@ -46,7 +46,6 @@
     "heroWisdomHighlight": "21 புகழ்பெற்ற முதலீட்டாளர்கள்",
     "heroWisdomPrefix": "ஞானம் வழங்குபவர்கள் — ",
     "heroTagline": "புனிதமான முதலீட்டு புத்திசாலித்தனம் · v4.4",
-    "liveMarketData": "நேரடி சந்தைத் தரவு",
     "markets": {
       "forexDesc": "10 நாணய ஜோடிகள்",
       "commoditiesDesc": "தங்கம், எண்ணெய், உலோகங்கள்",
@@ -227,19 +226,18 @@
   "pricing": {
     "breadcrumb": "ஞான நிலைகள்",
     "free": {
-      "title": "Everything Is Free",
+      "title": "Free — No Tiers, No Checkout",
       "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
-      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "allRishis": "All 21 Rishis — every persona, every framework",
       "aiChat": "AI Rishi chat with per-answer grounding provenance",
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
       "livePrices": "Delayed equity quotes and live crypto/FX where labelled LIVE",
-      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
-      "_note": "English copy pending translation"
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
     }
   },
   "news": {
@@ -383,7 +381,7 @@
   },
   "pulse": {
     "title": "எகானமி பிளஸ்",
-    "subtitle": "மேக்ரோ நுண்ணறிவு · தத்துவஞானி கவுன்சில் · ரெஜிம் பகுப்பாய்வு",
+    "subtitle": "Macro Intelligence · Philosopher Council · Regime Analysis",
     "backToDashboard": "டாஷ்போர்டு",
     "marketMood": "சந்தை மனநிலை",
     "scoreLabel": "மதிப்பெண்",
@@ -562,8 +560,6 @@
     "noBullishSignals": "தற்போதைய நிலைகளில் புல்லிஷ் சிக்னல்கள் இல்லை",
     "noBullishMacro": "புல்லிஷ் மேக்ரோ சிக்னல்கள் இல்லை",
     "noBearishMacro": "பேரிஷ் மேக்ரோ சிக்னல்கள் இல்லை",
-    "building": "அறிவு வரைபடம் உருவாக்குகிறது...",
-    "comingSoon": "இன்டராக்டிவ் அறிவு வரைபடம் விரைவில் வருகிறது",
     "unavailable": "அறிவு வரைபடம் கிடைக்கவில்லை",
     "elite": "எலைட் அறிவு வரைபடம்",
     "consensusArchitecture": "ஒருமித்த கருத்து கட்டமைப்பு"
@@ -730,7 +726,7 @@
   "forex": {
     "breadcrumb": "ஃபாரெக்ஸ்",
     "title": "ஃபாரெக்ஸ்",
-    "subtitle": "புகழ்பெற்ற வர்த்தகர்களிடமிருந்து மேக்ரோ பகுப்பாய்வுடன் நேரடி நாணய சந்தைகள்",
+    "subtitle": "நாணய சந்தைகள் மற்றும் மேக்ரோ லென்ஸ் — LIVE எனக் குறிக்கப்பட்ட ஜோடிகளில் நேரடி விகிதங்கள், மீதமுள்ளவற்றில் குறிப்பு தரவு",
     "pairs": "ஜோடிகள்",
     "inrCrossRates": "INR கிராஸ் ரேட்கள்",
     "avgVolatility": "சராசரி ஏற்ற இறக்கம்",

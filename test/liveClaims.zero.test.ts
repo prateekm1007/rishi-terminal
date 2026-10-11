@@ -146,4 +146,57 @@ describe("P0-8 — unbacked live claims removed; News hidden from nav", () => {
     // the sitemap pattern matches the pre-fix row
     expect("{ path: '/news', priority: 0.7, changeFrequency: 'daily' },".match(/'\/news'|\/news,/)).not.toBeNull();
   });
+
+  it("the round-47 audit follow-up: no 'Everything Is Free' / 'every verdict' / 'Live currency markets' / fake progress claims in any locale", () => {
+    const files = messageFiles();
+    const hits: string[] = [];
+    for (const f of files) {
+      const src = read(f);
+      for (const [i, raw] of src.split("\n").entries()) {
+        if (/Everything Is Free|every verdict|Live currency markets/.test(raw)) {
+          hits.push(`${f}:${i + 1}: ${raw.trim().slice(0, 100)}`);
+        }
+      }
+    }
+    expect(hits).toEqual([]);
+  });
+
+  it("the honest replacements are present (positive controls, B-18)", () => {
+    const en = read("messages/en.json");
+    // the pricing title describes the CURRENT access model (FD-7 + 410
+    // payment routes), not a permanence promise
+    expect(en).toContain('"title": "Free — No Tiers, No Checkout"');
+    // "every framework" is true under the verdict gate (896/896 seed -> no verdicts)
+    expect(en).toContain("every persona, every framework");
+    // the forex subtitle qualifies liveness instead of claiming it wholesale
+    expect(en).toContain("Currency markets with macro lenses — live rates where labelled LIVE, reference data otherwise");
+    // the knowledge-graph unavailability renders honestly (nothing is 'building')
+    expect(en).toContain('"unavailable": "Knowledge Graph unavailable"');
+    const kgv = read("components/stock/KnowledgeGraphView.tsx");
+    expect(kgv).toContain('t("kg.unavailable")');
+    expect(kgv).not.toContain('t("kg.building")');
+  });
+
+  it("the dead wisdom-graph modules are gone (rule 17)", () => {
+    const fileGone = (p: string) => {
+      try { read(p); return false; } catch { return true; }
+    };
+    expect(fileGone("components/stock/WisdomGraph.tsx")).toBe(true);
+    expect(fileGone("lib/wisdom/graph.ts")).toBe(true);
+  });
+
+  it("the forex macro-rishi section carries no unbacked superlative and discloses the simulated lenses", () => {
+    const fx = read("components/forex/ForexDetailClient.tsx");
+    expect(fx).not.toContain("Best macro track record in history");
+    expect(fx).toContain("Managed the Quantum Fund alongside Soros (public record)");
+    expect(fx).toContain("simulated lenses on public frameworks");
+    expect(fx).toContain("NOT their views");
+  });
+
+  it("the follow-up patterns bite (embedded pre-fix strings must match — C5)", () => {
+    expect('"title": "Everything Is Free",'.match(/Everything Is Free/)).not.toBeNull();
+    expect('"allRishis": "All 21 Rishis — every persona, every verdict",'.match(/every verdict/)).not.toBeNull();
+    expect('"subtitle": "Live currency markets with macro analysis from legendary traders",'.match(/Live currency markets/)).not.toBeNull();
+    expect("bio: 'Managed Soros Quantum Fund. Best macro track record in history.'".match(/Best macro track record in history/)).not.toBeNull();
+  });
 });

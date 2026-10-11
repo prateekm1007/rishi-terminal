@@ -48,7 +48,6 @@
     "heroWisdomHighlight": "21 महान निवेशकों",
     "heroWisdomPrefix": "ज्ञान ",
     "heroTagline": "पवित्र निवेश इंटेलिजेंस · v4.4",
-    "liveMarketData": "लाइव मार्केट डेटा",
     "markets": {
       "forexDesc": "10 मुद्रा जोड़े",
       "commoditiesDesc": "सोना, तेल, धातुएँ",
@@ -229,12 +228,12 @@
   "pricing": {
     "breadcrumb": "ज्ञान स्तर",
     "free": {
-      "title": "Everything Is Free",
+      "title": "Free — No Tiers, No Checkout",
       "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
-      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "allRishis": "All 21 Rishis — every persona, every framework",
       "aiChat": "AI Rishi chat with per-answer grounding provenance",
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
@@ -384,7 +383,7 @@
   },
   "pulse": {
     "title": "अर्थव्यवस्था प्लस",
-    "subtitle": "मैक्रो इंटेलिजेंस · दार्शनिक परिषद · व्यवस्था विश्लेषण",
+    "subtitle": "Macro Intelligence · Philosopher Council · Regime Analysis",
     "backToDashboard": "डैशबोर्ड",
     "marketMood": "बाजार मूड",
     "scoreLabel": "स्कोर",
@@ -563,8 +562,6 @@
     "noBullishSignals": "वर्तमान स्तरों पर कोई बुलिश सिग्नल नहीं",
     "noBullishMacro": "कोई बुलिश मैक्रो सिग्नल नहीं",
     "noBearishMacro": "कोई बेयरिश मैक्रो सिग्नल नहीं",
-    "building": "ज्ञान ग्राफ बनाया जा रहा है...",
-    "comingSoon": "इंटरैक्टिव ज्ञान ग्राफ जल्द आ रहा है",
     "unavailable": "ज्ञान ग्राफ अनुपलब्ध",
     "elite": "एलीट ज्ञान ग्राफ",
     "consensusArchitecture": "कंसेंसस आर्किटेक्चर"
@@ -732,7 +729,7 @@
   "forex": {
     "breadcrumb": "विदेशी मुद्रा",
     "title": "विदेशी मुद्रा",
-    "subtitle": "प्रसिद्ध व्यापारियों से मैक्रो विश्लेषण के साथ लाइव मुद्रा बाजार",
+    "subtitle": "मुद्रा बाज़ार और मैक्रो लेंस — LIVE चिह्नित जोड़ियों में सीधे दरें, शेष में संदर्भ डेटा",
     "pairs": "युग्म",
     "inrCrossRates": "INR क्रॉस दरें",
     "avgVolatility": "औसत वोलैटिलिटी",

@@ -35,7 +35,7 @@ const MACRO_RISHIS = [
     initials: 'SD',
     lens: 'Macro Momentum',
     philosophy: 'Earnings dont move the overall market; the Federal Reserve does.',
-    bio: 'Managed Soros Quantum Fund. Best macro track record in history. Currency and rate specialist.',
+    bio: 'Managed the Quantum Fund alongside Soros (public record). Macro, currency and rate specialist.',
   },
 ];
 
@@ -259,7 +259,7 @@ const { price: livePriceData } = usePrice(forexSymbol);
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 MACRO RISHI CONSENSUS · HEURISTIC REFERENCE</div>
-              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
+              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring). Rishi names mark simulated lenses on public frameworks — Soros, Dalio and Druckenmiller are real analysts, and these scores are NOT their views.</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: verdictsAllowedHere ? scoreColor(avgScore) : 'var(--text-muted)', lineHeight: 1 }}>{verdictsAllowedHere ? avgScore : '—'}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {verdictsAllowedHere

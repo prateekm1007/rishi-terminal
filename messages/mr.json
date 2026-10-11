@@ -46,7 +46,6 @@
     "heroWisdomHighlight": "२१ दंतकथा गुंतवणूकदार",
     "heroWisdomPrefix": "ज्ञान देणारे — ",
     "heroTagline": "पवित्र गुंतवणूक बुद्धिमत्ता · v4.4",
-    "liveMarketData": "थेट बाजार डेटा",
     "markets": {
       "forexDesc": "१० करन्सी जोड्या",
       "commoditiesDesc": "सोने, तेल, धातू",
@@ -227,19 +226,18 @@
   "pricing": {
     "breadcrumb": "ज्ञान स्तर",
     "free": {
-      "title": "Everything Is Free",
+      "title": "Free — No Tiers, No Checkout",
       "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
-      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "allRishis": "All 21 Rishis — every persona, every framework",
       "aiChat": "AI Rishi chat with per-answer grounding provenance",
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
       "livePrices": "Delayed equity quotes and live crypto/FX where labelled LIVE",
-      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
-      "_note": "English copy pending translation"
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
     }
   },
   "news": {
@@ -383,7 +381,7 @@
   },
   "pulse": {
     "title": "इकॉनॉमी प्लस",
-    "subtitle": "मॅक्रो बुद्धिमत्ता · तत्त्वज्ञ परिषद · रेजिम विश्लेषण",
+    "subtitle": "Macro Intelligence · Philosopher Council · Regime Analysis",
     "backToDashboard": "डॅशबोर्ड",
     "marketMood": "बाजाराचे मूड",
     "scoreLabel": "स्कोअर",
@@ -562,8 +560,6 @@
     "noBullishSignals": "सध्याच्या स्तरावर कोणतेही बुलिश सिग्नल नाहीत",
     "noBullishMacro": "कोणतेही बुलिश मॅक्रो सिग्नल नाहीत",
     "noBearishMacro": "कोणतेही बेअरिश मॅक्रो सिग्नल नाहीत",
-    "building": "ज्ञान ग्राफ तयार करत आहे...",
-    "comingSoon": "इंटरॅक्टिव्ह ज्ञान ग्राफ लवकरच येत आहे",
     "unavailable": "ज्ञान ग्राफ उपलब्ध नाही",
     "elite": "एलिट ज्ञान ग्राफ",
     "consensusArchitecture": "आमसंमती आर्किटेक्चर"
@@ -730,7 +726,7 @@
   "forex": {
     "breadcrumb": "फॉरेक्स",
     "title": "फॉरेक्स",
-    "subtitle": "प्रसिद्ध व्यापाऱ्यांकडून मॅक्रो विश्लेषणासह थेट चलन बाजार",
+    "subtitle": "करन्सी बाजार आणि मॅक्रो लेन्स — LIVE चिन्हांकित जोड्यांमध्ये थेट दर, उर्वरितात संदर्भ डेटा",
     "pairs": "जोड्या",
     "inrCrossRates": "INR क्रॉस दर",
     "avgVolatility": "सरासरी व्होलॅटिलिटी",

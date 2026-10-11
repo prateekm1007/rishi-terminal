@@ -337,7 +337,7 @@ export function KnowledgeGraphView({ stock, topBull, topBear, graph }: Props) {
   if (!graphData) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-        {t("kg.building")}
+        {t("kg.unavailable")}
       </div>
     );
   }

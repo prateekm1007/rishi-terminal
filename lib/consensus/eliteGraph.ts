@@ -28,7 +28,7 @@ export interface TechnicalEdgeEntry {
   peerComparison: { top3Avg: number; bottom3Avg: number; };
   rishiRelevance: Array<{
     rishi: string;
-    signal: 'STRONG BUY' | 'BUY' | 'HOLD' | 'SELL';
+    signal: 'STRONGLY FAVORABLE' | 'FAVORABLE' | 'BALANCED' | 'UNFAVORABLE';
     reason: string;
   }>;
   insight: string;
@@ -40,7 +40,7 @@ export interface TimelineEntry {
   score: number;
   trigger: string;
   context: string;
-  event: 'buy_signal' | 'sell_signal' | 'hold' | 'warning';
+  event: 'favorable_signal' | 'deterioration_signal' | 'balanced' | 'caution';
 }
 
 export interface EliteKnowledgeGraph {
@@ -157,7 +157,7 @@ function buildTechnicalEdge(stock: Stock, scores: RishiScore[]): TechnicalEdgeEn
        const sc = r.score as number;
        return {
          rishi: r.full,
-         signal: outperforming ? (sc > 75 ? 'STRONG BUY' : 'BUY') : (sc < 45 ? 'SELL' : 'HOLD'),
+         signal: outperforming ? (sc > 75 ? 'STRONGLY FAVORABLE' : 'FAVORABLE') : (sc < 45 ? 'UNFAVORABLE' : 'BALANCED'),
          reason: `Based on ${p.lens}, this ${metric} profile ${outperforming ? 'supports' : 'challenges'} the thesis.`
        };
     });
@@ -232,19 +232,19 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
     const dateStr = eventDate.toISOString().split('T')[0];
     const sc = rishi.score as number;
     const eventType: TimelineEntry['event'] =
-      sc >= 80 ? 'buy_signal' :
-      sc >= 60 ? 'hold' :
-      sc >= 45 ? 'warning' :
-      'sell_signal';
+      sc >= 80 ? 'favorable_signal' :
+      sc >= 60 ? 'balanced' :
+      sc >= 45 ? 'caution' :
+      'deterioration_signal';
 
     const p = RISHI_PHILOSOPHY[rishi.name] || { lens: 'fundamental', keyFocus: 'metrics', signature: '' };
     const topComp = rishi.comps.sort((a, b) => b.v - a.v)[0];
 
     const contextMap: Record<TimelineEntry['event'], string> = {
-      buy_signal: `${rishi.full} model triggers BUY. ${p.lens} score: ${rishi.score}/100. Primary driver: ${topComp?.label || 'overall quality'}. ${topComp?.detail || rishi.insight}`,
-      hold:       `${rishi.full} model signals HOLD. Score of ${rishi.score} -- not cheap enough to buy aggressively, not expensive enough to exit. ${p.keyFocus} remains acceptable.`,
-      warning:    `${rishi.full} model issues CAUTION. Score ${rishi.score}/100 -- ${p.keyFocus} deteriorating. Requires fresh catalyst before re-entry.`,
-      sell_signal:`${rishi.full} model triggers REDUCE. Score ${rishi.score}/100 -- ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
+      favorable_signal: `${rishi.full} model reads strongly favorable. ${p.lens} score: ${rishi.score}/100. Primary driver: ${topComp?.label || 'overall quality'}. ${topComp?.detail || rishi.insight}`,
+      balanced:         `${rishi.full} model reads balanced. Score of ${rishi.score} -- neither cheap enough to excite the framework nor expensive enough to flag. ${p.keyFocus} remains acceptable.`,
+      caution:          `${rishi.full} model issues CAUTION. Score ${rishi.score}/100 -- ${p.keyFocus} deteriorating. Requires fresh catalyst before re-entry.`,
+      deterioration_signal:`${rishi.full} model reads deterioration. Score ${rishi.score}/100 -- ${p.lens} framework no longer supports current valuation. Risk-reward unfavorable.`,
     };
 
     events.push({

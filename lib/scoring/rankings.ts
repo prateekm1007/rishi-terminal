@@ -234,7 +234,7 @@ export function computeShortRadar(n = 3): ShortCandidate[] {
     if (!prepared) continue;
     if (prepared.flags.length < 2) continue;
 
-    const qvps = calculateQvps(prepared.metrics, "SHORT");
+    const qvps = calculateQvps(prepared.metrics, "DOWNSIDE");
 
     candidates.push({
       symbol: prepared.symbol,

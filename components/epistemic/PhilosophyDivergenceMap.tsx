@@ -24,10 +24,10 @@ export const PhilosophyDivergenceMap: React.FC<Props> = ({ philosophyDivergence 
             <span className="text-xs text-gray-400 truncate w-24" title={name}>{name}</span>
             <div className="flex items-center gap-3">
               <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                data.signal === 'STRONG_BUY' ? 'bg-green-900 text-green-400' :
-                data.signal === 'BUY' ? 'bg-green-900/50 text-green-300' :
-                data.signal === 'SELL' ? 'bg-red-900/50 text-red-300' :
-                data.signal === 'STRONG_SELL' ? 'bg-red-900 text-red-400' :
+                data.signal === 'STRONGLY_FAVORABLE' ? 'bg-green-900 text-green-400' :
+                data.signal === 'FAVORABLE' ? 'bg-green-900/50 text-green-300' :
+                data.signal === 'UNFAVORABLE' ? 'bg-red-900/50 text-red-300' :
+                data.signal === 'STRONGLY_UNFAVORABLE' ? 'bg-red-900 text-red-400' :
                 'bg-gray-700 text-gray-400'
               }`}>
                 {data.signal.replace('_', ' ')}

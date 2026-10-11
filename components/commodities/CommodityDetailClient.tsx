@@ -35,8 +35,8 @@ function scoreDisp(s: number | null) {
   return s === null ? '—' : String(s);
 }
 function signalColor(signal: string) {
-  if (signal === 'BUY' || signal === 'STRONG BUY') return '#22C55E';
-  if (signal === 'SELL') return '#EF4444';
+  if (signal === 'FAVORABLE' || signal === 'STRONGLY FAVORABLE' || signal === 'POSITIVE' || signal === 'UPTREND') return '#22C55E';
+  if (signal === 'UNFAVORABLE') return '#EF4444';
   return '#D4AF37';
 }
 
@@ -385,7 +385,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   ? (recordQuality === 'seed' || recordQuality === 'missing'
                       ? 'No Verdict — the indicator inputs are static reference data'
                       : 'No Verdict — no valid scorer results')
-                  : avgScore >= 75 ? 'Strong Buy — Supercycle Conditions Present' : avgScore >= 55 ? 'Moderate Opportunity — Selective Accumulation' : 'Caution — Wait for Better Entry'}
+                  : avgScore >= 75 ? 'High conviction — supercycle conditions present' : avgScore >= 55 ? 'Moderate read — selective conditions' : 'Caution — weak conditions'}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (
@@ -578,37 +578,37 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   ...(commodity.contango !== undefined ? [{
                     label: 'Curve',
                     value: `${commodity.contango >= 0 ? '+' : ''}${commodity.contango.toFixed(2)}%`,
-                    signal: commodity.contango < -1 ? 'BUY' : commodity.contango > 1 ? 'SELL' : 'NEUTRAL'
+                    signal: commodity.contango < -1 ? 'FAVORABLE' : commodity.contango > 1 ? 'UNFAVORABLE' : 'NEUTRAL'
                   }] : []),
 
                   ...(commodity.inventoryVs5YAvg !== undefined ? [{
                     label: 'Inventory vs 5Y',
                     value: `${commodity.inventoryVs5YAvg >= 0 ? '+' : ''}${commodity.inventoryVs5YAvg.toFixed(0)}%`,
-                    signal: commodity.inventoryVs5YAvg < -10 ? 'BUY' : commodity.inventoryVs5YAvg > 10 ? 'SELL' : 'NEUTRAL'
+                    signal: commodity.inventoryVs5YAvg < -10 ? 'FAVORABLE' : commodity.inventoryVs5YAvg > 10 ? 'UNFAVORABLE' : 'NEUTRAL'
                   }] : []),
 
                   ...(costMargin !== undefined ? [{
                     label: 'Cost Margin',
                     value: `${costMargin.toFixed(0)}%`,
-                    signal: costMargin < 10 ? 'BUY' : costMargin > 40 ? 'SELL' : 'NEUTRAL'
+                    signal: costMargin < 10 ? 'FAVORABLE' : costMargin > 40 ? 'UNFAVORABLE' : 'NEUTRAL'
                   }] : []),
 
                   ...(commodity.seasonalityIndex !== undefined ? [{
                     label: 'Seasonality',
                     value: `${commodity.seasonalityIndex.toFixed(0)}/100`,
-                    signal: commodity.seasonalityIndex > 70 ? 'BUY' : commodity.seasonalityIndex < 40 ? 'SELL' : 'NEUTRAL'
+                    signal: commodity.seasonalityIndex > 70 ? 'FAVORABLE' : commodity.seasonalityIndex < 40 ? 'UNFAVORABLE' : 'NEUTRAL'
                   }] : []),
 
                   ...(commodity.supercycleScore !== undefined ? [{
                     label: 'Supercycle',
                     value: `${commodity.supercycleScore.toFixed(0)}/100`,
-                    signal: commodity.supercycleScore > 70 ? 'BUY' : commodity.supercycleScore < 40 ? 'SELL' : 'NEUTRAL'
+                    signal: commodity.supercycleScore > 70 ? 'FAVORABLE' : commodity.supercycleScore < 40 ? 'UNFAVORABLE' : 'NEUTRAL'
                   }] : []),
 
                   {
                     label: '52W Position',
                     value: `${pos52w.toFixed(0)}%`,
-                    signal: pos52w > 70 ? 'BUY' : pos52w < 30 ? 'SELL' : 'NEUTRAL'
+                    signal: pos52w > 70 ? 'FAVORABLE' : pos52w < 30 ? 'UNFAVORABLE' : 'NEUTRAL'
                   },
                 ].map(ind => (
                   <div key={ind.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>

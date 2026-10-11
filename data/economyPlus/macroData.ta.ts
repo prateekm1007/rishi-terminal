@@ -190,7 +190,7 @@ export const PHILOSOPHER_STANCES: PhilosopherStance[] = [
     keyWarning: 'Fiscal expansion creates false signals. Infrastructure boom may mask misallocation in rate-sensitive sectors. Watch for credit quality deterioration in 18-24 months.',
     keyConcernTag: 'Malinvestment Risk',
     sectorImplications: [
-      'Avoid long-duration infra plays with weak balance sheets',
+      'Long-duration infra plays with weak balance sheets are exposed',
       'Prefer cash-generative quality over leveraged cyclicals',
       'Watch NBFC/realty for late-cycle credit stress',
       'Be skeptical of subsidy-dependent business models',
@@ -218,7 +218,7 @@ export const PHILOSOPHER_STANCES: PhilosopherStance[] = [
       'Favor pricing-power businesses if inflation re-accelerates',
       'Be cautious on rate-sensitive consumption until cuts are real',
       'Financials benefit if inflation stays contained and growth holds',
-      'Avoid narratives that ignore monetary transmission lags',
+      'Narratives that ignore monetary transmission lags misprice risk',
     ],
     agreement: 52,
     indicators: [
@@ -314,7 +314,7 @@ export interface SectorRotationEntry {
   consensus: number;   // avg of three scores
   spread:    number;   // max - min
   regimeOutlook: '3M' | '6M' | '12M';
-  forwardBias: 'Strong Buy' | 'Accumulate' | 'Neutral' | 'Reduce' | 'Avoid';
+  forwardBias: 'Strongly Supportive' | 'Supportive' | 'Neutral' | 'Critical' | 'Opposed';
   biasColor: string;
   keyMacroDriver: string;
 }
@@ -324,18 +324,18 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
     sector: 'Banking',
     icon: '🏦',
     hayek:    { score: 62, stance: 'Neutral',    rationale: 'Credit expansion healthy if backed by real savings. Watch NPA trajectory.' },
-    friedman: { score: 72, stance: 'Accumulate', rationale: 'Rate pause helps NIM stability. Monetisation risk is contained.' },
-    keynes:   { score: 80, stance: 'Strong Buy', rationale: 'Anchor of demand stimulus. Rate cut will boost credit and margins.' },
+    friedman: { score: 72, stance: 'Supportive', rationale: 'Rate pause helps NIM stability. Monetisation risk is contained.' },
+    keynes:   { score: 80, stance: 'Strongly Supportive', rationale: 'Anchor of demand stimulus. Rate cut will boost credit and margins.' },
     consensus: 71, spread: 18,
-    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    regimeOutlook: '6M', forwardBias: 'Supportive', biasColor: '#10B981',
     keyMacroDriver: 'Repo rate trajectory + credit growth',
   },
   {
     sector: 'IT',
     icon: '💻',
-    hayek:    { score: 70, stance: 'Accumulate', rationale: 'Capital-light, no debt, high FCF — Hayekian ideal. Global demand uncertainty is the risk.' },
+    hayek:    { score: 70, stance: 'Supportive', rationale: 'Capital-light, no debt, high FCF — Hayekian ideal. Global demand uncertainty is the risk.' },
     friedman: { score: 58, stance: 'Neutral',    rationale: 'Dollar strength helps revenues but US slowdown concerns linger.' },
-    keynes:   { score: 44, stance: 'Reduce',     rationale: 'Export-oriented; domestic multiplier does not help IT directly.' },
+    keynes:   { score: 44, stance: 'Critical',     rationale: 'Export-oriented; domestic multiplier does not help IT directly.' },
     consensus: 57, spread: 26,
     regimeOutlook: '6M', forwardBias: 'Neutral', biasColor: '#F59E0B',
     keyMacroDriver: 'USD/INR + US enterprise IT spend',
@@ -343,11 +343,11 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
   {
     sector: 'Pharma',
     icon: '💊',
-    hayek:    { score: 75, stance: 'Accumulate', rationale: 'Pricing power + export earnings + minimal govt dependency.' },
-    friedman: { score: 68, stance: 'Accumulate', rationale: 'Inflation-resistant revenues. Dollar earnings hedge INR weakness.' },
+    hayek:    { score: 75, stance: 'Supportive', rationale: 'Pricing power + export earnings + minimal govt dependency.' },
+    friedman: { score: 68, stance: 'Supportive', rationale: 'Inflation-resistant revenues. Dollar earnings hedge INR weakness.' },
     keynes:   { score: 60, stance: 'Neutral',    rationale: 'Domestic demand stable but not a direct beneficiary of stimulus.' },
     consensus: 68, spread: 15,
-    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    regimeOutlook: '6M', forwardBias: 'Supportive', biasColor: '#10B981',
     keyMacroDriver: 'USD/INR + US FDA approvals + domestic formulations',
   },
   {
@@ -355,16 +355,16 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
     icon: '🚗',
     hayek:    { score: 52, stance: 'Neutral',    rationale: 'Consumer debt-driven cycle. Watch credit quality in auto loans.' },
     friedman: { score: 60, stance: 'Neutral',    rationale: 'Rate cuts would help EMI-driven demand; premature to price in.' },
-    keynes:   { score: 82, stance: 'Strong Buy', rationale: 'Animal spirits driver. Rate cut + rural demand revival = re-rating.' },
+    keynes:   { score: 82, stance: 'Strongly Supportive', rationale: 'Animal spirits driver. Rate cut + rural demand revival = re-rating.' },
     consensus: 65, spread: 30,
-    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    regimeOutlook: '6M', forwardBias: 'Supportive', biasColor: '#10B981',
     keyMacroDriver: 'Rate cuts + rural income + EV policy',
   },
   {
     sector: 'FMCG',
     icon: '🛒',
-    hayek:    { score: 68, stance: 'Accumulate', rationale: 'Pricing power and brand moat — resilient in all regimes.' },
-    friedman: { score: 72, stance: 'Accumulate', rationale: 'Low inflation environment helps volume recovery. Defensive.' },
+    hayek:    { score: 68, stance: 'Supportive', rationale: 'Pricing power and brand moat — resilient in all regimes.' },
+    friedman: { score: 72, stance: 'Supportive', rationale: 'Low inflation environment helps volume recovery. Defensive.' },
     keynes:   { score: 55, stance: 'Neutral',    rationale: 'Rural demand improving but urban discretionary spending muted.' },
     consensus: 65, spread: 17,
     regimeOutlook: '3M', forwardBias: 'Neutral', biasColor: '#F59E0B',
@@ -373,9 +373,9 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
   {
     sector: 'Infrastructure',
     icon: '🏗️',
-    hayek:    { score: 28, stance: 'Avoid',      rationale: 'Government capex dependency = malinvestment risk. Long gestation, execution risk.' },
+    hayek:    { score: 28, stance: 'Opposed',      rationale: 'Government capex dependency = malinvestment risk. Extended gestation, execution risk.' },
     friedman: { score: 55, stance: 'Neutral',    rationale: 'Productive capex is fine but fiscal crowding-out is a concern.' },
-    keynes:   { score: 90, stance: 'Strong Buy', rationale: 'The multiplier is here. Every rupee of govt capex generates 2-3x downstream.' },
+    keynes:   { score: 90, stance: 'Strongly Supportive', rationale: 'The multiplier is here. Every rupee of govt capex generates 2-3x downstream.' },
     consensus: 58, spread: 62,
     regimeOutlook: '12M', forwardBias: 'Neutral', biasColor: '#F59E0B',
     keyMacroDriver: 'Budget capex allocation + order book visibility',
@@ -383,9 +383,9 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
   {
     sector: 'Realty',
     icon: '🏢',
-    hayek:    { score: 22, stance: 'Avoid',      rationale: 'Classic malinvestment sector. Credit-driven boom masks real demand.' },
-    friedman: { score: 48, stance: 'Reduce',     rationale: 'Rate-sensitive. No cuts yet = margin pressure on buyers.' },
-    keynes:   { score: 75, stance: 'Accumulate', rationale: 'Housing demand is real. Rate cut catalyst is powerful for realty.' },
+    hayek:    { score: 22, stance: 'Opposed',      rationale: 'Classic malinvestment sector. Credit-driven boom masks real demand.' },
+    friedman: { score: 48, stance: 'Critical',     rationale: 'Rate-sensitive. No cuts yet = margin pressure on buyers.' },
+    keynes:   { score: 75, stance: 'Supportive', rationale: 'Housing demand is real. Rate cut catalyst is powerful for realty.' },
     consensus: 48, spread: 53,
     regimeOutlook: '6M', forwardBias: 'Neutral', biasColor: '#F59E0B',
     keyMacroDriver: 'Repo rate cuts + affordable housing demand',
@@ -393,11 +393,11 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
   {
     sector: 'Metals',
     icon: '⚙️',
-    hayek:    { score: 40, stance: 'Reduce',     rationale: 'China slowdown and commodity price cycles are unpredictable.' },
-    friedman: { score: 45, stance: 'Reduce',     rationale: 'Global dollar strength pressures commodity prices.' },
+    hayek:    { score: 40, stance: 'Critical',     rationale: 'China slowdown and commodity price cycles are unpredictable.' },
+    friedman: { score: 45, stance: 'Critical',     rationale: 'Global dollar strength pressures commodity prices.' },
     keynes:   { score: 62, stance: 'Neutral',    rationale: 'Infrastructure push supports domestic steel demand.' },
     consensus: 49, spread: 22,
-    regimeOutlook: '6M', forwardBias: 'Reduce', biasColor: '#F97316',
+    regimeOutlook: '6M', forwardBias: 'Critical', biasColor: '#F97316',
     keyMacroDriver: 'China demand + global commodity cycle + INR',
   },
   {
@@ -405,19 +405,19 @@ export const SECTOR_ROTATION: SectorRotationEntry[] = [
     icon: '⚡',
     hayek:    { score: 55, stance: 'Neutral',    rationale: 'Mixed: renewables distorted by subsidies; O&G has real pricing power.' },
     friedman: { score: 60, stance: 'Neutral',    rationale: 'Energy inflation passthrough creates pricing complexity.' },
-    keynes:   { score: 72, stance: 'Accumulate', rationale: 'Renewables are infrastructure — government multiplier applies.' },
+    keynes:   { score: 72, stance: 'Supportive', rationale: 'Renewables are infrastructure — government multiplier applies.' },
     consensus: 62, spread: 17,
-    regimeOutlook: '12M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    regimeOutlook: '12M', forwardBias: 'Supportive', biasColor: '#10B981',
     keyMacroDriver: 'Crude oil price + renewables policy + subsidy regime',
   },
   {
     sector: 'Consumer',
     icon: '🛍️',
-    hayek:    { score: 65, stance: 'Accumulate', rationale: 'Organic demand-driven — legitimate. Prefer premium over mass market.' },
+    hayek:    { score: 65, stance: 'Supportive', rationale: 'Organic demand-driven — legitimate. Prefer premium over mass market.' },
     friedman: { score: 63, stance: 'Neutral',    rationale: 'Inflation squeeze on real wages is a drag. Monitor carefully.' },
-    keynes:   { score: 78, stance: 'Accumulate', rationale: 'Animal spirits and confidence are rising. Discretionary re-rates on cuts.' },
+    keynes:   { score: 78, stance: 'Supportive', rationale: 'Animal spirits and confidence are rising. Discretionary re-rates on cuts.' },
     consensus: 69, spread: 15,
-    regimeOutlook: '6M', forwardBias: 'Accumulate', biasColor: '#10B981',
+    regimeOutlook: '6M', forwardBias: 'Supportive', biasColor: '#10B981',
     keyMacroDriver: 'Real wage growth + rate cut sentiment + urban confidence',
   },
 ];

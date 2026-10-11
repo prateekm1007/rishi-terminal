@@ -54,7 +54,7 @@ function categorize(score: number): string {
   if (score >= 55) return "Moderate Opportunity";
   if (score >= 45) return "Neutral Zone";
   if (score >= 35) return "Caution Advised";
-  return "Avoid - Low Conviction";
+  return "Low Conviction";
 }
 
 function analyzeTension(scores: RishiScore[]): { label: string; spread: number } {

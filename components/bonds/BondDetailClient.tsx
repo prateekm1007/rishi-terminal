@@ -95,7 +95,7 @@ export function BondDetailClient({ bond }: { bond: Bond }) {
       tag: 'Bond King',
       score: Math.round((durationScore * 0.40) + (spreadScore * 0.35) + (creditScore * 0.25)),
       signal: bond.duration <= 5 ? 'DURATION CONTROLLED' : 'WATCH RATE RISK',
-      thesis: bond.duration <= 5 ? 'Shorter duration keeps rate shocks contained.' : 'Long duration needs tighter rate-risk discipline.' ,
+      thesis: bond.duration <= 5 ? 'Shorter duration keeps rate shocks contained.' : 'Extended duration needs tighter rate-risk discipline.' ,
     },
     {
       name: 'Jeffrey Gundlach',

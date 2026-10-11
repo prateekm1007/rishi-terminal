@@ -89,7 +89,7 @@ export function WorldMarketsGrid({ activeLens = 'None' }: WorldMarketsGridProps)
           ? `Global markets down ${usAvg.toFixed(2)}% — malinvestments being revealed. This is necessary creative destruction. Central banks' instinct will be to 'rescue' markets with rate cuts — a mistake. Let prices clear. Over-leveraged structures must unwind. India's ${indiaAvg < 0 ? 'decline' : 'resilience'} (${indiaAvg > 0 ? '+' : ''}${indiaAvg.toFixed(2)}%) ${indiaAvg < 0 ? 'reflects contagion from global credit cycle' : 'shows domestic demand foundation — but fiscal sustainability matters'}.`
           : `Markets in equilibrium (US ${usAvg > 0 ? '+' : ''}${usAvg.toFixed(2)}%). Volatility suppressed by central bank put options — this is false stability. Entrepreneur cannot plan in regime of perpetual intervention. India ${indiaAvg > 0 ? 'outperforming' : 'tracking global'} (${indiaAvg > 0 ? '+' : ''}${indiaAvg.toFixed(2)}%) — domestic savings pool and capex may provide buffer, but watch for credit quality deterioration in late-cycle.`,
         actionable: [
-          globalRiskOn ? 'Quality over momentum — rising tide lifts all boats, but tide will turn' : 'Avoid averaging down in zombie companies — let liquidation work',
+          globalRiskOn ? 'Quality over momentum — rising tide lifts all boats, but tide will turn' : 'Zombie companies keep sinking — liquidation does the work',
           'Prefer unleveraged, cash-generative businesses',
           globalRiskOff ? 'This is not a dip to buy — this is price discovery' : 'Be skeptical of narratives that ignore business fundamentals',
           indiaAvg > 1 ? 'India strength is real but government-led — watch private capex for confirmation' : 'India cannot decouple indefinitely from global liquidity cycle',
@@ -107,7 +107,7 @@ export function WorldMarketsGrid({ activeLens = 'None' }: WorldMarketsGridProps)
           'Track M2/M3 growth rates — leading indicator for 12-month forward returns',
           globalRiskOn ? 'Rally sustainable only if backed by earnings growth, not just multiple expansion' : 'Sell rallies if driven by rate-cut hopes alone',
           'In India: favor pricing-power businesses if M3 stays above 10%',
-          globalRiskOff ? 'Build positions in quality if PE ratios compress below historical avg' : 'Avoid chasing momentum without fundamental support',
+          globalRiskOff ? 'Quality becomes compelling if PE ratios compress below historical avg' : 'Momentum without fundamental support tends to mean-revert',
         ],
       },
       Keynes: {

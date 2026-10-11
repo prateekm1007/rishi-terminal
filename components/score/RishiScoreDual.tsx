@@ -4,17 +4,18 @@ import { useState, useEffect } from "react";
 import { useLanguage } from '../../lib/language';
 import { getScoreColors, colors, fonts, shadows } from "@/lib/design";
 import type { RishiScoreResult, ScoreMode, PillarScore } from "@/lib/scorers/types";
+import { actionLabel } from "@/lib/scorers/types";
 import { describeDataQuality, type DataQuality } from "@/lib/dataQuality";
 
 function getConvictionLabel(c: string): string {
   const m: Record<string,string> = {
     LEGENDARY:"🌟 Legendary", HIGH_CONVICTION:"💎 High Conviction",
     STRONG:"✅ Strong", WATCHLIST:"👁 Watchlist",
-    NEUTRAL:"➡️ Neutral", AVOID:"🚫 Avoid",
-    LEGENDARY_SHORT:"🔥 Legendary Short",
-    HIGH_CONVICTION_SHORT:"⚡ High Conviction Short",
-    TACTICAL_SHORT:"🎯 Tactical Short",
-    DANGEROUS_SHORT:"⚠️ Dangerous Short",
+    NEUTRAL:"➡️ Neutral", WEAK_SUPPORT:"🚫 Weak Framework Support",
+    SEVERE_DETERIORATION:"🔥 Severe Deterioration",
+    MARKED_DETERIORATION:"⚡ Marked Deterioration",
+    EARLY_DETERIORATION:"🎯 Early Deterioration",
+    CRITICAL_DETERIORATION:"⚠️ Critical Deterioration",
   };
   return m[c] ?? c;
 }
@@ -30,8 +31,8 @@ function ScoreGauge({ score, mode }: { score: number; mode: ScoreMode }) {
   const r      = 62;
   const circ   = 2 * Math.PI * r;
   const offset = circ - (displayScore / 100) * circ;
-  const isLeg  = score >= 90 && mode === "LONG";
-  const isShortLeg = score >= 85 && mode === "SHORT";
+  const isLeg  = score >= 90 && mode === "UPSIDE";
+  const isShortLeg = score >= 85 && mode === "DOWNSIDE";
 
   useEffect(() => {
     const start = 0;
@@ -150,15 +151,15 @@ interface Props {
   defaultMode?: ScoreMode;
 }
 
-export default function RishiScoreDual({ dual, sector, dataQuality, defaultMode = "LONG" }: Props) {
+export default function RishiScoreDual({ dual, sector, dataQuality, defaultMode = "UPSIDE" }: Props) {
   const { t } = useLanguage();
   const [mode, setMode] = useState<ScoreMode>(defaultMode);
 
-  const result: RishiScoreResult = mode === "SHORT" ? dual.short : dual.long;
+  const result: RishiScoreResult = mode === "DOWNSIDE" ? dual.short : dual.long;
 
   const { primary, label: convLabel } = getScoreColors(result.finalScore, mode);
-  const isShort = mode === "SHORT";
-  const isLeg   = result.conviction === "LEGENDARY" || result.conviction === "LEGENDARY_SHORT";
+  const isShort = mode === "DOWNSIDE";
+  const isLeg   = result.conviction === "LEGENDARY" || result.conviction === "SEVERE_DETERIORATION";
 
   return (
     <div style={{
@@ -186,23 +187,23 @@ export default function RishiScoreDual({ dual, sector, dataQuality, defaultMode 
           </div>
 
           <div style={{ display:"flex", background:"rgba(5,8,16,0.85)", border:"1px solid " + colors.border, borderRadius:"14px", padding:"4px", gap:"3px", boxShadow:"inset 0 1px 2px rgba(0,0,0,0.2)" }}>
-            <button onClick={() => setMode("LONG")}
+            <button onClick={() => setMode("UPSIDE")}
               style={{ padding:"8px 18px", borderRadius:"11px", border:"none", cursor:"pointer", fontWeight:700, fontSize:"12px", fontFamily: fonts.sans, transition:"all 0.25s cubic-bezier(0.16,1,0.3,1)",
-                background: mode === "LONG" ? "linear-gradient(135deg,#16A34A,#22C55E)" : "transparent",
-                color: mode === "LONG" ? "white" : colors.textMuted,
-                boxShadow: mode === "LONG" ? "0 3px 12px rgba(34,197,94,0.4), 0 1px 3px rgba(0,0,0,0.3)" : "none",
-                transform: mode === "LONG" ? "scale(1.05)" : "scale(1)",
+                background: mode === "UPSIDE" ? "linear-gradient(135deg,#16A34A,#22C55E)" : "transparent",
+                color: mode === "UPSIDE" ? "white" : colors.textMuted,
+                boxShadow: mode === "UPSIDE" ? "0 3px 12px rgba(34,197,94,0.4), 0 1px 3px rgba(0,0,0,0.3)" : "none",
+                transform: mode === "UPSIDE" ? "scale(1.05)" : "scale(1)",
               }}>
-              📈 Long
+              📈 Upside
             </button>
-            <button onClick={() => setMode("SHORT")}
+            <button onClick={() => setMode("DOWNSIDE")}
               style={{ padding:"8px 18px", borderRadius:"11px", border:"none", cursor:"pointer", fontWeight:700, fontSize:"12px", fontFamily: fonts.sans, transition:"all 0.25s cubic-bezier(0.16,1,0.3,1)",
-                background: mode === "SHORT" ? "linear-gradient(135deg,#DC2626,#EF4444)" : "transparent",
-                color: mode === "SHORT" ? "white" : colors.textMuted,
-                boxShadow: mode === "SHORT" ? "0 3px 12px rgba(239,68,68,0.4), 0 1px 3px rgba(0,0,0,0.3)" : "none",
-                transform: mode === "SHORT" ? "scale(1.05)" : "scale(1)",
+                background: mode === "DOWNSIDE" ? "linear-gradient(135deg,#DC2626,#EF4444)" : "transparent",
+                color: mode === "DOWNSIDE" ? "white" : colors.textMuted,
+                boxShadow: mode === "DOWNSIDE" ? "0 3px 12px rgba(239,68,68,0.4), 0 1px 3px rgba(0,0,0,0.3)" : "none",
+                transform: mode === "DOWNSIDE" ? "scale(1.05)" : "scale(1)",
               }}>
-              📉 Short
+              📉 Downside
             </button>
           </div>
         </div>
@@ -214,7 +215,7 @@ export default function RishiScoreDual({ dual, sector, dataQuality, defaultMode 
               {getConvictionLabel(result.conviction)}
             </div>
             <div style={{ fontSize:"12px", color: colors.textMuted, fontFamily: fonts.mono, fontWeight:500, letterSpacing:"0.02em" }}>
-              {result.grade} · {result.action.replace(/_/g, " ")}
+              {result.grade} · {actionLabel(result.action)}
             </div>
           </div>
         </div>
@@ -242,7 +243,7 @@ export default function RishiScoreDual({ dual, sector, dataQuality, defaultMode 
         {isShort && (
           <div style={{ marginBottom:"28px" }}>
             <div style={{ fontSize:"10px", fontWeight:700, color: colors.textGhost, marginBottom:"14px", textTransform:"uppercase", letterSpacing:"0.1em", fontFamily: fonts.sans }}>
-              Short Risk Assessment
+              Downside Risk Assessment
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"10px" }}>
               <RiskChip label="Squeeze"    level={result.shortSqueezeRisk} />

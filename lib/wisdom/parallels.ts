@@ -86,7 +86,7 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
       {
         rishiName: 'Munger',
         quote: 'A great business at a fair price is superior to a fair business at a great price.',
-        reasoning: 'Cyclical commodity producers are fair businesses at best. Avoid unless deep distress.',
+        reasoning: 'Cyclical commodity producers are fair businesses at best. Compelling only in deep distress.',
       },
     ],
     archetype: 'cyclical_trap',
@@ -167,7 +167,7 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
       { name: 'Vodafone Idea', year: '2019', outcome: '99% loss from merger high', returnPct: -99 },
       { name: 'Jet Airways', year: '2017', outcome: 'Total wipeout', returnPct: -100 },
     ],
-    lesson: 'Turnarounds rarely turn. Management incompetence is sticky. Avoid unless margin of safety is extreme.',
+    lesson: 'Turnarounds rarely turn. Management incompetence is sticky. Justified only at an extreme margin of safety.',
     rishiPerspectives: [
       {
         rishiName: 'Munger',
@@ -182,7 +182,7 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
       {
         rishiName: 'Howard Marks',
         quote: 'Never forget the six-foot-tall man who drowned in the stream that was five feet deep on average.',
-        reasoning: 'Average odds mean nothing when downside is total loss. Avoid binary outcomes.',
+        reasoning: 'Average odds mean nothing when downside is total loss. Binary outcomes are unassessable.',
       },
     ],
     archetype: 'turnaround_trap',

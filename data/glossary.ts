@@ -83,7 +83,7 @@ export const INVESTMENT_GLOSSARY: Record<string, GlossaryTerm> = {
   'garp': {
     term: 'GARP (Growth At a Reasonable Price)',
     definition: 'Peter Lynch\'s philosophy: don\'t overpay for growth. The PEG ratio (PE ÷ Growth Rate) should be near 1. Pay a fair price for a growing business.',
-    example: 'PE of 20 with 20% earnings growth = PEG of 1.0 (fair). PE of 40 with 15% growth = PEG of 2.7 (expensive). Lynch would buy the first, avoid the second.',
+    example: 'PE of 20 with 20% earnings growth = PEG of 1.0 (fair). PE of 40 with 15% growth = PEG of 2.7 (expensive). The first fits the Lynch framework; the second does not.',
     relatedTerms: ['peg ratio', 'growth investing', 'pe ratio'],
   },
   'peg ratio': {

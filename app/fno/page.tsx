@@ -11,7 +11,7 @@ const FEATURES = [
     href:  "/chat",
     icon:  "🧘",
     title: "Rishi Advisor",
-    desc:  "Get contextual F&O advice from Jhunjhunwala, Damani, Buffett, Munger, Chanos, Lynch & Soros.",
+    desc:  "Options strategy education with contextual framework reads from the Rishi panel (AI simulations).",
     tag:   "7 Rishis",
     color: "#8B5CF6",
   },
@@ -28,22 +28,25 @@ const FEATURES = [
   {
     href:  "/stocks",
     icon:  "🔴",
-    title: "Short Radar",
-    desc:  "Rishi Score Short Mode identifies structural short candidates with high conviction.",
-    tag:   "Short Selling",
+    title: "Deterioration Radar",
+    desc:  "The Rishi deterioration model identifies structurally weak candidates with high conviction.",
+    tag:   "Deterioration Screen",
     color: "#EF4444",
   },
 ];
 
 const STRATEGIES = [
-  { name:"Iron Condor",        category:"Neutral",     tag:"Damani Conservative", risk:"Defined"   },
-  { name:"Bull Call Spread",   category:"Bullish",     tag:"Jhunjhunwala Approved",risk:"Defined"  },
-  { name:"Cash-Secured Put",   category:"Bullish",     tag:"Buffett Entry Method", risk:"Defined"  },
+  // P0-6/P0-7: the guru-attribution tags are gone (no endorsement
+  // wording attributed to real persons); the tags describe the strategy
+  // mechanics. Strategy NAMES are factual instrument terminology.
+  { name:"Iron Condor",        category:"Neutral",     tag:"Range-Bound Income",   risk:"Defined"   },
+  { name:"Bull Call Spread",   category:"Bullish",     tag:"Defined-Cost Upside",  risk:"Defined"  },
+  { name:"Cash-Secured Put",   category:"Bullish",     tag:"Entry-Level Strategy", risk:"Defined"  },
   { name:"Long Straddle",      category:"Speculative", tag:"Event Play",           risk:"Defined"  },
-  { name:"Short Strangle",     category:"Neutral",     tag:"Chanos Short Vol",     risk:"Undefined"},
-  { name:"Bear Put Spread",    category:"Bearish",     tag:"Chanos Bear",          risk:"Defined"  },
-  { name:"Butterfly Spread",   category:"Neutral",     tag:"Munger Defined Risk",  risk:"Defined"  },
-  { name:"Covered Call",       category:"Neutral",     tag:"Buffett Income",       risk:"Defined"  },
+  { name:"Short Strangle",     category:"Neutral",     tag:"Volatility Decay",     risk:"Undefined"},
+  { name:"Bear Put Spread",    category:"Bearish",     tag:"Defined-Cost Downside",risk:"Defined"  },
+  { name:"Butterfly Spread",   category:"Neutral",     tag:"Pin-Risk Income",      risk:"Defined"  },
+  { name:"Covered Call",       category:"Neutral",     tag:"Yield Enhancement",   risk:"Defined"  },
 ];
 
 const CAT_COLORS: Record<string,string> = {

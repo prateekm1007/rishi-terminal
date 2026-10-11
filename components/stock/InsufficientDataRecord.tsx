@@ -39,7 +39,7 @@ export function InsufficientDataRecord({ stock }: { stock: Stock }) {
             alongside positive reported profit). When the inputs contradict each other, every score,
             verdict, debate or ranking derived from them would be noise presented as analysis — so
             none is shown. {stock.name} stays listed for completeness of the universe, and the
-            record is excluded from Stock of the Day, Top Buys, Short Radar and screener counts.
+            record is excluded from Stock of the Day, Top Ranked, Deterioration Radar and screener counts.
           </p>
           <p style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.7, margin: '14px 0 0' }}>
             What fixes this: a real fundamentals source for {stock.symbol}. The dataset behind this

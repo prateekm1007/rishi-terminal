@@ -67,7 +67,7 @@ export default function DailyRitualWidget() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
-        {/* Long Pick */}
+        {/* Top Pick (highest consensus) */}
         <Link href={`/stock/${ritual.longPick.symbol}`} style={{ textDecoration: "none" }}>
           <div style={{
             background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)",
@@ -78,7 +78,7 @@ export default function DailyRitualWidget() {
             onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderLeftWidth = "3px"}
           >
             <div style={{ fontSize: "10px", fontWeight: 700, color: "#22C55E", letterSpacing: "0.1em", marginBottom: "6px" }}>
-              🟢 LONG PICK
+              🟢 TOP PICK
             </div>
             <div style={{ fontSize: "16px", fontWeight: 800, color: "#F8FAFC", fontFamily: "JetBrains Mono, monospace", marginBottom: "4px" }}>
               {ritual.longPick.symbol}
@@ -92,7 +92,7 @@ export default function DailyRitualWidget() {
           </div>
         </Link>
 
-        {/* Short Pick */}
+        {/* Bottom Pick (lowest consensus) */}
         <Link href={`/stock/${ritual.shortPick.symbol}`} style={{ textDecoration: "none" }}>
           <div style={{
             background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)",
@@ -103,7 +103,7 @@ export default function DailyRitualWidget() {
             onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderLeftWidth = "3px"}
           >
             <div style={{ fontSize: "10px", fontWeight: 700, color: "#EF4444", letterSpacing: "0.1em", marginBottom: "6px" }}>
-              🔴 SHORT PICK
+              🔴 BOTTOM PICK
             </div>
             <div style={{ fontSize: "16px", fontWeight: 800, color: "#F8FAFC", fontFamily: "JetBrains Mono, monospace", marginBottom: "4px" }}>
               {ritual.shortPick.symbol}
@@ -112,7 +112,7 @@ export default function DailyRitualWidget() {
               {ritual.shortPick.reason}
             </div>
             <div style={{ fontSize: "12px", fontWeight: 700, color: "#EF4444", marginTop: "8px" }}>
-              Short Score: {ritual.shortPick.score}/100
+              Bottom Score: {ritual.shortPick.score}/100
             </div>
           </div>
         </Link>

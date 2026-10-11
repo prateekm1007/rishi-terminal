@@ -136,7 +136,7 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
   return (
     <>
 
-      {/* U4: the ranked trio (Stock of the Day / Top Buy Signals / Short
+      {/* U4: the ranked trio (Stock of the Day / Top Ranked / Deterioration
         Radar) exists only when the RANKINGS_ENABLED flag is on. Off →
         one honest disabled panel; the ranking engine never ran. */}
       {rankingsEnabled && stockOfDay ? (<>

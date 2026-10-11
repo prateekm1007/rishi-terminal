@@ -64,9 +64,9 @@ export const SCREENER_PRESETS: ScreenerPreset[] = [
   },
   {
     id: "pharma_short",
-    name: "Pharma Short Mode",
+    name: "Pharma Deterioration Mode",
     emoji: "💊",
-    description: "Pharma shorts — USFDA warnings, overvaluation, patent cliffs",
+    description: "Pharma deterioration screen — USFDA warnings, overvaluation, patent cliffs",
     rishi: "Jim Chanos",
     filters: { minPE: 35, maxROE: 12, sectors: ["Pharma"] },
   },

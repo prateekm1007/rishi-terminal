@@ -38,8 +38,8 @@ function scoreDisp(s: number | null) {
   return s === null ? '—' : String(s);
 }
 function signalColor(s: string) {
-  if (s === 'BUY' || s === 'STRONG BUY' || s === 'BULLISH') return '#22C55E';
-  if (s === 'SELL' || s === 'BEARISH') return '#EF4444';
+  if (s === 'FAVORABLE' || s === 'STRONGLY FAVORABLE' || s === 'BULLISH' || s === 'POSITIVE' || s === 'UPTREND') return '#22C55E';
+  if (s === 'UNFAVORABLE' || s === 'BEARISH') return '#EF4444';
   return '#D4AF37';
 }
 
@@ -103,7 +103,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     : null;
 
   const aboveMa200 = liveAsset.price > asset.moving200d;
-  const maLabel = asset.macd === 'BULLISH' ? 'BUY' : asset.macd === 'BEARISH' ? 'SELL' : 'NEUTRAL';
+  const maLabel = asset.macd === 'BULLISH' ? 'UPTREND' : asset.macd === 'BEARISH' ? 'DOWNTREND' : 'NEUTRAL';
 
   const bulls = rishiScores.filter(r => r.result.score !== null && r.result.score >= 65);
   const bears = rishiScores.filter(r => r.result.score !== null && r.result.score < 45);
@@ -405,9 +405,9 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                 {[
                   { label: 'RSI (14)', value: asset.rsi.toString(), signal: asset.rsi > 70 ? 'OVERBOUGHT' : asset.rsi < 30 ? 'OVERSOLD' : 'NEUTRAL' },
                   { label: 'MACD', value: asset.macd, signal: maLabel },
-                  { label: '200D MA', value: aboveMa200 ? 'ABOVE' : 'BELOW', signal: aboveMa200 ? 'BUY' : 'SELL' },
-                  { label: '24h Momentum', value: `${asset.change24h >= 0 ? '+' : ''}${asset.change24h.toFixed(2)}%`, signal: asset.change24h > 2 ? 'BUY' : asset.change24h < -2 ? 'SELL' : 'NEUTRAL' },
-                  { label: '7D Momentum', value: `${asset.change7d >= 0 ? '+' : ''}${asset.change7d.toFixed(2)}%`, signal: asset.change7d > 5 ? 'BUY' : asset.change7d < -5 ? 'SELL' : 'NEUTRAL' },
+                  { label: '200D MA', value: aboveMa200 ? 'ABOVE' : 'BELOW', signal: aboveMa200 ? 'UPTREND' : 'DOWNTREND' },
+                  { label: '24h Momentum', value: `${asset.change24h >= 0 ? '+' : ''}${asset.change24h.toFixed(2)}%`, signal: asset.change24h > 2 ? 'POSITIVE' : asset.change24h < -2 ? 'NEGATIVE' : 'NEUTRAL' },
+                  { label: '7D Momentum', value: `${asset.change7d >= 0 ? '+' : ''}${asset.change7d.toFixed(2)}%`, signal: asset.change7d > 5 ? 'POSITIVE' : asset.change7d < -5 ? 'NEGATIVE' : 'NEUTRAL' },
                   { label: 'ATH Distance', value: `${asset.fromAth.toFixed(1)}%`, signal: asset.fromAth > -20 ? 'STRONG' : asset.fromAth > -50 ? 'NEUTRAL' : 'WEAK' },
                 ].map(ind => (
                   <div key={ind.label} style={{ padding: 14, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>

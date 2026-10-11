@@ -79,6 +79,26 @@ export const nseIndexSchema = z.object({
   pb: nseNumeric,
 });
 
+// ── NSE India: /api/equity-stockIndices?index=NIFTY 50 ───────────────
+// P1-LIVE-UNIVERSE (round 47): the official constituents payload. The
+// index's own aggregate row carries priority 1 and symbol == the index
+// name; constituents follow with priority 2..N.
+export const nseStockIndicesRowSchema = z.object({
+  symbol: z.string(),
+  priority: z.number().optional(),
+  series: z.string().optional(),
+  identifier: z.string().optional(),
+  isin: z.string().optional(),
+  lastPrice: nseNumeric,
+  lastUpdateTime: z.string().optional(),
+});
+
+export const nseStockIndicesSchema = z.object({
+  data: z.array(nseStockIndicesRowSchema).optional(),
+});
+
+export type NseStockIndicesRow = z.infer<typeof nseStockIndicesRowSchema>;
+
 export const nseAllIndicesSchema = z.object({
   data: z.array(nseIndexSchema).optional(),
 });

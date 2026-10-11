@@ -64,3 +64,38 @@ export const PRICE_DATA_LICENSE: PriceDataLicense = {
 export function priceScoresPublic(): boolean {
   return PRICE_DATA_LICENSE.status === "licensed";
 }
+
+/**
+ * The DISPLAY licence — a second, distinct written answer (P1-LIVE-UNIVERSE,
+ * founder directive 2026-10-11: "Keep NSE-sourced end-of-day prices off
+ * public pages until NSE answers the display question in writing").
+ *
+ * Why a second state instead of reusing PRICE_DATA_LICENSE (rule 14, stated
+ * openly): the NSE enquiry asked two separate contractual questions — the
+ * display licence (showing prices on the site/app) and the non-display
+ * calculation agreement (deriving ratios from the data). They are answered
+ * by different instruments and may arrive separately, so each publication
+ * surface carries the state of ITS OWN written answer. Both states live in
+ * this ONE module — there is no second licensing home.
+ *
+ * Same discipline as the score switch: fail-closed (rule 6), flips only in
+ * the PR recording the written answer, never via an env var, a query
+ * parameter, or a client-controlled value (rule 7).
+ */
+export const EOD_PRICE_DISPLAY_LICENSE: PriceDataLicense = {
+  status: "unresolved",
+  asOf: "2026-10-11",
+  authority:
+    "founder directive 2026-10-11: NSE-sourced end-of-day prices stay off public pages until NSE answers the display question in writing",
+  enquiry:
+    "NSE Data & Analytics — the display licence question (showing end-of-day prices on the website/app), asked in the 2026-10-11 enquiry; written answer pending",
+} as const;
+
+/**
+ * The display switch: NSE-sourced end-of-day prices may be SERVED (from
+ * any route, internal or public) only when the display answer is recorded.
+ * Anything other than an explicit "licensed" refuses (fail-closed, rule 6).
+ */
+export function eodPricesDisplayable(): boolean {
+  return EOD_PRICE_DISPLAY_LICENSE.status === "licensed";
+}

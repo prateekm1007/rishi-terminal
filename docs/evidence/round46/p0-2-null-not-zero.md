@@ -117,3 +117,19 @@ the user-facing delta is the honest `—` where `0.0x` used to render.
 
 `git revert <merge commit>` — the surgery, types and re-pins are one
 self-contained range.
+
+## Addendum — the CI trigger gap (2026-10-11 08:2xZ)
+
+The branch's force-pushed reconciliation commits (204d402, then 89e059c)
+produced `head_ref_force_pushed` timeline events but NO `synchronize`
+workflow trigger — no CI run fired for either head (verified against the
+actions/runs feed; only the Vercel check ran). Normal pushes fire
+pull_request CI normally (observed on #337's synchronizes). This
+evidence-file addendum rides as a normal commit to (a) record the gap
+and (b) trigger CI on the exact reconciled tree.
+
+Separately discovered during triage: the CI workflow's push filter has
+been corrupted since its creation (d553cba, 2026-09-30) —
+`branches: ain]` where `[main]` was intended — so branch-push events have
+never fired CI; only pull_request events kept the gate alive. The repair
+rides as its own PR (rule 23 / C7).

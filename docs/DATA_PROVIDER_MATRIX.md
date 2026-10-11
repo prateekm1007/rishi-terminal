@@ -221,3 +221,76 @@ provider authority; APPROVED-only routing is enforced inside the routing
 primitive. No provider was added, removed, or switched in Round 9
 (directive 13: `chat-api / agnes-2.5-flash` remains the attested AI
 provider/model — vendor changes are Rule-31 founder decisions).
+
+## The 2026-10-11 licensing review (founder research) — routing consequences
+
+The founder's licensing research (delivered in-session 2026-10-11) is the
+movement on FD-1 and the answer to P0-8's "FOUNDER DECISION NEEDED
+(licensing)". Recorded here verbatim-in-substance; the implementation leg
+(the price-license gate) is PR #349 / `docs/evidence/round47/p0-8-license-gate.md`.
+
+**NSE (the exchange whose data the equity universe derives from).** The
+published domestic price list charges fixed annual fees per website and
+per mobile app for DISPLAYING market data. The non-display policy defines
+automated calculations on NSE market data as a separate usage needing its
+own agreement — valuation frameworks (P/E, earnings yield, price-to-NCAV)
+ARE automated calculations on prices. Consequence: any price-based score
+is treated as unresolved until NSE answers in writing; the enquiries below
+ask exactly these two questions.
+
+**Broker APIs (own-account licenses).** Angel One SmartAPI — free; live
+market feed + historical data for NSE equities and F&O listed at no cost,
+with public live streams named as a use case; still exchange data, so
+public display needs Angel One's written confirmation (and under which
+exchange licence). Upstox — listed free for developers. Fyers — community
+post lists TrueData live-tick plans at ₹1,599 + GST for retail (verify
+what Fyers includes). Dhan — data API ₹499 + taxes/month. Kite Connect —
+₹500/month. ALL broker APIs are licensed to the subscriber's own account:
+build and test with them; never serve their data to other users without
+written permission.
+
+**yfinance — RESEARCH_ONLY, now explicit.** Its own README states the
+Yahoo finance API is intended for personal use only and the access is
+unofficial. Fine for experiments; never the product. (Consistent with the
+existing rejection row: client ≠ data rights.)
+
+**NSE archives — the free official base.** Daily files: corporate
+actions, gainers/losers, new 52-week highs/lows, price-band hits, top 25
+securities by traded value; historical bulk/block deals, price-volume
+archives, India VIX history. The equity list (EQUITY_L.csv) on the
+archive server is the agreed base for rebuilding the ticker master
+(fixes the duplicate/invalid symbols from the audit). CONSTRAINTS: check
+the website terms before automating any download; keep it to one request
+per day. (Measured from the sandbox: nsearchives returns 403 to
+non-browser clients — the first fetches run founder-side or from an
+allowlisted job; no loader ships unverified, rule 20.)
+
+**Macro — RBI.** The Database on Indian Economy (DBIE) data is
+downloadable free of charge; RBI bulletin tables carry government
+securities redemption yields, T-bill auctions and repo operations. ONE
+official 10-year yield series is adopted and its date recorded with
+every value — this retires the 6.92% vs 7.08% dual-source conflict from
+the audit. (Sandbox probe: rbi.org.in answers 418 to non-browser
+clients — same founder-side fetch constraint.)
+
+**News — primary sources first.** RBI and SEBI publications and exchange
+announcements before any aggregator.
+
+**Hosting — recorded constraint for the launch decision.** Vercel's
+Hobby plan is restricted to non-commercial personal use; commercial use
+requires Pro ($20 per user per month; asking for donations does not make
+a deployment commercial). A third-party comparison says Cloudflare Pages
+allows commercial use on its free tier — verify its CURRENT terms before
+any switch. FOUNDER DECISION at launch (rule 31: vendor selection).
+
+**The two enquiries (drafted 2026-10-11 for the founder to send; both
+cost nothing):**
+1. NSE Data & Analytics — may the product show end-of-day prices on a
+   website; does computing valuation ratios require a non-display
+   licence; what does each cost.
+2. Angel One — may the SmartAPI feed be shown publicly, and under which
+   exchange licence.
+
+Until both answers are in writing: price-based scores are own-use only
+(enforced mechanically by the price-license gate), and no surface claims
+"live".

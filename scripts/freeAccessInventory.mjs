@@ -177,8 +177,9 @@ const CLASSIFY = {
   'lib/chat/registryDisplay.ts': { cat: 'legitimate-concept', note: 'rank strings / formula copy (Listing Premium, PE Premium) / bios (Graham student)' },
   'lib/chat/registry.ts': { cat: 'legitimate-concept', note: 'rank axis = display (kept); access + fnoAccess axes = entitlement (removed in M3)' },
   'lib/chat/prompts.ts': { cat: 'legitimate-concept', note: 'persona prompt copy mentioning student in bio/voice text' },
-  'lib/gamification/index.ts': { cat: 'legitimate-concept', note: 'EnlightenmentLevel XP progress names (Seeker/Apprentice/Practitioner/Rishi) — achievement levels, NOT payment tiers' },
-  'components/gamification/ProgressBar.tsx': { cat: 'legitimate-concept', note: 'XP level display (EnlightenmentLevel)' },
+  // lib/gamification/index.ts, components/gamification/ProgressBar.tsx (and
+  // the DailyRitual widget) were DELETED in round-47 P0-7 (dead quote-bearing
+  // modules, rule 17); their inventory entries went with them.
   'lib/fno/strategyEngine.ts': { cat: 'legitimate-concept', note: 'options premium = price paid for an option (market term)' },
   'components/bonds/BondDetailClient.tsx': { cat: 'legitimate-concept', note: 'bond premium market term' },
   'components/markets/WorldMarketsGrid.tsx': { cat: 'legitimate-concept', note: 'pricing-power market commentary' },

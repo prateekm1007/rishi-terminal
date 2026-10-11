@@ -16,7 +16,6 @@ const FOREX_RISHIS = [
     icon: '🦅',
     color: 'var(--accent-gold)',
     expertise: 'Central bank psychology, currency crises, macro trends',
-    quote: 'Markets are constantly in a state of uncertainty and flux, and money is made by discounting the obvious and betting on the unexpected.',
   },
   {
     name: 'Stanley Druckenmiller',
@@ -26,7 +25,6 @@ const FOREX_RISHIS = [
     icon: '🎯',
     color: '#60a5fa',
     expertise: 'Regime change detection, position sizing, trend following',
-    quote: 'The way to build long-term returns is through preservation of capital and home runs.',
   },
   {
     name: 'Paul Tudor Jones',
@@ -36,7 +34,6 @@ const FOREX_RISHIS = [
     icon: '🛡️',
     color: 'var(--accent-green)',
     expertise: 'Technical analysis, macro overlays, volatility trading',
-    quote: 'Where you want to be is always in control, never wishing, always trading, and always, first and foremost protecting your butt.',
   },
   {
     name: 'Raghuram Rajan',
@@ -46,7 +43,6 @@ const FOREX_RISHIS = [
     icon: '🏛️',
     color: '#c084fc',
     expertise: 'Emerging markets, central bank actions, capital flows',
-    quote: 'The rupee finds its level based on fundamentals, not speculation.',
   },
 ];
 
@@ -127,19 +123,6 @@ export default function ForexRishisPage() {
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   {rishi.expertise}
                 </div>
-              </div>
-
-              <div style={{ 
-                padding: 16, 
-                background: 'var(--bg-secondary)', 
-                borderRadius: 8, 
-                borderLeft: `3px solid ${rishi.color}`,
-                fontStyle: 'italic',
-                fontSize: 12,
-                color: 'var(--text-secondary)',
-                lineHeight: 1.6,
-              }}>
-                &quot;{rishi.quote}&quot;
               </div>
 
               <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>

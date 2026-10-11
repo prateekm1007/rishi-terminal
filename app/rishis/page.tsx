@@ -259,9 +259,6 @@ export default function ChatWithRishisPage() {
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', color: 'var(--text-muted)', padding: '40px 20px' }}>
               <div style={{ fontSize: 56, marginBottom: 16 }}>{selectedRishi.emoji}</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: rankColor, marginBottom: 8 }}>{selectedRishi.name}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 420, lineHeight: 1.7, marginBottom: 20 }}>
-                &quot;{selectedRishi.quote}&quot;
-              </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', maxWidth: 380, lineHeight: 1.6, marginBottom: 24 }}>
                 {selectedRishi.bio}
               </div>

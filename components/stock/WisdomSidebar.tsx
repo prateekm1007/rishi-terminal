@@ -127,14 +127,12 @@ export function WisdomSidebar({ stock, scores, parallel }: WisdomSidebarProps) {
                 paddingTop: "16px", borderTop: "1px solid rgba(51,65,85,0.4)",
               }}>
                 <div style={{ fontSize: "10px", color: "#D4AF37", fontWeight: 700, marginBottom: "8px" }}>
-                  RELATED QUOTE
+                  PARALLEL VIEW
                 </div>
-                <blockquote style={{ fontSize: "12px", fontStyle: "italic", color: "#94A3B8", lineHeight: 1.7, marginBottom: "8px" }}>
-                  &quot;{parallel.quote}&quot;
-                </blockquote>
-                <div style={{ fontSize: "10px", color: "var(--text-muted)", textAlign: "right" }}>
-                  – {parallel.author}
+                <div style={{ fontSize: "12px", color: "#94A3B8", lineHeight: 1.7, marginBottom: "8px" }}>
+                  {parallel.lesson}
                 </div>
+
               </div>
             </>
           )}

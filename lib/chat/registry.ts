@@ -59,7 +59,6 @@ export interface CanonicalPersona {
   bio?: string;
   formula?: string;
   bestFor?: string[];
-  quote?: string;
   famousPicks?: string[];
 }
 
@@ -85,8 +84,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     label: "Conviction Multibagger",
     bio: "Big Bull of India. Concentrated bets on high-growth companies with deep conviction.",
     formula: "P/CF (25%) + Growth (25%) + Quality (20%) + Conviction (20%) + Sentiment (10%)",
-    bestFor: ["Growth","Multi-Year","Large Cap"],
-    quote: "I am a firm believer in the India story.",
+    bestFor: ["Growth","Long Term","Large Cap"],
     famousPicks: ["Titan","Star Health","Crisil"],
   },
   {
@@ -111,7 +109,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "DMart founder. Obsessed with debt-free businesses and consistent cash flows.",
     formula: "Zero-Debt (30%) + ROCE (25%) + Cash Flow (20%) + Moat (15%) + Management (10%)",
     bestFor: ["Defensive","Debt-Free","Quality"],
-    quote: "Never invest in a business you cannot understand.",
     famousPicks: ["DMart","VST Industries"],
   },
   {
@@ -130,7 +127,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Finds small-cap multibaggers before the mainstream discovers them.",
     formula: "Promoter (30%) + FCF (25%) + ROCE (20%) + Size (15%) + Momentum (10%)",
     bestFor: ["Small Cap","Hidden Gems","Multibagger"],
-    quote: "Small caps with high promoter holding are where real wealth is created.",
     famousPicks: ["Vaibhav Global","Newgen Software"],
   },
   {
@@ -149,7 +145,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Created the SMILE framework. Patient long-term approach to emerging businesses.",
     formula: "Small (20%) + Manageable (20%) + Innovation (20%) + Listing Premium (20%) + Emerging (20%)",
     bestFor: ["SMILE","Mid Cap","Emerging"],
-    quote: "Market transfers money from the impatient to the patient.",
     famousPicks: ["Cera Sanitaryware","Atul Auto"],
   },
   {
@@ -168,7 +163,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Finds value in beaten-down stocks others have abandoned. Specializes in turnarounds.",
     formula: "Contrarian (30%) + Management (25%) + Undervalue (25%) + Catalyst (20%)",
     bestFor: ["Deep Value","Turnarounds","Contrarian"],
-    quote: "The best investments come with maximum pessimism.",
     famousPicks: ["Stove Kraft","Geojit Financial"],
   },
   {
@@ -187,7 +181,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Co-founder of Motilal Oswal. Developed QGLP framework for compounding businesses.",
     formula: "Quality (30%) + Growth (25%) + Longevity (25%) + Price (20%)",
     bestFor: ["Compounders","Quality Growth","QGLP"],
-    quote: "Quality plus Growth plus Longevity at Right Price is the mantra.",
     famousPicks: ["Page Industries","Eicher Motors"],
   },
   {
@@ -205,8 +198,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     label: "Steady Compounder",
     bio: "Boring, steady businesses that compound for decades. Consistency over excitement.",
     formula: "EPS Growth (35%) + Debt-Free (30%) + Management Quality (20%) + Valuation (15%)",
-    bestFor: ["Multi-Year Hold","Boring Business","Compounder"],
-    quote: "Boring businesses compound into fortunes over decades.",
+    bestFor: ["Long Hold","Boring Business","Compounder"],
     famousPicks: ["V-Guard Industries"],
   },
   {
@@ -225,7 +217,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Focuses on India consumption growth megatrend. Early identifier of consumer stocks.",
     formula: "Consumer Theme (30%) + Revenue Growth (25%) + Margins (25%) + PE Premium (20%)",
     bestFor: ["Consumption","Growth","India Theme"],
-    quote: "The Indian consumption story is just beginning.",
     famousPicks: ["Berger Paints","HDFC Bank"],
   },
   {
@@ -249,8 +240,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     label: "Quality Moat",
     bio: "Oracle of Omaha. Seeks durable competitive advantages and exceptional management.",
     formula: "ROE (30%) + Economic Moat (25%) + Earnings Power (20%) + Management (15%) + Price (10%)",
-    bestFor: ["Quality","Multi-Year","Moat"],
-    quote: "Wonderful company at fair price beats fair company at wonderful price.",
+    bestFor: ["Quality","Long Term","Moat"],
     famousPicks: ["Coca-Cola","Apple","American Express"],
   },
   {
@@ -269,7 +259,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Father of value investing. Margin of safety is his central concept.",
     formula: "NCAV (40%) + P/E Below Market (25%) + Low Debt (20%) + Earnings Stability (15%)",
     bestFor: ["Deep Value","Asset Plays","Safety"],
-    quote: "Margin of safety is the central concept of investment.",
     famousPicks: ["GEICO"],
   },
   {
@@ -294,7 +283,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Fidelity Magellan fund manager. 29% annual returns for 13 years. Champion of retail investors.",
     formula: "PEG Ratio (30%) + Earnings Growth (25%) + FCF (20%) + Category (15%) + Story (10%)",
     bestFor: ["GARP","Growth","Consumer"],
-    quote: "Invest in what you know.",
     famousPicks: ["Dunkin Donuts","Chrysler"],
   },
   {
@@ -318,8 +306,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     label: "Mental Models",
     bio: "Buffett partner. Inversion, latticework of mental models, and multidisciplinary thinking.",
     formula: "Circle of Competence (30%) + Inversion (25%) + Quality Business (25%) + Fair Price (20%)",
-    bestFor: ["Quality","Mental Models","Multi-Year"],
-    quote: "Invert, always invert.",
+    bestFor: ["Quality","Mental Models","Long Term"],
     famousPicks: ["Costco","Berkshire Hathaway"],
   },
   {
@@ -338,7 +325,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Created the Magic Formula. Systematic combination of high ROC and high earnings yield.",
     formula: "Return on Capital (50%) + Earnings Yield (50%)",
     bestFor: ["Systematic","Quant","Value"],
-    quote: "Figure out the value of something and then pay a lot less for it.",
     famousPicks: ["Various - systematic approach"],
   },
   {
@@ -357,7 +343,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Clones the best ideas from the best investors. Dhandho framework - high upside, low downside.",
     formula: "Clone Score (30%) + Owner-Operator (25%) + Downside Protection (25%) + Upside (20%)",
     bestFor: ["Cloning","Asymmetric","Value"],
-    quote: "Heads I win, tails I do not lose much.",
     famousPicks: ["Fiat Chrysler","Rain Industries"],
   },
   {
@@ -375,8 +360,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     label: "Scuttlebutt Growth",
     bio: "Pioneer of growth investing. Deep qualitative research through scuttlebutt method.",
     formula: "Management Quality (25%) + R&D Strength (25%) + Revenue Growth (25%) + Margins (25%)",
-    bestFor: ["Growth","Quality Management","Multi-Year"],
-    quote: "The person with the right information beats the person with the right advice.",
+    bestFor: ["Growth","Quality Management","Long Term"],
     famousPicks: ["Motorola","Texas Instruments"],
   },
   {
@@ -395,7 +379,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Oaktree Capital founder. Market cycle expert. Understanding risk is his superpower.",
     formula: "Cycle Position (30%) + Margin of Safety (25%) + Risk Asymmetry (25%) + Sentiment (20%)",
     bestFor: ["Cycle","Contrarian","Risk Management"],
-    quote: "Most people try to find good assets. I try to find good risk/reward.",
     famousPicks: ["Distressed debt","High yield bonds"],
   },
   {
@@ -414,7 +397,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Baupost Group founder. Downside protection obsessed. The most secretive great investor.",
     formula: "Downside Protection (40%) + Asymmetric Return (30%) + Margin of Safety (15%) + Catalyst (15%)",
     bestFor: ["Defensive","Asymmetric","Deep Value"],
-    quote: "The best returns come from situations where downside is minimal.",
     famousPicks: ["Distressed assets","Special situations"],
   },
   {
@@ -433,7 +415,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Global value investor pioneer. Buys at the point of maximum pessimism worldwide.",
     formula: "Pessimism Score (35%) + Global Discount (30%) + Quality Business (20%) + Catalyst (15%)",
     bestFor: ["Contrarian","Global","Deep Value"],
-    quote: "Maximum pessimism is historically where the best entries cluster.",
     famousPicks: ["Japan 1980s","Various global bargains"],
   },
   {
@@ -452,7 +433,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "Graham student. 16%+ annual returns for 45+ years. Pure statistical value investor.",
     formula: "Price-to-Book (40%) + Zero Debt (30%) + Insider Buying (20%) + Low PE (10%)",
     bestFor: ["Deep Value","Low Risk","Diversified"],
-    quote: "Cheap stocks, held until they become less cheap.",
     famousPicks: ["Statistically cheap stocks"],
   },
   {
@@ -475,8 +455,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     label: "Forensic Analyst",
     bio: "Forensic accountant who built his name shorting Enron. Finds where the narrative diverges from the numbers.",
     formula: "Overvaluation (25%) + Deteriorating Fundamentals (25%) + Accounting Red Flags (25%) + Catalyst Timing (25%)",
-    bestFor: ["Deterioration Reads","Forensic","Skepticism"],
-    quote: "Being early is the same as being wrong in shorts.",
+    bestFor: ["Short Ideas","Forensic","Skepticism"],
     famousPicks: ["Enron (short)"],
   },
   {
@@ -500,7 +479,6 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     bio: "The reflexivist. Trades macro inflections where price action feeds back into fundamentals.",
     formula: "Macro Cycle (20%) + Reflexivity (20%) + Policy Shift (20%) + Trend Stage (20%) + Capital Flows (20%)",
     bestFor: ["Macro","Trends","Currencies"],
-    quote: "It's not whether you're right or wrong, but how much you make when you're right and how much you lose when you're wrong.",
     famousPicks: ["British Pound (1992 short)"],
   },
 ];

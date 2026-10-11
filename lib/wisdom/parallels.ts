@@ -13,7 +13,7 @@ export interface HistoricalParallel {
   lesson: string;
   rishiPerspectives: Array<{
     rishiName: string;
-    quote: string;
+    view: string;
     reasoning: string;
   }>;
   archetype: string;
@@ -22,7 +22,7 @@ export interface HistoricalParallel {
 
 export interface RishiQuote {
   rishi: string;
-  quote: string;
+  view: string;
   context: string;
   source?: string;
 }
@@ -43,17 +43,17 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     rishiPerspectives: [
       {
         rishiName: 'Damani',
-        quote: 'I buy businesses that are boring to most but essential to consumers. Then I wait.',
+        view: 'Boring, essential consumer businesses, held with patience.',
         reasoning: 'Consumer staples with pricing power compound for decades when left undisturbed.',
       },
       {
         rishiName: 'Buffett',
-        quote: 'The best business is one with a wide moat that gets wider every year.',
+        view: 'The best businesses have moats that widen every year.',
         reasoning: 'Brand equity in consumer goods creates permanent competitive advantages.',
       },
       {
         rishiName: 'Munger',
-        quote: 'Waiting helps you as an investor and a lot of people just cannot stand to wait.',
+        view: 'The waiting itself is the edge most people cannot sustain.',
         reasoning: 'These businesses looked expensive on PE but cheap on long-term value creation.',
       },
     ],
@@ -75,18 +75,18 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     rishiPerspectives: [
       {
         rishiName: 'Graham',
-        quote: 'The investor who permits himself to be stampeded by market declines is perversely transforming his basic advantage into a disadvantage.',
+        view: 'Being stampeded by declines turns the long-term advantage into a disadvantage.',
         reasoning: 'But Graham also warned: distinguish between permanent value and cyclical peaks.',
       },
       {
         rishiName: 'Howard Marks',
-        quote: 'The biggest investing errors come from psychological factors, not informational ones.',
+        view: 'The biggest errors are psychological, not informational.',
         reasoning: 'Greed makes low PE look safe. In commodities, low PE often means peak cycle.',
       },
       {
         rishiName: 'Munger',
-        quote: 'A great business at a fair price is superior to a fair business at a great price.',
-        reasoning: 'Cyclical commodity producers are fair businesses at best. Compelling only in deep distress.',
+        view: 'A great business at a fair price beats a fair business at a great price.',
+        reasoning: 'Cyclical commodity producers are fair businesses at best. Avoid unless deep distress.',
       },
     ],
     archetype: 'cyclical_trap',
@@ -107,17 +107,17 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     rishiPerspectives: [
       {
         rishiName: 'Buffett',
-        quote: 'Price is what you pay. Value is what you get.',
+        view: 'Price and value are different numbers; the gap is the opportunity.',
         reasoning: 'These were stories priced for perfection. When execution faltered, capital vanished.',
       },
       {
         rishiName: 'Seth Klarman',
-        quote: 'Risk is not knowing what you are doing.',
+        view: 'Risk lives in not knowing what you are doing.',
         reasoning: 'Buying unprofitable companies at premium valuations is speculation, not investment.',
       },
       {
         rishiName: 'Graham',
-        quote: 'The speculator\'s primary interest lies in anticipating market psychology.',
+        view: 'Speculation is fundamentally about anticipating market psychology.',
         reasoning: 'These were pure momentum plays. No margin of safety exists in narrative stocks.',
       },
     ],
@@ -139,17 +139,17 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     rishiPerspectives: [
       {
         rishiName: 'Buffett',
-        quote: 'Our favorite holding period is forever.',
+        view: 'The best holding period for a wonderful business is indefinite.',
         reasoning: 'Quality businesses with pricing power and capital efficiency deserve permanent ownership.',
       },
       {
         rishiName: 'Munger',
-        quote: 'Over the long term, it is hard for a stock to earn much better than the business earns.',
+        view: 'Long term, a stock earns what the business earns.',
         reasoning: 'IT services earn 20-30% ROE consistently. Stock returns mirror business quality.',
       },
       {
         rishiName: 'Lynch',
-        quote: 'Know what you own and why you own it.',
+        view: 'Every holding should carry a reason you can state.',
         reasoning: 'These are simple businesses: talent + client relationships. Easy to understand = easy to hold.',
       },
     ],
@@ -171,18 +171,18 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     rishiPerspectives: [
       {
         rishiName: 'Munger',
-        quote: 'A great business at a fair price beats a fair business at a great price.',
+        view: 'A great business at a fair price beats a fair business at a great price.',
         reasoning: 'These looked cheap but business quality was terminal. Price alone is not value.',
       },
       {
         rishiName: 'Graham',
-        quote: 'The margin of safety is always dependent on the price paid.',
+        view: 'The margin of safety depends entirely on the price paid.',
         reasoning: 'Even Graham\'s deep value worked only with asset backing. These had no safety net.',
       },
       {
         rishiName: 'Howard Marks',
-        quote: 'Never forget the six-foot-tall man who drowned in the stream that was five feet deep on average.',
-        reasoning: 'Average odds mean nothing when downside is total loss. Binary outcomes are unassessable.',
+        view: 'A five-foot-average stream can still drown a six-foot man — averages hide depth.',
+        reasoning: 'Average odds mean nothing when downside is total loss. Avoid binary outcomes.',
       },
     ],
     archetype: 'turnaround_trap',
@@ -203,17 +203,17 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
     rishiPerspectives: [
       {
         rishiName: 'Kacholia',
-        quote: 'I look for businesses the market has not discovered yet. Then I wait for the discovery.',
+        view: 'Undiscovered businesses, held until the market finds them.',
         reasoning: 'Information asymmetry in smallcaps creates opportunity. Low coverage = mispricing.',
       },
       {
         rishiName: 'Lynch',
-        quote: 'The person that turns over the most rocks wins the game.',
+        view: 'Whoever examines the most candidates finds the winners.',
         reasoning: 'These were not secret. They were boring. Most investors never looked.',
       },
       {
         rishiName: 'Pabrai',
-        quote: 'Heads I win, tails I do not lose much.',
+        view: 'Heads wins big; tails loses little — the asymmetry is the thesis.',
         reasoning: 'Strong balance sheets + niche moats = asymmetric upside in undiscovered names.',
       },
     ],
@@ -286,14 +286,16 @@ export function getHistoricalParallel(stock: Stock): HistoricalParallel | null {
   return HISTORICAL_PARALLELS[parallelId] || null;
 }
 
-// Get relevant Rishi quotes for this stock
+// P0-7 (round 47): perspectives are VIEWS, never quoted speech — the
+// map reads the reworded view field (the fabricated first-person
+// quotations are gone).
 export function getRelevantQuotes(stock: Stock, scores: RishiScore[]): RishiQuote[] {
   const parallel = getHistoricalParallel(stock);
   if (!parallel) return [];
 
   return parallel.rishiPerspectives.map(p => ({
     rishi: p.rishiName,
-    quote: p.quote,
+    view: p.view,
     context: p.reasoning,
     source: parallel.title,
   }));

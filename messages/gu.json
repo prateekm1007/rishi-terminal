@@ -219,7 +219,7 @@
     "breadcrumb": "જ્ઞાન સ્તરો",
     "free": {
       "title": "Everything Is Free",
-      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
@@ -228,7 +228,7 @@
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
-      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "livePrices": "Delayed equity quotes and live crypto/FX where labelled LIVE",
       "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
       "_note": "English copy pending translation"
     }
@@ -425,7 +425,7 @@
   },
   "dashboard2": {
     "rankingsDisabled": "ક્રમાંકિત પસંદગીઓ અક્ષમ છે",
-    "rankingsDisabledNote": "રેન્ક કરેલા વિજેટ્સ (આજનો સ્ટોક, ટોપ બાય સિગ્નલ્સ, શોર્ટ રડાર) બંધ છે. બાકી બધું — લાઇવ ભાવ, સ્ક્રીનર, ચેટ — કાર્યરત રહે છે."
+    "rankingsDisabledNote": "રેન્ક કરેલા વિજેટ્સ (આજનો સ્ટોક, ટોપ બાય સિગ્નલ્સ, શોર્ટ રડાર) બંધ છે. બાકી બધું — ઉપલબ્ધ બજાર ડેટા, સ્ક્રીનર, ચેટ — કાર્યરત રહે છે."
   },
   "fno": {
     "strategyEdu": "શૈક્ષણિક સંદર્ભ: પ્રમાણભૂત વ્યૂહ વ્યાખ્યાઓ, દૃષ્ટાંત પર્સોના ટૅગ સાથે. લાઇવ ડેટા કે સલાહ નથી."

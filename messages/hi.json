@@ -230,7 +230,7 @@
     "breadcrumb": "ज्ञान स्तर",
     "free": {
       "title": "Everything Is Free",
-      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
@@ -239,7 +239,7 @@
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
-      "livePrices": "Live prices and market data (where the upstream provides them)",
+      "livePrices": "Delayed equity quotes and live crypto/FX where labelled LIVE",
       "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
     }
   },
@@ -523,7 +523,7 @@
       "exploreBtn": "सभी ऋषियों का अन्वेषण करें"
     },
     "rankingsDisabled": "रैंक किए गए चयन अक्षम हैं",
-    "rankingsDisabledNote": "रैंक वाले विजेट (आज का स्टॉक, टॉप बाय सिग्नल, शॉर्ट रडार) बंद हैं। बाकी सब — लाइव कीमतें, स्क्रीनर, चैट — काम करते रहते हैं।"
+    "rankingsDisabledNote": "रैंक वाले विजेट (आज का स्टॉक, टॉप बाय सिग्नल, शॉर्ट रडार) बंद हैं। बाकी सब — उपलब्ध बाज़ार डेटा, स्क्रीनर, चैट — काम करते रहते हैं।"
   },
   "chat": {
     "header": "ऋषियों से संवाद",

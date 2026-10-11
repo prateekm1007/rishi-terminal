@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS, CRICKET_LIVE, NewsItem } from '../../data/news';
+// P0-8 (rule 17): NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS and
+// CRICKET_LIVE were imported here and never used — the list page renders
+// only the live RSS items (allNews = liveNews). The fabricated static
+// stories are NOT a fallback for this surface.
+import { NewsItem } from '../../data/news';
 import { fetchAllNews, LiveNewsItem } from '../../lib/newsApi';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';

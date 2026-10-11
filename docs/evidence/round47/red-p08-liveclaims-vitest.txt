@@ -1,0 +1,1850 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/liveClaims.zero.test.ts (9 tests | 7 failed) 33ms
+   ❯ P0-8 — unbacked live claims removed; News hidden from nav (9)
+     × no 'live prices' claim remains in any locale's UI strings 16ms
+     × the pricing copy states the honest data story (positive control, B-18) 3ms
+     ✓ the backed claims stay — crypto CoinGecko line and LIVE vocabulary 1ms
+     × the /news metadata no longer claims 'live news' 1ms
+     × the footer forex line no longer says 'Verify live rates' 4ms
+     × News is hidden from the sidebar nav and the dashboard mobile nav 2ms
+     × News is out of the sitemap (the MH pattern: nav-hidden = sitemap-hidden) 1ms
+     × the dead fabricated-data imports are gone from the news list page (rule 17) 3ms
+     ✓ the patterns bite (embedded pre-fix strings must match — C5) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/liveClaims.zero.test.ts > P0-8 — unbacked live claims removed; News hidden from nav > no 'live prices' claim remains in any locale's UI strings
+AssertionError: expected [ …(18) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "messages/bn.json:231: \"subtitle\": \"Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio ",
++   "messages/bn.json:240: \"livePrices\": \"Live prices and market data (where the upstream provides them)\",",
++   "messages/en.json:233: \"subtitle\": \"Every feature on Rishi Terminal is free — all Rishis, AI chat, the full stock list, por",
++   "messages/en.json:242: \"livePrices\": \"Live prices and market data (where the upstream provides them)\",",
++   "messages/en.json:535: \"rankingsDisabledNote\": \"The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are swi",
++   "messages/gu.json:222: \"subtitle\": \"Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio ",
++   "messages/gu.json:231: \"livePrices\": \"Live prices and market data (where the upstream provides them)\",",
++   "messages/hi.json:233: \"subtitle\": \"Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio ",
++   "messages/hi.json:242: \"livePrices\": \"Live prices and market data (where the upstream provides them)\",",
++   "messages/mr.json:231: \"subtitle\": \"Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio ",
++   "messages/mr.json:240: \"livePrices\": \"Live prices and market data (where the upstream provides them)\",",
++   "messages/pseudo.json:232: \"subtitle\": \"[Every feature on Rishi Terminal is free — all Rishis, AI chat, the full stock list, po",
++   "messages/pseudo.json:241: \"livePrices\": \"[Live prices and market data (where the upstream provides them)××××××××××××××××××××××",
++   "messages/pseudo.json:534: \"rankingsDisabledNote\": \"[The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are sw",
++   "messages/ta.json:231: \"subtitle\": \"Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio ",
++   "messages/ta.json:240: \"livePrices\": \"Live prices and market data (where the upstream provides them)\",",
++   "messages/te.json:231: \"subtitle\": \"Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio ",
++   "messages/te.json:240: \"livePrices\": \"Live prices and market data (where the upstream provides them)\",",
++ ]
+
+ ❯ test/liveClaims.zero.test.ts:60:18
+     58|       }
+     59|     }
+     60|     expect(hits).toEqual([]);
+       |                  ^
+     61|   });
+     62|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/liveClaims.zero.test.ts > P0-8 — unbacked live claims removed; News hidden from nav > the pricing copy states the honest data story (positive control, B-18)
+AssertionError: expected '{\n  "common": {\n    "loading": "Loa…' to contain 'market data where available'
+
+- Expected
++ Received
+
+- market data where available
++ {
++   "common": {
++     "loading": "Loading...",
++     "error": "Error",
++     "search": "Search stocks - TITAN, INFY, RELIANCE, TCS...",
++     "viewAll": "View All",
++     "back": "Back",
++     "close": "Close",
++     "export": "Export",
++     "save": "Save",
++     "cancel": "Cancel",
++     "delete": "Remove",
++     "edit": "Edit",
++     "add": "Add",
++     "viewDetails": "View Details",
++     "streak": "Streak",
++     "stack": "stack",
++     "rishiScore": "RISHI SCORE",
++     "philosophicalSpread": "PHILOSOPHICAL SPREAD",
++     "keyMetrics": "Key Metrics",
++     "valuationSnapshot": "VALUATION SNAPSHOT",
++     "shareholdingPattern": "Shareholding Pattern",
++     "noDebates": "No philosophical debates detected for this stock",
++     "qvpsScore": "QUALITY-VALUE PILLAR SCORE"
++   },
++   "header": {
++     "title": "RISHI TERMINAL",
++     "investmentWisdomOS": "INVESTMENT WISDOM OS",
++     "wisdomOverHype": "Wisdom over hype.",
++     "time": "IST",
++     "exchanges": "NSE - BSE - MCX - GLOBAL"
++   },
++   "dashboard": {
++     "stockOfDay": "STOCK OF THE DAY",
++     "viewFullAnalysis": "VIEW FULL RISHI ANALYSIS",
++     "wisdomOfDay": "RISHI WISDOM OF THE DAY",
++     "masterInvestor": "Master Investor",
++     "globalMarkets": "GLOBAL MARKETS - CLICK TO EXPLORE",
++     "topBuySignals": "TOP BUY SIGNALS - RISHI CONSENSUS ABOVE 65",
++     "fullScreener": "ALL STOCKS",
++     "notInvestmentAdvice": "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE",
++     "heroWisdomSuffix": ". Dual-mode scoring, short thesis, philosophical insights.",
++     "updatedPrefix": "Updated ",
++     "observationTimeNotDisclosed": "Observation time not disclosed",
++     "timeAgoMinutesSuffix": "m ago",
++     "timeAgoSecondsSuffix": "s ago",
++     "priceUnavailable": "Price unavailable",
++     "heroWisdomHighlight": "21 legendary investors",
++     "heroWisdomPrefix": "Wisdom from ",
++     "heroTagline": "SACRED INVESTMENT INTELLIGENCE · v4.4",
++     "liveMarketData": "Live Market Data",
++     "markets": {
++       "forexDesc": "10 currency pairs",
++       "commoditiesDesc": "Gold, Oil, Metals",
++       "bondsDesc": "G-Secs & Corporate",
++       "economyPlusDesc": "Macro regime & rotation",
++       "compareDesc": "Side-by-side analysis"
++     }
++   },
++   "stock": {
++     "overview": "Overview",
++     "overviewDesc": "Fundamentals & Consensus",
++     "technicals": "Technicals",
++     "technicalsDesc": "Price Action & Indicators",
++     "rishiWisdom": "Rishi Wisdom",
++     "wisdomDesc": "All 20 Philosopher Scores",
++     "consensusScore": "Consensus Score",
++     "consensus": "Consensus",
++     "top6Rishis": "Top 6 Rishis",
++     "topRishiScores": "TOP RISHI SCORES",
++     "topRishiSubtitle": "Highest conviction philosophers on this stock",
++     "viewAll20": "VIEW ALL 20",
++     "keyMetrics": "Key Metrics",
++     "price": "Price",
++     "marketCap": "Market Cap",
++     "peRatio": "P/E Ratio",
++     "roe": "ROE",
++     "debtEquity": "Debt/Equity",
++     "dividend": "Dividend Yield",
++     "priceChart": "Price Chart",
++     "technicalIndicators": "Technical Indicators",
++     "rsi": "RSI",
++     "macd": "MACD",
++     "bollingerBands": "Bollinger Bands",
++     "adx": "ADX",
++     "bullishRishis": "Bullish Rishis",
++     "bearishRishis": "Bearish Rishis",
++     "philosophyRadar": "Philosophy Radar",
++     "peerComparison": "Peer Comparison",
++     "analystRecommendations": "Analyst Recommendations",
++     "quarterlyPerformance": "Quarterly Performance",
++     "shareholdingPattern": "Shareholding Pattern",
++     "knowledgeGraph": "Knowledge Graph",
++     "graphSubtitle": "Relationships, Parallels & Insights",
++     "graph": "GRAPH",
++     "rishiDebate": "Rishi Debate",
++     "historicalParallels": "Historical Parallels",
++     "technicalComparison": "Technical Comparison",
++     "signalTimeline": "Signal Timeline"
++   },
++   "screener": {
++     "title": "Stocks",
++     "totalCoverage": "TOTAL COVERAGE",
++     "nseBseStocks": "NSE + BSE Stocks",
++     "strongBuy": "Strong Buy",
++     "valuePlays": "Value Plays",
++     "largeCap": "Large Cap",
++     "highROE": "High ROE",
++     "debtFree": "Debt-Free",
++     "filters": "Filters",
++     "minConsensus": "Min Consensus",
++     "maxPE": "Max P/E",
++     "minROE": "Min ROE",
++     "sector": "Sector",
++     "allSectors": "All Sectors",
++     "results": "Results",
++     "symbol": "Symbol",
++     "name": "Name",
++     "consensus": "Consensus",
++     "clearFilters": "Clear Filters"
++   },
++   "portfolio": {
++     "title": "My Portfolio",
++     "subtitle": "Track holdings and analyze performance through your custom Rishi lens.",
++     "holdings": "Holdings",
++     "holdingsDesc": "Your positions",
++     "myReturns": "My Returns",
++     "returnsDesc": "Performance & CAGR",
++     "addStock": "Add Holding",
++     "addFirstHolding": "Add First Holding",
++     "addToPortfolio": "Add to Portfolio",
++     "rishiWeights": "Rishi Weights",
++     "weightsHint": "Adjust weights to match your investment philosophy. Changes apply to all consensus scoring.",
++     "noHoldings": "NO HOLDINGS YET",
++     "noHoldingsHint": "Start tracking your portfolio by adding your first holding.",
++     "noData": "NO DATA YET",
++     "noDataHint": "Add holdings to track your historical performance and CAGR.",
++     "stock": "Stock",
++     "shares": "Shares",
++     "avgPrice": "Avg Buy Price",
++     "current": "Current",
++     "pnl": "P&L",
++     "returnPct": "Return %",
++     "rishiScore": "Rishi Score",
++     "invested": "Invested",
++     "currentValue": "Current Value",
++     "totalReturn": "Total Return",
++     "absoluteReturn": "Absolute Return",
++     "cagr": "Portfolio CAGR",
++     "cagrSub": "Compound Annual Growth Rate",
++     "capitalDeployed": "Capital deployed",
++     "markToMarket": "Mark to market",
++     "holdingsCount": "Holdings",
++     "positions": "Positions",
++     "total": "TOTAL",
++     "confirmRemove": "Remove from portfolio?",
++     "chartTitle": "PORTFOLIO VALUE OVER TIME",
++     "chartSubtitle": "Simulated based on current holdings & market drift",
++     "portfolioValue": "Portfolio Value",
++     "costBasis": "Cost Basis",
++     "positionReturns": "POSITION RETURNS",
++     "symbol": "Symbol",
++     "thesisLabel": "INVESTMENT THESIS (OPTIONAL)",
++     "thesisPlaceholder": "Why did you buy this? What is your thesis?",
++     "invalidSymbol": "Invalid stock symbol",
++     "invalidShares": "Shares must be positive",
++     "invalidPrice": "Price must be positive",
++     "invalidWeight": "Weight must be 0-10",
++     "default": "Default",
++     "reset": "Reset",
++     "saveClose": "Save & Close",
++     "buyPrice": "Buy Price",
++     "currentPrice": "Current Price",
++     "gainLoss": "Gain / Loss",
++     "totalInvested": "Total Invested",
++     "totalCurrent": "Total Current Value",
++     "totalGainLoss": "Total Gain / Loss",
++     "returns": "Returns"
++   },
++   "watchlist": {
++     "title": "Watchlist",
++     "subtitle": "Track your favorite stocks with notes and price alerts",
++     "addToWatchlist": "Add to Watchlist",
++     "watching": "WATCHING",
++     "notes": "Notes",
++     "note": "Note",
++     "exportCSV": "Export CSV",
++     "sortBy": "Sort By",
++     "sortRecent": "Recent",
++     "sortScore": "Score",
++     "sortChange": "Change",
++     "added": "Added",
++     "lastUpdated": "Last Updated",
++     "remove": "Remove",
++     "removeFromWatchlist": "Remove from Watchlist",
++     "confirmRemove": "Remove from watchlist?",
++     "rishiScore": "RISHI",
++     "empty": "NO STOCKS IN WATCHLIST",
++     "emptyHint": "Add stocks above to track their Rishi scores and set price alerts.",
++     "notePlaceholder": "Add a note... (e.g. Buy below 3500)"
++   },
++   "rishis": {
++     "title": "The Rishis",
++     "subtitle": "Investment legends across Stocks, Crypto, Commodities, and Forex.",
++     "philosophyDesc": "Each Rishi brings a unique philosophical lens to market analysis.",
++     "compareMode": "Compare Stocks",
++     "catalog": "Catalog",
++     "selectTwo": "Select 2 Rishis to compare",
++     "philosophy": "Philosophy",
++     "origin": "Origin",
++     "stockRishis": "Stock Market Rishis",
++     "cryptoRishis": "Crypto Rishis",
++     "forexRishis": "Forex Rishis",
++     "showing": "Showing",
++     "rishis": "Rishis",
++     "biography": "BIOGRAPHY",
++     "formula": "FORMULA",
++     "famousPicks": "FAMOUS PICKS",
++     "noMatch": "No Rishis match your search",
++     "searchPlaceholder": "Search Rishis...",
++     "stockComparison": "STOCK COMPARISON BY RISHIS",
++     "rishiVerdict": "RISHI VERDICT: WHO WINS?",
++     "deepAnalyze": "Deep Analyze",
++     "tied": "TIED",
++     "wins": "WINS",
++     "all": "All",
++     "deepDive": "Deep Analyze"
++   },
++   "pricing": {
++     "breadcrumb": "WISDOM TIERS",
++     "free": {
++       "title": "Everything Is Free",
++       "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the full stock list, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
++       "price": "Free",
++       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
++       "cta": "Meet the Rishis",
++       "allRishis": "All 21 Rishis — every persona, every verdict",
++       "aiChat": "AI Rishi chat with per-answer grounding provenance",
++       "screener": "All stocks with every filter and field",
++       "portfolio": "Portfolio, watchlist and lab analytics",
++       "knowledgeGraph": "Knowledge graphs and council tension views",
++       "livePrices": "Live prices and market data (where the upstream provides them)",
++       "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
++     }
++   },
++   "news": {
++     "title": "Market Intelligence",
++     "subtitle": "Latest headlines and insights",
++     "breadcrumb": "NEWS",
++     "liveRss": "LIVE RSS",
++     "india": "INDIA",
++     "global": "GLOBAL",
++     "crypto": "CRYPTO",
++     "sports": "SPORTS",
++     "breaking": "BREAKING",
++     "trending": "TRENDING",
++     "hot": "HOT",
++     "live": "LIVE",
++     "latest": "LATEST",
++     "fetchingLive": "Fetching live...",
++     "updated": "Updated",
++     "refresh": "Refresh",
++     "stories": "stories",
++     "saved": "saved",
++     "liveRssActive": "LIVE RSS ACTIVE",
++     "autoRefresh": "Auto-refreshes every 5 minutes",
++     "searchPlaceholder": "Search - RBI, Infosys, Bitcoin, Virat Kohli, IPL...",
++     "all": "ALL",
++     "bullish": "BULLISH",
++     "bearish": "BEARISH",
++     "neutral": "NEUTRAL",
++     "justNow": "just now",
++     "minutesAgo": "m ago",
++     "hoursAgo": "h ago",
++     "daysAgo": "d ago",
++     "via": "via",
++     "readFull": "Read full",
++     "openSource": "Open source",
++     "liveCricket": "LIVE CRICKET",
++     "vs": "vs",
++     "clickToSee": "Click to see sports news",
++     "iplTeams": "IPL 2025 TEAMS",
++     "titles": "titles",
++     "trendingTopics": "TRENDING",
++     "todaysPulse": "TODAY'S PULSE",
++     "total": "Total",
++     "noMatch": "No stories match your filters",
++     "clearFilters": "Clear filters"
++   },
++   "crypto": {
++     "title": "Crypto Markets",
++     "subtitle": "Digital assets analyzed through Satoshi Bodhi, Vitalik Veda, and Michael Saylor philosophies.",
++     "breadcrumb": "CRYPTO",
++     "totalMarketCap": "Total Market Cap",
++     "volume24h": "24h Volume",
++     "avgRsi": "Avg RSI",
++     "sentiment": "Sentiment",
++     "btcDominance": "BTC Dominance",
++     "fearGreed": "Fear & Greed",
++     "fearGreedIndex": "CRYPTO FEAR AND GREED INDEX",
++     "extremeFear": "Extreme Fear",
++     "fear": "Fear",
++     "neutral": "Neutral",
++     "greed": "Greed",
++     "extremeGreed": "Extreme Greed",
++     "yesterday": "Yesterday",
++     "lastWeek": "Last Week",
++     "lastMonth": "Last Month",
++     "cryptoPhilosophers": "CRYPTO PHILOSOPHERS",
++     "allCryptoAssets": "ALL CRYPTO ASSETS - CLICK TO EXPLORE",
++     "asset": "Asset",
++     "price": "Price",
++     "change24h": "24h",
++     "change7d": "7d",
++     "marketCap": "Market Cap",
++     "rsi": "RSI",
++     "macd": "MACD",
++     "moving200d": "200D MA",
++     "above": "ABOVE",
++     "below": "BELOW",
++     "bullish": "BULLISH",
++     "bearish": "BEARISH",
++     "about": "ABOUT",
++     "signatureQuote": "SIGNATURE QUOTE",
++     "currentAnalysis": "CURRENT ANALYSIS",
++     "at": "at"
++   },
++   "commodities": {
++     "title": "Commodity Markets",
++     "subtitle": "Jim Rogers, Rick Rule, Daniel Yergin - supercycles, precious metals, and energy geopolitics.",
++     "breadcrumb": "COMMODITIES",
++     "goldSpot": "Gold Spot",
++     "silverSpot": "Silver Spot",
++     "crudeWti": "Crude WTI",
++     "tracked": "Tracked",
++     "assets": "assets",
++     "commodityPhilosophers": "COMMODITY PHILOSOPHERS",
++     "analyzing": "analyzing",
++     "allCommodities": "ALL COMMODITIES - CLICK TO EXPLORE",
++     "commodity": "Commodity",
++     "price": "Price",
++     "change": "Change",
++     "low52w": "52W Low",
++     "high52w": "52W High",
++     "position52w": "52W Position"
++   },
++   "marketSections": {
++     "crypto": "Crypto",
++     "cryptoTag": "DIGITAL ASSETS",
++     "forex": "Forex",
++     "forexTag": "CURRENCY PAIRS",
++     "commodities": "Commodities",
++     "commoditiesTag": "HARD ASSETS",
++     "bonds": "Bonds",
++     "bondsTag": "FIXED INCOME",
++     "news": "News",
++     "newsTag": "LATEST HEADLINES"
++   },
++   "rishiQuotes": {
++     "buffett1": "The three most important words in investing are margin of safety.",
++     "graham1": "An investment operation promises safety of principal and an adequate return.",
++     "munger1": "The best thing that happens to us is when a great company gets into temporary trouble.",
++     "lynch1": "Know what you own and why you own it.",
++     "jhunjhunwala1": "I believe in buying quality businesses and holding them for the long term.",
++     "soros1": "Markets are constantly in a state of uncertainty and flux. Money is made by discounting the obvious.",
++     "damani1": "Buy businesses that are simple to understand and have a long runway of growth."
++   },
++   "language": {
++     "select": "Language",
++     "english": "English",
++     "hindi": "हिंदी",
++     "gujarati": "ગુજરાતી"
++   },
++   "asset": {
++     "graphSubtitle": "Relationships & Insights",
++     "overview": "Overview",
++     "marketCap": "Market Cap",
++     "technicals": "Technical Analysis",
++     "knowledgeGraph": "Knowledge Graph",
++     "graph": "Graph",
++     "rishiWisdom": "Rishi Wisdom",
++     "change24h": "24h Change",
++     "price": "Price",
++     "volume": "Volume",
++     "viewAll20": "View All 20",
++     "sector": "Sector",
++     "consensus": "Consensus",
++     "topRishiSubtitle": "Philosophical consensus ranking",
++     "topRishiScores": "Top Rishi Scores",
++     "category": "Category",
++     "overviewDesc": "Consensus & Metrics",
++     "technicalsDesc": "Charts & Indicators"
++   },
++   "pulse": {
++     "title": "Economy Plus",
++     "subtitle": "Macro Intelligence · Philosopher Council · Regime Analysis",
++     "backToDashboard": "Dashboard",
++     "marketMood": "MARKET MOOD",
++     "scoreLabel": "Score",
++     "currentMacroRegime": "CURRENT MACRO REGIME",
++     "consensusScore": "CONSENSUS SCORE",
++     "disagreementIndex": "Disagreement Index",
++     "councilRegimeRead": "Council regime read:",
++     "lensLabel": "LENS:",
++     "lensAll": "All",
++     "lensHayek": "Hayek",
++     "lensFriedman": "Friedman",
++     "lensKeynes": "Keynes",
++     "tabs": {
++       "overview": "Overview",
++       "macro": "Macro Regime",
++       "rotation": "Sector Rotation",
++       "evidence": "Evidence",
++       "currency": "Currency",
++       "brief": "Daily Brief",
++       "breadth": "Breadth",
++       "blocks": "Block Deals"
++     },
++     "overview": {
++       "sectorSnapshot": "SECTOR SNAPSHOT (NSE INDICES)",
++       "breadthLabel": "Breadth (A/D)",
++       "blockDealsLabel": "Block Deals",
++       "upSuffix": "up",
++       "downSuffix": "down",
++       "lastLabel": "Last"
++     },
++     "macro": {
++       "historicalAnalog": "Historical Analog",
++       "currencyImpact": "CURRENCY IMPACT – INR SNAPSHOT",
++       "asOfLabel": "As of",
++       "trendLabel": "Trend",
++       "volLabel": "Vol"
++     },
++     "rotation": {
++       "title": "SECTOR ROTATION OUTLOOK",
++       "description": "Scores are regime-based (updated when macro view is updated). Live market data is shown in Overview/Breadth/Currency/Blocks tabs.",
++       "tableHeaders": {
++         "sector": "SECTOR",
++         "hayek": "HAYEK",
++         "friedman": "FRIEDMAN",
++         "keynes": "KEYNES",
++         "consensus": "CONSENSUS",
++         "spread": "SPREAD",
++         "bias": "BIAS",
++         "driver": "KEY MACRO DRIVER"
++       }
++     },
++     "evidence": {
++       "title": "HISTORICAL EVIDENCE ENGINE",
++       "description": "Evidence cards: macro condition → historical outcome. Filtered by lens.",
++       "regimeMatch": "CURRENT REGIME MATCH",
++       "winRate": "WIN RATE",
++       "avg": "AVG",
++       "instances": "N",
++       "conditionLabel": "Condition:",
++       "outcomeLabel": "Outcome:",
++       "confidenceSuffix": "Confidence"
++     },
++     "currency": {
++       "title": "CURRENCY SENSITIVITY MATRIX",
++       "description": "Estimated earnings sensitivity per 1% INR move (heuristic).",
++       "tableHeaders": {
++         "sector": "SECTOR",
++         "rev": "REV",
++         "cost": "COST",
++         "inrWeak": "INR WEAK +1%",
++         "inrStrong": "INR STRONG +1%",
++         "bias": "BIAS",
++         "examples": "EXAMPLES"
++       }
++     },
++     "breadth": {
++       "title": "BREADTH (NSE INDICES SNAPSHOT)",
++       "advancing": "Advancing",
++       "declining": "Declining",
++       "unchanged": "Unchanged",
++       "unknown": "No Data",
++       "adRatio": "A/D Ratio",
++       "sectorMovesTitle": "SECTOR INDEX MOVES (LIVE)",
++       "tableHeaders": {
++         "sector": "Sector",
++         "last": "Last",
++         "change": "% Chg",
++         "high": "High",
++         "low": "Low",
++         "open": "Open",
++         "prevClose": "Prev Close"
++       }
++     },
++     "blocks": {
++       "description": "Live NSE block deal feed.",
++       "tableHeaders": {
++         "symbol": "Symbol",
++         "qty": "Qty",
++         "price": "Price",
++         "value": "Value (Cr)",
++         "change": "Chg %",
++         "side": "Side",
++         "series": "Series"
++       }
++     },
++     "consensus": {
++       "highConviction": "High Conviction",
++       "moderateConviction": "Moderate",
++       "lowConviction": "Low Conviction"
++     }
++   },
++   "dashboard2": {
++     "viewAll": "View All",
++     "fullAnalysis": "Full Analysis",
++     "fullScreener": "All Stocks",
++     "todaySuffix": "today",
++     "rishiScore": "Rishi Score",
++     "rishiConsensus": "Rishi Consensus",
++     "bulls": "Bulls",
++     "bears": "Bears",
++     "viewFullAnalysis": "View Full Analysis",
++     "peLabel": "PE",
++     "roeLabel": "ROE",
++     "oemLabel": "OPM",
++     "sections": {
++       "stockOfTheDay": "Stock of the Day",
++       "topBuySignals": "Top Buy Signals",
++       "shortRadar": "Short Radar",
++       "cryptocurrency": "Cryptocurrency",
++       "allMarkets": "All Markets"
++     },
++     "wisdom": {
++       "title": "21 Legendary Investors",
++       "body": "Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — timeless frameworks applied to every stock in our universe. Long and Short thesis. Every day.",
++       "bodyHighlight": "scoring every stock",
++       "exploreBtn": "Explore All Rishis"
++     },
++     "rankingsDisabled": "Ranked picks are disabled",
++     "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Everything else — live prices, the stock list, chat — keeps working."
++   },
++   "chat": {
++     "header": "Chat with Rishis",
++     "debate": "Debate",
++     "solo": "Solo",
++     "askAbout": "Ask",
++     "askTheRishis": "the Rishis",
++     "poweredBy": "Powered by Google Gemini",
++     "personalityDriven": "Personality-driven responses",
++     "thinking": "thinking...",
++     "consultingAI": "Consulting the AI model...",
++     "send": "Send",
++     "quickPrompts": {
++       "view": "What's your view on this stock?",
++       "buyHoldSell": "Should I buy, hold, or sell?",
++       "risks": "What are the biggest risks?",
++       "thesis": "Write a full investment thesis",
++       "changeMind": "What would change your mind?",
++       "valuation": "Is the valuation justified?",
++       "aiUnavailable": "AI unavailable — no answer was generated. Please try again.",
++       "personaLocked": "This Rishi requires a higher tier. Upgrade to continue."
++     },
++     "personaUnavailable": "This Rishi is temporarily unavailable — the roster could not be loaded. Please retry."
++   },
++   "kg": {
++     "close": "CLOSE",
++     "knowledgeGraph": "Knowledge Graph",
++     "macroKnowledgeGraph": "Macro Knowledge Graph",
++     "bullCase": "BULL CASE",
++     "bearCase": "BEAR CASE",
++     "bullishMacro": "BULLISH MACRO",
++     "bearishMacro": "BEARISH MACRO",
++     "noBulls": "No strong bulls at current levels",
++     "noBears": "No strong bears at current levels",
++     "noBullsPrice": "No strong bulls at current price levels",
++     "noBearsPrice": "No strong bears at current price levels",
++     "noBullishSignals": "No bullish signals at current levels",
++     "noBullishMacro": "No bullish macro signals",
++     "noBearishMacro": "No bearish macro signals",
++     "building": "Building knowledge graph...",
++     "comingSoon": "Interactive knowledge graph coming soon",
++     "unavailable": "Knowledge Graph unavailable",
++     "elite": "Elite Knowledge Graph",
++     "consensusArchitecture": "Consensus Architecture"
++   },
++   "overview": {
++     "totalInvested": "Total Invested",
++     "currentValue": "Current Value",
++     "portfolioRishiScore": "Portfolio Rishi Score",
++     "twrrTotal": "TWRR Total",
++     "holdings": "Holdings",
++     "avgHoldingPeriod": "Avg Holding Period",
++     "dailyEnlightenment": "Daily Enlightenment",
++     "sensex": "Sensex",
++     "riskSummary": "Risk Summary",
++     "hhiIndex": "HHI Index",
++     "liquidityRisk": "Liquidity Risk",
++     "governanceRisk": "Governance Risk",
++     "cyclicalExposure": "Cyclical Exposure",
++     "overallRisk": "Overall Risk",
++     "maxDrawdown": "Max Drawdown",
++     "fcfYield": "FCF Yield",
++     "portfolioBull": "Portfolio Bull",
++     "portfolioBear": "Portfolio Bear",
++     "disagreementIndex": "Disagreement Index",
++     "bestPerformer": "Best Performer",
++     "worstPerformer": "Worst Performer",
++     "symbol": "Symbol",
++     "newPortfolioValue": "New Portfolio Value",
++     "newRishiScore": "New Rishi Score",
++     "scoreImpact": "Score Impact"
++   },
++   "compare": {
++     "arenaEmpty": "The Arena is Empty",
++     "stock": "STOCK",
++     "price": "PRICE",
++     "marketCap": "MKT CAP",
++     "score": "SCORE",
++     "tension": "TENSION",
++     "rishi": "RISHI",
++     "winner": "WINNER",
++     "rishiConsensus": "RISHI CONSENSUS",
++     "sector": "SECTOR",
++     "rishiScore": "RISHI SCORE",
++     "category": "CATEGORY",
++     "historicalPerformanceAnalysis": "HISTORICAL PERFORMANCE ANALYSIS",
++     "disagreementIndex": "DISAGREEMENT INDEX"
++   },
++   "intel": {
++     "portfolioDebate": "Portfolio Rishi Debate",
++     "mostBullish": "MOST BULLISH ON PORTFOLIO",
++     "disagreementIndex": "DISAGREEMENT INDEX",
++     "mostBearish": "MOST BEARISH ON PORTFOLIO",
++     "symbol": "Symbol",
++     "spread": "Spread",
++     "knowledgeCoverage": "Knowledge Coverage",
++     "macroRegimeFit": "Macro Regime Fit",
++     "cyclicalExposure": "CYCLICAL EXPOSURE",
++     "defensiveExposure": "DEFENSIVE EXPOSURE"
++   },
++   "holdings": {
++     "symbol": "SYMBOL",
++     "shares": "SHARES",
++     "avgPrice": "AVG PRICE",
++     "purchaseDate": "PURCHASE DATE"
++   },
++   "quarterly": {
++     "title": "Quarterly Results",
++     "revenue": "Revenue",
++     "netProfit": "Net Profit",
++     "margins": "Margins"
++   },
++   "rishiGrid": {
++     "legend": "Legend",
++     "master": "Master",
++     "specialist": "Specialist",
++     "consensusWeight": "Consensus weight"
++   },
++   "analyst": {
++     "avgTargetPrice": "Avg Target Price",
++     "upsidePotential": "Upside Potential"
++   },
++   "chart": {
++     "priceChart": "PRICE CHART",
++     "loading": "Loading…",
++     "loadFailed": "Failed to load data",
++     "noData": "No data for this period"
++   },
++   "epistemic": {
++     "consensusDisagreement": "Consensus Disagreement",
++     "knowledgeGaps": "Knowledge Gaps",
++     "opposingViews": "Opposing Views",
++     "philosophyDivergence": "Philosophy Divergence"
++   },
++   "legal": {
++     "rishiDisclaimer": "All \"Rishis\" shown are",
++     "fictional": "purely fictional interpretations",
++     "inspired": "inspired by the public philosophies"
++   },
++   "nav": {
++     "terminal": "RISHI TERMINAL",
++     "bonds": "BONDS",
++     "forex": "FOREX",
++     "rishis": "RISHIS",
++     "pairs": "PAIRS",
++     "core": "CORE",
++     "dashboard": "Dashboard",
++     "screener": "Stocks",
++     "portfolioLab": "Portfolio Lab",
++     "markets": "MARKETS",
++     "crypto": "Crypto",
++     "commodities": "Commodities",
++     "economyPlus": "Economy Plus",
++     "intelligence": "INTELLIGENCE",
++     "chatWithRishis": "Chat with Rishis",
++     "news": "News",
++     "pricing": "Pricing",
++     "methodology": "Methodology",
++     "compare": "Compare",
++     "portfolio": "Portfolio",
++     "watchlist": "Watchlist",
++     "allRishis": "All Rishis"
++   },
++   "alerts": {
++     "symbol": "SYMBOL",
++     "alertType": "ALERT TYPE",
++     "targetValue": "TARGET VALUE"
++   },
++   "bonds": {
++     "breadcrumb": "BONDS",
++     "title": "BONDS",
++     "subtitle": "Sovereign and corporate debt — reference yields, labelled live where a live quote exists",
++     "totalBonds": "TOTAL BONDS",
++     "sovereignCorporate": "Sovereign & Corporate",
++     "gSecs": "G-SECS",
++     "sdls": "SDLs",
++     "corporate": "CORPORATE",
++     "tBills": "T-BILLS",
++     "avgYtm": "AVG YTM",
++     "avgDuration": "AVG DURATION",
++     "sortBy": "SORT BY",
++     "name": "NAME",
++     "type": "TYPE",
++     "coupon": "COUPON",
++     "duration": "DURATION",
++     "price": "PRICE",
++     "rating": "RATING",
++     "spread": "SPREAD",
++     "usTreasuries": "US Treasuries"
++   },
++   "fno": {
++     "underlying": "UNDERLYING",
++     "strategy": "STRATEGY",
++     "lotSize": "LOT SIZE",
++     "configureStrategy": "Configure your strategy and click Run Backtest",
++     "action": "ACTION",
++     "strike": "STRIKE",
++     "premium": "PREMIUM",
++     "clear": "Clear",
++     "noLegs": "No legs yet",
++     "wisdomDesc1": "Build options strategies with",
++     "wisdomDesc2": "Rishi wisdom",
++     "wisdomDesc3": "Understand your payoff, Greeks, and risk before you execute.",
++     "strategyEdu": "Educational reference: standard strategy definitions with illustrative persona tags. Not live data, not advice."
++   },
++   "forex": {
++     "breadcrumb": "FOREX",
++     "title": "FOREX",
++     "subtitle": "Live currency markets with macro analysis from legendary traders",
++     "pairs": "PAIRS",
++     "inrCrossRates": "INR Cross Rates",
++     "avgVolatility": "AVG VOLATILITY",
++     "volume24h": "24H VOLUME",
++     "usdInrSpot": "USD/INR SPOT",
++     "eurInrSpot": "EUR/INR SPOT",
++     "currencyPairs": "CURRENCY PAIRS",
++     "pair": "PAIR",
++     "spot": "SPOT",
++     "bid": "BID",
++     "ask": "ASK",
++     "spread": "SPREAD",
++     "forward1m": "1M FORWARD",
++     "volatility": "VOLATILITY",
++     "ppp": "PPP",
++     "pppValue": "PPP Value"
++   },
++   "assetDetail": {
++     "tabs": {
++       "overview": "Overview",
++       "overviewDesc": "Price & Fundamentals",
++       "technical": "Technicals",
++       "technicalDesc": "Indicators & Signals",
++       "wisdom": "Rishi Wisdom",
++       "wisdomDesc": "Philosopher Scores & Insights",
++       "wisdomDescCommodity": "Commodity Philosopher Scores",
++       "wisdomDescCrypto": "Crypto Wisdom",
++       "knowledge": "Knowledge Graph",
++       "knowledgeDesc": "Bulls vs Bears & Edge"
++     },
++     "rishis": {
++       "georgesorosName": "George Soros",
++       "georgesorosLens": "Reflexivity",
++       "georgesorosPhilosophy": "Markets are always biased in one direction or another. The key is to find the bias.",
++       "georgesorosBio": "Co-founder of Quantum Fund. Broke the Bank of England. Father of reflexivity theory.",
++       "raydaliName": "Ray Dalio",
++       "raydaliLens": "Debt Cycles",
++       "raydaliPhilosophy": "Understand the machine — interest rates and debt cycles drive all major currency moves.",
++       "raydaliBio": "Founder of Bridgewater. Creator of the economic machine framework. All-weather portfolio pioneer.",
++       "stanleyName": "Stanley Druckenmiller",
++       "stanleyLens": "Macro Momentum",
++       "stanleyPhilosophy": "Earnings don't move the overall market; the Federal Reserve does.",
++       "stanleyBio": "Managed Soros Quantum Fund. Best macro track record in history. Currency and rate specialist.",
++       "jimrogersName": "Jim Rogers",
++       "jimrogersFocus": "Supercycles, physical assets, inflation hedge",
++       "jimrogersPhilosophy": "Buy commodities when nobody wants them. Sell when everybody loves them.",
++       "jimrogersBio": "Co-founded Quantum Fund. Predicted the 2000s commodities supercycle.",
++       "rickruleName": "Rick Rule",
++       "rickruleFocus": "Precious metals, resource scarcity, monetary systems",
++       "rickrulePhilosophy": "Gold is money. Everything else is credit.",
++       "rickruleBio": "CEO of Sprott. Legendary resource sector investor.",
++       "danielyerginName": "Daniel Yergin",
++       "danielyerginFocus": "Energy transitions, geopolitical risk, supply dynamics",
++       "danielyerginPhilosophy": "Oil is the lifeblood of the industrial civilization.",
++       "danielyerginBio": "Pulitzer Prize-winning energy historian. VP at S&P Global.",
++       "satoshibodhiName": "Satoshi Bodhi",
++       "satoshibodhiFocus": "Bitcoin, decentralization, sound money",
++       "satoshibodhiPhilosophy": "The root problem with conventional currency is all the trust required to make it work.",
++       "satoshibodhiBio": "Sound money maximalist. Bitcoin as the ultimate store of value.",
++       "vitalikvedaName": "Vitalik Veda",
++       "vitalikvedaFocus": "Smart contracts, scalability, DeFi",
++       "vitalikvedaPhilosophy": "Whereas most technologies tend to automate workers, blockchains automate away trust.",
++       "vitalikvedaBio": "Protocol fundamentalist. Ethereum as world computer.",
++       "michaelsaylorName": "Michael Saylor",
++       "michaelsaylorFocus": "Institutional adoption, digital property",
++       "michaelsaylorPhilosophy": "Bitcoin is a bank in cyberspace, run by incorruptible software.",
++       "michaelsaylorBio": "Corporate Bitcoin maximalist. MicroStrategy treasury architect."
++     },
++     "metrics": {
++       "carryTrade": "Carry Trade",
++       "carryTradeYield": "Carry Trade Yield",
++       "pppAlignment": "PPP Alignment",
++       "pppDeviation": "PPP Deviation",
++       "volatility": "Volatility",
++       "momentum": "Momentum",
++       "rateDifferential": "Rate Differential",
++       "rsi14": "RSI (14)",
++       "priceVs200dMa": "Price vs 200D MA",
++       "distanceFromAth": "Distance from ATH",
++       "change7d": "7D Change",
++       "range52w": "52W Range Position",
++       "priceVsSma200": "Price vs SMA 200",
++       "momentum1d": "Momentum (1D)"
++     },
++     "labels": {
++       "bidAskSpread": "BID / ASK / SPREAD",
++       "bid": "Bid",
++       "ask": "Ask",
++       "spread": "Spread",
++       "mid": "Mid",
++       "forwardRates": "FORWARD RATES",
++       "oneMonth": "1 Month",
++       "threeMonths": "3 Months",
++       "sixMonths": "6 Months",
++       "twelveMonths": "12 Months",
++       "interestRateDiff": "INTEREST RATE DIFFERENTIAL",
++       "differential": "Differential",
++       "performance": "PERFORMANCE",
++       "oneDayChange": "1 Day",
++       "fromHigh52w": "From 52W High",
++       "fromLow52w": "From 52W Low",
++       "pppAnalysis": "PURCHASING POWER PARITY (PPP)",
++       "spotRate": "Spot Rate",
++       "pppFairValue": "PPP Fair Value",
++       "overUnderValued": "Over/Under Valued",
++       "macroEdge": "MACRO EDGE ANALYSIS",
++       "tradingStats": "24H TRADING STATISTICS",
++       "volume24h": "24h Volume",
++       "liquidity": "Liquidity",
++       "volatilityClass": "Volatility Class",
++       "centralBankPolicy": "CENTRAL BANK POLICY STANCE",
++       "centralBank": "Central Bank",
++       "policyRate": "POLICY RATE",
++       "carryTradeAnalysis": "CARRY TRADE ANALYSIS",
++       "keyMetrics": "KEY METRICS",
++       "currentPrice": "Current Price",
++       "low52w": "52W Low",
++       "high52w": "52W High",
++       "position52w": "52W Position",
++       "category": "Category",
++       "exchange": "Exchange",
++       "range52wTitle": "52-WEEK PRICE RANGE",
++       "rishiInsights": "RISHI INSIGHTS",
++       "technicalSignals": "TECHNICAL SIGNALS",
++       "marketCap": "Market Cap",
++       "moving200d": "200D MA",
++       "fromAth": "From ATH",
++       "macd": "MACD",
++       "analysis": "ANALYSIS",
++       "technicalEdge": "TECHNICAL EDGE",
++       "macroEdgeTitle": "MACRO EDGE",
++       "neutral": "NEUTRAL"
++     },
++     "signals": {
++       "overbought": "OVERBOUGHT",
++       "oversold": "OVERSOLD",
++       "neutral": "NEUTRAL",
++       "buy": "BUY",
++       "sell": "SELL",
++       "above": "ABOVE",
++       "below": "BELOW",
++       "strong": "STRONG",
++       "weak": "WEAK",
++       "bullish": "BULLISH",
++       "bearish": "BEARISH",
++       "hawkish": "HAWKISH",
++       "dovish": "DOVISH",
++       "positiveCarry": "POSITIVE CARRY OPPORTUNITY",
++       "negativeCarry": "NEGATIVE CARRY — REVERSE TRADE",
++       "positive": "POSITIVE",
++       "negative": "NEGATIVE"
++     },
++     "consensus": {
++       "commodity3": "3 COMMODITY RISHI CONSENSUS",
++       "crypto3": "3 CRYPTO RISHI CONSENSUS",
++       "macro3": "3 MACRO RISHI CONSENSUS",
++       "strongBuy": "Strong Buy — Supercycle Conditions Present",
++       "moderate": "Moderate Opportunity — Selective Accumulation",
++       "caution": "Caution — Wait for Better Entry",
++       "strongHodl": "Strong HODL Signal — Sound Money Thesis Intact",
++       "accumulation": "Accumulation Phase — Selective Entry Points",
++       "weakMomentum": "Weak Momentum — Patience Required",
++       "bullishFavor": "Bullish — Macro conditions favor",
++       "neutralMixed": "Neutral — Mixed signals, range-bound likely",
++       "bearishHeadwinds": "Bearish — Macro headwinds for"
++     }
++   }
++ }
++
+
+ ❯ test/liveClaims.zero.test.ts:65:16
+     63|   it("the pricing copy states the honest data story (positive control,…
+     64|     const en = read("messages/en.json");
+     65|     expect(en).toContain("market data where available");
+       |                ^
+     66|     // the feature bullet names what is actually served: delayed equit…
+     67|     // live crypto/FX where labelled (verified on production 2026-10-1…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/liveClaims.zero.test.ts > P0-8 — unbacked live claims removed; News hidden from nav > the /news metadata no longer claims 'live news'
+AssertionError: expected 'import { NamespaceProvider } from \'@…' not to match /live news/i
+
+- Expected:
+/live news/i
+
++ Received:
+"import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
+import { news } from '@/messages/en.json';
+import { routeMetadata } from \"@/lib/seo/routeMetadata\";
+
+// Round-5 audit (finding 18): client pages cannot export metadata —
+// this server layout carries the per-route title/description.
+export const metadata = routeMetadata({
+  path: \"/news\",
+  title: \"Market Intelligence — live news | Rishi Terminal\",
+  description: \"Latest India and global market headlines with region and category filters.\",
+});
+
+export default function RouteLayout({ children }: { children: React.ReactNode }) {
+  // X4 (Round 11): this route's dictionary namespace arrives as an RSC
+  // prop (streamed flight payload) instead of riding the client page's
+  // first-load JS — see lib/languageShell.ts and app/page.tsx's note.
+  return <NamespaceProvider ns={{ news }}>{children}</NamespaceProvider>;
+}
+"
+
+ ❯ test/liveClaims.zero.test.ts:85:24
+     83|   it("the /news metadata no longer claims 'live news'", () => {
+     84|     const layout = read("app/news/layout.tsx");
+     85|     expect(layout).not.toMatch(/live news/i);
+       |                        ^
+     86|     // positive control: the title still names the surface
+     87|     expect(layout).toContain("Market Intelligence");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  test/liveClaims.zero.test.ts > P0-8 — unbacked live claims removed; News hidden from nav > the footer forex line no longer says 'Verify live rates'
+AssertionError: expected '\'use client\';\n\nimport { useState,…' not to contain 'Verify live rates'
+
+- Expected
++ Received
+
+- Verify live rates
++ 'use client';
++
++ import { useState, useEffect } from 'react';
++ import dynamic from 'next/dynamic';
++ import { usePathname } from 'next/navigation';
++
++ // Z5: the acceptance modal loads only for first-visit acceptance (the
++ // footer strip below stays static on every page).
++ const DisclaimerModal = dynamic(() => import('./DisclaimerModal').then(m => m.DisclaimerModal), { ssr: false });
++
++ /** Round-5 audit (finding 9): the footer used to claim "Data from NSE /
++  * Yahoo Finance / Screener.in" on EVERY page — including crypto, forex,
++  * bonds and commodities, where nothing comes from those sources. The
++  * source line is now route-aware: each surface states where its data
++  * actually comes from. */
++ function dataSourceLine(pathname: string): string {
++   if (pathname.startsWith('/crypto'))
++     return 'Crypto: live quotes from CoinGecko where labelled LIVE; analytics are static reference — illustrative.';
++   if (pathname.startsWith('/forex'))
++     return 'Forex: static reference dataset — illustrative, not current. Verify live rates before acting.';
++   if (pathname.startsWith('/bonds'))
++     return 'Bond yields: static reference dataset — live only where a LIVE label is shown.';
++   if (pathname.startsWith('/commodities'))
++     return 'Commodities: static reference dataset — illustrative, not current.';
++   if (pathname.startsWith('/fno'))
++     return 'F&O: strategy definitions are educational reference; analytics require licensed NSE derivatives data (not available yet).';
++   if (pathname.startsWith('/pulse'))
++     return 'Macro indicators: static reference — as-of dates shown per row; live FX where labelled.';
++   // G4 (founder round 23): Screener.in is removed from the public source
++   // line (the provider registry marks it RESEARCH_ONLY and price routing
++   // is structurally barred from it), and the NSE/Yahoo path is described
++   // by its actual behavior: unofficial endpoints, delayed quotes.
++   return 'Equity data: unofficial, delayed quotes from NSE India / Yahoo Finance endpoints where labelled LIVE; fundamentals seeded illustratively where marked.';
++ }
++
++ /**
++  * Persistent footer strip colors. Exported because the pair is contractually
++  * WCAG-AA (>= 4.5:1) — audit retest 2026-10-02 finding C.2 caught the old
++  * #475569-on-#070B14 pair at 2.59:1 — and test/footer.contrast.test.ts
++  * locks the exact values that render. Change these two together.
++  */
++ export const FOOTER_STRIP_COLORS = {
++   background: '#070B14',
++   // Audit retest 2026-10-02 (C.2): was #475569 (2.59:1 on this background —
++   // the only a11y failure common to every route). #94A3B8 (Tailwind
++   // slate-400) restores WCAG AA at 7.68:1 for the 10px fine print.
++   text: '#94A3B8',
++ } as const;
++
++ export function LegalDisclaimer() {
++   const [showModal, setShowModal] = useState(false);
++   const pathname = usePathname() || '/';
++   const sourceLine = dataSourceLine(pathname);
++
++   useEffect(() => {
++     try {
++       const accepted = localStorage.getItem('rishi_disclaimer_v2');
++       if (!accepted) {
++         setShowModal(true);
++       }
++     } catch {
++       // localStorage unavailable - show modal
++       setShowModal(true);
++     }
++   }, []);
++
++   const handleAccept = () => {
++     try {
++       localStorage.setItem('rishi_disclaimer_v2', 'accepted');
++     } catch {}
++     setShowModal(false);
++   };
++
++   return (
++     <>
++       {/* ── First-visit acceptance modal ── */}
++       {showModal && <DisclaimerModal onAccept={handleAccept} sourceLine={sourceLine} />}
++
++
++
++       {/* ── Persistent footer strip on every page ── */}
++       <div style={{
++         borderTop: '1px solid rgba(212,175,55,0.2)',
++         background: FOOTER_STRIP_COLORS.background,
++         padding: '8px 24px',
++         textAlign: 'center',
++         fontSize: '10px',
++         color: FOOTER_STRIP_COLORS.text,
++         lineHeight: 1.5,
++         fontFamily: 'monospace',
++       }}>
++         <span style={{ color: '#D4AF37', fontWeight: 700 }}>⚠️ NOT INVESTMENT ADVICE</span>
++         {' · '}
++         Educational research tool only. {sourceLine}
++         {' · '}
++         Past performance ≠ future results.
++         {' · '}
++         Consult a SEBI-registered advisor before investing.
++         {' · '}
++         <button
++           onClick={() => setShowModal(true)}
++           style={{
++             background: 'none',
++             border: 'none',
++             color: '#D4AF37',
++             fontSize: '10px',
++             fontFamily: 'monospace',
++             cursor: 'pointer',
++             padding: 0,
++             textDecoration: 'underline',
++           }}
++         >
++           Full Disclaimer
++         </button>
++       </div>
++     </>
++   );
++ }
+
+ ❯ test/liveClaims.zero.test.ts:92:24
+     90|   it("the footer forex line no longer says 'Verify live rates'", () =>…
+     91|     const footer = read("components/ui/LegalDisclaimer.tsx");
+     92|     expect(footer).not.toContain("Verify live rates");
+       |                        ^
+     93|     // positive control: the honest static-dataset disclosure stays
+     94|     expect(footer).toContain("static reference dataset — illustrative,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/liveClaims.zero.test.ts > P0-8 — unbacked live claims removed; News hidden from nav > News is hidden from the sidebar nav and the dashboard mobile nav
+AssertionError: expected '"use client";\n\nimport Link from "ne…' not to match /href:\s*"\/news"/news"
+
+- Expected:
+/href:\s*"\/news"/
+
++ Received:
+"\"use client\";
+
+import Link from \"next/link\";
+import { usePathname } from \"next/navigation\";
+import SadhuVectorLogo from \"./SadhuVectorLogo\";
+import { useLanguage } from \"../lib/language\";
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const { t } = useLanguage();
+
+  const NAV_GROUPS = [
+    {
+      title: t(\"nav.core\"),
+      items: [
+        { href: \"/\",            label: t(\"nav.dashboard\"),      icon: \"◆\" },
+        { href: \"/stocks\",    label: t(\"nav.screener\"),       icon: \"◇\" },
+        { href: \"/lab\",         label: t(\"nav.portfolioLab\"),   icon: \"□\" },
+      ],
+    },
+    {
+      title: t(\"nav.markets\"),
+      items: [
+        { href: \"/crypto\",      label: t(\"nav.crypto\"),         icon: \"₿\" },
+        { href: \"/forex\",       label: t(\"nav.forex\"),          icon: \"¤\" },
+        { href: \"/commodities\", label: t(\"nav.commodities\"),    icon: \"◆\" },
+        { href: \"/bonds\",       label: t(\"nav.bonds\"),          icon: \"▭\" },
+        { href: \"/pulse\",       label: t(\"nav.economyPlus\"),    icon: \"●\" },
+      ],
+    },
+    {
+      title: t(\"nav.intelligence\"),
+      items: [
+        { href: \"/rishis\",      label: t(\"nav.chatWithRishis\"), icon: \"✦\" },
+        { href: \"/news\",        label: t(\"nav.news\"),           icon: \"◈\" },
+        { href: \"/pricing\",     label: t(\"nav.pricing\"),        icon: \"◇\" },
+        // MH (founder directive 10, 2026-10-06): /methodology is HIDDEN from
+        // the product navigation (IA-level hide, not deletion). The route,
+        // the content and the CONTEXTUAL links (stock-page \"how is this
+        // scored\" footer) remain — direct URL access stays coherent; the
+        // a5-navigation spec pins both sides.
+      ],
+    },
+  ];
+
+  return (
+    <aside className=\"shell-sidebar\" style={{
+      width: \"220px\",
+      minHeight: \"100vh\",
+      height: \"100vh\",
+      background: \"#111116\",
+      borderRight: \"1px solid rgba(255,255,255,0.07)\",
+      display: \"flex\",
+      flexDirection: \"column\",
+      position: \"fixed\",
+      left: 0,
+      top: 0,
+      bottom: 0,
+      zIndex: 100,
+      overflowY: \"auto\",
+      overflowX: \"hidden\",
+    }}>
+
+      {/* Logo area */}
+      <div style={{
+        padding: \"28px 20px 20px\",
+        borderBottom: \"1px solid rgba(255,255,255,0.05)\",
+        marginBottom: 8,
+      }}>
+        <SadhuVectorLogo size={48} showText={true} />
+        <div style={{
+          fontFamily: \"Inter, sans-serif\",
+          fontSize: \"9px\",
+          color: \"var(--text-muted)\",
+          letterSpacing: \"0.16em\",
+          marginTop: 10,
+          fontWeight: 600,
+        }}>
+          INVESTMENT INTELLIGENCE
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav style={{ flex: 1, padding: \"12px 10px 24px\", overflowY: \"auto\" }}>
+        {NAV_GROUPS.map((group) => (
+          <div key={group.title} style={{ marginBottom: \"24px\" }}>
+
+            {/* Group heading */}
+            <div style={{
+              fontSize: \"10px\",
+              fontWeight: 700,
+              color: \"var(--text-muted)\",
+              letterSpacing: \"0.14em\",
+              padding: \"0 12px\",
+              marginBottom: \"4px\",
+              fontFamily: \"Inter, sans-serif\",
+              textTransform: \"uppercase\",
+            }}>
+              {group.title}
+            </div>
+
+            {/* Nav items */}
+            {group.items.map((item) => {
+              const isActive =
+                item.href === \"/\"
+                  ? pathname === \"/\"
+                  : pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  href={item.href}
+                  key={item.href}
+                  onMouseEnter={() => {
+                    if (item.href === \"/news\") fetch(\"/api/news\").catch(() => {});
+                  }}
+                  style={{ textDecoration: \"none\", display: \"block\" }}
+                >
+                  <div
+                    style={{
+                      display: \"flex\",
+                      alignItems: \"center\",
+                      gap: \"10px\",
+                      padding: \"8px 12px\",
+                      borderRadius: \"8px\",
+                      marginBottom: \"2px\",
+                      cursor: \"pointer\",
+                      background: isActive
+                        ? \"rgba(251,191,36,0.08)\"
+                        : \"transparent\",
+                      border: isActive
+                        ? \"1px solid rgba(251,191,36,0.12)\"
+                        : \"1px solid transparent\",
+                      transition: \"all 0.15s ease\",
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLDivElement).style.background = \"rgba(255,255,255,0.04)\";
+                        (e.currentTarget as HTMLDivElement).style.borderColor = \"rgba(255,255,255,0.06)\";
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLDivElement).style.background = \"transparent\";
+                        (e.currentTarget as HTMLDivElement).style.borderColor = \"transparent\";
+                      }
+                    }}
+                  >
+                    {/* Icon */}
+                    <span style={{
+                      width: \"16px\",
+                      textAlign: \"center\",
+                      color: isActive ? \"#fbbf24\" : \"#8b8b9a\",
+                      fontSize: \"11px\",
+                      flexShrink: 0,
+                      transition: \"color 0.15s ease\",
+                    }}>
+                      {item.icon}
+                    </span>
+
+                    {/* Label */}
+                    <span style={{
+                      fontSize: \"13px\",
+                      fontWeight: isActive ? 600 : 400,
+                      color: isActive ? \"#fef3c7\" : \"#9b9baa\",
+                      fontFamily: \"Inter, sans-serif\",
+                      transition: \"color 0.15s ease\",
+                      letterSpacing: \"0.01em\",
+                      flex: 1,
+                    }}>
+                      {item.label}
+                    </span>
+
+                    {/* Active indicator dot */}
+                    {isActive && (
+                      <div style={{
+                        width: 4,
+                        height: 4,
+                        borderRadius: \"50%\",
+                        background: \"#fbbf24\",
+                        boxShadow: \"0 0 6px rgba(251,191,36,0.6)\",
+                        flexShrink: 0,
+                      }} />
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Bottom version tag */}
+      <div style={{
+        padding: \"12px 20px 16px\",
+        borderTop: \"1px solid rgba(255,255,255,0.05)\",
+      }}>
+        <div style={{
+          fontSize: \"10px\",
+          color: \"var(--text-ghost)\",
+          fontFamily: \"Inter, sans-serif\",
+          letterSpacing: \"0.08em\",
+        }}>
+          RISHI TERMINAL v4.4
+        </div>
+      </div>
+
+    </aside>
+  );
+}"
+
+ ❯ test/liveClaims.zero.test.ts:100:25
+     98|     const sidebar = read("components/Sidebar.tsx");
+     99|     const dashboard = read("components/dashboard/DashboardClient.tsx");
+    100|     expect(sidebar).not.toMatch(/href:\s*"\/news"/);
+       |                         ^
+    101|     expect(dashboard).not.toMatch(/href:\s*"\/news"/);
+    102|     // positive controls (B-18): the nav keeps its other destinations
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/liveClaims.zero.test.ts > P0-8 — unbacked live claims removed; News hidden from nav > News is out of the sitemap (the MH pattern: nav-hidden = sitemap-hidden)
+AssertionError: expected 'import type { MetadataRoute } from \'…' not to match /'\/news'|\/news,/news'|\
+
+- Expected:
+/'\/news'|\/news,/
+
++ Received:
+"import type { MetadataRoute } from 'next';
+import { STOCKS } from '../data/stocks';
+import { CRYPTO_ASSETS } from '../data/crypto';
+import { COMMODITIES_DATA } from '../data/commodities';
+import { INDIAN_INDEXES, GLOBAL_INDEXES } from '../data/indexes';
+import { SITE_URL } from '../lib/seo/site';
+
+/**
+ * Audit 2026-10-01 M6 (retest 2026-10-02 confirmed open): /sitemap.xml 404'd
+ * — the 916 stock pages, market detail pages and guru surface were
+ * uncrawlable-by-sitemap (they were reachable only via /screener SSR links).
+ * Served at /sitemap.xml by the App Router convention (see
+ * node_modules/next/dist/docs/.../metadata/sitemap.md).
+ *
+ * lastModified honesty: every entry below is prerendered at build time, so
+ * the build timestamp IS when this URL's HTML was generated — that is the
+ * truthful lastmod for a static deployment (the seed dataset itself has no
+ * provable capture date; SEED_CAPTURED_AT is null by design, see
+ * data/stocks/seedMeta.ts). Generated once per build, cached like any other
+ * static route; no request-time APIs are used.
+ */
+export default function sitemap(): MetadataRoute.Sitemap {
+  const generatedAt = new Date();
+
+  const staticPages: { path: string; priority: number; changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly' }[] = [
+    { path: '/', priority: 1.0, changeFrequency: 'daily' },
+    { path: '/stocks', priority: 0.9, changeFrequency: 'daily' },
+    { path: '/rishis', priority: 0.8, changeFrequency: 'weekly' },
+    { path: '/news', priority: 0.7, changeFrequency: 'daily' },
+    { path: '/pulse', priority: 0.7, changeFrequency: 'daily' },
+    { path: '/crypto', priority: 0.7, changeFrequency: 'daily' },
+    { path: '/forex', priority: 0.6, changeFrequency: 'daily' },
+    { path: '/commodities', priority: 0.6, changeFrequency: 'daily' },
+    { path: '/bonds', priority: 0.6, changeFrequency: 'daily' },
+    { path: '/pricing', priority: 0.5, changeFrequency: 'monthly' },
+    { path: '/terms', priority: 0.3, changeFrequency: 'yearly' },
+    { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' },
+  ];
+
+  return [
+    ...staticPages.map(p => ({
+      url: `${SITE_URL}${p.path}`,
+      lastModified: generatedAt,
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    })),
+
+    // Every stock page in the canonical universe (aliases are not listed —
+    // /stock/BAJAJ_AUTO 308-redirects to the canonical symbol, and each
+    // page carries rel=canonical, so there is exactly one indexable URL
+    // per company).
+    ...Object.values(STOCKS).map(stock => ({
+      // Follow-up fix (PR #41 acceptance): NSE symbols can carry & (J&KBANK,
+      // M&M, M&MFIN). A raw & in <loc> makes the whole sitemap fail XML
+      // parsing — percent-encode every symbol; it is identity for the rest
+      // and the encoded URL serves the identical page (verified: both
+      // /stock/J%26KBANK and /stock/J&KBANK return the same 200 HTML).
+      url: `${SITE_URL}/stock/${encodeURIComponent(stock.symbol)}`,
+      lastModified: generatedAt,
+      changeFrequency: 'daily' as const,
+      priority: 0.7,
+    })),
+
+    // Market detail pages.
+    ...CRYPTO_ASSETS.map(a => ({
+      url: `${SITE_URL}/crypto/${encodeURIComponent(a.symbol)}`,
+      lastModified: generatedAt,
+      changeFrequency: 'daily' as const,
+      priority: 0.6,
+    })),
+    ...COMMODITIES_DATA.map(c => ({
+      url: `${SITE_URL}/commodities/${encodeURIComponent(c.symbol)}`,
+      lastModified: generatedAt,
+      changeFrequency: 'daily' as const,
+      priority: 0.6,
+    })),
+    ...[...INDIAN_INDEXES, ...GLOBAL_INDEXES].map(i => ({
+      url: `${SITE_URL}/index/${encodeURIComponent(i.symbol)}`,
+      lastModified: generatedAt,
+      changeFrequency: 'daily' as const,
+      priority: 0.6,
+    })),
+  ];
+}
+"
+
+ ❯ test/liveClaims.zero.test.ts:111:25
+    109|   it("News is out of the sitemap (the MH pattern: nav-hidden = sitemap…
+    110|     const sitemap = read("app/sitemap.ts");
+    111|     expect(sitemap).not.toMatch(/'\/news'|\/news,/);
+       |                         ^
+    112|     // positive control: the sitemap still carries live routes
+    113|     expect(sitemap).toMatch(/\/stocks/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/liveClaims.zero.test.ts > P0-8 — unbacked live claims removed; News hidden from nav > the dead fabricated-data imports are gone from the news list page (rule 17)
+AssertionError: expected '\'use client\';\n\nimport { useState,…' not to contain 'NEWS_FEED'
+
+- Expected
++ Received
+
+- NEWS_FEED
++ 'use client';
++
++ import { useState, useEffect, useCallback, useMemo } from 'react';
++ import Link from 'next/link';
++ import { useRouter } from 'next/navigation';
++ import { NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS, CRICKET_LIVE, NewsItem } from '../../data/news';
++ import { fetchAllNews, LiveNewsItem } from '../../lib/newsApi';
++ import { useLanguage } from '../../lib/language';
++ import { useLivePrices } from '../../hooks/useLivePrices';
++
++ type Region   = 'ALL' | 'INDIA' | 'GLOBAL' | 'CRYPTO' | 'SPORTS';
++ type Category = 'All' | 'Markets' | 'Economy' | 'Earnings' | 'Cricket' | 'IPL' | 'Tech' | 'Regulation' | 'Corporate' | 'Crypto';
++
++ function timeAgoLabel(min: number) {
++   if (min < 1)    return 'just now';
++   if (min < 60)   return min + 'm ago';
++   if (min < 1440) return Math.floor(min / 60) + 'h ago';
++   return Math.floor(min / 1440) + 'd ago';
++ }
++
++ function impactColor(impact: string) {
++   if (impact === 'POSITIVE') return '#10B981';
++   if (impact === 'NEGATIVE') return '#EF4444';
++   return '#818CF8';
++ }
++
++ function impactBg(impact: string) {
++   if (impact === 'POSITIVE') return '#10B98115';
++   if (impact === 'NEGATIVE') return '#EF444415';
++   return '#818CF815';
++ }
++
++ function regionColor(r: string) {
++   if (r === 'INDIA')  return '#F59E0B';
++   if (r === 'GLOBAL') return '#818CF8';
++   if (r === 'SPORTS') return '#10B981';
++   return '#A78BFA';
++ }
++
++ function regionFlag(r: string) {
++   if (r === 'INDIA')  return 'IN';
++   if (r === 'GLOBAL') return 'GL';
++   if (r === 'SPORTS') return 'SP';
++   return 'CR';
++ }
++
++ function SkeletonCard() {
++   return (
++     <div className="card-sacred" style={{ padding: 16, borderLeft: '3px solid var(--border-primary)' }}>
++       <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
++         <div style={{ height: 18, width: 48, borderRadius: 4, background: 'var(--bg-secondary)', animation: 'skp 1.4s ease-in-out infinite' }} />
++         <div style={{ height: 18, width: 60, borderRadius: 4, background: 'var(--bg-secondary)', animation: 'skp 1.4s ease-in-out infinite 0.1s' }} />
++         <div style={{ height: 18, width: 52, borderRadius: 4, background: 'var(--bg-secondary)', animation: 'skp 1.4s ease-in-out infinite 0.2s' }} />
++       </div>
++       <div style={{ height: 20, width: '85%', borderRadius: 4, background: 'var(--bg-secondary)', marginBottom: 8, animation: 'skp 1.4s ease-in-out infinite 0.1s' }} />
++       <div style={{ height: 20, width: '65%', borderRadius: 4, background: 'var(--bg-secondary)', marginBottom: 10, animation: 'skp 1.4s ease-in-out infinite 0.15s' }} />
++       <div style={{ height: 13, width: '90%', borderRadius: 4, background: 'var(--bg-secondary)', marginBottom: 6, animation: 'skp 1.4s ease-in-out infinite 0.2s' }} />
++       <div style={{ height: 13, width: '70%', borderRadius: 4, background: 'var(--bg-secondary)', marginBottom: 10, animation: 'skp 1.4s ease-in-out infinite 0.25s' }} />
++       <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
++         <div style={{ height: 10, width: 60, borderRadius: 4, background: 'var(--bg-secondary)', animation: 'skp 1.4s ease-in-out infinite 0.3s' }} />
++         <div style={{ height: 10, width: 10, borderRadius: 4, background: 'var(--bg-secondary)', animation: 'skp 1.4s ease-in-out infinite 0.35s' }} />
++         <div style={{ height: 10, width: 40, borderRadius: 4, background: 'var(--bg-secondary)', animation: 'skp 1.4s ease-in-out infinite 0.4s' }} />
++       </div>
++     </div>
++   );
++ }
++
++ function NewsCard({ news, saved, toggleSave, t }: {
++   news: NewsItem | LiveNewsItem;
++   saved: string[];
++   toggleSave: (id: string) => void;
++   t: (key: string) => string;
++ }) {
++   const router  = useRouter();
++   const isSaved = saved.includes(news.id);
++
++   const handleClick = () => {
++     if (news.url && news.url !== '#') {
++       window.open(news.url, '_blank', 'noopener,noreferrer');
++     } else {
++       router.push('/news/' + news.id);
++     }
++   };
++
++   const impactLabel = news.impact === 'POSITIVE' ? t('news.bullish') : news.impact === 'NEGATIVE' ? t('news.bearish') : t('news.neutral');
++
++   // Audit 2026-10-02 (F): the card is a semantic link (opens the article)
++   // — role + tabIndex + Enter/Space activation, not a mouse-only div.
++   const handleKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
++     if (e.key === 'Enter' || e.key === ' ') {
++       e.preventDefault();
++       handleClick();
++     }
++   };
++
++   return (
++     <div
++       onClick={handleClick}
++       onKeyDown={handleKey}
++       role="link"
++       tabIndex={0}
++       aria-label={`${news.headline} — ${news.source}`}
++       className="card-sacred"
++       style={{ padding: 16, cursor: 'pointer', transition: 'all 0.15s', borderLeft: '3px solid ' + impactColor(news.impact) }}
++       onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'}
++       onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}>
++       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, gap: 8 }}>
++         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flex: 1 }}>
++           <span style={{ fontSize: 8, fontFamily: 'monospace', letterSpacing: 1, color: regionColor(news.region), background: regionColor(news.region) + '15', border: '1px solid ' + regionColor(news.region) + '30', borderRadius: 4, padding: '2px 7px', fontWeight: 700 }}>{regionFlag(news.region)} {news.region}</span>
++           <span style={{ fontSize: 8, color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 4, padding: '2px 7px' }}>{news.category}</span>
++           <span style={{ fontSize: 8, fontWeight: 700, color: impactColor(news.impact), background: impactBg(news.impact), borderRadius: 4, padding: '2px 7px', letterSpacing: 1 }}>{impactLabel}</span>
++         </div>
++         <button onClick={e => { e.stopPropagation(); toggleSave(news.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: isSaved ? 'var(--accent-gold)' : 'var(--text-muted)', transition: 'color 0.2s' }}>{isSaved ? '\u2605' : '\u2606'}</button>
++       </div>
++       <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, lineHeight: 1.4 }}>{news.headline}</h3>
++       {news.summary && news.summary !== news.headline && news.summary.length > 30 && (
++         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10 }}>{news.summary}</p>
++       )}
++       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
++         <div style={{ display: 'flex', gap: 8, fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
++           <span>{news.source}</span>
++           <span>&bull;</span>
++           <span>{timeAgoLabel(news.minutesAgo)}</span>
++         </div>
++         {(news as any).tickers && (news as any).tickers.length > 0 && (
++           <div style={{ display: 'flex', gap: 4 }}>
++             {((news as any).tickers as string[]).slice(0, 3).map((ticker: string) => (
++               <span key={ticker} style={{ fontSize: 9, fontWeight: 700, fontFamily: 'monospace', background: 'var(--accent-gold)' + '20', color: 'var(--accent-gold)', padding: '2px 6px', borderRadius: 3 }}>{ticker}</span>
++             ))}
++           </div>
++         )}
++       </div>
++     </div>
++   );
++ }
++
++ export default function NewsPage() {
++   const { t } = useLanguage();
++   const [region, setRegion]       = useState<Region>('ALL');
++   const [category, setCategory]   = useState<Category>('All');
++   const [saved, setSaved]         = useState<string[]>([]);
++   const [liveNews, setLiveNews]   = useState<LiveNewsItem[]>([]);
++   const [loading, setLoading]     = useState(true);
++   const [fetchFailed, setFetchFailed] = useState(false);
++
++   const tickerSymbols = useMemo(() => ['BTC', 'ETH', 'GOLD', 'SILVER', 'WTI', 'RELIANCE', 'TCS', 'INFY'], []);
++   const { prices } = useLivePrices(tickerSymbols);
++
++   const tickerItems = useMemo(() => {
++     return tickerSymbols.map(sym => {
++       const livePrice = prices[sym];
++       // G6: no observation keeps the ticker's '—' unavailable visual; an
++       // entry with an unobserved price/change renders '—', never 0/0.00%.
++       if (!livePrice) return { symbol: sym, price: '--', change: null };
++       const p = livePrice.price;
++       const priceFormatted = typeof p !== 'number'
++         ? '—'
++         : sym.startsWith('BTC') || sym.startsWith('ETH')
++         ? '$' + p.toLocaleString('en-US', { maximumFractionDigits: 0 })
++         : sym === 'GOLD' || sym === 'SILVER' || sym === 'WTI'
++         ? '$' + p.toFixed(2)
++         : '' + p.toFixed(2);
++       return { symbol: sym, price: priceFormatted, change: typeof livePrice.change === 'number' ? livePrice.change : null };
++     });
++   }, [prices, tickerSymbols]);
++
++   useEffect(() => {
++     const savedStr = localStorage.getItem('rishi_saved_news');
++     if (savedStr) {
++       try { setSaved(JSON.parse(savedStr)); }
++       catch { setSaved([]); }
++     }
++   }, []);
++
++   useEffect(() => {
++     let cancelled = false;
++
++     async function loadLive(silent: boolean = false) {
++       if (!silent) setLoading(true);
++       try {
++         const news = await fetchAllNews();
++         if (!cancelled) {
++           setLiveNews(news);
++           // Round-5 audit (finding 16): an explicit failure state. A silent
++           // catch left the page blank with no explanation and no retry.
++           setFetchFailed(false);
++           try { localStorage.setItem('rishi.news.cache', JSON.stringify({ ts: Date.now(), news })); } catch {}
++         }
++       } catch {
++         if (!cancelled) setFetchFailed(true);
++       } finally {
++         if (!cancelled) setLoading(false);
++       }
++     }
++
++     // Try localStorage cache first — show instantly
++     try {
++       const cached = localStorage.getItem('rishi.news.cache');
++       if (cached) {
++         const parsed = JSON.parse(cached);
++         const age = Date.now() - (parsed.ts || 0);
++         if (parsed.news && Array.isArray(parsed.news) && parsed.news.length > 0) {
++           setLiveNews(parsed.news);
++           setLoading(false);
++           // Stale? Refresh silently in background
++           if (age >= 120000) { loadLive(true); }
++           const interval = setInterval(() => loadLive(true), 300000);
++           return () => { cancelled = true; clearInterval(interval); };
++         }
++       }
++     } catch {}
++
++     // No cache — show skeleton, fetch fresh
++     loadLive(false);
++     const interval = setInterval(() => loadLive(true), 300000);
++     return () => { cancelled = true; clearInterval(interval); };
++   }, []);
++
++   const toggleSave = (id: string) => {
++     const updated = saved.includes(id) ? saved.filter(s => s !== id) : [...saved, id];
++     setSaved(updated);
++     localStorage.setItem('rishi_saved_news', JSON.stringify(updated));
++   };
++
++   const allNews = liveNews;
++   const filtered = allNews
++     .filter(n => region === 'ALL' || n.region === region)
++     .filter(n => category === 'All' || n.category === category);
++
++   const categories: Category[] = ['All', 'Markets', 'Economy', 'Earnings', 'Cricket', 'IPL', 'Tech', 'Regulation', 'Corporate', 'Crypto'];
++
++   const categoryCounts = useMemo(() => {
++     const counts: Record<string, number> = {};
++     for (const n of allNews) {
++       if (region !== 'ALL' && n.region !== region) continue;
++       counts[n.category] = (counts[n.category] || 0) + 1;
++     }
++     return counts;
++   }, [allNews, region]);
++
++   return (
++     <main className="page-bg">
++       <style jsx>{`
++         @keyframes scroll-ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
++         @keyframes skp { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
++       `}</style>
++
++       {/* Live Ticker */}
++       <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)', padding: '10px 0', overflow: 'hidden' }}>
++         <div style={{ display: 'flex', gap: 32, animation: 'scroll-ticker 30s linear infinite', whiteSpace: 'nowrap' }}>
++           {[...tickerItems, ...tickerItems].map((item, idx) => (
++             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
++               <span style={{ fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)' }}>{item.symbol}</span>
++               <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-primary)' }}>{item.price}</span>
++               <span style={{ fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: item.change === null ? 'var(--text-muted)' : item.change >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>{item.change === null ? '—' : `${item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}%`}</span>
++             </div>
++           ))}
++         </div>
++       </div>
++
++       <div className="page-header">
++         <div className="content-wrapper">
++           <div className="page-breadcrumb">
++             <Link href="/" style={{ color: 'var(--accent-gold)', textDecoration: 'none' }}>RISHI TERMINAL</Link>
++             {' > '}
++             <span>{t('news.breadcrumb')}</span>
++           </div>
++           <h1 className="page-title" style={{ color: 'var(--accent-gold)', marginBottom: 8 }}>{t('news.title')}</h1>
++           <p className="page-subtitle" style={{ maxWidth: 600 }}>{t('news.subtitle')}</p>
++         </div>
++       </div>
++
++       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
++         {/* Filters */}
++         <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 8, WebkitOverflowScrolling: 'touch' }}>
++           {categories.map(c => {
++             // Audit 2026-10-02 (P2): counts are REGION-AWARE — the pills
++             // previously showed whole-dataset counts while the list below
++             // was region-filtered (categoryCounts was computed but unused).
++             const count = c === 'All'
++               ? allNews.filter(n => region === 'ALL' || n.region === region).length
++               : (categoryCounts[c] ?? 0);
++             if (c !== 'All' && count === 0) return null;
++             return (
++               <button key={c} onClick={() => setCategory(c)} style={{ padding: '8px 16px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: category === c ? 700 : 500, border: category === c ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(30,41,59,0.8)', background: category === c ? 'rgba(212,175,55,0.15)' : 'rgba(17,24,39,0.85)', color: category === c ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'monospace', whiteSpace: 'nowrap', flexShrink: 0 }}>
++                 {c} {count > 0 && <span style={{ opacity: 0.6 }}>({count})</span>}
++               </button>
++             );
++           })}
++         </div>
++
++         {/* Skeleton while loading with no cache */}
++         {loading && liveNews.length === 0 && (
++           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
++             {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
++           </div>
++         )}
++
++         {/* Round-5 audit (finding 16): explicit fetch-failure state — a blank
++             page with no explanation is indistinguishable from "no news". */}
++         {!loading && liveNews.length === 0 && fetchFailed && (
++           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
++             <div style={{ fontSize: 28, marginBottom: 12 }}>📡</div>
++             <div style={{ fontSize: 14, marginBottom: 6 }}>Live news is unavailable right now.</div>
++             <div style={{ fontSize: 12, marginBottom: 16 }}>Nothing is shown rather than made-up headlines.</div>
++             <button
++               onClick={() => { setFetchFailed(false); window.location.reload(); }}
++               style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}
++             >
++               Retry
++             </button>
++           </div>
++         )}
++
++         {!loading && liveNews.length === 0 && !fetchFailed && (
++           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', fontSize: 14 }}>No stories available right now.</div>
++         )}
++
++         {/* News Grid */}
++         {liveNews.length > 0 && (
++           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
++             {filtered.map(news => <NewsCard key={news.id} news={news} saved={saved} toggleSave={toggleSave} t={t} />)}
++           </div>
++         )}
++
++         {!loading && filtered.length === 0 && liveNews.length > 0 && (
++           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', fontSize: 14 }}>No news found for selected filters.</div>
++         )}
++       </div>
++     </main>
++   );
++ }
++
+
+ ❯ test/liveClaims.zero.test.ts:119:24
+    117|     const page = read("app/news/page.tsx");
+    118|     for (const name of ["NEWS_FEED", "TICKER_ITEMS", "TRENDING_TOPICS"…
+    119|       expect(page).not.toContain(name);
+       |                        ^
+    120|     }
+    121|     // positive control: the page still types its card with the shared…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 2 passed (9)
+   Start at  11:05:58
+   Duration  218ms (tests 42%, transform 39%, import 7%, setup 7%, worker 5%)
+
+EXIT=1

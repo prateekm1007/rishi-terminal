@@ -41,9 +41,13 @@ describe('app/sitemap.ts (served at /sitemap.xml)', () => {
   });
 
   it('covers the static market surfaces', () => {
-    for (const p of ['/', '/stocks', '/rishis', '/news', '/pulse', '/bonds', '/crypto', '/forex', '/commodities', '/pricing', '/terms', '/privacy']) {
+    for (const p of ['/', '/stocks', '/rishis', '/pulse', '/bonds', '/crypto', '/forex', '/commodities', '/pricing', '/terms', '/privacy']) {
       expect(urls, `missing ${p}`).toContain(`${SITE_URL}${p}`);
     }
+    // P0-8 (round 47, founder order 2026-10-11; rule-23 re-pin): /news is
+    // nav-hidden (the MH pattern — /methodology likewise absent). A hidden
+    // surface must not be advertised to crawlers as a primary destination.
+    expect(urls, 'nav-hidden /news must be sitemap-hidden').not.toContain(`${SITE_URL}/news`);
   });
 
   it('covers the market detail pages (crypto, commodities, indexes)', () => {

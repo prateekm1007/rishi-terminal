@@ -32,7 +32,12 @@ export default function Sidebar() {
       title: t("nav.intelligence"),
       items: [
         { href: "/rishis",      label: t("nav.chatWithRishis"), icon: "✦" },
-        { href: "/news",        label: t("nav.news"),           icon: "◈" },
+        // P0-8 (founder order 2026-10-11): /news is HIDDEN from the
+        // product navigation until the founder re-enables it (the MH
+        // pattern — IA-level hide, not deletion; the route and direct
+        // URL access stay). Evidence recorded in the PR: the RSS
+        // aggregator IS real (production /api/news served 223 fresh
+        // items, 2026-10-11) — re-enabling is one nav line.
         { href: "/pricing",     label: t("nav.pricing"),        icon: "◇" },
         // MH (founder directive 10, 2026-10-06): /methodology is HIDDEN from
         // the product navigation (IA-level hide, not deletion). The route,
@@ -110,9 +115,6 @@ export default function Sidebar() {
                 <Link
                   href={item.href}
                   key={item.href}
-                  onMouseEnter={() => {
-                    if (item.href === "/news") fetch("/api/news").catch(() => {});
-                  }}
                   style={{ textDecoration: "none", display: "block" }}
                 >
                   <div

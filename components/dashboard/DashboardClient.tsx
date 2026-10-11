@@ -315,7 +315,8 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
               { href:"/lab",       label:"💼 " + t("nav.portfolio"),  primary:false },
               { href:"/lab",       label:"⭐ " + t("nav.watchlist"),  primary:false },
               { href:"/rishis",    label:"🧘 " + t("nav.allRishis"), outline:true  },
-              { href:"/news",      label:"📰 " + t("nav.news"),       ghost:true    },
+              // P0-8 (founder order 2026-10-11): /news hidden from this nav
+              // with the sidebar (MH pattern — route stays, nav link gone).
               { href:"/lab",       label:"⚖️ " + t("nav.compare"),    ghost:true    },
             ].map(b => (
               <Link key={b.href} href={b.href} style={{

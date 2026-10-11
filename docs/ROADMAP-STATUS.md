@@ -343,3 +343,23 @@ docs/RELEASE.md. Next founder-independent items: E6-03 (streaming
 acceptance), E6-05/06 (observability/SLOs), E6-07 (contract tests + drills),
 E6-10 (repo-wide type promotion), X3-09 (PWA), L5-02/05/06, R4-03/05/06/07
 data-independent parts.
+
+## Round-48 ranked coder brief (2026-10-11) — the item ledger
+
+Founder brief verbatim frame: "Open each ranked item as its own issue or PR, one branch per item (C7). Put the rank and ID in the title... Record every item in ROADMAP-STATUS with status, owner and the acceptance test. Opening items doesn't count as a production merge, so C8 pacing doesn't apply to opening them."
+
+| Rank | Item | Surface | Status (2026-10-11) | Owner | Acceptance test |
+|---|---|---|---|---|---|
+| R1 | DEPLOY-GAP — the failing probe + the deployment record pasted; batch the queue if quota blocks | production | **DELIVERED (evidence pasted in the round-48 reply):** probe FAIL live sha 4c9f7088 ≠ main, /api/version recorded, 24h deployment record extracted (last deploy 13:11:48Z; NO deployment event for #343 or later — cause unverifiable sandbox-side, no Vercel token; quota saturation after the ninth exhaustion is the leading hypothesis); the batch protocol ARMED (merges continue at the C8 pace, deploy debt accumulates, ONE catch-up deploy when the blocker clears) | CODER + FOUNDER (Vercel dashboard check) | the failing probe (exit 1) and the deployment table are pasted — DONE |
+| R2 | FD-15-RECORD — the founder's verbatim words recorded, FD-15 resolved, FD-3's out list updated | docs | **DELIVERED** — PR #360 (this branch): ROADMAP.md + ROADMAP-STATUS.md carry "Keep them, with each row showing its source and as-of time." + the date | CODER | ROADMAP.md and ROADMAP-STATUS.md carry the quote and date — DONE in this PR |
+| R3 | REFMARKET-CONTRACT — value, unit, source, as-of, state on every non-equity row; dashboard ticker too | lib/refmarket + 4 surfaces + dashboard | **OPEN** — issue #363 (spec + plan); scheduled after the R6–R10 merge queue | CODER | a test fails when any row renders without a source or as-of time |
+| R4 | PR-345-PERSONAS — rebase and merge #345 | PR #345 | **MERGED 15:53Z** (7c9b6a1) after the a11y contrast fix + the rebase reconciliation; covers the first-person prompts, the Graham commentary line, "or life" | CODER | grep-zero on those strings + positive control — test/personaAttribution.zero.test.ts 13/13 |
+| R5 | ADVICE-IDENTIFIERS — BUY/HOLD/AVOID identifiers removed; journal confirmed user-own; F&O hidden | PR #362 | **OPEN (built, CI running)** — lib/utils.ts dead identifiers deleted, rishiMemory neutral signal vocabulary, journal type contract ("your trade"), F&O hidden behind the fail-closed FNO_ENABLED flag + FOUNDER DECISION NEEDED | CODER | the grep gate covers identifiers as well as strings — test/r5.adviceIdentifiers.test.ts 6/6 |
+| R6 | PB-BASIS — one price basis for the header, P/B and the flip | PR #353 | **OPEN (rebased, CI green-pending)** | CODER | P/B equals the displayed price divided by bvps — test/pb.priceBasis.test.ts 8/8 |
+| R7 | MUNGER-DEFAULT — the inversion check defaults to "not assessed" until forensic inputs | PR #354 | **OPEN (rebased, CI green-pending)** — endorsed over the stricter full-refusal alternative (recorded in the round-48 worklog) | CODER | no PASS without forensic inputs — test/munger.notAssessed.test.ts 5/5 |
+| R8 | PR-346-LIVE-CLAIMS — rebase and merge #346; News out of the nav | PR #346 | **OPEN (rebased, CI green-pending)** | CODER | News not in the nav + the claim strings grep-zero — test/liveClaims.zero.test.ts 9/9 |
+| R9 | PR-348-347-ROUTING — merge #348 then #347 | PRs #348, #347 | **OPEN (queue slots)** | CODER | one shell and nav on every route; no internal IDs in public text — test/routingShells.p1.test.ts + test/methodologyClean.zero.test.ts |
+| R10 | PR-350-LIVE-UNIVERSE — NSE EOD prices behind an internal flag until NSE answers in writing | PR #350 | **OPEN (built, queue slot LAST)** — the branch now carries the internal display flag (EOD_PRICE_DISPLAY_LICENSE, the fail-closed 503-before-fetch route, 6 pins) | CODER | no public page shows NSE-sourced prices — test/universe.priceDisplay.test.ts |
+| R11 | DEMO-SPEC — the honest demo path spec | test/demo | **OPEN** — issue #364 | CODER | runs green on main |
+| R12 | ACTIVATION-EVENTS — five events behind a consent hook | instrumentation | **OPEN** — issue #365 (consent wording: counsel-owned, FOUNDER DECISION NEEDED) | CODER + counsel | the events fire during the demo spec |
+| R13 | TODAY-AND-TRACKING — the dashboard Today view + "tracking since: not started" | dashboard + methodology | **OPEN** — issue #366 | CODER | both render on main |

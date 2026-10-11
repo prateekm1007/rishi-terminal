@@ -317,7 +317,12 @@ export default function NewsPage() {
         )}
 
         {!loading && liveNews.length === 0 && !fetchFailed && (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', fontSize: 14 }}>No stories available right now.</div>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+            {/* RESP-2 (founder order 2026-10-12): the founder named the
+                empty state's exact words — "No headlines yet". */}
+            <div style={{ fontSize: 14, marginBottom: 8 }}>No headlines yet.</div>
+            <div style={{ fontSize: 12 }}>The feed is empty right now — nothing is shown rather than made-up headlines.</div>
+          </div>
         )}
 
         {/* News Grid */}

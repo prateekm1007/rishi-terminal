@@ -5,6 +5,17 @@
  *    and /news metadata. Hide News from the nav until a real feed
  *    exists."
  *
+ * RESP-2 REVERSAL (founder order, 2026-10-12):
+ *
+ *   "News stays in the nav with an honest empty state, 'No headlines
+ *    yet'. The PR must not hide News. Keep-or-remove stays with you."
+ *   (and, from the confirmations list: "News: keep or remove. Current
+ *    directive: keep, with an honest empty state.")
+ *
+ * The 11 Oct hide is REVERSED on the founder's exact words; the honest
+ * copy fixes (title, claims) STAY. The empty-state copy is the
+ * founder's exact string: "No headlines yet".
+ *
  * What this pin enforces:
  *   1. UNBACKED "live" claims are gone:
  *      - /pricing copy ("live prices" x2) and the dashboard's
@@ -22,9 +33,11 @@
  *      /api/prices/batch serves BTC/ETH status LIVE from coingecko with
  *      fresh observedAt (2026-10-11T11:02:21Z probe), so "live quotes
  *      from CoinGecko where labelled LIVE" is backed and must survive.
- *   3. News is HIDDEN from the nav (sidebar + dashboard mobile nav) and
- *      the sitemap — the MH pattern (founder directive 10, 2026-10-06):
- *      IA-level hide, not deletion; the route stays reachable by URL.
+ *   3. News STAYS in the nav (sidebar + dashboard mobile nav) and the
+ *      sitemap — the founder's 2026-10-12 RESP-2 words reverse the
+ *      11 Oct hide; keep-or-remove remains the founder's. The route and
+ *      the nav line both stay; the page renders the founder's honest
+ *      empty state ("No headlines yet") when the feed is empty.
  *      Nav still carries its other items (positive control).
  *   4. The dead fabricated-data imports on the news list page are gone
  *      (rule 17): NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS,
@@ -43,7 +56,7 @@ function messageFiles(): string[] {
     .map((f) => join("messages", f));
 }
 
-describe("P0-8 — unbacked live claims removed; News hidden from nav", () => {
+describe("P0-8 — unbacked live claims removed; News stays in the nav (RESP-2)", () => {
   it("no 'live prices' claim remains in any locale's UI strings", () => {
     const files = messageFiles();
     expect(files.length).toBeGreaterThanOrEqual(8);
@@ -98,11 +111,12 @@ describe("P0-8 — unbacked live claims removed; News hidden from nav", () => {
     expect(code).toContain("static reference dataset — illustrative, not current");
   });
 
-  it("News is hidden from the sidebar nav and the dashboard mobile nav", () => {
+  it("News stays in the sidebar nav and the dashboard mobile nav (RESP-2, founder words 2026-10-12)", () => {
     const sidebar = read("components/Sidebar.tsx");
     const dashboard = read("components/dashboard/DashboardClient.tsx");
-    expect(sidebar).not.toMatch(/href:\s*"\/news"/);
-    expect(dashboard).not.toMatch(/href:\s*"\/news"/);
+    // RESP-2: "News stays in the nav" — the 11 Oct hide is reversed.
+    expect(sidebar).toMatch(/href:\s*"\/news"/);
+    expect(dashboard).toMatch(/href:\s*"\/news"/);
     // positive controls (B-18): the nav keeps its other destinations
     expect(sidebar).toMatch(/href:\s*"\/stocks"/);
     expect(sidebar).toMatch(/href:\s*"\/rishis"/);
@@ -110,9 +124,16 @@ describe("P0-8 — unbacked live claims removed; News hidden from nav", () => {
     expect(dashboard).toMatch(/href:\s*"\/stocks"/);
   });
 
-  it("News is out of the sitemap (the MH pattern: nav-hidden = sitemap-hidden)", () => {
+  it("the News empty state renders the founder's honest copy: 'No headlines yet' (RESP-2)", () => {
+    const page = read("app/news/page.tsx");
+    expect(page).toContain("No headlines yet");
+    // positive control (B-18): the fetch-failure honesty stays its own state
+    expect(page).toContain("Nothing is shown rather than made-up headlines.");
+  });
+
+  it("News is in the sitemap (RESP-2 reversal: the surface is nav-visible again)", () => {
     const sitemap = read("app/sitemap.ts");
-    expect(sitemap).not.toMatch(/'\/news'|\/news,/);
+    expect(sitemap).toMatch(/'\/news'/);
     // positive control: the sitemap still carries live routes
     expect(sitemap).toMatch(/\/stocks/);
   });

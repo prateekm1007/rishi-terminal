@@ -15,7 +15,7 @@
  * Rule 21: watched FAILING before the fix (the module did not exist and
  * the zero-reading scorers scored SBIN's placeholder D/E as debt-free).
  */
-import { describe, it, expect } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 
 import {
   SCORER_VERDICT_CONTRACT,
@@ -25,6 +25,20 @@ import {
 import { runAllScorers, seedScoringContext, TOTAL_RISHIS } from "@/lib/consensus/orchestrator";
 import { STOCKS } from "@/data/stocks";
 import type { Stock, RishiScore } from "@/lib/types";
+
+// Round-47 P0-8: this file pins the LICENSED state — the scorer
+// arithmetic beneath the price-license gate. The publication hold while
+// the exchange-data license is unresolved is pinned by
+// test/licenseGate.test.ts; the seed-world refusal-reason pins below
+// are unaffected (the sector and placeholder guards precede the license
+// gate inside every scorer).
+// (vi added to the vitest import for the mock.)
+vi.mock("@/lib/licensing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/licensing")>();
+  // The arithmetic world: the exchange-data license is satisfied.
+  return { ...actual, priceScoresPublic: () => true };
+});
+
 
 const SBIN = STOCKS["SBIN"] as Stock;
 const KWALITY = STOCKS["KWALITY"] as Stock;

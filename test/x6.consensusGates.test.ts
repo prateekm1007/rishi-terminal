@@ -15,7 +15,7 @@
  *     covers per-scorer health, but a panel-wide shift (every verdict
  *     creeping toward the same number) would pass silently.
  */
-import { describe, it, expect } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 
 import { STOCKS } from "@/data/stocks";
 import type { Stock } from "@/lib/types";
@@ -23,6 +23,20 @@ import { RISHI_WEIGHT_CONFIG } from "@/lib/gurus/weights";
 import { MIN_VALID_SCORERS, getWeight } from "@/lib/consensus/weights";
 import { runAllScorers, TOTAL_RISHIS } from "@/lib/consensus/orchestrator";
 import { buildConsensus } from "@/lib/consensus/engine";
+
+// Round-47 P0-8: this file pins the LICENSED state — the scorer
+// arithmetic beneath the price-license gate. The publication hold while
+// the exchange-data license is unresolved is pinned by
+// test/licenseGate.test.ts; the seed-world refusal-reason pins below
+// are unaffected (the sector and placeholder guards precede the license
+// gate inside every scorer).
+// (vi added to the vitest import for the mock.)
+vi.mock("@/lib/licensing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/licensing")>();
+  // The arithmetic world: the exchange-data license is satisfied.
+  return { ...actual, priceScoresPublic: () => true };
+});
+
 
 const HEALTHY: Stock = {
   symbol: "HEAL", name: "Healthy Ltd", sector: "IT", exchange: "NSE",

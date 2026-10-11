@@ -5,7 +5,7 @@
  * with P/E 0.0x and ROE 0.0%; Graham scored it 100 because zero P/E read
  * as "cheap"; NEUTRAL/Hold verdicts fell through to the AVOID commentary).
  */
-import { describe, expect, it } from "vitest";
+import { vi, describe, expect, it } from "vitest";
 import { STOCKS } from "@/data/stocks";
 import { dataQualityFromSeedStock, verdictsAllowed } from "@/lib/dataQuality";
 import { getStockScore } from "@/lib/scoring";
@@ -14,6 +14,20 @@ import { scoreGraham } from "@/lib/scorers/graham";
 import { generateCommentary, generateHeadline } from "@/lib/scorers/commentary";
 import type { StockMetrics } from "@/lib/scorers/types";
 import type { Stock } from "@/lib/types";
+
+// Round-47 P0-8: this file pins the LICENSED state — the scorer
+// arithmetic beneath the price-license gate. The publication hold while
+// the exchange-data license is unresolved is pinned by
+// test/licenseGate.test.ts; the seed-world refusal-reason pins below
+// are unaffected (the sector and placeholder guards precede the license
+// gate inside every scorer).
+// (vi added to the vitest import for the mock.)
+vi.mock("@/lib/licensing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/licensing")>();
+  // The arithmetic world: the exchange-data license is satisfied.
+  return { ...actual, priceScoresPublic: () => true };
+});
+
 
 // Round-46 P0-1 re-pin (founder audit 2026-10-11): the OK | INCOMPLETE
 // vocabulary is replaced by the closed four-value dataQuality — impossible

@@ -1,5 +1,5 @@
 /** T11: scorers stay finite and honest on degenerate input. */
-import { describe, it, expect } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 
 import type { Stock } from "@/lib/types";
 import { runAllScorers, TOTAL_RISHIS } from "@/lib/consensus/orchestrator";
@@ -7,6 +7,20 @@ import { buildConsensus } from "@/lib/consensus/engine";
 import { dataQualityFromSeedStock } from "@/lib/dataQuality";
 import { weightedAverage, MIN_VALID_SCORERS } from "@/lib/consensus/weights";
 import { STOCKS } from "@/data/stocks";
+
+// Round-47 P0-8: this file pins the LICENSED state — the scorer
+// arithmetic beneath the price-license gate. The publication hold while
+// the exchange-data license is unresolved is pinned by
+// test/licenseGate.test.ts; the seed-world refusal-reason pins below
+// are unaffected (the sector and placeholder guards precede the license
+// gate inside every scorer).
+// (vi added to the vitest import for the mock.)
+vi.mock("@/lib/licensing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/licensing")>();
+  // The arithmetic world: the exchange-data license is satisfied.
+  return { ...actual, priceScoresPublic: () => true };
+});
+
 
 const allZeroStock = (): Stock => ({
   symbol: "ZERO", name: "Zero Corp", sector: "IT", exchange: "NSE",

@@ -66,21 +66,32 @@ describe("round-5 + round-46 P0-1: rankings exclude every non-verdict-allowed re
   });
 });
 
-describe("round-5: Graham no longer reads P/E 0 as ultra-cheap", () => {
-  it("a zero-P/E record scores zero P/E-value points (not 100)", () => {
+describe("round-5: Graham no longer reads P/E 0 as ultra-cheap (P0-2 re-pin: no verdict at all)", () => {
+  it("a zero-P/E record earns NO verdict — the round-5 substance enforced at the root", () => {
+    // Round-5 fixed the component (P/E 0 scored 0 value points, not 100);
+    // round-46 P0-2 goes further: a placeholder P/E is UNKNOWN — Graham
+    // returns no verdict and names the field. No comps are fabricated.
     const kw = STOCKS["KWALITY"] as Stock;
     const g = scoreGraham(kw);
-    const peComponent = g.comps.find(c => c.label === "P/E Value");
-    expect(peComponent?.v).toBe(0);
-    // The composite was 100 pre-fix; with P/E value zeroed and impossible
-    // records excluded from rankings, it must be materially lower.
-    expect(g.score).toBeLessThan(100);
+    expect(g.score).toBeNull();
+    expect(g.comps).toEqual([]);
+    expect(g.insight).toMatch(/[Nn]o verdict/);
+    expect(g.insight).toContain("pe");
   });
 
-  it("a normal cheap stock still earns its P/E points", () => {
-    const sbin = STOCKS["SBIN"] as Stock; // pe 10
-    const g = scoreGraham(sbin);
+  it("a normal cheap stock still earns its P/E points (observed data, arithmetic unchanged)", () => {
+    // P0-1/P0-2: SBIN carries a placeholder D/E, so the SBIN fixture can
+    // no longer exercise the P/E component — an OBSERVED cheap fixture can.
+    const cheap: Stock = {
+      symbol: "CHEAP", name: "Cheap Ltd", sector: "IT", exchange: "NSE",
+      price: 100, pe: 10, roe: 18, mktcap: 50000, ocf: 900, rev: 5000,
+      revcagr: 12, epscagr: 14, opm: 18, roce: 19, de: 0.3, fcf: 700,
+      promo: 52, ca: 2200, tl: 900, sh: 50, np: 480, dep: 90,
+      capex: 150, bvps: 300,
+    };
+    const g = scoreGraham(cheap, { unknownFields: new Set<string>() });
     expect(g.comps.find(c => c.label === "P/E Value")?.v).toBe(100);
+    expect(g.score).not.toBeNull();
   });
 });
 

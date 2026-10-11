@@ -2,6 +2,8 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp, safeDiv } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
 /**
  * Magic Formula (T11 zero-guard): ROC and EY divide by market cap; a
@@ -31,7 +33,12 @@ import { clamp, safeDiv } from '../utils';
  * blocked on the FD-1 data-vendor decision — flagged FOUNDER DECISION
  * NEEDED in the V2 PR.
  */
-export function scoreGreenblatt(s: Stock): RishiScore {
+export function scoreGreenblatt(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Greenblatt"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Greenblatt"], p02Missing);
+
   const rocCap = s.mktcap > 0 ? s.mktcap * 0.6 : 0;
   const rocFrac = safeDiv(s.np, rocCap);
   const rocPct = rocFrac === null ? null : rocFrac * 100;

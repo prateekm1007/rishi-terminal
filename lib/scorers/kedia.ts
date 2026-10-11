@@ -2,8 +2,15 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
-export function scoreKedia(s: Stock): RishiScore {
+export function scoreKedia(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Kedia"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Kedia"], p02Missing);
+
   const smallS = s.mktcap <= 5000 ? 100 : clamp(100 - (s.mktcap - 5000) / 100);
   const manageableS = s.de <= 0.5 ? 100 : clamp(100 - s.de * 100);
   const innovS = clamp(s.opm >= 12 ? 100 : s.opm * 8.33);

@@ -2,6 +2,8 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
 /**
  * W4 (founder round-10) saturation fix: every component was a STEP
@@ -24,7 +26,12 @@ import { clamp } from '../utils';
  *     x0.6 without FCF
  *   - Uncertainty discount: 100 at P/E 10 → 0 at 40 (was flat 100 <= 20)
  */
-export function scorePabrai(s: Stock): RishiScore {
+export function scorePabrai(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Pabrai"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Pabrai"], p02Missing);
+
   const cloneS = clamp(35 + (s.promo - 35) * (100 / 35));
   const ownerS = clamp((s.promo - 20) * 2.5);
   const lowRiskS = clamp(Math.round(clamp(100 - s.de * 45) * (s.fcf > 0 ? 1 : 0.6)));

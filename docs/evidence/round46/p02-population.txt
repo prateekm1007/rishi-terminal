@@ -1,0 +1,6 @@
+# P0-2 population measurement (scripts/round46/measureP02.ts, run via the vitest harness)
+# Measured 2026-10-11 on the P0-2 tree, seedScoringContext semantics (bare seed records).
+
+MEASURE stocks: 896 | evaluable: 649
+MEASURE nulls: Nemish:248 Pabrai:247 Raamdeo:242 Seth Klarman:241 Munger:234 Graham:209 Howard Marks:209 Jhunjhunwala:197 Walter Schloss:182 Damani:180 Kedia:174 Soros:159 Porinju:128 Buffett:120 Basant:111 Kacholia:78 Philip Fisher:78 Lynch:69 John Templeton:68 Greenblatt:6
+MEASURE sd: Nemish:9.74(n=648) Raamdeo:8.37(n=654) Munger:11.74(n=662) Howard Marks:13.57(n=687) Basant:6.30(n=785) Philip Fisher:8.20(n=818) Seth Klarman:11.95(n=655) Buffett:7.19(n=776) Lynch:12.20(n=827) Jhunjhunwala:10.39(n=699) Kedia:10.26(n=722) Pabrai:13.46(n=649) Kacholia:9.61(n=818) Walter Schloss:18.63(n=714) Porinju:17.10(n=768) Damani:8.26(n=716) Soros:7.46(n=737) John Templeton:20.90(n=828) Graham:11.45(n=687) Greenblatt:24.09(n=890)

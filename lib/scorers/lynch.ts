@@ -2,8 +2,15 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
-export function scoreLynch(s: Stock): RishiScore {
+export function scoreLynch(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Lynch"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Lynch"], p02Missing);
+
   const peg = s.pe / Math.max(1, s.epscagr);
   const pegS = clamp(peg <= 1 ? 100 : peg <= 1.5 ? 70 : Math.max(0, 100 - (peg - 1) * 50));
   const gS = clamp(s.epscagr >= 15 ? 100 : s.epscagr * 6.67);

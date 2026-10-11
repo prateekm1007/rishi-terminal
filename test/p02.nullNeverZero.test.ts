@@ -58,7 +58,7 @@ describe("P0-2 — the declared verdict contract", () => {
 
   it("every required field is a real Stock numeric field, and no contract is empty", () => {
     const stockFields = Object.keys(STOCKS["SBIN"]).filter(
-      k => typeof (STOCKS["SBIN"] as Record<string, unknown>)[k] === "number",
+      k => typeof (STOCKS["SBIN"] as unknown as Record<string, unknown>)[k] === "number",
     );
     for (const [name, c] of Object.entries(SCORER_VERDICT_CONTRACT)) {
       expect(c.required.length, `${name} must declare what its verdict requires`).toBeGreaterThan(0);

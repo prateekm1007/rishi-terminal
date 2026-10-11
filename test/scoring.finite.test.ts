@@ -34,12 +34,14 @@ describe("T11 — every scorer is null-safe, never NaN", () => {
     for (const s of scores) {
       expect(s.score === null || Number.isFinite(s.score)).toBe(true);
     }
-    // The two known offenders must return the documented null.
-    const damani = scores.find(s => s.name === "Damani")!;
-    const jhunjhunwala = scores.find(s => s.name === "Jhunjhunwala")!;
-    expect(damani.score).toBeNull();
-    expect(jhunjhunwala.score).toBeNull();
-    expect(damani.insight).toMatch(/insufficient data/i);
+    // P0-2 (founder audit 2026-10-11): an all-placeholder record yields the
+    // honest no-verdict from EVERY scorer — stronger than the old
+    // mixed-null state (Damani/Jhunjhunwala nulls, others fabricating from
+    // zeros). The insight names the unknown fields.
+    for (const s of scores) {
+      expect(s.score, `${s.name} scored an all-placeholder record`).toBeNull();
+      expect(s.insight).toMatch(/[Nn]o verdict|insufficient data/i);
+    }
   });
 
   it("all 944 registry stocks produce only finite/null scorer scores", () => {
@@ -58,17 +60,19 @@ describe("T11 — every scorer is null-safe, never NaN", () => {
     }
   });
 
-  it("weightedAverage ignores null scores but still works above the quorum", () => {
-    const scores = runAllScorers(allZeroStock());
-    const validCount = scores.filter(s => s.score !== null).length;
-    // X6 (Round 13): 15 — Nemish joins the documented-null set on
-    // all-zero data (a fully-placeholder record has no Steady Compounder
-    // verdict; previously it returned a finite 45 built on two
-    // placeholder-perfect pillars). Damani/Jhunjhunwala/Buffett/Greenblatt
-    // were already null.
-    expect(validCount).toBe(15);
-    const c = weightedAverage(scores);
-    expect(c).not.toBeNull();
+  it("weightedAverage ignores null scores; the quorum holds on observed data (P0-2 re-pin)", () => {
+    // P0-2: an all-placeholder record nulls the WHOLE panel (20/20) — the
+    // quorum refuses, and the refusal is the honest state (was: 15 valid
+    // scorers fabricating from placeholder zeros). The quorum-below null
+    // and the quorum-above finite number are both pinned; the arithmetic
+    // on observed data is unchanged.
+    const allZero = runAllScorers(allZeroStock());
+    expect(allZero.filter(s => s.score !== null).length).toBe(0);
+    expect(weightedAverage(allZero)).toBeNull();
+
+    const observed = runAllScorers(healthyStock(), { unknownFields: new Set<string>() });
+    expect(observed.filter(s => s.score !== null).length).toBe(TOTAL_RISHIS);
+    expect(weightedAverage(observed)).not.toBeNull();
   });
 
   it("panels below MIN_VALID_SCORERS produce a null consensus", () => {

@@ -2,6 +2,8 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
 /**
  * George Soros — Reflexivity & Macro Contrarian
@@ -22,7 +24,12 @@ import { clamp } from '../utils';
  *     100, 2.5 → 0); Soros tolerates leverage but does not reward it.
  *   - Liquidity: current ratio 1 → 50, 2 → 100 (was 4 steps).
  */
-export function scoreSoros(s: Stock): RishiScore {
+export function scoreSoros(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Soros"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Soros"], p02Missing);
+
   // Reflexivity: is price disconnected from value? (contrarian signal)
   const ncav = (s.ca - s.tl) / s.sh;
   // Reflexivity: the component measures the discount to a POSITIVE net

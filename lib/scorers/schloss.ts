@@ -2,8 +2,15 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
-export function scoreWalterSchloss(s: Stock): RishiScore {
+export function scoreWalterSchloss(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Walter Schloss"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Walter Schloss"], p02Missing);
+
   const pbScore = s.price <= s.bvps ? 100 : s.price <= s.bvps * 1.3 ? 80 : clamp(100 - (s.price / s.bvps - 1.3) * 100);
   const debtScore = s.de <= 0.2 ? 100 : s.de <= 0.5 ? 80 : clamp(100 - s.de * 100);
   const insiderScore = s.promo >= 40 ? 100 : clamp(s.promo * 2.5);

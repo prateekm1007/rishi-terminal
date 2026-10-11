@@ -106,3 +106,31 @@ Behavioral pins on the new file (`test/p03.sectorGate.test.ts`):
   the order, the census measured.
 - C10: one evidence file for the round-46 P0-3 topic; the re-pin's
   count change is measured, not asserted.
+
+## Post-merge C6 legs (2026-10-11, production serving `791c7b6db7c2`)
+
+Deploy proof: `GET /api/version` → `{"sha":"791c7b6db7c2d144b2134e6fbf4d53601bbd8fd2",...}`
+(polled ~2 min after the merge).
+
+Production legs — 10/10 PASS
+(`p03-production-legs.txt`, runner `scripts/p03/prodVerifyP03.mjs`):
+
+- deploy gate: /api/version == the merge SHA;
+- SBIN (Banking) flight-payload positive controls — the NEW content is
+  present: Greenblatt's lender-formula refusal ("does not apply to a
+  Banking company"), Buffett's "OPM (fields opm) is not applicable to a
+  Banking company", Lynch's FCF refusal, and Graham's refusal switched
+  from the placeholder reason to the sector reason ("fields ca, tl, de");
+  the pre-fix "Magic Formula: ROC …" SBIN insight is ABSENT;
+- non-lender positive control: RELIANCE (Energy) keeps its Greenblatt
+  "Magic Formula: ROC 5.9% · EY 3.5%" insight — the gate is a no-op off
+  the lender vocabulary, live;
+- P0-1 regression: both stock pages still render the honest NO VERDICT
+  record; /stocks 200.
+
+CI note: the first CI attempt on #341 was FAILED by the C8 deploy-cadence
+gate (window closed by #338's 09:16Z merge — the gate biting as designed);
+the attempt-1 job was re-run after the window opened (~10:16Z) → all five
+jobs green; the #340 docs-only merge landed mid-flight (deploy-exempt),
+the branch was rebased onto it and all six checks re-greened on the exact
+rebased head before merging.

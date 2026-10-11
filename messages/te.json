@@ -507,8 +507,8 @@
     "oemLabel": "OPM",
     "sections": {
       "stockOfTheDay": "నేటి స్టాక్",
-      "topBuySignals": "టాప్ ర్యాంక్ చేయబడినవి",
-      "shortRadar": "క్షీణత రాడార్",
+      "topBuySignals": "టాప్ కొనుగోలు సిగ్నల్స్",
+      "shortRadar": "షార్ట్ రాడార్",
       "cryptocurrency": "క్రిప్టోకరెన్సీ",
       "allMarkets": "అన్ని మార్కెట్లు"
     },

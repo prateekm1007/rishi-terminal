@@ -507,8 +507,8 @@
     "oemLabel": "OPM",
     "sections": {
       "stockOfTheDay": "আজকের স্টক",
-      "topBuySignals": "শীর্ষ র‌্যাঙ্কড",
-      "shortRadar": "অবনতি র‌্যাডার",
+      "topBuySignals": "শীর্ষ ক্রয় সংকেত",
+      "shortRadar": "শর্ট রাডার",
       "cryptocurrency": "ক্রিপ্টোকারেন্সি",
       "allMarkets": "সকল বাজার"
     },

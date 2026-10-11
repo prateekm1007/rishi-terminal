@@ -507,8 +507,8 @@
     "oemLabel": "OPM",
     "sections": {
       "stockOfTheDay": "आजचा स्टॉक",
-      "topBuySignals": "टॉप रँक केलेले",
-      "shortRadar": "ऱ्हास रडार",
+      "topBuySignals": "टॉप खरेदी सिग्नल",
+      "shortRadar": "शॉर्ट रडार",
       "cryptocurrency": "क्रिप्टोकरन्सी",
       "allMarkets": "सर्व बाजार"
     },

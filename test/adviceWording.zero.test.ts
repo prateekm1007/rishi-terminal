@@ -42,6 +42,18 @@
  * enum keys themselves are now descriptive (STRONGLY_FAVORABLE … ) and
  * the LONG/SHORT ScoreMode became UPSIDE/DOWNSIDE. No surface, internal
  * or rendered, carries the advice vocabulary.
+ *
+ * FD-24 (founder order 11 Oct 2026, recorded in ROADMAP): "Keep 'Top Buy
+ * Signals' as the name." — a P0-6 exception for THIS NAME ONLY (no other
+ * buy wording is added); "Short Radar" keeps its name. Both names are
+ * CODER's decisions retained with the founder's endorsement; counsel's
+ * view on them stays on the open list. The two names are the only
+ * exception strings added below. Pre-existing bare lowercase "buy"/"sell"
+ * sites OUTSIDE this change's scope (documented, unchanged by FD-24): the
+ * portfolio thesis placeholder ("Why did you buy this?" — the user's own
+ * trade record), the free-access statement ("There is nothing to buy")
+ * and the buyHoldSell chat-question example — none is advice wording the
+ * P0-6 order listed, and FD-24 adds no new one.
  */
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
@@ -96,6 +108,8 @@ const EXCEPTIONS: RegExp[] = [
   /short-seller|short seller/i, // factual journalism (Hindenburg)
   /\(Short\)",?$/, // historical position facts (Soros 1992 pound, 1997 baht)
   /systemPrompt:/, // server-side LLM persona instructions — not UI strings (the AI-loop stage governs model output)
+  /Top Buy Signals/, // FD-24 (11 Oct 2026): the founder's P0-6 exception — THIS NAME ONLY
+  /\bShort Radar\b/, // FD-24 (11 Oct 2026): "Short Radar" keeps its name
 ];
 
 /** Files whose string literals are PERSISTED ANALYTICS, never rendered:
@@ -129,12 +143,25 @@ describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
     const en = readFileSync("messages/en.json", "utf8");
     expect(en).toContain('"highConviction": "High Conviction"');
     expect(en).toContain('"lowPE": "Low P/E"');
-    expect(en).toContain('"topBuySignals": "Top Ranked"');
-    expect(en).toContain('"shortRadar": "Deterioration Radar"');
+    // FD-24 (11 Oct 2026): the founder's exception — the restored names.
+    expect(en).toContain('"topBuySignals": "Top Buy Signals"');
+    expect(en).toContain('"shortRadar": "Short Radar"');
     const dual = readFileSync("components/score/RishiScoreDual.tsx", "utf8");
     expect(dual).toContain("📈 Upside");
     expect(dual).toContain("📉 Downside");
     expect(dual).toContain("Weak Framework Support");
+  });
+
+  it("FD-24: the exception is THIS NAME ONLY — no other capitalized Buy wording is added (en.json)", () => {
+    // The founder: "Don't add other buy wording." Every capitalized
+    // \bBuy\b in en.json must be the restored name itself (the section
+    // title + the disabled-note naming the trio) — a new Buy phrase
+    // anywhere else fails this pin.
+    const en = readFileSync("messages/en.json", "utf8");
+    const hits = en.match(/^.*\bBuy\b.*$/gm) ?? [];
+    expect(hits.length).toBe(2);
+    expect(hits[0]).toContain('"topBuySignals": "Top Buy Signals"');
+    expect(hits[1]).toContain("Top Buy Signals, Short Radar");
   });
 
   it("the audit's five named sites carry none of the vocabulary (round-47 follow-up)", () => {

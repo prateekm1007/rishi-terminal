@@ -95,3 +95,39 @@ P0-6 counsel review and P0-8 data licensing remain FOUNDER DECISION NEEDED
 
 `git revert` of the branch's two commits (RED pins + the gate); the gate
 additive-reverts to the previous OK|INCOMPLETE behavior.
+
+## Post-merge C6 legs (2026-10-11, production serving `3c1f096bf92b`)
+
+Deploy proof: `GET /api/version` → `{"sha":"3c1f096bf92ba981e551e01b139a1ec4be13931c",...}`
+(poll 2, ~45 s after merge; the first poll still served the prior build `d824ed9c…`).
+
+SSR legs (`p01-production-legs.txt`, 15/17 PASS): NO VERDICT record + dataQuality
+disclosure IN the first byte of /stock/RELIANCE; consensus hero / QVPS
+commentary / pillar breakdown ABSENT; MetricsPanel + peers still render;
+KWALITY serves the whole-page INSUFFICIENT DATA record; /stocks carries 845
+"seed · no verdict" chips (the remaining 51 rows are the "missing" records —
+all-zero/impossible — with their own "no data · no verdict" chip; 845 + 51 =
+896); dashboard renders the disabled ranked-picks panel; substrate intact
+(capability=thesis 200 ok:true; capability=insight the designed 404 — zero spend).
+
+The two raw byte-grep FAILs are the flight-payload trap, disclosed: the RSC
+payload inside `<script>` carries (a) the i18n dictionary ("TOP BUY SIGNALS",
+"STOCK OF THE DAY") and (b) precomputed data for suppressed client components
+(PhilosophyRadar's philosophyDivergence, QVPS dual results). Payload ≠ rendered
+content — the hydrated legs are the user-facing truth.
+
+Hydrated legs (`p01-production-hydrated.txt`, 8/8 PASS, screenshots in
+`screens/`): NO VERDICT record VISIBLE; consensus hero / QVPS tile / council
+NOT visible; labelled metrics visible; "seed · no verdict" badge visible on
+/stocks; the disabled ranked-picks panel visible and NO rendered
+Stock-of-the-Day section on the dashboard. Screenshots:
+`p01-stock-reliance.png`, `p01-stocks.png`, `p01-dashboard.png`.
+
+Follow-up recorded (NOT this item's scope, queued for the next relevant PR):
+the payload trim — when a record is verdict-blocked the server could pass
+`qvpsDual`/`eliteGraph` as null so the suppressed components' data never
+crosses the wire (bytes + consistency; zero rendering impact — the components
+already gate on `allowed`).
+
+**P0-1 is CLOSED** (merged `3c1f096b` + deployed + live-proven). Next per the
+dependency order: P0-2 (null-never-0 + no_verdict on missing inputs).

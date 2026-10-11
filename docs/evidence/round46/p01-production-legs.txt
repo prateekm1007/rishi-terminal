@@ -1,0 +1,19 @@
+PASS deploy gate /api/version — sha=3c1f096bf92b expected=3c1f096bf92b
+PASS stock page 200 — status=200 bytes=106531
+PASS seed page: NO VERDICT record in first byte
+PASS seed page: the dataQuality disclosure renders
+PASS seed page: verdict surface absent — "RISHI CONSENSUS"
+PASS seed page: verdict surface absent — "RISHI COMMENTARY"
+PASS seed page: verdict surface absent — "Pillar Breakdown"
+FAIL seed page: verdict surface absent — "STRONG_BUY"
+PASS seed page: MetricsPanel still renders (labelled data stays)
+PASS seed page: peers still render
+PASS impossible record: whole-page INSUFFICIENT DATA record
+PASS /stocks: seed · no verdict badges — count=845 of 896 rows
+PASS /stocks: checked score tiles — (score pills only on verdict-allowed rows)
+PASS dashboard: honest disabled ranked-picks panel
+FAIL dashboard: no fabricated Stock-of-the-Day section
+PASS substrate: /api/intelligence capability=thesis 200 ok:true — status=200
+PASS substrate: insight stays the designed 404 (zero spend) — status=404
+
+2 LEG(S) FAILED

@@ -197,7 +197,9 @@ export function licenseRefusal(scorerName: string): RishiScore | null {
     score: null,
     origin: contract.origin,
     comps: [],
-    insight: `No verdict \u2014 the ${contract.full} ${contract.label} framework is price-based: its verdict reads price-derived inputs (P/E, market capitalisation or price). Price-based scores are unresolved while the exchange-data license is pending (NSE display / non-display enquiry, sent for a written answer); until it arrives they are own-use only and are not published here.`,
+    // FD-26 (founder default, 11 Oct 2026): every price-based refusal
+    // CARRIES the canonical label first; the P0-8 disclosure follows.
+    insight: `Licence pending \u2014 no verdict: the ${contract.full} ${contract.label} framework is price-based: its verdict reads price-derived inputs (P/E, market capitalisation or price). Price-based scores are unresolved while the exchange-data licence is pending (NSE display / non-display enquiry, sent for a written answer); until it arrives they are own-use only and are not published here.`,
   };
 }
 

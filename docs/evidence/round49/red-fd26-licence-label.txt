@@ -1,0 +1,5 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected undefined to be 'Licence pending' // Object.is equality
+AssertionError: Buffett must carry the label: expected false to be true // Object.is equality
+AssertionError: expected '\'use client\';\n\nimport { useState …' to contain 'LicencePendingNote'
+      Tests  3 failed | 8 passed (11)

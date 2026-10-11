@@ -31,6 +31,7 @@
  * match them exactly.
  */
 import { describe, it, expect, vi } from "vitest";
+import { readFileSync } from "node:fs";
 
 import {
   SCORER_VERDICT_CONTRACT,
@@ -77,6 +78,51 @@ const observedStock = (sector: string): Stock => ({
   ...observedBody,
 });
 
+/**
+ * FD-26 (founder default, 11 Oct 2026, recorded in ROADMAP): "licence
+ * pending" is the label on EVERY price-based score while the exchange-data
+ * licence is unresolved — recorded as the FOUNDER'S DEFAULT, not as the
+ * coder's instruction. The label is the canonical short form; the refusal
+ * text beneath it stays the P0-8 disclosure.
+ */
+const FOUNDER_DEFAULT_LABEL = "Licence pending";
+
+describe("FD-26 — the licence-pending label on every price-based score", () => {
+  it("the canonical label constant is the founder's default wording", async () => {
+    const licensing = await import("@/lib/licensing");
+    expect(licensing.PRICE_SCORES_LABEL).toBe(FOUNDER_DEFAULT_LABEL);
+  });
+
+  it("every price-based refusal insight CARRIES the label (it starts with it)", () => {
+    for (const r of panel(observedStock("FMCG"))) {
+      if (SCORER_VERDICT_CONTRACT[r.name].priceBased) {
+        expect(
+          r.insight.startsWith(FOUNDER_DEFAULT_LABEL),
+          `${r.name} must carry the label`,
+        ).toBe(true);
+      }
+    }
+    // the fundamental-only frameworks carry no licence label (nothing of
+    // theirs is held) — positive control on the boundary
+    for (const name of FOUNDER_FUNDAMENTAL_ONLY) {
+      const r = byName(panel(observedStock("FMCG")), name);
+      expect(r.insight.startsWith(FOUNDER_DEFAULT_LABEL)).toBe(false);
+    }
+  });
+
+  it("the label pin BITES (C5 — a pre-fix refusal without the label fails)", () => {
+    const preFix = "No verdict \u2014 the framework is price-based: its verdict reads price-derived inputs.";
+    expect(preFix.startsWith(FOUNDER_DEFAULT_LABEL)).toBe(false);
+  });
+
+  it("the QVPS absent state and the page metadata carry the canonical label (source pins, B-18)", () => {
+    const client = readFileSync("components/stock/StockPageClient.tsx", "utf8");
+    expect(client).toContain("LicencePendingNote");
+    const page = readFileSync("app/stock/[symbol]/page.tsx", "utf8");
+    expect(page).toContain("\u2014 licence pending | Rishi Terminal");
+  });
+});
+
 describe("P0-8 — the price-license gate", () => {
   it("the declared license state is the founder's order", async () => {
     const licensing = await import("@/lib/licensing");
@@ -99,7 +145,10 @@ describe("P0-8 — the price-license gate", () => {
       if (SCORER_VERDICT_CONTRACT[r.name].priceBased) {
         expect(r.score, `${r.name} must refuse while the license is unresolved`).toBeNull();
         expect(r.insight, `${r.name} must name the reason`).toMatch(/price-based/i);
-        expect(r.insight).toMatch(/exchange-data license/i);
+        // FD-26 wording alignment: the canonical label is the founder's
+        // British "licence" — the pin follows the refusal text's intent
+        // (the exchange-data licence is named), spelling aligned.
+        expect(r.insight).toMatch(/exchange-data licence/i);
         expect(r.insight).toMatch(/own-use only/i);
       }
     }

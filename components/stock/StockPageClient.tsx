@@ -18,6 +18,8 @@ import { MetricsPanel }           from './MetricsPanel';
 import { PeerComparison }         from './PeerComparison';
 import { WisdomSidebar }          from './WisdomSidebar';
 import SeedDataBanner             from '../shared/SeedDataBanner';
+import LicencePendingNote         from '../shared/LicencePendingNote'; // FD-26: the licence-pending label on the withheld QVPS
+import { priceScoresPublic }      from '@/lib/licensing';
 import { useLanguage } from '../../lib/language';
 // A1: server-resolved historical parallel for the wisdom rail (the
 // dataset/detector live in lib/wisdom/historicalParallels, server-side).
@@ -366,6 +368,10 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
 
                 <div className="wisdom-reveal-delay-1">
                   {allowed && qvpsDual ? <RishiScoreDual dual={qvpsDual} sector={stock.sector} dataQuality={consensus.dataQuality} /> : null}
+                  {/* FD-26 (founder default, 11 Oct 2026): the QVPS is a
+                      price-based score — while the licence is pending it is
+                      not produced, and the absent state CARRIES the label. */}
+                  {allowed && resolved && !priceScoresPublic() ? <LicencePendingNote /> : null}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">

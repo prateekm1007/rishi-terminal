@@ -209,3 +209,28 @@ the exit gate, repair only what is missing, advance.**
   honest-null state should be restored. Recommended default: `git revert
   e5e75b76`. Escalation on the #267 thread. Phase 0 closure is unaffected
   either way.
+
+## 6. Round-46 founder audit (2026-10-11) — the P0 integrity & legal program
+
+The founder's full-product audit (delivered 2026-10-11, tracker 6.5/20)
+orders: clear every P0 before starting new work; evidence per fix
+(screenshots, test output, deployed commit SHAs). Intake record, production
+ground truth, and escalations: `docs/evidence/round46/audit-intake.md`.
+The audit's checklist item 19 (dossier "Resolving intelligence…") is MOOT on
+the current production `d824ed9c970c` — the segment was removed in round 45
+(#331) before this audit's probe build.
+
+| ID | Scope (founder's finding) | Fix direction (founder's words) | Status |
+|---|---|---|---|
+| P0-1 | Verdicts on placeholder data: STRONG BUY (77) beside the illustrative-placeholder footer; "v2.0 · HIGH Data" beside "illustrative seed inputs"; whole-number PE/ROE | Add `dataQuality` (live, delayed, seed, missing); seed rows show no verdict; the badge reads that field | **IN PROGRESS** (intake 2026-10-11) |
+| P0-2 | Zeros scored as facts (KWALITY 76 on 0.0x/0.0%; DFL 73; EASEMYTRIP 72; DISH 71; seven more at 69; SBIN D/E 0.00 seed zero passes 6 frameworks while Nemish returns no verdict) | null, never 0; no_verdict on missing inputs | PENDING |
+| P0-3 | Banks scored on non-bank metrics (SBIN on D/E, OPM, FCF, P/NCAV 69.62x, current ratio; Greenblatt "doesn't apply to banks" yet SBIN passes at 66) | Sector gate on all 20 scorers | PENDING |
+| P0-4 | Passes with missed targets (SBIN Greenblatt 66: EY 7.9% vs >10%, ROC 13.2% vs >25%; SBIN Kacholia 75: growth 24% vs >25%; RELIANCE Buffett 64: OPM 18% vs >20%; RELIANCE Kacholia 68: ROCE 16% vs >20%) | Fail these, or label "pass with exceptions" | PENDING |
+| P0-5 | Two contradictory verdicts on one page (RELIANCE 70 vs QVPS 44 "Avoid · REDUCE"; SBIN 80 vs 57 "Fair · HOLD") | One headline verdict; divergence explained in one sentence | PENDING |
+| P0-6 | Buy/sell wording (STRONG BUY, Long/Short, REDUCE, Avoid, "Value Plays", "Pharma Short Mode", "Growth Trap Mode") | Framework-fit wording ("15+ of 20 frameworks agree"); counsel review before public launch — FOUNDER DECISION NEEDED (counsel) | PENDING |
+| P0-7 | Real people as sources (Jhunjhunwala quote on /rishis; "Michael Saylor philosophies" on /crypto; Rogers/Rule/Yergin on /commodities; the Graham/Buffett misattribution in RELIANCE commentary) | Remove real-name quotes/attributions; label personas "simulated"; correct the attribution | PENDING |
+| P0-8 | "Live" claims vs unofficial sources (Delayed · Yahoo Finance (unofficial); /pricing "live prices"; "Observation time not disclosed") | Source + as-of on every price; drop "live" unless licensed — FOUNDER DECISION NEEDED (licensing) | PENDING |
+
+Execution order (dependency-driven, one item = one PR, C7):
+**P0-1 → P0-2 → P0-3 → P0-4 → P0-5 → P0-6 → P0-7 → P0-8.** All P1/P2
+findings stay QUEUED behind the eight P0s per the founder's directive.

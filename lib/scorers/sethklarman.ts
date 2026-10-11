@@ -2,8 +2,15 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
-export function scoreSethKlarman(s: Stock): RishiScore {
+export function scoreSethKlarman(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Seth Klarman"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Seth Klarman"], p02Missing);
+
   const downsideScore = s.de <= 0.5 && s.fcf > 0 ? 100 : s.de > 2 || s.fcf <= 0 ? 20 : clamp(50 + (s.de <= 1 ? 25 : 0) + (s.fcf > 0 ? 25 : 0));
   const asymmetricScore = s.pe <= 15 && s.price <= s.bvps * 1.5 ? 100 : s.pe > 40 || s.price > s.bvps * 3 ? 20 : clamp(50 + (s.pe <= 25 ? 25 : 0) + (s.price <= s.bvps * 2 ? 25 : 0));
   const marginScore = s.opm >= 20 ? 100 : clamp(s.opm * 5);

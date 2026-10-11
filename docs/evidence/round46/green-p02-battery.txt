@@ -1,0 +1,30 @@
+# P0-2 GREEN — raw outputs (round-46, branch fix/p0-2-null-never-zero)
+
+$ npx vitest run  (full unit battery)
+ Test Files  200 passed (200)
+      Tests  2229 passed (2229)  EXIT=0
+
+$ npx playwright test  (full smoke, 54 specs)
+  54 passed (2.4m)  SMOKE_EXIT=0
+
+$ npm run lint:ratchet
+ESLint ratchet: 0 errors, 283 warnings (total 283) / Baseline: 283 / Ratchet holds.
+
+$ npx tsc --noEmit  → exit 0
+
+$ npm run validate:encoding → Encoding validation passed — no mojibake detected
+
+$ npx tsx scripts/validateStocks.ts → Validation complete — all T12 gates passed.
+
+$ npx tsx scripts/scoreParity.ts
+Checked 896 symbols across 4 entry paths.
+0 mismatches / 0 non-finite of 896
+
+$ npm run aiLoopAudit
+aiLoopAudit: OK — unified AI-loop architecture invariants hold (8/8 checks).
+
+$ npm run build (exit 0) + npm run verify:isr + npm run bundle:budget
+ISR manifest gate: PASS — 896 baked stock routes
+/ 159.4 kB | /stocks 163.4 kB | /stock/[symbol] 170.4 kB — within ratchets
+
+$ git ls-files | grep -E "(^|/)\.env" → .env.example

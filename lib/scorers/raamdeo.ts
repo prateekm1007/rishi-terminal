@@ -2,8 +2,15 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
-export function scoreRaamdeo(s: Stock): RishiScore {
+export function scoreRaamdeo(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Raamdeo"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Raamdeo"], p02Missing);
+
   // S2-05 (Round 13): this was the ONLY unclamped pillar in the scorer
   // panel — a negative ROCE/ROE drove Quality below 0 (CHEMPLASTS -60,
   // PVRINOX -35 on the 916 seed), dragging the verdict below the design

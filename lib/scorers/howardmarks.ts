@@ -2,8 +2,15 @@ import 'server-only';
 
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
+import type { ScoringContext } from '../consensus/orchestrator';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
 
-export function scoreHowardMarks(s: Stock): RishiScore {
+export function scoreHowardMarks(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Howard Marks"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Howard Marks"], p02Missing);
+
   const cycleScore = s.de <= 0.5 && s.pe <= 20 ? 100 : s.de > 2 || s.pe > 50 ? 20 : clamp(50 + (s.de <= 1.5 ? 25 : 0) + (s.pe <= 30 ? 25 : 0));
   const safetyScore = s.fcf > 0 && s.roe > 10 ? 100 : s.fcf > 0 ? 70 : 30;
   const asymmetryScore = (s.price / s.bvps) <= 1.5 ? 100 : (s.price / s.bvps) <= 3 ? 70 : clamp(100 - (s.price / s.bvps - 3) * 20);

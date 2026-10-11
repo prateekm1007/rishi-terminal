@@ -112,9 +112,18 @@ describe("X6 — consensus output saturation gate (measured on the seed universe
   const pctLE5 = cons.filter((v) => v <= 5).length / cons.length;
   const pctGE90 = cons.filter((v) => v >= 90).length / cons.length;
 
-  it("every seed stock produces a finite consensus (quorum holds)", () => {
-    expect(cons.length).toBe(Object.values(STOCKS).length);
-    expect(cons.length).toBeGreaterThan(890);
+  it("the consensus panel is evaluable where the data allows it — the quorum honestly refuses placeholder-heavy panels (P0-2 re-pin)", () => {
+    // Round-46 P0-2 (founder audit 2026-10-11): scorers return no_verdict
+    // on placeholder inputs, so a panel whose valid count falls below
+    // MIN_VALID_SCORERS produces the documented null — measured: 649 of
+    // 896 stocks remain evaluable (raw: docs/evidence/round46/p02-population.txt).
+    // The old pin (cons.length === 896) measured the pre-P0-2 state where
+    // placeholder zeros were scored as facts. The surface-level null is
+    // separately pinned (P0-1: getStockScore nulls the whole seed
+    // universe); this gate measures the ENGINE population.
+    expect(cons.length).toBeGreaterThan(600);
+    expect(cons.length).toBeLessThanOrEqual(Object.values(STOCKS).length);
+    for (const v of cons) expect(Number.isFinite(v)).toBe(true);
   });
 
   it("the consensus keeps real spread: sd >= 5 (measured baseline documented in the PR)", () => {

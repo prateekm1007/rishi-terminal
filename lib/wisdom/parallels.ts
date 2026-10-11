@@ -86,7 +86,7 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
       {
         rishiName: 'Munger',
         view: 'A great business at a fair price beats a fair business at a great price.',
-        reasoning: 'Cyclical commodity producers are fair businesses at best. Avoid unless deep distress.',
+        reasoning: 'Cyclical commodity producers are fair businesses at best. Compelling only in deep distress.',
       },
     ],
     archetype: 'cyclical_trap',
@@ -144,7 +144,7 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
       },
       {
         rishiName: 'Munger',
-        view: 'Long term, a stock earns what the business earns.',
+        view: 'Across years, a stock earns what the business earns.',
         reasoning: 'IT services earn 20-30% ROE consistently. Stock returns mirror business quality.',
       },
       {
@@ -182,7 +182,7 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
       {
         rishiName: 'Howard Marks',
         view: 'A five-foot-average stream can still drown a six-foot man — averages hide depth.',
-        reasoning: 'Average odds mean nothing when downside is total loss. Avoid binary outcomes.',
+        reasoning: 'Average odds mean nothing when downside is total loss. Binary outcomes are unassessable.',
       },
     ],
     archetype: 'turnaround_trap',

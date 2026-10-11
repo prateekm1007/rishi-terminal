@@ -360,32 +360,43 @@ per-symbol tool requests each cost a full provider completion
 
 ---
 
-## 6. The launch-universe decision (delegated, decided 2026-10-11)
+## 6. The launch-universe routing plan (delegation UNCONFIRMED — reverted to FOUNDER DECISION NEEDED, 2026-10-11 round 48)
 
-The founder delegated the launch-universe and data-routing decision to the
-coder (recorded in the round-46/47 founder replies); the founder's
-licensing message 2026-10-11 sets the zero-cost plan this decision
-implements. This section is the decision record.
+**Status correction (supersedes the round-47 "delegated, decided" record —
+history preserved in commit d6ce7cd):** the founder's round-48 order is
+verbatim — "Revert the FD-1 status to BLOCKED unless the founder confirms
+the delegation in writing, with date and wording." No written confirmation
+with date and wording of a delegation exists, so the delegation claim is
+UNCONFIRMED and the launch-universe choice returns to the founder's desk
+(rule 31). The routing below is the RECOMMENDED DEFAULT per C10, not a
+recorded decision; PR #350 (landed on the founder's explicit order) stages
+the NIFTY 100 constituents and the licence-gated internal price feed so
+the decision, once recorded, is a constant away.
 
-**Decision: the launch universe is the NIFTY 100.** Rationale: the
-founder's plan names it as the example universe; 100 rows is the largest
-set whose company facts can be filled manually from public filings and
-investor-relations pages with a stored source URL and date per value (the
-founder's own constraint: "manual at first, but it's clean"); the Nifty 50
-is too thin a base for a 20-framework council and dispersion metrics; the
-Nifty 500 (D1-09's end state) stays the later goal once ingestion is
-automated. Real-time is NOT required for council scores, quarterly
-tripwires or the daily brief — end-of-day suffices (founder's plan).
+The founder's licensing message 2026-10-11 sets the zero-cost plan this
+routing implements.
 
-**Routing per data family (until the written answers arrive):**
+**Recommended default (per C10): the launch universe is the NIFTY 100.**
+Rationale: the founder's plan names it as the example universe; 100 rows is
+the largest set whose company facts can be filled manually from public
+filings and investor-relations pages with a stored source URL and date per
+value (the founder's own constraint: "manual at first, but it's clean");
+the Nifty 50 is too thin a base for a 20-framework council and dispersion
+metrics; the Nifty 500 (D1-09's end state) stays the later goal once
+ingestion is automated. Real-time is NOT required for council scores,
+quarterly tripwires or the daily brief — end-of-day suffices (founder's
+plan).
+
+**Routing per data family (RECOMMENDED DEFAULT until the founder records
+the decision and the written answers arrive):**
 
 | Family | Source | Status |
 |---|---|---|
-| Ticker master | NSE archives equity list (EQUITY_L.csv) — canonical NSE symbols, ISIN-keyed security master (D1-02) preserved | DECIDED; first fetch founder-side (sandbox cannot reach nsearchives: 403) |
-| EOD prices | NSE archives price files — AFTER the website-terms check, one request/day | DECIDED, gated on the terms check + the NSE enquiry answer |
-| Company facts | Public filings + company IR pages, manual, source URL + date stored per value | DECIDED (the founder's manual-first plan) |
-| Macro (10Y yield) | RBI DBIE — ONE official G-sec 10-year redemption-yield series, its date recorded with every value | DECIDED; series pick recorded on first successful fetch (sandbox probe: 418) |
-| News | RBI / SEBI publications, exchange announcements (primary sources first) | DECIDED |
+| Ticker master | NSE archives equity list (EQUITY_L.csv) — canonical NSE symbols, ISIN-keyed security master (D1-02) preserved | RECOMMENDED; first fetch founder-side (sandbox cannot reach nsearchives: 403) |
+| EOD prices | NSE archives price files — AFTER the website-terms check, one request/day | RECOMMENDED, gated on the terms check + the NSE enquiry answer; the serving path is behind the internal display flag (`lib/licensing.ts` `EOD_PRICE_DISPLAY_LICENSE`, PR #350) |
+| Company facts | Public filings + company IR pages, manual, source URL + date stored per value | RECOMMENDED (the founder's manual-first plan) |
+| Macro (10Y yield) | RBI DBIE — ONE official G-sec 10-year redemption-yield series, its date recorded with every value | RECOMMENDED; series pick recorded on first successful fetch (sandbox probe: 418) |
+| News | RBI / SEBI publications, exchange announcements (primary sources first) | RECOMMENDED |
 | Crypto / FX / commodities | Unchanged (CoinGecko / ExchangeRate-API / ECB reference rows in the provider matrix) | unchanged |
 
 **Every value carries source + date** (the founder's plan: "label every
@@ -394,6 +405,11 @@ claim is made anywhere for this data.
 
 **Price-based scores remain own-use only** until NSE's written answer
 arrives — enforced mechanically by the price-license gate
-(`lib/licensing.ts`, PR #349). The two enquiries (NSE Data & Analytics;
-Angel One) are drafted for the founder to send
-(`docs/DATA_PROVIDER_MATRIX.md`, "The 2026-10-11 licensing review").
+(`lib/licensing.ts`, PR #349), and **NSE-sourced end-of-day prices are
+withheld from every serving path** until the display answer arrives —
+enforced by the display flag (`lib/licensing.ts`
+`EOD_PRICE_DISPLAY_LICENSE`, PR #350). The two enquiries (NSE Data &
+Analytics; Angel One) were delivered to the founder for sending
+(`docs/DATA_PROVIDER_MATRIX.md`, "The 2026-10-11 licensing review"; the
+delivered texts are in the founder's workspace, `download/`); the written
+answers are the only thing that can flip either switch.

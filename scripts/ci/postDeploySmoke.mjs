@@ -19,10 +19,24 @@
 // Checks (each printed PASS/FAIL, any FAIL -> exit 1):
 //   version   — /api/version serves JSON carrying a 40-hex sha; with
 //               --expect-sha <sha> the live sha must equal it (C6).
-//   sections  — /stock/SBIN and /stock/BANKBARODA each contain every
-//               A1 first-byte section >= 1 occurrence:
-//               Key Metrics, Peer Comparison, RISHI COMMENTARY,
-//               Pillar Breakdown (positive controls by construction).
+//   sections  — /stock/SBIN and /stock/BANKBARODA each carry the A1
+//               first-byte anchors "Key Metrics" and "Peer Comparison",
+//               AND satisfy the P0-1 verdict trichotomy (rule-23 re-pin,
+//               founder audit 2026-10-11 "seed rows show no verdict"):
+//               every page shows EXACTLY ONE of
+//                 (a) the seed no-verdict record (then the verdict
+//                     sections RISHI COMMENTARY / Pillar Breakdown must
+//                     be ABSENT — the suppression is enforced, not
+//                     assumed),
+//                 (b) the whole-page insufficient-data record (missing
+//                     class), or
+//                 (c) the full verdict record (live/delayed data — both
+//                     verdict sections present, no-verdict markers
+//                     absent).
+//               This is STRICTLY STRONGER than the pre-P0-1 probe: the
+//               old probe asserted section presence only; the re-pin
+//               also fails a seed page that still leaks a verdict
+//               section, and fails any page showing neither record.
 //   price     — "PRICE UNAVAILABLE" occurs 0 times on both pages, and the
 //               page integrity control (<h1 ...>Rishi Terminal title) holds,
 //               so the zero cannot come from a missing page (B-18).
@@ -42,12 +56,26 @@
 
 const DEFAULT_BASE = "https://rishi-terminal.vercel.app";
 
-const SECTIONS = [
+// A1 first-byte anchors that render on EVERY stock page regardless of
+// the P0-1 data-quality class (the seed record keeps the provenance-
+// labelled metrics and the peer table below it).
+const ALWAYS_SECTIONS = [
   "Key Metrics",
   "Peer Comparison",
+];
+
+// Verdict-record sections — present ONLY when the record classifies
+// live/delayed (verdicts allowed, lib/dataQuality verdictsAllowed).
+const VERDICT_SECTIONS = [
   "RISHI COMMENTARY",
   "Pillar Breakdown",
 ];
+
+// P0-1 honest-record markers (rule-23 re-pin, founder audit 2026-10-11):
+// the in-page seed record (components/stock/NoVerdictRecord) and the
+// whole-page missing record (components/stock/InsufficientDataRecord).
+const NO_VERDICT_SEED_MARKER = "NO VERDICT — ILLUSTRATIVE SEED DATA";
+const NO_VERDICT_MISSING_MARKER = "INSUFFICIENT DATA — NO VERDICT IS PRODUCED";
 
 const PAGES = ["/stock/SBIN", "/stock/BANKBARODA"];
 
@@ -117,8 +145,8 @@ try {
   report(false, "version", `transport error: ${err.message}`);
 }
 
-// ── 2/3. First-byte sections + price honesty on both probe pages ──────────
-const requiredSections = [...SECTIONS, ...extraSections];
+// ── 2/3. First-byte anchors + the P0-1 verdict trichotomy on both pages ──
+const requiredSections = [...extraSections];
 for (const page of PAGES) {
   try {
     const r = await fetchText(`${base}${page}?smoke=${Date.now()}`);
@@ -133,6 +161,40 @@ for (const page of PAGES) {
     const hasH1 = /<h1[^>]*>/.test(html);
     const hasTitle = /Rishi Terminal/.test(html);
     report(hasH1 && hasTitle, `page-integrity ${page}`, `<h1 present: ${hasH1}; title marker: ${hasTitle}; ${html.length} bytes`);
+
+    // ── P0-1 verdict trichotomy (rule-23 re-pin, founder audit
+    // 2026-10-11 "seed rows show no verdict") — exactly one of:
+    // seed record | whole-page missing record | full verdict record.
+    const seedMarker = countOccurrences(html, NO_VERDICT_SEED_MARKER);
+    const missingMarker = countOccurrences(html, NO_VERDICT_MISSING_MARKER);
+    if (missingMarker >= 1) {
+      // (b) missing class: the whole-page record REPLACES the page — no
+      // metrics, no peers, no verdict sections, and no seed in-page record.
+      report(seedMarker === 0, `verdict-state ${page} missing-record`, `seed marker ${seedMarker} occurrence(s) (must be 0 beside the whole-page record)`);
+      for (const section of VERDICT_SECTIONS) {
+        const n = countOccurrences(html, section);
+        report(n === 0, `verdict-state ${page} "${section}" suppressed`, `${n} occurrence(s) (must be 0 on the missing record)`);
+      }
+    } else if (seedMarker >= 1) {
+      // (a) seed class: the in-page record keeps the honest surfaces
+      // (metrics, peers) and suppresses every verdict section.
+      for (const section of ALWAYS_SECTIONS) {
+        const n = countOccurrences(html, section);
+        report(n >= 1, `section ${page} "${section}"`, `${n} occurrence(s)`);
+      }
+      for (const section of VERDICT_SECTIONS) {
+        const n = countOccurrences(html, section);
+        report(n === 0, `verdict-state ${page} "${section}" suppressed`, `${n} occurrence(s) (must be 0 on seed data — P0-1)`);
+      }
+    } else {
+      // (c) live/delayed: the full verdict record — the original A1
+      // probes, unmodified. These return the moment licensed live
+      // fundamentals cover a probe symbol (P0-8 decision pending).
+      for (const section of [...ALWAYS_SECTIONS, ...VERDICT_SECTIONS]) {
+        const n = countOccurrences(html, section);
+        report(n >= 1, `section ${page} "${section}"`, `${n} occurrence(s)`);
+      }
+    }
 
     for (const section of requiredSections) {
       const n = countOccurrences(html, section);

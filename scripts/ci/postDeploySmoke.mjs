@@ -43,6 +43,18 @@
 //   nullzero  — /stock/BANDHANBNK: the Y4 placeholder-zero defect strings
 //               ("Promoter Hold0.0%", "D/E Ratio0.0x") occur 0 times while
 //               the MetricsPanel control ("hidden for banks") occurs >= 1.
+//   seedleak  — /stock/RELIANCE (founder directive 2026-10-11, C5/C6): a
+//               seed-leak probe that FAILS on the retired leak-era content —
+//               the literal "HIGH Data" (the old QVPS coverage-grade badge,
+//               renamed to `coverage` in P0-1, rule 2), the retired action
+//               word "REDUCE" (P0-6 vocabulary), or a QVPS score rendered
+//               for a seed record (P0-1: seed rows show no verdict).
+//               Detectors run on the comment-stripped HTML (React inserts
+//               <!-- --> separators between JSX text nodes) and anchor on
+//               RENDERED tile markup — never bare numbers — because the RSC
+//               payload can carry precomputed results for suppressed client
+//               components (the flight-payload trap disclosed in the
+//               round-46 P0-1 production legs).
 //
 // Usage:
 //   node scripts/ci/postDeploySmoke.mjs [--base https://…] [--expect-sha <sha>]
@@ -85,6 +97,30 @@ const NULLZERO_SYMBOL = "/stock/BANDHANBNK";
 const NULLZERO_DEFECTS = ["Promoter Hold0.0%", "D/E Ratio0.0x"];
 const NULLZERO_PANEL_CONTROL = "hidden for banks";
 
+// Seed-leak probe (founder directive 2026-10-11): RELIANCE is the seed
+// canary. The three leak families are the retired leak-era renderings —
+//   1. "HIGH Data" — the old QVPS badge subtitle `v2.0 · {dataQuality} Data`
+//      (components/score/RishiScoreDual.tsx before P0-1 renamed the field
+//      to `coverage`; the founder's 2026-10-11 audit caught it live:
+//      "SBIN/RELIANCE show 'v2.0 · HIGH Data' beside 'illustrative seed
+//      inputs'"). The full badge regex pins the exact retired markup;
+//      the literal string is the founder's named marker.
+//   2. "REDUCE" — the old ActionType vocabulary (`score >= 40 -> REDUCE`,
+//      rendered by `{action.replace(/_/g, " ")}`); removed from every UI
+//      surface by P0-6. Word-boundary matched so it cannot hide inside
+//      other tokens.
+//   3. A QVPS score on a seed record — the retired badge regex on ANY
+//      record class (it cannot honestly render anywhere any more), plus
+//      the QVPS tile label whenever the record is seed/missing (a seed
+//      record must render no verdict surface at all — P0-1; on a
+//      live/delayed record the tile is legitimate, so the label alone is
+//      not a leak there).
+const SEEDLEAK_SYMBOL = "/stock/RELIANCE";
+const SEEDLEAK_HIGH_DATA = "HIGH Data";
+const SEEDLEAK_REDUCE = /\bREDUCE\b/g;
+const SEEDLEAK_OLD_BADGE = /v2\.0\s*·\s*(?:HIGH|MEDIUM|LOW)\s*Data/g;
+const SEEDLEAK_QVPS_LABEL = "QVPS Score";
+
 const argv = process.argv.slice(2);
 let base = DEFAULT_BASE;
 let expectSha = null;
@@ -104,6 +140,21 @@ for (let i = 0; i < argv.length; i++) {
 function countOccurrences(haystack, needle) {
   if (!haystack.includes(needle)) return 0;
   return haystack.split(needle).length - 1;
+}
+
+/** Count global-regex matches (the `grep -o | wc -l` semantics for
+ * patterns; the caller passes a fresh `g`-flagged regex). */
+function countPattern(haystack, re) {
+  const m = haystack.match(re);
+  return m ? m.length : 0;
+}
+
+/** React SSR inserts <!-- --> separators between adjacent JSX text
+ * nodes, which would split the leak-era strings ("v2.0 · <!-- -->HIGH
+ * <!-- --> Data"). Strip them before matching — rendered text is what
+ * the user sees. */
+function stripSsrComments(html) {
+  return html.replace(/<!--[\s\S]*?-->/g, "");
 }
 
 async function fetchText(url, headers = {}) {
@@ -208,17 +259,71 @@ for (const page of PAGES) {
   }
 }
 
-// ── 4. Y4 null-not-zero on the bank page ──────────────────────────────────
+// ── 4. RELIANCE seed-leak probe (founder directive 2026-10-11, C5/C6) ─────
 try {
-  const r = await fetchText(`${base}${NULLZERO_SYMBOL}?smoke=${Date.now()}`);
+  const r = await fetchText(`${base}${SEEDLEAK_SYMBOL}?smoke=${Date.now()}`);
   if (r.status !== 200) {
-    report(false, "nullzero BANDHANBNK", `HTTP ${r.status}`);
+    report(false, "seedleak RELIANCE", `HTTP ${r.status}`);
+  } else {
+    // Page integrity control first (B-18): absence/presence checks mean
+    // nothing on a page that did not actually render.
+    const hasH1 = /<h1[^>]*>/.test(r.text);
+    const hasTitle = /Rishi Terminal/.test(r.text);
+    report(hasH1 && hasTitle, "seedleak RELIANCE page-integrity", `<h1 present: ${hasH1}; title marker: ${hasTitle}; ${r.text.length} bytes`);
+
+    const html = stripSsrComments(r.text);
+
+    // Record-state control: at least one honest record class must render
+    // (seed marker | whole-page missing marker | full verdict record), so
+    // the zero counts below cannot come from a missing page (B-18) and the
+    // QVPS-label detector can be scoped to the record class honestly.
+    const seedMarker = countOccurrences(html, NO_VERDICT_SEED_MARKER);
+    const missingMarker = countOccurrences(html, NO_VERDICT_MISSING_MARKER);
+    const verdictSections = VERDICT_SECTIONS.filter((s) => countOccurrences(html, s) >= 1).length;
+    const recordClass =
+      missingMarker >= 1 ? "missing" : seedMarker >= 1 ? "seed" : verdictSections === VERDICT_SECTIONS.length ? "verdict" : "none";
+    report(
+      recordClass !== "none",
+      "seedleak RELIANCE record-control",
+      `record class: ${recordClass} (seed=${seedMarker} missing=${missingMarker} verdict-sections=${verdictSections}/${VERDICT_SECTIONS.length})`,
+    );
+
+    // Detector 1 — the founder's named literal, any record class.
+    const highData = countOccurrences(html, SEEDLEAK_HIGH_DATA);
+    report(highData === 0, `seedleak RELIANCE "HIGH Data"`, `${highData} occurrence(s) (must be 0 — the QVPS coverage grade was renamed to coverage, P0-1 rule 2)`);
+
+    // Detector 2 — the retired action word, any record class (P0-6).
+    const reduce = countPattern(html, new RegExp(SEEDLEAK_REDUCE.source, "g"));
+    report(reduce === 0, `seedleak RELIANCE "REDUCE"`, `${reduce} occurrence(s) (must be 0 — the action vocabulary is retired, P0-6)`);
+
+    // Detector 3 — a QVPS score for a seed record: the retired badge
+    // markup can never honestly render (any record class); the QVPS tile
+    // label must not render when the record is seed/missing (P0-1).
+    const oldBadge = countPattern(html, new RegExp(SEEDLEAK_OLD_BADGE.source, "g"));
+    report(oldBadge === 0, `seedleak RELIANCE old QVPS badge "v2.0 · <grade> Data"`, `${oldBadge} occurrence(s) (must be 0 — retired markup, renders a score for a seed record)`);
+    const qvpsLabel = countOccurrences(html, SEEDLEAK_QVPS_LABEL);
+    const qvpsOnSeed = recordClass === "seed" || recordClass === "missing" ? qvpsLabel : 0;
+    report(
+      qvpsOnSeed === 0,
+      `seedleak RELIANCE QVPS score on ${recordClass} record`,
+      `${qvpsOnSeed} occurrence(s) of the tile label (must be 0 on seed/missing — P0-1; ${qvpsLabel} on the page overall)`,
+    );
+  }
+} catch (err) {
+  report(false, "seedleak RELIANCE", `transport error: ${err.message}`);
+}
+
+// ── 5. Y4 null-not-zero on the bank page ──────────────────────────────────
+try {
+  const rz = await fetchText(`${base}${NULLZERO_SYMBOL}?smoke=${Date.now()}`);
+  if (rz.status !== 200) {
+    report(false, "nullzero BANDHANBNK", `HTTP ${rz.status}`);
   } else {
     for (const defect of NULLZERO_DEFECTS) {
-      const n = countOccurrences(r.text, defect);
+      const n = countOccurrences(rz.text, defect);
       report(n === 0, `nullzero "${defect}"`, `${n} occurrence(s) (must be 0)`);
     }
-    const panel = countOccurrences(r.text, NULLZERO_PANEL_CONTROL);
+    const panel = countOccurrences(rz.text, NULLZERO_PANEL_CONTROL);
     report(panel >= 1, `nullzero panel control "${NULLZERO_PANEL_CONTROL}"`, `${panel} occurrence(s) (must be >= 1)`);
   }
 } catch (err) {

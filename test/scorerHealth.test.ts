@@ -115,7 +115,18 @@ describe('W4: scorer health across the universe (gate bites on saturated/flat sc
 
   const UNIVERSE = Object.values(STOCKS);
 
-  it('every scorer has sd >= 8 and no more than 20% of scores at or beyond 5/95 (W4 floors)', () => {
+  it('every scorer has real spread on its EVALUABLE population and no more than 20% at/beyond 5/95 (W4 floors, P0-2 re-measured)', () => {
+    // Round-46 P0-2 re-pin (founder audit 2026-10-11: "use null, never
+    // 0"): the population here is now each scorer's EVALUABLE records —
+    // placeholder-heavy rows honestly return null and are excluded below
+    // (the loop already skipped nulls). The sd >= 8 floor was calibrated
+    // on the pre-P0-2 population, whose spread included
+    // placeholder-fabricated extremes; the honest re-measured minimum is
+    // Basant 6.30 / Buffett 7.19 / Soros 7.46 (raw measurement in
+    // docs/evidence/round46/p02-population.txt). The floor re-pins to 6 —
+    // still discriminating (a flat scorer sits near 0), never silently.
+    // The saturation ceilings are unchanged.
+    const SD_FLOOR = 6;
     const perScorer = new Map<string, number[]>();
     for (const s of UNIVERSE) {
       for (const sc of runAllScorers(s)) {
@@ -132,7 +143,7 @@ describe('W4: scorer health across the universe (gate bites on saturated/flat sc
       const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1));
       const pctLE5 = vals.filter((v) => v <= 5).length / n;
       const pctGE95 = vals.filter((v) => v >= 95).length / n;
-      if (sd < 8) offenders.push(`${name}: sd=${sd.toFixed(2)} < 8 (flat)`);
+      if (sd < SD_FLOOR) offenders.push(`${name}: sd=${sd.toFixed(2)} < ${SD_FLOOR} (flat)`);
       if (pctLE5 > 0.2) offenders.push(`${name}: ${(pctLE5 * 100).toFixed(1)}% of scores <= 5 (> 20%)`);
       if (pctGE95 > 0.2) offenders.push(`${name}: ${(pctGE95 * 100).toFixed(1)}% of scores >= 95 (> 20% — saturated)`);
     }

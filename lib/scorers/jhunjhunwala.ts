@@ -1,9 +1,9 @@
 import 'server-only';
 
 import { Stock, RishiScore } from '../types';
-import { clamp, safeDiv } from '../utils';
+import { clamp, fin, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { inputMissing, insuffDetail } from './unknownInputs';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
 /**
  * Jhunjhunwala — "Conviction Multibagger" (remediation T11).
@@ -13,21 +13,24 @@ import { inputMissing, insuffDetail } from './unknownInputs';
  * previously produced NaN/Infinity that poisoned the consensus. Any missing
  * component now yields a documented `score: null` ("insufficient data");
  * `weightedAverage` ignores null scores.
- *
- * P0-2 (founder audit 2026-10-11): the same no-verdict contract covers
- * the data-layer nulls and the seed placeholder zeros (the X6/Y4
- * semantics) — `fin()` only caught non-finite values, so a seed `de: 0`
- * still scored as debt-free quality. Observed-data arithmetic unchanged.
  */
-export function scoreJhunjhunwala(s: Stock, ctx?: ScoringContext): RishiScore {
-  const pcf = inputMissing(s, ctx, 'mktcap') || inputMissing(s, ctx, 'ocf') ? null : safeDiv(s.mktcap, s.ocf);
-  const revcagr = inputMissing(s, ctx, 'revcagr') ? null : s.revcagr;
-  const epscagr = inputMissing(s, ctx, 'epscagr') ? null : s.epscagr;
-  const opm = inputMissing(s, ctx, 'opm') ? null : s.opm;
-  const roce = inputMissing(s, ctx, 'roce') ? null : s.roce;
-  const de = inputMissing(s, ctx, 'de') ? null : s.de;
-  const promo = inputMissing(s, ctx, 'promo') ? null : s.promo;
-  const fcfM = inputMissing(s, ctx, 'fcf') || inputMissing(s, ctx, 'rev') ? null : safeDiv(s.fcf, s.rev);
+export function scoreJhunjhunwala(input: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Jhunjhunwala"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Jhunjhunwala"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
+
+  const pcf = safeDiv(s.mktcap, s.ocf);
+  const revcagr = fin(s.revcagr);
+  const epscagr = fin(s.epscagr);
+  const opm = fin(s.opm);
+  const roce = fin(s.roce);
+  const de = fin(s.de);
+  const promo = fin(s.promo);
+  const fcfM = safeDiv(s.fcf, s.rev);
 
   const pcfS = pcf === null ? null
     : pcf >= 25 && pcf <= 35 ? 100 : pcf < 25 ? clamp(100 - (25 - pcf) * 2) : clamp(100 - (pcf - 35) * 3);
@@ -47,14 +50,14 @@ export function scoreJhunjhunwala(s: Stock, ctx?: ScoringContext): RishiScore {
     name: 'Jhunjhunwala', full: 'Rakesh Jhunjhunwala', label: 'Conviction Multibagger',
     score: total === null ? null : Math.round(total), scoreRaw: total, origin: 'Bharat',
     comps: [
-      { label: 'P/CF Ratio', v: pcfS === null ? 0 : pcfS, wt: 25, detail: pcf === null ? insuffDetail('operating cash flow for P/CF') : `${pcf.toFixed(1)}x (ideal 25-35x)` },
+      { label: 'P/CF Ratio', v: pcfS === null ? 0 : pcfS, wt: 25, detail: pcf === null ? 'insufficient data (OCF is 0)' : `${pcf.toFixed(1)}x (ideal 25-35x)` },
       { label: 'Growth Composite', v: gS === null ? 0 : gS, wt: 25, detail: `Rev ${s.revcagr}% EPS ${s.epscagr}% OPM ${s.opm}%` },
       { label: 'Quality ROCE/Debt/FCF', v: qS === null ? 0 : qS, wt: 20, detail: `ROCE ${s.roce}% D/E ${s.de} FCF ${fcfM === null ? 'n/a' : fcfM.toFixed(1) + '%'}` },
       { label: 'Promoter Conviction', v: cvS === null ? 0 : cvS, wt: 20, detail: `${s.promo}% holding target >45%` },
       { label: 'Neutral Base', v: 50, wt: 10, detail: 'design constant — the scorer holds a neutral 50 at 10% weight (S2-05: published, not hidden)' },
     ],
     insight: insufficient
-      ? 'Insufficient data — placeholder or missing inputs in the Conviction Multibagger pillars (P/CF / growth / quality / conviction), no Jhunjhunwala verdict.'
+      ? 'Insufficient data — core fundamentals missing or zero, no Jhunjhunwala verdict.'
       : `P/CF ${pcf!.toFixed(1)}x · ${s.revcagr}% rev CAGR · ${s.promo}% promoter. ${total! >= 75 ? 'High multibagger probability.' : 'Below conviction threshold.'}`
   };
 }

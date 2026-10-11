@@ -3,43 +3,21 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { inputMissing, insuffDetail } from './unknownInputs';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
-/**
- * Seth Klarman — Asymmetric Safety. P0-2 (founder audit 2026-10-11): a
- * required pillar input that was never observed (null / seed placeholder
- * zero / non-positive P/E) yields `score: null` — no verdict.
- * Observed-data arithmetic unchanged (W4).
- */
-export function scoreSethKlarman(s: Stock, ctx?: ScoringContext): RishiScore {
-  const deUnknown = inputMissing(s, ctx, 'de');
-  const fcfUnknown = inputMissing(s, ctx, 'fcf');
-  const peUnknown = inputMissing(s, ctx, 'pe');
-  const bvpsUnknown = inputMissing(s, ctx, 'bvps');
-  const opmUnknown = inputMissing(s, ctx, 'opm');
-  const revcagrUnknown = inputMissing(s, ctx, 'revcagr');
-  const insufficient = deUnknown || fcfUnknown || peUnknown || bvpsUnknown || opmUnknown || revcagrUnknown;
+export function scoreSethKlarman(input: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Seth Klarman"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Seth Klarman"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
-  const downsideScore = deUnknown || fcfUnknown
-    ? null
-    : s.de! <= 0.5 && s.fcf > 0 ? 100 : s.de! > 2 || s.fcf <= 0 ? 20 : clamp(50 + (s.de! <= 1 ? 25 : 0) + (s.fcf > 0 ? 25 : 0));
-  const asymmetricScore = peUnknown || bvpsUnknown
-    ? null
-    : s.pe! <= 15 && s.price <= s.bvps * 1.5 ? 100 : s.pe! > 40 || s.price > s.bvps * 3 ? 20 : clamp(50 + (s.pe! <= 25 ? 25 : 0) + (s.price <= s.bvps * 2 ? 25 : 0));
-  const marginScore = opmUnknown ? null : s.opm! >= 20 ? 100 : clamp(s.opm! * 5);
-  const catalystScore = revcagrUnknown ? null : s.revcagr >= 12 ? 100 : clamp(s.revcagr * 8.33);
-  const total = insufficient
-    ? null
-    : downsideScore! * 0.40 + asymmetricScore! * 0.30 + marginScore! * 0.15 + catalystScore! * 0.15;
-  return { name: 'Seth Klarman', full: 'Seth Klarman', label: 'Asymmetric Safety',
-    score: total === null ? null : Math.round(total), scoreRaw: total, origin: 'Global',
-    comps: [
-      { label: 'Downside Protection', v: downsideScore === null ? 0 : downsideScore, wt: 40, detail: downsideScore === null ? insuffDetail('debt (D/E) / cash flow') : `Debt ${s.de}` },
-      { label: 'Asymmetric', v: asymmetricScore === null ? 0 : asymmetricScore, wt: 30, detail: asymmetricScore === null ? insuffDetail('valuation (P/E) / book value') : `P/E ${s.pe}` },
-      { label: 'Margin Safety', v: marginScore === null ? 0 : marginScore, wt: 15, detail: marginScore === null ? insuffDetail('operating margin (OPM)') : `OPM ${s.opm}%` },
-      { label: 'Catalyst', v: catalystScore === null ? 0 : catalystScore, wt: 15, detail: catalystScore === null ? insuffDetail('revenue growth') : `Growth ${s.revcagr}%` },
-    ],
-    insight: insufficient
-      ? 'Insufficient data — placeholder or missing inputs in the Asymmetric Safety pillars (debt / valuation / margin / growth), no Klarman verdict.'
-      : `Conservative value. ${total! >= 75 ? 'Margin excellent' : 'Risk present'}` };
+  const downsideScore = s.de <= 0.5 && s.fcf > 0 ? 100 : s.de > 2 || s.fcf <= 0 ? 20 : clamp(50 + (s.de <= 1 ? 25 : 0) + (s.fcf > 0 ? 25 : 0));
+  const asymmetricScore = s.pe <= 15 && s.price <= s.bvps * 1.5 ? 100 : s.pe > 40 || s.price > s.bvps * 3 ? 20 : clamp(50 + (s.pe <= 25 ? 25 : 0) + (s.price <= s.bvps * 2 ? 25 : 0));
+  const marginScore = s.opm >= 20 ? 100 : clamp(s.opm * 5);
+  const catalystScore = s.revcagr >= 12 ? 100 : clamp(s.revcagr * 8.33);
+  const total = downsideScore * 0.40 + asymmetricScore * 0.30 + marginScore * 0.15 + catalystScore * 0.15;
+  return { name: 'Seth Klarman', full: 'Seth Klarman', label: 'Asymmetric Safety', score: Math.round(total), scoreRaw: total, origin: 'Global', comps: [ { label: 'Downside Protection', v: downsideScore, wt: 40, detail: `Debt ${s.de}` }, { label: 'Asymmetric', v: asymmetricScore, wt: 30, detail: `P/E ${s.pe}` }, { label: 'Margin Safety', v: marginScore, wt: 15, detail: `OPM ${s.opm}%` }, { label: 'Catalyst', v: catalystScore, wt: 15, detail: `Growth ${s.revcagr}%` } ], insight: `Conservative value. ${total >= 75 ? 'Margin excellent' : 'Risk present'}` };
 }

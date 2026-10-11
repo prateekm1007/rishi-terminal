@@ -3,26 +3,26 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { inputMissing, insuffDetail } from './unknownInputs';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
 /**
- * Buffett (T11 zero-guard + P0-2): owner-earnings yield divides by market
- * cap; a degenerate mktcap of 0 yields a documented null ("insufficient
- * data"). P0-2 (founder audit 2026-10-11) extends the same no-verdict
- * contract to every required pillar input: ROE, OPM and promoter holding
- * that were never observed (null / seed placeholder zero) yield
- * `score: null` — the observed-data arithmetic is unchanged (W4).
+ * Buffett (T11 zero-guard): owner-earnings yield divides by market cap;
+ * a degenerate mktcap of 0 yields a documented null ("insufficient data").
  */
-export function scoreBuffett(s: Stock, ctx?: ScoringContext): RishiScore {
-  const roeUnknown = inputMissing(s, ctx, 'roe');
-  const opmUnknown = inputMissing(s, ctx, 'opm');
-  const promoUnknown = inputMissing(s, ctx, 'promo');
+export function scoreBuffett(input: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Buffett"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Buffett"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   // ROE sustainability
-  const roeS = roeUnknown ? null : clamp(s.roe! >= 20 ? 100 : s.roe! * 5);
+  const roeS = clamp(s.roe >= 20 ? 100 : s.roe * 5);
 
   // Economic moat (via Operating Profit Margin)
-  const moatS = opmUnknown ? null : clamp(s.opm! >= 20 ? 100 : s.opm! * 5);
+  const moatS = clamp(s.opm >= 20 ? 100 : s.opm * 5);
 
   // Owner Earnings = Net Profit + Depreciation - 70% of Capex
   const oe = s.np + s.dep - s.capex * 0.7;
@@ -30,9 +30,9 @@ export function scoreBuffett(s: Stock, ctx?: ScoringContext): RishiScore {
   const oeS = oeY === null ? null : clamp(oeY >= 8 ? 100 : oeY * 12.5);
 
   // Management skin in the game
-  const mgS = promoUnknown ? null : clamp(s.promo >= 30 ? 100 : s.promo * 3.33);
+  const mgS = clamp(s.promo >= 30 ? 100 : s.promo * 3.33);
 
-  const total = roeS === null || moatS === null || oeS === null || mgS === null
+  const total = oeS === null
     ? null
     : roeS * 0.30 + moatS * 0.25 + oeS * 0.20 + mgS * 0.15 + 50 * 0.10;
 
@@ -46,15 +46,15 @@ export function scoreBuffett(s: Stock, ctx?: ScoringContext): RishiScore {
     comps: [
       {
         label: 'ROE Sustainability',
-        v: roeS === null ? 0 : roeS,
+        v: roeS,
         wt: 30,
-        detail: roeUnknown ? insuffDetail('ROE') : `${s.roe}% target >20%`
+        detail: `${s.roe}% target >20%`
       },
       {
         label: 'Economic Moat',
-        v: moatS === null ? 0 : moatS,
+        v: moatS,
         wt: 25,
-        detail: opmUnknown ? insuffDetail('operating margin (OPM)') : `OPM ${s.opm}% target >20%`
+        detail: `OPM ${s.opm}% target >20%`
       },
       {
         label: 'Owner Earnings Yield',
@@ -64,9 +64,9 @@ export function scoreBuffett(s: Stock, ctx?: ScoringContext): RishiScore {
       },
       {
         label: 'Management Skin',
-        v: mgS === null ? 0 : mgS,
+        v: mgS,
         wt: 15,
-        detail: promoUnknown ? insuffDetail('promoter holding') : `Promoter ${s.promo}%`
+        detail: `Promoter ${s.promo}%`
       },
       {
         label: 'Neutral Base',
@@ -76,7 +76,7 @@ export function scoreBuffett(s: Stock, ctx?: ScoringContext): RishiScore {
       },
     ],
     insight: total === null
-      ? 'Insufficient data \u2014 placeholder or missing inputs in the Quality Moat pillars (ROE / OPM / owner earnings / promoter holding), no Buffett verdict.'
+      ? 'Insufficient data \u2014 market cap missing, no Buffett verdict.'
       : `ROE ${s.roe}% · OE yield ${oeY!.toFixed(1)}% · OPM ${s.opm}%. ${total >= 75 ? 'Wonderful compounder.' : 'Lacks durable moat.'}`
   };
 }

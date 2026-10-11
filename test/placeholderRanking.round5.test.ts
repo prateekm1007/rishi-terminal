@@ -20,10 +20,11 @@ import type { Stock } from "@/lib/types";
 // records are "missing", healthy illustrative records are "seed"; verdicts
 // are allowed on neither.
 describe("round-5: internally impossible records are missing (no usable data)", () => {
-  // P0-2 re-pin (founder audit 2026-10-11): KWALITY's placeholder P/E and
-  // ROE moved from typed 0s to nulls — the record has real values beside
-  // them, so it classifies seed; the impossibility rule now bites only on
-  // synthetic typed zeros (below).
+  // P0-2b re-pin (the data-layer leg, founder audit 2026-10-11 "use
+  // null, never 0"): KWALITY's placeholder P/E and ROE moved from typed
+  // 0s to null — the record has real values beside them, so it
+  // classifies seed; the impossibility rule bites on synthetic typed
+  // zeros (the regression catch for datasets that reintroduce them).
   it("KWALITY (pe null, roe null, np>0) is seed — unknown, not impossible", () => {
     const kw = STOCKS["KWALITY"] as Stock;
     expect(kw).toBeDefined();
@@ -33,7 +34,12 @@ describe("round-5: internally impossible records are missing (no usable data)", 
     expect(dataQualityFromSeedStock(kw)).toBe("seed");
   });
 
-  it("P0-2: no record carries typed pe===0 or roe===0 — the classes are null", () => {
+  it("a synthetic typed-zero record (pe 0, roe 0, np>0) is still missing", () => {
+    const synthetic = { ...(STOCKS["KWALITY"] as Stock), pe: 0, roe: 0 } as Stock;
+    expect(dataQualityFromSeedStock(synthetic)).toBe("missing");
+  });
+
+  it("P0-2b: no record carries typed pe===0 or roe===0 — the classes are null", () => {
     const typed = Object.values(STOCKS).filter(
       s => s.pe === 0 || s.roe === 0,
     );
@@ -43,11 +49,6 @@ describe("round-5: internally impossible records are missing (no usable data)", 
     );
     expect(nulled.length).toBeGreaterThan(40); // the audit counted ~57 with pe0+roe0
     for (const s of nulled) expect(dataQualityFromSeedStock(s)).toBe("seed");
-  });
-
-  it("a synthetic typed-zero record (pe 0, roe 0, np>0) is still missing", () => {
-    const synthetic = { ...(STOCKS["KWALITY"] as Stock), pe: 0, roe: 0 } as Stock;
-    expect(dataQualityFromSeedStock(synthetic)).toBe("missing");
   });
 
   it("a loss-maker with pe 0 (np<0) is NOT auto-rejected by the impossibility rule", () => {
@@ -80,29 +81,32 @@ describe("round-5 + round-46 P0-1: rankings exclude every non-verdict-allowed re
   });
 });
 
-describe("round-5: Graham no longer reads P/E 0 as ultra-cheap", () => {
-  // P0-2 re-pin: a null-P/E record earns NO Graham verdict at all (the
-  // round-5 zero-points guard is preserved inside the guarded branch and
-  // still bites on a synthetic typed zero).
-  it("a null-P/E record returns no Graham verdict; a typed zero scores zero P/E-value points", () => {
+describe("round-5: Graham no longer reads P/E 0 as ultra-cheap (P0-2 re-pin: no verdict at all)", () => {
+  it("a zero-P/E record earns NO verdict — the round-5 substance enforced at the root", () => {
+    // Round-5 fixed the component (P/E 0 scored 0 value points, not 100);
+    // round-46 P0-2 goes further: a placeholder P/E is UNKNOWN — Graham
+    // returns no verdict and names the field. No comps are fabricated.
     const kw = STOCKS["KWALITY"] as Stock;
-    expect(kw.pe).toBeNull();
     const g = scoreGraham(kw);
     expect(g.score).toBeNull();
-
-    const synthetic = { ...(STOCKS["KWALITY"] as Stock), pe: 0 } as Stock;
-    const g2 = scoreGraham(synthetic);
-    // P0-2 ctx-free call = seed semantics: typed 0 is a placeholder
-    // unknown, so the verdict is null here too — the zero-points guard
-    // lives in the observed branch (pe > 0 required for points).
-    expect(g2.score).toBeNull();
-    expect(g2.comps.find(c => c.label === "P/E Value")?.detail).toContain("insufficient");
+    expect(g.comps).toEqual([]);
+    expect(g.insight).toMatch(/[Nn]o verdict/);
+    expect(g.insight).toContain("pe");
   });
 
-  it("a normal cheap stock still earns its P/E points", () => {
-    const sbin = STOCKS["SBIN"] as Stock; // pe 10
-    const g = scoreGraham(sbin);
+  it("a normal cheap stock still earns its P/E points (observed data, arithmetic unchanged)", () => {
+    // P0-1/P0-2: SBIN carries a placeholder D/E, so the SBIN fixture can
+    // no longer exercise the P/E component — an OBSERVED cheap fixture can.
+    const cheap: Stock = {
+      symbol: "CHEAP", name: "Cheap Ltd", sector: "IT", exchange: "NSE",
+      price: 100, pe: 10, roe: 18, mktcap: 50000, ocf: 900, rev: 5000,
+      revcagr: 12, epscagr: 14, opm: 18, roce: 19, de: 0.3, fcf: 700,
+      promo: 52, ca: 2200, tl: 900, sh: 50, np: 480, dep: 90,
+      capex: 150, bvps: 300,
+    };
+    const g = scoreGraham(cheap, { unknownFields: new Set<string>() });
     expect(g.comps.find(c => c.label === "P/E Value")?.v).toBe(100);
+    expect(g.score).not.toBeNull();
   });
 });
 

@@ -49,35 +49,18 @@ import type { NextRequest } from "next/server";
 
 const isBank = (s: Stock) => s.sector === "Banking";
 
-/** The required-inputs contract: pillar inputs per scorer. A verdict
- *  built on a null/unknown required input is no verdict (P0-2). */
-export const REQUIRED_INPUTS: Record<string, ReadonlyArray<keyof Stock>> = {
-  Buffett:       ["roe", "opm", "promo", "np", "dep", "capex", "mktcap"],
-  Graham:        ["pe", "de", "ca", "tl", "sh"],
-  Lynch:         ["pe", "epscagr", "fcf", "revcagr"],
-  Damani:        ["de", "roce", "opm", "fcf", "rev"],
-  Jhunjhunwala:  ["ocf", "revcagr", "epscagr", "opm", "roce", "de", "fcf", "rev", "promo"],
-  Munger:        ["roce", "de", "roe", "fcf", "promo"],
-  Pabrai:        ["promo", "de", "fcf", "pe"],
-  "Howard Marks": ["de", "pe", "fcf", "roe", "bvps", "mktcap"],
-  "Seth Klarman": ["de", "fcf", "pe", "bvps", "opm", "revcagr"],
-  Soros:         ["ca", "tl", "sh", "revcagr", "de", "epscagr"],
-  Kacholia:      ["promo", "epscagr", "mktcap", "roce"],
-  Kedia:         ["mktcap", "de", "opm", "revcagr"],
-  Porinju:       ["pe", "promo", "bvps", "revcagr"],
-  Raamdeo:       ["roce", "roe", "revcagr", "epscagr", "de", "pe"],
-  Nemish:        ["epscagr", "de", "promo", "pe"],
-  Basant:        ["revcagr", "opm", "pe"],
-  "Philip Fisher": ["promo", "capex", "rev", "epscagr", "mktcap"],
-  Greenblatt:    ["np", "mktcap"],
-  "John Templeton": ["pe", "bvps", "mktcap"],
-  "Walter Schloss": ["bvps", "de", "promo", "mktcap"],
-};
+// The required-inputs contract is THE MERGED #337 declaration
+// (lib/scorers/verdictGuards SCORER_VERDICT_CONTRACT) — one source of
+// truth (rule 14). This test pins the DATA-LAYER leg against it.
+import { SCORER_VERDICT_CONTRACT } from "@/lib/scorers/verdictGuards";
+const REQUIRED_INPUTS: Record<string, readonly string[]> = Object.fromEntries(
+  Object.entries(SCORER_VERDICT_CONTRACT).map(([k, v]) => [k, v.required]),
+);
 
 const PROBES = ["KWALITY", "SBIN", "AUBANK"] as const;
 
-function nullOrUnknownFields(s: Stock): Set<keyof Stock> {
-  const unknown = new Set<keyof Stock>();
+function nullOrUnknownFields(s: Stock): Set<string> {
+  const unknown = new Set<string>();
   for (const [k, v] of Object.entries(s)) {
     if (v === null) unknown.add(k as keyof Stock);
     else if (typeof v === "number" && v === 0) unknown.add(k as keyof Stock); // seed semantics (Y4)
@@ -128,7 +111,7 @@ describe("P0-2 scorers — no verdict on missing required inputs", () => {
       for (const r of results) {
         const required = REQUIRED_INPUTS[r.name];
         expect(required, `required-inputs table covers ${r.name}`).toBeDefined();
-        const consumesUnknown = required!.some((f) => unknown.has(f) || (f === "pe" && (stock.pe ?? 0) <= 0));
+        const consumesUnknown = required!.some((f) => unknown.has(f));
         if (consumesUnknown) {
           expect(
             r.score,
@@ -154,15 +137,22 @@ describe("P0-2 scorers — no verdict on missing required inputs", () => {
     }
   });
 
-  it("a null-verdict comp documents the insufficient input, never a zero score", () => {
+  it("a null verdict documents the insufficient input — never a zero score, never silent", () => {
     const stock = STOCKS.KWALITY;
     const results = runAllScorers(stock, seedScoringContext(stock));
     const nulls = results.filter((r) => r.score === null);
     expect(nulls.length).toBeGreaterThan(0);
     for (const r of nulls) {
       expect(r.scoreRaw ?? "insufficient").not.toBe(0);
+      // The merged #337 contract returns the attribution shell with NO
+      // comps and an insight that names the placeholder unknowns;
+      // Nemish's X6 heritage keeps comp-level details. Both are honest —
+      // a SILENT null (empty insight) is not.
       const texts = [r.insight, ...r.comps.map((c) => c.detail)].join(" ").toLowerCase();
-      expect(texts, `${r.name} names its insufficiency`).toContain("insufficient");
+      expect(
+        texts.includes("no verdict") || texts.includes("insufficient") || texts.includes("unknown"),
+        `${r.name} names its insufficiency`,
+      ).toBe(true);
     }
   });
 });

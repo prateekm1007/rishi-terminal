@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { inputMissing, insuffDetail } from './unknownInputs';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
 /**
  * George Soros — Reflexivity & Macro Contrarian
@@ -23,17 +23,15 @@ import { inputMissing, insuffDetail } from './unknownInputs';
  *   - Leverage tolerance: full marks only with little debt (D/E 0.5 →
  *     100, 2.5 → 0); Soros tolerates leverage but does not reward it.
  *   - Liquidity: current ratio 1 → 50, 2 → 100 (was 4 steps).
- *
- * P0-2 (founder audit 2026-10-11): a required pillar input that was
- * never observed (null / seed placeholder zero) yields `score: null` —
- * no verdict. Observed-data arithmetic unchanged (W4).
  */
-export function scoreSoros(s: Stock, ctx?: ScoringContext): RishiScore {
-  const ncavUnknown = inputMissing(s, ctx, 'sh') || inputMissing(s, ctx, 'ca') || inputMissing(s, ctx, 'tl');
-  const revcagrUnknown = inputMissing(s, ctx, 'revcagr');
-  const deUnknown = inputMissing(s, ctx, 'de');
-  const epscagrUnknown = inputMissing(s, ctx, 'epscagr');
-  const insufficient = ncavUnknown || revcagrUnknown || deUnknown || epscagrUnknown;
+export function scoreSoros(input: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
+  // field is UNKNOWN — no verdict, never an interpretation of zero.
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Soros"].required, ctx);
+  if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Soros"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   // Reflexivity: is price disconnected from value? (contrarian signal)
   const ncav = (s.ca - s.tl) / s.sh;
@@ -59,13 +57,13 @@ export function scoreSoros(s: Stock, ctx?: ScoringContext): RishiScore {
   }
 
   // Macro trend: revenue growth signals macro tailwind (0 → 100 at 20%)
-  const macroS = revcagrUnknown ? null : clamp(s.revcagr * 5);
+  const macroS = clamp(s.revcagr * 5);
 
   // Leverage tolerance: Soros uses leverage — but rewards only low debt
-  const deS = deUnknown ? null : clamp(100 - Math.max(0, s.de! - 0.5) * 50);
+  const deS = clamp(100 - Math.max(0, s.de - 0.5) * 50);
 
   // Momentum proxy: EPS growth as trend confirmation (0 → 100 at 25%)
-  const momS = epscagrUnknown ? null : clamp(s.epscagr * 4);
+  const momS = clamp(s.epscagr * 4);
 
   // Liquidity: the current ratio needs POSITIVE liabilities. tl <= 0 is
   // nonsensical balance-sheet data — the ratio is not computable, the
@@ -84,25 +82,21 @@ export function scoreSoros(s: Stock, ctx?: ScoringContext): RishiScore {
     liqDetail = `Current ratio ${cr.toFixed(2)}`;
   }
 
-  const total = insufficient
-    ? null
-    : reflexS * 0.30 + macroS! * 0.25 + deS! * 0.15 + momS! * 0.20 + liqS * 0.10;
+  const total = reflexS * 0.30 + macroS * 0.25 + deS * 0.15 + momS * 0.20 + liqS * 0.10;
 
   return {
     name: 'Soros',
     full: 'George Soros',
     label: 'Reflexivity Macro',
-    score: total === null ? null : Math.round(total), scoreRaw: total,
+    score: Math.round(total), scoreRaw: total,
     origin: 'Global',
     comps: [
-      { label: 'Reflexivity Signal',  v: reflexS, wt: 30, detail: ncavUnknown ? insuffDetail('NCAV operands') : reflexDetail },
-      { label: 'Macro Tailwind',      v: macroS === null ? 0 : macroS,  wt: 25, detail: macroS === null ? insuffDetail('revenue growth') : `Rev CAGR ${s.revcagr}% — macro confirms` },
-      { label: 'Momentum Confirm',    v: momS === null ? 0 : momS,  wt: 20, detail: momS === null ? insuffDetail('EPS growth') : `EPS CAGR ${s.epscagr}% — trend in place` },
-      { label: 'Leverage Tolerance',  v: deS === null ? 0 : deS,   wt: 15, detail: deS === null ? insuffDetail('debt (D/E)') : `D/E ${s.de} — low debt rewarded` },
+      { label: 'Reflexivity Signal',  v: reflexS, wt: 30, detail: reflexDetail },
+      { label: 'Macro Tailwind',      v: macroS,  wt: 25, detail: `Rev CAGR ${s.revcagr}% — macro confirms` },
+      { label: 'Momentum Confirm',    v: momS,  wt: 20, detail: `EPS CAGR ${s.epscagr}% — trend in place` },
+      { label: 'Leverage Tolerance',  v: deS,   wt: 15, detail: `D/E ${s.de} — low debt rewarded` },
       { label: 'Liquidity Buffer',    v: liqS,  wt: 10, detail: liqDetail },
     ],
-    insight: insufficient
-      ? 'Insufficient data — placeholder or missing inputs in the Reflexivity pillars (NCAV / revenue growth / debt / EPS growth), no Soros verdict.'
-      : `Soros sees ${reflexS > 70 ? 'a market misconception worth exploiting' : 'insufficient reflexive opportunity'}. Rev CAGR ${s.revcagr}% ${macroS! > 70 ? 'confirms macro tailwind' : 'shows weak macro'}. ${total! >= 70 ? 'The alchemy of finance favors this position.' : 'Soros would wait for a clearer dislocation.'}`,
+    insight: `Soros sees ${reflexS > 70 ? 'a market misconception worth exploiting' : 'insufficient reflexive opportunity'}. Rev CAGR ${s.revcagr}% ${macroS > 70 ? 'confirms macro tailwind' : 'shows weak macro'}. ${total >= 70 ? 'The alchemy of finance favors this position.' : 'Soros would wait for a clearer dislocation.'}`,
   };
 }

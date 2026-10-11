@@ -1,4 +1,16 @@
-# P0-2 — placeholder zeros are never facts (2026-10-11)
+# P0-2b — the data layer carries nulls, never zeros (2026-10-11)
+
+**Reconciliation note (C7/B-23):** PR #337 (the parallel session) landed
+the SCORER VERDICT CONTRACT (all 20 scorers declare required fields; a
+placeholder zero yields no_verdict) while this branch was building. This
+PR is the complementary half of the founder's order — the part #337 does
+not cover: "use null, NEVER 0" at the DATA layer. The two implementations
+are reconciled here: the scorers keep the merged #337 contract (this
+branch takes their implementation wholesale), the contract's
+`unknownAmong` gains the null class (a null value is unknown regardless
+of provenance), and the guard pays for a type-level lift (`observed()`)
+so the arithmetic below it compiles against the nullable Stock type.
+Everything else in this file is this branch's own surgery.
 
 ## Founder order (audit 2026-10-11, verbatim)
 
@@ -75,10 +87,8 @@ GREEN on the fixed tree: **13/13 passed, EXIT=0**.
 
 ## Full Tier-2 battery (GREEN)
 
-See `green-p02-battery.txt` (raw): tsc 0 · vitest **2236/2236** ·
-eslint 0 errors / ratchet 283 exact · encoding PASS · validateStocks
-all gates + the null census · scoreParity 0/896 · build 1019 pages ·
-ISR PASS (896 baked routes) · bundle 159.4/163.4/170.4 kB all OK.
+Pre-merge run: `green-p02b-datalayer-battery.txt`. Post-#337-merge reconciled tree: tsc 0 · vitest **2245/2245** (`green-p02b-vitest.txt`) · smoke 54/54 ·
+eslint 0 errors / ratchet 283 exact · encoding PASS · validateStocks all gates + the null census (68/53/22/4) · scoreParity 0/896 · build 1019 pages · ISR PASS (896 baked routes) · bundle 159.4/163.4/170.4 kB all OK.
 
 ## Rule-23 re-pins (each names the founder order)
 
@@ -93,6 +103,7 @@ ISR PASS (896 baked routes) · bundle 159.4/163.4/170.4 kB all OK.
 | test/scoring.finite.test.ts | all-zero record keeps 15 valid scorers | all-zero → every scorer nulls, consensus null; RELIANCE keeps the quorum |
 | test/x6.consensusGates.test.ts | every seed stock keeps finite consensus | observed slice keeps consensus; placeholder classes null with reason |
 | test/x6.nemishPlaceholders.test.ts | SBIN de === 0 | SBIN de === null (same verdict); typed-zero branch pinned synthetically |
+| test/p02.nullNeverZero.test.ts (#337's own) | required fields exist as `number` on Stock | exists as number OR null (the P0-2b classes) |
 
 ## Risk
 

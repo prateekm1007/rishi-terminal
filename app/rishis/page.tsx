@@ -269,7 +269,11 @@ export default function ChatWithRishisPage() {
               <div style={{ marginTop: 20, fontSize: 11, color: 'var(--text-muted)' }}>
                 Ask anything about stocks, markets or investing ↓
               </div>
-              <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-muted)', opacity: 0.8, maxWidth: 380, lineHeight: 1.5 }}>
+              {/* A11y (axe wcag2aa): 9px text must hold 4.5:1 — the dimmed
+                  muted variant measured 4.37:1 on the dark background. The
+                  full-opacity muted tone passes and keeps the disclosure
+                  quiet. */}
+              <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-muted)', maxWidth: 380, lineHeight: 1.5 }}>
                 Simulated persona — a framework illustration, not the real investor. The chat is unavailable until an approved provider exists.
               </div>
             </div>

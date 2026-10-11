@@ -68,11 +68,18 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     insight?: string;
     comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
   }> | null>(null);
+  // P0-5 (round 47): the record's dataQuality rides the wire — the hero
+  // reads it so the no-verdict state names the gate reason (seed inputs).
+  const [recordQuality, setRecordQuality] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/gurus?kind=crypto&symbol=${encodeURIComponent(asset.symbol)}`, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (!cancelled && Array.isArray(d?.gurus)) setVerdicts(d.gurus); })
+      .then((d) => {
+        if (cancelled) return;
+        if (Array.isArray(d?.gurus)) setVerdicts(d.gurus);
+        if (typeof d?.dataQuality === 'string') setRecordQuality(d.dataQuality);
+      })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [asset.symbol]);
@@ -270,7 +277,14 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
                 <span>|</span>
                 <span>RSI: {asset.rsi}</span>
                 <span>|</span>
-                <span style={{ color: avgScore === null ? '#94A3B8' : scoreColor(avgScore), fontWeight: 600 }}>Crypto Consensus: {avgScore === null ? '— Insufficient Data' : avgScore + '/100'}</span>
+                <span style={{ color: avgScore === null ? '#94A3B8' : scoreColor(avgScore), fontWeight: 600 }}>
+                  Crypto Consensus:{' '}
+                  {avgScore === null
+                    ? (recordQuality === 'seed' || recordQuality === 'missing'
+                        ? '— No Verdict (reference indicators)'
+                        : '— Insufficient Data')
+                    : avgScore + '/100'}
+                </span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>

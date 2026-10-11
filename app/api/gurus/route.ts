@@ -3,6 +3,8 @@ import { getSessionUser } from '@/lib/auth/session';
 import { CRYPTO_ASSETS } from '@/data/crypto';
 import { COMMODITIES } from '@/data/markets';
 import { fetchLivePrice } from '@/lib/livePrice';
+import { dataQualityFromAssetInputs, type DataQuality } from '@/lib/dataQuality';
+import { gateAssetVerdict } from '@/lib/gurus/gate';
 import { scoreSatoshiBodhi } from '@/lib/scorers/crypto/satoshibodhi';
 import { scoreVitalikVeda } from '@/lib/scorers/crypto/vitalikVeda';
 import { scoreMichaelSaylor } from '@/lib/scorers/crypto/michaelsaylor';
@@ -33,6 +35,43 @@ interface GuruVerdict {
   label: string;
   insight: string;
   comps: Array<{ label: string; v: number; wt: number; detail: string }>;
+}
+
+/**
+ * Round-47 P0-5 (founder order 2026-10-11: every surface calls the ONE
+ * verdict gate): derive the record's dataQuality for the asset-side
+ * rishis cards. The price/change inputs ride the live overlay when it
+ * is reachable; every RISK INDICATOR the guru scorers read (RSI, 200D
+ * MA, ATH distance, 52-week range, contango, inventory, supercycle
+ * phase) is a compile-time static reference value — no live indicator
+ * feed exists. Mixed provenance rolls up to "seed" (the stock-side
+ * rule): the verdict is withheld until the inputs are live-sourced.
+ */
+function cryptoAssetQuality(
+  asset: (typeof CRYPTO_ASSETS)[number],
+  live: { price: number; changePct: number | null } | undefined,
+): DataQuality {
+  return dataQualityFromAssetInputs({
+    price: { source: live ? 'live' : 'reference', value: live?.price ?? asset.price },
+    change24h: { source: live ? 'live' : 'reference', value: live?.changePct ?? asset.change24h },
+    rsi: { source: 'reference', value: asset.rsi },
+    moving200d: { source: 'reference', value: asset.moving200d },
+    fromAth: { source: 'reference', value: asset.fromAth },
+  });
+}
+
+function commodityAssetQuality(
+  c: (typeof COMMODITIES)[number],
+  live: { price: number; changePct: number | null } | undefined,
+): DataQuality {
+  return dataQualityFromAssetInputs({
+    price: { source: live ? 'live' : 'reference', value: live?.price ?? c.price },
+    changePct: { source: live ? 'live' : 'reference', value: live?.changePct ?? c.changePct },
+    high52w: { source: 'reference', value: c.high52w },
+    low52w: { source: 'reference', value: c.low52w },
+    inventoryDays: { source: 'reference', value: c.inventoryDays ?? null },
+    supercycleScore: { source: 'reference', value: c.supercycleScore ?? null },
+  });
 }
 
 const GURU_SCORERS = [
@@ -128,16 +167,17 @@ export async function GET(req: NextRequest) {
     };
 
     if (detail) {
-      // Detail page: every per-guru verdict, in full, for every caller.
+      // Detail page: every per-guru verdict, in full, for every caller —
+      // GATED by the record's dataQuality (P0-5: a verdict over reference
+      // indicators is a seed verdict; it is withheld, not displayed).
+      const dq = commodityAssetQuality(detail, overlayC[detail.symbol]);
       const gurus: GuruVerdict[] = COMMODITY_SCORERS.map((g, i) => {
         const scored = scoreCommodity(detail)[i];
-        return {
-          id: g.id, name: g.name, score: scored.score, label: scored.label,
-          insight: scored.insight, comps: scored.comps,
-        };
+        const gated = gateAssetVerdict(scored, dq);
+        return { ...gated, id: g.id, name: g.name };
       });
       return NextResponse.json(
-        { kind, symbol: detail.symbol, category: detail.category, gurus },
+        { kind, symbol: detail.symbol, category: detail.category, dataQuality: dq, gurus },
         { headers: { 'Cache-Control': 'private, no-store' } },
       );
     }
@@ -145,9 +185,11 @@ export async function GET(req: NextRequest) {
     // List page: per-commodity average plus the per-guru verdict rows.
     // (List mode keeps scores only — verdict text/comps are per-symbol
     // detail; this is a payload decision, not a gate: ?symbol= serves the
-    // full text to anyone.)
+    // full text to anyone.) The average is over GATED verdicts: seed
+    // quality nulls every score, so avg is null (T11: never 0).
     const commodities = COMMODITIES.map((c) => {
-      const results = scoreCommodity(c);
+      const dq = commodityAssetQuality(c, overlayC[c.symbol]);
+      const results = scoreCommodity(c).map((r) => gateAssetVerdict(r, dq));
       const valid = results.filter((r) => r.score !== null);
       const avg =
         valid.length > 0
@@ -156,6 +198,7 @@ export async function GET(req: NextRequest) {
       return {
         symbol: c.symbol,
         category: c.category,
+        dataQuality: dq,
         avg,
         gurus: results.map((r, i) => ({ id: COMMODITY_SCORERS[i].id, initials: COMMODITY_SCORERS[i].name.slice(0, 2).toUpperCase(), score: r.score })),
       };
@@ -172,6 +215,9 @@ export async function GET(req: NextRequest) {
       return { id: g.id, name: g.name, score: null, label: 'Insufficient Data', insight: '', comps: [] };
     }
     const live = overlay[g.target];
+    // P0-5: the ONE verdict gate — the asset record's dataQuality decides
+    // whether the guru verdict is served or withheld (seed inputs → null).
+    const dq = cryptoAssetQuality(asset, live);
     const scored = g.scorer({
       ...asset,
       price: live?.price ?? asset.price,
@@ -179,14 +225,8 @@ export async function GET(req: NextRequest) {
       // recorded 24h change — never to a fabricated 0.
       change24h: live?.changePct ?? asset.change24h,
     });
-    return {
-      id: g.id,
-      name: g.name,
-      score: scored.score,
-      label: scored.label,
-      insight: scored.insight,
-      comps: scored.comps,
-    };
+    const gated = gateAssetVerdict(scored, dq);
+    return { ...gated, id: g.id, name: g.name };
   });
 
   return NextResponse.json(

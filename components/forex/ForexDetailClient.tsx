@@ -6,6 +6,7 @@ import Link from 'next/link';
 import type { ForexPair } from '../../data/forex';
 import { usePrice } from '../../hooks/useLivePrices';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
+import { dataQualityFromAssetInputs, verdictsAllowed } from '../../lib/dataQuality';
 
 const TABS = [
   { id: 'overview',   label: 'Overview',       desc: 'Rates & Fundamentals'        },
@@ -103,6 +104,21 @@ const { price: livePriceData } = usePrice(forexSymbol);
   const change1D: number | null = livePair.change24h;
   const pppDeviation = ((livePair.spotRate - livePair.pppValue) / livePair.pppValue * 100);
   const isOvervalued = livePair.spotRate > livePair.pppValue;
+
+  // P0-5 (round 47, founder order: every surface calls the ONE verdict
+  // gate): the macro-rishi cards score this pair from carry, volatility
+  // and PPP — all STATIC reference values (data/forex.ts). The spot rate
+  // may be a live observation, but a verdict built on reference
+  // indicators is a seed verdict: mixed provenance gates to no verdict.
+  const hasLiveSpot = !!(livePriceData?.price && livePriceData.price > 0);
+  const macroQuality = dataQualityFromAssetInputs({
+    spotRate: { source: hasLiveSpot ? 'live' : 'reference', value: livePair.spotRate },
+    change24h: { source: hasLiveSpot ? 'live' : 'reference', value: livePair.change24h },
+    carry: { source: 'reference', value: livePair.interestDiff.diff },
+    volatility: { source: 'reference', value: livePair.volatility },
+    pppDeviation: { source: 'reference', value: pppDeviation },
+  });
+  const verdictsAllowedHere = verdictsAllowed(macroQuality);
 
   const rishiScores = MACRO_RISHIS.map(r => ({ ...r, result: scoreMacroRishi(livePair, r.name) }));
   const avgScore = Math.round(rishiScores.reduce((s, r) => s + r.result.score, 0) / rishiScores.length);
@@ -244,15 +260,17 @@ const { price: livePriceData } = usePrice(forexSymbol);
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 MACRO RISHI CONSENSUS · HEURISTIC REFERENCE</div>
               <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
-              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(avgScore), lineHeight: 1 }}>{avgScore}</div>
+              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: verdictsAllowedHere ? scoreColor(avgScore) : 'var(--text-muted)', lineHeight: 1 }}>{verdictsAllowedHere ? avgScore : '—'}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
-                {avgScore >= 70 ? 'Bullish — Macro conditions favor ' + livePair.baseCurrency : avgScore >= 50 ? 'Neutral — Mixed signals, range-bound likely' : 'Bearish — Macro headwinds for ' + livePair.baseCurrency}
+                {verdictsAllowedHere
+                  ? (avgScore >= 70 ? 'Bullish — Macro conditions favor ' + livePair.baseCurrency : avgScore >= 50 ? 'Neutral — Mixed signals, range-bound likely' : 'Bearish — Macro headwinds for ' + livePair.baseCurrency)
+                  : 'No Verdict — the carry, volatility and PPP inputs are static reference data'}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (
                   <div key={r.name} style={{ textAlign: 'center' }}>
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(212,175,55,0.1)', border: `2px solid ${scoreColor(r.result.score)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: scoreColor(r.result.score), margin: '0 auto 6px' }}>{r.initials}</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: scoreColor(r.result.score) }}>{r.result.score}</div>
+                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(212,175,55,0.1)', border: `2px solid ${verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--border-primary)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--text-muted)', margin: '0 auto 6px' }}>{r.initials}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--text-muted)' }}>{verdictsAllowedHere ? r.result.score : '—'}</div>
                     <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{r.name.split(' ')[0]}</div>
                   </div>
                 ))}
@@ -457,25 +475,31 @@ const { price: livePriceData } = usePrice(forexSymbol);
               </div>
             </div>
 
-            {/* Macro Rishis */}
+            {/* Macro Rishis — P0-5: gated by the ONE verdict gate; the
+                no-verdict card state names the reference-input reason. */}
             {rishiScores.map(r => (
               <div key={r.name} className="card-sacred" style={{ padding: 24, position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${scoreColor(r.result.score)}, transparent)` }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--border-primary)'}, transparent)` }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(212,175,55,0.1)', border: `2px solid ${scoreColor(r.result.score)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: scoreColor(r.result.score) }}>{r.initials}</div>
+                    <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(212,175,55,0.1)', border: `2px solid ${verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--border-primary)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--text-muted)' }}>{r.initials}</div>
                     <div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{r.name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.lens} • {r.result.signal}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.lens} • {verdictsAllowedHere ? r.result.signal : 'no verdict'}</div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(r.result.score), lineHeight: 1 }}>{r.result.score}</div>
+                    <div style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace', color: verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--text-muted)', lineHeight: 1 }}>{verdictsAllowedHere ? r.result.score : '—'}</div>
+                    {!verdictsAllowedHere && <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 4 }}>No Verdict — Seed Data</div>}
                   </div>
                 </div>
-                <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${scoreColor(r.result.score)}`, marginBottom: 16 }}>
+                <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${verdictsAllowedHere ? scoreColor(r.result.score) : 'var(--border-primary)'}`, marginBottom: 16 }}>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>ANALYSIS</div>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{r.result.reasoning}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>
+                    {verdictsAllowedHere
+                      ? r.result.reasoning
+                      : 'No verdict — this framework reads carry, volatility and PPP from static reference data. Verdicts return when live-sourced macro inputs land.'}
+                  </p>
                 </div>
                 <div style={{ padding: 14, background: 'rgba(212,175,55,0.05)', borderRadius: 8, borderLeft: '3px solid rgba(212,175,55,0.4)', marginBottom: 16 }}>
                   <div style={{ fontSize: 10, color: '#D4AF37', fontStyle: 'italic' }}>&quot;{r.philosophy}&quot;</div>

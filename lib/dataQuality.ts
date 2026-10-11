@@ -204,3 +204,43 @@ export function describeDataQuality(dq: DataQuality): string {
       return "no usable data — no verdicts produced";
   }
 }
+
+/**
+ * Round-47 P0-5 (founder order 2026-10-11): the ASSET-side derivation —
+ * the same closed vocabulary, the same rollup semantics, for the
+ * crypto / commodity / forex / bond records whose "rishis cards" render
+ * guru verdicts. One gate, every surface (rule 14).
+ *
+ * Rollup (mechanically the stock-side rules, stated per input):
+ *   - every input live-sourced and non-null        → "live"
+ *   - any live input among reference ones (mixed)  → "seed"  — a verdict
+ *     built on reference indicators is a seed verdict even when the
+ *     price overlay is live; verdicts wait for full live coverage.
+ *   - no live inputs, any real reference value     → "seed"
+ *   - nothing (all null)                           → "missing"
+ *
+ * There is no "delayed" class on assets today: no asset indicator feed
+ * discloses an observation date, and an undated live value claims no
+ * freshness (the R1 rule). When a dated indicator feed lands, the dated
+ * staleness rollup from dataQualityFromResolvedFields applies verbatim.
+ */
+export interface AssetInputView {
+  /** "live" = live-observed; "reference" = the static seed/registry value. */
+  source: "live" | "reference";
+  value: number | null;
+}
+
+export function dataQualityFromAssetInputs(
+  inputs: Record<string, AssetInputView>,
+): DataQuality {
+  const entries = Object.values(inputs);
+  if (entries.length === 0) return "missing";
+  const liveEntries = entries.filter(
+    (f) => f.source === "live" && f.value !== null && Number.isFinite(f.value),
+  );
+  if (liveEntries.length === entries.length) return "live";
+  const hasValue = entries.some(
+    (f) => f.value !== null && Number.isFinite(f.value),
+  );
+  return hasValue ? "seed" : "missing";
+}

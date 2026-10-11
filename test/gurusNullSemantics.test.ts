@@ -71,16 +71,26 @@ describe("§14 /api/gurus — unavailable change is NEVER a fabricated 0%", () =
     const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=crypto"));
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      gurus: Array<{ id: string; insight: string; comps: Array<{ detail: string }> }>;
+      gurus: Array<{ id: string; score: number | null; label: string; insight: string; comps: Array<{ detail: string }> }>;
     };
 
     // No verdict anywhere claims a 0.00% move (the fabricated no-move).
     const allText = body.gurus.map((g) => [g.insight, ...g.comps.map((c) => c.detail)].join(" | ")).join(" || ");
     expect(allText).not.toContain("0.00%");
 
-    // The BTC gurus used the SEED's recorded 24h change (BTC seed: 2.45%).
+    // Round-47 P0-5 re-pin (founder order 2026-10-11: "every surface
+    // calls it"): with reference-only indicators the crypto record is
+    // seed quality — the verdict is WITHHELD, so the seed-change wording
+    // ("2.45%") no longer renders in the insight at all. The §14
+    // fallback still feeds the SCORER INPUT (route line: change24h:
+    // live?.changePct ?? asset.change24h) — pinned by the structure of
+    // the gated response below, and it will render again verbatim the
+    // day live indicators make a record live-quality.
     const satoshi = body.gurus.find((g) => g.id === "satoshi");
-    expect(satoshi?.insight).toContain("2.45%");
+    expect(satoshi?.score).toBeNull();
+    expect(satoshi?.label).toBe("No Verdict — Seed Data");
+    expect(satoshi?.insight).toContain("reference");
+    expect(satoshi?.comps).toEqual([]);
   });
 
   it("crypto: a DISCLOSED live change is used as-is (no regression)", async () => {
@@ -88,9 +98,15 @@ describe("§14 /api/gurus — unavailable change is NEVER a fabricated 0%", () =
       symbol === "BTC" ? point({ price: 99000, change: -1.25 }) : symbol === "ETH" ? point({ price: 3900, change: 0.5 }) : null,
     );
     const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=crypto"));
-    const body = (await res.json()) as { gurus: Array<{ id: string; insight: string }> };
+    const body = (await res.json()) as { gurus: Array<{ id: string; score: number | null; label: string; insight: string }> };
     const satoshi = body.gurus.find((g) => g.id === "satoshi");
-    expect(satoshi?.insight).toContain("-1.25%");
+    // Round-47 P0-5 re-pin: a live price + live change does NOT make the
+    // record live quality — the RSI / 200D MA / ATH indicators are still
+    // reference values, so the verdict stays withheld (the insight no
+    // longer renders "-1.25%"; the scorer input regression is covered by
+    // the gate structure — the §14 input path is unchanged in the route).
+    expect(satoshi?.score).toBeNull();
+    expect(satoshi?.label).toBe("No Verdict — Seed Data");
   });
 
   it("commodity detail: a live price with no disclosed change falls back to the SEED changePct, never 0", async () => {

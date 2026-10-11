@@ -53,19 +53,25 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     price: displayPrice,
     changePct: displayChange,
     change: livePriceData?.change ?? commodity.change,
-  };
-  // R3 (round 2): guru verdicts come from /api/gurus (server-computed,
+  }; // R3 (round 2): guru verdicts come from /api/gurus (server-computed,
   // tier-sliced). Locked verdicts arrive as teasers without insight/comps.
+  // P0-5 (round 47): the wire carries the record's dataQuality — the hero
+  // reads it so the no-verdict state says WHY (seed inputs), not just '—'.
   const [verdicts, setVerdicts] = useState<Array<{
     id: string; name: string; score: number | null; label: string;
     locked: boolean; insight?: string;
     comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
   }> | null>(null);
+  const [recordQuality, setRecordQuality] = useState<string | null>(null);
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/gurus?kind=commodity&symbol=${encodeURIComponent(commodity.symbol)}`, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (!cancelled && Array.isArray(d?.gurus)) setVerdicts(d.gurus); })
+      .then((d) => {
+        if (cancelled) return;
+        if (Array.isArray(d?.gurus)) setVerdicts(d.gurus);
+        if (typeof d?.dataQuality === 'string') setRecordQuality(d.dataQuality);
+      })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [commodity.symbol]);
@@ -83,9 +89,13 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     };
   });
   const validScores = rishiScores.filter(r => r.result.score !== null); // T11: insufficient data excluded
-  const avgScore = validScores.length > 0
+  // P0-5 + rule 16: no valid scorer results -> NULL ("no verdict"), never
+  // a neutral 0 — "Rishi Consensus: 0/100" was a fabricated zero score.
+  // The gate nulls every seed-quality verdict, so this is the live state
+  // until live-sourced indicators land.
+  const avgScore: number | null = validScores.length > 0
     ? Math.round(validScores.reduce((s, r) => s + (r.result.score as number), 0) / validScores.length)
-    : 0; // no valid scorer results -> neutral average, per-scorer cards show em dash
+    : null;
 
   const chartAsset: UniversalAsset = {
     symbol: commodity.symbol,
@@ -328,7 +338,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                 <span>|</span>
                 <span>{(commodity as any).exchange || "Global"}</span>
                 <span>|</span>
-                <span style={{ color: scoreColor(avgScore), fontWeight: 600 }}>Rishi Consensus: {avgScore}/100</span>
+                <span style={{ color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), fontWeight: 600 }}>Rishi Consensus: {avgScore === null ? '— No Verdict' : avgScore + '/100'}</span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -369,9 +379,13 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 COMMODITY RISHI CONSENSUS · HEURISTIC REFERENCE</div>
               <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
-              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: scoreColor(avgScore), lineHeight: 1 }}>{avgScore}</div>
+              <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
-                {avgScore >= 75 ? 'Strong Buy — Supercycle Conditions Present' : avgScore >= 55 ? 'Moderate Opportunity — Selective Accumulation' : 'Caution — Wait for Better Entry'}
+                {avgScore === null
+                  ? (recordQuality === 'seed' || recordQuality === 'missing'
+                      ? 'No Verdict — the indicator inputs are static reference data'
+                      : 'No Verdict — no valid scorer results')
+                  : avgScore >= 75 ? 'Strong Buy — Supercycle Conditions Present' : avgScore >= 55 ? 'Moderate Opportunity — Selective Accumulation' : 'Caution — Wait for Better Entry'}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (

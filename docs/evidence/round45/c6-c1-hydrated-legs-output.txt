@@ -1,0 +1,9 @@
+
+Running 1 test using 1 worker
+
+(node:8924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+HYDRATED_LEGS_OK briefCount=0 rishiIntelHome=0 thesisCalls=0
+  ✓  1 test/smoke/_c6-c1-hydrated.spec.ts:9:5 › C1 removal hydrated legs on production (4.7s)
+
+  1 passed (5.4s)

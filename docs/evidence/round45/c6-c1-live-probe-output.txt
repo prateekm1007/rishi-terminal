@@ -1,0 +1,9 @@
+PASS | home SSR: no 'Rishi Intelligence' string | count=0 (66569 bytes, HTTP 200)
+PASS | home SSR: no data-dashboard-brief attribute | count=0
+PASS | home SSR positive controls present | SOD=1 TBS=1 (flight payload markers)
+PASS | substrate: capability=thesis 200 | subject=RELIANCE HTTP=200 ok=true wallMs=2173 changeKey=n/a modelStatus=?
+PASS | substrate: capability=insight designed 404 | HTTP=404
+PASS | D2: badge openers on /stocks | count=896 (HTTP 200, 1890440 bytes)
+PASS | fixture route: 200 | HTTP=200
+PASS | stock page: council intact, no 'Rishi Intelligence' | council=1 rishiIntel=0 (HTTP 200)
+C6_SSR_LEGS_EXIT=0

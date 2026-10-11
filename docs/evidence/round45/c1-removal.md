@@ -123,3 +123,43 @@ revert). No other commit belongs to this item.
   render; `/api/intelligence?capability=thesis` still 200; the D2 badge
   still renders on /stocks; the fixture route still 200; hydrated
   screenshots in `screens/`.
+
+## Post-merge legs (appended 2026-10-11 — the section pre-declared above)
+
+- **Merged**: PR #331, head `8c3e037598de…` → merge commit
+  `d824ed9c970ce5ede84e7f415848a965e759cfba`, merge-guard gates 0–6 PASS
+  (branch current with `f7dd4db`; all five blocking checks success on the
+  exact head; cadence 555.9 min since the last production-relevant merge —
+  #329 at 19:08Z the prior day; Vercel quota 27 deployment events / 24 h,
+  100/day budget). CI history on this PR: the first run failed ONE of 54
+  smoke tests — the B1 spec's POSITIVE control (council visibility), a
+  strict-mode violation (2 matched elements) on a route this diff does not
+  touch; proven non-regression by the three-head comparison (`e0921a1`
+  PASS / `dba83dd` FAIL / `34169f0` PASS on identical app code) and
+  disclosed with the table on the PR thread before the job was re-run on
+  the exact pinned head — the rerun passed, all six checks green, no code
+  change, no rebase, SHA unchanged.
+- **Deployed**: `/api/version` = `d824ed9c970c…` verified 04:33Z (poll leg
+  5; four polls of the prior deploy `dba83dd26b39` before it).
+- **Live (C6)** — raw output committed here
+  (`c6-c1-live-probe-output.txt`, `c6-c1-hydrated-legs-output.txt`):
+  - SSR (`/`, 66,569 B): `Rishi Intelligence` strings = 0,
+    `data-dashboard-brief` = 0; positive controls in the flight payload
+    (STOCK OF THE DAY = 1, TOP BUY SIGNALS = 1).
+  - Substrate: `/api/intelligence?capability=thesis&subject=RELIANCE` →
+    **200 ok:true** (wallMs 2173, endpoint unchanged);
+    `capability=insight` → designed 404 (zero spend).
+  - D2: `/stocks` carries **896** `data-intelligence-badge` openers (the
+    ONE remaining declared surface, alive).
+  - Fixture route: 200 (A8 + Ask Rishi mount alive).
+  - Stock page regression control: council = 1, `Rishi Intelligence` = 0.
+  - Hydrated (Playwright Chromium against production, exit 0):
+    dashboard post-hydration `section[data-dashboard-brief]` = 0,
+    "Rishi Intelligence" text = 0, capability=thesis calls = 0, TOP BUY
+    SIGNALS visible; stock page council visible; D2 opener visible.
+- **Screenshots** (this directory, `screens/`): `c1-removal-home.png`
+  (dashboard, hydrated, no brief), `c1-removal-home-former-segment.png`
+  (the exact area where the segment used to sit — Stock of the Day (ISEC)
+  flowing toward Top Buy Signals with nothing between),
+  `c1-removal-stock.png` (stock page, council intact),
+  `c1-removal-stocks.png` (screener, D2 opener).

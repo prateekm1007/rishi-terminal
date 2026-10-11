@@ -162,22 +162,6 @@ export default async function StockPage({ params }: StockPageProps) {
   const council = buildCouncil(stock, sanitized.verdicts);
   const stockDetail = generateStockDetail(stock);
 
-  // N1 (round 3): every engine call happens here, on the server. The
-  // client components below receive RESULTS — the resolved seed-baseline
-  // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
-  // both QVPS modes, and the knowledge graph for the FULL verdict set.
-  const resolved = resolveStockMetrics(key);
-  // Round-47 P0-8: the QVPS pillars read P/E, P/B and market cap —
-  // price-derived inputs. While the exchange-data license is pending the
-  // dual-gauge is not produced (the client renders the honest absent
-  // state), mirroring the scorers' licenseRefusal.
-  const qvpsDual = resolved && priceScoresPublic() ? calculateQvpsDual(resolved.metrics) : null;
-  const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
-  // A1: the historical parallel for the wisdom rail — server-resolved;
-  // null renders the honest "no parallels detected" state.
-  const archetypeKey = detectArchetype(stock);
-  const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
-
   // X3+Y1+Y2: the SSR price peek — ONE read-only batch read of the shared
   // quote cache at ISR REGENERATION (skipped in the build phase: builds
   // fetch nothing, hermetically) covering the symbol AND its comparison
@@ -196,6 +180,28 @@ export default async function StockPage({ params }: StockPageProps) {
     const mapped = toPriceData(q);
     if (mapped) initialPeerPrices[sym] = mapped;
   }
+
+  // N1 (round 3): every engine call happens here, on the server. The
+  // client components below receive RESULTS — the resolved seed-baseline
+  // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
+  // both QVPS modes, and the knowledge graph for the FULL verdict set.
+  // P1-PB-PRICE-BASIS (founder audit 2026-10-11): the resolver receives
+  // the SAME peeked quote price the header renders, so the panel's P/B
+  // and the header's price share one basis (RELIANCE: 1,170.90 / 1,100
+  // = 1.06x, not the seed-price 2.27x). Build phase / cache miss: no
+  // operand, the derivation falls back to the seed price and declares
+  // that basis.
+  const resolved = resolveStockMetrics(key, null, initialQuote?.price ?? null);
+  // Round-47 P0-8: the QVPS pillars read P/E, P/B and market cap —
+  // price-derived inputs. While the exchange-data license is pending the
+  // dual-gauge is not produced (the client renders the honest absent
+  // state), mirroring the scorers' licenseRefusal.
+  const qvpsDual = resolved && priceScoresPublic() ? calculateQvpsDual(resolved.metrics) : null;
+  const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
+  // A1: the historical parallel for the wisdom rail — server-resolved;
+  // null renders the honest "no parallels detected" state.
+  const archetypeKey = detectArchetype(stock);
+  const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
 
   // Y3: the NSE session state at regeneration, frozen into the ISR HTML
   // and refreshed on the next regen (same lifecycle as the quote peek).

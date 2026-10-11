@@ -170,7 +170,16 @@ export function MetricsPanel({ resolved }: Props) {
         <div className="philosophy-subheading text-xs mb-4">{t("common.valuationSnapshot")}</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatGroup title="P/B Ratio" stats={[
-            { label: 'Price / Book', value: <DataValue sourced={metricsSourced.pb} digits={2} unit="x" /> }
+            { label: 'Price / Book', value: <DataValue sourced={metricsSourced.pb} digits={2} unit="x" /> },
+            // P1-PB-PRICE-BASIS (founder audit 2026-10-11): the P/B names
+            // its price operand — the same displayed quote the header
+            // renders, or the seed registry price when no quote was
+            // observed. One basis, stated, never silently mixed.
+            { label: 'Basis', value: (
+              <span style={{ fontSize: 11, color: '#94A3B8' }}>
+                {resolved.pbPriceBasis === 'displayed' ? 'on displayed price' : 'seed-price basis'}
+              </span>
+            ) },
           ]} />
           <StatGroup title="PEG Ratio" stats={[
             { label: 'P/E / Growth', value: <DataValue sourced={peg} digits={2} /> }

@@ -44,6 +44,15 @@ type ScorerFn = (s: Stock, ctx?: ScoringContext) => RishiScore;
  */
 export interface ScoringContext {
   readonly unknownFields: ReadonlySet<string>;
+  /**
+   * Round-46 P0-1: the caller-DECLARED data quality (the closed
+   * live | delayed | seed | missing vocabulary). The resolved scoring
+   * path derives it from per-field provenance and passes it here; a bare
+   * seed record leaves it unset and the engine derives its own (always
+   * seed or missing). Optional — undefined keeps the bare-record
+   * derivation, never an assumed "live".
+   */
+  readonly dataQuality?: import("../dataQuality").DataQuality;
 }
 
 /** Seed semantics for a bare Stock input: every zero field is a

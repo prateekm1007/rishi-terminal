@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { STOCKS } from "@/data/stocks";
-import { dataQualityFromSeedStock, verdictsAllowed } from "@/lib/scoring/dataQuality";
+import { dataQualityFromSeedStock, verdictsAllowed } from "@/lib/dataQuality";
 import { getStockScore } from "@/lib/scoring";
 import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from "@/lib/scoring/rankings";
 import { scoreGraham } from "@/lib/scorers/graham";

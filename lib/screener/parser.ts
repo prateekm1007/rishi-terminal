@@ -56,7 +56,7 @@ export const SCREENER_FIELDS: Record<string, ScreenerFieldDef> = {
   name: { type: 'string', label: 'Company name (exact)' },
   sector: { type: 'string', label: 'Sector (exact, e.g. Banking)' },
   category: { type: 'string', label: 'Consensus category' },
-  dataQuality: { type: 'enum', label: 'Data quality (OK | INCOMPLETE)' },
+  dataQuality: { type: 'enum', label: 'Data quality (live | delayed | seed | missing)' },
 };
 
 /** Hard limits — the parser refuses absurd input instead of choking. */

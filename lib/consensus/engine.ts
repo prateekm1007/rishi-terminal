@@ -4,36 +4,23 @@ import { Stock, ConsensusResult, RishiScore } from "./types";
 import { runAllScorers, type ScoringContext }   from "./orchestrator";
 import { weightedAverage } from "./weights";
 import { dispersion } from "./dispersion";
+import {
+  dataQualityFromSeedStock,
+  type DataQuality,
+} from "../dataQuality";
 
 /**
- * Core-fundamental fields that must be finite and not all-zero for a record
- * to count as complete data (remediation T11.4). price/mktcap are excluded:
- * a dead ticker can still carry a stale price while every fundamental is 0.
+ * Core consensus engine.
+ *
+ * Round-46 P0-1: the former assessDataQuality ("OK" | "INCOMPLETE", T11.4
+ * + the round-5 impossibility rules) is FOLDED into the closed four-value
+ * dataQuality derivation (lib/dataQuality.ts) — same rules, the
+ * founder-audit vocabulary, one derivation for every entry path. The
+ * engine labels its input honestly (dataQuality) but does NOT gate the
+ * number: the verdict gate lives on THE scoring surface (getStockScore),
+ * so engine-level tests keep exercising the math while every product
+ * path is gated identically.
  */
-const CORE_FUNDAMENTALS: Array<keyof Stock> = [
-  "pe", "roe", "ocf", "rev", "revcagr", "epscagr",
-  "opm", "roce", "de", "fcf", "bvps", "promo",
-];
-
-export function assessDataQuality(stock: Stock): "OK" | "INCOMPLETE" {
-  const vals = CORE_FUNDAMENTALS.map(k => stock[k]);
-  // Any non-finite core field -> unusable record.
-  if (vals.some(v => !Number.isFinite(v))) return "INCOMPLETE";
-  // A record where revenue, cash flows, book value, ROCE and promoter
-  // holding are ALL zero carries no real fundamentals (dead/placeholder
-  // ticker) even if a couple of leftover fields hold stub values — T11.4.
-  const FUNDAMENTALS: Array<keyof Stock> = ["rev", "ocf", "fcf", "bvps", "roce", "promo"];
-  if (FUNDAMENTALS.every(k => stock[k] === 0)) return "INCOMPLETE";
-  // Round-5 audit (finding 1): internally IMPOSSIBLE combinations. P/E is
-  // price/EPS — positive net profit can never yield P/E 0; positive profit
-  // with positive book value can never yield ROE 0. Rows like KWALITY
-  // (np 3000, pe 0, roe 0) are self-contradictory placeholders, and they
-  // were ranking as top buys because a zero P/E reads as "cheap". Such
-  // records are INCOMPLETE: never ranked, never scored "OK".
-  if (stock.np > 0 && stock.pe === 0) return "INCOMPLETE";
-  if (stock.np > 0 && stock.roe === 0 && stock.bvps > 0) return "INCOMPLETE";
-  return "OK";
-}
 
 function categorize(score: number): string {
   if (score >= 85) return "Legendary Compounder";
@@ -78,13 +65,17 @@ export function buildConsensus(stock: Stock, ctx?: ScoringContext): ConsensusRes
   // dispersion.md) — population σ over the valid verdicts, null below
   // 2 valid (one voice is not agreement).
   const panelDispersion = dispersion(scores.map(s => s.score));
+  // P0-1: the caller may DECLARE the derived provenance (the resolved
+  // path — it knows the per-field sources); the bare seed record derives
+  // its own (always seed or missing — the dataset is placeholder).
+  const dataQuality: DataQuality = ctx?.dataQuality ?? dataQualityFromSeedStock(stock);
 
   return {
     asset:         stock,
     scores,
     consensus,
     category:      consensus === null ? "Insufficient Data" : categorize(consensus),
-    dataQuality:   assessDataQuality(stock),
+    dataQuality,
     tension,
     tensionSpread,
     dispersion:    panelDispersion,

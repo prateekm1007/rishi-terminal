@@ -16,6 +16,7 @@
 import { STOCKS } from "../data/stocks";
 import { getStockScore, resolveStockMetrics } from "../lib/scoring";
 import { buildConsensus } from "../lib/consensus/engine";
+import { verdictsAllowed } from "../lib/dataQuality";
 
 const symbols = Object.keys(STOCKS);
 let mismatches = 0;
@@ -28,7 +29,12 @@ for (const sym of symbols) {
 
   const viaResolved = getStockScore(resolveStockMetrics(sym)!)?.consensus ?? null;
   const viaSeed = getStockScore(seedStock).consensus;
-  const viaBarrel = buildConsensus(seedStock).consensus;
+  // Round-46 P0-1: the engine barrel does NOT gate (the gate lives on
+  // getStockScore), so the barrel path is compared through the SAME
+  // verdict gate — a barrel consensus on verdict-blocked data must be
+  // null exactly like the surface's, and equal to it otherwise.
+  const barrelReport = buildConsensus(seedStock);
+  const viaBarrel = verdictsAllowed(barrelReport.dataQuality) ? barrelReport.consensus : null;
   const viaEmptyLive = getStockScore(resolveStockMetrics(sym, null)!).consensus;
 
   const values = [

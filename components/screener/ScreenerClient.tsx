@@ -8,6 +8,7 @@
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
+import { verdictsAllowed } from '@/lib/dataQuality';
 import { StockTable } from '@/components/screener/StockTable';
 import { ScreenerQueryBar } from '@/components/screener/ScreenerQueryBar';
 import { useLanguage } from '@/lib/language';
@@ -59,9 +60,11 @@ export function ScreenerClient({ rows }: Props) {
     // nothing to do with the engine's verdicts and made the threshold
     // meaningless. It now counts the consensus engine's own buy-side
     // categories (>= 75 = High Conviction / Legendary), and LARGE CAP is
-    // the actual definition (top 100 by market cap), both over
-    // dataQuality-OK rows only.
-    const okRows = rows.filter(s => s.dataQuality === 'OK');
+    // the actual definition (top 100 by market cap). Round-46 P0-1: the
+    // pool is the verdict-ALLOWED rows only (live | delayed) — seed/
+    // missing rows carry no verdict, so they count in none of these
+    // pills; on the current placeholder dataset the counts are honestly 0.
+    const okRows = rows.filter(s => verdictsAllowed(s.dataQuality));
     const largeCapCount = [...okRows]
       .sort((a, b) => b.mktcap - a.mktcap)
       .slice(0, 100)
@@ -74,7 +77,6 @@ export function ScreenerClient({ rows }: Props) {
     { label: t('screener.debtFree'),   count: okRows.filter(s => s.de < 0.3).length,             color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)', title: 'Debt-to-equity below 0.3' },
     ];
   }, [t, locale, rows]);
-
   return (
     <main className="page-bg">
 

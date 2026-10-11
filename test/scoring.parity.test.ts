@@ -4,6 +4,7 @@ import { describe, it, expect } from "vitest";
 import { STOCKS } from "@/data/stocks";
 import { getStockScore, resolveStockMetrics } from "@/lib/scoring";
 import { buildConsensus } from "@/lib/consensus/engine";
+import { verdictsAllowed } from "@/lib/dataQuality";
 import { SCORE_ENGINE_VERSION } from "@/lib/consensus/version";
 
 describe("T10 — score parity across entry paths", () => {
@@ -14,13 +15,25 @@ describe("T10 — score parity across entry paths", () => {
     for (const sym of symbols) {
       const viaResolved = getStockScore(resolveStockMetrics(sym)!).consensus;
       const viaSeed = getStockScore(STOCKS[sym]).consensus;
-      const viaBarrel = buildConsensus(STOCKS[sym]).consensus;
+      // P0-1: the barrel does not gate (the gate lives on getStockScore),
+      // so the barrel value passes through the SAME verdict gate — the
+      // parity contract is "what a UI would receive", and no UI receives
+      // an ungated number.
+      const barrel = buildConsensus(STOCKS[sym]);
+      const viaBarrel = verdictsAllowed(barrel.dataQuality) ? barrel.consensus : null;
       const viaEmptyLive = getStockScore(resolveStockMetrics(sym, null)!).consensus;
       const vals = new Set([viaResolved, viaSeed, viaBarrel, viaEmptyLive]);
       if (vals.size > 1) mismatches++;
       expect(mismatches).toBe(0);
     }
     expect(symbols.length).toBeGreaterThan(890);
+  });
+
+  it("the whole seed universe is verdict-blocked on every path (P0-1 parity of the honest null)", () => {
+    for (const sym of symbols) {
+      expect(getStockScore(STOCKS[sym]).consensus).toBeNull();
+      expect(getStockScore(resolveStockMetrics(sym)!).consensus).toBeNull();
+    }
   });
 
   it("scoring is deterministic — two calls give the same result", () => {

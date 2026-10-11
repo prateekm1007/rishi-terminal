@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useLanguage } from '../../lib/language';
 import { getScoreColors, colors, fonts, shadows } from "@/lib/design";
 import type { RishiScoreResult, ScoreMode, PillarScore } from "@/lib/scorers/types";
+import { describeDataQuality, type DataQuality } from "@/lib/dataQuality";
 
 function getConvictionLabel(c: string): string {
   const m: Record<string,string> = {
@@ -142,10 +143,14 @@ interface Props {
   dual: { long: RishiScoreResult; short: RishiScoreResult };
   /** Sector label for the header (was metrics.sector). */
   sector?: string;
+  /** P0-1 (founder audit 2026-10-11): the record's canonical data quality
+   *  (live | delayed | seed | missing) — the badge reads THIS field, never
+   *  a fabricated "HIGH Data" claim. */
+  dataQuality: DataQuality;
   defaultMode?: ScoreMode;
 }
 
-export default function RishiScoreDual({ dual, sector, defaultMode = "LONG" }: Props) {
+export default function RishiScoreDual({ dual, sector, dataQuality, defaultMode = "LONG" }: Props) {
   const { t } = useLanguage();
   const [mode, setMode] = useState<ScoreMode>(defaultMode);
 
@@ -177,7 +182,7 @@ export default function RishiScoreDual({ dual, sector, defaultMode = "LONG" }: P
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"32px" }}>
           <div>
             <div style={{ fontFamily: fonts.serif, fontSize:"20px", fontWeight:700, color: colors.gold, letterSpacing:"0.05em", marginBottom:"4px" }}>{t("common.qvpsScore")}</div>
-            <div style={{ fontSize:"11px", color: colors.textMuted, fontFamily: fonts.mono, fontWeight:500 }}>v2.0 · {result.dataQuality} Data{sector ? " · " + sector : ""}</div>
+            <div style={{ fontSize:"11px", color: colors.textMuted, fontFamily: fonts.mono, fontWeight:500 }}>v2.0 · coverage {result.coverage} · {describeDataQuality(dataQuality)}{sector ? " · " + sector : ""}</div>
           </div>
 
           <div style={{ display:"flex", background:"rgba(5,8,16,0.85)", border:"1px solid " + colors.border, borderRadius:"14px", padding:"4px", gap:"3px", boxShadow:"inset 0 1px 2px rgba(0,0,0,0.2)" }}>

@@ -1,6 +1,7 @@
 import 'server-only';
 
 import type { ConsensusResult, RishiScore } from './types';
+import type { DataQuality } from '../dataQuality';
 
 /**
  * Remediation R3 + Commit M3: server-side sanitization of per-Rishi
@@ -29,10 +30,13 @@ export interface TrimmedVerdict {
 }
 
 export interface SanitizedConsensus {
-  /** THE free consensus number. */
+  /** THE free consensus number. null also when the record is
+   *  verdict-blocked (P0-1: seed/missing data produce no verdict). */
   consensus: number | null;
   category: string;
-  dataQuality: 'OK' | 'INCOMPLETE';
+  /** The closed P0-1 vocabulary (live | delayed | seed | missing) — the
+   *  badge reads THIS. */
+  dataQuality: DataQuality;
   tension: string;
   tensionSpread: number;
   /** S2-06: the disagreement metric — population σ of the valid verdicts

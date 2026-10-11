@@ -4,7 +4,7 @@ import { describe, it, expect } from "vitest";
 import type { Stock } from "@/lib/types";
 import { runAllScorers, TOTAL_RISHIS } from "@/lib/consensus/orchestrator";
 import { buildConsensus } from "@/lib/consensus/engine";
-import { dataQualityFromSeedStock } from "@/lib/scoring/dataQuality";
+import { dataQualityFromSeedStock } from "@/lib/dataQuality";
 import { weightedAverage, MIN_VALID_SCORERS } from "@/lib/consensus/weights";
 import { STOCKS } from "@/data/stocks";
 

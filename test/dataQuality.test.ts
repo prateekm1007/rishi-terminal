@@ -19,7 +19,7 @@ import {
   dataQualityFromSeedStock,
   dataQualityFromResolvedFields,
   noVerdictCategory,
-} from "@/lib/scoring/dataQuality";
+} from "@/lib/dataQuality";
 import { getStockScore } from "@/lib/scoring";
 import { resolveStockMetrics } from "@/lib/scoring";
 import { buildConsensus } from "@/lib/consensus/engine";
@@ -52,9 +52,11 @@ describe("P0-1 — the closed dataQuality vocabulary", () => {
     expect(verdictsAllowed("missing")).toBe(false);
   });
 
-  it("the module is client-safe (no server-only import — the badge reads it)", () => {
-    const src = readFileSync(join(process.cwd(), "lib/scoring/dataQuality.ts"), "utf8");
-    expect(src).not.toMatch(/server-only/);
+  it("the module is client-safe (no server-only directive — the badge reads it)", () => {
+    const src = readFileSync(join(process.cwd(), "lib/dataQuality.ts"), "utf8");
+    // The precise pin: no `import 'server-only'` directive (a comment
+    // MENTIONING the rule is documentation, not a directive).
+    expect(src).not.toMatch(/import\s+['"]server-only['"]/);
   });
 });
 

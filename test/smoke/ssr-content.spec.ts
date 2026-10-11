@@ -28,8 +28,12 @@ import { test, expect } from "@playwright/test";
 // unconditionally would fabricate history). The sidebar's stable marker
 // is its wisdom/chat mode button.
 const OVERVIEW_SECTIONS = [
-  "Pillar Breakdown", // RishiScoreDual
-  "RISHI COMMENTARY", // RishiScoreDual (commentary block)
+  // P0-1 (round-46 founder audit: "Seed rows show no verdict"): the QVPS
+  // tile markers ("Pillar Breakdown", "RISHI COMMENTARY") are verdict
+  // content — suppressed on seed data; they moved to the ABSENCE pins
+  // below. The honest no-verdict record is the tile area's first-byte
+  // positive control instead.
+  "NO VERDICT — ILLUSTRATIVE SEED DATA", // NoVerdictRecord (the P0-1 gate, in the first byte)
   "P/B Ratio", // MetricsPanel StatGroup (renders on every stock page)
   "Peer Comparison", // PeerComparison heading
   "Key Metrics", // MetricsPanel heading
@@ -38,12 +42,23 @@ const OVERVIEW_SECTIONS = [
   // is the only stable substring)
 ];
 
-test("stock page serves the content sections in the raw SSR HTML", async ({ request }) => {
+const VERDICT_SECTIONS = [
+  "Pillar Breakdown", // RishiScoreDual (QVPS tile — verdict content)
+  "RISHI COMMENTARY", // RishiScoreDual commentary block (verdict content)
+];
+
+test("stock page serves the content sections in the raw SSR HTML — and NO verdict section on seed data (P0-1)", async ({ request }) => {
   const res = await request.get("/stock/SBIN");
   expect(res.status()).toBe(200);
   const html = await res.text();
   for (const section of OVERVIEW_SECTIONS) {
     expect(html, `raw HTML must contain "${section}"`).toContain(section);
+  }
+  // P0-1 (founder audit 2026-10-11): the verdict tiles are NOT in the
+  // first byte of a seed record's page — the honest state is server-
+  // rendered, exactly the standard the A1 fix set for every other section.
+  for (const section of VERDICT_SECTIONS) {
+    expect(html, `seed page must NOT contain "${section}"`).not.toContain(section);
   }
 });
 

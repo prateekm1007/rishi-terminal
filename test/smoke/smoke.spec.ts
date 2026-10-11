@@ -5,21 +5,21 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("smoke — core surfaces", () => {
-  test("dashboard renders the ranked Top Buy section", async ({ page }) => {
+  test("dashboard renders the honest no-ranked-picks state (P0-1: seed rows show no verdict)", async ({ page }) => {
     await page.goto("/");
     await expect(page).toHaveTitle(/Rishi/i);
-    // R1: rankings on placeholder data carry the mandated illustrative-data
-    // label; the former "as of <date>" caption was a false freshness claim
-    // and must NOT be rendered.
-    // SM (2026-10-06): the ranked trio is a LAZY CLIENT CHUNK (next/dynamic,
-    // the Z5 bundle split) — it renders after chunk load + hydration, which
-    // can exceed the default 5s expect timeout on a loaded CI runner. Two
-    // real CI failures (PR #209 2026-10-06T00:36Z, PR #212 2026-10-06T04:13Z)
-    // were exactly this: 35 passed / 1 failed, element not found at 5s while
-    // the section renders. Same timeout its sibling assertions already use
-    // (the /stocks table and consensus-hero tests both wait 20s). The CHECK
-    // is unchanged — only the wait now covers the lazy chunk's real cost.
-    await expect(page.getByText(/Illustrative sample data/i).first()).toBeVisible({ timeout: 20_000 });
+    // Round-46 P0-1 re-pin (founder audit 2026-10-11): with the seed
+    // universe verdict-blocked, the ranked trio (Stock of the Day / Top
+    // Buy Signals / Short Radar) is replaced by the honest disabled panel
+    // — no fabricated picks, and the former "as of <date>" caption was a
+    // false freshness claim that must NOT come back with them.
+    await expect(page.getByText(/Ranked picks are disabled/i).first()).toBeVisible({ timeout: 20_000 });
+    // The trio's heading may survive as a dictionary string inside the RSC
+    // flight <script>, and the disabled panel's own note names the widgets —
+    // so the absence pin targets the SECTION HEADING's distinctive suffix
+    // ("TOP BUY SIGNALS - RISHI CONSENSUS ABOVE …"), which exists only in
+    // the ranked section's header.
+    await expect(page.getByText(/TOP BUY SIGNALS - RISHI CONSENSUS/i).first()).not.toBeVisible();
     await expect(page.getByText(/as of \d{4}-\d{2}-\d{2}/i).first()).toHaveCount(0);
   });
 
@@ -35,9 +35,13 @@ test.describe("smoke — core surfaces", () => {
     );
   });
 
-  test("stock page for RELIANCE renders the consensus hero", async ({ page }) => {
+  test("stock page for RELIANCE renders the honest no-verdict record (P0-1: seed rows show no verdict)", async ({ page }) => {
     await page.goto("/stock/RELIANCE");
-    await expect(page.getByText(/RISHI CONSENSUS/i).first()).toBeVisible({ timeout: 20_000 });
+    // Round-46 P0-1 re-pin (founder audit 2026-10-11): the consensus hero
+    // is verdict content — on seed data the page renders the NO-VERDICT
+    // record instead, and the hero heading is absent.
+    await expect(page.getByText(/NO VERDICT — ILLUSTRATIVE SEED DATA/i).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/RISHI CONSENSUS/i)).toHaveCount(0);
   });
 
   // SR (2026-10-06): /screener is the legacy URL for the renamed Stocks

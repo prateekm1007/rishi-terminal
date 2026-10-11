@@ -1,4 +1,5 @@
 import { Stock, RishiScore } from "../types";
+import type { DataQuality } from "../dataQuality";
 
 export type { Stock, RishiScore };
 
@@ -9,8 +10,12 @@ export interface ConsensusResult {
    *  ("Insufficient Data") — display as "—", sort last, never coerce to 0. */
   consensus: number | null;
   category: string;
-  /** OK | INCOMPLETE — all-zero/non-finite core fundamentals — T11.4. */
-  dataQuality: 'OK' | 'INCOMPLETE';
+  /** The closed P0-1 vocabulary — live | delayed | seed | missing
+   *  (founder audit 2026-10-11). Derived from per-field provenance on the
+   *  resolved path, from the bare seed record otherwise; replaces the
+   *  former OK | INCOMPLETE pair. Verdicts are allowed only on live and
+   *  delayed records — the gate itself lives on getStockScore. */
+  dataQuality: DataQuality;
   tension: string;
   tensionSpread: number;
   /** S2-06: the disagreement metric — population σ of the valid verdicts

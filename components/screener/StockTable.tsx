@@ -14,6 +14,7 @@ import { useBulkFundamentals } from '@/hooks/useFundamentals';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { DataValue } from '@/components/DataValue';
 import { overlaySourced, type Sourced } from '@/lib/types/sourced';
+import { verdictsAllowed } from '@/lib/dataQuality';
 import { IntelligenceBadge } from '@/components/screener/IntelligenceBadge';
 
 interface Props {
@@ -266,11 +267,22 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
                   <DataValue sourced={metricSourced(stock.roe, bulkFund[stock.symbol]?.roe, bulkFund[stock.symbol], "roe")} digits={1} unit="%" />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <span
-                    className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
-                  >
-                    <DataValue sourced={scoreSourced(stock.consensus)} digits={0} />
-                  </span>
+                  {verdictsAllowed(stock.dataQuality) ? (
+                    <span
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
+                    >
+                      <DataValue sourced={scoreSourced(stock.consensus)} digits={0} />
+                    </span>
+                  ) : (
+                    /* P0-1 (founder audit 2026-10-11): seed/missing rows show
+                       NO verdict — the badge reads the dataQuality field. */
+                    <span
+                      className="inline-block rounded-full px-3 py-1 text-xs font-mono font-semibold border bg-gray-100 text-gray-600 border-gray-300 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-600"
+                      title={stock.dataQuality === "missing" ? "No usable data — no verdict produced" : "Illustrative seed data — no verdict produced"}
+                    >
+                      {stock.dataQuality === "missing" ? "no data · no verdict" : "seed · no verdict"}
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

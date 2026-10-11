@@ -13,7 +13,7 @@ import 'server-only';
 import {
   StockMetrics, RishiScoreResult, ScoreMode, PillarScore,
   clamp, getConviction, getGrade, getAction,
-  getDataQuality, getShortRiskFlags, buildCommentaryKey,
+  getCoverage, getShortRiskFlags, buildCommentaryKey,
 } from "./types";
 
 import { scoreBusinessQuality } from "./pillars/businessQuality";
@@ -116,7 +116,7 @@ export function calculateQvps(
   const conviction  = getConviction(finalScore, mode);
   const grade       = getGrade(finalScore);
   const action      = getAction(finalScore, mode);
-  const dataQuality = getDataQuality(metrics);
+  const coverage = getCoverage(metrics);
   const confidence  = pillars.reduce((s, p) => s + p.confidence, 0) / pillars.length;
 
   // Deterministic commentary key
@@ -139,7 +139,7 @@ export function calculateQvps(
     trendMultiplier,
     sectorAdj,
     confidence,
-    dataQuality,
+    coverage,
     commentaryKey,
     headline:        "",
     commentary:      "",

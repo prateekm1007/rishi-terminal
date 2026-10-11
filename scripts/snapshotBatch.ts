@@ -126,8 +126,9 @@ async function snapshotNewStocks() {
           snapshot_date:      today,
           consensus_score:    consensus.consensus,
           score_engine_version: SCORE_ENGINE_VERSION,
-          signal:             consensus.consensus >= 75 ? "BUY"
-                            : consensus.consensus >= 45 ? "HOLD" : "SELL",
+          // Round-48: the descriptive signal union (matches rishiMemory.ts)
+          signal:             consensus.consensus >= 75 ? "FAVORABLE"
+                            : consensus.consensus >= 45 ? "BALANCED" : "UNFAVORABLE",
           disagreement:       0,
           philosopher_scores: philosopherScores,
           instability:        0,

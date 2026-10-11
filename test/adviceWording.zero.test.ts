@@ -60,6 +60,30 @@ import { SCREENER_PRESETS } from "@/lib/screener/presets";
 const ADVICE_WORDS =
   /\b([Ss]trong[ _]?[Bb]uy|STRONG[ _]?BUY|VALUE[ _]?PLAYS?|value[ _]?plays?|[Vv]alue[ _]?[Pp]lays?|REDUCE|[Aa]void|Long|Short)\b(?![\w-])/g;
 
+/** Round-48 (founder order 2026-10-11): "Remove the remaining advice
+ *  identifiers from user paths: lib/utils.ts and lib/services/rishiMemory.ts
+ *  … Add these identifiers to the grep gate." The identifier vocabulary those
+ *  two files carried: EXACTLY-QUOTED 'BUY'/'SELL'/'HOLD'/'AVOID' value
+ *  literals — the enum-style signal/action vocabulary, distinct from prose
+ *  (a philosophy sentence saying "buy when others are fearful" is a framework
+ *  description; a value map keyed 'BUY' is an advice identifier). */
+const QUOTED_SIGNAL_LITERALS = /['"](BUY|SELL|HOLD|AVOID)['"]/;
+
+/** Sanctioned exceptions for the quoted-literal identifiers (each factual,
+ *  not advice — same class as the strategy-name exception):
+ *  - F&O order legs ("BUY"/"SELL" transaction sides — factual instrument
+ *    terminology in the out-of-product-scope F&O module);
+ *  - the user's OWN transaction records — the portfolio journal's entry
+ *    types and the block-deal side enum (a factual record of what happened,
+ *    never a directive to the user). */
+const QUOTED_EXCEPTIONS: RegExp[] = [
+  /\.action === ['"](BUY|SELL)['"]/, // fno order-leg comparisons
+  /action:\s*['"](BUY|SELL)['"]/, // fno strategy-leg object literals (order sides)
+  /OptionAction/, // the fno order-side type
+  /type: 'BUY' \| 'SELL' \| 'OBSERVATION'/, // the journal entry types (own trades)
+  /side: 'BUY' \| 'SELL'/, // block-deal sides (factual market data)
+];
+
 /** Files whose string literals can render in the UI. */
 function uiStringFiles(): string[] {
   const roots = ["app", "components", "lib", "data", "messages"];
@@ -98,10 +122,12 @@ const EXCEPTIONS: RegExp[] = [
   /systemPrompt:/, // server-side LLM persona instructions — not UI strings (the AI-loop stage governs model output)
 ];
 
-/** Files whose string literals are PERSISTED ANALYTICS, never rendered:
- *  the rishi_snapshots.signal DB column vocabulary (see the header). */
+/** Files whose string literals are PERSISTED ANALYTICS, never rendered.
+ *  Round-48: rishiMemory.ts is NO LONGER exempt — its signal-column
+ *  vocabulary was renamed to the descriptive union (FAVORABLE /
+ *  BALANCED / UNFAVORABLE) with the founder's order; the scan now covers
+ *  it so the advice identifiers cannot return. */
 const NON_UI_FILES: RegExp[] = [
-  /^lib\/services\/rishiMemory\.ts$/,
   /^scripts\//, // scripts/ is outside the uiStringFiles roots anyway — belt and braces
 ];
 
@@ -181,6 +207,15 @@ describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
     }
   });
 
+  it("the quoted-literal pattern BITES (C5)", () => {
+    // the exact identifier forms the two named files carried
+    expect("s >= 72 ? 'BUY' : s >= 52 ? 'HOLD' : 'AVOID';".match(QUOTED_SIGNAL_LITERALS)).not.toBeNull();
+    expect('signal: c >= 75 ? "BUY" : c >= 45 ? "HOLD" : "SELL"'.match(QUOTED_SIGNAL_LITERALS)).not.toBeNull();
+    // prose and factual labels stay non-hits
+    expect('"Buy when there is maximum pessimism."'.match(QUOTED_SIGNAL_LITERALS)).toBeNull();
+    expect("'Promoter Hold'".match(QUOTED_SIGNAL_LITERALS)).toBeNull();
+  });
+
   it("the runtime label functions carry no advice vocabulary", () => {
     const actions: ActionType[] = [
       "STRONGLY_FAVORABLE", "FAVORABLE", "BALANCED",
@@ -199,6 +234,37 @@ describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
       expect(closed.has(getAction(score, "DOWNSIDE"))).toBe(true);
       expect(getGrade(score).match(ADVICE_WORDS)).toBeNull();
     }
+  });
+
+  it("round-48: the quoted-signal identifiers are gone (lib/utils.ts, rishiMemory.ts and any successor)", () => {
+    const files = uiStringFiles();
+    const hits: string[] = [];
+    for (const f of files) {
+      if (NON_UI_FILES.some((x) => x.test(f))) continue;
+      const src = readFileSync(f, "utf8");
+      for (const [i, raw] of src.split("\n").entries()) {
+        if (raw.trim().startsWith("//") || raw.trim().startsWith("*") || raw.trim().startsWith("/*")) continue;
+        const line = stripComments(raw);
+        if (!QUOTED_SIGNAL_LITERALS.test(line)) continue;
+        if (QUOTED_EXCEPTIONS.some((x) => x.test(line))) continue;
+        hits.push(`${f}:${i + 1}: ${line.trim().slice(0, 110)}`);
+      }
+    }
+    expect(hits).toEqual([]);
+    // Positive control (B-18): the renamed vocabulary is present in the
+    // snapshot writer — the zero is not vacuous.
+    const memory = readFileSync("lib/services/rishiMemory.ts", "utf8");
+    expect(memory).toContain('"FAVORABLE"');
+    expect(memory).toContain('"BALANCED"');
+    expect(memory).toContain('"UNFAVORABLE"');
+  });
+
+  it("round-48: the portfolio journal is labelled a record of the user's own trades", () => {
+    const model = readFileSync("lib/types/portfolio.ts", "utf8");
+    expect(model).toMatch(/record of your own trades/i);
+    expect(model).toMatch(/not terminal output/i);
+    // the journal entry types stay factual transaction records (own trades)
+    expect(model).toContain("type: 'BUY' | 'SELL' | 'OBSERVATION' | 'THESIS' | 'REVIEW'");
   });
 
   it("no screener mode name carries the vocabulary ('Short' in mode names)", () => {

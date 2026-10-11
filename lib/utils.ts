@@ -7,14 +7,10 @@ export const sc = (s: number) =>
 export const lbl = (s: number) =>
   s >= 80 ? 'HIGH' : s >= 60 ? 'MOD' : s >= 40 ? 'LOW' : 'WEAK';
 
-export const getSig = (s: number) =>
-  s >= 72 ? 'BUY' : s >= 52 ? 'HOLD' : 'AVOID';
-
-export const SIG: Record<string, string> = {
-  BUY: '#10B981',
-  HOLD: '#F59E0B',
-  AVOID: '#EF4444',
-};
+// Round-48 (founder order 2026-10-11): getSig ('BUY'/'HOLD'/'AVOID') and
+// the SIG color map are DELETED — zero importers (grep-verified) and the
+// advice identifiers are banned from user paths; the adviceWording gate
+// now pins their absence.
 
 // T11: finite-guard helpers. Scorers must never propagate NaN/Infinity.
 /** Returns v when finite, otherwise null ("insufficient data"). */

@@ -37,8 +37,9 @@ interface SnapshotHealthRow {
     r.consensus_score === null || r.consensus_score === undefined
   );
 
+  // Round-48: the descriptive signal union (matches rishiMemory.ts)
   const badSignal = rows.filter((r: SnapshotHealthRow) =>
-    !["BUY","HOLD","SELL"].includes(r.signal)
+    !["FAVORABLE","BALANCED","UNFAVORABLE"].includes(r.signal)
   );
 
   console.log(`Missing scores: ${missingScore.length}`);
@@ -50,18 +51,18 @@ interface SnapshotHealthRow {
 
   console.log(`Average score: ${avg.toFixed(2)}`);
 
-  const buy =
-    rows.filter((r: SnapshotHealthRow) => r.signal === "BUY").length;
+  const favorable =
+    rows.filter((r: SnapshotHealthRow) => r.signal === "FAVORABLE").length;
 
-  const hold =
-    rows.filter((r: SnapshotHealthRow) => r.signal === "HOLD").length;
+  const balanced =
+    rows.filter((r: SnapshotHealthRow) => r.signal === "BALANCED").length;
 
-  const sell =
-    rows.filter((r: SnapshotHealthRow) => r.signal === "SELL").length;
+  const unfavorable =
+    rows.filter((r: SnapshotHealthRow) => r.signal === "UNFAVORABLE").length;
 
-  console.log(`BUY:  ${buy}`);
-  console.log(`HOLD: ${hold}`);
-  console.log(`SELL: ${sell}`);
+  console.log(`FAVORABLE:   ${favorable}`);
+  console.log(`BALANCED:    ${balanced}`);
+  console.log(`UNFAVORABLE: ${unfavorable}`);
 
   console.log("\nHealth complete.");
 }

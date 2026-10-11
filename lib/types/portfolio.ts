@@ -6,6 +6,13 @@ export interface PortfolioHolding {
   notes?: string;
 }
 
+/** The user's own trade journal. This is a RECORD OF YOUR OWN TRADES —
+ *  entries you write about transactions you made yourself, in your own
+ *  words. It is not terminal output, not analysis the product produced,
+ *  and not a recommendation to transact. The BUY/SELL entry types are
+ *  factual records of what the user did (the same factual class as a
+ *  brokerage statement), never directives — the labelling contract any
+ *  journal UI must carry verbatim (founder order 2026-10-11, round 48). */
 export interface JournalEntry {
   id: string;
   symbol: string;

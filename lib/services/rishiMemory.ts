@@ -61,8 +61,14 @@ export async function snapshotAllStocks(): Promise<{
         snapshot_date:     date,
         consensus_score:   consensus.consensus,
         score_engine_version: SCORE_ENGINE_VERSION,
-        signal:            consensus.consensus >= 75 ? "BUY"
-                          : consensus.consensus >= 45 ? "HOLD" : "SELL",
+        // Round-48 (founder order 2026-10-11): the signal-column vocabulary
+        // is the descriptive union — "FAVORABLE"/"BALANCED"/"UNFAVORABLE" —
+        // matching the epistemic signal vocabulary everywhere else. The
+        // column is text with no CHECK constraint and the pipeline has
+        // never written a row (ingest never logged success — the T14
+        // founder checklist), so the rename mixes no historical values.
+        signal:            consensus.consensus >= 75 ? "FAVORABLE"
+                          : consensus.consensus >= 45 ? "BALANCED" : "UNFAVORABLE",
         disagreement:      0,
         philosopher_scores: philosopherScores,
         instability:       0,

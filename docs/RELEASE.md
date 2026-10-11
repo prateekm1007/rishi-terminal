@@ -340,3 +340,39 @@ pacing discipline above remains the standing rule.
   (dpl_7poPsgYLEER3fFmVRiXMgCeCXgmU, READY ~16:56Z, /api/version
   verified). 87deecf (parallel session's #184) auto-deployed after.
 - Full record: docs/evidence/round16/deployment-closure.md.
+
+### 2026-10-11 session (round 47) — ninth exhaustion, deploy debt recorded
+
+- **11:48:14Z — PR #342 (P0-5-VERDICT-UNIFORM) MERGED** through
+  `scripts/ci/merge-guard.py` (all six gates green on the exact head
+  e1b62bfe886d, rebased onto main f3b8ec4 first; merge commit
+  71a37a6a3e42). The merge did NOT auto-fire a Vercel deployment (no
+  deployment record was created for the SHA at all — the webhook never
+  fired; previews from branch pushes WERE still being created).
+- **12:04Z — sanctioned single-shot API retry REFUSED by quota**:
+  `POST /v13/deployments` → HTTP 402
+  `Resource is limited - try again in 24 hours (more than 100, code:
+  "api-deployments-free-per-day")`. The B-22 pattern (ninth recorded
+  exhaustion). Sandbox egress to NSE is 403-blocked (recorded in the
+  P1-LIVE-UNIVERSE PR), so the retry path is the production API only.
+- **DEPLOY DEBT: 71a37a6a (PR #342).** Production serves 791c7b6
+  (pre-#342). Retry sporadically per B-26 (the counter expires on
+  oldest-event age, not a fixed clock); every later merge in this round
+  joins the debt queue in order. The cadence ledger below tracks the
+  production-relevant merges; C6 "live" legs for each owed merge run
+  when the debt clears.
+- Merge cadence this round (all through the merge-guard, rebased heads):
+  #342 11:48:14Z (window from #341 10:35:39Z honored). Subsequent
+  merges hold the one-per-hour C8 window regardless of deploy state —
+  the debt is deployment-side, not merge-side.
+
+### 2026-10-11 follow-up (round 48) — the #342 deploy debt CLEARED
+
+The 11:48Z entry above records #342 landing with deploy debt while the
+quota window was 402-saturated ("production serves 791c7b6 until the debt
+clears"). That present-tense claim is now historical only: #349 merged at
+~12:55Z, built FROM THE MAIN TIP (which already contained #342's changes),
+and deployed — production serves `4c9f7088` (verified live, first probe,
+13:56Z: `GET /api/version` → sha 4c9f7088cb04...; the /stock/RELIANCE
+flight carries the #349 licence-hold content). No debt remains; the
+retry-sporadically protocol stood down unused.

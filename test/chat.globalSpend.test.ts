@@ -23,6 +23,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  * mock models the REAL SQL semantics (guarded increment, floored adjust)
  * so reservation arithmetic is asserted, not scripted.
  */
+// CHAT-FD8-GATE re-pin (rule 23, founder directive 2026-10-11: "Keep
+// chat at 503 until FD-8 is decided"): the W3-B env contract below is
+// tested under a DECIDED FD-8 mock — the contract itself is unchanged
+// and orthogonal to the decision gate; the OPEN state (the production
+// default) is pinned in test/chat.fd8Gate.test.ts. No assertion here is
+// weakened: every CHAT_DISABLED value keeps its exact meaning.
+vi.mock('@/lib/founderDecisions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/founderDecisions')>();
+  return { ...actual, fd8ChatProviderApproved: () => true };
+});
+
 vi.mock('@/lib/auth/session', () => ({
   getSessionUser: vi.fn(async () => null),
 }));

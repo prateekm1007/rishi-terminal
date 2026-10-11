@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { fd8ChatProviderApproved } from '../founderDecisions';
+
 /**
  * W3 (founder round-10) + W3 closure (founder round-10 review, 2026-10-03):
  * global chat cost safety.
@@ -117,8 +119,21 @@ export const GLOBAL_TOKEN_RESERVATION_CEILING = 6 * 2 * (22_000 + 2_048); // 288
  *  chat ENABLED. Every other non-empty CHAT_DISABLED value disables. */
 const CHAT_DISABLED_FALSEY = new Set(['0', 'false', 'no', 'off']);
 
-/** The kill switch — see the module header for the ONE contract. */
+/**
+ * CHAT-FD8-GATE (round 48, founder directive 2026-10-11, verbatim:
+ * "Keep chat at 503 until FD-8 is decided"): the env kill switch is now
+ * OR-ed with the STRUCTURAL FD-8 gate — while the founder decision is
+ * open (lib/founderDecisions.ts FD8_CHAT_PROVIDER), chat refuses 503
+ * even if CHAT_DISABLED is unset or false-y. The live-200 defect that
+ * justified this: production served chat with real upstream spend on
+ * 2026-10-11 while FD-8 was open, because an env control nobody had set
+ * is not a control (the B-06 class). The env contract is unchanged —
+ * every CHAT_DISABLED value keeps its exact W3-B meaning; the gate only
+ * ADDS a condition. FD-8 flips to decided ONLY in the PR recording the
+ * founder's written decision (the lib/founderDecisions.ts pattern).
+ */
 export function chatDisabled(): boolean {
+  if (!fd8ChatProviderApproved()) return true;
   const v = process.env.CHAT_DISABLED?.trim();
   if (!v) return false;
   return !CHAT_DISABLED_FALSEY.has(v.toLowerCase());

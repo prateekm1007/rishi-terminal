@@ -56,7 +56,11 @@ It is protection and abuse control, never a product level:
   round 12). The IST day boundary is computed once, in the
   database RPCs (W3 closure). `CHAT_DISABLED` contract: unset, "", or
   0/false/no/off (case-insensitive) leaves chat enabled; every other
-  non-empty value disables it — a typo fails toward OFF.
+  non-empty value disables it — a typo fails toward OFF. Since the
+  round-48 CHAT-FD8-GATE (founder directive 2026-10-11: "Keep chat at
+  503 until FD-8 is decided"), chat refuses 503 STRUCTURALLY while FD-8
+  is undecided (`lib/founderDecisions.ts`); the env switch matters only
+  once FD-8 is recorded as decided, and keeps its exact contract then.
 - `lib/auth/session.ts` resolves **authentication identity only**
   (`id`, `email`). It no longer resolves any product tier.
 - `GET /api/auth/me` returns `{ user: { id, email } }` or `{ user: null }` —

@@ -1,0 +1,10 @@
+PASS stock: NO VERDICT record visible
+PASS stock: consensus hero NOT visible
+PASS stock: QVPS tile NOT visible
+PASS stock: council NOT visible (verdict content)
+PASS stock: labelled metrics still visible
+PASS /stocks: 'seed · no verdict' badge visible
+PASS dashboard: disabled ranked-picks panel visible
+PASS dashboard: no rendered Stock-of-the-Day section (visible text)
+
+ALL HYDRATED P0-1 LEGS PASS (screenshots captured)

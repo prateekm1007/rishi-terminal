@@ -1,0 +1,60 @@
+=== BITE mode=neither ===
+PASS  version — live sha 3c1f096bf92b
+PASS  page-integrity /stock/SBIN — <h1 present: true; title marker: true; 130 bytes
+PASS  section /stock/SBIN "Key Metrics" — 1 occurrence(s)
+PASS  section /stock/SBIN "Peer Comparison" — 1 occurrence(s)
+FAIL  section /stock/SBIN "RISHI COMMENTARY" — 0 occurrence(s)
+FAIL  section /stock/SBIN "Pillar Breakdown" — 0 occurrence(s)
+PASS  price /stock/SBIN "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  page-integrity /stock/BANKBARODA — <h1 present: true; title marker: true; 177 bytes
+PASS  section /stock/BANKBARODA "Key Metrics" — 1 occurrence(s)
+PASS  section /stock/BANKBARODA "Peer Comparison" — 1 occurrence(s)
+PASS  verdict-state /stock/BANKBARODA "RISHI COMMENTARY" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  verdict-state /stock/BANKBARODA "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  price /stock/BANKBARODA "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  nullzero "Promoter Hold0.0%" — 0 occurrence(s) (must be 0)
+PASS  nullzero "D/E Ratio0.0x" — 0 occurrence(s) (must be 0)
+PASS  nullzero panel control "hidden for banks" — 1 occurrence(s) (must be >= 1)
+post-deploy-smoke: FAIL — 2 failed check(s)
+mode=neither exit=1
+
+=== BITE mode=leak ===
+PASS  version — live sha 3c1f096bf92b
+PASS  page-integrity /stock/SBIN — <h1 present: true; title marker: true; 205 bytes
+PASS  section /stock/SBIN "Key Metrics" — 1 occurrence(s)
+PASS  section /stock/SBIN "Peer Comparison" — 1 occurrence(s)
+FAIL  verdict-state /stock/SBIN "RISHI COMMENTARY" suppressed — 1 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  verdict-state /stock/SBIN "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  price /stock/SBIN "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  page-integrity /stock/BANKBARODA — <h1 present: true; title marker: true; 177 bytes
+PASS  section /stock/BANKBARODA "Key Metrics" — 1 occurrence(s)
+PASS  section /stock/BANKBARODA "Peer Comparison" — 1 occurrence(s)
+PASS  verdict-state /stock/BANKBARODA "RISHI COMMENTARY" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  verdict-state /stock/BANKBARODA "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  price /stock/BANKBARODA "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  nullzero "Promoter Hold0.0%" — 0 occurrence(s) (must be 0)
+PASS  nullzero "D/E Ratio0.0x" — 0 occurrence(s) (must be 0)
+PASS  nullzero panel control "hidden for banks" — 1 occurrence(s) (must be >= 1)
+post-deploy-smoke: FAIL — 1 failed check(s)
+mode=leak exit=1
+
+=== BITE mode=clean ===
+PASS  version — live sha 3c1f096bf92b
+PASS  page-integrity /stock/SBIN — <h1 present: true; title marker: true; 177 bytes
+PASS  section /stock/SBIN "Key Metrics" — 1 occurrence(s)
+PASS  section /stock/SBIN "Peer Comparison" — 1 occurrence(s)
+PASS  verdict-state /stock/SBIN "RISHI COMMENTARY" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  verdict-state /stock/SBIN "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  price /stock/SBIN "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  page-integrity /stock/BANKBARODA — <h1 present: true; title marker: true; 189 bytes
+PASS  section /stock/BANKBARODA "Key Metrics" — 1 occurrence(s)
+PASS  section /stock/BANKBARODA "Peer Comparison" — 1 occurrence(s)
+PASS  section /stock/BANKBARODA "RISHI COMMENTARY" — 1 occurrence(s)
+PASS  section /stock/BANKBARODA "Pillar Breakdown" — 1 occurrence(s)
+PASS  price /stock/BANKBARODA "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  nullzero "Promoter Hold0.0%" — 0 occurrence(s) (must be 0)
+PASS  nullzero "D/E Ratio0.0x" — 0 occurrence(s) (must be 0)
+PASS  nullzero panel control "hidden for banks" — 1 occurrence(s) (must be >= 1)
+post-deploy-smoke: PASS (http://127.0.0.1:18234, sha 3c1f096bf92b)
+mode=clean exit=0
+

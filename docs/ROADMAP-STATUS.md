@@ -9,7 +9,7 @@ delivered) and `CONSTITUTION.md` (the governing rules).
 **Statuses:** ✅ done (evidence linked) · 🟡 partial (what remains, who blocks it) ·
 ⬜ not started · 🚫 blocked on an FD · ➖ not applicable yet.
 
-Last updated: 2026-10-02 (Commit M — founder decision: ALL FEATURES FREE, no tiers; pricing/payment surface retired; FD-7 resolved. Prior: Commit L — AI tool loop, grounding/provenance closure, eval harness; FD-9..FD-18 reconciled).
+Last updated: 2026-10-12 (Round 49 — RULES-1 records: FD-22 rankings on; FD-12 resolved as FD-23; News kept with the honest "No headlines yet" empty state, PR #346 rewritten; FD-1 BLOCKED stands. Prior: 2026-10-02, Commit M — founder decision: ALL FEATURES FREE, no tiers; pricing/payment surface retired; FD-7 resolved. Prior: Commit L — AI tool loop, grounding/provenance closure, eval harness; FD-9..FD-18 reconciled).
 
 **Phase-0 status correction (Q5):** the round-3 close-out commit (`301a9d0`)
 said "Phase 0 closed"; that was an overclaim — P0-03 remains 🟡 (no staging
@@ -120,13 +120,14 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-06 needs D1-01 licence terms)
 | FD-9 | Constitution rules 32–37 ratification + encrypted-credentials-mirror proposal (detail below) | Article VI governance | PARTIALLY RESOLVED — rules 32–37 are now in force as Appendix A Article VI of the ratified Constitution v2 (PR #152, 2026-10-05); the **encrypted-credentials-mirror proposal itself remains OPEN** (current base64 scheme stays in force until decided). |
 | FD-10 | `/rishis` general chat scope: philosophy-only vs symbol-aware evidence-grounded (detail below) | `app/rishis` product contract | OPEN. |
 | FD-11 | Matured bond instruments (IN91DTB and successors) (detail below) | `data/bonds.ts` | OPEN. |
-| FD-12 | Non-equity heuristic-reference scores: promote to official scores or keep labelled heuristic reference | crypto/forex/commodity/bond score surfaces | OPEN (they remain explicitly labelled heuristic reference; do not silently redesign). |
+| FD-12 | Non-equity heuristic-reference scores: promote to official scores or keep labelled heuristic reference | crypto/forex/commodity/bond score surfaces | **RESOLVED 11 Oct 2026 as FD-23** (founder words "Crypto cards score and category back on reference data."; restated 12 Oct 2026 — RULES-2 verbatim in docs/ROADMAP.md FD-12). Implementing PR: #369. |
 | FD-13 | Seed-dataset residual placeholders (~416 boilerplate clones, ~422 mktcap artifacts) — impossibility gate + seed banner is interim | D1 live-fundamentals project | OPEN (real fix is D1, not more placeholder edits). |
 | FD-14 | `/terms` + `/privacy` minimal honest drafts — counsel review of the free-product wording; refund wording sign-off | legal copy | OPEN (the "before paid tiers scale" trigger is moot — there are no paid tiers; the drafts were updated for the free product in Commit M and still need counsel review). |
 | FD-15 | Non-equity asset classes in main nav (keep for traffic vs demote for focus) | nav/product scope | **RESOLVED 2026-10-11 (founder, verbatim: "Keep them, with each row showing its source and as-of time.")** — the rows STAY in the main nav, and every row must carry its source and as-of time; the missing-field state renders an honest em-dash with "no source yet" (the R3 REFMARKET-CONTRACT acceptance: a test fails when any row renders without a source or as-of time). |
 | FD-16 | Banks scored with non-bank metrics — NIM/GNPA/CRAR modelling needs a data-source decision | bank scoring surfaces | OPEN. |
 | FD-17 | Soft-404 on unknown stock symbols (HTTP 200 + not-found UI) — fix vs leave | SEO hygiene | OPEN. |
 | FD-18 | `data/security-master/populate.sql` mirrors the pre-round-5 symbol list — regeneration owned by the D1 pipeline | D1-04/D1-05 (must not resurrect removed symbols) | OPEN (flagged). |
+| FD-22 | Rankings on: `RANKINGS_ENABLED=true` in production (detail in docs/ROADMAP.md FD-22) | dashboard ranked widgets | **RESOLVED 2026-10-12 (founder words verbatim in docs/ROADMAP.md FD-22).** Env verified set (production target, `true`, created 2026-10-06). Honest-state probe (three widgets show honest empties, no seed ranking renders) rides the round-49 evidence; the flag-on-no-candidates note fix is the round-49 implementation PR. |
 
 ### Round-4 additions (Q6) — pending founder approval
 
@@ -363,3 +364,40 @@ Founder brief verbatim frame: "Open each ranked item as its own issue or PR, one
 | R11 | DEMO-SPEC — the honest demo path spec | test/demo | **OPEN** — issue #364 | CODER | runs green on main |
 | R12 | ACTIVATION-EVENTS — five events behind a consent hook | instrumentation | **OPEN** — issue #365 (consent wording: counsel-owned, FOUNDER DECISION NEEDED) | CODER + counsel | the events fire during the demo spec |
 | R13 | TODAY-AND-TRACKING — the dashboard Today view + "tracking since: not started" | dashboard + methodology | **OPEN** — issue #366 | CODER | both render on main |
+## Round 49 (2026-10-12) — RULES-1 founder-decision records (words + implementing PRs)
+
+Recorded BEFORE any code change this round, per the founder's order ("Record each founder
+instruction with your exact words and the date before changing code" — the directive's words are
+quoted verbatim; the date is the directive's receipt date, 2026-10-12).
+
+- **FD-22 — Rankings on.** Founder's words: "Set `RANKINGS_ENABLED=true` in production."
+  (Phase 0, DELIV-1.) Env verified already set (production target, `true`, created 2026-10-06).
+  Implementing PR (the honest flag-on-no-candidates state + probe): the round-49 rankings PR.
+  Register row: docs/ROADMAP.md FD-22.
+- **FD-12 — crypto/commodity cards (implemented as FD-23).** Founder's words (11 Oct, recorded
+  as FD-23 in PR #368): "Crypto cards score and category back on reference data." Restated
+  12 Oct (RULES-2): "Show score and category on reference data, labelled 'Heuristic reference —
+  static reference inputs, not a verdict', with source, attribution and as-of time. Show no BUY,
+  SELL, HOLD or AVOID. Stock verdicts stay null on seed data." Implementing PR: #369.
+- **The price-based override ("licence pending" label) — implemented as FD-26.** Founder's
+  words (12 Oct, DELIV-2): "Every price-based score carries 'licence pending'. The status stays
+  'unresolved' in code." FD-26 recorded 11 Oct (PR #368). Implementing PR: #371.
+- **"Top Buy Signals" name exception to P0-6 — implemented as FD-24.** Recorded 11 Oct
+  (PR #368): "Keep 'Top Buy Signals' as the name." Implementing PR: #370.
+- **Persona labels (Michael Saylor, Vitalik) — implemented as FD-25.** Recorded 11 Oct
+  (PR #368): "Keep Michael Saylor and Vitalik as persona labels."
+- **Payments after the demo — implemented as FD-27.** Recorded 11 Oct (PR #368): scheduled,
+  no code change until the demo date.
+- **FD-15 — the four markets show source and as-of on every row.** Founder's words (12 Oct,
+  DELIV-3): "Every row shows value, unit, source, as-of time and state. Missing fields show '—'
+  with 'no source yet'. Screener PRICE and 24H follow the same rule." Record PR: #360;
+  implementing PRs: #361 (sourced-rows contract) + #363 (the row-contract module, wiring tracked
+  in issue #363).
+- **News — keep, with an honest empty state (RESP-2).** Founder's words: "News stays in the nav
+  with an honest empty state, 'No headlines yet'. The PR must not hide News. Keep-or-remove stays
+  with you." (and: "News: keep or remove. Current directive: keep, with an honest empty state.")
+  Implementing PR: #346 (rewritten — the 11 Oct hide reversed on these words).
+- **FD-1 — BLOCKED stands.** Founder's words (12 Oct): "Set FD-1 back to BLOCKED unless you
+  confirm the 11 Oct delegation in writing." No written confirmation of the delegation exists,
+  so the revert is implemented by PR #359 (the 11 Oct record, which quotes the round-48 order)
+  and no further change happens without the founder's dated, written confirmation.

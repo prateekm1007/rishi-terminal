@@ -1,0 +1,29 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/verdictGate.uniform.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/verdictGate.uniform.test.ts [ test/verdictGate.uniform.test.ts ]
+Error: Cannot find package '@/lib/gurus/gate' imported from /home/z/rishi-terminal/test/verdictGate.uniform.test.ts
+ ❯ test/verdictGate.uniform.test.ts:37:1
+     35|   type DataQuality,
+     36| } from '@/lib/dataQuality';
+     37| import { gateAssetVerdict } from '@/lib/gurus/gate';
+       | ^
+     38| import type { RishiScore } from '@/lib/scorers/types';
+     39|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  09:25:35
+   Duration  662ms (transform 58%, setup 25%, worker 17%, environment 1%)
+
+EXIT_CODE=1

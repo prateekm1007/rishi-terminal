@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { Stock, RishiScore } from '../types';
 import type { ScoringContext } from '../consensus/orchestrator';
+import { isLenderSector, inapplicableAmong, describeFields } from './sectorGate';
 
 /**
  * Round-46 P0-2 — the SCORER VERDICT CONTRACT (founder audit 2026-10-11:
@@ -41,6 +42,16 @@ export interface ScorerVerdictContract {
   /** The numeric Stock fields this verdict REQUIRES — a placeholder zero
    *  in any of them yields no_verdict (never an interpretation of zero). */
   required: readonly string[];
+  /**
+   * P0-3: the lender policy. "field-gated" (the default) refuses a lender
+   * row when any REQUIRED field is sector-inapplicable (de/opm/fcf/ca/tl
+   * — the fields behind D/E, OPM, FCF, P/NCAV and the current ratio).
+   * "refuse" refuses EVERY lender row: the framework's tests presume a
+   * non-lender balance sheet even when its inputs compute. Greenblatt is
+   * the one "refuse" declaration (founder: "Greenblatt must refuse
+   * banks").
+   */
+  lenderPolicy?: 'refuse' | 'field-gated';
 }
 
 export const SCORER_VERDICT_CONTRACT: Record<string, ScorerVerdictContract> = {
@@ -63,7 +74,7 @@ export const SCORER_VERDICT_CONTRACT: Record<string, ScorerVerdictContract> = {
   'Seth Klarman':{ name: 'Seth Klarman',  full: 'Seth Klarman',      label: 'Asymmetric Safety',     origin: 'Global', required: ['de', 'fcf', 'pe', 'price', 'bvps', 'opm', 'revcagr'] },
   Soros:         { name: 'Soros',         full: 'George Soros',      label: 'Reflexivity Macro',     origin: 'Global', required: ['ca', 'tl', 'sh', 'price', 'revcagr', 'de', 'epscagr'] },
   'John Templeton':{name: 'John Templeton',full: 'John Templeton',    label: 'Maximum Pessimism',     origin: 'Global', required: ['bvps', 'mktcap', 'pe', 'price'] },
-  Greenblatt:    { name: 'Greenblatt',    full: 'Joel Greenblatt',   label: 'Magic Formula',         origin: 'Global', required: ['np', 'mktcap'] },
+  Greenblatt:    { name: 'Greenblatt',    full: 'Joel Greenblatt',   label: 'Magic Formula',         origin: 'Global', required: ['np', 'mktcap'], lenderPolicy: 'refuse' },
 };
 
 /**
@@ -111,9 +122,27 @@ export function observed(s: Stock): ObservedStock {
   return s as ObservedStock;
 }
 
+/**
+ * P0-3: the sector refusal reasons. "inapplicable" — the named required
+ * fields do not exist for this stock's sector; "lender-formula" — the
+ * framework declares lenderPolicy "refuse" (Greenblatt).
+ */
+export type SectorRefusal =
+  | { kind: 'inapplicable'; sector: string }
+  | { kind: 'lender-formula'; sector: string };
+
 /** The honest null verdict — attribution shell preserved, nothing fabricated. */
-export function noVerdictScore(c: ScorerVerdictContract, missing: string[]): RishiScore {
+export function noVerdictScore(
+  c: ScorerVerdictContract,
+  missing: string[],
+  sector?: SectorRefusal,
+): RishiScore {
   const list = missing.join(', ');
+  const insight = sector
+    ? sector.kind === 'lender-formula'
+      ? `No verdict \u2014 the ${c.full} ${c.label} framework does not apply to a ${sector.sector} company; its earnings-yield and return-on-capital tests presume a non-lender balance sheet.`
+      : (() => { const d = describeFields(missing); return `No verdict \u2014 ${d.text} (fields ${d.rawList}) ${d.isAre} not applicable to a ${sector.sector} company; the ${c.full} framework does not score lender balance sheets on them.`; })()
+    : `No verdict \u2014 ${list} ${missing.length > 1 ? 'are' : 'is'} a placeholder zero (unknown); the ${c.full} framework does not score missing data.`;
   return {
     name: c.name,
     full: c.full,
@@ -121,6 +150,36 @@ export function noVerdictScore(c: ScorerVerdictContract, missing: string[]): Ris
     score: null,
     origin: c.origin,
     comps: [],
-    insight: `No verdict \u2014 ${list} ${missing.length > 1 ? 'are' : 'is'} a placeholder zero (unknown); the ${c.full} framework does not score missing data.`,
+    insight,
   };
+}
+
+/**
+ * P0-3 — THE SECTOR GATE, the one refusal a scorer consults before its
+ * placeholder guard. A lender row is refused when the framework declares
+ * lenderPolicy "refuse" (Greenblatt) or when any REQUIRED field is
+ * sector-inapplicable; every other row passes through untouched (the
+ * gate is a no-op off the lender vocabulary — the positive control pins
+ * it). Inapplicability is checked BEFORE the P0-2 placeholder guard:
+ * the metric does not exist for the sector, which no observation can
+ * cure.
+ */
+export function sectorRefusal(stock: Stock, scorerName: string): RishiScore | null {
+  const contract = SCORER_VERDICT_CONTRACT[scorerName];
+  if (!contract) {
+    // Config defect, not a pass-through (rule 6): an unregistered name
+    // must never silently score.
+    throw new Error(
+      `sector gate: scorer "${scorerName}" has no SCORER_VERDICT_CONTRACT entry — declare it (lib/scorers/verdictGuards.ts) instead of scoring ungated`,
+    );
+  }
+  if (!isLenderSector(stock.sector)) return null;
+  if (contract.lenderPolicy === 'refuse') {
+    return noVerdictScore(contract, [], { kind: 'lender-formula', sector: stock.sector });
+  }
+  const fields = inapplicableAmong(stock.sector, contract.required);
+  if (fields.length) {
+    return noVerdictScore(contract, fields, { kind: 'inapplicable', sector: stock.sector });
+  }
+  return null;
 }

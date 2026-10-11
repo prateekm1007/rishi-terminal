@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, noVerdictScore, sectorRefusal, unknownAmong } from './verdictGuards';
 
 /**
  * Magic Formula (T11 zero-guard): ROC and EY divide by market cap; a
@@ -34,6 +34,12 @@ import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdict
  * NEEDED in the V2 PR.
  */
 export function scoreGreenblatt(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-3 (founder audit 2026-10-11): THE SECTOR GATE — a lender row is
+  // never scored on the metrics its sector does not have (D/E, OPM,
+  // FCF, P/NCAV, current ratio); Greenblatt refuses lenders entirely.
+  const p03Refusal = sectorRefusal(s, "Greenblatt");
+  if (p03Refusal) return p03Refusal;
+
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
   const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Greenblatt"].required, ctx);

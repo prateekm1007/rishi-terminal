@@ -127,14 +127,23 @@ describe("P0-3 — the sector gate", () => {
     const fmcg = panel(observedStock("FMCG"));
     expect(fmcg.filter((r) => r.score !== null)).toHaveLength(TOTAL_RISHIS);
     // Differential: flipping ONLY the sector to a lender refuses the gated
-    // frameworks while the survivors keep their exact scores.
-    const bank = panel(observedStock("Banking"));
-    for (const name of FOUNDER_SURVIVORS) {
+    // frameworks. The three sector-blind survivors keep their exact
+    // scores; John Templeton also carries a PRE-EXISTING sector component
+    // of its own (the maximum-pessimism quality leg scores FMCG/pharma
+    // 100, everything else 70 — documented in its scorer), so for it the
+    // pin is equality across Banking/NBFC/Energy — identical from the
+    // gate's point of view, proving the gate never touched its arithmetic.
+    for (const name of ["Kacholia", "Philip Fisher", "Porinju"]) {
       const a = byName(fmcg, name);
-      const b = byName(bank, name);
+      const b = byName(panel(observedStock("Banking")), name);
       expect(b.score, `${name} must be untouched by the gate`).toBe(a.score);
     }
-    for (const r of bank) {
+    const tScores = ["Banking", "NBFC", "Energy"].map((sector) =>
+      byName(panel(observedStock(sector)), "John Templeton").score,
+    );
+    expect(new Set(tScores).size).toBe(1);
+    expect(tScores[0]).not.toBeNull();
+    for (const r of panel(observedStock("Banking"))) {
       if (!FOUNDER_SURVIVORS.includes(r.name)) {
         expect(r.score, `${r.name} must refuse a bank`).toBeNull();
       }
@@ -164,11 +173,12 @@ describe("P0-3 — the sector gate", () => {
     }
   });
 
-  it("inapplicability refusals name the sector and the fields, never advice wording", () => {
+  it("inapplicability refusals name the sector and the ratio vocabulary, never advice wording", () => {
     const b = byName(panel(AXISBANK), "Buffett"); // opm 44 is non-null: only the gate refuses
     expect(b.score).toBeNull();
     expect(b.insight).toMatch(/not applicable to a Banking company/);
     expect(b.insight).toMatch(/\bOPM\b/);
+    expect(b.insight).toMatch(/fields opm/);
     for (const r of panel(AXISBANK)) {
       expect(r.insight).not.toMatch(/STRONG BUY|\bLong\b|\bShort\b|REDUCE|Avoid/);
     }

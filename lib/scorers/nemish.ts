@@ -4,6 +4,7 @@ import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
 import { insuffDetail } from './unknownInputs';
+import { sectorRefusal } from './verdictGuards';
 
 /**
  * Nemish Shah — Steady Compounder (X6, Round 13 root-cause fix).
@@ -40,6 +41,12 @@ import { insuffDetail } from './unknownInputs';
  * missing data).
  */
 export function scoreNemish(s: Stock, ctx?: ScoringContext): RishiScore {
+  // P0-3 (founder audit 2026-10-11): THE SECTOR GATE — a lender row is
+  // never scored on the metrics its sector does not have (D/E, OPM,
+  // FCF, P/NCAV, current ratio); Greenblatt refuses lenders entirely.
+  const p03Refusal = sectorRefusal(s, "Nemish");
+  if (p03Refusal) return p03Refusal;
+
   // A pillar input is a placeholder unknown when it is the seed's 0 (the
   // context decides — no context means seed semantics, the fail-closed
   // default) or, for P/E, when no meaningful P/E exists at all.

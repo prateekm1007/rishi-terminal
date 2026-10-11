@@ -357,7 +357,10 @@ describe("INT-D1 nlToQuery — translation pins per phrase class (byte-exact)", 
     translates("information technology", '(sector = "IT")');
     translates("sector oil & gas", '(sector = "Oil & Gas")');
     translates("defence", '(sector = "Defence")');
-    translates("real estate", '(sector = "RealEstate")');
+    // FD-13 re-pin (rule 23, founder directive 2026-10-11: "Merge the
+    // sector duplicates (Realty/RealEstate, Tech/IT, Fintech/FinTech)") —
+    // the phrase resolves to the CANONICAL spelling now.
+    translates("real estate", '(sector = "Realty")');
     translates("sector it", '(sector = "IT")');
     translates("capital goods", '(sector = "Capital Goods")');
     translates("auto ancillaries", '(sector = "Auto Ancillaries")');

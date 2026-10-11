@@ -4,6 +4,7 @@ import { useFundamentals } from '@/hooks/useFundamentals';
 import { MetricCard, StatGroup } from './StyleGuide';
 import { DataValue } from '@/components/DataValue';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
+import { isMktcapArtifact } from '@/lib/seedResiduals';
 import { derivedSourced, dropSeedPlaceholderZero, overlaySourced, type Sourced } from '@/lib/types/sourced';
 
 interface Props {
@@ -113,6 +114,10 @@ export function MetricsPanel({ resolved }: Props) {
     s.mktcap.asOf,
   );
 
+  // FD-13: the market-cap artifact detection (mktcap === price x 1000
+  // exactly — the ingestion-era placeholder arithmetic).
+  const mktcapArtifactRow = isMktcapArtifact(resolved.stock.price, metricsSourced.mktcap.value);
+
   const metrics = [
     { label: 'P/E Ratio',    sourced: metricsSourced.pe,      unit: 'x',    threshold: 20,  inverse: true  },
     { label: 'ROE',          sourced: metricsSourced.roe,     unit: '%',    threshold: 15,  inverse: false },
@@ -122,7 +127,11 @@ export function MetricsPanel({ resolved }: Props) {
     { label: 'OPM',          sourced: metricsSourced.opm,     unit: '%',    threshold: 10,  inverse: false, bankHidden: true },
     { label: 'Revenue CAGR', sourced: metricsSourced.revcagr, unit: '%',    threshold: 15,  inverse: false },
     { label: 'EPS CAGR',     sourced: metricsSourced.epscagr, unit: '%',    threshold: 15,  inverse: false },
-    { label: 'Mkt Cap',      sourced: metricsSourced.mktcap,  unit: 'K Cr', threshold: 100, inverse: false, scale: 1000 },
+    // FD-13 (founder directive 2026-10-11: "label or hide the boilerplate
+    // rows and market-cap artifacts"): the mktcap === price x 1000
+    // artifact rows are LABELLED in place — the value stays visible under
+    // the seed banner, the label says what it is.
+    { label: mktcapArtifactRow ? 'Mkt Cap · placeholder' : 'Mkt Cap', sourced: metricsSourced.mktcap,  unit: 'K Cr', threshold: 100, inverse: false, scale: 1000 },
   ].filter(m => !(isBank && m.bankHidden));
 
   return (
@@ -182,6 +191,11 @@ export function MetricsPanel({ resolved }: Props) {
           ) : (
             <StatGroup title="FCF Yield" stats={[
               { label: 'FCF / Mkt Cap', value: <DataValue sourced={fcfYield} digits={2} unit="%" /> }
+            ]} />
+          )}
+          {mktcapArtifactRow && (
+            <StatGroup title="Seed note" stats={[
+              { label: 'Mkt Cap', value: <span style={{ fontSize: 12, color: '#94A3B8' }}>placeholder artifact — recorded as exactly seed price × 1000 (the ingestion-era arithmetic), not an observation (FD-13; the real figure arrives with the D1 live-fundamentals project)</span> }
             ]} />
           )}
           <StatGroup title="Promoter" stats={[

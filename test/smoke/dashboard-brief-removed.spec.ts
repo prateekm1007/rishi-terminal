@@ -23,11 +23,15 @@
  *
  * Positive control FIRST (B-18 — a missing section passes any absence
  * check): a TAIL-OWNED section renders. Round-46 P0-1 (founder audit
- * 2026-10-11: "Seed rows show no verdict") emptied the ranked pools — the
- * tail's own honest "Ranked picks are disabled" panel now carries the
- * settled-state gate (it mounts in the SAME client commit as the tail's
- * other sections, so once it is visible the absence counts below cannot
- * race a not-yet-mounted section).
+ * 2026-10-11: "Seed rows show no verdict") emptied the ranked pools —
+ * the tail's own honest no-picks panel now carries the settled-state
+ * gate (it mounts in the SAME client commit as the tail's other
+ * sections, so once it is visible the absence counts below cannot race
+ * a not-yet-mounted section). FD-22 re-pin (founder order 2026-10-12,
+ * rankings ON): the tail-owned marker is the AWAITING panel title —
+ * "Rankings are on — nothing qualifies yet" — because this suite runs
+ * with RANKINGS_ENABLED=true and the old "Ranked picks are disabled"
+ * note would now be a false statement in this state (C1).
  */
 import { test, expect } from "@playwright/test";
 
@@ -47,8 +51,9 @@ test.describe("INT-C1 dashboard brief REMOVED per founder order (2026-10-11)", (
     // so this visibility is the settled-state gate the absence pins below
     // are evaluated after. (TOP BUY SIGNALS was the original marker; the
     // round-46 P0-1 verdict gate emptied the ranked pools, and the tail's
-    // honest disabled-picks panel took over the settled-state role.)
-    await expect(page.getByText("Ranked picks are disabled")).toBeVisible({ timeout: 20_000 });
+    // honest no-picks panel took over the settled-state role — under FD-22
+    // with the flag on, that panel is the AWAITING state.)
+    await expect(page.getByText("Rankings are on")).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PINS: no brief section skeleton anywhere in the DOM.
     // (Pre-removal each was 1 — the hydrated tail skeleton and the

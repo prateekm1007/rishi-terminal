@@ -23,7 +23,13 @@ export default function Sidebar() {
       items: [
         { href: "/crypto",      label: t("nav.crypto"),         icon: "₿" },
         { href: "/forex",       label: t("nav.forex"),          icon: "¤" },
-        { href: "/commodities", label: t("nav.commodities"),    icon: "◆" },
+        // P1 (founder order 2026-10-11): "Point /commodities to Stocks in
+        // the nav" — the Commodities entry no longer advertises the
+        // static-reference shell; Stocks (CORE group, above) is the
+        // destination. The route and its detail pages stay reachable
+        // (MH pattern). NOTE (C10): a "Commodities"-labelled link aimed
+        // at /stocks was rejected on rule 2 — labels describe their
+        // destination. FOUNDER DECISION NEEDED if another shape is wanted.
         { href: "/bonds",       label: t("nav.bonds"),          icon: "▭" },
         { href: "/pulse",       label: t("nav.economyPlus"),    icon: "●" },
       ],

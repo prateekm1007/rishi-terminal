@@ -284,8 +284,8 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
                     {/* Round-5 audit (finding 22): null handling unified with
                         the Stock of the Day card — a zero P/E means "not
                         meaningful" and renders as an em dash, never "PE 0". */}
-                    <div>{t("dashboard2.peLabel")} {(() => { const pe = buyFund[stock.symbol]?.pe ?? stock.pe; return pe > 0 ? pe : "—"; })()}</div>
-                    <div>{t("dashboard2.roeLabel")} {(() => { const roe = buyFund[stock.symbol]?.roe ?? stock.roe; return roe !== 0 ? roe + "%" : "—"; })()}</div>
+                    <div>{t("dashboard2.peLabel")} {(() => { const pe = buyFund[stock.symbol]?.pe ?? stock.pe; return pe !== null && pe > 0 ? pe : "—"; })()}</div>
+                    <div>{t("dashboard2.roeLabel")} {(() => { const roe = buyFund[stock.symbol]?.roe ?? stock.roe; return roe !== null && roe !== 0 ? roe + "%" : "—"; })()}</div>
                   </div>
                 </div>
               </div>

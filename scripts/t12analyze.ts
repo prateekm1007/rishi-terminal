@@ -8,7 +8,7 @@ function normalize(name: string): string {
     .replace(/[^A-Z0-9]/g, "");
 }
 
-const groups: Record<string, Array<{ symbol: string; name: string; sector: string; price: number; mktcap: number; rev: number; pe: number; roe: number; promo: number; bvps: number }>> = {};
+const groups: Record<string, Array<{ symbol: string; name: string; sector: string; price: number; mktcap: number; rev: number; pe: number | null; roe: number | null; promo: number; bvps: number }>> = {};
 
 for (const s of Object.values(STOCKS)) {
   const key = normalize(s.name);

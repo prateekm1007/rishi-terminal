@@ -8,6 +8,8 @@ import { dataQualityFromSeedStock } from "@/lib/dataQuality";
 import { weightedAverage, MIN_VALID_SCORERS } from "@/lib/consensus/weights";
 import { STOCKS } from "@/data/stocks";
 
+const RELIANCE = STOCKS["RELIANCE"] as import("@/lib/types").Stock;
+
 const allZeroStock = (): Stock => ({
   symbol: "ZERO", name: "Zero Corp", sector: "IT", exchange: "NSE",
   price: 100, pe: 0, roe: 0, mktcap: 0, ocf: 0, rev: 0, revcagr: 0,
@@ -58,15 +60,24 @@ describe("T11 — every scorer is null-safe, never NaN", () => {
     }
   });
 
-  it("weightedAverage ignores null scores but still works above the quorum", () => {
+  // P0-2 re-pin (founder audit 2026-10-11 "return no_verdict on missing
+  // inputs"): on a FULLY-placeholder record (all fundamentals zero/seed)
+  // every one of the 20 scorers returns null — the X6 contract extended
+  // to the whole panel. The quorum (and the consensus) is null; the
+  // "still works above the quorum" branch is exercised below on OBSERVED
+  // data (RELIANCE).
+  it("all-zero fundamentals: every scorer nulls; the consensus is null", () => {
     const scores = runAllScorers(allZeroStock());
     const validCount = scores.filter(s => s.score !== null).length;
-    // X6 (Round 13): 15 — Nemish joins the documented-null set on
-    // all-zero data (a fully-placeholder record has no Steady Compounder
-    // verdict; previously it returned a finite 45 built on two
-    // placeholder-perfect pillars). Damani/Jhunjhunwala/Buffett/Greenblatt
-    // were already null.
-    expect(validCount).toBe(15);
+    expect(validCount).toBe(0);
+    const c = weightedAverage(scores);
+    expect(c).toBeNull();
+  });
+
+  it("observed data keeps the quorum: weightedAverage still works (RELIANCE)", () => {
+    const scores = runAllScorers(RELIANCE);
+    const validCount = scores.filter(s => s.score !== null).length;
+    expect(validCount).toBeGreaterThanOrEqual(12); // MIN_VALID_SCORERS
     const c = weightedAverage(scores);
     expect(c).not.toBeNull();
   });

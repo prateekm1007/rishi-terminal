@@ -29,9 +29,10 @@ export interface Sourced<T = number> {
   asOf: string | null;
 }
 
-/** The internal resolution shape produced by lib/scoring (T10). */
+/** The internal resolution shape produced by lib/scoring (T10).
+ *  P0-2: null = the field was never observed (the placeholder class). */
 export interface ResolvedFieldLike {
-  value: number;
+  value: number | null;
   source: "seed" | "live" | "derived";
   asOf: string | null;
 }

@@ -4,16 +4,32 @@ export interface Stock {
   sector: string;        // CRITICAL - used by scorers and WisdomSidebar
   exchange: string;
   price: number;
-  pe: number;
-  roe: number;
+  /**
+   * P0-2 (founder audit 2026-10-11): null = the value was never observed
+   * (placeholder unknown). A P/E of exactly 0 is impossible for
+   * profit-makers and undefined for loss-makers, so the placeholder class
+   * is null at the data layer — never a typed 0 that scores as a fact.
+   */
+  pe: number | null;
+  /** P0-2: null = placeholder unknown (same class as pe). */
+  roe: number | null;
   mktcap: number;
   ocf: number;
   rev: number;
   revcagr: number;
   epscagr: number;
-  opm: number;
+  /**
+   * P0-2: null = concept inapplicable for Banking rows (deposits are not
+   * corporate debt; the stock page hides D/E for banks) or placeholder
+   * unknown. A non-bank 0 is a REAL observation (debt-free, G5).
+   */
+  opm: number | null;
   roce: number;
-  de: number;
+  /**
+   * P0-2: null = concept inapplicable for Banking rows or placeholder
+   * unknown. A non-bank 0 is a REAL observation (debt-free, G5).
+   */
+  de: number | null;
   fcf: number;
   promo: number;
   ca: number;

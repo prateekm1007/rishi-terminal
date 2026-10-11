@@ -49,18 +49,21 @@ export function applyLens(stock: Stock, score: RishiScore, lens: RishiLens): Len
   const keyMetrics = lens.focusMetrics.map(metric => {
     switch (metric) {
       case 'ROE':
+        if (stock.roe === null) return { metric: 'Return on Equity', value: 'unknown', assessment: 'Not assessed — ROE never observed' };
         return {
           metric: 'Return on Equity',
           value: `${stock.roe}%`,
           assessment: stock.roe > 20 ? 'Excellent' : stock.roe > 15 ? 'Good' : 'Weak',
         };
       case 'P/E':
+        if (stock.pe === null) return { metric: 'Price to Earnings', value: 'unknown', assessment: 'Not assessed — P/E never observed' };
         return {
           metric: 'Price to Earnings',
           value: `${stock.pe}x`,
           assessment: stock.pe < 15 ? 'Attractive' : stock.pe < 25 ? 'Fair' : 'Expensive',
         };
       case 'D/E':
+        if (stock.de === null) return { metric: 'Debt to Equity', value: 'unknown', assessment: 'Not assessed — D/E never observed' };
         return {
           metric: 'Debt to Equity',
           value: stock.de.toFixed(2),
@@ -80,9 +83,9 @@ export function applyLens(stock: Stock, score: RishiScore, lens: RishiLens): Len
   const risks: string[] = [];
   const opportunities: string[] = [];
 
-  if (stock.de > 1) risks.push('High leverage - monitor refinancing risk');
-  if (stock.roe < 12) risks.push('Low returns - competitive pressure visible');
-  if (stock.pe > 40) risks.push('Rich valuation - limited margin of safety');
+  if (stock.de !== null && stock.de > 1) risks.push('High leverage - monitor refinancing risk');
+  if (stock.roe !== null && stock.roe < 12) risks.push('Low returns - competitive pressure visible');
+  if (stock.pe !== null && stock.pe > 40) risks.push('Rich valuation - limited margin of safety');
 
   if (stock.fcf > stock.np * 0.8) opportunities.push('Strong free cash flow generation');
   if (stock.promo > 50) opportunities.push('High promoter confidence');

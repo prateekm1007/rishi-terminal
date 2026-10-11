@@ -20,20 +20,34 @@ import type { Stock } from "@/lib/types";
 // records are "missing", healthy illustrative records are "seed"; verdicts
 // are allowed on neither.
 describe("round-5: internally impossible records are missing (no usable data)", () => {
-  it("KWALITY (pe 0, roe 0, np>0) is missing", () => {
+  // P0-2 re-pin (founder audit 2026-10-11): KWALITY's placeholder P/E and
+  // ROE moved from typed 0s to nulls — the record has real values beside
+  // them, so it classifies seed; the impossibility rule now bites only on
+  // synthetic typed zeros (below).
+  it("KWALITY (pe null, roe null, np>0) is seed — unknown, not impossible", () => {
     const kw = STOCKS["KWALITY"] as Stock;
     expect(kw).toBeDefined();
     expect(kw.np).toBeGreaterThan(0);
-    expect(kw.pe).toBe(0);
-    expect(dataQualityFromSeedStock(kw)).toBe("missing");
+    expect(kw.pe).toBeNull();
+    expect(kw.roe).toBeNull();
+    expect(dataQualityFromSeedStock(kw)).toBe("seed");
   });
 
-  it("every record with pe===0 AND roe===0 AND np>0 is missing", () => {
-    const bad = Object.values(STOCKS).filter(
-      s => s.pe === 0 && s.roe === 0 && s.np > 0,
+  it("P0-2: no record carries typed pe===0 or roe===0 — the classes are null", () => {
+    const typed = Object.values(STOCKS).filter(
+      s => s.pe === 0 || s.roe === 0,
     );
-    expect(bad.length).toBeGreaterThan(40); // the audit counted ~57 with pe0+roe0
-    for (const s of bad) expect(dataQualityFromSeedStock(s)).toBe("missing");
+    expect(typed).toEqual([]);
+    const nulled = Object.values(STOCKS).filter(
+      s => s.pe === null && s.roe === null && s.np > 0,
+    );
+    expect(nulled.length).toBeGreaterThan(40); // the audit counted ~57 with pe0+roe0
+    for (const s of nulled) expect(dataQualityFromSeedStock(s)).toBe("seed");
+  });
+
+  it("a synthetic typed-zero record (pe 0, roe 0, np>0) is still missing", () => {
+    const synthetic = { ...(STOCKS["KWALITY"] as Stock), pe: 0, roe: 0 } as Stock;
+    expect(dataQualityFromSeedStock(synthetic)).toBe("missing");
   });
 
   it("a loss-maker with pe 0 (np<0) is NOT auto-rejected by the impossibility rule", () => {
@@ -67,14 +81,22 @@ describe("round-5 + round-46 P0-1: rankings exclude every non-verdict-allowed re
 });
 
 describe("round-5: Graham no longer reads P/E 0 as ultra-cheap", () => {
-  it("a zero-P/E record scores zero P/E-value points (not 100)", () => {
+  // P0-2 re-pin: a null-P/E record earns NO Graham verdict at all (the
+  // round-5 zero-points guard is preserved inside the guarded branch and
+  // still bites on a synthetic typed zero).
+  it("a null-P/E record returns no Graham verdict; a typed zero scores zero P/E-value points", () => {
     const kw = STOCKS["KWALITY"] as Stock;
+    expect(kw.pe).toBeNull();
     const g = scoreGraham(kw);
-    const peComponent = g.comps.find(c => c.label === "P/E Value");
-    expect(peComponent?.v).toBe(0);
-    // The composite was 100 pre-fix; with P/E value zeroed and impossible
-    // records excluded from rankings, it must be materially lower.
-    expect(g.score).toBeLessThan(100);
+    expect(g.score).toBeNull();
+
+    const synthetic = { ...(STOCKS["KWALITY"] as Stock), pe: 0 } as Stock;
+    const g2 = scoreGraham(synthetic);
+    // P0-2 ctx-free call = seed semantics: typed 0 is a placeholder
+    // unknown, so the verdict is null here too — the zero-points guard
+    // lives in the observed branch (pe > 0 required for points).
+    expect(g2.score).toBeNull();
+    expect(g2.comps.find(c => c.label === "P/E Value")?.detail).toContain("insufficient");
   });
 
   it("a normal cheap stock still earns its P/E points", () => {

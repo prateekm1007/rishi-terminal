@@ -71,10 +71,10 @@ export function ScreenerClient({ rows }: Props) {
       .filter(s => s.mktcap > 0).length;
     return [
     { label: t('screener.strongBuy'),  count: okRows.filter(s => s.consensus !== null && s.consensus >= 75).length, color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)',  title: 'Consensus >= 75 (High Conviction / Legendary bands)' },
-    { label: t('screener.valuePlays'), count: okRows.filter(s => s.pe < 20 && s.pe > 0).length,  color: 'var(--accent-gold)',  bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)',  title: 'P/E below 20 with positive earnings' },
+    { label: t('screener.valuePlays'), count: okRows.filter(s => s.pe !== null && s.pe < 20 && s.pe > 0).length,  color: 'var(--accent-gold)',  bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)',  title: 'P/E below 20 with positive earnings' },
     { label: t('screener.largeCap'),   count: largeCapCount,       color: '#c084fc',             bg: 'rgba(192,132,252,0.08)', border: 'rgba(192,132,252,0.2)', title: 'Top 100 by market cap (AMFI definition)' },
-    { label: t('screener.highROE'),    count: okRows.filter(s => s.roe > 25).length,              color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)',  title: 'ROE above 25%' },
-    { label: t('screener.debtFree'),   count: okRows.filter(s => s.de < 0.3).length,             color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)', title: 'Debt-to-equity below 0.3' },
+    { label: t('screener.highROE'),    count: okRows.filter(s => s.roe !== null && s.roe > 25).length,              color: 'var(--accent-green)', bg: 'rgba(16,185,129,0.08)',  border: 'rgba(16,185,129,0.2)',  title: 'ROE above 25%' },
+    { label: t('screener.debtFree'),   count: okRows.filter(s => s.de !== null && s.de < 0.3).length,             color: '#f472b6',             bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.2)', title: 'Debt-to-equity below 0.3' },
     ];
   }, [t, locale, rows]);
   return (

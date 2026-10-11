@@ -29,14 +29,14 @@ export function generateWisdomGraph(stock: Stock): WisdomGraphData {
   const insights: string[] = [];
   
   // Quality metrics
-  if (stock.roe > 15) {
+  if (stock.roe !== null && stock.roe > 15) {
     nodes.push({ id: 'quality', label: 'High Quality', type: 'principle', value: stock.roe });
     edges.push({ from: 'stock', to: 'quality', strength: stock.roe, label: `ROE ${stock.roe}%` });
     insights.push(`Strong return on equity suggests competitive advantage`);
   }
   
   // Value metrics
-  if (stock.pe < 20) {
+  if (stock.pe !== null && stock.pe < 20) {
     nodes.push({ id: 'value', label: 'Value Opportunity', type: 'principle', value: stock.pe });
     edges.push({ from: 'stock', to: 'value', strength: 100 - stock.pe * 3, label: `P/E ${stock.pe}` });
     insights.push(`Trading at reasonable valuation relative to market`);
@@ -50,7 +50,7 @@ export function generateWisdomGraph(stock: Stock): WisdomGraphData {
   }
   
   // Risk factors
-  if (stock.de > 1) {
+  if (stock.de !== null && stock.de > 1) {
     nodes.push({ id: 'leverage', label: 'Leverage Risk', type: 'risk', value: stock.de });
     edges.push({ from: 'stock', to: 'leverage', strength: stock.de * 30, label: `D/E ${stock.de.toFixed(2)}` });
     insights.push(`Monitor debt levels — refinancing risk exists`);

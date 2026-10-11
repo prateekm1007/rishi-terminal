@@ -72,11 +72,12 @@ export interface SlimStockRow {
   tensionSpread: number;
   /** Bounded per-Rishi summary slice for LIST payloads (see slimIndex). */
   summaryScores: SlimVerdictScore[];
-  /** Free display / preset-filter fields (shown on every stock page). */
-  pe: number;
-  roe: number;
+  /** Free display / preset-filter fields (shown on every stock page).
+   *  P0-2: null = never observed; renders "—", never a placeholder 0. */
+  pe: number | null;
+  roe: number | null;
   mktcap: number;
-  de: number;
+  de: number | null;
   revcagr: number;
   fcf: number;
 }
@@ -96,10 +97,13 @@ export interface ScreenerPickerRow {
   /** The closed P0-1 vocabulary (live | delayed | seed | missing) — the
    *  row badge reads THIS. */
   dataQuality: DataQuality;
-  pe: number;
-  roe: number;
+  /** P0-2: null = never observed. */
+  pe: number | null;
+  /** P0-2: null = never observed. */
+  roe: number | null;
   mktcap: number;
-  de: number;
+  /** P0-2: null = never observed / banking-inapplicable. */
+  de: number | null;
   /** SCREENER_PRESETS' minRevCAGR filter reads this. */
   revcagr: number;
 }

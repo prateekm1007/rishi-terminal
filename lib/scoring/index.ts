@@ -45,7 +45,7 @@ export type { Stock, ConsensusResult, StockMetrics, RishiScoreResult, ScoreMode 
 /** Where a resolved field's value came from. */
 export type FieldSource = "seed" | "live" | "derived";
 
-export interface ResolvedField<T = number> {
+export interface ResolvedField<T = number | null> {
   value: T;
   source: FieldSource;
   /**
@@ -95,14 +95,18 @@ function isResolved(x: unknown): x is ResolvedStockMetrics {
  * live data" and keep the seed baseline — missing is never reinterpreted
  * as zero and zero/negative is never reinterpreted as missing.
  */
-function pick(
+function pick<S extends number | null>(
   field: string,
   liveValue: number | null | undefined,
-  seedValue: number,
-): { value: number; source: FieldSource } {
+  seedValue: S,
+): { value: S; source: FieldSource } {
   if (typeof liveValue === "number" && isAdmissibleLive(field, liveValue)) {
-    return { value: liveValue, source: "live" };
+    return { value: liveValue as S, source: "live" };
   }
+  // P0-2: a null seed value is UNKNOWN — it resolves to null (never to a
+  // fabricated 0) and flows through the wire, the scorers' no-verdict
+  // contract and the data-quality derivation as unknown. A seed typed
+  // `number` (never-null class) keeps its type.
   return { value: seedValue, source: "seed" };
 }
 
@@ -136,7 +140,7 @@ export function resolveStockMetrics(
   // instead of a generic "live". FullFundamentals.source: screener | yahoo+nse | static.
   const vendorName = live?.source && live.source !== "static" ? live.source : undefined;
 
-  const set = (key: string, r: { value: number; source: FieldSource }) => {
+  const set = (key: string, r: { value: number | null; source: FieldSource }) => {
     fields[key] = {
       value: r.value,
       source: r.source,
@@ -181,13 +185,15 @@ export function resolveStockMetrics(
   // took the live asOf whenever BVPS was live, presenting seed-price /
   // live-BVPS as a coherent live figure).
   const pb: ResolvedField = {
-    value: bvps.value > 0 ? Number((seed.price / bvps.value).toFixed(4)) : 0,
+    // P0-2: no book value observed (null) -> no P/B derived (null), never
+    // a fabricated 0 (rule 16).
+    value: bvps.value !== null && bvps.value > 0 ? Number((seed.price / bvps.value).toFixed(4)) : null,
     source: "derived",
     asOf: null,
   };
   fields.pb = pb;
   sourced.pb = toSourced(pb);
-  const fcfMargin: ResolvedField = {
+  const fcfMargin: ResolvedField<number> = {
     value: seed.rev > 0 ? Number(((seed.fcf / seed.rev) * 100).toFixed(4)) : 0,
     source: "seed",
     asOf: null,
@@ -265,7 +271,9 @@ export function getStockScore(input: Stock | ResolvedStockMetrics): ConsensusRes
     // stagnant EPS CAGR) is an observation and scores normally.
     const unknownFields = new Set(
       Object.entries(input.fields)
-        .filter(([, f]) => f.source === "seed" && f.value === 0)
+        // P0-2: a seed-sourced zero is the June placeholder (Y4) AND a
+        // null seed value is never-observed — both are unknown inputs.
+        .filter(([, f]) => f.source === "seed" && (f.value === 0 || f.value === null))
         .map(([name]) => name),
     );
     // P0-1: the data quality derives from the per-field provenance. The

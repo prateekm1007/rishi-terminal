@@ -24,8 +24,10 @@ export interface StockMetrics {
   industry?:           string;
 
   // Valuation
-  pe:                  number;
-  pb:                  number;
+  /** P0-2: null = never observed (the placeholder class). */
+  pe:                  number | null;
+  /** P0-2: null when no book value was observed (P/B underivable). */
+  pb:                  number | null;
   evEbitda?:           number;
   pegRatio?:           number;
   evSales?:            number;
@@ -33,9 +35,11 @@ export interface StockMetrics {
   marketCap?:          number;
 
   // Profitability
-  roe:                 number;
+  /** P0-2: null = never observed. */
+  roe:                 number | null;
   roce?:               number;
-  opm?:                number;
+  /** P0-2: null = never observed. */
+  opm?:                number | null;
   npm?:                number;
   fcfMargin?:          number;
   grossMargin?:        number;
@@ -47,7 +51,8 @@ export interface StockMetrics {
   epsCAGR5Y?:          number;
 
   // Balance Sheet
-  debtToEquity?:       number;
+  /** P0-2: null = never observed / concept inapplicable (banking). */
+  debtToEquity?:       number | null;
   currentRatio?:       number;
   interestCoverage?:   number;
   debtEbitda?:         number;

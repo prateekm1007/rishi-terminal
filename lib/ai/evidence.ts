@@ -328,6 +328,10 @@ export function buildFundamentalItems(
   };
   const out: AiEvidenceItem[] = [];
   for (const [field, rf] of Object.entries(resolved.fields)) {
+    // P0-2 (founder audit 2026-10-11): a null value was never observed —
+    // the AI evidence emits NO fact for it (no text, no typed fact), so
+    // nothing downstream can cite a number that does not exist.
+    if (rf.value === null) continue;
     const label = FIELD_LABELS[field] ?? field;
     const asOf = rf.source === "live" && rf.asOf ? rf.asOf : null;
     // Audit 2026-10-02 P0: the id fragment must distinguish the three real
@@ -477,23 +481,27 @@ export interface AiPeerRow {
   sector: string;
   price: number;
   mktcap: number;
-  pe: number;
-  roe: number;
+  /** P0-2: null = never observed. */
+  pe: number | null;
+  /** P0-2: null = never observed. */
+  roe: number | null;
 }
 
 export function buildPeerItems(symbol: string, peers: readonly AiPeerRow[]): AiEvidenceItem[] {
   return peers.map(p => {
+    // P0-2: unknown values (null) emit NO typed fact — nothing downstream
+    // may cite a number that was never observed.
     const facts: AiEvidenceFact[] = [
       { field: "price", value: p.price, unit: FACT_UNIT_BY_FIELD.price, source: "seed", observedAt: null },
       { field: "mktcap", value: p.mktcap, unit: FACT_UNIT_BY_FIELD.mktcap, source: "seed", observedAt: null },
-      { field: "pe", value: p.pe, unit: FACT_UNIT_BY_FIELD.pe, source: "seed", observedAt: null },
-      { field: "roe", value: p.roe, unit: FACT_UNIT_BY_FIELD.roe, source: "seed", observedAt: null },
+      ...(p.pe !== null ? [{ field: "pe", value: p.pe, unit: FACT_UNIT_BY_FIELD.pe, source: "seed" as const, observedAt: null }] : []),
+      ...(p.roe !== null ? [{ field: "roe", value: p.roe, unit: FACT_UNIT_BY_FIELD.roe, source: "seed" as const, observedAt: null }] : []),
     ];
     return {
       id: `peer:${symbol}:${p.symbol}:seed`,
       text:
         `Peer (SEED REGISTRY — may be stale): ${p.name} (${p.symbol}), sector ${p.sector}; ` +
-        `seed price ${fmt(p.price)}, seed market cap ${fmt(p.mktcap)} Cr, seed P/E ${fmt(p.pe)}, seed ROE ${fmt(p.roe)}%.` +
+        `seed price ${fmt(p.price)}, seed market cap ${fmt(p.mktcap)} Cr, seed P/E ${p.pe === null ? 'unknown' : fmt(p.pe)}, seed ROE ${p.roe === null ? 'unknown' : fmt(p.roe)}%.` +
         factAnnotation(facts),
       facts,
     };

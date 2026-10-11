@@ -76,15 +76,17 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
 
 export function detectArchetype(stock: Stock): string | null {
   const { sector, roe, pe, np, revcagr, de, mktcap } = stock;
-  if (['FMCG', 'Consumer', 'Retail'].includes(sector) && roe > 20) return 'consumer_moat';
-  if (['Metals', 'Energy'].includes(sector) && pe < 10 && pe > 0) return 'cyclical_value';
-  if (pe > 50 && np < 0) return 'growth_premium';
+  // P0-2: null (never observed) matches no archetype — a value nobody
+  // observed cannot be a signal. Comparisons on null are skipped.
+  if (['FMCG', 'Consumer', 'Retail'].includes(sector) && roe !== null && roe > 20) return 'consumer_moat';
+  if (['Metals', 'Energy'].includes(sector) && pe !== null && pe < 10 && pe > 0) return 'cyclical_value';
+  if (pe !== null && pe > 50 && np < 0) return 'growth_premium';
   // Y4 (Round 12): Banking removed — a bank is not an IT-services
   // compounder, and the seed's bank D/E 0 (placeholder) made the old
   // IT-plus-Banking rule match on fabricated cleanliness. Banks (and
   // anything else unmatched) show NO analog rather than a wrong one.
-  if (sector === 'IT' && roe > 15 && de < 1) return 'quality_growth';
-  if (roe < 0 || de > 3) return 'turnaround';
-  if (mktcap < 10000 && revcagr > 20 && roe > 15) return 'smallcap_gem';
+  if (sector === 'IT' && roe !== null && roe > 15 && de !== null && de < 1) return 'quality_growth';
+  if ((roe !== null && roe < 0) || (de !== null && de > 3)) return 'turnaround';
+  if (mktcap < 10000 && revcagr > 20 && roe !== null && roe > 15) return 'smallcap_gem';
   return null;
 }

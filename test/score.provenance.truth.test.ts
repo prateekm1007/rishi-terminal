@@ -53,9 +53,10 @@ function seedField(value: number): ResolvedField {
 
 function coherentLiveFields(asOf: string | null, seedBase: NonNullable<ReturnType<typeof resolveStockMetrics>>): Record<string, ResolvedField> {
   const out: Record<string, ResolvedField> = {};
-  for (const f of DIRECT_FIELDS) out[f] = liveField(seedBase.fields[f].value, asOf);
+  // P0-2: null seed bases stay null (unknown), never coerced.
+  for (const f of DIRECT_FIELDS) out[f] = liveField(seedBase.fields[f].value ?? 0, asOf);
   out.pb = { value: seedBase.fields.pb.value, source: "derived", asOf: null };
-  out.fcfMargin = seedField(seedBase.fields.fcfMargin.value);
+  out.fcfMargin = seedField(seedBase.fields.fcfMargin.value ?? 0);
   return out;
 }
 
@@ -85,7 +86,7 @@ describe("score provenance describes the ACTUAL inputs (founder §21)", () => {
   it("MUST FAIL PRE-M: mixed live observation times → 'live-mixed-observation', never collapsed to 'seed-derived'", () => {
     const base = resolveStockMetrics("TCS")!;
     const fields = coherentLiveFields(T1, base);
-    fields.roe = liveField(base.fields.roe.value, T2); // a second, later observation
+    fields.roe = liveField(base.fields.roe.value ?? 0, T2); // a second, later observation
     const item = buildScoreItem(withFields(fields));
     expect(item.id).toBe(`score:TCS:${SCORE_ENGINE_VERSION}:live-mixed-observation`);
     expect(item.id).not.toContain("seed");
@@ -96,10 +97,10 @@ describe("score provenance describes the ACTUAL inputs (founder §21)", () => {
     const base = resolveStockMetrics("TCS")!;
     const fields: Record<string, ResolvedField> = {};
     for (const f of DIRECT_FIELDS) {
-      fields[f] = f === "pe" || f === "roe" ? liveField(base.fields[f].value, T1) : seedField(base.fields[f].value);
+      fields[f] = f === "pe" || f === "roe" ? liveField(base.fields[f].value ?? 0, T1) : seedField(base.fields[f].value ?? 0);
     }
     fields.pb = { value: base.fields.pb.value, source: "derived", asOf: null };
-    fields.fcfMargin = seedField(base.fields.fcfMargin.value);
+    fields.fcfMargin = seedField(base.fields.fcfMargin.value ?? 0);
     const item = buildScoreItem(withFields(fields));
     expect(item.id).toBe(`score:TCS:${SCORE_ENGINE_VERSION}:mixed-provenance`);
     expect(item.text).toContain("mixed"); // the statement discloses the mixed freshness

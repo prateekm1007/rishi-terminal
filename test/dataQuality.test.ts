@@ -77,12 +77,23 @@ describe("P0-1 — derivation from a bare seed record", () => {
     expect(dataQualityFromSeedStock(zero)).toBe("missing");
   });
 
-  it("an internally impossible record (KWALITY shape: np>0 with pe 0) is missing", () => {
+  // P0-2 re-pin (founder audit 2026-10-11 "use null, never 0"): KWALITY's
+  // placeholder P/E moved from a typed 0 to null — the record has real
+  // values beside the nulls (opm/roce/de/mktcap), so it classifies SEED
+  // (data exists; some fields never observed). The impossibility catch
+  // still bites on a SYNTHETIC typed zero (the regression guard for any
+  // dataset that reintroduces placeholder zeros).
+  it("KWALITY (np>0 with pe NULL) is seed — null is unknown, not impossible", () => {
     const kw = STOCKS["KWALITY"] as Stock;
     expect(kw).toBeDefined();
     expect(kw.np).toBeGreaterThan(0);
-    expect(kw.pe).toBe(0);
-    expect(dataQualityFromSeedStock(kw)).toBe("missing");
+    expect(kw.pe).toBeNull();
+    expect(dataQualityFromSeedStock(kw)).toBe("seed");
+  });
+
+  it("an internally impossible record (np>0 with a TYPED pe 0) is still missing", () => {
+    const synthetic = { ...(STOCKS["KWALITY"] as Stock), pe: 0 } as Stock;
+    expect(dataQualityFromSeedStock(synthetic)).toBe("missing");
   });
 
   it("a non-finite core field is missing", () => {

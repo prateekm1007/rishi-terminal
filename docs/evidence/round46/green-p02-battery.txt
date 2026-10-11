@@ -1,0 +1,31 @@
+=== P0-2 full Tier-2 battery (GREEN raw outputs) ===
+
+## tsc
+$ npx tsc --noEmit
+EXIT=0 (0 errors)
+
+## vitest
+             ~10.14s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
+VITEST_EXIT=0
+VITEST_EXIT=0
+
+## eslint ratchet
+$ npm run lint:ratchet
+ESLint ratchet: 0 errors, 283 warnings (total 283) / Baseline: 283 / Ratchet holds.
+
+## encoding
+validate:encoding — no mojibake detected, EXIT=0
+
+## validateStocks census
+  OK    all numeric fields finite (null only in the P0-2 classes)
+  INFO  P0-2 null classes — pe: 68, roe: 53, de (banking): 22, opm (banking): 4
+EXIT=0
+
+## scoreParity
+Checked 896 symbols across 4 entry paths. 0 mismatches / 0 non-finite of 896
+
+## ISR + bundle
+ISR manifest gate: PASS — 896 baked stock routes
+bundle: / 159.4 kB OK, /stocks 163.4 kB OK, /stock/[symbol] 170.4 kB OK

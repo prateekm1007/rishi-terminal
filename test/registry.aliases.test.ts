@@ -62,15 +62,22 @@ describe("T12 — validateStocks gates (in-process)", () => {
     }
   });
 
-  it("all numeric fields are finite", () => {
+  // P0-2 re-pin (founder audit 2026-10-11 "use null, never 0"): pe, roe,
+  // de and opm carry the placeholder-unknown class as null; every other
+  // numeric field stays finite, and the four nullable fields are
+  // finite-or-null.
+  it("all numeric fields are finite (null allowed only in the P0-2 classes)", () => {
     const fields = [
       "price", "pe", "roe", "mktcap", "ocf", "rev", "revcagr", "epscagr",
       "opm", "roce", "de", "fcf", "promo", "ca", "tl", "sh", "np", "dep",
       "capex", "bvps",
     ] as const;
+    const nullable = new Set(["pe", "roe", "opm", "de"]);
     for (const [sym, s] of Object.entries(STOCKS)) {
       for (const f of fields) {
-        expect(Number.isFinite(s[f] as number), `${sym}.${f}`).toBe(true);
+        const v = s[f] as number | null;
+        const ok = v === null ? nullable.has(f) : Number.isFinite(v);
+        expect(ok, `${sym}.${f} = ${String(v)}`).toBe(true);
       }
     }
   });

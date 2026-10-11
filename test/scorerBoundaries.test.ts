@@ -30,6 +30,7 @@ import { scorePabrai } from '@/lib/scorers/pabrai';
 import { scorePorinju } from '@/lib/scorers/porinju';
 import { scoreSoros } from '@/lib/scorers/soros';
 import type { Stock } from '@/lib/types';
+import type { ScoringContext } from '@/lib/consensus/orchestrator';
 
 function stock(overrides: Partial<Stock>): Stock {
   return {
@@ -44,10 +45,17 @@ function stock(overrides: Partial<Stock>): Stock {
 
 const weightsSum = (comps: Array<{ wt: number }>) => comps.reduce((a, c) => a + c.wt, 0);
 
+// P0-2 re-pin (founder audit 2026-10-11): boundary math is asserted on
+// OBSERVED data — an explicit empty unknownFields context, so synthetic
+// zeros (de: 0, pe: 0) are observations here, exactly like a live feed
+// reporting them (G5). The placeholder-zero behavior (null verdict) is
+// pinned separately in test/placeholderZero.noVerdict.test.ts.
+const observed: ScoringContext = { unknownFields: new Set<string>() };
+
 describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
   it('Clone ramp: 0 at promoter 0%, 35 at 35%, 100 from exactly 57.75% (code is the truth, docstring corrected)', () => {
     const at = (promo: number) =>
-      scorePabrai(stock({ promo })).comps.find((c) => c.label === 'Clone Score')!.v;
+      scorePabrai(stock({ promo }), observed).comps.find((c) => c.label === 'Clone Score')!.v;
     expect(at(0)).toBe(0);
     expect(at(35)).toBe(35);   // the documented contradiction: 35, NOT 0
     expect(at(50)).toBe(35 + 15 * (100 / 35)); // 77.857… — S2-05: comps carry the UNROUNDED ramp (display rounds to 78)
@@ -59,7 +67,7 @@ describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
 
   it('Owner ramp: 0 at 20%, 100 from 60%', () => {
     const at = (promo: number) =>
-      scorePabrai(stock({ promo })).comps.find((c) => c.label === 'Owner Operator')!.v;
+      scorePabrai(stock({ promo }), observed).comps.find((c) => c.label === 'Owner Operator')!.v;
     expect(at(20)).toBe(0);
     expect(at(40)).toBe(50);
     expect(at(60)).toBe(100);
@@ -67,7 +75,7 @@ describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
 
   it('Uncertainty ramp: 100 at P/E <= 10, 0 at P/E 40; detail says target <10', () => {
     const at = (pe: number) =>
-      scorePabrai(stock({ pe })).comps.find((c) => c.label === 'High Uncertainty Discount')!;
+      scorePabrai(stock({ pe }), observed).comps.find((c) => c.label === 'High Uncertainty Discount')!;
     expect(at(10).v).toBe(100);
     expect(at(25).v).toBe(50);
     expect(at(40).v).toBe(0);
@@ -76,7 +84,7 @@ describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
 
   it('Low risk: 100 at D/E 0 with FCF; the FCF-less multiplier 0.6 applies; 0 at D/E 100/45', () => {
     const lowRisk = (de: number, fcf: number) =>
-      scorePabrai(stock({ de, fcf })).comps.find((c) => c.label === 'Low Risk')!.v;
+      scorePabrai(stock({ de, fcf }), observed).comps.find((c) => c.label === 'Low Risk')!.v;
     expect(lowRisk(0, 100)).toBe(100);
     expect(lowRisk(1, 100)).toBe(55);          // 100 - 45
     expect(lowRisk(0, 0)).toBe(60);            // 100 * 0.6
@@ -87,7 +95,7 @@ describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
     for (let promo = 0; promo <= 90; promo += 15) {
       for (const pe of [5, 10, 25, 40, 60]) {
         for (const [de, fcf] of [[0, 100], [1, 0], [3, -50]] as const) {
-          const r = scorePabrai(stock({ promo, pe, de, fcf }));
+          const r = scorePabrai(stock({ promo, pe, de, fcf }), observed);
           expect(weightsSum(r.comps)).toBe(100);
           expect(r.score).not.toBeNull();
           expect(r.score as number).toBeGreaterThanOrEqual(0);
@@ -109,7 +117,7 @@ describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
 describe('W4 closure — Porinju boundaries + degenerate book value (direction 12)', () => {
   it('Contrarian ramp: 100 at P/E <= 10, 0 at 60', () => {
     const at = (pe: number) =>
-      scorePorinju(stock({ pe })).comps.find((c) => c.label === 'Contrarian')!.v;
+      scorePorinju(stock({ pe }), observed).comps.find((c) => c.label === 'Contrarian')!.v;
     expect(at(10)).toBe(100);
     expect(at(35)).toBe(50);
     expect(at(60)).toBe(0);
@@ -117,7 +125,7 @@ describe('W4 closure — Porinju boundaries + degenerate book value (direction 1
 
   it('Management ramp: 0 at 25%, 100 from 65%', () => {
     const at = (promo: number) =>
-      scorePorinju(stock({ promo })).comps.find((c) => c.label === 'Management')!.v;
+      scorePorinju(stock({ promo }), observed).comps.find((c) => c.label === 'Management')!.v;
     expect(at(25)).toBe(0);
     expect(at(45)).toBe(50);
     expect(at(65)).toBe(100);
@@ -126,7 +134,7 @@ describe('W4 closure — Porinju boundaries + degenerate book value (direction 1
   it('Undervaluation ramp with a REAL book value: 100 at P/B <= 1, 0 at 4; detail shows the true P/B', () => {
     // price 200, bvps 200 -> P/B 1.0
     const atPb = (price: number, bvps: number) =>
-      scorePorinju(stock({ price, bvps })).comps.find((c) => c.label === 'Undervaluation')!;
+      scorePorinju(stock({ price, bvps }), observed).comps.find((c) => c.label === 'Undervaluation')!;
     expect(atPb(200, 200).v).toBe(100);
     expect(atPb(400, 200).v).toBe(100 - (100 / 3)); // 66.67 — S2-05: unrounded (display rounds to 67)
     expect(atPb(800, 200).v).toBe(0);
@@ -135,7 +143,7 @@ describe('W4 closure — Porinju boundaries + degenerate book value (direction 1
 
   it('NEGATIVE or ZERO book value: Undervaluation scores 0 and the detail says so — never a fabricated P/B', () => {
     for (const bvps of [-50, 0]) {
-      const comp = scorePorinju(stock({ price: 100, bvps })).comps.find((c) => c.label === 'Undervaluation')!;
+      const comp = scorePorinju(stock({ price: 100, bvps }), observed).comps.find((c) => c.label === 'Undervaluation')!;
       expect(comp.v, `bvps=${bvps}`).toBe(0);
       expect(comp.detail.toLowerCase()).toContain('no asset backing');
       expect(comp.detail).not.toMatch(/P\/B \d/); // no fabricated ratio
@@ -143,9 +151,9 @@ describe('W4 closure — Porinju boundaries + degenerate book value (direction 1
   });
 
   it('monotone direction: score never rises as P/E rises (hated price = better entry)', () => {
-    let prev = scorePorinju(stock({ pe: 8 })).score as number;
+    let prev = scorePorinju(stock({ pe: 8 }), observed).score as number;
     for (const pe of [10, 12, 15, 20, 30, 45, 60, 80]) {
-      const v = scorePorinju(stock({ pe })).score as number;
+      const v = scorePorinju(stock({ pe }), observed).score as number;
       expect(v, `pe=${pe}`).toBeLessThanOrEqual(prev);
       prev = v;
     }
@@ -153,7 +161,7 @@ describe('W4 closure — Porinju boundaries + degenerate book value (direction 1
 
   it('weights sum to 100; score stays finite in 0-100 across degenerate inputs', () => {
     for (const bvps of [-50, 0, 1, 250]) {
-      const r = scorePorinju(stock({ bvps, pe: 70, promo: 10, revcagr: -5 }));
+      const r = scorePorinju(stock({ bvps, pe: 70, promo: 10, revcagr: -5 }), observed);
       expect(weightsSum(r.comps)).toBe(100);
       expect(r.score).not.toBeNull();
       expect(r.score as number).toBeGreaterThanOrEqual(0);

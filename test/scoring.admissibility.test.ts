@@ -75,8 +75,9 @@ describe("G5 — zero/negative observations are LIVE, never silently reseeded", 
     const r = resolveWith({ bookValue: -120 });
     expect(r.fields.bvps).toMatchObject({ value: -120, source: "live" });
     // PB derivation divides ONLY on a positive BVPS — a negative one must
-    // not mint a nonsense negative PB; the derivation says 0 + derived.
-    expect(r.fields.pb.value).toBe(0);
+    // not mint a nonsense negative PB. P0-2 (founder audit 2026-10-11):
+    // the underivable P/B is null (unknown), never a typed 0.
+    expect(r.fields.pb.value).toBeNull();
     expect(r.fields.pb.source).toBe("derived");
   });
 });

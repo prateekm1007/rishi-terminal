@@ -125,6 +125,10 @@ let nonFiniteCount = 0;
 let badPriceCount = 0;
 let allZeroCount = 0;
 let highRoeCount = 0;
+// P0-2: the placeholder-unknown classes, counted to pin the surgery.
+const NULLABLE_FIELDS = new Set<string>(["pe", "roe", "de", "opm"]);
+type NullableField = "pe" | "roe" | "de" | "opm";
+const nullFieldCount: Record<NullableField, number> = { pe: 0, roe: 0, de: 0, opm: 0 };
 const ROE_WHITELIST: Record<string, number> = {
   // NESTLEIND ROE=110 verified against screener.in (high ROE from small
   // equity base + treasury operations) — explicitly whitelisted, T12.
@@ -132,7 +136,19 @@ const ROE_WHITELIST: Record<string, number> = {
 };
 for (const [sym, s] of Object.entries(STOCKS)) {
   for (const f of NUMERIC_FIELDS) {
-    const v = s[f] as number;
+    const v = s[f] as number | null;
+    // P0-2 (founder audit 2026-10-11): pe/roe/(banking) de/opm carry the
+    // placeholder-unknown class as null — allowed, counted below. Any
+    // other non-number or non-finite value still fails.
+    if (v === null) {
+      if (NULLABLE_FIELDS.has(f)) {
+        nullFieldCount[f as NullableField]++;
+        continue;
+      }
+      if (nonFiniteCount < 10) fail(`${sym}.${f} is null (not in the P0-2 nullable class)`);
+      nonFiniteCount++;
+      continue;
+    }
     if (typeof v !== "number" || !Number.isFinite(v)) {
       if (nonFiniteCount < 10) fail(`${sym}.${f} is not finite: ${String(v)}`);
       nonFiniteCount++;
@@ -150,13 +166,14 @@ for (const [sym, s] of Object.entries(STOCKS)) {
     if (allZeroCount < 10) fail(`${sym}: all-zero fundamentals (dead/placeholder ticker)`);
     allZeroCount++;
   }
-  const roe = Math.abs(s.roe);
+  const roe = s.roe === null ? 0 : Math.abs(s.roe);
   if (roe > 150 && ROE_WHITELIST[sym] !== s.roe) {
     if (highRoeCount < 10) fail(`${sym}: |ROE|=${roe} > 150 and not whitelisted`);
     highRoeCount++;
   }
 }
-if (nonFiniteCount === 0) console.log("  OK    all numeric fields finite");
+if (nonFiniteCount === 0) console.log("  OK    all numeric fields finite (null only in the P0-2 classes)");
+console.log(`  INFO  P0-2 null classes — pe: ${nullFieldCount.pe}, roe: ${nullFieldCount.roe}, de (banking): ${nullFieldCount.de}, opm (banking): ${nullFieldCount.opm}`);
 if (badPriceCount === 0) console.log("  OK    all prices > 0");
 if (allZeroCount === 0) console.log("  OK    no all-zero fundamental records");
 if (highRoeCount === 0) console.log("  OK    |ROE| within 150 (whitelisted: " + Object.keys(ROE_WHITELIST).join(", ") + ")");

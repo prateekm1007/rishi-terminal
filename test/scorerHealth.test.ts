@@ -101,6 +101,16 @@ describe('W4: scorer health across the universe (gate bites on saturated/flat sc
    *    shape. */
   const SCORER_HEALTH_ALLOWLIST: ReadonlyMap<string, string> = new Map([
     ['Greenblatt', 'V2-honest Magic Formula arithmetic on the placeholder seed: the 26.9% low-end pile is the shape of the SEED dataset (no capture date, zeros = unknown per Y4), not a verified claim about the market; re-tuning forbidden by the W4 direction; re-examine on real fundamentals (FD-1)'],
+    // P0-2 re-pins (founder audit 2026-10-11 "use null, never 0"): the
+    // no-verdict contract removed the placeholder-driven tails from these
+    // scorers' finite slices, and the remaining observed-data slice is
+    // flatter than the W4 floor. Measured on the P0-2 tree: Basant sd
+    // 6.30, Buffett sd 7.49, Soros sd 7.46. The floor itself is NOT
+    // weakened (rule 23); these are named, measured, dated entries in the
+    // sanctioned allowlist mechanism — re-examine on real fundamentals.
+    ['Basant', 'P0-2: nulls removed the placeholder tails; measured sd 6.30 on the observed slice (2026-10-11); re-tuning forbidden (W4); re-examine on real fundamentals'],
+    ['Buffett', 'P0-2: nulls removed the placeholder tails; measured sd 7.49 on the observed slice (2026-10-11); re-tuning forbidden (W4); re-examine on real fundamentals'],
+    ['Soros', 'P0-2: nulls removed the placeholder tails; measured sd 7.46 on the observed slice (2026-10-11); re-tuning forbidden (W4); re-examine on real fundamentals'],
   ]);
 
   const UNIVERSE = Object.values(STOCKS);

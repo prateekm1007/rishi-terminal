@@ -112,9 +112,20 @@ describe("X6 — consensus output saturation gate (measured on the seed universe
   const pctLE5 = cons.filter((v) => v <= 5).length / cons.length;
   const pctGE90 = cons.filter((v) => v >= 90).length / cons.length;
 
-  it("every seed stock produces a finite consensus (quorum holds)", () => {
-    expect(cons.length).toBe(Object.values(STOCKS).length);
-    expect(cons.length).toBeGreaterThan(890);
+  // P0-2 re-pin (founder audit 2026-10-11 "return no_verdict on missing
+  // inputs"): the quorum no longer holds across the placeholder dataset —
+  // records with unobserved required inputs produce null consensus BY
+  // DESIGN. The gate now pins the honest split: a substantial observed
+  // slice keeps finite consensus (the spread gates below bite on it), and
+  // every null is a documented insufficient-data record, never a coerced
+  // number.
+  it("observed-enough records keep a finite consensus; the rest are null (P0-2)", () => {
+    const all = Object.values(STOCKS).map((s) => buildConsensus(s).consensus);
+    const finite = all.filter((v): v is number => v !== null);
+    const nulls = all.length - finite.length;
+    expect(finite.length + nulls).toBe(Object.values(STOCKS).length);
+    expect(finite.length).toBeGreaterThan(300); // the observed slice
+    expect(nulls).toBeGreaterThan(0);           // the placeholder classes
   });
 
   it("the consensus keeps real spread: sd >= 5 (measured baseline documented in the PR)", () => {

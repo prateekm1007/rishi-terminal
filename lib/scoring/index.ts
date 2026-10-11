@@ -22,6 +22,7 @@ import 'server-only';
 import { STOCKS, SEED_STATUS, SEED_CAPTURED_AT, type SeedStatus } from "@/data/stocks";
 import type { Stock, ConsensusResult } from "@/lib/consensus/types";
 import { buildConsensus } from "@/lib/consensus/engine";
+import { seedScoringContext } from "@/lib/consensus/orchestrator";
 import {
   calculateQvps,
   calculateQvpsDual,
@@ -30,6 +31,12 @@ import type { StockMetrics, RishiScoreResult, ScoreMode } from "@/lib/scorers/ty
 import type { FullFundamentals } from "@/hooks/useFundamentals";
 import { toSourced, type Sourced } from "@/lib/types/sourced";
 import { isAdmissibleLive } from "@/lib/types/admissibility";
+import {
+  dataQualityFromResolvedFields,
+  dataQualityFromSeedStock,
+  noVerdictCategory,
+  verdictsAllowed,
+} from "@/lib/dataQuality";
 
 export { SCORE_ENGINE_VERSION } from "@/lib/consensus/version";
 
@@ -237,6 +244,16 @@ export function resolveStockMetrics(
  * over a raw Stock or over a resolved metrics object. UI surfaces show
  * `consensus` (or an em dash when null, per T11) and must never present a
  * competing number as "the Rishi Score".
+ *
+ * Round-46 P0-1 — THE VERDICT GATE (founder audit 2026-10-11: "Seed rows
+ * show no verdict, and the badge reads from that field"): the data quality
+ * is derived mechanically from per-field provenance (resolved path) or
+ * from the bare seed record (fast path), and when it is "seed" or
+ * "missing" the consensus is null and the category names the honest
+ * no-verdict state. The per-framework score substrate is untouched —
+ * P0-2/P0-3/P0-4 (null-never-0, sector gates, threshold honesty) operate
+ * on it. Nothing can render a stock verdict without passing through here,
+ * so nothing can render a verdict on seed data.
  */
 export function getStockScore(input: Stock | ResolvedStockMetrics): ConsensusResult {
   if (isResolved(input)) {
@@ -251,12 +268,27 @@ export function getStockScore(input: Stock | ResolvedStockMetrics): ConsensusRes
         .filter(([, f]) => f.source === "seed" && f.value === 0)
         .map(([name]) => name),
     );
-    return buildConsensus(input.stock, { unknownFields });
+    // P0-1: the data quality derives from the per-field provenance. The
+    // clock is read HERE, at the scoring surface, so the derivation
+    // module stays pure and testable (rule 18: no hidden Date.now()).
+    const dq = dataQualityFromResolvedFields(input.fields, { now: Date.now() });
+    const report = buildConsensus(input.stock, { unknownFields, dataQuality: dq });
+    if (!verdictsAllowed(dq)) {
+      return { ...report, consensus: null, category: noVerdictCategory(dq) };
+    }
+    return report;
   }
   // A bare Stock is a seed record (every current caller passes one):
   // seed semantics apply inside runAllScorers — zero fields are
-  // placeholder unknowns.
-  return buildConsensus(input);
+  // placeholder unknowns. P0-1: its data quality is derived from the
+  // record itself and the verdict gate applies identically. The scoring
+  // context carries BOTH the seed-zero semantics AND the derived quality.
+  const dq = dataQualityFromSeedStock(input);
+  const report = buildConsensus(input, { ...seedScoringContext(input), dataQuality: dq });
+  if (!verdictsAllowed(dq)) {
+    return { ...report, consensus: null, category: noVerdictCategory(dq) };
+  }
+  return report;
 }
 
 /** Quality-Value Pillar Score (QVPS) — the demoted former "v2" engine. */

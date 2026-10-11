@@ -57,10 +57,13 @@ export default async function Page() {
   // ranked picks are computed and the dashboard shows the disabled state.
   const rankings = rankingsEnabled();
 
-  // T13: Top Buy = top-N by consensus among dataQuality==='OK' stocks,
-  // deterministic tie-breaks. Shorts = actual trigger flags with reasons
-  // derived from those flags, ranked by the (unvalidated) QVPS short model.
-  // Stock of the Day = deterministic IST-date pick from the ranked pool.
+  // T13: Top Buy = top-N by consensus among verdict-allowed stocks (P0-1:
+  // getStockScore nulls every seed/missing consensus, so the null filter
+  // is the verdict gate), deterministic tie-breaks. Shorts = actual
+  // trigger flags with reasons derived from those flags, ranked by the
+  // (unvalidated) QVPS short model. Stock of the Day = deterministic
+  // IST-date pick from the ranked pool — null (the honest disabled panel)
+  // when no verdict-allowed record exists.
   const rotatingStocks = rankings ? rankTopBuy(6) : [];
   const rotatingShorts = rankings ? computeShortRadar(3) : [];
   const stockOfDay = rankings ? pickStockOfTheDay() : null;

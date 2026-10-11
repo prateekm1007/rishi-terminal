@@ -1,0 +1,256 @@
+$ npx vitest run test/dataQuality.test.ts test/rankings.test.ts test/scoring.finite.test.ts test/placeholderRanking.round5.test.ts test/screener.parser.test.ts test/c5.wireIndex.test.ts
+
+(the dataQuality import-fail is the module-absence RED; the behavioral failures are the verdict-fabrication RED)
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-main
+
+ ❯ test/rankings.test.ts (7 tests | 4 failed) 424ms
+   ❯ T13 + P0-1 — Top Buy ranking on the seed universe (2)
+     × produces NO candidates while every record is seed (no verdict, no rank) 94ms
+     ✓ is stable across two calls (no Date/random inside) 92ms
+   ❯ T13 + P0-1 — Short radar on the seed universe (2)
+     × produces NO candidates while every record is seed 69ms
+     ✓ is stable across two calls 59ms
+   ❯ T13 + P0-1 — Stock of the Day on the seed universe (2)
+     × returns the honest null (no qualified pool) instead of throwing or fabricating 67ms
+     × same IST day stays deterministic (null everywhere, never sometimes-a-pick) 40ms
+   ✓ T13 — the short-flag derivation contract (unchanged) (1)
+     ✓ nulls never fire flags; real values fire their documented flags 0ms
+ ❯ test/dataQuality.test.ts (0 test)
+ ❯ test/placeholderRanking.round5.test.ts (0 test)
+ ❯ test/scoring.finite.test.ts (0 test)
+ ✓ test/screener.parser.test.ts (47 tests) 209ms
+ ✓ test/c5.wireIndex.test.ts (6 tests) 134ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/dataQuality.test.ts [ test/dataQuality.test.ts ]
+Error: Cannot find package '@/lib/scoring/dataQuality' imported from /home/z/my-project/rishi-main/test/dataQuality.test.ts
+ ❯ test/dataQuality.test.ts:15:1
+     13| import { join } from "node:path";
+     14|
+     15| import {
+       | ^
+     16|   DATA_QUALITY_VALUES,
+     17|   QUALITY_FIELDS,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  test/placeholderRanking.round5.test.ts [ test/placeholderRanking.round5.test.ts ]
+Error: Cannot find package '@/lib/scoring/dataQuality' imported from /home/z/my-project/rishi-main/test/placeholderRanking.round5.test.ts
+ ❯ test/placeholderRanking.round5.test.ts:10:1
+      8| import { describe, expect, it } from "vitest";
+      9| import { STOCKS } from "@/data/stocks";
+     10| import { dataQualityFromSeedStock, verdictsAllowed } from "@/lib/scori…
+       | ^
+     11| import { getStockScore } from "@/lib/scoring";
+     12| import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from "@/li…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  test/scoring.finite.test.ts [ test/scoring.finite.test.ts ]
+Error: Cannot find package '@/lib/scoring/dataQuality' imported from /home/z/my-project/rishi-main/test/scoring.finite.test.ts
+ ❯ test/scoring.finite.test.ts:7:1
+      5| import { runAllScorers, TOTAL_RISHIS } from "@/lib/consensus/orchestra…
+      6| import { buildConsensus } from "@/lib/consensus/engine";
+      7| import { dataQualityFromSeedStock } from "@/lib/scoring/dataQuality";
+       | ^
+      8| import { weightedAverage, MIN_VALID_SCORERS } from "@/lib/consensus/we…
+      9| import { STOCKS } from "@/data/stocks";
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/rankings.test.ts > T13 + P0-1 — Top Buy ranking on the seed universe > produces NO candidates while every record is seed (no verdict, no rank)
+AssertionError: expected [ { symbol: 'SBIN', …(7) }, …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "consensus": 80,
++     "mktcap": 695000,
++     "name": "State Bank of India",
++     "pe": 10,
++     "rank": 1,
++     "roe": 18,
++     "sector": "Banking",
++     "symbol": "SBIN",
++   },
++   {
++     "consensus": 80,
++     "mktcap": 95000,
++     "name": "Canara Bank",
++     "pe": 6,
++     "rank": 2,
++     "roe": 14,
++     "sector": "Banking",
++     "symbol": "CANBK",
++   },
++   {
++     "consensus": 80,
++     "mktcap": 2000,
++     "name": "Sandur Manganese",
++     "pe": 8,
++     "rank": 3,
++     "roe": 14,
++     "sector": "Mining",
++     "symbol": "SANDUMANG",
++   },
++   {
++     "consensus": 80,
++     "mktcap": 1800,
++     "name": "Gufic Biosciences",
++     "pe": 22,
++     "rank": 4,
++     "roe": 16,
++     "sector": "Pharma",
++     "symbol": "GUFICBIO",
++   },
++   {
++     "consensus": 78,
++     "mktcap": 180000,
++     "name": "DLF Limited",
++     "pe": 12,
++     "rank": 5,
++     "roe": 24,
++     "sector": "RealEstate",
++     "symbol": "DLF",
++   },
++   {
++     "consensus": 78,
++     "mktcap": 119000,
++     "name": "Bank of Baroda",
++     "pe": 7,
++     "rank": 6,
++     "roe": 14,
++     "sector": "Banking",
++     "symbol": "BANKBARODA",
++   },
++ ]
+
+ ❯ test/rankings.test.ts:22:27
+     20| describe("T13 + P0-1 — Top Buy ranking on the seed universe", () => {
+     21|   it("produces NO candidates while every record is seed (no verdict, n…
+     22|     expect(rankTopBuy(6)).toEqual([]);
+       |                           ^
+     23|     expect(rankTopBuy(50)).toEqual([]);
+     24|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  test/rankings.test.ts > T13 + P0-1 — Short radar on the seed universe > produces NO candidates while every record is seed
+AssertionError: expected [ { symbol: 'CDSL', …(4) }, …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "flagCount": 2,
++     "name": "Central Depository Services",
++     "reason": "Overvaluation (P/E 55.0x above 40x); Low promoter skin-in-game (promoter holding 20.1%)",
++     "shortScore": 42.1875,
++     "symbol": "CDSL",
++   },
++   {
++     "flagCount": 2,
++     "name": "Max Healthcare Institute",
++     "reason": "Overvaluation (P/E 72.0x above 40x); Low promoter skin-in-game (promoter holding 23.2%)",
++     "shortScore": 40.25,
++     "symbol": "MAXHEALTH",
++   },
++   {
++     "flagCount": 2,
++     "name": "NTPC Green Energy",
++     "reason": "Overvaluation (P/E 85.0x above 40x); High leverage (D/E 4.50x above 2x)",
++     "shortScore": 39.25,
++     "symbol": "NTPCGREEN",
++   },
++ ]
+
+ ❯ test/rankings.test.ts:33:34
+     31| describe("T13 + P0-1 — Short radar on the seed universe", () => {
+     32|   it("produces NO candidates while every record is seed", () => {
+     33|     expect(computeShortRadar(3)).toEqual([]);
+       |                                  ^
+     34|     expect(computeShortRadar(20)).toEqual([]);
+     35|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  test/rankings.test.ts > T13 + P0-1 — Stock of the Day on the seed universe > returns the honest null (no qualified pool) instead of throwing or fabricating
+AssertionError: expected { symbol: 'HGINFRA', …(7) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "category": "High Conviction Quality",
+  "consensus": 78,
+  "name": "H.G. Infra Engineering",
+  "rishi": "Nemish Shah",
+  "sector": "Infra",
+  "symbol": "HGINFRA",
+  "tag": "High Conviction Quality",
+  "why": "Nemish Shah is today's lead advocate: \"Boring steady. EPS 20% · Debt 0.3 · P/E 18. Long term hold\" Nemish scores it 100/100 on the steady compounder framework. Panel consensus: 78/100 (High Conviction Quality) with moderate disagreement across the rishis.",
+}
+
+ ❯ test/rankings.test.ts:44:65
+     42| describe("T13 + P0-1 — Stock of the Day on the seed universe", () => {
+     43|   it("returns the honest null (no qualified pool) instead of throwing …
+     44|     expect(pickStockOfTheDay(new Date("2026-09-30T06:00:00Z"))).toBeNu…
+       |                                                                 ^
+     45|     expect(pickStockOfTheDay(new Date("2026-10-01T06:00:00Z"))).toBeNu…
+     46|     expect(pickStockOfTheDay()).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  test/rankings.test.ts > T13 + P0-1 — Stock of the Day on the seed universe > same IST day stays deterministic (null everywhere, never sometimes-a-pick)
+AssertionError: expected { symbol: 'HGINFRA', …(7) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "category": "High Conviction Quality",
+  "consensus": 78,
+  "name": "H.G. Infra Engineering",
+  "rishi": "Nemish Shah",
+  "sector": "Infra",
+  "symbol": "HGINFRA",
+  "tag": "High Conviction Quality",
+  "why": "Nemish Shah is today's lead advocate: \"Boring steady. EPS 20% · Debt 0.3 · P/E 18. Long term hold\" Nemish scores it 100/100 on the steady compounder framework. Panel consensus: 78/100 (High Conviction Quality) with moderate disagreement across the rishis.",
+}
+
+ ❯ test/rankings.test.ts:52:15
+     50|     const a = pickStockOfTheDay(new Date("2026-09-30T06:00:00Z"));
+     51|     const b = pickStockOfTheDay(new Date("2026-09-30T18:00:00Z"));
+     52|     expect(a).toBeNull();
+       |               ^
+     53|     expect(b).toBeNull();
+     54|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  4 failed | 2 passed (6)
+      Tests  4 failed | 56 passed (60)
+   Start at  05:47:00
+   Duration  2.13s (tests 53%, transform 32%, import 12%, setup 2%, worker 1%)
+
+    Isolate  6 workers spawned · ~86ms startup each (spawn + environment, per file)
+             at least ~428ms faster with isolate: false — reuses workers across files instead of one per file
+
+VITEST_EXIT=1

@@ -4,7 +4,12 @@
  * Pure, deterministic functions — no Date.now(), no Math.random(). The IST
  * date (for Stock of the Day) is an explicit parameter so tests can assert
  * stability. All ranks are computed from the single consensus engine via
- * lib/scoring/getStockScore over dataQuality==='OK' records only.
+ * lib/scoring/getStockScore — and round-46 P0-1 (founder audit
+ * 2026-10-11: "Seed rows show no verdict") gates them: a record whose
+ * dataQuality is seed/missing carries a NULL consensus and can neither
+ * rank nor be picked. On the current placeholder dataset the ranked pools
+ * are honestly EMPTY — pickStockOfTheDay returns null (the dashboard
+ * renders its disabled panel) instead of fabricating a pick.
  */
 
 import 'server-only';
@@ -12,6 +17,7 @@ import 'server-only';
 import { STOCKS } from "@/data/stocks";
 import type { Stock } from "@/lib/consensus/types";
 import { getStockScore } from "./index";
+import { verdictsAllowed } from "@/lib/dataQuality";
 import { calculateQvps } from "@/lib/scorers/rishiScoreV2";
 import { shortFlagsFromMetrics } from "@/lib/scorers/shortFlags";
 import type { StockMetrics } from "@/lib/scorers/types";
@@ -30,13 +36,15 @@ export interface RankedStock {
 }
 
 /**
- * Top-N long candidates: highest consensus among dataQuality==='OK' stocks.
+ * Top-N long candidates: highest consensus among verdict-allowed records
+ * (P0-1: the gate on getStockScore nulls every seed/missing consensus, so
+ * the null filter IS the verdict gate — one gate, never two).
  * Deterministic tie-breaks: market cap (larger first), then symbol (A-Z).
  */
 export function rankTopBuy(n = 6): RankedStock[] {
   return (Object.values(STOCKS) as Stock[])
     .map(s => ({ stock: s, report: getStockScore(s) }))
-    .filter(({ report }) => report.dataQuality === "OK" && report.consensus !== null)
+    .filter(({ report }) => report.consensus !== null)
     .sort(
       (a, b) =>
         (b.report.consensus as number) - (a.report.consensus as number) ||
@@ -67,7 +75,6 @@ export interface StockOfTheDay {
   /** Generated from the stock's actual lead-advocate data — never hardcoded. */
   why: string;
 }
-
 function istDateString(date: Date): string {
   // en-CA yields YYYY-MM-DD
   return date.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -85,12 +92,14 @@ function hashString(s: string): number {
 /**
  * Deterministic daily selection (IST-date seed) from the top-ranked
  * qualified list. Same IST date -> same stock, everywhere.
+ * P0-1: an empty qualified pool returns the honest null — the dashboard
+ * renders its disabled panel; no pick is fabricated from seed data.
  */
-export function pickStockOfTheDay(now: Date = new Date(), poolSize = 10): StockOfTheDay {
+export function pickStockOfTheDay(now: Date = new Date(), poolSize = 10): StockOfTheDay | null {
   const ranked = rankTopBuy(poolSize);
   const fallback = ranked[0];
   if (!fallback) {
-    throw new Error("No qualified stocks available for Stock of the Day");
+    return null;
   }
   const seed = istDateString(now);
   const pick = ranked[hashString(seed) % ranked.length];
@@ -216,7 +225,7 @@ export function computeShortRadar(n = 3): ShortCandidate[] {
 
   for (const s of Object.values(STOCKS) as Stock[]) {
     const report = getStockScore(s);
-    if (report.dataQuality !== "OK") continue;
+    if (!verdictsAllowed(report.dataQuality)) continue;
 
     const prepared = prepareShortCandidate(s.symbol);
     if (!prepared) continue;

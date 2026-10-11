@@ -12,16 +12,15 @@
  * docs/evidence/round45/.
  *
  * Positive control FIRST (B-18 — a missing section passes any absence
- * check): the Rishi Council renders unchanged — the removal took one
- * section, not the page. [The B1 thesis panel was the original first
- * positive control; the founder's second removal order the same round
- * took the panel off the page too — its absence pins now live in
- * test/smoke/b1-panel-removed.spec.ts.]
+ * check): the page's own honest content renders. Round-46 P0-1 (founder
+ * audit 2026-10-11: "Seed rows show no verdict") suppressed the Rishi
+ * Council on seed data — the control is now the NO-VERDICT record, which
+ * ALSO proves the P0-1 gate itself is live on the rendered page.
  */
 import { test, expect } from "@playwright/test";
 
 test.describe("INT-D3 REMOVED per founder order (2026-10-10)", () => {
-  test("the stock page carries NO dossier section — the council renders unchanged (the B1 panel joined the removal the same round)", async ({ page }) => {
+  test("the stock page carries NO dossier section — the honest no-verdict record renders (the B1 panel and the council joined the removals)", async ({ page }) => {
     const insightCalls: string[] = [];
     page.on("response", (r) => {
       if (r.url().includes("/api/intelligence") && r.url().includes("capability=insight")) {
@@ -31,12 +30,11 @@ test.describe("INT-D3 REMOVED per founder order (2026-10-10)", () => {
 
     await page.goto("/stock/RELIANCE");
 
-    // positive control FIRST: the surrounding sections render unchanged
-    // (council present — the removal removed ONE section, not the page;
-    // the heading is RishiCouncil.tsx's "Rishi Council — Consensus & Dissent".
-    // The B1 panel was the original first control until the founder's
-    // second removal order took it off the page the same round.)
-    await expect(page.getByText("Rishi Council — Consensus & Dissent")).toBeVisible({ timeout: 20_000 });
+    // positive control FIRST: the no-verdict record renders (the P0-1
+    // verdict gate is live: the record's dataQuality is 'seed' and the
+    // page says so instead of scoring it. The council was the original
+    // control until the round-46 P0-1 order suppressed verdicts on seed).
+    await expect(page.getByText("NO VERDICT — ILLUSTRATIVE SEED DATA")).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PIN: no dossier section skeleton anywhere in the DOM.
     // (Pre-removal this was 1 — the honest-absent skeleton; the RED.)

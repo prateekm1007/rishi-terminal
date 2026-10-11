@@ -129,7 +129,11 @@ export interface RishiScoreResult {
   trendMultiplier: number;
   sectorAdj:       number;
   confidence:      number;
-  dataQuality:     "HIGH" | "MEDIUM" | "LOW";
+  /** Field-coverage grade (was misnamed dataQuality — rule 2, P0-1): the
+   *  record's canonical data quality is the closed live | delayed | seed |
+   *  missing vocabulary (lib/dataQuality) and the badge reads
+   *  THAT; this grade renders as "coverage". */
+  coverage:        "HIGH" | "MEDIUM" | "LOW";
 
   headline:        string;
   commentary:      string;
@@ -228,9 +232,16 @@ export function buildCommentaryKey(
   return mode + "_" + conviction + "_" + bucket + "_" + flagHash;
 }
 
-// ── Data Quality ──────────────────────────────────────────────
+// ── Field Coverage ──────────────────────────────────────────────
 
-export function getDataQuality(m: StockMetrics): "HIGH" | "MEDIUM" | "LOW" {
+/**
+ * Round-46 P0-1 (rule 2 — names describe behavior): this is a FIELD-
+ * COVERAGE grade (how many core metric slots carry a value), NOT data
+ * quality. The record's data quality is the closed live | delayed |
+ * seed | missing vocabulary in lib/dataQuality.ts, and the QVPS
+ * badge reads THAT; this grade renders as "coverage".
+ */
+export function getCoverage(m: StockMetrics): "HIGH" | "MEDIUM" | "LOW" {
   const coreFields = [
     m.roe, m.roce, m.fcfMargin, m.opm,
     m.pe,  m.pb,   m.revenueCAGR3Y, m.epsCAGR3Y,

@@ -9,6 +9,8 @@ import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
 import { ConsensusHero }          from './ConsensusHero';
 import { LivePriceWidget }        from './LivePriceWidget';
+import { NoVerdictRecord }        from './NoVerdictRecord';
+import { verdictsAllowed } from '@/lib/dataQuality';
 // A1: content rides the first byte — static imports (see the contract
 // note above the dynamic surfaces).
 import RishiScoreDual            from '../score/RishiScoreDual';
@@ -103,6 +105,14 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
   // exactly what the server sent.
   const verdicts: RishiScore[] = consensus.verdicts;
   const graph: EliteKnowledgeGraph | null = eliteGraph;
+  // Round-46 P0-1 (founder audit 2026-10-11: "Seed rows show no verdict"):
+  // every verdict surface on this page — consensus hero, QVPS tile, top
+  // scores, wisdom tab, knowledge graph, sidebar scores — renders ONLY
+  // when the record's dataQuality allows verdicts (live | delayed). On
+  // seed data the page shows the honest no-verdict record instead; the
+  // price/metrics/peers surfaces keep rendering (they carry their own
+  // provenance labels).
+  const allowed = verdictsAllowed(consensus.dataQuality);
 
   const TABS = [
     { id: 'overview',  label: t('stock.overview'),   desc: t('stock.overviewDesc')   },
@@ -125,7 +135,9 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
         <SeedDataBanner suffix="consensus, QVPS, metrics and verdicts on this page are illustrative placeholders" />
       </div>
 
-      {/* Knowledge Graph Floating Button */}
+      {/* Knowledge Graph Floating Button — verdict content (P0-1: suppressed
+          on seed data; the graph is built from per-Rishi verdicts). */}
+      {allowed && (
       <button
         onClick={() => setShowGraph(true)}
         style={{
@@ -170,6 +182,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
           {t('stock.graph')}
         </span>
       </button>
+      )}
 
       {/* Knowledge Graph Modal */}
       {showGraph && (
@@ -273,7 +286,9 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 <span>{stock.exchange}</span>
                 <span style={{ color: 'rgba(30,41,59,0.8)' }}>|</span>
                 <span style={{ color: consensus.consensus === null ? 'var(--text-muted)' : scoreColor(consensus.consensus), fontWeight: 600 }}>
-                  {t('stock.consensus')}: {consensus.consensus === null ? '\u2014' : consensus.consensus + '/100'}
+                  {allowed
+                    ? <>Consensus: {consensus.consensus === null ? '\u2014' : consensus.consensus + '/100'}</>
+                    : 'No verdict — seed data'}
                 </span>
               </div>
             </div>
@@ -346,11 +361,11 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
             {activeTab === 'overview' && (
               <>
                 <div className="wisdom-reveal">
-                  <ConsensusHero consensus={consensus} />
+                  {allowed ? <ConsensusHero consensus={consensus} /> : <NoVerdictRecord />}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
-                  {qvpsDual ? <RishiScoreDual dual={qvpsDual} sector={stock.sector} /> : null}
+                  {allowed && qvpsDual ? <RishiScoreDual dual={qvpsDual} sector={stock.sector} dataQuality={consensus.dataQuality} /> : null}
                 </div>
 
                 <div className="wisdom-reveal-delay-1">
@@ -358,6 +373,8 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 </div>
 
                 <div className="wisdom-reveal-delay-2 card-sacred" style={{ padding: 24, position: 'relative' }}>
+                  {allowed ? (
+                  <>
                   <div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, height: 2,
                     background: 'linear-gradient(90deg, transparent, #D4AF37, transparent)',
@@ -448,6 +465,8 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                       </div>
                     ))}
                   </div>
+                  </>
+                  ) : null}
                 </div>
 
                 <div className="wisdom-reveal-delay-2">
@@ -477,6 +496,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
             )}
 
             {activeTab === 'wisdom' && (
+              allowed ? (
               <>
                 <div className="wisdom-reveal">
                   <BullBearBar
@@ -498,13 +518,18 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                   />
                 </div>
               </>
+              ) : (
+                <div className="wisdom-reveal">
+                  <NoVerdictRecord />
+                </div>
+              )
             )}
 
           </div>
 
           <div style={{ position: 'sticky', top: 80 }}>
             <div className="wisdom-reveal-delay-2">
-              <WisdomSidebar stock={stock} scores={verdicts} parallel={parallel} />
+              <WisdomSidebar stock={stock} scores={allowed ? verdicts : []} parallel={parallel} />
             </div>
           </div>
 
@@ -521,7 +546,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
           borderTop: '1px solid rgba(30,41,59,0.8)',
         }}>
           <span style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 0.5 }}>
-            {stock.name} · {stock.symbol} · {t('stock.topRishiScores')}: {consensus.scoresCount} Rishis
+            {stock.name} · {stock.symbol} · {allowed ? `${t('stock.topRishiScores')}: ${consensus.scoresCount} Rishis` : 'no verdict produced (seed data)'}
           </span>
           <Link
             href="/methodology"

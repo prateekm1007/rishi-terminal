@@ -1,7 +1,7 @@
 // RISHI_MEMORY_V1
 import { getAdminSupabase } from "./supabaseAdmin";
 import { STOCKS } from "../../data/stocks";
-import { buildConsensus } from "../consensus";
+import { getStockScore } from "../scoring";
 import { SCORE_ENGINE_VERSION } from "../consensus/version";
 
 function today(): string {
@@ -32,7 +32,10 @@ export async function snapshotAllStocks(): Promise<{
   for (const sym of symbols) {
     try {
       const stock = STOCKS[sym];
-      const consensus = buildConsensus(stock);
+      // Round-46 P0-1: snapshot through THE scoring surface — its verdict
+      // gate nulls every seed/missing record, so the historical series
+      // only ever receives verdicts computed on verdict-allowed data.
+      const consensus = getStockScore(stock);
 
       // T11: fail closed — records with insufficient data produce consensus
       // null and are NOT persisted. Writing a null/0 score would corrupt the

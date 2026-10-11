@@ -37,6 +37,7 @@ export type { SlimStockRow, SlimVerdictSummary, SlimVerdictScore };
 
 import { STOCKS } from '@/data/stocks';
 import { getStockScore } from './index';
+import { verdictsAllowed } from '@/lib/dataQuality';
 
 /** Per-Rishi verdict summary (name/label/score/origin only). */
 // (interface SlimVerdictSummary lives in wireIndex.ts — see the re-export above.)
@@ -79,6 +80,12 @@ export function getSlimIndex(): SlimStockRow[] {
 
   cache = Object.values(STOCKS).map((stock) => {
     const report = getStockScore(stock);
+    // P0-1 (founder audit 2026-10-11): a seed/missing record ships NO
+    // verdict display fields — the consensus is already null (the gate on
+    // getStockScore) and the verdict attributions/summary slice are
+    // withheld here, at the list-payload boundary, so every list surface
+    // (screener, lab tabs, chat picker) renders the honest nulls.
+    const allowed = verdictsAllowed(report.dataQuality);
     return {
       symbol: stock.symbol,
       name: stock.name,
@@ -86,17 +93,19 @@ export function getSlimIndex(): SlimStockRow[] {
       consensus: report.consensus,
       category: report.category,
       dataQuality: report.dataQuality,
-      topBull: toSummary(report.topBull),
-      topBear: toSummary(report.topBear),
+      topBull: allowed ? toSummary(report.topBull) : null,
+      topBear: allowed ? toSummary(report.topBear) : null,
       tension: report.tension,
       tensionSpread: report.tensionSpread,
-      summaryScores: report.scores.slice(0, LIST_SUMMARY_VERDICTS).map((rs) => ({
-        name: rs.name,
-        full: rs.full,
-        label: rs.label,
-        score: rs.score,
-        origin: rs.origin,
-      })),
+      summaryScores: allowed
+        ? report.scores.slice(0, LIST_SUMMARY_VERDICTS).map((rs) => ({
+            name: rs.name,
+            full: rs.full,
+            label: rs.label,
+            score: rs.score,
+            origin: rs.origin,
+          }))
+        : [],
       pe: stock.pe,
       roe: stock.roe,
       mktcap: stock.mktcap,

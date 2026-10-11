@@ -77,14 +77,16 @@ const WORLD_MARKETS_SYMS = WORLD_MARKETS.map(m => m.sym);
 function homepagePopulation(): string[] {
   const rotating = rankTopBuy(6).map(s => s.symbol);
   const shorts = computeShortRadar(3).map(s => s.symbol);
-  const sod = pickStockOfTheDay().symbol;
+  // P0-1: the pick is null when no verdict-allowed record exists — the
+  // homepage then renders no SOD section, so it contributes no symbol.
+  const sod = pickStockOfTheDay()?.symbol ?? null;
   const syms = [
     ...TICKER_SYMS,
     ...rotating,
     ...shorts,
     ...WORLD_MARKETS_SYMS,
     ...TOP_CRYPTO.map(c => c.symbol),
-    sod,
+    ...(sod ? [sod] : []),
   ];
   // de-dup, preserve order
   return Array.from(new Set(syms)).map(s => s.trim()).filter(Boolean).slice(0, 100);

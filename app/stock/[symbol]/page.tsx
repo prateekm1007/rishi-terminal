@@ -18,6 +18,7 @@ import { marketState } from '@/lib/marketHours'; // Y3: server-disclosed NSE sta
 import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically; Y2: peer entries
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
+import { verdictsAllowed } from '@/lib/dataQuality';
 import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
 // `stock as stockNs`: this page's OWN `stock` binding (the resolved Stock
 // record) shadows the namespace identifier inside the component scope —
@@ -65,9 +66,23 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   // Percent-encode: J&KBANK/M&M/M&MFIN carry & — the encoded canonical
   // matches the sitemap URL form exactly (both forms serve the same page).
   const ogUrl = `/stock/${encodeURIComponent(canonicalSym)}`;
-  if (getStockScore(stock).dataQuality === "INCOMPLETE") {
+  // Round-46 P0-1: the closed dataQuality vocabulary — "missing" (no usable
+  // data) gets the whole-page insufficient record; a "seed" record (the
+  // founder's P0-1: seed rows show no verdict) gets its own honest title.
+  const dq = getStockScore(stock).dataQuality;
+  if (dq === "missing") {
     const title = `${stock.name} (${canonicalSym}) — insufficient data | Rishi Terminal`;
     const description = `${stock.name} (${canonicalSym}, ${stock.sector}) has internally inconsistent fundamentals — no scores or verdicts are produced for this record. Listed for universe completeness.`;
+    return {
+      title,
+      description,
+      alternates: { canonical: ogUrl },
+      openGraph: { title, description, url: ogUrl, type: "article" },
+    };
+  }
+  if (!verdictsAllowed(dq)) {
+    const title = `${stock.name} (${canonicalSym}) — no verdict (seed data) | Rishi Terminal`;
+    const description = `${stock.name} (${canonicalSym}, ${stock.sector}) carries illustrative seed fundamentals — no consensus, no per-Rishi verdicts and no QVPS are produced on seed data. Prices, labelled metrics and peers are shown with their own provenance.`;
     return {
       title,
       description,
@@ -116,7 +131,10 @@ export default async function StockPage({ params }: StockPageProps) {
   // (impossible P/E-0-with-profit etc.) renders NO scored surface — no
   // verdicts, no QVPS, no debate graph, no technical-edge signals.
   // Rankings were gated in this same round; this gates the page itself.
-  if (consensus.dataQuality === 'INCOMPLETE') {
+  // Round-46 P0-1: the gate reads the closed vocabulary — "missing" is
+  // the whole-page record; "seed" renders the page with the verdict area
+  // suppressed inside StockPageClient (founder: seed rows show no verdict).
+  if (consensus.dataQuality === 'missing') {
     return <InsufficientDataRecord stock={stock} />;
   }
 
@@ -181,7 +199,8 @@ export default async function StockPage({ params }: StockPageProps) {
         initialMarket={initialMarket}
         parallel={parallel}
       />
-      <RishiCouncil council={council} />
+      {/* P0-1: the council is verdict content — suppressed on seed data. */}
+      {verdictsAllowed(consensus.dataQuality) && <RishiCouncil council={council} />}
     </NamespaceProvider>
   );
 }

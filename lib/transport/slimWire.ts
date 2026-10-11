@@ -20,6 +20,11 @@
 // SHAPE types live here and slimIndex re-exports them — one source of
 // truth (Constitution 14).
 
+// P0-1: the closed data-quality vocabulary lives in a client-safe module
+// (no server-only) so both the server rows and the client badges read the
+// same type and the same verdictsAllowed gate.
+import type { DataQuality } from '../dataQuality';
+
 export interface SlimVerdictSummary {
   name: string;
   full: string;
@@ -53,10 +58,13 @@ export interface SlimStockRow {
   symbol: string;
   name: string;
   sector: string;
-  /** THE consensus number (free for everyone); null = insufficient data. */
+  /** THE consensus number (free for everyone); null = insufficient data
+   *  OR the record is verdict-blocked (P0-1: seed/missing — no verdict). */
   consensus: number | null;
   category: string;
-  dataQuality: 'OK' | 'INCOMPLETE';
+  /** The closed P0-1 vocabulary (live | delayed | seed | missing) — the
+   *  row badge reads THIS. */
+  dataQuality: DataQuality;
   topBull: SlimVerdictSummary | null;
   topBear: SlimVerdictSummary | null;
   /** Council tension summary (free fields, part of SanitizedConsensus). */
@@ -85,7 +93,9 @@ export interface ScreenerPickerRow {
   sector: string;
   consensus: number | null;
   category: string;
-  dataQuality: 'OK' | 'INCOMPLETE';
+  /** The closed P0-1 vocabulary (live | delayed | seed | missing) — the
+   *  row badge reads THIS. */
+  dataQuality: DataQuality;
   pe: number;
   roe: number;
   mktcap: number;

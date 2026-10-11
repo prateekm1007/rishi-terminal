@@ -3,7 +3,8 @@ import { describe, it, expect } from "vitest";
 
 import type { Stock } from "@/lib/types";
 import { runAllScorers, TOTAL_RISHIS } from "@/lib/consensus/orchestrator";
-import { buildConsensus, assessDataQuality } from "@/lib/consensus/engine";
+import { buildConsensus } from "@/lib/consensus/engine";
+import { dataQualityFromSeedStock } from "@/lib/dataQuality";
 import { weightedAverage, MIN_VALID_SCORERS } from "@/lib/consensus/weights";
 import { STOCKS } from "@/data/stocks";
 
@@ -89,9 +90,14 @@ describe("T11 — every scorer is null-safe, never NaN", () => {
     expect(c).not.toBeNull();
   });
 
-  it("all-zero fundamentals are flagged INCOMPLETE and healthy ones OK", () => {
-    expect(assessDataQuality(allZeroStock())).toBe("INCOMPLETE");
-    expect(assessDataQuality(healthyStock())).toBe("OK");
-    expect(buildConsensus(allZeroStock()).dataQuality).toBe("INCOMPLETE");
+  // Round-46 P0-1 re-pin (founder audit 2026-10-11: "add dataQuality
+  // (live, delayed, seed, missing)"): the OK | INCOMPLETE pair is replaced
+  // by the closed four-value vocabulary. all-zero is "missing" (no usable
+  // data); a healthy BARE-SEED record is "seed" (illustrative data — the
+  // verdict gate itself lives on getStockScore, see test/dataQuality.test.ts).
+  it("all-zero fundamentals are missing and healthy seed ones are seed", () => {
+    expect(dataQualityFromSeedStock(allZeroStock())).toBe("missing");
+    expect(dataQualityFromSeedStock(healthyStock())).toBe("seed");
+    expect(buildConsensus(allZeroStock()).dataQuality).toBe("missing");
   });
 });

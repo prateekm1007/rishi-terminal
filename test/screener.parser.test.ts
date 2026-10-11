@@ -225,7 +225,9 @@ describe('X3-05 screener parser — syntax and limits', () => {
 function fakeRow(over: Partial<SlimStockRow>): SlimStockRow {
   return {
     symbol: 'TEST', name: 'Test Industries', sector: 'Banking', consensus: 80,
-    category: 'High Conviction', dataQuality: 'OK', topBull: null, topBear: null,
+    // P0-1 (round-46): the closed dataQuality vocabulary — fixtures use
+    // the new values; 'OK' | 'INCOMPLETE' no longer exist.
+    category: 'High Conviction', dataQuality: 'seed', topBull: null, topBear: null,
     tension: '', tensionSpread: 10, summaryScores: [], pe: 20, roe: 25,
     mktcap: 50000, de: 0.4, revcagr: 12, fcf: 500, ...over,
   } as SlimStockRow;

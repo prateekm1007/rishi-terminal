@@ -36,11 +36,12 @@
     "wisdomOfDay": "[RISHI WISDOM OF THE DAY×××××××××]",
     "masterInvestor": "[Master Investor××××××]",
     "globalMarkets": "[GLOBAL MARKETS - CLICK TO EXPLORE×××××××××××××]",
-    "topBuySignals": "[TOP RANKED - RISHI CONSENSUS ABOVE 65××××××××××]",
+    "topBuySignals": "[TOP RANKED - RISHI CONSENSUS ABOVE 65×××××××××××××××]",
     "fullScreener": "[ALL STOCKS××××]",
     "notInvestmentAdvice": "[NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE×××××××××××××××××××××××××××××××××××]",
     "heroWisdomSuffix": "[. Dual-mode scoring, short thesis, philosophical insights.×××××××××××××××××××××××]",
     "updatedPrefix": "[Updated ×××]",
+    "observationTimeNotDisclosed": "[Observation time not disclosed××××××××××××]",
     "timeAgoMinutesSuffix": "[m ago×××]",
     "timeAgoSecondsSuffix": "[s ago×××]",
     "priceUnavailable": "[Price unavailable×××××××]",
@@ -114,8 +115,8 @@
     "name": "[Name×××]",
     "consensus": "[Consensus××××]",
     "clearFilters": "[Clear Filters×××××]",
-    "highConviction": "[High Conviction××××]",
-    "lowPE": "[Low P/E××]"
+    "highConviction": "[High Conviction××××××]",
+    "lowPE": "[Low P/E×××]"
   },
   "portfolio": {
     "title": "[My Portfolio×××××]",
@@ -135,7 +136,7 @@
     "noDataHint": "[Add holdings to track your historical performance and CAGR.××××××××××××××××××××××××]",
     "stock": "[Stock×××]",
     "shares": "[Shares×××]",
-    "avgPrice": "[Avg Entry Price×××××]",
+    "avgPrice": "[Avg Entry Price××××××]",
     "current": "[Current×××]",
     "pnl": "[P&L×××]",
     "returnPct": "[Return %×××]",
@@ -227,17 +228,17 @@
   "pricing": {
     "breadcrumb": "[WISDOM TIERS×××××]",
     "free": {
-      "title": "[Free — No Tiers, No Checkout×××××××]",
-      "subtitle": "[Every feature on Rishi Terminal is free — all Rishis, AI chat, the full stock list, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.×××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××]",
+      "title": "[Free — No Tiers, No Checkout×××××××××××]",
+      "subtitle": "[Every feature on Rishi Terminal is free — all Rishis, AI chat, the full stock list, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.×××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××]",
       "price": "[Free×××]",
       "body": "[There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××]",
       "cta": "[Meet the Rishis××××××]",
       "allRishis": "[All 21 Rishis — every persona, every framework××××××××××××××××××]",
-      "aiChat": "[AI Rishi chat with per-answer grounding provenance×××××××××××××]",
+      "aiChat": "[AI Rishi chat with per-answer grounding provenance××××××××××××××××××××]",
       "screener": "[All stocks with every filter and field×××××××××××××××]",
       "portfolio": "[Portfolio, watchlist and lab analytics×××××××××××××××]",
       "knowledgeGraph": "[Knowledge graphs and council tension views×××××××××××××××××]",
-      "livePrices": "[Delayed equity quotes and live crypto/FX where labelled LIVE×××××××××××××××××××××××××]",
+      "livePrices": "[Delayed equity quotes and live crypto/FX where labelled LIVE××××××××××××××××××××××××]",
       "signUpNote": "[Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.××××××××××××××××××××××××××××××××××××××××]"
     }
   },
@@ -389,7 +390,7 @@
     "currentMacroRegime": "[CURRENT MACRO REGIME××××××××]",
     "consensusScore": "[CONSENSUS SCORE××××××]",
     "disagreementIndex": "[Disagreement Index×××××××]",
-    "councilRegimeRead": "[Council regime read:×××××××××××]",
+    "councilRegimeRead": "[Council regime read:××××××××]",
     "lensLabel": "[LENS:×××]",
     "lensAll": "[All×××]",
     "lensHayek": "[Hayek×××]",
@@ -510,18 +511,20 @@
     "sections": {
       "stockOfTheDay": "[Stock of the Day××××××]",
       "topBuySignals": "[Top Ranked××××]",
-      "shortRadar": "[Deterioration Radar××××××]",
+      "shortRadar": "[Deterioration Radar××××××××]",
       "cryptocurrency": "[Cryptocurrency××××××]",
       "allMarkets": "[All Markets××××]"
     },
     "wisdom": {
       "title": "[21 Legendary Investors×××××××××]",
-      "body": "[Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — timeless frameworks applied to every stock in our universe. Upside and downside theses. Every day.××××××××××××××××××××××××]",
+      "body": "[Buffett, Graham, Lynch, Damani, Jhunjhunwala, Chanos — timeless frameworks applied to every stock in our universe. Upside and downside theses. Every day.×××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××]",
       "bodyHighlight": "[scoring every stock××××××××]",
       "exploreBtn": "[Explore All Rishis×××××××]"
     },
     "rankingsDisabled": "[Ranked picks are disabled××××××××××]",
-    "rankingsDisabledNote": "[The ranked widgets (Stock of the Day, Top Ranked, Deterioration Radar) are switched off. Everything else — market data where available, the stock list, chat — keeps working.××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××]"
+    "rankingsDisabledNote": "[The ranked widgets (Stock of the Day, Top Ranked, Deterioration Radar) are switched off. Everything else — market data where available, the stock list, chat — keeps working.×××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××]",
+    "rankingsAwaiting": "[Rankings are on — nothing qualifies yet××××××××××××××××]",
+    "rankingsAwaitingNote": "[Rankings are enabled, but no record currently qualifies for a ranked pick — the exchange-data licence is pending, so no consensus exists yet. The ranked widgets appear the moment a record qualifies; no seed-derived ranking is shown.×××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××]"
   },
   "chat": {
     "header": "[Chat with Rishis××××××]",
@@ -728,7 +731,7 @@
   "forex": {
     "breadcrumb": "[FOREX×××]",
     "title": "[FOREX×××]",
-    "subtitle": "[Currency markets with macro lenses — live rates where labelled LIVE, reference data otherwise××××××××××××××××××××××××××]",
+    "subtitle": "[Currency markets with macro lenses — live rates where labelled LIVE, reference data otherwise×××××××××××××××××××××××××××××××××××××]",
     "pairs": "[PAIRS×××]",
     "inrCrossRates": "[INR Cross Rates××××××]",
     "avgVolatility": "[AVG VOLATILITY××××××]",

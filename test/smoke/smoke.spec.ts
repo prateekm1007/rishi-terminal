@@ -10,12 +10,22 @@ test.describe("smoke — core surfaces", () => {
     await expect(page).toHaveTitle(/Rishi/i);
     // Round-46 P0-1 re-pin (founder audit 2026-10-11): with the seed
     // universe verdict-blocked, the ranked trio (Stock of the Day / Top
-    // Buy Signals / Short Radar) is replaced by the honest disabled panel
-    // — no fabricated picks, and the former "as of <date>" caption was a
+    // Buy Signals / Short Radar) is replaced by an honest state — no
+    // fabricated picks, and the former "as of <date>" caption was a
     // false freshness claim that must NOT come back with them.
-    await expect(page.getByText(/Ranked picks are disabled/i).first()).toBeVisible({ timeout: 20_000 });
+    // FD-22 re-pin (founder order 2026-10-12: rankings ON per
+    // "Set RANKINGS_ENABLED=true in production"): this suite runs with
+    // RANKINGS_ENABLED=true, so the honest state is the AWAITING panel —
+    // rankings are on, nothing qualifies (the price-licence gate refuses
+    // every consensus), the licence is the stated reason, and no
+    // seed-derived ranking is shown. The old "switched off" note would
+    // now be a false statement (C1) and must NOT render here.
+    await expect(page.getByText(/Rankings are on/i).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/licence is pending/i).first()).toBeVisible();
+    await expect(page.getByText(/no seed-derived ranking is shown/i).first()).toBeVisible();
+    await expect(page.getByText(/switched off/i).first()).toHaveCount(0);
     // The trio's heading may survive as a dictionary string inside the RSC
-    // flight <script>, and the disabled panel's own note names the widgets —
+    // flight <script>, and the panel's own note names the widgets —
     // so the absence pin targets the SECTION HEADING's distinctive suffix
     // ("TOP BUY SIGNALS - RISHI CONSENSUS ABOVE …"), which exists only in
     // the ranked section's header.

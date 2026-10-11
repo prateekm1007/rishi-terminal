@@ -341,7 +341,17 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
         ))}
         </div>
       </div>
-      </>) : (
+      </>) : rankingsEnabled ? (
+        // FD-22 (founder order 2026-10-12): the flag is ON but nothing
+        // qualifies (the price-licence gate refuses every consensus, so
+        // pickStockOfTheDay() is null) — saying "switched off" here would
+        // be false (C1). The honest state: rankings are on, nothing to
+        // rank yet, the licence is the reason, no seed ranking is shown.
+        <RankingsDisabledPanel
+        title={t("dashboard2.rankingsAwaiting")}
+        note={t("dashboard2.rankingsAwaitingNote")}
+        />
+      ) : (
         <RankingsDisabledPanel
         title={t("dashboard2.rankingsDisabled")}
         note={t("dashboard2.rankingsDisabledNote")}

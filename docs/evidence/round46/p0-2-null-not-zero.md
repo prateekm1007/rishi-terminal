@@ -77,7 +77,12 @@ surgery (`pe: 68, roe: 53, de (banking): 22, opm (banking): 4`).
 
 ## Fail-first proof (rule 21)
 
-RED on the mounted pre-fix tree — `docs/evidence/round46/red-p02-vitest.txt`:
+RED on the mounted pre-fix tree —
+`docs/evidence/round46/red-p02b-datalayer-vitest.txt`
+(post-#338-merge pointer correction: `red-p02-vitest.txt` on main is the
+#337 scorer-leg RED — the module-absent import-failure run — while THIS
+branch's data-layer RED, 10 failed / 3 passed below, lives in the `b` file;
+the two same-named pre-merge files were disambiguated by the merge):
 `npx vitest run test/placeholderZero.noVerdict.test.ts` → **10 failed /
 3 passed, EXIT=1** (pe 0 on 68 rows; roe 0 on 53; Banking de 0 on 22;
 Banking opm 0 on 4; KWALITY/SBIN/AUBANK probes; the six-Rishi SBIN D/E

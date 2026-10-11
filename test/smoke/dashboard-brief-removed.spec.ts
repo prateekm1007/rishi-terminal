@@ -22,9 +22,12 @@
  * docs/evidence/round45/.
  *
  * Positive control FIRST (B-18 — a missing section passes any absence
- * check): the tail's own TOP BUY SIGNALS section renders unchanged — its
- * visibility proves the ssr:false tail chunk mounted, and the removal
- * took one section inside that tail, not the tail.
+ * check): a TAIL-OWNED section renders. Round-46 P0-1 (founder audit
+ * 2026-10-11: "Seed rows show no verdict") emptied the ranked pools — the
+ * tail's own honest "Ranked picks are disabled" panel now carries the
+ * settled-state gate (it mounts in the SAME client commit as the tail's
+ * other sections, so once it is visible the absence counts below cannot
+ * race a not-yet-mounted section).
  */
 import { test, expect } from "@playwright/test";
 
@@ -39,11 +42,13 @@ test.describe("INT-C1 dashboard brief REMOVED per founder order (2026-10-11)", (
 
     await page.goto("/");
 
-    // positive control FIRST: a TAIL-OWNED section renders unchanged. The
-    // brief and this section mount in the same client commit (one
-    // DashboardTail render), so this visibility is the settled-state gate
-    // the absence pins below are evaluated after.
-    await expect(page.getByText("TOP BUY SIGNALS")).toBeVisible({ timeout: 20_000 });
+    // positive control FIRST: a TAIL-OWNED marker renders. The brief and
+    // the tail mount in the same client commit (one DashboardTail render),
+    // so this visibility is the settled-state gate the absence pins below
+    // are evaluated after. (TOP BUY SIGNALS was the original marker; the
+    // round-46 P0-1 verdict gate emptied the ranked pools, and the tail's
+    // honest disabled-picks panel took over the settled-state role.)
+    await expect(page.getByText("Ranked picks are disabled")).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PINS: no brief section skeleton anywhere in the DOM.
     // (Pre-removal each was 1 — the hydrated tail skeleton and the

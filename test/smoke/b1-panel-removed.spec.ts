@@ -14,13 +14,15 @@
  * Raw RED + GREEN: docs/evidence/round45/.
  *
  * Positive control FIRST (B-18 — a missing section passes any absence
- * check): the Rishi Council renders unchanged — the removal took one
- * section, not the page.
+ * check): the page's own honest content renders. Round-46 P0-1 (founder
+ * audit 2026-10-11: "Seed rows show no verdict") suppressed the Rishi
+ * Council on seed data — the control is now the NO-VERDICT record, which
+ * ALSO proves the P0-1 gate itself is live on the rendered page.
  */
 import { test, expect } from "@playwright/test";
 
 test.describe("INT-B1 stock-page surface REMOVED per founder order (2026-10-10)", () => {
-  test("the stock page carries NO Rishi Intelligence section — the surrounding page renders unchanged", async ({ page }) => {
+  test("the stock page carries NO Rishi Intelligence section — the honest no-verdict record renders", async ({ page }) => {
     const thesisCalls: string[] = [];
     page.on("response", (r) => {
       if (r.url().includes("/api/intelligence") && r.url().includes("capability=thesis")) {
@@ -30,10 +32,10 @@ test.describe("INT-B1 stock-page surface REMOVED per founder order (2026-10-10)"
 
     await page.goto("/stock/RELIANCE");
 
-    // positive control FIRST: the surviving sections render unchanged
-    // (the heading is RishiCouncil.tsx's
-    // "Rishi Council — Consensus & Dissent").
-    await expect(page.getByText("Rishi Council — Consensus & Dissent")).toBeVisible({ timeout: 20_000 });
+    // positive control FIRST: the no-verdict record renders (the P0-1
+    // verdict gate is live: the record's dataQuality is 'seed' and the
+    // page says so instead of scoring it).
+    await expect(page.getByText("NO VERDICT — ILLUSTRATIVE SEED DATA")).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PINS: no panel section skeleton anywhere in the DOM.
     // (Pre-removal each was 1 — the SSR skeleton, its aria label, and the

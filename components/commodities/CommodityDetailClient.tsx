@@ -378,7 +378,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 COMMODITY RISHI CONSENSUS · HEURISTIC REFERENCE</div>
-              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
+              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring). Rishi names mark simulated lenses on public frameworks — Jim Rogers, Daniel Yergin and Rick Rule are real analysts, and these scores are NOT their views.</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore === null

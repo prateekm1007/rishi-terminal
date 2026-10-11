@@ -329,7 +329,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
             <div className="card-sacred" style={{ padding: 32, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 CRYPTO RISHI CONSENSUS · HEURISTIC REFERENCE</div>
-              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring)</div>
+              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring). Rishi names mark simulated lenses on public frameworks — Michael Saylor is a real analyst and these scores are NOT his views; Satoshi Bodhi and Vitalik Veda are fictional archetypes.</div>
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore === null ? 'Insufficient Data — fewer than the minimum valid scorers' : avgScore >= 75 ? 'Strong HODL Signal — Sound Money Thesis Intact' : avgScore >= 55 ? 'Accumulation Phase — Selective Entry Points' : 'Weak Momentum — Patience Required'}

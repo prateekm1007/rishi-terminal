@@ -267,7 +267,10 @@ export default function ChatWithRishisPage() {
                 {selectedRishi.formula}
               </div>
               <div style={{ marginTop: 20, fontSize: 11, color: 'var(--text-muted)' }}>
-                Ask anything about stocks, markets, investing, or life ↓
+                Ask anything about stocks, markets or investing ↓
+              </div>
+              <div style={{ marginTop: 8, fontSize: 9, color: 'var(--text-muted)', opacity: 0.8, maxWidth: 380, lineHeight: 1.5 }}>
+                Simulated persona — a framework illustration, not the real investor. The chat is unavailable until an approved provider exists.
               </div>
             </div>
           )}

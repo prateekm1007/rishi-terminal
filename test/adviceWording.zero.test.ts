@@ -28,9 +28,20 @@
  *     lie (rule 1).
  *   - Hyphenated compounds (long-term, top-down) — not the listed
  *     vocabulary.
- *   - The internal ActionType enum keys (STRONG_BUY etc.) — never
- *     rendered raw; actionLabel() is the only sanctioned render path
- *     (pinned below).
+ *   - The rishi_snapshots DB `signal` column vocabulary ("BUY"/"HOLD"/
+ *     "SELL" in lib/services/rishiMemory.ts + scripts/snapshotBatch.ts +
+ *     scripts/snapshotHealth.ts) — persisted analytics values with NO
+ *     UI consumer (grep-verified: every `signal:` in app/components is
+ *     AbortSignal or the descriptive technical vocabulary); renaming
+ *     them would mix vocabularies across historical rows for zero UI
+ *     effect.
+ *
+ * Round-47 follow-up (founder audit, same day): the earlier "internal
+ * enum keys" exception is WITHDRAWN — the audit named
+ * STRONG_BUY/BUY/HOLD/SELL and REDUCE in lib/scorers/types.ts, so the
+ * enum keys themselves are now descriptive (STRONGLY_FAVORABLE … ) and
+ * the LONG/SHORT ScoreMode became UPSIDE/DOWNSIDE. No surface, internal
+ * or rendered, carries the advice vocabulary.
  */
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
@@ -76,17 +87,22 @@ function stripComments(l: string): string {
 }
 
 /** Sanctioned exception substrings (see the header — each is factual,
- *  legal, or an internal key, and none is trading advice). */
+ *  legal, or a persisted non-UI value, and none is trading advice). */
 const EXCEPTIONS: RegExp[] = [
   /an offer to buy or sell any/, // terms legal disclaimer
   /We do not sell your personal data|We never sell your/, // privacy policy
   /Long Straddle|Short Strangle|Long Call|Long Put/, // factual options strategy names
-  /"(STRONG_BUY|BUY|HOLD|REDUCE|SELL|STRONG_SHORT|SHORT)"|'(STRONG_BUY|BUY|HOLD|REDUCE|SELL|STRONG_SHORT|SHORT)'|case "(STRONG_BUY|BUY|HOLD|REDUCE|SELL|STRONG_SHORT|SHORT)"|ScoreMode/, // internal enum keys + type unions
-  /getAction\(|actionLabel\(|ActionType/, // the map itself
   /Short Interest/i, // the factual market metric (% of float sold short)
   /short-seller|short seller/i, // factual journalism (Hindenburg)
   /\(Short\)",?$/, // historical position facts (Soros 1992 pound, 1997 baht)
   /systemPrompt:/, // server-side LLM persona instructions — not UI strings (the AI-loop stage governs model output)
+];
+
+/** Files whose string literals are PERSISTED ANALYTICS, never rendered:
+ *  the rishi_snapshots.signal DB column vocabulary (see the header). */
+const NON_UI_FILES: RegExp[] = [
+  /^lib\/services\/rishiMemory\.ts$/,
+  /^scripts\//, // scripts/ is outside the uiStringFiles roots anyway — belt and braces
 ];
 
 describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
@@ -95,6 +111,7 @@ describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
     expect(files.length).toBeGreaterThan(250); // positive control: the scan covers the tree
     const hits: string[] = [];
     for (const f of files) {
+      if (NON_UI_FILES.some((x) => x.test(f))) continue;
       const src = readFileSync(f, "utf8");
       for (const [i, raw] of src.split("\n").entries()) {
         if (raw.trim().startsWith("//") || raw.trim().startsWith("*") || raw.trim().startsWith("/*")) continue;
@@ -120,6 +137,31 @@ describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
     expect(dual).toContain("Weak Framework Support");
   });
 
+  it("the audit's five named sites carry none of the vocabulary (round-47 follow-up)", () => {
+    const dual = readFileSync("components/score/RishiScoreDual.tsx", "utf8");
+    // 1. lib/scorers/types.ts — the enum keys themselves are descriptive
+    const types = readFileSync("lib/scorers/types.ts", "utf8");
+    expect(types).not.toMatch(/STRONG_BUY|REDUCE|"LONG"|"SHORT"|AVOID/);
+    expect(types).toContain('"UPSIDE" | "DOWNSIDE"');
+    expect(types).toContain('"STRONGLY_FAVORABLE" | "FAVORABLE" | "BALANCED"');
+    // 2. StockTable — the renamed consensus category, not the old one
+    const table = readFileSync("components/screener/StockTable.tsx", "utf8");
+    expect(table).not.toContain("Classic Value Opportunity");
+    // 3. eliteGraph — no BUY/SELL/HOLD emission
+    const graph = readFileSync("lib/consensus/eliteGraph.ts", "utf8");
+    expect(graph).not.toMatch(/triggers BUY|signals HOLD|buy_signal|sell_signal/);
+    // 4. the consensus category renamed
+    const engine = readFileSync("lib/consensus/engine.ts", "utf8");
+    expect(engine).not.toContain("Classic Value Opportunity");
+    expect(engine).toContain("Value-Aligned Consensus");
+    // 5. RishiScoreDual — the toggle carries no LONG/SHORT mode value
+    expect(dual).not.toMatch(/mode === "LONG"|mode === "SHORT"|setMode\("(LONG|SHORT)"\)/);
+    // 6. the epistemic signal union (renders via replace('_',' '))
+    const epis = readFileSync("lib/engine/epistemicTransparency.ts", "utf8");
+    expect(epis).not.toContain("'STRONG_BUY'");
+    expect(epis).toContain("'STRONGLY_FAVORABLE'");
+  });
+
   it("every pattern BITES (embedded pre-fix strings must match — C5)", () => {
     const preFix = [
       "STRONG BUY",
@@ -141,7 +183,9 @@ describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
 
   it("the runtime label functions carry no advice vocabulary", () => {
     const actions: ActionType[] = [
-      "STRONG_BUY", "BUY", "HOLD", "REDUCE", "SELL", "STRONG_SHORT", "SHORT",
+      "STRONGLY_FAVORABLE", "FAVORABLE", "BALANCED",
+      "UNFAVORABLE", "STRONGLY_UNFAVORABLE",
+      "SEVERE_DETERIORATION", "DETERIORATION",
     ];
     const closed = new Set(actions);
     for (const a of actions) {
@@ -151,8 +195,8 @@ describe("P0-6 — the advice vocabulary is gone from UI strings", () => {
     // (never rendered raw — actionLabel() is the only sanctioned render
     // path, pinned by the RishiScoreDual source check above).
     for (const score of [10, 30, 50, 60, 72, 88, 95]) {
-      expect(closed.has(getAction(score, "LONG"))).toBe(true);
-      expect(closed.has(getAction(score, "SHORT"))).toBe(true);
+      expect(closed.has(getAction(score, "UPSIDE"))).toBe(true);
+      expect(closed.has(getAction(score, "DOWNSIDE"))).toBe(true);
       expect(getGrade(score).match(ADVICE_WORDS)).toBeNull();
     }
   });

@@ -8,7 +8,7 @@ export interface EpistemicMetadata {
   institutionalImplication: string;
   philosophyDivergence: Record<string, {
     score: number;
-    signal: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL';
+    signal: 'STRONGLY_FAVORABLE' | 'FAVORABLE' | 'NEUTRAL' | 'UNFAVORABLE' | 'STRONGLY_UNFAVORABLE';
     confidence: number;
   }>;
   conflictPairs: Array<{
@@ -37,21 +37,21 @@ function rishiScoresToSignals(scores: RishiScore[]): PhilosophySignal[] {
     score: s.score as number,
     confidence: 0.75,
     signal: (
-      (s.score as number) >= 80 ? 'STRONG_BUY' :
-      (s.score as number) >= 60 ? 'BUY' :
-      (s.score as number) >= 50 ? 'HOLD' :
-      (s.score as number) >= 35 ? 'SELL' :
-      'STRONG_SELL'
-    ) as 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL',
+      (s.score as number) >= 80 ? 'STRONGLY_FAVORABLE' :
+      (s.score as number) >= 60 ? 'FAVORABLE' :
+      (s.score as number) >= 50 ? 'BALANCED' :
+      (s.score as number) >= 35 ? 'UNFAVORABLE' :
+      'STRONGLY_UNFAVORABLE'
+    ) as 'STRONGLY_FAVORABLE' | 'FAVORABLE' | 'BALANCED' | 'UNFAVORABLE' | 'STRONGLY_UNFAVORABLE',
     weight: 1,
   }));
 }
 
 function getMajoritySignal(scores: RishiScore[]): string {
   const valid = scores.filter(r => r.score !== null).map(r => r.score as number);
-  if (valid.length === 0) return 'HOLD';
+  if (valid.length === 0) return 'BALANCED';
   const mean = valid.reduce((s, v) => s + v, 0) / valid.length;
-  return mean >= 70 ? 'STRONG_BUY' : mean >= 60 ? 'BUY' : mean >= 50 ? 'HOLD' : mean >= 35 ? 'SELL' : 'STRONG_SELL';
+  return mean >= 70 ? 'STRONGLY_FAVORABLE' : mean >= 60 ? 'FAVORABLE' : mean >= 50 ? 'BALANCED' : mean >= 35 ? 'UNFAVORABLE' : 'STRONGLY_UNFAVORABLE';
 }
 
 function findConflictPairs(scores: RishiScore[]) {
@@ -97,7 +97,7 @@ export function buildEpistemicMetadata(scores: RishiScore[]): EpistemicMetadata 
       missingPerspectives: [],
       confidenceInterval: { lower: 0, upper: 100 },
       opposingViews: [],
-      majorityView: 'HOLD',
+      majorityView: 'BALANCED',
       dissidents: [],
       epistemicWarnings: [],
     };
@@ -110,11 +110,11 @@ export function buildEpistemicMetadata(scores: RishiScore[]): EpistemicMetadata 
   const majorityView = getMajoritySignal(scores);
   const instability = calculateInstabilityScore(signals, disagreementResult.index);
 
-  const philosophyDivergence: Record<string, { score: number; signal: 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL'; confidence: number }> = {};
+  const philosophyDivergence: Record<string, { score: number; signal: 'STRONGLY_FAVORABLE' | 'FAVORABLE' | 'NEUTRAL' | 'UNFAVORABLE' | 'STRONGLY_UNFAVORABLE'; confidence: number }> = {};
   signals.forEach((sig) => {
     philosophyDivergence[sig.philosophy] = {
       score: sig.score,
-      signal: (sig.signal === 'HOLD' ? 'NEUTRAL' : sig.signal) as 'STRONG_BUY' | 'BUY' | 'NEUTRAL' | 'SELL' | 'STRONG_SELL',
+      signal: (sig.signal === 'BALANCED' ? 'NEUTRAL' : sig.signal) as 'STRONGLY_FAVORABLE' | 'FAVORABLE' | 'NEUTRAL' | 'UNFAVORABLE' | 'STRONGLY_UNFAVORABLE',
       confidence: sig.confidence,
     };
   });

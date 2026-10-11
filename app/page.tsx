@@ -74,7 +74,7 @@ export default async function Page() {
   const sodCommentary = stockOfDay
     ? (() => {
         const resolved = resolveStockMetrics(stockOfDay.symbol);
-        return resolved ? getQvps(resolved, 'LONG').commentary : stockOfDay.why;
+        return resolved ? getQvps(resolved, 'UPSIDE').commentary : stockOfDay.why;
       })()
     : null;
 

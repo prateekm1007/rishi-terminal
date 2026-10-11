@@ -151,7 +151,7 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
       return dark
         ? "bg-emerald-900/40 text-emerald-400 border-emerald-800"
         : "bg-green-100 text-green-800 border-green-300";
-    if (cat === "Classic Value Opportunity" || cat === "Balanced Risk-Reward")
+    if (cat === "Value-Aligned Consensus" || cat === "Balanced Risk-Reward")
       return dark
         ? "bg-amber-900/40 text-amber-400 border-amber-800"
         : "bg-amber-100 text-amber-800 border-amber-300";

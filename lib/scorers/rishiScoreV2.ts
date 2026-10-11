@@ -50,7 +50,7 @@ function getTrendMultiplier(m: StockMetrics, mode: ScoreMode): number {
   const marginOk    = (m.opm ?? 0) > 15;
   const pioBig      = (m.piotroskiScore ?? 0) >= 7;
 
-  if (mode === "LONG") {
+  if (mode === "UPSIDE") {
     let mult = 1.0;
     if (growthAccel) mult += 0.04;
     if (marginOk)    mult += 0.03;
@@ -68,7 +68,7 @@ function getTrendMultiplier(m: StockMetrics, mode: ScoreMode): number {
 
 export function calculateQvps(
   metrics:     StockMetrics,
-  mode:        ScoreMode = "LONG",
+  mode:        ScoreMode = "UPSIDE",
   useCache:    boolean   = true,
 ): RishiScoreResult {
 
@@ -85,7 +85,7 @@ export function calculateQvps(
 
   let pillars: PillarScore[];
 
-  if (mode === "LONG") {
+  if (mode === "UPSIDE") {
     pillars = [
       scoreBusinessQuality(metrics),
       scoreValuation(metrics),
@@ -124,7 +124,7 @@ export function calculateQvps(
   const commentaryKey = buildCommentaryKey(finalScore, conviction, mode, topFlag);
 
   // Short risk flags
-  const shortRisks = mode === "SHORT" ? getShortRiskFlags(metrics) : null;
+  const shortRisks = mode === "DOWNSIDE" ? getShortRiskFlags(metrics) : null;
 
   const result: RishiScoreResult = {
     symbol:          metrics.symbol,
@@ -168,8 +168,8 @@ export function calculateQvpsDual(metrics: StockMetrics): {
   short: RishiScoreResult;
 } {
   return {
-    long:  calculateQvps(metrics, "LONG"),
-    short: calculateQvps(metrics, "SHORT"),
+    long:  calculateQvps(metrics, "UPSIDE"),
+    short: calculateQvps(metrics, "DOWNSIDE"),
   };
 }
 
@@ -184,7 +184,7 @@ export function quickScore(stock: {
   roe:    number;
   [key: string]: any;
 }): RishiScoreResult {
-  return calculateQvps(stock as StockMetrics, "LONG");
+  return calculateQvps(stock as StockMetrics, "UPSIDE");
 }
 
 // ── Clear Cache ───────────────────────────────────────────────

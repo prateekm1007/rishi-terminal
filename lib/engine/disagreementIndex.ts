@@ -2,7 +2,7 @@ export interface PhilosophySignal {
   philosophy: string;
   score: number;
   confidence: number;
-  signal: 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL';
+  signal: 'STRONGLY_FAVORABLE' | 'FAVORABLE' | 'BALANCED' | 'UNFAVORABLE' | 'STRONGLY_UNFAVORABLE';
   weight: number;
 }
 
@@ -79,16 +79,20 @@ export function extractOpposingViews(
   signals: PhilosophySignal[],
   majoritySignal: string
 ): string[] {
-  const majority = majoritySignal.includes('BUY') ? 'buy' :
-                   majoritySignal.includes('SELL') ? 'sell' : 'hold';
+  // P0-6: exact-match classification — substring matching would misread
+  // 'UNFAVORABLE' as favorable (it contains FAVORABLE).
+  const favorable = new Set(['STRONGLY_FAVORABLE', 'FAVORABLE']);
+  const unfavorable = new Set(['UNFAVORABLE', 'STRONGLY_UNFAVORABLE']);
+  const majority = favorable.has(majoritySignal as never) ? 'favorable' :
+                   unfavorable.has(majoritySignal as never) ? 'unfavorable' : 'balanced';
   return signals
     .filter(p => {
-      const isBuy = p.signal.includes('BUY');
-      const isSell = p.signal.includes('SELL');
-      if (majority === 'buy') return isSell;
-      if (majority === 'sell') return isBuy;
-      return isBuy || isSell;
+      const isFav = favorable.has(p.signal);
+      const isUnfav = unfavorable.has(p.signal);
+      if (majority === 'favorable') return isUnfav;
+      if (majority === 'unfavorable') return isFav;
+      return isFav || isUnfav;
     })
-    .map(p => `${p.philosophy}: ${p.signal} at score ${p.score.toFixed(0)} (confidence ${(p.confidence * 100).toFixed(0)}%)`)
+    .map(p => `${p.philosophy}: ${p.signal.replace(/_/g, ' ').toLowerCase()} at score ${p.score.toFixed(0)} (confidence ${(p.confidence * 100).toFixed(0)}%)`)
     .slice(0, 5);
 }

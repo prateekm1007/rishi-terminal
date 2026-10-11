@@ -39,7 +39,7 @@ function scoreDisp(s: number | null) {
 }
 function signalColor(s: string) {
   if (s === 'FAVORABLE' || s === 'STRONGLY FAVORABLE' || s === 'BULLISH' || s === 'POSITIVE' || s === 'UPTREND') return '#22C55E';
-  if (s === 'SELL' || s === 'BEARISH') return '#EF4444';
+  if (s === 'UNFAVORABLE' || s === 'BEARISH') return '#EF4444';
   return '#D4AF37';
 }
 

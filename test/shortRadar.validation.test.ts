@@ -50,7 +50,7 @@ const cfg: BacktestConfig = {
 const recording: ModelRecording = { byDate: new Map() };
 
 /** The production scoring path — the SAME function the dashboard uses. */
-const productionScore = (m: StockMetrics) => calculateQvps(m, "SHORT", false);
+const productionScore = (m: StockMetrics) => calculateQvps(m, "DOWNSIDE", false);
 
 const modelFactor = makeGatedModelFactor({
   sectorOf: world.sectorOf,
@@ -269,7 +269,7 @@ for (const s of Object.values(STOCKS)) {
     resolved.metrics.pb !== null && resolved.metrics.pb > 0
       ? resolved.metrics.pb
       : undefined;
-  const band = getConviction(productionScore(nulled).finalScore, "SHORT");
+  const band = getConviction(productionScore(nulled).finalScore, "DOWNSIDE");
   seedBandCensus.add(band);
 }
 

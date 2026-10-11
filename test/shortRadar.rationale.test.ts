@@ -44,11 +44,11 @@ describe("P10 — Short Radar rationale contract (round 20 + P0-1 re-pin)", () =
       if (!resolved) continue;
       const flags = shortFlags(STOCKS[c.symbol]);
       expect(flags.length, `${c.symbol}: gate and display must agree`).toBe(c.flagCount);
-      const baseScore = calculateQvps(resolved.metrics, "SHORT", false).finalScore;
+      const baseScore = calculateQvps(resolved.metrics, "DOWNSIDE", false).finalScore;
       for (const f of flags) {
         const field = FLAG_FIELD[f.key];
         const without: StockMetrics = { ...resolved.metrics, [field]: undefined };
-        const reduced = calculateQvps(without, "SHORT", false).finalScore;
+        const reduced = calculateQvps(without, "DOWNSIDE", false).finalScore;
         expect(
           reduced,
           `${c.symbol} displays "${f.label}" but its feature (${field}) contributes nothing to the score`,

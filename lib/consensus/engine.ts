@@ -25,7 +25,7 @@ import {
 function categorize(score: number): string {
   if (score >= 85) return "Legendary Compounder";
   if (score >= 75) return "High Conviction Quality";
-  if (score >= 65) return "Classic Value Opportunity";
+  if (score >= 65) return "Value-Aligned Consensus";
   if (score >= 55) return "Balanced Risk-Reward";
   if (score >= 45) return "Speculative with Merit";
   if (score >= 35) return "High Philosophical Conflict";

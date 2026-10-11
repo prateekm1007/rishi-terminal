@@ -71,7 +71,7 @@ export function generateCommentary(
 ): string {
   const { conviction, mode, finalScore } = result;
 
-  if (mode === "LONG") {
+  if (mode === "UPSIDE") {
     if (conviction === "LEGENDARY") return pick(LEGENDARY_LONG, finalScore);
     if (conviction === "HIGH_CONVICTION") return pick(HIGH_CONVICTION_LONG, finalScore);
     if (conviction === "STRONG") return pick(STRONG_LONG, finalScore);
@@ -79,8 +79,8 @@ export function generateCommentary(
     if (conviction === "NEUTRAL") return pick(NEUTRAL_LONG, finalScore);
     return pick(AVOID_LONG, finalScore);
   } else {
-    if (conviction === "LEGENDARY_SHORT") return pick(LEGENDARY_SHORT, finalScore);
-    if (conviction === "HIGH_CONVICTION_SHORT") return pick(HIGH_CONVICTION_SHORT, finalScore);
+    if (conviction === "SEVERE_DETERIORATION") return pick(LEGENDARY_SHORT, finalScore);
+    if (conviction === "MARKED_DETERIORATION") return pick(HIGH_CONVICTION_SHORT, finalScore);
     return pick(TACTICAL_SHORT, finalScore);
   }
 }
@@ -93,7 +93,7 @@ export function generateHeadline(
   const sym = metrics.symbol;
   const s = finalScore.toFixed(0);
 
-  if (mode === "LONG") {
+  if (mode === "UPSIDE") {
     // Round-5 audit (finding 3): the headline must NAME the model (QVPS),
     // not just "scores X/100" — the stock page shows the panel consensus
     // (Rishi Merit System v1) right next to this, and two unlabeled numbers
@@ -107,13 +107,13 @@ export function generateHeadline(
     if (conviction === "WATCHLIST") 
       return `${sym} QVPS ${s}/100 – Watchlist-grade, valuation ahead of quality`;
     if (conviction === "NEUTRAL") 
-      return `${sym} QVPS ${s}/100 – Hold, mixed signals`;
+      return `${sym} QVPS ${s}/100 – Balanced, mixed signals`;
     return `${sym} QVPS ${s}/100 – Weak framework support`;
   } else {
-    if (conviction === "LEGENDARY_SHORT") 
-      return `${sym} QVPS short ${s}/100 – Severe deterioration thesis`;
-    if (conviction === "HIGH_CONVICTION_SHORT") 
-      return `${sym} QVPS short ${s}/100 – Marked deterioration`;
-    return `${sym} QVPS short ${s}/100 – Early deterioration signal`;
+    if (conviction === "SEVERE_DETERIORATION") 
+      return `${sym} QVPS downside ${s}/100 – Severe deterioration read`;
+    if (conviction === "MARKED_DETERIORATION") 
+      return `${sym} QVPS downside ${s}/100 – Marked deterioration`;
+    return `${sym} QVPS downside ${s}/100 – Early deterioration signal`;
   }
 }

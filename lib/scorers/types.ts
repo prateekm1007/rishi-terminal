@@ -3,13 +3,13 @@
 // All scorers import from here — single source of truth
 // ============================================================
 
-export type ScoreMode = "LONG" | "SHORT";
+export type ScoreMode = "UPSIDE" | "DOWNSIDE";
 
 export type ConvictionBand =
   | "LEGENDARY" | "HIGH_CONVICTION" | "STRONG"
-  | "WATCHLIST"  | "NEUTRAL"         | "AVOID"
-  | "LEGENDARY_SHORT" | "HIGH_CONVICTION_SHORT"
-  | "TACTICAL_SHORT"  | "DANGEROUS_SHORT";
+  | "WATCHLIST"  | "NEUTRAL"         | "WEAK_SUPPORT"
+  | "SEVERE_DETERIORATION"    | "MARKED_DETERIORATION"
+  | "EARLY_DETERIORATION"     | "CRITICAL_DETERIORATION";
 
 export type Grade =
   | "Legendary" | "Outstanding" | "Excellent"
@@ -153,9 +153,9 @@ export interface RishiScoreResult {
 }
 
 export type ActionType =
-  | "STRONG_BUY" | "BUY" | "HOLD"
-  | "REDUCE"     | "SELL"
-  | "SHORT"      | "STRONG_SHORT";
+  | "STRONGLY_FAVORABLE" | "FAVORABLE" | "BALANCED"
+  | "UNFAVORABLE"        | "STRONGLY_UNFAVORABLE"
+  | "DETERIORATION"      | "SEVERE_DETERIORATION";
 
 // ── Sector Benchmark ──────────────────────────────────────────
 
@@ -187,18 +187,18 @@ export function safeNum(val: number | undefined | null, fallback = 0): number {
 }
 
 export function getConviction(score: number, mode: ScoreMode): ConvictionBand {
-  if (mode === "LONG") {
+  if (mode === "UPSIDE") {
     if (score >= 90) return "LEGENDARY";
     if (score >= 80) return "HIGH_CONVICTION";
     if (score >= 70) return "STRONG";
     if (score >= 60) return "WATCHLIST";
     if (score >= 50) return "NEUTRAL";
-    return "AVOID";
+    return "WEAK_SUPPORT";
   }
-  if (score >= 85) return "LEGENDARY_SHORT";
-  if (score >= 75) return "HIGH_CONVICTION_SHORT";
-  if (score >= 65) return "TACTICAL_SHORT";
-  return "DANGEROUS_SHORT";
+  if (score >= 85) return "SEVERE_DETERIORATION";
+  if (score >= 75) return "MARKED_DETERIORATION";
+  if (score >= 65) return "EARLY_DETERIORATION";
+  return "CRITICAL_DETERIORATION";
 }
 
 export function getGrade(score: number): Grade {
@@ -213,34 +213,35 @@ export function getGrade(score: number): Grade {
 
 /**
  * Round-47 P0-6 (founder order 2026-10-11: "Remove buy, sell and advice
- * wording from the UI"): the ONE descriptive render map for the action
- * vocabulary. The ActionType KEYS stay (internal, stable, tested) but no
- * surface renders them raw — `actionLabel` is the only sanctioned way to
- * turn an action into UI text, and every label is DESCRIPTIVE of what the
+ * wording from the UI"): the action vocabulary is DESCRIPTIVE end to end —
+ * the enum KEYS themselves carry no advice wording (the founder audit
+ * follow-up named this file's old keys), so no surface can render them
+ * raw. `actionLabel` remains the one sanctioned way
+ * to turn an action into UI text, and every label is DESCRIPTIVE of what the
  * frameworks conclude, never imperative of what the reader should do.
  */
 export function actionLabel(action: ActionType): string {
   switch (action) {
-    case "STRONG_BUY": return "Strongly Favorable";
-    case "BUY": return "Favorable";
-    case "HOLD": return "Balanced";
-    case "REDUCE": return "Unfavorable";
-    case "SELL": return "Strongly Unfavorable";
-    case "STRONG_SHORT": return "Severe Deterioration";
-    case "SHORT": return "Deterioration";
+    case "STRONGLY_FAVORABLE": return "Strongly Favorable";
+    case "FAVORABLE": return "Favorable";
+    case "BALANCED": return "Balanced";
+    case "UNFAVORABLE": return "Unfavorable";
+    case "STRONGLY_UNFAVORABLE": return "Strongly Unfavorable";
+    case "SEVERE_DETERIORATION": return "Severe Deterioration";
+    case "DETERIORATION": return "Deterioration";
   }
 }
 
 export function getAction(score: number, mode: ScoreMode): ActionType {
-  if (mode === "LONG") {
-    if (score >= 85) return "STRONG_BUY";
-    if (score >= 70) return "BUY";
-    if (score >= 55) return "HOLD";
-    if (score >= 40) return "REDUCE";
-    return "SELL";
+  if (mode === "UPSIDE") {
+    if (score >= 85) return "STRONGLY_FAVORABLE";
+    if (score >= 70) return "FAVORABLE";
+    if (score >= 55) return "BALANCED";
+    if (score >= 40) return "UNFAVORABLE";
+    return "STRONGLY_UNFAVORABLE";
   }
-  if (score >= 80) return "STRONG_SHORT";
-  return "SHORT";
+  if (score >= 80) return "SEVERE_DETERIORATION";
+  return "DETERIORATION";
 }
 
 // ── Deterministic Commentary Key ─────────────────────────────

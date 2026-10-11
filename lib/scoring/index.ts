@@ -302,7 +302,7 @@ export function getStockScore(input: Stock | ResolvedStockMetrics): ConsensusRes
 /** Quality-Value Pillar Score (QVPS) — the demoted former "v2" engine. */
 export function getQvps(
   resolved: ResolvedStockMetrics,
-  mode: ScoreMode = "LONG",
+  mode: ScoreMode = "UPSIDE",
 ): RishiScoreResult {
   return calculateQvps(resolved.metrics, mode);
 }

@@ -133,7 +133,7 @@ describe("round-5: verdict text matches the verdict", () => {
 
   it("NEUTRAL conviction no longer renders the AVOID 'cautionary tale'", () => {
     const result = {
-      conviction: "NEUTRAL", mode: "LONG", finalScore: 57,
+      conviction: "NEUTRAL", mode: "UPSIDE", finalScore: 57,
     } as Parameters<typeof generateCommentary>[0];
     const text = generateCommentary(result, mk({}));
     expect(text).not.toMatch(/cautionary tale/i);
@@ -142,7 +142,7 @@ describe("round-5: verdict text matches the verdict", () => {
 
   it("the QVPS headline names its model (no bare 'scores X/100')", () => {
     const result = {
-      conviction: "NEUTRAL", mode: "LONG", finalScore: 57,
+      conviction: "NEUTRAL", mode: "UPSIDE", finalScore: 57,
     } as Parameters<typeof generateHeadline>[0];
     const h = generateHeadline(result, mk({ symbol: "SBIN" }));
     expect(h).toMatch(/^SBIN QVPS 57\/100/);

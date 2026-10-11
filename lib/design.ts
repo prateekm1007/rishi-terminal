@@ -53,8 +53,8 @@ export const radii = {
   full: "9999px",
 } as const;
 
-export function getScoreColors(score: number, mode: "LONG" | "SHORT") {
-  if (mode === "SHORT") {
+export function getScoreColors(score: number, mode: "UPSIDE" | "DOWNSIDE") {
+  if (mode === "DOWNSIDE") {
     if (score >= 85) return { primary: colors.red,    glow: colors.redGlow,    label: "Severe Deterioration" };
     if (score >= 75) return { primary: "#F97316",     glow: "rgba(249,115,22,0.2)", label: "Marked Deterioration" };
     if (score >= 65) return { primary: colors.amber,  glow: "rgba(245,158,11,0.2)", label: "Early Deterioration" };

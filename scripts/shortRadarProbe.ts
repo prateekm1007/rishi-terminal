@@ -22,7 +22,7 @@ for (const c of radar) {
   const resolved = resolveStockMetrics(c.symbol);
   if (!resolved) continue;
   // Bypass the 5-minute cache so provenance-affecting edits are visible.
-  const qvps = calculateQvps(resolved.metrics, "SHORT", false);
+  const qvps = calculateQvps(resolved.metrics, "DOWNSIDE", false);
   console.log(`\n${c.symbol} (finalScore ${qvps.finalScore.toFixed(2)}, totalWeighted ${qvps.totalWeighted.toFixed(2)}, trendMult ${qvps.trendMultiplier})`);
   for (const p of qvps.pillars) {
     console.log(

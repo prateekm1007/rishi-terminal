@@ -7,7 +7,11 @@ import type { CommodityData as Commodity } from '../../data/markets';
 import { usePrice } from '../../hooks/useLivePrices';
 import type { UniversalAsset } from '../../lib/types/asset';
 import { AssetPriceChart } from '../terminal/AssetPriceChart';
-import { COMMODITY_GURUS } from '../../lib/gurus/commodity'; // R3: verdicts served by /api/gurus
+import { COMMODITY_GURUS } from '../../lib/gurus/commodity';
+import GuruHeuristicNote from '../shared/GuruHeuristicNote';
+import SimulatedPersonaChip from '../shared/SimulatedPersonaChip';
+import type { GuruOutputType } from '../../lib/gurus/gate';
+import { guruCategory } from '../../lib/gurus/gate'; // R3: verdicts served by /api/gurus
 
 const TABS = [
   { id: 'overview',   label: 'Overview',       desc: 'Price & Fundamentals'         },
@@ -53,13 +57,15 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     price: displayPrice,
     changePct: displayChange,
     change: livePriceData?.change ?? commodity.change,
-  }; // R3 (round 2): guru verdicts come from /api/gurus (server-computed,
-  // tier-sliced). Locked verdicts arrive as teasers without insight/comps.
-  // P0-5 (round 47): the wire carries the record's dataQuality — the hero
-  // reads it so the no-verdict state says WHY (seed inputs), not just '—'.
+  }; // R3 (round 2): guru verdicts come from /api/gurus (server-computed).
+  // P0-5 (round 47): the wire carries the record's dataQuality. FD-23
+  // (11 Oct 2026): on reference data the wire serves the heuristic-
+  // reference output — score + P0-6 category + the founder's label; the
+  // verdict content stays withheld.
   const [verdicts, setVerdicts] = useState<Array<{
-    id: string; name: string; score: number | null; label: string;
-    locked: boolean; insight?: string;
+    id: string; name: string; outputType: GuruOutputType;
+    score: number | null; category: string | null; label: string;
+    insight?: string;
     comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
   }> | null>(null);
   const [recordQuality, setRecordQuality] = useState<string | null>(null);
@@ -81,11 +87,10 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
     return {
       name: v.name,
       initials: meta?.initials ?? v.name.slice(0, 2).toUpperCase(),
-      framework: meta?.philosophy ?? '',
+      framework: meta?.framework ?? '',
       focus: meta?.focus ?? '',
       bio: meta?.bio ?? '',
-      result: { score: v.score, label: v.label, insight: v.insight ?? '', comps: v.comps ?? [] },
-      locked: v.locked,
+      result: { outputType: v.outputType, score: v.score, category: v.category, label: v.label, insight: v.insight ?? '', comps: v.comps ?? [] },
     };
   });
   const validScores = rishiScores.filter(r => r.result.score !== null); // T11: insufficient data excluded
@@ -96,6 +101,13 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
   const avgScore: number | null = validScores.length > 0
     ? Math.round(validScores.reduce((s, r) => s + (r.result.score as number), 0) / validScores.length)
     : null;
+
+  // FD-23: the P0-6 category of the heuristic average (null with avg), the
+  // heuristic state flag, and the withheld-verdict summary line.
+  const avgCategory = avgScore === null ? null : guruCategory(avgScore);
+  const anyHeuristic = rishiScores.some(r => r.result.outputType === 'heuristic-reference');
+  const insightLine = (r: { result: { insight: string; category: string | null } }) =>
+    r.result.insight || (r.result.category !== null ? `Heuristic category: ${r.result.category}` : '—');
 
   const chartAsset: UniversalAsset = {
     symbol: commodity.symbol,
@@ -257,7 +269,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{r.name}</span>
                       <span style={{ fontSize: 14, color: '#22C55E', fontWeight: 700 }}>{scoreDisp(r.result.score)}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#94A3B8' }}>{r.result.insight}</div>
+                    <div style={{ fontSize: 11, color: '#94A3B8' }}>{insightLine(r)}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.framework}</div>
                   </div>
                 ))}
@@ -273,7 +285,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 13, fontWeight: 700, color: '#F8FAFC' }}>{r.name}</span>
                       <span style={{ fontSize: 14, color: '#EF4444', fontWeight: 700 }}>{scoreDisp(r.result.score)}</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#94A3B8' }}>{r.result.insight}</div>
+                    <div style={{ fontSize: 11, color: '#94A3B8' }}>{insightLine(r)}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 6, borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.framework}</div>
                   </div>
                 ))}
@@ -338,7 +350,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                 <span>|</span>
                 <span>{(commodity as any).exchange || "Global"}</span>
                 <span>|</span>
-                <span style={{ color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), fontWeight: 600 }}>Rishi Consensus: {avgScore === null ? '— No Verdict' : avgScore + '/100'}</span>
+                <span style={{ color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), fontWeight: 600 }}>Rishi Consensus: {avgScore === null ? '— No Verdict' : avgScore + '/100' + (anyHeuristic ? ' — heuristic reference' : '')}</span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -379,13 +391,20 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, transparent, var(--accent-gold), transparent)' }} />
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 12 }}>3 COMMODITY RISHI CONSENSUS · HEURISTIC REFERENCE</div>
               <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 12, opacity: 0.8 }}>Deterministic heuristic reference scores — not the canonical Rishi consensus engine (lib/scoring). Rishi names mark simulated lenses on public frameworks — Jim Rogers, Daniel Yergin and Rick Rule are real analysts, and these scores are NOT their views.</div>
+              {/* FD-23: the founder's label + provenance on the consensus
+                  card whenever it shows heuristic-reference scores. */}
+              {anyHeuristic && (
+                <div style={{ marginBottom: 16, textAlign: 'center' }}>
+                  <GuruHeuristicNote />
+                </div>
+              )}
               <div style={{ fontSize: 80, fontWeight: 900, fontFamily: 'monospace', color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore), lineHeight: 1 }}>{avgScore === null ? '—' : avgScore}</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8 }}>
                 {avgScore === null
                   ? (recordQuality === 'seed' || recordQuality === 'missing'
                       ? 'No Verdict — the indicator inputs are static reference data'
                       : 'No Verdict — no valid scorer results')
-                  : avgScore >= 75 ? 'High conviction — supercycle conditions present' : avgScore >= 55 ? 'Moderate read — selective conditions' : 'Caution — weak conditions'}
+                  : avgCategory}
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 24 }}>
                 {rishiScores.map(r => (
@@ -546,13 +565,18 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             {/* Rishi Insights */}
             <div className="card-sacred" style={{ padding: 24 }}>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 16 }}>RISHI INSIGHTS</div>
+              {anyHeuristic && (
+                <div style={{ marginBottom: 14 }}>
+                  <GuruHeuristicNote compact />
+                </div>
+              )}
               {rishiScores.map(r => (
                 <div key={r.name} style={{ marginBottom: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${scoreColorN(r.result.score)}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center' }}>{r.name}<SimulatedPersonaChip /></span>
                     <span style={{ fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{scoreDisp(r.result.score)}/100</span>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{insightLine(r)}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{r.framework}</div>
                 </div>
               ))}
@@ -673,23 +697,33 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <div style={{ width: 56, height: 56, borderRadius: '50%', background: scoreBgN(r.result.score), border: `2px solid ${scoreColorN(r.result.score)}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: scoreColorN(r.result.score) }}>{r.initials}</div>
                     <div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{r.name}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.result.label} • {r.focus}</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center' }}>{r.name}<SimulatedPersonaChip /></div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.result.category ?? r.result.label} • {r.focus}</div>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 52, fontWeight: 900, fontFamily: 'monospace', color: scoreColorN(r.result.score), lineHeight: 1 }}>{scoreDisp(r.result.score)}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{r.result.label}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{r.result.category ?? r.result.label}</div>
                   </div>
                 </div>
+                {/* FD-23: every guru card that shows a heuristic-reference
+                    score carries the founder's label + provenance. */}
+                {r.result.outputType === 'heuristic-reference' && (
+                  <div style={{ marginBottom: 16 }}>
+                    <GuruHeuristicNote />
+                  </div>
+                )}
+                {r.result.insight && (
                 <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: `3px solid ${scoreColorN(r.result.score)}`, marginBottom: 16 }}>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: 1, marginBottom: 8 }}>ANALYSIS</div>
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{r.result.insight}</p>
                 </div>
+                )}
                 <div style={{ padding: 14, background: 'rgba(212,175,55,0.05)', borderRadius: 8, borderLeft: '3px solid rgba(212,175,55,0.4)', marginBottom: 16 }}>
                   <div style={{ fontSize: 10, color: '#D4AF37' }}>{r.framework}</div>
                   <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 6 }}>{r.bio}</div>
                 </div>
+                {r.result.comps.length > 0 && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
                   {r.result.comps.map(comp => (
                     <div key={comp.label} style={{ padding: 12, background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
@@ -704,6 +738,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             ))}
           </div>
@@ -715,6 +750,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div className="card-sacred" style={{ padding: 24, borderTop: '2px solid #22C55E' }}>
                 <div style={{ fontSize: 9, color: '#22C55E', letterSpacing: 2, marginBottom: 16 }}>{t("kg.bullCase")} ({bulls.length})</div>
+                {anyHeuristic && <div style={{ marginBottom: 12 }}><GuruHeuristicNote compact /></div>}
                 {bulls.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("kg.noBullsPrice")}</div>}
                 {bulls.map((r, i) => (
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10 }}>
@@ -722,13 +758,14 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#22C55E' }}>{scoreDisp(r.result.score)}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{insightLine(r)}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #22C55E', paddingLeft: 8 }}>{r.framework}</div>
                   </div>
                 ))}
               </div>
               <div className="card-sacred" style={{ padding: 24, borderTop: '2px solid #EF4444' }}>
                 <div style={{ fontSize: 9, color: '#EF4444', letterSpacing: 2, marginBottom: 16 }}>{t("kg.bearCase")} ({bears.length})</div>
+                {anyHeuristic && <div style={{ marginBottom: 12 }}><GuruHeuristicNote compact /></div>}
                 {bears.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t("kg.noBearsPrice")}</div>}
                 {bears.map((r, i) => (
                   <div key={i} style={{ marginBottom: 14, padding: 14, background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10 }}>
@@ -736,7 +773,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
                       <span style={{ fontSize: 16, fontWeight: 700, color: '#EF4444' }}>{scoreDisp(r.result.score)}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{r.result.insight}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>{insightLine(r)}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic', borderLeft: '2px solid #EF4444', paddingLeft: 8 }}>{r.framework}</div>
                   </div>
                 ))}
@@ -752,7 +789,7 @@ export function CommodityDetailClient({ commodity }: { commodity: Commodity }) {
                         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{r.name}</span>
                         <span style={{ fontSize: 16, fontWeight: 700, color: '#D4AF37' }}>{scoreDisp(r.result.score)}</span>
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{r.result.insight}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{insightLine(r)}</div>
                     </div>
                   ))}
                 </div>

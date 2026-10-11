@@ -9,6 +9,9 @@ import { CRYPTO_GURUS } from '../../lib/gurus/crypto'; // R3: metadata only — 
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
+import GuruHeuristicNote from '../../components/shared/GuruHeuristicNote';
+import SimulatedPersonaChip from '../../components/shared/SimulatedPersonaChip';
+import type { GuruOutputType } from '../../lib/gurus/gate';
 
 
 function scoreColor(score: number): string {
@@ -25,9 +28,12 @@ export default function CryptoPage() {
 
   // R3 (round 2) + Commit M3 (free access): guru verdicts are computed
   // SERVER-SIDE (/api/gurus) and served in full to every caller. This page
-  // renders only what it is served.
+  // renders only what it is served. FD-23 (11 Oct 2026): on reference data
+  // the wire serves the heuristic-reference output — score + P0-6 category
+  // + the founder's label; the verdict content stays withheld.
   const [guruVerdicts, setGuruVerdicts] = useState<Array<{
-    id: string; name: string; score: number | null; label: string;
+    id: string; name: string; outputType: GuruOutputType;
+    score: number | null; category: string | null; label: string;
     insight?: string; comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
   }> | null>(null);
   useEffect(() => {
@@ -301,7 +307,9 @@ export default function CryptoPage() {
             const isExpanded = expandedCard === guru.id;
 
             const result = {
+              outputType: verdict.outputType,
               score: verdict.score,
+              category: verdict.category,
               label: verdict.label,
               insight: verdict.insight ?? '',
               comps: verdict.comps ?? [],
@@ -329,8 +337,9 @@ export default function CryptoPage() {
                         {guru.tag}
                       </div>
                       <div>
-                        <div className="philosophy-heading" style={{ fontSize: 18, color: 'var(--text-primary)', marginBottom: 4 }}>
+                        <div className="philosophy-heading" style={{ fontSize: 18, color: 'var(--text-primary)', marginBottom: 4, display: 'flex', alignItems: 'center' }}>
                           {guru.name}
+                          <SimulatedPersonaChip />
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                           {guru.bio}
@@ -342,17 +351,30 @@ export default function CryptoPage() {
                         {result.score === null ? '\u2014' : result.score}
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-                        {result.label}
+                        {/* FD-23: the category under the score — the P0-6
+                            vocabulary on heuristic-reference output, the
+                            scorer's own label on a live verdict. */}
+                        {result.category ?? result.label}
                       </div>
                     </div>
                   </div>
+                  {/* FD-23: every card that shows a heuristic-reference
+                      score carries the founder's label + provenance. */}
+                  {result.outputType === 'heuristic-reference' && (
+                    <div style={{ marginBottom: 12 }}>
+                      <GuruHeuristicNote compact />
+                    </div>
+                  )}
                   {isExpanded && (
                     <div style={{ paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
-                      <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 16 }}>
-                        {result.insight}
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
-                        {result.comps.map((c, i) => (
+                      {result.insight && (
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 16 }}>
+                          {result.insight}
+                        </div>
+                      )}
+                      {result.comps.length > 0 && (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+                          {result.comps.map((c, i) => (
                           <div key={i} style={{
                             background: 'var(--bg-secondary)',
                             padding: 12,
@@ -371,6 +393,7 @@ export default function CryptoPage() {
                           </div>
                         ))}
                       </div>
+                      )}
                     </div>
                   )}
                 </div>

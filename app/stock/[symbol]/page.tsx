@@ -19,6 +19,7 @@ import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboa
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
 import { verdictsAllowed } from '@/lib/dataQuality';
+import { priceScoresPublic } from '@/lib/licensing'; // P0-8: the exchange-data license state
 import { NamespaceProvider } from '../../../components/shared/NamespaceProvider';
 // `stock as stockNs`: this page's OWN `stock` binding (the resolved Stock
 // record) shadows the namespace identifier inside the component scope —
@@ -90,6 +91,19 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
       openGraph: { title, description, url: ogUrl, type: "article" },
     };
   }
+  // Round-47 P0-8: while the exchange-data license is pending, price-based
+  // verdicts are not published — the metadata must not promise the
+  // consensus or the QVPS the page does not render (rule 1).
+  if (!priceScoresPublic()) {
+    const title = `${stock.name} (${canonicalSym}) — verdicts paused (exchange-data license pending) | Rishi Terminal`;
+    const description = `${stock.name} (${canonicalSym}, ${stock.sector}) — price-based framework verdicts and the consensus are own-use only while the exchange-data license is pending (NSE display / non-display enquiry). Fundamental-only framework checks and labelled metrics are shown with their own provenance.`;
+    return {
+      title,
+      description,
+      alternates: { canonical: ogUrl },
+      openGraph: { title, description, url: ogUrl, type: "article" },
+    };
+  }
   const title = `${stock.name} (${canonicalSym}) — Rishi scores & fundamentals | Rishi Terminal`;
   const description = `${stock.name} (${canonicalSym}, ${stock.sector}) analysed through 20 Rishi frameworks — consensus score, QVPS pillars, valuation and quality metrics. Illustrative seed data, labelled per field.`;
   return {
@@ -153,7 +167,11 @@ export default async function StockPage({ params }: StockPageProps) {
   // metrics (MetricsPanel overlays live fundamentals with overlaySourced),
   // both QVPS modes, and the knowledge graph for the FULL verdict set.
   const resolved = resolveStockMetrics(key);
-  const qvpsDual = resolved ? calculateQvpsDual(resolved.metrics) : null;
+  // Round-47 P0-8: the QVPS pillars read P/E, P/B and market cap —
+  // price-derived inputs. While the exchange-data license is pending the
+  // dual-gauge is not produced (the client renders the honest absent
+  // state), mirroring the scorers' licenseRefusal.
+  const qvpsDual = resolved && priceScoresPublic() ? calculateQvpsDual(resolved.metrics) : null;
   const eliteGraph = buildEliteKnowledgeGraph(stock, sanitized.verdicts);
   // A1: the historical parallel for the wisdom rail — server-resolved;
   // null renders the honest "no parallels detected" state.

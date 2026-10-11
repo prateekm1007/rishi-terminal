@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, noVerdictScore, observed, sectorRefusal, unknownAmong } from './verdictGuards';
+import { licenseRefusal, SCORER_VERDICT_CONTRACT, noVerdictScore, observed, sectorRefusal, unknownAmong } from './verdictGuards';
 
 /**
  * George Soros — Reflexivity & Macro Contrarian
@@ -35,6 +35,11 @@ export function scoreSoros(input: Stock, ctx?: ScoringContext): RishiScore {
   // field is UNKNOWN — no verdict, never an interpretation of zero.
   const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Soros"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Soros"], p02Missing);
+  // P0-8 (founder directive 2026-10-11): the price-license gate — the
+  // LAST refusal before the arithmetic. While the exchange-data license
+  // is pending, a price-based framework does not publish verdicts.
+  const p08Refusal = licenseRefusal("Soros");
+  if (p08Refusal) return p08Refusal;
   // P0-2b: the guard proved every required field observed — lift the
   // nullable classes to their observed types for the arithmetic below.
   const s = observed(input);

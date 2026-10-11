@@ -3,6 +3,7 @@ import 'server-only';
 import type { Stock, RishiScore } from '../types';
 import type { ScoringContext } from '../consensus/orchestrator';
 import { isLenderSector, inapplicableAmong, describeFields } from './sectorGate';
+import { priceScoresPublic } from '../licensing';
 
 /**
  * Round-46 P0-2 — the SCORER VERDICT CONTRACT (founder audit 2026-10-11:
@@ -52,29 +53,42 @@ export interface ScorerVerdictContract {
    * banks").
    */
   lenderPolicy?: 'refuse' | 'field-gated';
+  /**
+   * P0-8 (founder directive 2026-10-11): does this verdict READ a
+   * price-derived input? true = the scorer's arithmetic (or a weighted
+   * component of it) consumes P/E, market capitalisation or price — an
+   * automated calculation on market data under NSE's non-display policy.
+   * The classification is per-scorer (NOT derived from `required`
+   * mechanically): Nemish's P/E leg is optional in its required list but
+   * the verdict still reads it, so the honest declaration is "true".
+   * REQUIRED (never optional): a scorer that has not declared cannot
+   * compile, and an undeclared price read would silently bypass the
+   * license gate.
+   */
+  priceBased: boolean;
 }
 
 export const SCORER_VERDICT_CONTRACT: Record<string, ScorerVerdictContract> = {
-  Graham:        { name: 'Graham',        full: 'Benjamin Graham',   label: 'Deep Value',            origin: 'Global', required: ['pe', 'ca', 'tl', 'sh', 'price', 'de'] },
-  Buffett:       { name: 'Buffett',       full: 'Warren Buffett',    label: 'Quality Moat',          origin: 'Global', required: ['roe', 'opm', 'np', 'dep', 'capex', 'mktcap', 'promo'] },
-  Damani:        { name: 'Damani',        full: 'Radhakishan Damani',label: 'Zero-Debt Fortress',    origin: 'Bharat', required: ['de', 'roce', 'fcf', 'rev', 'opm'] },
-  'Howard Marks':{ name: 'Howard Marks',  full: 'Howard Marks',      label: 'Risk Cycle',            origin: 'Global', required: ['de', 'pe', 'fcf', 'roe', 'price', 'bvps', 'mktcap'] },
-  Jhunjhunwala:  { name: 'Jhunjhunwala',  full: 'Rakesh Jhunjhunwala',label: 'Conviction Multibagger',origin: 'Bharat', required: ['mktcap', 'ocf', 'revcagr', 'epscagr', 'opm', 'roce', 'de', 'promo', 'fcf', 'rev'] },
-  Basant:        { name: 'Basant',        full: 'Basant Maheshwari', label: 'Consumption Growth',    origin: 'Bharat', required: ['revcagr', 'opm', 'pe'] },
-  Kacholia:      { name: 'Kacholia',      full: 'Ashish Kacholia',   label: 'Whale Small-Cap Hunter',origin: 'Bharat', required: ['promo', 'epscagr', 'mktcap', 'roce'] },
-  Kedia:         { name: 'Kedia',         full: 'Vijay Kedia',       label: 'SMILE Formula',         origin: 'Bharat', required: ['mktcap', 'de', 'opm', 'revcagr'] },
-  Lynch:         { name: 'Lynch',         full: 'Peter Lynch',       label: 'GARP',                  origin: 'Global', required: ['pe', 'epscagr', 'fcf', 'revcagr'] },
-  Munger:        { name: 'Munger',        full: 'Charlie Munger',    label: 'Mental Models',         origin: 'Global', required: ['roce', 'de', 'fcf', 'roe', 'promo'] },
-  Nemish:        { name: 'Nemish',        full: 'Nemish Shah',       label: 'Steady Compounder',     origin: 'Bharat', required: ['epscagr', 'de', 'promo'] },
-  Pabrai:        { name: 'Pabrai',        full: 'Mohnish Pabrai',    label: 'Dhandho Cloner',        origin: 'Global', required: ['promo', 'de', 'fcf', 'pe'] },
-  'Philip Fisher':{name: 'Philip Fisher', full: 'Philip Fisher',     label: 'Scuttlebutt Growth',    origin: 'Global', required: ['promo', 'capex', 'rev', 'epscagr', 'mktcap'] },
-  Porinju:       { name: 'Porinju',       full: 'Porinju Veliyath',  label: 'Contrarian Deep Value', origin: 'Bharat', required: ['pe', 'promo', 'bvps', 'price', 'revcagr'] },
-  Raamdeo:       { name: 'Raamdeo',       full: 'Raamdeo Agrawal',   label: 'QGLP Framework',        origin: 'Bharat', required: ['roce', 'roe', 'revcagr', 'epscagr', 'de', 'pe'] },
-  'Walter Schloss':{name: 'Walter Schloss',full: 'Walter Schloss',    label: 'Cigar Butt',            origin: 'Global', required: ['price', 'bvps', 'de', 'promo', 'mktcap'] },
-  'Seth Klarman':{ name: 'Seth Klarman',  full: 'Seth Klarman',      label: 'Asymmetric Safety',     origin: 'Global', required: ['de', 'fcf', 'pe', 'price', 'bvps', 'opm', 'revcagr'] },
-  Soros:         { name: 'Soros',         full: 'George Soros',      label: 'Reflexivity Macro',     origin: 'Global', required: ['ca', 'tl', 'sh', 'price', 'revcagr', 'de', 'epscagr'] },
-  'John Templeton':{name: 'John Templeton',full: 'John Templeton',    label: 'Maximum Pessimism',     origin: 'Global', required: ['bvps', 'mktcap', 'pe', 'price'] },
-  Greenblatt:    { name: 'Greenblatt',    full: 'Joel Greenblatt',   label: 'Magic Formula',         origin: 'Global', required: ['np', 'mktcap'], lenderPolicy: 'refuse' },
+  Graham:        { name: 'Graham',        full: 'Benjamin Graham',   label: 'Deep Value',            origin: 'Global', required: ['pe', 'ca', 'tl', 'sh', 'price', 'de'], priceBased: true },
+  Buffett:       { name: 'Buffett',       full: 'Warren Buffett',    label: 'Quality Moat',          origin: 'Global', required: ['roe', 'opm', 'np', 'dep', 'capex', 'mktcap', 'promo'], priceBased: true },
+  Damani:        { name: 'Damani',        full: 'Radhakishan Damani',label: 'Zero-Debt Fortress',    origin: 'Bharat', required: ['de', 'roce', 'fcf', 'rev', 'opm'], priceBased: false },
+  'Howard Marks':{ name: 'Howard Marks',  full: 'Howard Marks',      label: 'Risk Cycle',            origin: 'Global', required: ['de', 'pe', 'fcf', 'roe', 'price', 'bvps', 'mktcap'], priceBased: true },
+  Jhunjhunwala:  { name: 'Jhunjhunwala',  full: 'Rakesh Jhunjhunwala',label: 'Conviction Multibagger',origin: 'Bharat', required: ['mktcap', 'ocf', 'revcagr', 'epscagr', 'opm', 'roce', 'de', 'promo', 'fcf', 'rev'], priceBased: true },
+  Basant:        { name: 'Basant',        full: 'Basant Maheshwari', label: 'Consumption Growth',    origin: 'Bharat', required: ['revcagr', 'opm', 'pe'], priceBased: true },
+  Kacholia:      { name: 'Kacholia',      full: 'Ashish Kacholia',   label: 'Whale Small-Cap Hunter',origin: 'Bharat', required: ['promo', 'epscagr', 'mktcap', 'roce'], priceBased: true },
+  Kedia:         { name: 'Kedia',         full: 'Vijay Kedia',       label: 'SMILE Formula',         origin: 'Bharat', required: ['mktcap', 'de', 'opm', 'revcagr'], priceBased: true },
+  Lynch:         { name: 'Lynch',         full: 'Peter Lynch',       label: 'GARP',                  origin: 'Global', required: ['pe', 'epscagr', 'fcf', 'revcagr'], priceBased: true },
+  Munger:        { name: 'Munger',        full: 'Charlie Munger',    label: 'Mental Models',         origin: 'Global', required: ['roce', 'de', 'fcf', 'roe', 'promo'], priceBased: false },
+  Nemish:        { name: 'Nemish',        full: 'Nemish Shah',       label: 'Steady Compounder',     origin: 'Bharat', required: ['epscagr', 'de', 'promo'], priceBased: true },
+  Pabrai:        { name: 'Pabrai',        full: 'Mohnish Pabrai',    label: 'Dhandho Cloner',        origin: 'Global', required: ['promo', 'de', 'fcf', 'pe'], priceBased: true },
+  'Philip Fisher':{name: 'Philip Fisher', full: 'Philip Fisher',     label: 'Scuttlebutt Growth',    origin: 'Global', required: ['promo', 'capex', 'rev', 'epscagr', 'mktcap'], priceBased: true },
+  Porinju:       { name: 'Porinju',       full: 'Porinju Veliyath',  label: 'Contrarian Deep Value', origin: 'Bharat', required: ['pe', 'promo', 'bvps', 'price', 'revcagr'], priceBased: true },
+  Raamdeo:       { name: 'Raamdeo',       full: 'Raamdeo Agrawal',   label: 'QGLP Framework',        origin: 'Bharat', required: ['roce', 'roe', 'revcagr', 'epscagr', 'de', 'pe'], priceBased: true },
+  'Walter Schloss':{name: 'Walter Schloss',full: 'Walter Schloss',    label: 'Cigar Butt',            origin: 'Global', required: ['price', 'bvps', 'de', 'promo', 'mktcap'], priceBased: true },
+  'Seth Klarman':{ name: 'Seth Klarman',  full: 'Seth Klarman',      label: 'Asymmetric Safety',     origin: 'Global', required: ['de', 'fcf', 'pe', 'price', 'bvps', 'opm', 'revcagr'], priceBased: true },
+  Soros:         { name: 'Soros',         full: 'George Soros',      label: 'Reflexivity Macro',     origin: 'Global', required: ['ca', 'tl', 'sh', 'price', 'revcagr', 'de', 'epscagr'], priceBased: true },
+  'John Templeton':{name: 'John Templeton',full: 'John Templeton',    label: 'Maximum Pessimism',     origin: 'Global', required: ['bvps', 'mktcap', 'pe', 'price'], priceBased: true },
+  Greenblatt:    { name: 'Greenblatt',    full: 'Joel Greenblatt',   label: 'Magic Formula',         origin: 'Global', required: ['np', 'mktcap'], lenderPolicy: 'refuse', priceBased: true },
 };
 
 /**
@@ -151,6 +165,39 @@ export function noVerdictScore(
     origin: c.origin,
     comps: [],
     insight,
+  };
+}
+
+/**
+ * P0-8 — THE PRICE-LICENSE REFUSAL (round-47, founder directive
+ * 2026-10-11: "Treat any price-based score as unresolved until NSE
+ * answers in writing"). A price-based scorer refuses EVERY row while
+ * `priceScoresPublic()` is false — the refusal is a PUBLICATION hold,
+ * not a data property: the license state is global, so the verdict is
+ * row-independent. Consulted by every scorer AFTER the sector gate and
+ * the placeholder guard: a lender row keeps naming the sector truth, a
+ * placeholder row keeps naming the unknown fields, and the license is
+ * the LAST line nothing price-based crosses.
+ */
+export function licenseRefusal(scorerName: string): RishiScore | null {
+  const contract = SCORER_VERDICT_CONTRACT[scorerName];
+  if (!contract) {
+    // Config defect, not a pass-through (rule 6): an unregistered name
+    // must never silently score.
+    throw new Error(
+      `license gate: scorer "${scorerName}" has no SCORER_VERDICT_CONTRACT entry — declare it (lib/scorers/verdictGuards.ts) instead of scoring ungated`,
+    );
+  }
+  if (priceScoresPublic()) return null;
+  if (!contract.priceBased) return null;
+  return {
+    name: contract.name,
+    full: contract.full,
+    label: contract.label,
+    score: null,
+    origin: contract.origin,
+    comps: [],
+    insight: `No verdict \u2014 the ${contract.full} ${contract.label} framework is price-based: its verdict reads price-derived inputs (P/E, market capitalisation or price). Price-based scores are unresolved while the exchange-data license is pending (NSE display / non-display enquiry, sent for a written answer); until it arrives they are own-use only and are not published here.`,
   };
 }
 

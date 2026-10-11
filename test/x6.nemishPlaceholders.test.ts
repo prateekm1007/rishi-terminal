@@ -26,7 +26,7 @@
  *     sentinel; Y4: seed 0 is the placeholder): insufficient regardless
  *     of provenance.
  */
-import { describe, it, expect } from "vitest";
+import { vi, describe, it, expect } from "vitest";
 
 import { STOCKS } from "@/data/stocks";
 import type { Stock } from "@/lib/types";
@@ -34,6 +34,20 @@ import { scoreNemish } from "@/lib/scorers/nemish";
 import { runAllScorers } from "@/lib/consensus/orchestrator";
 import { buildConsensus } from "@/lib/consensus/engine";
 import { getStockScore, resolveStockMetrics } from "@/lib/scoring";
+
+// Round-47 P0-8: this file pins the LICENSED state — the scorer
+// arithmetic beneath the price-license gate. The publication hold while
+// the exchange-data license is unresolved is pinned by
+// test/licenseGate.test.ts; the seed-world refusal-reason pins below
+// are unaffected (the sector and placeholder guards precede the license
+// gate inside every scorer).
+// (vi added to the vitest import for the mock.)
+vi.mock("@/lib/licensing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/licensing")>();
+  // The arithmetic world: the exchange-data license is satisfied.
+  return { ...actual, priceScoresPublic: () => true };
+});
+
 
 const UNKNOWN_STOCK: Stock = {
   symbol: "UNK", name: "Unknown Corp", sector: "X", exchange: "NSE",

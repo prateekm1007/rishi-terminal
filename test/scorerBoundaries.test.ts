@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 
 /**
  * W4 closure (founder round-11, directions 10/11/12): the retuned
@@ -38,6 +38,20 @@ import type { Stock } from '@/lib/types';
 // arithmetic's way. The provenance behavior itself is pinned by
 // test/p02.nullNeverZero.test.ts.
 import type { ScoringContext } from '@/lib/consensus/orchestrator';
+
+// Round-47 P0-8: this file pins the LICENSED state — the scorer
+// arithmetic beneath the price-license gate. The publication hold while
+// the exchange-data license is unresolved is pinned by
+// test/licenseGate.test.ts; the seed-world refusal-reason pins below
+// are unaffected (the sector and placeholder guards precede the license
+// gate inside every scorer).
+// (vi added to the vitest import for the mock.)
+vi.mock("@/lib/licensing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/licensing")>();
+  // The arithmetic world: the exchange-data license is satisfied.
+  return { ...actual, priceScoresPublic: () => true };
+});
+
 const LIVE: ScoringContext = { unknownFields: new Set<string>() };
 const pabraiObserved = (o: Partial<Stock>) => scorePabrai(stock(o), LIVE);
 const porinjuObserved = (o: Partial<Stock>) => scorePorinju(stock(o), LIVE);

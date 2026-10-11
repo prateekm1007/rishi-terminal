@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp, fin, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, noVerdictScore, observed, sectorRefusal, unknownAmong } from './verdictGuards';
+import { licenseRefusal, SCORER_VERDICT_CONTRACT, noVerdictScore, observed, sectorRefusal, unknownAmong } from './verdictGuards';
 
 /**
  * Jhunjhunwala — "Conviction Multibagger" (remediation T11).
@@ -25,6 +25,11 @@ export function scoreJhunjhunwala(input: Stock, ctx?: ScoringContext): RishiScor
   // field is UNKNOWN — no verdict, never an interpretation of zero.
   const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Jhunjhunwala"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Jhunjhunwala"], p02Missing);
+  // P0-8 (founder directive 2026-10-11): the price-license gate — the
+  // LAST refusal before the arithmetic. While the exchange-data license
+  // is pending, a price-based framework does not publish verdicts.
+  const p08Refusal = licenseRefusal("Jhunjhunwala");
+  if (p08Refusal) return p08Refusal;
   // P0-2b: the guard proved every required field observed — lift the
   // nullable classes to their observed types for the arithmetic below.
   const s = observed(input);

@@ -4,7 +4,7 @@ import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
 import { insuffDetail } from './unknownInputs';
-import { sectorRefusal } from './verdictGuards';
+import { licenseRefusal, sectorRefusal } from './verdictGuards';
 
 /**
  * Nemish Shah — Steady Compounder (X6, Round 13 root-cause fix).
@@ -66,6 +66,13 @@ export function scoreNemish(s: Stock, ctx?: ScoringContext): RishiScore {
   const peUnknown = isUnknown('pe');
   const insufficient =
     epsUnknown || deUnknown || promoUnknown || peUnknown;
+  // P0-8 (founder directive 2026-10-11): the price-license gate — the
+  // LAST refusal before the arithmetic. While the exchange-data license
+  // is pending, a price-based framework does not publish verdicts.
+  if (!insufficient) {
+    const p08Refusal = licenseRefusal("Nemish");
+    if (p08Refusal) return p08Refusal;
+  }
 
   const consistencyScore = s.epscagr >= 12 ? 100 : clamp(s.epscagr * 8.33);
   const debtScore = s.de === null ? 0 : s.de <= 0.3 ? 100 : s.de <= 0.6 ? 80 : clamp(100 - s.de * 100);

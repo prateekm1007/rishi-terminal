@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, noVerdictScore, sectorRefusal, unknownAmong } from './verdictGuards';
+import { licenseRefusal, SCORER_VERDICT_CONTRACT, noVerdictScore, sectorRefusal, unknownAmong } from './verdictGuards';
 
 /**
  * Magic Formula (T11 zero-guard): ROC and EY divide by market cap; a
@@ -44,6 +44,11 @@ export function scoreGreenblatt(s: Stock, ctx?: ScoringContext): RishiScore {
   // field is UNKNOWN — no verdict, never an interpretation of zero.
   const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Greenblatt"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Greenblatt"], p02Missing);
+  // P0-8 (founder directive 2026-10-11): the price-license gate — the
+  // LAST refusal before the arithmetic. While the exchange-data license
+  // is pending, a price-based framework does not publish verdicts.
+  const p08Refusal = licenseRefusal("Greenblatt");
+  if (p08Refusal) return p08Refusal;
 
   const rocCap = s.mktcap > 0 ? s.mktcap * 0.6 : 0;
   const rocFrac = safeDiv(s.np, rocCap);

@@ -14,6 +14,15 @@ import {
   aggregatePresentationState,
   statusColor,
 } from "@/lib/pricePresentation";
+// FD-15 (founder decision 2026-10-11): "The dashboard ticker follows the
+// same rule" — a ticker value renders only when its wire entry carries a
+// price, a source AND an observation time, and only when the symbol's
+// asset class is cleared for display (commodity/forex quotes are
+// licence-pending: they render "—" until the founder clears a source).
+import {
+  renderableTickerValue,
+  renderableTickerChange,
+} from "@/lib/markets/sourcedRow";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";
 import { useLanguage } from "@/lib/language";
@@ -44,6 +53,13 @@ const MARKETS = [
   { href:"/lab",         icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
   
 ];
+
+/** FD-15: symbols whose DISPLAY is licence-pending (founder order
+ *  2026-10-11 item 5 — forex/commodity values wait for the founder's
+ *  source decision; the licensing review is PR #351). Even a live
+ *  transport quote for these classes renders "—" on the ticker. */
+const TICKER_LICENCE_PENDING = new Set(["GOLD", "SILVER", "WTI", "GOLDMCX", "SILVERMCX", "CRUDEOILMCX"]);
+const licencePending = (sym: string) => TICKER_LICENCE_PENDING.has(sym);
 
 /* ── Style Helpers ─────────────────────────────────────────── */
 
@@ -194,13 +210,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     return () => clearInterval(interval);
   }, [observedAt, t]);
 
-  // G6: null (unobserved) renders '—' / neutral — never a fabricated 0 or 0.00%.
-  const fmtINR = (n?: number | null) =>
-    n ? "" + n.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "—";
-  const fmtUSD = (n?: number | null) =>
-    n ? "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "—";
-  const fmtPct = (n?: number | null) =>
-    n != null ? (n >= 0 ? "+" : "") + n.toFixed(2) + "%" : "—";
+  // G6: null (unobserved) renders neutral — never a fabricated 0 or 0.00%.
+  // (FD-15: the INR/USD/pct formatters moved out — every value on this
+  // surface renders through the ticker gate now; large-magnitude formatting
+  // lives in the shared cells.)
   const upClr = (n?: number | null): React.CSSProperties =>
     ({ color: n == null ? C.textMuted : n >= 0 ? C.green : C.red });
 
@@ -217,23 +230,38 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
         <div className="animate-ticker" style={{ whiteSpace:"nowrap", display:"flex" }}>
           {[...TICKER_SYMS, ...TICKER_SYMS].map((sym, i) => {
             const d = prices[sym];
-            const up = (d?.changePercent24h ?? 0) >= 0;
-            const useUSD = ["BTC","ETH","SOL","BNB","GOLD","SILVER","WTI"].includes(sym);
+            // FD-15: the value renders ONLY through the ticker gate —
+            // price + source + observation time + a display-cleared asset
+            // class. Licence-pending symbols (GOLD/SILVER/WTI) and
+            // STATIC/unavailable entries render "—". Data by CoinGecko
+            // (crypto) and Yahoo Finance (unofficial, delayed) — the
+            // attribution rides each entry's own source id.
+            const gated = renderableTickerValue(sym, d, licencePending);
+            const change = renderableTickerChange(sym, d, licencePending);
+            const up = (change ?? 0) >= 0;
+            const useUSD = ["BTC","ETH","SOL","BNB"].includes(sym);
             return (
               <span key={i} style={{
                 display:"inline-flex", alignItems:"center", gap:"10px",
                 padding:"0 24px", borderRight:"1px solid rgba(212,175,55,0.08)",
                 flexShrink:0,
-              }}>
+              }}
+                title={gated === null
+                  ? (licencePending(sym)
+                      ? "Data licence pending — values return once a source is cleared (FD-15)"
+                      : "No sourced observation (price + source + time) yet — nothing renders (FD-15)")
+                  : `${d?.source === "coingecko" ? "CoinGecko" : "Yahoo Finance (unofficial)"}, observed ${d?.lastUpdated ?? ""}`}
+              >
                 <span style={{ color:C.textMuted, fontSize:"11px", fontWeight:700, letterSpacing:"0.08em", fontFamily:mono }}>{sym}</span>
                 <span style={{ color:C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
-                  {d?.price ? (useUSD ? "$" : "") + d.price.toLocaleString("en-IN",{maximumFractionDigits:2}) : "—"}
+                  {gated === null ? "—" : (useUSD ? "$" : "") + gated.toLocaleString("en-IN",{maximumFractionDigits:2})}
                 </span>
                 {/* Round-5 audit (finding 9): a missing quote used to render
                     "▼ 0.00%" — a fabricated direction and magnitude. No
-                    data -> no arrow, no number. */}
-                <span style={{ fontSize:"12px", fontWeight:600, color: up ? C.green : C.red, fontFamily:mono }}>
-                  {d?.changePercent24h == null ? "—" : `${up ? "▲" : "▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%`}
+                    data -> no arrow, no number. FD-15: the change renders
+                    only beside a gated value. */}
+                <span style={{ fontSize:"12px", fontWeight:600, color: change == null ? C.textMuted : up ? C.green : C.red, fontFamily:mono }}>
+                  {change == null ? "—" : `${up ? "▲" : "▼"} ${Math.abs(change).toFixed(2)}%`}
                 </span>
               </span>
             );
@@ -352,10 +380,16 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
             {STATS.map(({ label, sym, usd }) => {
               const d  = prices[sym];
-              const up = (d?.changePercent24h ?? 0) >= 0;
+              // FD-15: the stat tiles follow the ticker rule — the value
+              // renders only through the gate (source + observation time
+              // + display-cleared class; Gold is licence-pending).
+              const gated = renderableTickerValue(sym, d, licencePending);
+              const change = renderableTickerChange(sym, d, licencePending);
+              const up = (change ?? 0) >= 0;
               return (
                 <Link href="/pulse/markets" key={sym} style={{ textDecoration:"none" }}>
-                  <div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
+                  <div style={{ ...card(), padding:"18px", cursor:"pointer" }}
+                    title={gated === null ? "No sourced observation yet (FD-15)" : `${d?.source === "coingecko" ? "CoinGecko" : "Yahoo Finance (unofficial)"}, observed ${d?.lastUpdated ?? ""}`}>
                   <div style={{ fontSize:"10px",fontWeight:700,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px",fontFamily:sans }}>
                     {label}
                   </div>
@@ -363,11 +397,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                     <div className="skeleton" style={{ height:"28px", marginBottom:"8px" }} />
                   ) : (
                     <>
-                      <div style={{ fontSize:"22px",fontWeight:800,color:C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
-                        {usd ? fmtUSD(d?.price) : fmtINR(d?.price)}
+                      <div style={{ fontSize:"22px",fontWeight:800,color:gated === null ? C.textMuted : C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
+                        {gated === null ? "—" : (usd ? "$" : "") + gated.toLocaleString("en-IN",{maximumFractionDigits:2})}
                       </div>
-                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
+                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(change) }}>
+                        {change == null ? "—" : `${up?"▲":"▼"} ${Math.abs(change).toFixed(2)}%`}
                       </div>
                     </>
                   )}
@@ -386,9 +420,13 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
             {WORLD_MARKETS.map(({ label, sym }) => {
               const d  = prices[sym];
-              const up = (d?.changePercent24h ?? 0) >= 0;
+              // FD-15: world-market tiles render through the same gate.
+              const gated = renderableTickerValue(sym, d, licencePending);
+              const change = renderableTickerChange(sym, d, licencePending);
+              const up = (change ?? 0) >= 0;
               return (
-                <Link href="/pulse?tab=markets" key={sym} style={{ textDecoration:"none" }}><div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
+                <Link href="/pulse?tab=markets" key={sym} style={{ textDecoration:"none" }}><div style={{ ...card(), padding:"18px", cursor:"pointer" }}
+                  title={gated === null ? "No sourced observation yet (FD-15)" : `${d?.source === "coingecko" ? "CoinGecko" : "Yahoo Finance (unofficial)"}, observed ${d?.lastUpdated ?? ""}`}>
                   <div style={{ fontSize:"10px",fontWeight:700,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px",fontFamily:sans }}>
                     {label}
                   </div>
@@ -396,11 +434,11 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                     <div className="skeleton" style={{ height:"28px", marginBottom:"8px" }} />
                   ) : (
                     <>
-                      <div style={{ fontSize:"22px",fontWeight:800,color:C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
-                        {d?.price ? d.price.toLocaleString("en-US",{maximumFractionDigits:2}) : "—"}
+                      <div style={{ fontSize:"22px",fontWeight:800,color:gated === null ? C.textMuted : C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
+                        {gated === null ? "—" : gated.toLocaleString("en-US",{maximumFractionDigits:2})}
                       </div>
-                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
+                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(change) }}>
+                        {change == null ? "—" : `${up?"▲":"▼"} ${Math.abs(change).toFixed(2)}%`}
                       </div>
                     </>
                   )}

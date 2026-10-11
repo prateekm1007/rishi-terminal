@@ -66,6 +66,12 @@ export const FOREIGN_INDEXES: IndexData[] = [
 ];
 
 export const COMMODITIES: CommodityData[] = [
+  // FD-15 (founder order 2026-10-11, item 5): "Show MCX prices in ₹.
+  // Give grains and cotton their units." Units are part of the sourced-rows
+  // contract — every row shows its unit beside the (currently "—") value.
+  // The numeric fields below remain the static reference dataset; the
+  // commodities LIST page never renders them as data (no source is
+  // licensed for display yet — the source cell reads "licence pending").
   {
     symbol: 'GOLD',
     name: 'Gold',
@@ -140,9 +146,9 @@ export const COMMODITIES: CommodityData[] = [
   { symbol: 'CORN', name: 'Corn', emoji: '🌽', category: 'Agriculture', price: 485, unit: '$/bu', change: -5.2, changePct: -1.06, high52w: 650, low52w: 420, contango: 0.8, supercyclePhase: 'early', supercycleScore: 52, inventoryDays: 95, inventoryVs5YAvg: 8, productionCost: 380, costMargin: 27.6, seasonalityIndex: 65, usdCorrelation: -0.42 },
   { symbol: 'SOYBEAN', name: 'Soybeans', emoji: '🫘', category: 'Agriculture', price: 1280, unit: '$/bu', change: 12.5, changePct: 0.98, high52w: 1550, low52w: 1150, contango: 0.4, supercyclePhase: 'early', supercycleScore: 60, inventoryDays: 78, inventoryVs5YAvg: -4, productionCost: 950, costMargin: 34.7, seasonalityIndex: 70, usdCorrelation: -0.48 },
   { symbol: 'COTTON', name: 'Cotton', emoji: '☁️', category: 'Agriculture', price: 82.5, unit: '$/lb', change: 1.85, changePct: 2.29, high52w: 95, low52w: 72, contango: -0.3, supercyclePhase: 'early', supercycleScore: 55, inventoryDays: 88, inventoryVs5YAvg: -6, productionCost: 65, costMargin: 26.9, seasonalityIndex: 58, usdCorrelation: -0.38 },
-  { symbol: 'GOLDMCX', name: 'Gold MCX', emoji: '🥇', category: 'MCX India', price: 72500, unit: '/10g', change: 350, changePct: 0.48, high52w: 75000, low52w: 60000, contango: -0.8, supercyclePhase: 'mid', supercycleScore: 72, inventoryDays: 45, inventoryVs5YAvg: -12, productionCost: 50000, costMargin: 45.0, seasonalityIndex: 65, usdCorrelation: -0.82 },
-  { symbol: 'SILVERMCX', name: 'Silver MCX', emoji: '🥈', category: 'MCX India', price: 88500, unit: '/kg', change: 1200, changePct: 1.37, high52w: 95000, low52w: 65000, contango: -0.5, supercyclePhase: 'mid', supercycleScore: 68, inventoryDays: 120, inventoryVs5YAvg: -8, productionCost: 55000, costMargin: 60.9, seasonalityIndex: 60, usdCorrelation: -0.75 },
-  { symbol: 'CRUDEOILMCX', name: 'Crude Oil MCX', emoji: '🛢️', category: 'MCX India', price: 6150, unit: '/bbl', change: 85, changePct: 1.40, high52w: 7500, low52w: 5200, contango: 2.5, supercyclePhase: 'decline', supercycleScore: 38, inventoryDays: 28, inventoryVs5YAvg: 8, productionCost: 4500, costMargin: 36.7, seasonalityIndex: 55, usdCorrelation: -0.65 },
+  { symbol: 'GOLDMCX', name: 'Gold MCX', emoji: '🥇', category: 'MCX India', price: 72500, unit: '₹/10g', change: 350, changePct: 0.48, high52w: 75000, low52w: 60000, contango: -0.8, supercyclePhase: 'mid', supercycleScore: 72, inventoryDays: 45, inventoryVs5YAvg: -12, productionCost: 50000, costMargin: 45.0, seasonalityIndex: 65, usdCorrelation: -0.82 },
+  { symbol: 'SILVERMCX', name: 'Silver MCX', emoji: '🥈', category: 'MCX India', price: 88500, unit: '₹/kg', change: 1200, changePct: 1.37, high52w: 95000, low52w: 65000, contango: -0.5, supercyclePhase: 'mid', supercycleScore: 68, inventoryDays: 120, inventoryVs5YAvg: -8, productionCost: 55000, costMargin: 60.9, seasonalityIndex: 60, usdCorrelation: -0.75 },
+  { symbol: 'CRUDEOILMCX', name: 'Crude Oil MCX', emoji: '🛢️', category: 'MCX India', price: 6150, unit: '₹/bbl', change: 85, changePct: 1.40, high52w: 7500, low52w: 5200, contango: 2.5, supercyclePhase: 'decline', supercycleScore: 38, inventoryDays: 28, inventoryVs5YAvg: 8, productionCost: 4500, costMargin: 36.7, seasonalityIndex: 55, usdCorrelation: -0.65 },
 ];
 
 export function getMarketSummary() {

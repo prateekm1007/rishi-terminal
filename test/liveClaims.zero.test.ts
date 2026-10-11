@@ -189,8 +189,14 @@ describe("P0-8 — unbacked live claims removed; News stays in the nav (RESP-2)"
     expect(en).toContain('"title": "Free — No Tiers, No Checkout"');
     // "every framework" is true under the verdict gate (896/896 seed -> no verdicts)
     expect(en).toContain("every persona, every framework");
-    // the forex subtitle qualifies liveness instead of claiming it wholesale
-    expect(en).toContain("Currency markets with macro lenses — live rates where labelled LIVE, reference data otherwise");
+    // the forex subtitle qualifies liveness instead of claiming it wholesale.
+    // FD-15 re-anchor (rebase reconciliation, 2026-10-12): #346 pinned its
+    // own era's subtitle; the FD-15 sourced-rows contract (PR #361, founder
+    // DELIV-3: "Every row shows value, unit, source, as-of time and state")
+    // de-lives the subtitle in all 8 locales to the licence-pending truth —
+    // the same rule-23 pattern as the #372 re-anchor (the PR that changes
+    // the honest state fixes the pins that anchor it).
+    expect(en).toContain("Currency reference with macro context — values return with their source and as-of time once a display licence is cleared");
     // the knowledge-graph unavailability renders honestly (nothing is 'building')
     expect(en).toContain('"unavailable": "Knowledge Graph unavailable"');
     const kgv = read("components/stock/KnowledgeGraphView.tsx");

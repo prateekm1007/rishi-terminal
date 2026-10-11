@@ -16,6 +16,11 @@ export interface PriceData {
    *  (absent volume is unavailability, not zero trading; audit
    *  2026-10-02 P1). */
   volume24h: number | null;
+  /** FD-15 (founder order 2026-10-11): the market cap from the SAME
+   *  CoinGecko payload as the price (same snapshot — dominance and totals
+   *  derive from one observation, never a live price times a seed cap).
+   *  Null when the transport carried none; only crypto carries it today. */
+  marketCap: number | null;
   /** Corrective gate 3: the server's ORIGINAL observation time, or null when
    *  the upstream disclosed none. The client never substitutes its own
    *  fetch time here — that would fabricate an observation timestamp. */
@@ -69,6 +74,8 @@ export interface BatchPriceEntry {
   change?: number;
   changePercent24h?: number;
   volume24h?: number;
+  /** FD-15: same-payload market cap (crypto path); absent → null. */
+  marketCap?: number | null;
   lastUpdated?: string | null;
   /** Round 9: the wire's upstream source id (for honest delayed-source
    *  labelling in aggregate badges). */
@@ -95,6 +102,7 @@ export function normalizeBatchEntry(
     change: num(raw.change),
     changePercent24h: num(raw.changePercent24h),
     volume24h: num(raw.volume24h),
+    marketCap: num(raw.marketCap),
     lastUpdated:
       typeof raw.lastUpdated === 'string' && raw.lastUpdated ? raw.lastUpdated : null,
     // Round 9: the wire's provenance status and source id ride through

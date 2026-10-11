@@ -1,13 +1,27 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { COMMODITIES } from '../../data/markets';
 import { useLanguage } from '../../lib/language';
-import { useLivePrices } from '../../hooks/useLivePrices';
 import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
-
+// FD-15 (founder order 2026-10-11, item 5): forex and commodity values
+// wait for the founder's source decision — every value renders "—" with
+// the source reading "licence pending". MCX rows quote in ₹ (their units
+// say so); global rows keep their $ units; grains and cotton show theirs.
+// The static reference prices in data/markets.ts never render as data.
+import {
+  wireEntryToRow,
+  type MarketRow,
+} from '../../lib/markets/sourcedRow';
+import {
+  MarketValueCell,
+  MarketSourceCell,
+  MarketAsOfCell,
+  MarketStateChip,
+  MarketUnitNote,
+} from '../../components/shared/MarketRowCells';
 
 function scoreColor(score: number): string {
   if (score >= 75) return 'var(--accent-green)';
@@ -15,21 +29,15 @@ function scoreColor(score: number): string {
   return 'var(--accent-red)';
 }
 
-function changeColor(change: number): string {
-  if (change > 0) return 'var(--accent-green)';
-  if (change < 0) return 'var(--accent-red)';
-  return 'var(--text-muted)';
-}
-
 export default function CommoditiesPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [category, setCategory] = useState('All');
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
   // R3 (round 2) + Commit M3 (free access): the average on each card is
   // computed SERVER-SIDE (/api/gurus?kind=commodity); every detail page
-  // serves the full per-guru verdicts to every caller.
+  // serves the full per-guru verdicts to every caller. These are the FD-12
+  // REFERENCE heuristics — labelled as such, never market data.
   const [guruTeasers, setGuruTeasers] = useState<Record<string, { avg: number | null; gurus: Array<{ id: string; initials: string; score: number | null }> }>>({});
   useEffect(() => {
     let cancelled = false;
@@ -45,52 +53,15 @@ export default function CommoditiesPage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Pull symbols for live price fetching
-  const commoditySymbols = useMemo(() => COMMODITIES.map(c => c.symbol), []);
-  const { prices, loading, error, observedAt } = useLivePrices(commoditySymbols);
-  // G4 (founder round 23): the header clock is the server-disclosed
-  // OBSERVATION time — never the fetch clock (a fetch is not a freshness
-  // claim; the same defect Round 9 fixed on the dashboard). The state
-  // word comes from the shared aggregate contract, and the count below
-  // counts genuine observations, not price-map keys.
-  const observedCount = useMemo(
-    () => Object.values(prices).filter(p => typeof p.price === 'number' && p.price > 0).length,
-    [prices],
-  );
-  const headerState: 'live' | 'derived' | 'reference' =
-    observedCount === 0 ? 'reference' : observedCount >= COMMODITIES.length ? 'live' : 'derived';
+  // FD-15: every commodity row is licence-pending — value "—", source
+  // "licence pending". No live fetch runs on this page.
+  const pendingRow = (unit: string): MarketRow =>
+    wireEntryToRow(null, { unit, licencePending: true });
 
-  // Merge live prices into commodities. Audit 2026-10-02 (P1): a
-  // no-live fallback keeps the STATIC reference price but is explicitly
-  // labelled — and the change renders '—' (unavailable), not a fabricated
-  // 0% move on a reference price.
-  const enrichedCommodities = useMemo(() => {
-    return COMMODITIES.map(c => {
-      const live = prices[c.symbol];
-      // G6: a live entry without a price observation is NOT a live quote —
-      // the static reference price stays and is labelled reference below.
-      if (live && typeof live.price === 'number' && live.price > 0) {
-        return {
-          ...c,
-          price:           live.price,
-          changePercent:   live.changePercent24h,
-          change24h:       live.changePercent24h,
-        };
-      }
-      return { ...c, changePercent: null, change24h: null };
-    });
-  }, [prices]);
-
-  const categories = ['All', ...Array.from(new Set(enrichedCommodities.map(c => c.category)))];
+  const categories = ['All', ...Array.from(new Set(COMMODITIES.map(c => c.category)))];
   const filtered = category === 'All'
-    ? enrichedCommodities
-    : enrichedCommodities.filter(c => c.category === category);
-
-  // Key stats from live data
-  const goldData   = enrichedCommodities.find(c => c.symbol === 'GOLD');
-  const silverData = enrichedCommodities.find(c => c.symbol === 'SILVER');
-  const wtiData    = enrichedCommodities.find(c => c.symbol === 'WTI');
-  const brentData  = enrichedCommodities.find(c => c.symbol === 'BRENT');
+    ? COMMODITIES
+    : COMMODITIES.filter(c => c.category === category);
 
   return (
     <main className="page-bg">
@@ -112,15 +83,6 @@ export default function CommoditiesPage() {
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 600, lineHeight: 1.6 }}>
                 {t('commodities.subtitle')}
               </p>
-              {/* G4: the observation clock + the shared aggregate word.
-                  No observation time disclosed → no time is shown (never
-                  the fetch time, never an unconditional "Live"). */}
-              {observedCount > 0 && (
-                <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  {headerState === 'live' ? '⚡ Live' : headerState === 'derived' ? 'Partially live' : 'Last observed'}
-                  {observedAt ? <> • Observed {observedAt.toLocaleTimeString('en-IN')}</> : null}
-                </div>
-              )}
             </div>
 
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160 }}>
@@ -128,75 +90,40 @@ export default function CommoditiesPage() {
                 COMMODITIES
               </div>
               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
-                {enrichedCommodities.length}
+                {COMMODITIES.length}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, display: 'flex', alignItems: 'center' }}>
                 <span>Global Markets</span>
                 <ProvenanceChip
-                  state={headerState}
-                  title={observedCount > 0
-                    ? `${observedCount} of ${COMMODITIES.length} quotes are live observations${observedCount < COMMODITIES.length ? ' — the rest show static reference prices' : ''}`
-                    : 'No live quotes — reference data shown'}
-                  label={observedCount > 0
-                    ? `LIVE ${observedCount}/${COMMODITIES.length}`
-                    : 'REFERENCE'}
+                  state="unavailable"
+                  title="No commodity source is licensed for display yet — every value shows — until one is cleared"
+                  label="LICENCE PENDING"
                 />
               </div>
             </div>
           </div>
 
-          {/* Live Key Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginTop: 24 }}>
-            {[
-              { label: 'GOLD (XAU/USD)',   data: goldData,   color: '#FFD700', bg: 'rgba(255,215,0,0.08)',   border: 'rgba(255,215,0,0.2)',   prefix: '$' },
-              { label: 'SILVER (XAG/USD)', data: silverData, color: '#C0C0C0', bg: 'rgba(192,192,192,0.08)', border: 'rgba(192,192,192,0.2)', prefix: '$' },
-              { label: 'WTI CRUDE',        data: wtiData,    color: '#f97316', bg: 'rgba(249,115,22,0.08)',  border: 'rgba(249,115,22,0.2)',  prefix: '$' },
-              { label: 'BRENT CRUDE',      data: brentData,  color: '#60a5fa', bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.2)',  prefix: '$' },
-            ].map(stat => {
-              // G4: every stat tile labels its own value — a tile without a
-              // live observation shows the static reference price WITH the
-              // reference chip, never an unlabeled number that reads as a
-              // current price.
-              const statIsLive = typeof stat.data?.price === 'number' && stat.data.price > 0
-                && typeof prices[stat.data.symbol]?.price === 'number' && (prices[stat.data.symbol]?.price ?? 0) > 0;
-              return (
-              <div key={stat.label} style={{
-                background: stat.bg,
-                border: '1px solid ' + stat.border,
-                borderRadius: 10,
-                padding: '12px 16px',
-              }}>
-                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1, display: 'flex', alignItems: 'center' }}>
-                  <span>{stat.label}</span>
-                  <ProvenanceChip state={statIsLive ? 'live' : 'reference'} title={statIsLive ? 'Live quote' : 'Static reference price — live quote unavailable'} />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <div style={{ fontSize: 20, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
-                    {loading ? '...' : stat.data ? stat.prefix + stat.data.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
-                  </div>
-                  {!loading && stat.data && (
-                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: changeColor(stat.data.change24h ?? 0) }}>
-                      {stat.data.change24h === null || stat.data.change24h === undefined
-                        ? '—'
-                        : (stat.data.change24h > 0 ? '+' : '') + stat.data.change24h.toFixed(2) + '%'}
-                    </div>
-                  )}
-                </div>
-              </div>
-              );
-            })}
+          {/* FD-15 honest state notice */}
+          <div style={{
+            background: 'rgba(245,158,11,0.08)',
+            border: '1px solid rgba(245,158,11,0.3)',
+            borderRadius: 10,
+            padding: '14px 18px',
+            marginTop: 24,
+            fontSize: 12,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.7,
+          }}>
+            <span style={{ color: '#F59E0B', fontWeight: 700, fontFamily: 'monospace', letterSpacing: 1 }}>DATA LICENCE PENDING</span>
+            {' — '}
+            No commodity price source is licensed for display yet, so every value shows
+            &ldquo;—&rdquo; with its source reading <span style={{ color: '#F59E0B' }}>licence pending</span>.
+            Each row still states its quotation unit — MCX rows in ₹ (₹/10g, ₹/kg, ₹/bbl), global
+            rows in $/oz, $/bbl, $/ton, grains in $/bu and cotton in $/lb. Prices will appear,
+            each with its source and observation time, once a source is cleared.
           </div>
         </div>
       </div>
-
-      {/* Error Banner */}
-      {error && (
-        <div className="content-wrapper" style={{ padding: '12px 24px' }}>
-          <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 16px', fontSize: 12, color: 'var(--accent-red)' }}>
-            ⚠ {error} — showing last known prices
-          </div>
-        </div>
-      )}
 
       {/* Category Filter */}
       <div className="content-wrapper" style={{ padding: '20px 24px 0' }}>
@@ -223,26 +150,16 @@ export default function CommoditiesPage() {
         </div>
       </div>
 
-      {/* Commodities Grid */}
+      {/* Commodities Grid — the FD-15 contract per card */}
       <div className="content-wrapper" style={{ padding: '24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
           {filtered.map(commodity => {
-            const isExpanded  = expandedCard === commodity.symbol;
-            const liveCommodity = {
-              ...commodity,
-              price: commodity.price,
-              changePct: commodity.change24h ?? commodity.changePct ?? 0,
-              change: commodity.change ?? 0,
-            };
+            const priceRow = pendingRow(commodity.unit);
             // R3: server-computed average (null = insufficient data, T11;
             // P1 audit 2026-10-02: null renders '—', never a fabricated 0)
             const teaser = guruTeasers[commodity.symbol];
             const avgScore: number | null = teaser?.avg ?? null;
             const rishiScores = (teaser?.gurus ?? []).map(g => ({ id: g.id, tag: g.initials, result: { score: g.score } }));
-            // G6: LIVE is only claimed for a genuine price observation —
-            // an entry whose price is null keeps the reference chip.
-            const liveEntry = prices[commodity.symbol];
-            const isLive = typeof liveEntry?.price === 'number' && liveEntry.price > 0;
 
             return (
               <div
@@ -271,9 +188,6 @@ export default function CommoditiesPage() {
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', letterSpacing: 1 }}>
                         {commodity.symbol} • {commodity.category}
-                        {isLive && (
-                          <span style={{ color: 'var(--accent-green)', marginLeft: 6 }}>⚡ LIVE</span>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -288,41 +202,20 @@ export default function CommoditiesPage() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                {/* FD-15 value row: gated value + unit, source, as-of, state */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
                   <div style={{ fontSize: 28, fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    {loading && !prices[commodity.symbol]
-                      ? '...'
-                      : <>{'$' + commodity.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}<ProvenanceChip state={isLive ? 'live' : 'reference'} title={isLive ? 'Live quote' : 'Static reference price — live quote unavailable'} /></>
-                    }
+                    <MarketValueCell row={priceRow} />
+                    <MarketStateChip row={priceRow} />
                   </div>
-                  <div style={{ fontSize: 13, fontFamily: 'monospace', color: changeColor(commodity.change24h ?? 0), fontWeight: 700 }}>
-                    {commodity.change24h === null || commodity.change24h === undefined
-                      ? '—'
-                      : (commodity.change24h > 0 ? '+' : '') + commodity.change24h.toFixed(2) + '%'}
-                  </div>
+                  <MarketUnitNote row={priceRow} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+                  <MarketSourceCell row={priceRow} />
+                  <MarketAsOfCell row={priceRow} />
                 </div>
 
-                {/* 52W Range Bar */}
-                {commodity.high52w && commodity.low52w && (
-                  <div style={{ marginBottom: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 4 }}>
-                      <span>${commodity.low52w.toLocaleString()}</span>
-                      <span>52W RANGE</span>
-                      <span>${commodity.high52w.toLocaleString()}</span>
-                    </div>
-                    <div style={{ height: 3, background: 'var(--bg-secondary)', borderRadius: 2 }}>
-                      <div style={{
-                        height: '100%', borderRadius: 2,
-                        width: Math.min(100, Math.max(0,
-                          ((commodity.price - commodity.low52w) / (commodity.high52w - commodity.low52w)) * 100
-                        )) + '%',
-                        background: 'linear-gradient(90deg, var(--accent-gold), var(--accent-green))',
-                      }} />
-                    </div>
-                  </div>
-                )}
-
-                {/* Rishi Score Bar */}
+                {/* Rishi heuristic scores (FD-12 reference — labelled) */}
                 <div style={{ display: 'flex', gap: 6 }}>
                   {rishiScores.map(r => (
                     <div key={r.id} style={{ flex: 1, textAlign: 'center' }}>
@@ -339,6 +232,14 @@ export default function CommoditiesPage() {
               </div>
             );
           })}
+        </div>
+
+        <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+          <ProvenanceChip state="unavailable" title="FD-12: the per-guru numbers are the labelled reference heuristics, not market data" label="REFERENCE" />
+          {' '}
+          Card scores are the FD-12 heuristic reference (labelled, never the canonical consensus
+          engine). Prices, changes and ranges render only when a licensed source with an
+          observation time exists — none is cleared yet.
         </div>
       </div>
     </main>

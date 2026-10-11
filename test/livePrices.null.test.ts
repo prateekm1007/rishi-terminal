@@ -26,6 +26,7 @@ describe("G6 — normalizeBatchEntry null contract", () => {
       change: null,
       changePercent24h: null,
       volume24h: null,
+      marketCap: null,
       lastUpdated: null,
       status: null,
       source: null,
@@ -56,6 +57,7 @@ describe("G6 — normalizeBatchEntry null contract", () => {
       change: null,
       changePercent24h: null,
       volume24h: 12345,
+      marketCap: null,
       lastUpdated: null,
       status: null,
       source: null,
@@ -78,10 +80,12 @@ describe("G6 — normalizeBatchEntry null contract", () => {
       change: 0,
       changePercent24h: 0,
       volume24h: 0,
+      marketCap: null,
       lastUpdated: "2026-10-01T09:00:00.000Z",
       // Round 9: the wire's status/source ride through verbatim too; the
       // test payload carries none, so the honest values are null (never
-      // guessed).
+      // guessed). FD-15: no market cap on the wire → null (crypto-only
+      // field, always from the same payload as the price).
       status: null,
       source: null,
     });

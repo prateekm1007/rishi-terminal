@@ -1,15 +1,43 @@
 'use client';
 
+// FD-15 (founder decision 2026-10-11): "Keep them, with each row showing
+// its source and as-of time." This page renders market values ONLY through
+// the sourced-rows contract (lib/markets/sourcedRow + MarketRowCells):
+// every value cell carries value, unit, source, as-of time and state; a
+// value with no source and no date renders "—" with "no source yet".
+// The seed numeric fields in data/crypto.ts (reference market caps, the
+// Fear & Greed index, BTC dominance) NEVER render as data here — the
+// acceptance scanner (test/refMarkets.sourced.test.ts) fails the build if
+// they come back.
+
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CRYPTO_ASSETS, FEAR_GREED_INDEX, MARKET_DOMINANCE, getCryptoMetrics } from '../../data/crypto';
-import { formatUsdCompact } from '../../lib/format';
+import { CRYPTO_ASSETS } from '../../data/crypto';
 import { CRYPTO_GURUS } from '../../lib/gurus/crypto'; // R3: metadata only — verdicts come from /api/gurus
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
-import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
+import {
+  wireEntryToRow,
+  wireCapToRow,
+  wireVolumeToRow,
+  wireChangeValue,
+  cryptoSnapshotTotals,
+  observedCountOf,
+  wireVolumeSum,
+  type MarketRow,
+} from '../../lib/markets/sourcedRow';
+import {
+  MarketValueCell,
+  MarketSourceCell,
+  MarketAsOfCell,
+  MarketStateChip,
+  formatMarketChange,
+} from '../../components/shared/MarketRowCells';
 
+/** The display name of the crypto price source (provider matrix:
+ *  CoinGecko, credited on every surface that shows its values). */
+const CRYPTO_SOURCE_NAME = 'CoinGecko';
 
 function scoreColor(score: number): string {
   if (score >= 75) return 'var(--accent-green)';
@@ -25,7 +53,8 @@ export default function CryptoPage() {
 
   // R3 (round 2) + Commit M3 (free access): guru verdicts are computed
   // SERVER-SIDE (/api/gurus) and served in full to every caller. This page
-  // renders only what it is served.
+  // renders only what it is served. (FD-12 keeps them labelled heuristic
+  // reference — a separate, still-open founder decision.)
   const [guruVerdicts, setGuruVerdicts] = useState<Array<{
     id: string; name: string; score: number | null; label: string;
     insight?: string; comps?: Array<{ label: string; v: number; wt: number; detail: string }>;
@@ -46,40 +75,91 @@ export default function CryptoPage() {
   // server-disclosed OBSERVATION clock — the header below keys off it,
   // never off a fetch/arrival time, and the LIVE word is earned by
   // actual observations (a fetch is not a freshness claim).
-  const { prices, loading, observedAt } = useLivePrices(cryptoSymbols, 60000);
+  const { prices, loading: pricesLoading, observedAt } = useLivePrices(cryptoSymbols, 60000);
+  // FD-15: LIVE is earned by COMPLETE observations (price + source +
+  // observation time) — not by a mere price field.
   const observedCount = useMemo(
-    () => Object.values(prices).filter(p => typeof p.price === 'number' && p.price > 0).length,
-    [prices],
+    () => observedCountOf(prices, cryptoSymbols),
+    [prices, cryptoSymbols],
   );
 
   const sectors = ['All', ...Array.from(new Set(CRYPTO_ASSETS.map(c => c.sector)))];
   const filtered = sector === 'All' ? CRYPTO_ASSETS : CRYPTO_ASSETS.filter(c => c.sector === sector);
 
-  // Audit 2026-10-02 (P1): Volume 24h sums the actual per-asset 24h
-  // VOLUMES from the live transport (it previously summed PRICES divided
-  // by 1e9 — the wrong metric). No live volume anywhere -> UNAVAILABLE.
-  const liveVolumes = useMemo(() =>
-    CRYPTO_ASSETS.map(a => prices[a.symbol]?.volume24h).filter(
-      (v): v is number => typeof v === 'number' && v > 0,
-    ), [prices]);
-  const totalVolume24h = liveVolumes.length > 0 ? liveVolumes.reduce((s, v) => s + v, 0) : null;
+  // FD-15 (founder order 2026-10-11, item 4): "Show BTC dominance only
+  // from the same snapshot as the market cap." Totals and dominance derive
+  // from the CoinGecko payload's OWN market caps — never a live price
+  // times a seed cap (that mixes snapshots). Incomplete disclosure →
+  // null → "—" (an incomplete denominator is not a dominance claim).
+  const snapshot = useMemo(
+    () => cryptoSnapshotTotals(prices, cryptoSymbols),
+    [prices, cryptoSymbols],
+  );
 
-  const fgValue = FEAR_GREED_INDEX.value;
-  const fgColor = fgValue >= 60 ? 'var(--accent-green)' : fgValue >= 40 ? 'var(--accent-gold)' : 'var(--accent-red)';
-  const fgLabel = fgValue >= 75 ? t('crypto.extremeGreed') : fgValue >= 55 ? t('crypto.greed') : fgValue >= 45 ? t('crypto.neutral') : fgValue >= 25 ? t('crypto.fear') : t('crypto.extremeFear');
+  // FD-15: the 24h volume total sums the SAME disclosed live volumes
+  // (complete observations only); its as-of is the newest observation
+  // time among the contributing entries.
+  const volumeTotal = useMemo(
+    () => wireVolumeSum(prices, cryptoSymbols),
+    [prices, cryptoSymbols],
+  );
+  const volumeAsOf = useMemo(() => {
+    let newest: string | null = null;
+    for (const sym of cryptoSymbols) {
+      const at = prices[sym]?.lastUpdated;
+      if (typeof at === 'string' && at && (newest === null || at > newest)) newest = at;
+    }
+    return newest;
+  }, [prices, cryptoSymbols]);
 
-  // Calculate metrics with live prices
-  const totalMarketCap = useMemo(() => {
-    let sum = 0;
-    CRYPTO_ASSETS.forEach(asset => {
-      const livePrice = prices[asset.symbol];
-      // G6: an unobserved price is skipped in the derivation — never read as 0.
-      if (livePrice && typeof livePrice.price === 'number') {
-        sum += livePrice.price * (asset.marketCap / asset.price);
-      }
-    });
-    return sum > 0 ? sum : CRYPTO_ASSETS.reduce((s, a) => s + a.marketCap, 0);
-  }, [prices]);
+  /** A contract row for the header stat cards. */
+  function headerRow(value: number | null, source: string | null, asOf: string | null): MarketRow {
+    return {
+      value,
+      unit: '',
+      source,
+      asOf,
+      state: value === null ? 'missing' : 'live',
+    };
+  }
+
+  const totalCapRow = headerRow(snapshot ? snapshot.totalMarketCap : null, snapshot ? CRYPTO_SOURCE_NAME : null, snapshot ? snapshot.snapshotAt : null);
+  const dominanceRow = headerRow(snapshot ? snapshot.btcShare : null, snapshot ? CRYPTO_SOURCE_NAME : null, snapshot ? snapshot.snapshotAt : null);
+  const volumeRow = headerRow(volumeTotal, volumeTotal === null ? null : CRYPTO_SOURCE_NAME, volumeTotal === null ? null : volumeAsOf);
+  const noSourceRow: MarketRow = { value: null, unit: '', source: null, asOf: null, state: 'missing' };
+
+  // The stat cards every FD-15 surface shows: value, source, as-of, state.
+  // Unsourced analytics (RSI, sentiment, Fear & Greed) render "—" with
+  // "no source yet" — they were previously seed numbers shown as data.
+  const statCards: Array<{ label: string; row: MarketRow; compact?: boolean; unit?: string; title?: string }> = [
+    {
+      label: t('crypto.totalMarketCap'),
+      row: totalCapRow, compact: true,
+      title: 'Sum of the market caps disclosed in the SAME CoinGecko snapshot as the prices (never a live price times a reference cap)',
+    },
+    {
+      label: t('crypto.volume24h'),
+      row: volumeRow, compact: true,
+      title: 'Sum of the live 24h volumes the upstream disclosed',
+    },
+    {
+      label: t('crypto.btcDominance'),
+      row: dominanceRow, unit: '%',
+      title: 'BTC share of the same-snapshot market-cap total',
+    },
+    {
+      label: t('crypto.avgRsi'), row: noSourceRow,
+      title: 'No RSI source is wired — nothing renders until one is',
+    },
+    {
+      label: t('crypto.sentiment'), row: noSourceRow,
+      title: 'No sentiment source is wired — nothing renders until one is',
+    },
+    {
+      label: t('crypto.fearGreed'), row: noSourceRow,
+      title: 'No Fear & Greed source is wired — the old gauge showed a static reference value as data',
+    },
+  ];
 
   return (
     <main className="page-bg">
@@ -113,98 +193,28 @@ export default function CryptoPage() {
 
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
 
-        {/* Market Overview — every card carries its data-state chip (P1) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
-          {[
-            {
-              label: t('crypto.totalMarketCap'),
-              value: '$' + (totalMarketCap / 1e12).toFixed(2) + 'T', color: 'var(--accent-gold)',
-              state: (Object.values(prices).length > 0 ? 'derived' : 'reference') as 'derived' | 'reference',
-              title: Object.values(prices).length > 0
-                ? 'Derived from live prices x reference market caps'
-                : 'Static reference dataset — illustrative',
-            },
-            {
-              label: t('crypto.volume24h'),
-              value: totalVolume24h === null
-                ? (loading ? '...' : '—')
-                : '$' + (totalVolume24h / 1e9).toFixed(1) + 'B',
-              color: 'var(--text-primary)',
-              state: (totalVolume24h === null ? 'unavailable' : 'live') as 'unavailable' | 'live',
-              title: totalVolume24h === null
-                ? 'No live 24h volume disclosed by the upstream'
-                : `Sum of live 24h volumes (${liveVolumes.length} of ${CRYPTO_ASSETS.length} assets)`,
-            },
-            {
-              label: t('crypto.avgRsi'), value: '62', color: 'var(--accent-gold)',
-              state: 'reference' as const,
-              title: 'Static reference value — RSI is not computed from live data',
-            },
-            {
-              label: t('crypto.sentiment'), value: 'BULLISH', color: 'var(--accent-green)',
-              state: 'reference' as const,
-              title: 'Static reference label — not derived from live data',
-            },
-            {
-              label: t('crypto.btcDominance'), value: MARKET_DOMINANCE.btc + '%', color: 'var(--accent-gold)',
-              state: 'reference' as const,
-              title: 'Static reference dataset — illustrative',
-            },
-            {
-              label: t('crypto.fearGreed'), value: fgValue.toString() + ' – ' + fgLabel, color: fgColor,
-              state: 'reference' as const,
-              title: 'Static reference value — the Fear & Greed index is not fetched live',
-            },
-          ].map(stat => (
-            <div key={stat.label} className="card-sacred" style={{ padding: 16 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1, display: 'flex', alignItems: 'center' }}>
+        {/* Market Overview — every card is an FD-15 contract row: value,
+            unit, source, as-of time and state. Unsourced cards show "—"
+            with "no source yet". Data by CoinGecko (provider matrix). */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 12, marginBottom: 28 }}>
+          {statCards.map(stat => (
+            <div key={stat.label} className="card-sacred" style={{ padding: 16 }} title={stat.title}>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 8, letterSpacing: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span>{stat.label.toUpperCase()}</span>
-                <ProvenanceChip state={stat.state} title={stat.title} />
+                <MarketStateChip row={stat.row} />
               </div>
-              <div style={{ fontSize: 16, fontWeight: 700, fontFamily: 'monospace', color: stat.color }}>{stat.value}</div>
+              <div style={{ fontSize: 16, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <MarketValueCell row={stat.unit ? { ...stat.row, unit: stat.unit } : stat.row} compact={stat.compact} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginTop: 6 }}>
+                <MarketSourceCell row={stat.row} />
+                <MarketAsOfCell row={stat.row} />
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Fear & Greed Gauge — reference data (P1) */}
-        <div className="card-sacred" style={{ padding: 24, marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 6, display: 'flex', alignItems: 'center' }}>
-                <span>{t('crypto.fearGreedIndex')}</span>
-                <ProvenanceChip state="reference" title="Static reference values — the Fear & Greed index is not fetched live" />
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 700, fontFamily: 'monospace', color: fgColor }}>
-                {fgValue} – {fgLabel}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 24, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-              <span>{t('crypto.yesterday')}: <strong style={{ color: 'var(--text-primary)' }}>{FEAR_GREED_INDEX.previousDay}</strong></span>
-              <span>{t('crypto.lastWeek')}: <strong style={{ color: 'var(--text-primary)' }}>{FEAR_GREED_INDEX.previousWeek}</strong></span>
-              <span>{t('crypto.lastMonth')}: <strong style={{ color: 'var(--text-primary)' }}>{FEAR_GREED_INDEX.previousMonth}</strong></span>
-            </div>
-          </div>
-          <div style={{ position: 'relative', height: 20, background: 'linear-gradient(90deg, #F4212E 0%, #FFD700 50%, #00BA7C 100%)', borderRadius: 10 }}>
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: 'calc(' + Math.min(95, Math.max(5, fgValue)) + '% - 12px)',
-              transform: 'translateY(-50%)',
-              width: 24, height: 24,
-              background: 'var(--bg-primary)',
-              border: '3px solid ' + fgColor,
-              borderRadius: '50%',
-              boxShadow: '0 0 12px ' + fgColor,
-            }} />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}>
-            <span>{t('crypto.extremeFear')} (0)</span>
-            <span>{t('crypto.neutral')} (50)</span>
-            <span>{t('crypto.extremeGreed')} (100)</span>
-          </div>
-        </div>
-
-        {/* Crypto Assets Table */}
+        {/* Crypto Assets Table — the FD-15 contract columns */}
         <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
           {t('crypto.allCryptoAssets')}
         </div>
@@ -214,7 +224,7 @@ export default function CryptoPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
-                  {['Asset', 'Price', 'Change 24h', 'Market Cap', 'Volume 24h'].map((h, i) => (
+                  {['Asset', 'Price', 'Change 24h', 'Market Cap', 'Volume 24h', 'Source', 'As Of'].map((h, i) => (
                     <th key={h} style={{
                       textAlign: i === 0 ? 'left' : 'right',
                       padding: '14px 24px',
@@ -229,20 +239,16 @@ export default function CryptoPage() {
               </thead>
               <tbody>
                 {filtered.map(asset => {
-                  const liveData = prices[asset.symbol];
-                  // G6: an entry whose price/change is null renders '—' —
-                  // never a fabricated $0.00 or 0.00% move.
-                  const displayPrice = liveData
-                    ? (typeof liveData.price === 'number'
-                      ? `$${liveData.price.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
-                      : '—')
-                    : '$...';
-                  const displayChange = liveData
-                    ? (typeof liveData.change === 'number'
-                      ? `${liveData.change > 0 ? '+' : ''}${liveData.change.toFixed(2)}%`
-                      : '—')
-                    : '...';
-                  
+                  const entry = prices[asset.symbol];
+                  // FD-15: every value on this table renders through the
+                  // wire→row mappers — price, change, market cap and volume
+                  // each carry their source and observation time, or "—".
+                  const priceRow = wireEntryToRow(entry, { unit: '$', sourceName: CRYPTO_SOURCE_NAME });
+                  const capRow = wireCapToRow(entry, { unit: '', sourceName: CRYPTO_SOURCE_NAME });
+                  const volRow = wireVolumeToRow(entry, { unit: '', sourceName: CRYPTO_SOURCE_NAME });
+                  const change = wireChangeValue(entry);
+                  const stillLoading = !entry && pricesLoading;
+
                   return (
                     <tr
                       key={asset.symbol}
@@ -256,28 +262,29 @@ export default function CryptoPage() {
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                     >
                       <td style={{ padding: '16px 24px', textAlign: 'left' }}>
-                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 14, marginBottom: 4 }}>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 14, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
                           {asset.emoji} {asset.symbol}
+                          <MarketStateChip row={priceRow} />
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{asset.name}</div>
                       </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 700, fontSize: 16, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
-                        {displayPrice}
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 16, fontFamily: 'monospace' }}>
+                        {stillLoading ? <span style={{ color: 'var(--text-muted)' }}>…</span> : <MarketValueCell row={priceRow} />}
                       </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: !liveData || typeof liveData.change !== 'number' ? 'var(--text-muted)' : liveData.change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                        {displayChange}
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 14, fontFamily: 'monospace', fontWeight: 700, color: change === null ? 'var(--text-muted)' : change > 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+                        {change === null ? '—' : formatMarketChange(change)}
                       </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                        {/* Round-5 audit (finding 15): T-tier + separators —
-                            "$1950.0B" for a $1.95T asset hid the magnitude
-                            and glued into the chip text on copy. */}
-                        {formatUsdCompact(asset.marketCap)}{' '}
-                        <ProvenanceChip state="reference" title="Static reference market cap" />
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace' }}>
+                        <MarketValueCell row={capRow} compact muted />
                       </td>
-                      <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                        {liveData && typeof liveData.volume24h === 'number' && liveData.volume24h > 0
-                          ? <>{formatUsdCompact(liveData.volume24h)} <ProvenanceChip state="live" /></>
-                          : <>{formatUsdCompact(asset.volume24h)} <ProvenanceChip state="reference" title="Static reference volume — no live 24h volume disclosed" /></>}
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace' }}>
+                        <MarketValueCell row={volRow} compact muted />
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px' }}>
+                        <MarketSourceCell row={priceRow} />
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px' }}>
+                        <MarketAsOfCell row={priceRow} />
                       </td>
                     </tr>
                   );
@@ -287,7 +294,9 @@ export default function CryptoPage() {
           </div>
         </div>
 
-        {/* Crypto Rishis */}
+        {/* Crypto Rishis — FD-12 heuristic-reference verdicts from the
+            server; they are score surfaces, not market values, and stay
+            labelled by /api/gurus. */}
         <div style={{ marginTop: 40, marginBottom: 8 }}>
           <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
             {t('crypto.cryptoPhilosophers')}

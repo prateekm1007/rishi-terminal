@@ -77,6 +77,15 @@ export interface ResolvedStockMetrics {
   seedStatus: SeedStatus;
   /** Always null while seedStatus === 'placeholder' (no provable capture date). */
   seedCapturedAt: string | null;
+  /**
+   * P1-PB-PRICE-BASIS (founder audit 2026-10-11): WHICH price operand
+   * produced the derived P/B — 'displayed' (the same quote-cache
+   * observation the stock-page header renders) or 'seed' (no quote
+   * observed; the registry price). The header, the P/B row and the flip
+   * narrative must never mix bases silently; the MetricsPanel renders
+   * this next to the value.
+   */
+  pbPriceBasis: "displayed" | "seed";
 }
 
 function isResolved(x: unknown): x is ResolvedStockMetrics {
@@ -113,10 +122,19 @@ function pick<S extends number | null>(
 /**
  * Merge the static seed record with live fundamentals.
  * Returns null when the symbol is unknown (callers decide 404 vs empty state).
+ *
+ * `quotePrice` (P1-PB-PRICE-BASIS): the DISPLAYED price — the same
+ * quote-cache observation the stock-page header renders. When admissible
+ * (> 0, finite) it is the P/B price operand so the panel's P/B and the
+ * header's price share one basis; otherwise the derivation falls back to
+ * the seed registry price and `pbPriceBasis` says 'seed'. The SCORING
+ * basis is untouched — `resolved.stock` keeps the registry price for the
+ * record-basis parity contract.
  */
 export function resolveStockMetrics(
   symbol: string,
   live?: FullFundamentals | null,
+  quotePrice?: number | null,
 ): ResolvedStockMetrics | null {
   const sym = symbol?.trim().toUpperCase();
   const seed = STOCKS[sym];
@@ -177,17 +195,23 @@ export function resolveStockMetrics(
   set("mktcap", mktcap);
   set("bvps", bvps);
 
-  // Derived from other resolved fields — never invented. PB's operands are
-  // the SEED registry price and the (possibly live) BVPS: until a live
-  // price operand exists in this resolver, EVERY PB is a mixed-source
-  // derivation, and a mixed derivation claims NO freshness — asOf stays
-  // null and the source says "derived" (audit 2026-10-02 P0: it previously
-  // took the live asOf whenever BVPS was live, presenting seed-price /
-  // live-BVPS as a coherent live figure).
+  // Derived from other resolved fields — never invented. P1-PB-PRICE-BASIS
+  // (founder audit 2026-10-11): the P/B price operand is the DISPLAYED
+  // quote when the caller has one (the stock page passes the same
+  // quote-cache observation the header renders — RELIANCE: ₹1,170.90 over
+  // the ₹1,100 book = 1.06x, not the seed-price 2.27x); without a quote
+  // the seed registry price derives it and `pbPriceBasis` declares that.
+  // A mixed derivation still claims NO freshness — asOf stays null and the
+  // source says "derived" (audit 2026-10-02 P0: it previously took the
+  // live asOf whenever BVPS was live, presenting seed-price / live-BVPS
+  // as a coherent live figure).
+  const quoteAdmissible =
+    typeof quotePrice === "number" && Number.isFinite(quotePrice) && quotePrice > 0;
+  const pbPriceOperand = quoteAdmissible ? (quotePrice as number) : seed.price;
   const pb: ResolvedField = {
     // P0-2: no book value observed (null) -> no P/B derived (null), never
     // a fabricated 0 (rule 16).
-    value: bvps.value !== null && bvps.value > 0 ? Number((seed.price / bvps.value).toFixed(4)) : null,
+    value: bvps.value !== null && bvps.value > 0 ? Number((pbPriceOperand / bvps.value).toFixed(4)) : null,
     source: "derived",
     asOf: null,
   };
@@ -242,6 +266,7 @@ export function resolveStockMetrics(
     sourced,
     seedStatus: SEED_STATUS,
     seedCapturedAt: SEED_CAPTURED_AT,
+    pbPriceBasis: quoteAdmissible ? "displayed" : "seed",
   };
 }
 

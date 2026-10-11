@@ -1,0 +1,40 @@
++             { label: 'Price / Book', value: <DataValue sourced={metricsSourced.pb} digits={2} unit="x" /> }
++           ]} />
++           <StatGroup title="PEG Ratio" stats={[
++             { label: 'P/E / Growth', value: <DataValue sourced={peg} digits={2} /> }
++           ]} />
++           {isBank ? (
++             <StatGroup title="Banking note" stats={[
++               { label: 'D/E · OPM · FCF yield', value: <span style={{ fontSize: 12, color: '#94A3B8' }}>hidden for banks — leverage accounting makes them misleading; NIM / GNPA arrive with the banking data feed (FD-16)</span> }
++             ]} />
++           ) : (
++             <StatGroup title="FCF Yield" stats={[
++               { label: 'FCF / Mkt Cap', value: <DataValue sourced={fcfYield} digits={2} unit="%" /> }
++             ]} />
++           )}
++           <StatGroup title="Promoter" stats={[
++             { label: 'Promoter Hold', value: <DataValue sourced={metricsSourced.promo} unit="%" /> }
++           ]} />
++         </div>
++       </div>
++     </div>
++   );
++ }
++
+
+ ❯ test/pb.priceBasis.test.ts:91:19
+     89|   it("the MetricsPanel declares the price basis next to the P/B row (p…
+     90|     const panel = readFileSync("components/stock/MetricsPanel.tsx", "u…
+     91|     expect(panel).toContain("on displayed price");
+       |                   ^
+     92|     expect(panel).toContain("seed-price basis");
+     93|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 2 passed (8)
+   Start at  13:49:02
+   Duration  712ms (transform 82%, import 14%, tests 3%, setup 1%, worker 1%)
+

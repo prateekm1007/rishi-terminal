@@ -71,7 +71,7 @@ describe("§14 /api/gurus — unavailable change is NEVER a fabricated 0%", () =
     const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=crypto"));
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      gurus: Array<{ id: string; score: number | null; label: string; insight: string; comps: Array<{ detail: string }> }>;
+      gurus: Array<{ id: string; outputType: string; score: number | null; category: string | null; label: string; insight: string; comps: Array<{ detail: string }> }>;
     };
 
     // No verdict anywhere claims a 0.00% move (the fabricated no-move).

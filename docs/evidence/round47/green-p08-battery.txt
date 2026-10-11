@@ -1,0 +1,10 @@
+ Test Files  203 passed (203)
+      Tests  2265 passed (2265)
+encoding: PASS (validate:encoding — no mojibake)
+validateStocks: all T12 gates passed
+scoreParity: 0 mismatches / 0 non-finite of 896
+build: exit 0, 1019 pages
+ISR manifest gate: PASS — / 60s, /stock/[symbol] template, 896 baked (cap 60s)
+bundle budget: / 159.4 kB, /stocks 163.4 kB, /stock/[symbol] 170.4 kB — all OK (200 kB hard cap)
+tsc --noEmit: exit 0
+eslint: 0 errors, 278 warnings (baseline 283 — under, no ratchet change needed on this branch)

@@ -6,7 +6,10 @@ import { routeMetadata } from "@/lib/seo/routeMetadata";
 // this server layout carries the per-route title/description.
 export const metadata = routeMetadata({
   path: "/news",
-  title: "Market Intelligence — live news | Rishi Terminal",
+  // P0-8 (round 47, founder order 2026-10-11): the title claimed "live
+  // news" — the page aggregates RSS feeds (revalidated, delayed), not a
+  // live wire. Honest title names the aggregation.
+  title: "Market Intelligence — aggregated headlines | Rishi Terminal",
   description: "Latest India and global market headlines with region and category filters.",
 });
 

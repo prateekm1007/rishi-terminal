@@ -46,7 +46,6 @@
     "heroWisdomHighlight": "২১ জন কিংবদন্তি বিনিয়োগকারী",
     "heroWisdomPrefix": "জ্ঞান প্রদানকারী — ",
     "heroTagline": "পবিত্র বিনিয়োগ বুদ্ধিমত্তা · v4.4",
-    "liveMarketData": "লাইভ বাজার ডেটা",
     "markets": {
       "forexDesc": "১০টি মুদ্রা জোড়া",
       "commoditiesDesc": "সোনা, তেল, ধাতু",
@@ -227,19 +226,18 @@
   "pricing": {
     "breadcrumb": "জ্ঞান স্তর",
     "free": {
-      "title": "Everything Is Free",
-      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and live prices. No tiers, no subscriptions, no checkout.",
+      "title": "Free — No Tiers, No Checkout",
+      "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
       "price": "Free",
       "body": "There is nothing to buy. The full product — every Rishi, every tool, every surface — is open to everyone. Signing in is only for saving your own portfolio, watchlist and chat sessions.",
       "cta": "Meet the Rishis",
-      "allRishis": "All 21 Rishis — every persona, every verdict",
+      "allRishis": "All 21 Rishis — every persona, every framework",
       "aiChat": "AI Rishi chat with per-answer grounding provenance",
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
       "knowledgeGraph": "Knowledge graphs and council tension views",
-      "livePrices": "Live prices and market data (where the upstream provides them)",
-      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only.",
-      "_note": "English copy pending translation"
+      "livePrices": "Delayed equity quotes and live crypto/FX where labelled LIVE",
+      "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
     }
   },
   "news": {
@@ -383,7 +381,7 @@
   },
   "pulse": {
     "title": "ইকোনমি প্লাস",
-    "subtitle": "ম্যাক্রো বুদ্ধিমত্তা · দার্শনিক পরিষদ · রেজিম বিশ্লেষণ",
+    "subtitle": "Macro Intelligence · Philosopher Council · Regime Analysis",
     "backToDashboard": "ড্যাশবোর্ড",
     "marketMood": "বাজারের মেজাজ",
     "scoreLabel": "স্কোর",
@@ -522,7 +520,7 @@
       "exploreBtn": "সকল ঋষি অন্বেষণ করুন"
     },
     "rankingsDisabled": "র‍্যাঙ্ক করা নির্বাচন অক্ষম",
-    "rankingsDisabledNote": "র‍্যাঙ্ক করা উইজেটগুলি (আজকের স্টক, টপ বাই সিগন্যাল, শর্ট রাডার) বন্ধ। বাকি সব — লাইভ দাম, স্ক্রিনার, চ্যাট — কাজ করে।"
+    "rankingsDisabledNote": "র‍্যাঙ্ক করা উইজেটগুলি (আজকের স্টক, টপ বাই সিগন্যাল, শর্ট রাডার) বন্ধ। বাকি সব — উপলব্ধ বাজার তথ্য, স্ক্রিনার, চ্যাট — কাজ করে।"
   },
   "chat": {
     "header": "ঋষিদের সাথে চ্যাট",
@@ -562,8 +560,6 @@
     "noBullishSignals": "বর্তমান স্তরে কোনো বুলিশ সংকেত নেই",
     "noBullishMacro": "কোনো বুলিশ ম্যাক্রো সংকেত নেই",
     "noBearishMacro": "কোনো বেয়ারিশ ম্যাক্রো সংকেত নেই",
-    "building": "জ্ঞান গ্রাফ তৈরি হচ্ছে...",
-    "comingSoon": "ইন্টারেক্টিভ জ্ঞান গ্রাফ শীঘ্রই আসছে",
     "unavailable": "জ্ঞান গ্রাফ অনুপলব্ধ",
     "elite": "এলিট জ্ঞান গ্রাফ",
     "consensusArchitecture": "ঐকমত্য আর্কিটেকচার"
@@ -730,7 +726,7 @@
   "forex": {
     "breadcrumb": "ফরেক্স",
     "title": "ফরেক্স",
-    "subtitle": "কিংবদন্তি ব্যবসায়ীদের ম্যাক্রো বিশ্লেষণ সহ লাইভ মুদ্রা বাজার",
+    "subtitle": "মুদ্রা বাজার ও ম্যাক্রো লেন্স — LIVE চিহ্নিত জোড়ায় সরাসরি মূল্য, বাকিগুলোতে রেফারেন্স ডেটা",
     "pairs": "জোড়া",
     "inrCrossRates": "INR ক্রস রেট",
     "avgVolatility": "গড় ভোলাটিলিটি",

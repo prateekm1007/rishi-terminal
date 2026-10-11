@@ -26,6 +26,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/', priority: 1.0, changeFrequency: 'daily' },
     { path: '/stocks', priority: 0.9, changeFrequency: 'daily' },
     { path: '/rishis', priority: 0.8, changeFrequency: 'weekly' },
+    // RESP-2 (founder order 2026-10-12): "News stays in the nav with an
+    // honest empty state" — the 11 Oct nav-hide (and its sitemap twin) is
+    // REVERSED; the surface is nav-visible again.
     { path: '/news', priority: 0.7, changeFrequency: 'daily' },
     { path: '/pulse', priority: 0.7, changeFrequency: 'daily' },
     { path: '/crypto', priority: 0.7, changeFrequency: 'daily' },

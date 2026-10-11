@@ -32,6 +32,11 @@ export default function Sidebar() {
       title: t("nav.intelligence"),
       items: [
         { href: "/rishis",      label: t("nav.chatWithRishis"), icon: "✦" },
+        // RESP-2 (founder order 2026-10-12): "News stays in the nav with an
+        // honest empty state, 'No headlines yet'. The PR must not hide
+        // News. Keep-or-remove stays with you." The 11 Oct hide is
+        // REVERSED verbatim; the page renders the founder's empty-state
+        // copy when the feed is empty.
         { href: "/news",        label: t("nav.news"),           icon: "◈" },
         { href: "/pricing",     label: t("nav.pricing"),        icon: "◇" },
         // MH (founder directive 10, 2026-10-06): /methodology is HIDDEN from
@@ -111,6 +116,9 @@ export default function Sidebar() {
                   href={item.href}
                   key={item.href}
                   onMouseEnter={() => {
+                    // restored with RESP-2 (founder order 2026-10-12): the
+                    // hover warm for the real RSS aggregator, removed only
+                    // alongside the 11 Oct nav hide it served
                     if (item.href === "/news") fetch("/api/news").catch(() => {});
                   }}
                   style={{ textDecoration: "none", display: "block" }}

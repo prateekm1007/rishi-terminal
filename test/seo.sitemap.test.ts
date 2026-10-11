@@ -44,6 +44,10 @@ describe('app/sitemap.ts (served at /sitemap.xml)', () => {
     for (const p of ['/', '/stocks', '/rishis', '/news', '/pulse', '/bonds', '/crypto', '/forex', '/commodities', '/pricing', '/terms', '/privacy']) {
       expect(urls, `missing ${p}`).toContain(`${SITE_URL}${p}`);
     }
+    // RESP-2 (founder order 2026-10-12): "News stays in the nav with an
+    // honest empty state" — the 11 Oct nav-hide (and its sitemap twin) is
+    // REVERSED; a nav-visible surface is advertised to crawlers again.
+    expect(urls, 'nav-visible /news must stay in the sitemap').toContain(`${SITE_URL}/news`);
   });
 
   it('covers the market detail pages (crypto, commodities, indexes)', () => {

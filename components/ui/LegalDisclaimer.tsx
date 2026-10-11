@@ -17,7 +17,9 @@ function dataSourceLine(pathname: string): string {
   if (pathname.startsWith('/crypto'))
     return 'Crypto: live quotes from CoinGecko where labelled LIVE; analytics are static reference — illustrative.';
   if (pathname.startsWith('/forex'))
-    return 'Forex: static reference dataset — illustrative, not current. Verify live rates before acting.';
+    // P0-8 (round 47): "Verify live rates" read as a live claim; the forex
+    // surface serves static reference data with live pairs where labelled.
+    return 'Forex: static reference dataset — illustrative, not current. Verify current rates with your broker before acting.';
   if (pathname.startsWith('/bonds'))
     return 'Bond yields: static reference dataset — live only where a LIVE label is shown.';
   if (pathname.startsWith('/commodities'))

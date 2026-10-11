@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS, CRICKET_LIVE, NewsItem } from '../../data/news';
+// P0-8 (rule 17): NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS and
+// CRICKET_LIVE were imported here and never used — the list page renders
+// only the live RSS items (allNews = liveNews). The fabricated static
+// stories are NOT a fallback for this surface.
+import { NewsItem } from '../../data/news';
 import { fetchAllNews, LiveNewsItem } from '../../lib/newsApi';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
@@ -313,7 +317,12 @@ export default function NewsPage() {
         )}
 
         {!loading && liveNews.length === 0 && !fetchFailed && (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', fontSize: 14 }}>No stories available right now.</div>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+            {/* RESP-2 (founder order 2026-10-12): the founder named the
+                empty state's exact words — "No headlines yet". */}
+            <div style={{ fontSize: 14, marginBottom: 8 }}>No headlines yet.</div>
+            <div style={{ fontSize: 12 }}>The feed is empty right now — nothing is shown rather than made-up headlines.</div>
+          </div>
         )}
 
         {/* News Grid */}

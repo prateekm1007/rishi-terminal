@@ -315,6 +315,8 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
               { href:"/lab",       label:"💼 " + t("nav.portfolio"),  primary:false },
               { href:"/lab",       label:"⭐ " + t("nav.watchlist"),  primary:false },
               { href:"/rishis",    label:"🧘 " + t("nav.allRishis"), outline:true  },
+              // RESP-2 (founder order 2026-10-12): "News stays in the nav"
+              // — the 11 Oct hide is reversed with the sidebar's line.
               { href:"/news",      label:"📰 " + t("nav.news"),       ghost:true    },
               { href:"/lab",       label:"⚖️ " + t("nav.compare"),    ghost:true    },
             ].map(b => (

@@ -16,3 +16,24 @@ export function rankingsEnabled(
 ): boolean {
   return env.RANKINGS_ENABLED === "true";
 }
+
+/**
+ * FNO_ENABLED (R5-ADVICE-IDENTIFIERS, founder directive 2026-10-11:
+ * "For the F&O strategy legs, escalate with a recommended default: hide
+ * the route until the founder decides."). The recommended default is
+ * RECORDED as the implemented state: the /fno routes refuse (fail-closed,
+ * rule 6) while the founder decision is open — the flag flips ONLY in the
+ * PR recording that decision (the lib/founderDecisions.ts discipline; a
+ * flag here is the faster hand, same fail-closed direction). Same strict
+ * contract as RANKINGS_ENABLED: enabled ONLY by the exact string "true".
+ *
+ * FOUNDER DECISION NEEDED: F&O strategy legs — the options/backtester
+ * routes render strategy BUY/SELL legs (the user's own paper trades) and
+ * the derivatives-data licence question (FD-2's SEBI positioning) is
+ * open. Recommended default (implemented): hidden until decided.
+ */
+export function fnoEnabled(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return env.FNO_ENABLED === "true";
+}

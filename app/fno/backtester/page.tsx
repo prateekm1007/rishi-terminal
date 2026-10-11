@@ -1,5 +1,8 @@
 'use client';
 
+import { fnoEnabled } from '@/lib/featureFlags';
+import { notFound } from 'next/navigation';
+
 import { useLanguage } from '@/lib/language';
 
 /**
@@ -11,6 +14,11 @@ import { useLanguage } from '@/lib/language';
  * renders an explicit empty state instead of simulated results.
  */
 export default function FnoBacktesterPage() {
+// R5-ADVICE-IDENTIFIERS (founder directive 2026-10-11): the F&O strategy
+  // legs are HIDDEN until the founder decides (FOUNDER DECISION NEEDED,
+  // recommended default implemented) — fail-closed (rule 6).
+  if (!fnoEnabled()) notFound();
+
   const { t } = useLanguage();
 
   return (

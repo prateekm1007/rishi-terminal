@@ -9,6 +9,11 @@ import { NamespaceProvider } from "@/components/shared/NamespaceProvider";
 import { fno } from "@/messages/en.json";
 
 import { routeMetadata } from "@/lib/seo/routeMetadata";
+// R5-ADVICE-IDENTIFIERS (founder directive 2026-10-11): the F&O strategy
+// legs are HIDDEN until the founder decides — fail-closed (rule 6).
+import { fnoEnabled } from '@/lib/featureFlags';
+import { notFound } from 'next/navigation';
+
 export const metadata = routeMetadata({
   path: "/fno",
   title: "F&O Intelligence Suite | Rishi Terminal",
@@ -16,5 +21,7 @@ export const metadata = routeMetadata({
 });
 
 export default function FnoLayout({ children }: { children: ReactNode }) {
+  if (!fnoEnabled()) notFound();
+
   return <NamespaceProvider ns={{ fno }}>{children}</NamespaceProvider>;
 }

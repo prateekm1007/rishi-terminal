@@ -1,0 +1,138 @@
+
+> rishi-terminal@0.1.0 build
+> next build
+
+▲ Next.js 16.2.4 (Turbopack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 14.7s
+  Running TypeScript ...
+  Finished TypeScript in 16.1s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/1019) ...
+[/api/news] fetch failed: Error: Dynamic server usage: Route /api/news couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at ignore-listed frames {
+  description: "Route /api/news couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+  Generating static pages using 1 worker (254/1019) 
+  Generating static pages using 1 worker (509/1019) 
+  Generating static pages using 1 worker (764/1019) 
+✓ Generating static pages using 1 worker (1019/1019) in 10.5s
+  Finalizing page optimization ...
+
+Route (app)                     Revalidate  Expire
+┌ ○ /                                   1m      1y
+├ ○ /_not-found
+├ ○ /alerts
+├ ƒ /api/account/delete
+├ ƒ /api/account/export
+├ ƒ /api/admin/providers
+├ ƒ /api/alerts
+├ ƒ /api/alerts/evaluate
+├ ƒ /api/alerts/unsubscribe
+├ ƒ /api/auth/me
+├ ƒ /api/chat
+├ ƒ /api/chat/personas
+├ ƒ /api/csp-report
+├ ƒ /api/fundamentals
+├ ƒ /api/gurus
+├ ƒ /api/health
+├ ƒ /api/history
+├ ƒ /api/history/breadth
+├ ƒ /api/ingest/financials
+├ ƒ /api/ingest/observations
+├ ƒ /api/ingest/quotes-warm
+├ ƒ /api/ingest/snapshot
+├ ƒ /api/intelligence
+├ ƒ /api/news
+├ ƒ /api/payment
+├ ƒ /api/payment/webhook
+├ ƒ /api/portfolio/import
+├ ƒ /api/portfolio/import/[id]
+├ ƒ /api/portfolio/summary
+├ ƒ /api/prices
+├ ƒ /api/prices/batch
+├ ƒ /api/probe/ai-loop
+├ ƒ /api/pulse/blocks
+├ ƒ /api/pulse/breadth
+├ ƒ /api/pulse/currency
+├ ƒ /api/rishis/[symbol]
+├ ƒ /api/screener/export
+├ ƒ /api/screener/query
+├ ƒ /api/screens
+├ ƒ /api/screens/[id]
+├ ƒ /api/search
+├ ƒ /api/stock/[symbol]
+├ ƒ /api/technical
+├ ƒ /api/version
+├ ○ /auth/callback
+├ ○ /auth/signin
+├ ○ /bonds
+├ ● /bonds/[symbol]
+│ ├ /bonds/IN6YS
+│ ├ /bonds/IN10YS
+│ ├ /bonds/IN15YS
+│ └ [+12 more paths]
+├ ○ /bonds/rishis
+├ ○ /bonds/screener
+├ ○ /chat
+├ ○ /commodities
+├ ● /commodities/[symbol]
+│ ├ /commodities/GOLD
+│ ├ /commodities/SILVER
+│ ├ /commodities/PLATINUM
+│ └ [+14 more paths]
+├ ○ /crypto
+├ ● /crypto/[symbol]
+│ ├ /crypto/BTC
+│ ├ /crypto/ETH
+│ ├ /crypto/BNB
+│ └ [+9 more paths]
+├ ○ /evidence-fixtures
+├ ○ /fno
+├ ○ /fno/backtester
+├ ○ /fno/options
+├ ○ /forex
+├ ● /forex/[pair]
+│ ├ /forex/EURUSD
+│ ├ /forex/GBPUSD
+│ ├ /forex/USDJPY
+│ └ [+7 more paths]
+├ ○ /forex/pairs
+├ ○ /forex/rishis
+├ ƒ /index/[symbol]
+├ ○ /lab
+├ ○ /manifest.webmanifest
+├ ○ /methodology
+├ ● /methodology/[scorer]               1h      1y
+│ ├ /methodology/README                 1h      1y
+│ ├ /methodology/basant                 1h      1y
+│ ├ /methodology/buffett                1h      1y
+│ └ [+19 more paths]
+├ ○ /news
+├ ƒ /news/[id]
+├ ○ /offline
+├ ○ /pricing
+├ ○ /privacy
+├ ○ /pulse
+├ ○ /pulse/markets
+├ ○ /rishis
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+├ ● /stock/[symbol]                     1m      1y
+│ ├ /stock/360ONE                       1m      1y
+│ ├ /stock/3MINDIA                      1m      1y
+│ ├ /stock/5PAISA                       1m      1y
+│ └ [+893 more paths]
+├ ○ /stocks
+└ ○ /terms
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+BUILD_EXIT=0

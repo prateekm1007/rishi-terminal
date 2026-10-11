@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
 /**
  * George Soros — Reflexivity & Macro Contrarian
@@ -24,11 +24,14 @@ import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdict
  *     100, 2.5 → 0); Soros tolerates leverage but does not reward it.
  *   - Liquidity: current ratio 1 → 50, 2 → 100 (was 4 steps).
  */
-export function scoreSoros(s: Stock, ctx?: ScoringContext): RishiScore {
+export function scoreSoros(input: Stock, ctx?: ScoringContext): RishiScore {
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
-  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Soros"].required, ctx);
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Soros"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Soros"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   // Reflexivity: is price disconnected from value? (contrarian signal)
   const ncav = (s.ca - s.tl) / s.sh;

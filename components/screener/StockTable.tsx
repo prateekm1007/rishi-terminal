@@ -42,11 +42,13 @@ interface Row extends ScreenerPickerRow {
  * field key makes zero/negative legitimate observations admissible).
  */
 function metricSourced(
-  seedValue: number,
+  seedValue: number | null,
   liveValue: number | null | undefined,
   live: { source?: string; lastUpdated?: string | null } | undefined,
   field: string,
 ): Sourced<number> {
+  // P0-2: a null seed value is UNKNOWN — it overlays to null (never a
+  // fabricated 0) and <DataValue> renders the em dash.
   return overlaySourced(
     { value: seedValue, source: "seed", asOf: null },
     liveValue,

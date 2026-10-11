@@ -233,33 +233,36 @@ export const HISTORICAL_PARALLELS: Record<string, HistoricalParallel> = {
 export function detectArchetype(stock: Stock): string | null {
   const { sector, pe, roe, de, np, epscagr, opm, mktcap } = stock;
 
+  // P0-2: null (never observed) matches no archetype — a value nobody
+  // observed cannot be a signal. Comparisons on null are skipped.
+
   // Consumer moat: FMCG/Consumer + high ROE + strong margins
-  if (['FMCG', 'Consumer'].includes(sector) && roe > 20 && opm > 15) {
+  if (['FMCG', 'Consumer'].includes(sector) && roe !== null && roe > 20 && opm !== null && opm > 15) {
     return 'consumer_moat';
   }
 
   // Cyclical trap: Metals/Energy + low PE + high debt
-  if (['Metals', 'Energy', 'Mining'].includes(sector) && pe < 10 && de > 0.5) {
+  if (['Metals', 'Energy', 'Mining'].includes(sector) && pe !== null && pe < 10 && de !== null && de > 0.5) {
     return 'cyclical_trap';
   }
 
   // Growth mania: High PE + negative profits
-  if (pe > 50 && np < 0) {
+  if (pe !== null && pe > 50 && np < 0) {
     return 'growth_mania';
   }
 
   // Quality compound: IT/Pharma + high ROE + low debt
-  if (['IT', 'Pharma'].includes(sector) && roe > 18 && de < 0.3) {
+  if (['IT', 'Pharma'].includes(sector) && roe !== null && roe > 18 && de !== null && de < 0.3) {
     return 'quality_compound';
   }
 
   // Turnaround gamble: Negative profits + high debt
-  if (np < 0 && de > 1.5) {
+  if (np < 0 && de !== null && de > 1.5) {
     return 'turnaround_trap';
   }
 
   // Smallcap rocket: Small cap + high growth + good margins
-  if (mktcap < 50000 && epscagr > 20 && opm > 12) {
+  if (mktcap < 50000 && epscagr > 20 && opm !== null && opm > 12) {
     return 'smallcap_gem';
   }
 
@@ -310,6 +313,8 @@ export function findSimilarStocks(
     if (s.sector !== stock.sector) return;
 
     // Calculate consensus for peer (lightweight - you'd cache this in production)
+    // P0-2: a peer with unobserved pe/roe/de has no comparable basis.
+    if (s.roe === null || s.de === null) return;
     const peerConsensus = Math.round((s.roe + s.roce + (100 - s.de * 10)) / 3);
     const diff = Math.abs(consensus - peerConsensus);
 

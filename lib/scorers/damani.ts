@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp, fin, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
 /**
  * Damani — "Zero-Debt Fortress" (remediation T11).
@@ -15,11 +15,14 @@ import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdict
  * `score: null` ("insufficient data") instead of a non-finite number;
  * `weightedAverage` ignores null scores.
  */
-export function scoreDamani(s: Stock, ctx?: ScoringContext): RishiScore {
+export function scoreDamani(input: Stock, ctx?: ScoringContext): RishiScore {
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
-  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Damani"].required, ctx);
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Damani"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Damani"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   const de = fin(s.de);
   const roce = fin(s.roce);

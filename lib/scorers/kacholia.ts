@@ -3,13 +3,16 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
-export function scoreKacholia(s: Stock, ctx?: ScoringContext): RishiScore {
+export function scoreKacholia(input: Stock, ctx?: ScoringContext): RishiScore {
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
-  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Kacholia"].required, ctx);
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Kacholia"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Kacholia"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   const skinS = clamp(s.promo >= 50 ? 100 : s.promo * 2);
   const fcfGrowth = s.epscagr * 1.2;

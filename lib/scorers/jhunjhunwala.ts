@@ -3,7 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp, fin, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
 /**
  * Jhunjhunwala — "Conviction Multibagger" (remediation T11).
@@ -14,11 +14,14 @@ import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdict
  * component now yields a documented `score: null` ("insufficient data");
  * `weightedAverage` ignores null scores.
  */
-export function scoreJhunjhunwala(s: Stock, ctx?: ScoringContext): RishiScore {
+export function scoreJhunjhunwala(input: Stock, ctx?: ScoringContext): RishiScore {
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
-  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Jhunjhunwala"].required, ctx);
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Jhunjhunwala"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Jhunjhunwala"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   const pcf = safeDiv(s.mktcap, s.ocf);
   const revcagr = fin(s.revcagr);

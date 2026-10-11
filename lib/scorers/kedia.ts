@@ -3,13 +3,16 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
-export function scoreKedia(s: Stock, ctx?: ScoringContext): RishiScore {
+export function scoreKedia(input: Stock, ctx?: ScoringContext): RishiScore {
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
-  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Kedia"].required, ctx);
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Kedia"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Kedia"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   const smallS = s.mktcap <= 5000 ? 100 : clamp(100 - (s.mktcap - 5000) / 100);
   const manageableS = s.de <= 0.5 ? 100 : clamp(100 - s.de * 100);

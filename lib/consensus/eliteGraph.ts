@@ -197,14 +197,22 @@ function buildTechnicalEdge(stock: Stock, scores: RishiScore[]): TechnicalEdgeEn
     };
   };
 
-  return [
-    buildMetric('P/E Ratio', 'Valuation relative to earnings', stock.pe, avg.pe, 'x', false),
-    buildMetric('ROE', 'Return on Equity', stock.roe, avg.roe, '%', true),
-    buildMetric('Operating Margin', 'Core business profitability', stock.opm, avg.opm, '%', true),
-    buildMetric('Debt / Equity', 'Financial leverage', stock.de, avg.de, 'x', false),
-    buildMetric('ROCE', 'Return on Capital Employed', stock.roce, avg.roce, '%', true),
-    buildMetric('Revenue CAGR', 'Growth trajectory', stock.revcagr || 0, avg.revcagr, '%', true),
+  // P0-2 (founder audit 2026-10-11): a metric nobody observed (null) is
+  // not compared against the sector average — a value that does not
+  // exist has no trend, percentile or peer comparison. Null rows are
+  // omitted; the remaining metrics keep their exact arithmetic.
+  const metricRows: Array<[string, string, number | null, number, string, boolean]> = [
+    ['P/E Ratio', 'Valuation relative to earnings', stock.pe, avg.pe, 'x', false],
+    ['ROE', 'Return on Equity', stock.roe, avg.roe, '%', true],
+    ['Operating Margin', 'Core business profitability', stock.opm, avg.opm, '%', true],
+    ['Debt / Equity', 'Financial leverage', stock.de, avg.de, 'x', false],
+    ['ROCE', 'Return on Capital Employed', stock.roce, avg.roce, '%', true],
+    ['Revenue CAGR', 'Growth trajectory', stock.revcagr || 0, avg.revcagr, '%', true],
   ];
+  return metricRows
+    .filter((row): row is [string, string, number, number, string, boolean] => row[2] !== null)
+    .map(([name, desc, val, avgVal, unit, higherIsBetter]) =>
+      buildMetric(name, desc, val, avgVal, unit, higherIsBetter));
 }
 
 // --- Timeline generation ---

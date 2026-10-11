@@ -3,17 +3,20 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp, safeDiv } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
 /**
  * Buffett (T11 zero-guard): owner-earnings yield divides by market cap;
  * a degenerate mktcap of 0 yields a documented null ("insufficient data").
  */
-export function scoreBuffett(s: Stock, ctx?: ScoringContext): RishiScore {
+export function scoreBuffett(input: Stock, ctx?: ScoringContext): RishiScore {
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
-  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Buffett"].required, ctx);
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Buffett"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Buffett"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   // ROE sustainability
   const roeS = clamp(s.roe >= 20 ? 100 : s.roe * 5);

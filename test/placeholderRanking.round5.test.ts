@@ -20,20 +20,35 @@ import type { Stock } from "@/lib/types";
 // records are "missing", healthy illustrative records are "seed"; verdicts
 // are allowed on neither.
 describe("round-5: internally impossible records are missing (no usable data)", () => {
-  it("KWALITY (pe 0, roe 0, np>0) is missing", () => {
+  // P0-2b re-pin (the data-layer leg, founder audit 2026-10-11 "use
+  // null, never 0"): KWALITY's placeholder P/E and ROE moved from typed
+  // 0s to null — the record has real values beside them, so it
+  // classifies seed; the impossibility rule bites on synthetic typed
+  // zeros (the regression catch for datasets that reintroduce them).
+  it("KWALITY (pe null, roe null, np>0) is seed — unknown, not impossible", () => {
     const kw = STOCKS["KWALITY"] as Stock;
     expect(kw).toBeDefined();
     expect(kw.np).toBeGreaterThan(0);
-    expect(kw.pe).toBe(0);
-    expect(dataQualityFromSeedStock(kw)).toBe("missing");
+    expect(kw.pe).toBeNull();
+    expect(kw.roe).toBeNull();
+    expect(dataQualityFromSeedStock(kw)).toBe("seed");
   });
 
-  it("every record with pe===0 AND roe===0 AND np>0 is missing", () => {
-    const bad = Object.values(STOCKS).filter(
-      s => s.pe === 0 && s.roe === 0 && s.np > 0,
+  it("a synthetic typed-zero record (pe 0, roe 0, np>0) is still missing", () => {
+    const synthetic = { ...(STOCKS["KWALITY"] as Stock), pe: 0, roe: 0 } as Stock;
+    expect(dataQualityFromSeedStock(synthetic)).toBe("missing");
+  });
+
+  it("P0-2b: no record carries typed pe===0 or roe===0 — the classes are null", () => {
+    const typed = Object.values(STOCKS).filter(
+      s => s.pe === 0 || s.roe === 0,
     );
-    expect(bad.length).toBeGreaterThan(40); // the audit counted ~57 with pe0+roe0
-    for (const s of bad) expect(dataQualityFromSeedStock(s)).toBe("missing");
+    expect(typed).toEqual([]);
+    const nulled = Object.values(STOCKS).filter(
+      s => s.pe === null && s.roe === null && s.np > 0,
+    );
+    expect(nulled.length).toBeGreaterThan(40); // the audit counted ~57 with pe0+roe0
+    for (const s of nulled) expect(dataQualityFromSeedStock(s)).toBe("seed");
   });
 
   it("a loss-maker with pe 0 (np<0) is NOT auto-rejected by the impossibility rule", () => {

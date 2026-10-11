@@ -70,10 +70,20 @@ describe("X6 — Nemish: a pillar built on a placeholder zero is insufficient", 
     expect(n.comps.find((c) => c.label === "Valuation")!.detail).toMatch(/insufficient/i);
   });
 
-  it("SBIN (bank; seed de: 0 is the June placeholder) loses its Steady Compounder verdict", () => {
+  // P0-2 re-pin (founder audit 2026-10-11): SBIN's bank D/E moved from a
+  // typed 0 to null at the data layer (deposits are not corporate debt —
+  // the concept does not apply). The verdict is still null, now via the
+  // null branch; the typed-zero branch is pinned synthetically below.
+  it("SBIN (bank; de NULL — concept inapplicable) loses its Steady Compounder verdict", () => {
     const sbin = STOCKS["SBIN"] as Stock;
-    expect(sbin.de).toBe(0); // the placeholder this test exists for
+    expect(sbin.de).toBeNull(); // the placeholder this test exists for
     const n = scoreNemish(sbin);
+    expect(n.score).toBeNull();
+  });
+
+  it("a typed-zero de under seed semantics still loses the verdict (synthetic)", () => {
+    const synthetic = { ...(STOCKS["SBIN"] as Stock), de: 0 } as Stock;
+    const n = scoreNemish(synthetic);
     expect(n.score).toBeNull();
   });
 

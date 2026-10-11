@@ -274,8 +274,8 @@ function getRelevantPlays(stock: Stock): RishiPlay[] {
     if (play.market === 'India' && stock.exchange === 'NSE') score += 3;
 
     // Category match (quality stocks → quality plays)
-    if (stock.roe >= 20 && play.category === 'quality') score += 4;
-    if (stock.pe < 15 && play.category === 'value') score += 4;
+    if (stock.roe !== null && stock.roe >= 20 && play.category === 'quality') score += 4;
+    if (stock.pe !== null && stock.pe < 15 && play.category === 'value') score += 4;
     if (stock.revcagr >= 20 && play.category === 'growth') score += 4;
 
     // Famous plays get slight bonus
@@ -309,11 +309,11 @@ function getRelevanceNote(play: RishiPlay, stock: Stock): string {
     return `Indian market success story by ${play.rishi}`;
   }
 
-  if (play.category === 'quality' && stock.roe >= 20) {
+  if (play.category === 'quality' && stock.roe !== null && stock.roe >= 20) {
     return `Quality business playbook - similar ROE profile to ${stock.symbol}`;
   }
 
-  if (play.category === 'value' && stock.pe < 15) {
+  if (play.category === 'value' && stock.pe !== null && stock.pe < 15) {
     return `Value investing case study - similar valuation approach`;
   }
 

@@ -53,11 +53,12 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
       // Cr"); /api/fundamentals' static fallback now nulls seed market
       // caps, so a miss stays a miss.
       marketCap: bulkFund[stock.symbol]?.marketCap ?? null,
-      // R15-E: a placeholder-zero seed P/E (73 rows) is MISSING data — the
-      // live value wins when present, otherwise null renders "—", never
-      // "0.00x" (Y4 forbidden shape; rule 16).
-      pe: bulkFund[stock.symbol]?.pe ?? (stock.pe > 0 ? stock.pe : null),
-      roe: bulkFund[stock.symbol]?.roe ?? (stock.roe !== 0 ? stock.roe : null),
+      // R15-E + P0-2: a placeholder-zero/null seed P/E is MISSING data —
+      // the live value wins when present, otherwise null renders "—",
+      // never "0.00x" (Y4 forbidden shape; rule 16). The data layer now
+      // carries the placeholder class as null directly.
+      pe: bulkFund[stock.symbol]?.pe ?? (stock.pe !== null && stock.pe > 0 ? stock.pe : null),
+      roe: bulkFund[stock.symbol]?.roe ?? (stock.roe !== null && stock.roe !== 0 ? stock.roe : null),
       isCurrent: true,
     },
     ...peers.map(p => ({

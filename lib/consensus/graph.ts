@@ -180,7 +180,7 @@ export function buildKnowledgeGraph(
   });
 
   // Add key metric nodes
-  if (stock.roe > 20) {
+  if (stock.roe !== null && stock.roe > 20) {
     const metricNodeId = 'metric_quality';
     nodes.push({
       id: metricNodeId,
@@ -200,7 +200,7 @@ export function buildKnowledgeGraph(
     insights.push('Strong return on equity indicates competitive advantage');
   }
 
-  if (stock.de > 1) {
+  if (stock.de !== null && stock.de > 1) {
     const metricNodeId = 'metric_leverage';
     nodes.push({
       id: metricNodeId,

@@ -1,0 +1,11 @@
+=== P0-2 DATA-LAYER LEG — full Tier-2 battery (GREEN raw, branch fix/p0-2-null-not-zero, post-#337-merge re-run below) ===
+
+## pre-merge run (the data-layer tree, 2026-10-11 07:2xZ)
+- tsc: 0 errors
+- vitest: 2236/2236 (raw tail below)
+             ~10.14s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
+VITEST_EXIT=0
+- eslint ratchet: 0 errors, 283 warnings = baseline exact
+- encoding: PASS; validateStocks: all gates + null census pe:68/roe:53/de:22/opm:4; parity 0/896; build 1019 pages; ISR PASS; bundle OK (raw: green-p02-build.txt)

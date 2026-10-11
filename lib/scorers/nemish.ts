@@ -3,6 +3,7 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
+import { insuffDetail } from './unknownInputs';
 
 /**
  * Nemish Shah — Steady Compounder (X6, Round 13 root-cause fix).
@@ -43,8 +44,13 @@ export function scoreNemish(s: Stock, ctx?: ScoringContext): RishiScore {
   // context decides — no context means seed semantics, the fail-closed
   // default) or, for P/E, when no meaningful P/E exists at all.
   const isUnknown = (field: 'epscagr' | 'de' | 'promo' | 'pe'): boolean => {
-    if (field === 'pe') return s.pe <= 0;
-    return s[field] === 0 && (ctx ? ctx.unknownFields.has(field) : true);
+    // P0-2: the data-layer null (never observed) is missing regardless
+    // of provenance; the pe rule is unchanged (no input set in which a
+    // zero/negative P/E is a valuation observation).
+    if (field === 'pe') return s.pe === null || s.pe <= 0;
+    const v = s[field];
+    if (v === null) return true;
+    return v === 0 && (ctx ? ctx.unknownFields.has(field) : true);
   };
 
   const epsUnknown = isUnknown('epscagr');
@@ -55,13 +61,11 @@ export function scoreNemish(s: Stock, ctx?: ScoringContext): RishiScore {
     epsUnknown || deUnknown || promoUnknown || peUnknown;
 
   const consistencyScore = s.epscagr >= 12 ? 100 : clamp(s.epscagr * 8.33);
-  const debtScore = s.de <= 0.3 ? 100 : s.de <= 0.6 ? 80 : clamp(100 - s.de * 100);
+  const debtScore = s.de === null ? 0 : s.de <= 0.3 ? 100 : s.de <= 0.6 ? 80 : clamp(100 - s.de * 100);
   const mgmtScore = s.promo >= 35 ? 100 : clamp(s.promo * 2.86);
-  const valueScore = s.pe <= 25 ? 100 : s.pe <= 35 ? 70 : clamp(100 - (s.pe - 35) * 3);
+  // (valueScore is only reached when peUnknown is false — a meaningful P/E exists.)
+  const valueScore = s.pe === null ? 0 : s.pe <= 25 ? 100 : s.pe <= 35 ? 70 : clamp(100 - (s.pe - 35) * 3);
   const total = consistencyScore * 0.35 + debtScore * 0.30 + mgmtScore * 0.20 + valueScore * 0.15;
-
-  const insuff = (what: string): string =>
-    `insufficient data (seed placeholder zero — ${what} unknown)`;
 
   return {
     name: 'Nemish', full: 'Nemish Shah', label: 'Steady Compounder',
@@ -69,10 +73,10 @@ export function scoreNemish(s: Stock, ctx?: ScoringContext): RishiScore {
     scoreRaw: insufficient ? null : total,
     origin: 'Bharat',
     comps: [
-      { label: 'EPS Consistency', v: epsUnknown ? 0 : consistencyScore, wt: 35, detail: epsUnknown ? insuff('EPS growth') : `${s.epscagr}%` },
-      { label: 'Debt Free', v: deUnknown ? 0 : debtScore, wt: 30, detail: deUnknown ? insuff('debt (D/E)') : `D/E ${s.de}` },
-      { label: 'Management', v: promoUnknown ? 0 : mgmtScore, wt: 20, detail: promoUnknown ? insuff('promoter holding') : `${s.promo}%` },
-      { label: 'Valuation', v: peUnknown ? 0 : valueScore, wt: 15, detail: peUnknown ? insuff('valuation (no meaningful P/E)') : `P/E ${s.pe}` },
+      { label: 'EPS Consistency', v: epsUnknown ? 0 : consistencyScore, wt: 35, detail: epsUnknown ? insuffDetail('EPS growth') : `${s.epscagr}%` },
+      { label: 'Debt Free', v: deUnknown ? 0 : debtScore, wt: 30, detail: deUnknown ? insuffDetail('debt (D/E)') : `D/E ${s.de}` },
+      { label: 'Management', v: promoUnknown ? 0 : mgmtScore, wt: 20, detail: promoUnknown ? insuffDetail('promoter holding') : `${s.promo}%` },
+      { label: 'Valuation', v: peUnknown ? 0 : valueScore, wt: 15, detail: peUnknown ? insuffDetail('valuation (no meaningful P/E)') : `P/E ${s.pe}` },
     ],
     insight: insufficient
       ? 'Insufficient data \u2014 placeholder zeros in the Steady Compounder pillars (EPS growth / debt / management / valuation), no verdict.'

@@ -59,7 +59,7 @@ export type QualityField = (typeof QUALITY_FIELDS)[number];
 
 /** Minimal structural view of a resolved provenance field. */
 export interface QualityFieldView {
-  value: number;
+  value: number | null;
   source: "seed" | "live" | "derived";
   asOf: string | null;
 }
@@ -103,7 +103,10 @@ export function dataQualityFromResolvedFields(
     (name) => [name, fields[name]] as const,
   );
 
-  const liveEntries = entries.filter(([, f]) => f && f.source === "live");
+  // P0-2: a null seed value is UNKNOWN — it can never be "live", but it
+  // is not non-finite garbage either; the rollup below treats it as a
+  // non-live slot (which is what it is).
+  const liveEntries = entries.filter(([, f]) => f && f.source === "live" && f.value !== null);
 
   if (liveEntries.length === QUALITY_FIELDS.length) {
     const budgetMs = LIVE_FRESHNESS_DAYS * 24 * 60 * 60 * 1000;
@@ -118,22 +121,25 @@ export function dataQualityFromResolvedFields(
 
   if (liveEntries.length > 0) {
     // Mixed provenance: part of the input set is still the illustrative
-    // seed. Verdicts wait for full coverage — scoring a half-live record
-    // would present seed noise as live analysis.
+    // seed (or never observed). Verdicts wait for full coverage — scoring
+    // a half-live record would present seed noise as live analysis.
     return "seed";
   }
 
-  const hasValue = entries.some(([, f]) => f && Number.isFinite(f.value) && f.value !== 0);
+  const hasValue = entries.some(([, f]) => f && f.value !== null && Number.isFinite(f.value) && f.value !== 0);
   return hasValue ? "seed" : "missing";
 }
 
-/** Minimal structural view of a bare seed record (lib/types Stock shape). */
+/** Minimal structural view of a bare seed record (lib/types Stock shape).
+ *  P0-2: the placeholder classes are NULL at the data layer — null is
+ *  UNKNOWN (the field was never observed), which is neither "missing
+ *  data" by itself nor an impossibility; non-finite values still are. */
 export interface SeedStockView {
-  pe: number;
-  roe: number;
+  pe: number | null;
+  roe: number | null;
   roce: number;
-  opm: number;
-  de: number;
+  opm: number | null;
+  de: number | null;
   promo: number;
   revcagr: number;
   epscagr: number;
@@ -154,13 +160,19 @@ export interface SeedStockView {
  * The round-5 record-honesty rules are preserved verbatim (previously
  * assessDataQuality's "INCOMPLETE"): non-finite cores, the all-zero
  * fundamental set, and internally impossible combinations are "missing".
+ *
+ * P0-2: null slots are UNKNOWN, not missing — a record with real values
+ * beside nulls classifies "seed" (it has data; some fields were never
+ * observed). The impossibility rules (pe 0 with profit, roe 0 with book)
+ * keep biting on TYPED zeros — the synthetic regression catch for any
+ * dataset that reintroduces placeholder zeros.
  */
 export function dataQualityFromSeedStock(stock: SeedStockView): DataQuality {
-  const vals: number[] = [
+  const vals: Array<number | null> = [
     stock.pe, stock.roe, stock.roce, stock.opm, stock.de,
     stock.promo, stock.revcagr, stock.epscagr, stock.mktcap, stock.bvps,
   ];
-  if (vals.some(v => !Number.isFinite(v))) return "missing";
+  if (vals.some(v => v !== null && !Number.isFinite(v))) return "missing";
   // T11.4 (preserved): a record where revenue, cash flows, book value,
   // ROCE and promoter holding are ALL zero carries no real fundamentals.
   if (
@@ -171,10 +183,12 @@ export function dataQualityFromSeedStock(stock: SeedStockView): DataQuality {
   }
   // Round-5 audit (preserved): internally IMPOSSIBLE combinations —
   // positive net profit can never yield P/E 0, and positive profit with
-  // positive book value can never yield ROE 0.
+  // positive book value can never yield ROE 0. (Nulls skip: null is
+  // unknown, not impossible.)
   if (stock.np > 0 && stock.pe === 0) return "missing";
   if (stock.np > 0 && stock.roe === 0 && stock.bvps > 0) return "missing";
-  return "seed";
+  const hasValue = vals.some(v => v !== null && v !== 0);
+  return hasValue ? "seed" : "missing";
 }
 
 /** Short badge/UI label for the data-quality chip (the badge reads THIS). */

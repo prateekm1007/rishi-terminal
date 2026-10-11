@@ -72,6 +72,13 @@ export const SCORER_VERDICT_CONTRACT: Record<string, ScorerVerdictContract> = {
  * zeros); no context = bare-seed semantics, fail-closed: every zero is a
  * placeholder. A non-zero value is never "unknown" here — negative and
  * small observations are real (G5/Y4).
+ *
+ * P0-2b (the data-layer leg): a NULL value is unknown REGARDLESS of
+ * provenance — the surgery moved the placeholder classes (impossible /
+ * undefined P/E, undefined ROE, banking-inapplicable D/E and OPM) from
+ * typed zeros to null at the data layer, so null is the "never observed"
+ * marker itself. Live-sourced values are never null (the admissibility
+ * gate), so this branch is seed/data-layer only.
  */
 export function unknownAmong(
   stock: Stock,
@@ -79,10 +86,29 @@ export function unknownAmong(
   ctx?: ScoringContext,
 ): string[] {
   return fields.filter((f) => {
-    const v = (stock as unknown as Record<string, number>)[f];
+    const v = (stock as unknown as Record<string, number | null>)[f];
+    if (v === null) return true;
     if (v !== 0) return false;
     return ctx ? ctx.unknownFields.has(f) : true;
   });
+}
+
+/**
+ * P0-2b: the type-level lift the guard pays for. `unknownAmong` proved
+ * every required field observed (non-null), so the arithmetic below the
+ * guard may treat the four nullable Stock fields as numbers. ONE cast,
+ * justified by the guard directly above it — never use this without the
+ * guard.
+ */
+export type ObservedStock = Stock & {
+  pe: number;
+  roe: number;
+  opm: number;
+  de: number;
+};
+
+export function observed(s: Stock): ObservedStock {
+  return s as ObservedStock;
 }
 
 /** The honest null verdict — attribution shell preserved, nothing fabricated. */

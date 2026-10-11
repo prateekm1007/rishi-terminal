@@ -29,8 +29,10 @@ export interface RankedStock {
   sector: string;
   /** Consensus from the single engine (Rishi Merit System v1). */
   consensus: number;
-  pe: number;
-  roe: number;
+  /** P0-2: null = never observed. */
+  pe: number | null;
+  /** P0-2: null = never observed. */
+  roe: number | null;
   mktcap: number;
   rank: number;
 }
@@ -201,8 +203,9 @@ export function prepareShortCandidate(symbol: string): {
     }
   }
   // pb is a mixed-source derivation (seed price / possibly-live BVPS): a
-  // non-positive value means "cannot derive", never a real 0.
-  if (!(metrics.pb > 0)) mutable.pb = undefined;
+  // non-positive value means "cannot derive", never a real 0; P0-2 adds
+  // null (no book value observed) to the same cannot-derive branch.
+  if (!(metrics.pb !== null && metrics.pb > 0)) mutable.pb = undefined;
 
   return {
     symbol: resolved.symbol,

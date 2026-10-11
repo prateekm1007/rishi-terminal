@@ -57,8 +57,14 @@ describe("P0-2 — the declared verdict contract", () => {
   });
 
   it("every required field is a real Stock numeric field, and no contract is empty", () => {
+    // P0-2b re-pin (the data-layer leg): the placeholder classes carry
+    // null on SBIN (bank de/opm), so the existence check accepts
+    // number OR null — the field must exist and be numeric-or-null.
     const stockFields = Object.keys(STOCKS["SBIN"]).filter(
-      k => typeof (STOCKS["SBIN"] as unknown as Record<string, unknown>)[k] === "number",
+      k => {
+        const v = (STOCKS["SBIN"] as unknown as Record<string, unknown>)[k];
+        return typeof v === "number" || v === null;
+      },
     );
     for (const [name, c] of Object.entries(SCORER_VERDICT_CONTRACT)) {
       expect(c.required.length, `${name} must declare what its verdict requires`).toBeGreaterThan(0);

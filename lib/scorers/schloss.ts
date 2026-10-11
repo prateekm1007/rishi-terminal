@@ -3,13 +3,16 @@ import 'server-only';
 import { Stock, RishiScore } from '../types';
 import { clamp } from '../utils';
 import type { ScoringContext } from '../consensus/orchestrator';
-import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore } from './verdictGuards';
+import { SCORER_VERDICT_CONTRACT, unknownAmong, noVerdictScore, observed } from './verdictGuards';
 
-export function scoreWalterSchloss(s: Stock, ctx?: ScoringContext): RishiScore {
+export function scoreWalterSchloss(input: Stock, ctx?: ScoringContext): RishiScore {
   // P0-2 (founder audit 2026-10-11): a placeholder zero in a required
   // field is UNKNOWN — no verdict, never an interpretation of zero.
-  const p02Missing = unknownAmong(s, SCORER_VERDICT_CONTRACT["Walter Schloss"].required, ctx);
+  const p02Missing = unknownAmong(input, SCORER_VERDICT_CONTRACT["Walter Schloss"].required, ctx);
   if (p02Missing.length) return noVerdictScore(SCORER_VERDICT_CONTRACT["Walter Schloss"], p02Missing);
+  // P0-2b: the guard proved every required field observed — lift the
+  // nullable classes to their observed types for the arithmetic below.
+  const s = observed(input);
 
   const pbScore = s.price <= s.bvps ? 100 : s.price <= s.bvps * 1.3 ? 80 : clamp(100 - (s.price / s.bvps - 1.3) * 100);
   const debtScore = s.de <= 0.2 ? 100 : s.de <= 0.5 ? 80 : clamp(100 - s.de * 100);

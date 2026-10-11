@@ -263,7 +263,12 @@ for (const s of Object.values(STOCKS)) {
       mutable[key] = undefined;
     }
   }
-  mutable.pb = resolved.metrics.pe > 0 && resolved.metrics.pb > 0 ? resolved.metrics.pb : undefined;
+  // P0-2: pe/pb may be null (never observed) — the guard covers it.
+  mutable.pb =
+    resolved.metrics.pe !== null && resolved.metrics.pe > 0 &&
+    resolved.metrics.pb !== null && resolved.metrics.pb > 0
+      ? resolved.metrics.pb
+      : undefined;
   const band = getConviction(productionScore(nulled).finalScore, "SHORT");
   seedBandCensus.add(band);
 }

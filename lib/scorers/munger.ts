@@ -26,7 +26,19 @@ export function scoreMunger(input: Stock, ctx?: ScoringContext): RishiScore {
   const s = observed(input);
 
   const circleS = s.roce >= 25 && s.de <= 0.5 ? 100 : clamp((s.roce * 2) + (s.de <= 0.5 ? 50 : 0));
-  const inversionS = s.de > 2 || s.fcf < 0 ? 0 : 100;
+  // P1-MUNGER (founder audit 2026-10-11): the Inversion Check defaults to
+  // NOT ASSESSED, never to a clearance. The old arithmetic awarded the
+  // full 100 — an all-clear detail string — whenever D/E and the FCF sign
+  // stayed clean, asserting a forensic clearance that no forensic data
+  // backs (the pipeline observes no accounting flags, related-party
+  // percentages or auditor notes for any record). The two OBSERVED screens
+  // still bite (high debt or negative FCF -> 0); without them and without
+  // forensic data the pillar holds the neutral 50 under its honest label.
+  const inversionS = s.de > 2 || s.fcf < 0 ? 0 : 50;
+  const inversionDetail =
+    s.de > 2 ? 'FAIL: High debt'
+    : s.fcf < 0 ? 'FAIL: Negative FCF'
+    : 'NOT ASSESSED — no forensic screens observed (accounting flags, related-party, auditor notes pending)';
   const lollaS = clamp(s.roe >= 20 && s.roce >= 20 ? 100 : (s.roe + s.roce) * 2);
   const patienceS = s.promo >= 40 ? 100 : clamp(s.promo * 2.5);
   const total = circleS * 0.30 + inversionS * 0.25 + lollaS * 0.25 + patienceS * 0.20;
@@ -35,7 +47,7 @@ export function scoreMunger(input: Stock, ctx?: ScoringContext): RishiScore {
     score: Math.round(total), scoreRaw: total, origin: 'Global',
     comps: [
       { label: 'Circle of Competence', v: circleS, wt: 30, detail: `ROCE ${s.roce}% · D/E ${s.de.toFixed(2)}` },
-      { label: 'Inversion Check', v: inversionS, wt: 25, detail: `${s.de > 2 ? 'FAIL: High debt' : s.fcf < 0 ? 'FAIL: Negative FCF' : 'PASS: No red flags'}` },
+      { label: 'Inversion Check', v: inversionS, wt: 25, detail: inversionDetail },
       { label: 'Lollapalooza Effect', v: lollaS, wt: 25, detail: `ROE ${s.roe}% + ROCE ${s.roce}% convergence` },
       { label: 'Patience Filter', v: patienceS, wt: 20, detail: `Promoter ${s.promo}% commitment` },
     ],

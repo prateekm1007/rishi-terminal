@@ -376,3 +376,25 @@ and deployed — production serves `4c9f7088` (verified live, first probe,
 13:56Z: `GET /api/version` → sha 4c9f7088cb04...; the /stock/RELIANCE
 flight carries the #349 licence-hold content). No debt remains; the
 retry-sporadically protocol stood down unused.
+
+### 2026-10-12 (round 49) — tenth exhaustion; deploy debt recorded
+
+- #346 (P0-8-LIVE-CLAIMS + the RESP-2 News reversal) merged via the
+  merge-guard at 2026-10-12T00:36:42Z (all six gates green on the exact
+  head 00582dc; merge commit 304dc104877b). The merge did NOT auto-fire a
+  deployment within the observation window (two v6 list reads, 45 s and
+  120 s after the merge).
+- **12:00Z-class sanctioned single-shot API retry (policy 4) → HTTP 402
+  `api-deployments-free-per-day` (total=100, remaining=0)** — the tenth
+  recorded exhaustion (B-22 class).
+- **DEPLOY DEBT: 304dc104 (#346) + 6197039 (#353).** Production serves
+  16cd0a9 until the debt clears. The founder's RESP-1 order anticipates
+  exactly this: "If the deploy quota blocks it, batch the queue into one
+  deploy and record it in docs/RELEASE.md" — the queue is batched: the
+  debt is deployment-side, not merge-side (C8 cadence continues; later
+  merges join the debt in order).
+- The sanctioned sporadic retry loop (POST /v13/deployments every 20 min,
+  max 20 h) is armed; production catch-up runs the moment the window
+  drains, then the round-49 live probes run against the deployed SHA
+  (/api/version, the RELIANCE seed-leak probe, the News nav + empty state,
+  the FD-22 awaiting panel).

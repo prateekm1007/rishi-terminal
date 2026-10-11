@@ -71,3 +71,30 @@ never 0, and return no_verdict on missing inputs."
 `git revert` of the branch's two commits; the guards are additive and
 revert cleanly to the pre-P0-2 zero-scoring behavior (which P0-1's surface
 gate made invisible anyway).
+
+## Post-merge C6 legs (2026-10-11, production serving `827c14a9bb8c`)
+
+Deploy proof: `GET /api/version` → `{"sha":"827c14a9bb8cf4656f085eb6b07286cc68fc2a61",...}`
+(poll 2, ~45 s after merge).
+
+P0-2 is an engine-substrate fix — the rendered product surfaces are
+unchanged from P0-1, and the production legs prove that regression-free:
+SSR legs 15/17 (`p02-production-legs.txt` — the 2 FAILs are the SAME
+disclosed flight-payload traps as P0-1's record: dictionary strings +
+precomputed client-component data inside `<script>`; payload ≠ rendered)
+and hydrated legs 8/8 (`p02-production-hydrated.txt`: NO VERDICT record
+visible, hero/QVPS/council invisible, metrics visible, /stocks seed badge,
+dashboard disabled panel + no rendered SOD). Substrate intact: thesis
+200 ok:true; insight designed-404.
+
+Cadence note: the CI cadence gate (C8) bit twice before the window opened
+(runs started 07:23Z and 07:29Z vs the ~07:36Z window anchored at #334's
+merge) — honored both times; the in-window rerun at 07:37Z went all-green.
+A parallel session merged #336 (P0-1-SMOKE-REPIN: the post-deploy smoke
+script re-pinned for the verdict trichotomy, zero file overlap) mid-flight;
+#337 was rebased onto it and re-verified on the exact rebased head
+(battery 200/2229 + smoke 54/54 locally, all six CI checks green on
+`965a596`).
+
+**P0-2 is CLOSED** (merged `827c14a9bb8c` + deployed + live-proven). Next
+per the dependency order: P0-3 (sector gate on all 20 scorers).

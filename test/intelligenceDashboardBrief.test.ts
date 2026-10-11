@@ -197,7 +197,7 @@ describe("INT-B1 stock-page surface REMOVED per founder order (2026-10-10) — t
 });
 
 describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
-  it("the set of surfaces fetching /api/intelligence is EXACTLY the two declared product surfaces (C1 brief + the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; declared, never silent)", () => {
+  it("the set of surfaces fetching /api/intelligence is EXACTLY the one remaining declared product surface (the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; now the C1 dashboard brief, round 45, 2026-10-11: 'remove the whole Rishi Intelligence segment'; declared, never silent)", () => {
     const files = [
       ...walk(join(ROOT, "app")),
       ...walk(join(ROOT, "lib")),
@@ -207,7 +207,6 @@ describe("INT-C1 the exact-surface scan (N surfaces, ONE route)", () => {
       /fetch\([^)]*\/api\/intelligence/.test(readFileSync(f, "utf8")),
     );
     expect(consumers.map(rel).sort()).toEqual([
-      "components/dashboard/DashboardBrief.tsx",
       "components/screener/IntelligenceDrawer.tsx",
     ]);
   });

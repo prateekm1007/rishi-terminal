@@ -166,3 +166,41 @@ describe("INT-D2 the wiring (badge in the row, drawer mounted once)", () => {
     expect(src).toContain("onClose=");
   });
 });
+
+// INT-C1 dashboard brief REMOVED — the founder's third removal order
+// (round 45, 2026-10-11): after the D3 dossier removal and the B1
+// stock-page panel removal, the dashboard STILL rendered a standing
+// section headed "Rishi Intelligence — <SYMBOL>" (the C1 DashboardBrief
+// mount inside the DashboardTail), and the founder ordered it removed
+// ("remove the whole Rishi Intelligence segment"). Product surface only —
+// the substrate stays untouched and green: the chain, the ONE
+// /api/intelligence (capability=thesis included), the cache, the A8
+// primitives, the fixture route, and the D2 badge/drawer (the last
+// declared product surface).
+//
+// Fail-first in reverse (rule 21): these absence pins were written FIRST
+// and watched FAIL on the mounted tree (the component file existed, the
+// tail mounted it, the exact-surface scan saw two consumers); then the
+// removal landed; then they passed. Raw RED + GREEN: docs/evidence/round45/.
+describe("INT-C1 dashboard brief REMOVED per founder order (2026-10-11) — the absence pins", () => {
+  const TAIL = "components/dashboard/DashboardTail.tsx";
+
+  it("the brief component file is DELETED (dead code after the mount removal — rule 17)", () => {
+    expect(existsSync(join(ROOT, "components/dashboard/DashboardBrief.tsx"))).toBe(false);
+  });
+
+  it("the dashboard tail no longer imports, mounts, or wires the intelligence brief", () => {
+    const s = source(TAIL);
+    expect(s).not.toContain("DashboardBrief");
+    // the mount's own comment block went with it
+    expect(s).not.toContain("INT-C1");
+    // the tail consumes NO intelligence surface anymore — the remaining
+    // product surface is the D2 drawer (screener), pinned by the
+    // exact-surface scan below
+    expect(s).not.toContain("/api/intelligence");
+    // positive control (B-18): the tail still carries the SURVIVING
+    // sections — the removal removed one mount, not the tail
+    expect(s).toContain("TOP BUY SIGNALS");
+    expect(s).toContain("<SectionHeader");
+  });
+});

@@ -44,8 +44,10 @@ test.describe("INT-B1 stock-page surface REMOVED per founder order (2026-10-10)"
 
     // the substrate stays, the surface does not: the stock page wires NO
     // capability=thesis fetch anymore (the panel was this page's only
-    // intelligence consumer; the exact-surface scan pins the two remaining
-    // surfaces — the C1 brief and the D2 drawer — on their own pages).
+    // intelligence consumer; the exact-surface scan pins the one remaining
+    // product surface — the D2 drawer — on its own page (the C1 brief was
+    // the other of the two when this spec was written; the founder's third
+    // removal order took it off the dashboard on 2026-10-11).
     expect(thesisCalls.length).toBe(0);
   });
 });

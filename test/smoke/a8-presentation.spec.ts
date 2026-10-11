@@ -120,35 +120,18 @@ test.describe("INT-A8-PRES real surfaces — honest states are styled, focus is 
   // page still showed a section headed "Rishi Intelligence"; the founder:
   // "it s still there remove it"). Rule 23: retirement on removal, never
   // silent deletion — the leg died WITH its subject; the honest-state
-  // styling discipline continues on the surviving surfaces below (brief,
-  // drawer) and on the fixture route above. Removal record:
+  // styling discipline continues on the surviving surfaces below (drawer)
+  // and on the fixture route above. Removal record:
   // docs/evidence/round45/b1-removal.md.
-
-  test("the dashboard brief renders its honest state with the shared class styling", async ({ page }) => {
-    await page.goto("/");
-    const brief = page.locator("section[data-dashboard-brief]");
-    // EXACTLY ONE brief, settled (the same torn-frame discipline as the
-    // stock panel above — the brief mounts client-side via the ssr:false
-    // tail chunk, so the section exists only after hydration). The same
-    // SETTLED-STATE poll: count and phase evaluated atomically per poll.
-    await expect(async () => {
-      const count = await brief.count();
-      expect(count).toBe(1);
-      const phase = await brief.getAttribute("data-dashboard-brief");
-      expect(phase === "loading").toBe(false);
-      expect(["unavailable", "ready"]).toContain(phase ?? "");
-    }).toPass({ timeout: 20_000 });
-    await expect(brief).toBeVisible();
-    const phase = await brief.getAttribute("data-dashboard-brief");
-    if (phase === "unavailable") {
-      await expect(brief).toContainText("Intelligence is not available for this subject right now.");
-    }
-    const empty = brief.locator(".insight-surface__empty").first();
-    if ((await empty.count()) > 0) {
-      const pad = await empty.evaluate((el) => parseFloat(getComputedStyle(el).paddingTop));
-      expect(pad).toBeGreaterThan(0);
-    }
-  });
+  //
+  // [RETIRED 2026-10-11] the dashboard-brief leg ("the dashboard brief
+  // renders its honest state with the shared class styling") — the
+  // founder's THIRD product-surface removal order (round 45) took the C1
+  // DashboardBrief off the dashboard ("remove the whole Rishi Intelligence
+  // segment"). The leg died WITH its subject, same rule-23 discipline; the
+  // rendered-page absence pins for that removal live in
+  // test/smoke/dashboard-brief-removed.spec.ts. Removal record:
+  // docs/evidence/round45/c1-removal.md.
 
   test("the drawer's close button has a designed visible focus state (keyboard)", async ({ page }) => {
     // Deterministic returning-user state BEFORE navigation: the first-visit

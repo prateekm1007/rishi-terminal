@@ -1,0 +1,1945 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/my-project/rishi-main
+
+ ❯ test/intelligenceDashboardBrief.test.ts (15 tests | 1 failed) 36ms
+   ✓ INT-C1 the dashboard brief component (the second real product surface) (4)
+     ✓ exists as a client component that fetches ONLY /api/intelligence with capability=thesis 2ms
+     ✓ renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client) 0ms
+     ✓ carries the honest unavailable state and discloses its subject (never a fake artifact, never a fallback word) 0ms
+     ✓ adds no investment advice strings (the A8 absence pin, display-side) 0ms
+   ✓ INT-C1 the mount (positive control — B-18) (2)
+     ✓ the dashboard tail mounts the brief with the SERVER-resolved Stock-of-the-Day symbol 0ms
+     ✓ the mount imports no intelligence module (no chain, no registry, no parser) 0ms
+   ✓ INT-D3 REMOVED per founder order (2026-10-10) — the absence pins (2)
+     ✓ the dossier component file is DELETED (dead code after the mount removal — rule 17) 0ms
+     ✓ the stock page no longer imports, mounts, or wires the dossier section 0ms
+   ✓ INT-B1 stock-page surface REMOVED per founder order (2026-10-10) — the absence pins (2)
+     ✓ the panel component file is DELETED (dead code after the mount removal — rule 17) 0ms
+     ✓ the stock page no longer imports, mounts, or wires the intelligence panel 0ms
+   ❯ INT-C1 the exact-surface scan (N surfaces, ONE route) (1)
+     × the set of surfaces fetching /api/intelligence is EXACTLY the one remaining declared product surface (the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; now the C1 dashboard brief, round 45, 2026-10-11: 'remove the whole Rishi Intelligence segment'; declared, never silent) 28ms
+   ✓ Ask Rishi (the affordance component contract — the stock-page mount is REMOVED per founder order, 2026-10-10; the component and its contract SURVIVE with the fixture route as the mounted consumer) (4)
+     ✓ exists as a client component that fetches ONLY /api/chat 0ms
+     ✓ sends the bounded payload: personaId + message + insightRef + symbol — nothing else 0ms
+     ✓ renders refusals AS the refusal they are (the error text verbatim) and disables the empty submit 0ms
+     ✓ imports no intelligence module beyond types 0ms
+ ❯ test/intelligenceScreenerDrawer.test.ts (11 tests | 2 failed) 15ms
+   ✓ INT-D2 the per-row intelligence badge (the opener) (2)
+     ✓ exists as a presentational opener: NO fetch, no intelligence imports, no chain 2ms
+     ✓ carries no computed intelligence value and no advice (static label only) 0ms
+   ✓ INT-D2 the intelligence drawer (the B1 pattern, one subject at a time) (5)
+     ✓ exists as a client component that fetches ONLY /api/intelligence with capability=thesis 1ms
+     ✓ aborts the in-flight fetch on close/switch (AbortController) with the 12 s bounded wait 0ms
+     ✓ renders through the A8 primitives over the route's A1-validated artifact (NO second parser, no zod on the client) 0ms
+     ✓ carries the honest states and discloses its subject (never a fake artifact, never a fallback word) 0ms
+     ✓ adds no investment advice strings (the A8 absence pin, display-side) 0ms
+   ✓ INT-D2 the wiring (badge in the row, drawer mounted once) (2)
+     ✓ StockTable renders the badge per row and imports NO intelligence module (never the drawer) 0ms
+     ✓ ScreenerClient mounts the drawer ONCE via next/dynamic (ssr:false) and imports no intelligence module 0ms
+   ❯ INT-C1 dashboard brief REMOVED per founder order (2026-10-11) — the absence pins (2)
+     × the brief component file is DELETED (dead code after the mount removal — rule 17) 6ms
+     × the dashboard tail no longer imports, mounts, or wires the intelligence brief 2ms
+ ✓ test/e2s.cleanServer.test.mjs (25 tests) 3359ms
+   ✓ E2 clean-server — subprocess bites (real processes) (2)
+     ✓ BITES: a failing wrapped command forwards its exit code 759ms
+   ✓ E2 clean-server — full lifecycle (SKIP_FULL_LIFECYCLE=1 to skip) (1)
+     ✓ PASSES: port free -> clean -> build -> start -> health -> command sees the port listening 1292ms
+   ✓ G6 clean-server — subprocess bites with ss AND lsof removed from PATH (2)
+     ✓ PASSES: ss missing + port free -> explicit fallback message, full stub lifecycle still works 759ms
+ ✓ test/priceChain.deadline.test.ts (1 test) 1343ms
+   ✓ MUST FAIL PRE-O: a hung first-choice source cannot serialize the chain (1)
+     ✓ Yahoo answers within 5 s wall while NSE hangs — provenance preserved (source=yahoo, live) 1342ms
+stderr | test/quotePath.test.ts > U2 — serveQuote (single-symbol shared-cache surface) > cold symbol: claims, fetches upstream once, writes through, reports LIVE with provenance
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+stderr | test/quotePath.test.ts > U2 — serveQuote (single-symbol shared-cache surface) > claim row (price 0 placeholder from the 017 claim insert) is never served as a quote
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+stderr | test/quotePath.test.ts > U2 — cachedQuoteBatch (batch surface, bulk refresher) > fresh rows serve without upstream; only stale/missing symbols reach the bulk refresher
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+stderr | test/quotePath.test.ts > U2 — cachedQuoteBatch (batch surface, bulk refresher) > 50 concurrent batch requests → at most ONE upstream batch refresh per TTL (founder acceptance, batch)
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+stderr | test/quotePath.test.ts > U2 — cachedQuoteBatch (batch surface, bulk refresher) > cache infrastructure read failure falls back to one upstream batch pass (never fabricated)
+[quoteCache] batch read failed: Cannot read properties of undefined (reading 'TCS')
+
+stderr | test/quotePath.test.ts > U2 — cachedQuote single surface keeps the cold-populate contract (017 SQL semantics) > cold symbol populates the shared table (claim emulation mirrors the 017 upsert)
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+ ✓ test/quotePath.test.ts (12 tests) 817ms
+   ✓ U2 — serveQuote (single-symbol shared-cache surface) (6)
+     ✓ claim row (price 0 placeholder from the 017 claim insert) is never served as a quote 401ms
+   ✓ U2 — cachedQuoteBatch (batch surface, bulk refresher) (4)
+     ✓ 50 concurrent batch requests → at most ONE upstream batch refresh per TTL (founder acceptance, batch) 403ms
+ ✓ test/scoring.explain.test.ts (2 tests) 760ms
+   ✓ S2-05 — every score is reconstructible from its published breakdown (2)
+     ✓ every universe stock's every scorer: complete weights, in-range pillars, exact reconstruction, honest rounding 730ms
+stdout | test/r4-04.council.test.ts > R4-04 — council structure over the universe > THE ACCEPTANCE: every reported 'what would change' flips the scorer when re-run
+[r4-04] honest-null (no lever path) rows across the universe: 0
+
+ ✓ test/r4-04.council.test.ts (3 tests) 688ms
+   ✓ R4-04 — council structure over the universe (3)
+     ✓ every stock's council is complete and statuses are honest 459ms
+ ✓ test/screener.nl.test.ts (34 tests) 656ms
+   ✓ INT-D1 fuzz — 10k random natural-language strings (X3-05 discipline) (1)
+     ✓ never throws, always returns a shaped result, and every success parses 320ms
+error: pathspec 'feature' did not match any file(s) known to git
+Switched to a new branch 'feature'
+Switched to branch 'main'
+ ✓ test/z1.vercelIgnore.test.ts (13 tests) 619ms
+ ✓ test/backtest.correctness.test.ts (6 tests) 496ms
+stderr | test/quoteCache.test.ts > MUST FAIL PRE-U2: the shared cache bounds upstream calls > 50 concurrent requests → exactly ONE upstream fetch per TTL
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+stderr | test/quoteCache.test.ts > MUST FAIL PRE-U2: the shared cache bounds upstream calls > a fresh row is served without any upstream call
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+stderr | test/quoteCache.test.ts > MUST FAIL PRE-U2: the shared cache bounds upstream calls > closed market: a row from this session never goes stale — zero refreshes
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+stderr | test/quoteCache.test.ts > MUST FAIL PRE-U2: the shared cache bounds upstream calls > upstream down with a stale row → stale-served with its ORIGINAL observation, never fabricated
+[quoteCache] state-log append threw: unexpected table observation_state_log
+
+ ✓ test/quoteCache.test.ts (5 tests) 408ms
+   ✓ MUST FAIL PRE-U2: the shared cache bounds upstream calls (5)
+     ✓ 50 concurrent requests → exactly ONE upstream fetch per TTL 404ms
+stdout | test/x7.powBenchmark.test.ts > A2 — the chosen difficulty is human-solvable > median solve time at the chosen difficulty is under 2 s (benchmark)
+[a2-benchmark] runs=29.9, 30.0, 30.1, 30.4, 30.4, 30.5, 30.7, 30.8, 30.9, 31.2, 39.7 ms | median=30.5 ms | p95=39.7 ms @ 15 bits
+
+ ✓ test/x7.powBenchmark.test.ts (5 tests) 365ms
+   ✓ A2 — the chosen difficulty is human-solvable (2)
+     ✓ median solve time at the chosen difficulty is under 2 s (benchmark) 346ms
+ ✓ test/placeholderRanking.round5.test.ts (10 tests) 321ms
+ ✓ test/vercelIgnore.test.ts (13 tests) 308ms
+ ✓ test/lp.chunkWaterfall.test.ts (4 tests) 298ms
+ ✓ test/rankings.test.ts (10 tests) 268ms
+stderr | test/measurement.test.ts > T59.2 — upstream attempts vs application requests vs caches > provider call counted once: health volume and ledger single-path agree
+[NSE] BAJFINANCE error: nse down
+
+stdout | test/measurement.test.ts > T59.1 — Yahoo-bulk path is measured > every upstream HTTP attempt is counted; run aggregate is exact (one attempt per spark GROUP)
+[Yahoo-Bulk] Fetched 3/3 prices (cached: 0, new: 3)
+
+stdout | test/measurement.test.ts > T59.1 — Yahoo-bulk path is measured > spark→chart failover counts each attempt and records the HTTP failure class
+[Yahoo-Bulk] HINDALCO -> HINDALCO.BO : 2400.00
+
+stdout | test/measurement.test.ts > T59.1 — Yahoo-bulk path is measured > spark→chart failover counts each attempt and records the HTTP failure class
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+stdout | test/measurement.test.ts > T59.1 — Yahoo-bulk path is measured > batch cache traffic is identified: second run inside TTL → zero upstream, cache hits recorded
+[Yahoo-Bulk] Fetched 2/2 prices (cached: 0, new: 2)
+
+stdout | test/measurement.test.ts > T59.1 — Yahoo-bulk path is measured > bulk traffic stays OUT of providerHealth counters (reconciliation expects this split)
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+stdout | test/measurement.test.ts > T60.1 — provenance semantics survive replay > bulk entries carry the ORIGINAL observation time, never the serve time
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+stdout | test/measurement.test.ts > T60.1 — provenance semantics survive replay > missing regularMarketTime → observedAt null (never fabricated)
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+stdout | test/measurement.test.ts > corrective — overlapping bulk runs cannot charge each other's attempts > two concurrent bulk runs each report exactly their own upstream attempts and failures
+[Yahoo-Bulk] Fetched 2/2 prices (cached: 0, new: 2)
+
+stdout | test/measurement.test.ts > corrective — overlapping bulk runs cannot charge each other's attempts > two concurrent bulk runs each report exactly their own upstream attempts and failures
+[Yahoo-Bulk] TESTC -> TESTC.BO : 200.00
+
+stdout | test/measurement.test.ts > corrective — overlapping bulk runs cannot charge each other's attempts > two concurrent bulk runs each report exactly their own upstream attempts and failures
+[Yahoo-Bulk] TESTD -> TESTD.BO : 200.00
+
+stdout | test/measurement.test.ts > corrective — overlapping bulk runs cannot charge each other's attempts > two concurrent bulk runs each report exactly their own upstream attempts and failures
+[Yahoo-Bulk] Fetched 2/2 prices (cached: 0, new: 2)
+
+ ✓ test/measurement.test.ts (17 tests) 257ms
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/news: generic error, no detail field, no marker
+Feed failed (Economic Times): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Mint Markets): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (ET Economy): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Mint Economy): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (ET Corporate): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Mint Companies): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (ET Tech): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google India Markets): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google India Economy): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Earnings): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Regulation): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Corporate): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Tech): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Investing News): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Investing Stocks): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Investing Economy): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Investing Commodities): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Investing Forex): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Global Markets): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Global Economy): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Commodities): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (CoinTelegraph): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (CoinDesk): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (CT Bitcoin): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (CT Ethereum): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Crypto): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (ESPNCricinfo): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (TOI Sports): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (ET Sports): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google Cricket): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+Feed failed (Google IPL): Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/history: generic error, no detail field, no marker
+[rateLimit] exception (failing open): Missing Supabase URL or service-role key environment variables
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/history: generic error, no detail field, no marker
+[/api/history] yahoo series failed for RELIANCE: Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:26:11
+    at Mock (file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/spy.KLHgXex_.js:321:40)
+    at fetchYahooSeries (/home/z/my-project/rishi-main/app/api/history/route.ts:89:21)
+    at GET (/home/z/my-project/rishi-main/app/api/history/route.ts:167:24)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:54:17
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/history/breadth: honest fallback WITHOUT the upstream message
+[breadth] fetchHistory1M exception for NIFTY50 Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+[breadth] fetchHistory1M exception for SENSEX Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+[breadth] fetchHistory1M exception for BANK_NIFTY Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/history/breadth: honest fallback WITHOUT the upstream message
+[/api/history/breadth] fetch failed: Error: All three history fetches returned 0 points. Check /api/history endpoint.
+    at GET (/home/z/my-project/rishi-main/app/api/history/breadth/route.ts:61:13)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:62:17
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/pulse/blocks: generic error, no detail field, no marker
+[/api/pulse/blocks] fetch failed: Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:26:11
+    at Mock (file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/spy.KLHgXex_.js:321:40)
+    at GET (/home/z/my-project/rishi-main/app/api/pulse/blocks/route.ts:9:23)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:70:23
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/pulse/breadth: generic error, no detail field, no marker
+[/api/pulse/breadth] fetch failed: Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:26:11
+    at Mock (file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/spy.KLHgXex_.js:321:40)
+    at GET (/home/z/my-project/rishi-main/app/api/pulse/breadth/route.ts:9:23)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:78:23
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/fundamentals: generic error, no details field, no marker
+[Screener] fetch error for RELIANCE: Error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:26:11
+    at Mock (file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/spy.KLHgXex_.js:321:40)
+    at fetchPage (/home/z/my-project/rishi-main/lib/scrapers/screener.ts:282:23)
+    at fetchScreenerFundamentals (/home/z/my-project/rishi-main/lib/scrapers/screener.ts:305:22)
+    at fetchFullFundamentals (/home/z/my-project/rishi-main/lib/liveFundamentals.ts:63:32)
+    at GET (/home/z/my-project/rishi-main/app/api/fundamentals/route.ts:96:22)
+    at /home/z/my-project/rishi-main/test/rule10ErrorHygiene.round9.test.ts:86:23
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:20
+
+stderr | test/rule10ErrorHygiene.round9.test.ts > R9 §18 — Rule 10: no upstream error detail on the wire > /api/fundamentals: generic error, no details field, no marker
+[NSE] RELIANCE error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+[Yahoo] RELIANCE error: connection refused by secret-upstream-host-9f3a.internal.example (upstream diagnostics)
+
+ ✓ test/rule10ErrorHygiene.round9.test.ts (6 tests) 373ms
+ ✓ test/screener.parser.test.ts (47 tests) 256ms
+stderr | test/rishiMemory.batch.test.ts > NS1 — nightly_snapshot completes inside the 60 s budget > a failed batch counts its rows as errors and never throws (retry completes the rest)
+[RishiMemory] batch 1 write failed: batch write failed
+
+ ✓ test/rishiMemory.batch.test.ts (5 tests) 193ms
+ ✓ test/routes.validateInput.test.ts (20 tests) 204ms
+ ✓ test/x7.challenge.test.ts (15 tests) 97ms
+ ✓ test/scoring.finite.test.ts (9 tests) 161ms
+stderr | test/ailoop.attestation.test.ts > provider/model identity attestation (founder §25) > a non-well-formed CHAT_MODEL fails closed — no candidate is created
+[ai/router] CHAT_API model identity is not attested/well-formed — failing closed for this provider
+
+ ✓ test/ailoop.attestation.test.ts (4 tests) 261ms
+ ✓ test/scoring.parity.test.ts (5 tests) 134ms
+ ✓ test/pulseNullSemantics.round9.test.ts (6 tests) 115ms
+ ✓ test/shortRadar.rationale.test.ts (5 tests) 136ms
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="0" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="false" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="FALSE" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="False" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="no" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="NO" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="off" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="Off" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED="" -> chat proceeds (200)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > CHAT_DISABLED unset -> chat proceeds (regression guard)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-B — CHAT_DISABLED kill switch (single contract) > whitespace is trimmed: " 1 " disables and " " does not
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > the route reserves the single-request ceiling BEFORE the provider call
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > a denied reservation: 503 before per-identity quota is consumed
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > success settles the reservation to the reported usage (no double counting)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > multi-completion usage is settled ONCE with the accumulated total
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > multi-completion usage is settled ONCE with the accumulated total
+[NSE] RELIANCE: HTTP 503
+[Yahoo] RELIANCE: HTTP 503
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > usage unavailable: the FULL reservation is kept (unknown spend is charged at the ceiling)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > upstream failure: quota refunded AND the reservation released
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > upstream failure: quota refunded AND the reservation released
+[ai/openai] upstream error: 500 upstream broke
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > upstream failure: quota refunded AND the reservation released
+[ai/gemini] upstream error: 500 upstream broke
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > upstream failure: quota refunded AND the reservation released
+[chat] upstream failed: gemini HTTP 500
+
+stderr | test/chat.globalSpend.test.ts > W3-A — global daily token cap as a hard reservation > per-identity quota denial releases the token reservation (no leak)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3-C — the IST day key lives ONLY in the RPCs > the route passes stable key prefixes (no JS-computed date)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — global daily request cap > over the cap: 503 before per-identity quota is consumed
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > missing ANON_ID_PEPPER: anonymous chat fails CLOSED (503)
+[chat] anonymous identity unavailable: ANON_ID_PEPPER is not configured
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.globalSpend.test.ts > W3 — anonymous identity pepper > 100 IPv6 addresses in one /64 share ONE quota identity (acceptance)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+ ✓ test/chat.globalSpend.test.ts (34 tests) 160ms
+ ✓ test/c5.wireIndex.test.ts (6 tests) 158ms
+ ✓ test/registry.aliases.test.ts (10 tests) 99ms
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > prov-03 [router/provider-failure]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=eval-model  rawHead="Error: upstream timeout"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > tool-01 [tool/tool-failure]
+[ai/tools] getPrices(RELIANCE) failed: simulated upstream failure
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > tool-02 [router/tool-failure]
+[ai/tools] getPrices(RELIANCE) failed: simulated upstream failure
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > tmo-02 [router/tool-timeout]
+[ai/tools] getPrices(RELIANCE) failed: simulated upstream failure
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > loop-01 [router/tool-loop-exhaustion]
+[ai/router] tool-loop exhausted (4/4) — terminating BLOCKED
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > loop-02 [router/tool-loop-exhaustion]
+[ai/router] tool-loop exhausted (4/4) — terminating BLOCKED
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > json-01 [router/invalid-json]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=eval-model  rawHead="Here is my analysis {\"answer\": \"BUY NOW roe 12\", claims: [broken"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > json-02 [router/invalid-json]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=eval-model  rawHead="{answer: 'ROE is 12%',}"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > json-03 [router/invalid-json]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=eval-model  rawHead="InternalError: upstream overloaded - trace 99f2"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > schema-01 [router/wrong-schema]
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=eval-model [{"expected":"string","code":"invalid_type","path":["answer"],"message":"Invalid input: expected string, received number"}] rawHead="{\"answer\":42,\"claims\":[],\"uncertainties\":[]}"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > schema-02 [router/wrong-schema]
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=eval-model [{"expected":"array","code":"invalid_type","path":["claims"],"message":"Invalid input: expected array, received string"},{"origin":"string","code":"too_big","maximum":10,"inclusive":true,"path":["claims"],"message":"Too big: expected string to have <=10 characters"}] rawHead="{\"answer\":\"ok\",\"claims\":\"not-an-array\",\"uncertainties\":[]}"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > schema-03 [router/wrong-schema]
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=eval-model [{"expected":"array","code":"invalid_type","path":["claims",0,"evidenceIds"],"message":"Invalid input: expected array, received string"},{"origin":"string","code":"too_big","maximum":6,"inclusive":true,"path":["claims",0,"evidenceIds"],"message":"Too big: expected string to have <=6 characters"}] rawHead="{\"answer\":\"ok\",\"claims\":[{\"claim\":\"ROE is 12%\",\"evidenceIds\":\"roe-item\"}],\"uncertainties\":[]}"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > schema-04 [router/wrong-schema]
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=eval-model [{"origin":"string","code":"too_big","maximum":300,"inclusive":true,"path":["uncertainties",0],"message":"Too big: expected string to have <=300 characters"}] rawHead="{\"answer\":\"ok\",\"claims\":[],\"uncertainties\":[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > persona-01 [route/forged-persona]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > persona-03 [route/forged-persona]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > quota-03 [route/quota-exhaustion]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > auth-01 [route/unauthenticated]
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > auth-01 [route/unauthenticated]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > auth-02 [route/unauthenticated]
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > auth-02 [route/unauthenticated]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/evalChat.golden.test.ts > eval:chat golden set — deterministic contract states (§6) > big-03 [route/oversized-input]
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+ ✓ test/evalChat.golden.test.ts (115 tests) 123ms
+ ✓ test/portfolio.xirr.test.ts (19 tests) 118ms
+ ✓ test/searchRoute.registry.test.ts (7 tests) 104ms
+ ✓ test/x6.nemishPlaceholders.test.ts (14 tests) 92ms
+ ✓ test/bundleBoundary.language.test.ts (45 tests) 90ms
+stderr | test/aiToolLoop.test.ts > executeAiTool — canonical surfaces (no second source of truth) > a throwing surface is an explicit failed state (generic outward, detail logged server-side)
+[ai/tools] getPrices(TCS) failed: upstream exploded with secret detail
+
+stderr | test/aiToolLoop.test.ts > generateEvidenceGroundedAnswer — the bounded tool loop (Commit L1) > a throwing tool surface is an explicit failed state on the audit trail and the loop continues
+[ai/tools] getPrices(TCS) failed: boom
+
+stderr | test/aiToolLoop.test.ts > generateEvidenceGroundedAnswer — the bounded tool loop (Commit L1) > MUST FAIL PRE-L1: loop exhaustion terminates BLOCKED — no plausible fallback answer
+[ai/router] tool-loop exhausted (4/4) — terminating BLOCKED
+
+ ✓ test/aiToolLoop.test.ts (24 tests) 80ms
+stderr | test/y2.coinGeckoBackoff.test.ts > Y2 follow-up — CoinGecko batch 429 backoff > bounded: at most 2 retries (3 attempts) — a persistent 429 is an honest miss, not a hang
+[CoinGecko] batch error: Error: CoinGecko HTTP 429
+    at /home/z/my-project/rishi-main/lib/livePrice.ts:522:34
+    at getCoinGeckoPrice (/home/z/my-project/rishi-main/lib/livePrice.ts:550:3)
+    at withProviderHealth (/home/z/my-project/rishi-main/lib/registry/providerHealth.ts:165:20)
+    at attempt (/home/z/my-project/rishi-main/lib/livePrice.ts:958:15)
+    at fetchLivePrice (/home/z/my-project/rishi-main/lib/livePrice.ts:1175:18)
+
+ ✓ test/y2.coinGeckoBackoff.test.ts (3 tests) 77ms
+stderr | test/ailoop.unified.test.ts > the unified loop — no raw unstructured provider output can escape (founder §24) > MUST FAIL PRE-M: a financial-looking numeric answer on the NO-EVIDENCE path is never served as the answer
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="RELIANCE is trading at 2500 right now and it is a great buy."
+
+stderr | test/ailoop.unified.test.ts > the unified loop — no raw unstructured provider output can escape (founder §24) > MUST FAIL PRE-M: claims with no evidence and no tools can never ground — not even the raw text is served
+[ai/router] no-evidence reply carried ungroundable content (claims=1, ungroundedNumbers=2) — discarded rejections=["claim 1: unknown evidence id(s) \"score:MADEUP:v9:2026-10-02\" — rejected"] answerHead="The Rishi score is 88 and the price is 9999."
+
+stderr | test/ailoop.unified.test.ts > the unified loop — no raw unstructured provider output can escape (founder §24) > MUST FAIL PRE-M: an unparseable reply on the no-evidence path is discarded, never shown raw
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="I am feeling chatty today!!! No JSON here."
+
+stderr | test/ailoop.unified.test.ts > the unified loop — financial questions in general chat enter the same tool path (founder §23) > tool exhaustion in the no-evidence path terminates BLOCKED (same budget, same honesty)
+[ai/router] tool-loop exhausted (4/4) — terminating BLOCKED
+
+stderr | test/ailoop.unified.test.ts > Commit N — financial-intent enforcement before context-only acceptance > MUST FAIL PRE-N: a symbol-specific data question answered context-only WITHOUT any tool call is BLOCKED, not served
+[ai/router] financial-data request answered claims-free after ok tool data — BLOCKED (received data is never restated as unverified context)
+
+stderr | test/ailoop.unified.test.ts > Commit N — financial-intent enforcement before context-only acceptance > a numeric improvised answer to a data question is discarded (number rule) — and with the guard, zero-tool context-only is gone entirely
+[ai/router] no-evidence reply carried ungroundable content (claims=0, ungroundedNumbers=1) — discarded rejections=["model produced no claims — context injection only"] answerHead="RELIANCE trades around 2500 and looks cheap."
+
+stderr | test/ailoop.unified.test.ts > Commit N — the complete general-chat loop contract (production-grade) > the pre-fix failure shape itself stays honest: a string-array claims reply is STILL rejected (invalid), never displayed
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=test-model [{"expected":"object","code":"invalid_type","path":["claims",0],"message":"Invalid input: expected object, received string"}] rawHead="{\"answer\":\"The latest observed price of Reliance is 1294.30.\",\"claims\":[\"price=1294.3 inr (live) - Source: price:RELIANCE:2026-10-02T05:53:40.947Z\"],\"uncertainties\":[]}"
+
+ ✓ test/ailoop.unified.test.ts (16 tests) 98ms
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > malformed reference -> 400
+[chat] insight context refused: invalid-ref
+
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > cache miss -> 404
+[chat] insight context refused: not-found
+
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > cache infra error -> 503
+[chat] insight context refused: unavailable
+
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > payload fails A1 -> 422
+[chat] insight context refused: invalid-payload
+
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > status stale -> 410
+[chat] insight context refused: stale
+
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > older than the window -> 410
+[chat] insight context refused: stale
+
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > portfolio subject -> 403
+[chat] insight context refused: unauthorized-subject
+
+stderr | test/chat.route.insightContext.test.ts > INT-A9 fail-closed refusals (all before any consumption) > symbol mismatch -> 400
+[chat] insight context refused: symbol-mismatch
+
+ ✓ test/chat.route.insightContext.test.ts (16 tests) 78ms
+ ✓ test/provenance.test.ts (5 tests) 81ms
+ ✓ test/freeAccess.contract.test.ts (51 tests) 72ms
+stderr | test/aiRouter.test.ts > generateEvidenceGroundedAnswer (T50–T52) > evidence context flows into the request system prompt (T51)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="ok"
+
+stderr | test/aiRouter.test.ts > generateEvidenceGroundedAnswer (T50–T52) > upstream 502 → throws with the failure recorded in provider health (T45)
+[ai/openai] upstream error: 502 nope
+
+stderr | test/aiRouter.test.ts > generateEvidenceGroundedAnswer (T50–T52) > upstream 502 → throws with the failure recorded in provider health (T45)
+[ai/gemini] upstream error: 502 nope
+
+stderr | test/aiRouter.test.ts > Phase 5.1 — runtime failover chain (T50) > chat-api fails → Gemini ANSWERS (runtime failover, not config fallback)
+[ai/openai] upstream error: 500 primary exploded
+
+stderr | test/aiRouter.test.ts > Phase 5.1 — runtime failover chain (T50) > both providers fail → the upstream error propagates (caller surfaces 502)
+[ai/openai] upstream error: 503 everything is down
+
+stderr | test/aiRouter.test.ts > Phase 5.1 — runtime failover chain (T50) > both providers fail → the upstream error propagates (caller surfaces 502)
+[ai/gemini] upstream error: 503 everything is down
+
+stderr | test/aiRouter.test.ts > Phase 5.1 — honest AI provenance (T52) > with evidence context: an unparseable model reply degrades honestly (grounded false, mode disclosed)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=undefined  rawHead="answer"
+
+stderr | test/aiRouter.test.ts > audit 2026-10-02 (production probe follow-up): string-typed assertion values > a NON-numeric string value is still rejected (coercion must not launder garbage)
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=test-model [{"expected":"number","code":"invalid_type","path":["claims",0,"assertions",0,"value"],"message":"Invalid input: expected number, received string"}] rawHead="{\"answer\":\"ROE is high.\",\"claims\":[{\"claim\":\"ROE is high\",\"evidenceIds\":[\"fundamental:RELIANCE:roe:no-disclosed-observation-time\"],\"assertions\":[{\"field\":\"roe\",\"value\":\"eight point nine\",\"unit\":\"percent\"}]}],\"uncertainties\":[]}"
+
+stderr | test/aiRouter.test.ts > G4 — invalid structured output never becomes displayed financial text > MUST FAIL PRE-FIX: malformed JSON → bounded honest response, never the raw payload
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="Here is my analysis {\"answer\": \"BUY NOW roe 12\", claims: [broken"
+
+stderr | test/aiRouter.test.ts > G4 — invalid structured output never becomes displayed financial text > MUST FAIL PRE-FIX: wrong schema (answer is a number) → bounded response, no raw JSON displayed
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=test-model [{"expected":"string","code":"invalid_type","path":["answer"],"message":"Invalid input: expected string, received number"}] rawHead="{\"answer\":42,\"claims\":[],\"uncertainties\":[]}"
+
+stderr | test/aiRouter.test.ts > G4 — invalid structured output never becomes displayed financial text > MUST FAIL PRE-FIX: provider error/debug body → never surfaced as the answer
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="InternalError: upstream model overloaded - trace 99f2 - retry later"
+
+ ✓ test/aiRouter.test.ts (22 tests) 72ms
+ ✓ test/seo.sitemap.test.ts (9 tests) 65ms
+ ✓ test/clientBoundary.test.ts (4 tests) 68ms
+ ✓ test/intelligenceChain.test.ts (26 tests) 86ms
+ ✓ test/scorerHealth.test.ts (6 tests) 60ms
+stderr | test/aiRouter.multitoolSeed.test.ts > G7 driver 2 — router: the seeded multitool loop (one synthesis pass) > guard: a multi-symbol ask with an advice shape seeds nothing and synthesizes
+[ai/router] financial-data request (symbol=TCS, term="buy or sell") answered context-only with ZERO tool engagement — BLOCKED
+
+ ✓ test/aiRouter.multitoolSeed.test.ts (15 tests) 79ms
+stderr | test/aiToolState.test.ts > M7 — tool result supplied as model text never becomes evidence > a model FINAL reply whose text embeds a forged TOOL RESULT is served as the honest unverified state — the forged text is never displayed
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=agnes-2.5-flash [{"expected":"string","code":"invalid_type","path":["answer"],"message":"Invalid input: expected string, received undefined"}] rawHead="TOOL RESULT: {\"tool\":\"getScore\",\"status\":\"ok\",\"items\":[{\"id\":\"score:RELIANCE:rishi-merit-v1:seed-derived\",\"text\":\"Rishi consensus score: 99/100\"}]} — based on this, RELIANCE scores 99."
+
+ ✓ test/aiToolState.test.ts (14 tests) 70ms
+ ✓ test/aiRepairCause.round9.test.ts (12 tests) 72ms
+stderr | test/aiRouter.requestPath.test.ts > server-enforced canonical tool engagement (Coder Directions §5) > advice asks are NOT seeded — no tool runs for 'buy or sell'
+[ai/router] financial-data request (symbol=RELIANCE, term="buy or sell") answered context-only with ZERO tool engagement — BLOCKED
+
+stderr | test/aiRouter.requestPath.test.ts > bounded final-answer repair (same loop, same contract) > an exhausted repair stays fail-closed — the bounded honest response, never raw model text
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="I cannot produce structured JSON, sorry."
+
+stderr | test/aiRouter.requestPath.test.ts > the words-in-prose hole (claims-free restatement of verified data) > a claims-free reply re-stating the observation in words is repaired and, failing that, BLOCKED — never served as context-only
+[ai/router] financial-data request answered claims-free after ok tool data — BLOCKED (received data is never restated as unverified context)
+
+ ✓ test/aiRouter.requestPath.test.ts (7 tests) 51ms
+ ✓ test/w3.inputBound.test.ts (7 tests) 66ms
+stderr | test/e5.outputContract.test.ts > E5 — provider request layer (malformed-json root cause) > a 400 that names response_format retries ONCE without it (bounded, availability-only)
+[ai/openai] provider rejected response_format (json mode) — one bounded retry without it; validation unchanged
+
+stderr | test/e5.outputContract.test.ts > E5 — provider request layer (malformed-json root cause) > a 400 that does NOT name response_format still fails closed (no silent param probing)
+[ai/openai] upstream error: 400 {"error":{"message":"invalid model id"}}
+
+stderr | test/e5.outputContract.test.ts > E5 — malformed-json repair teaches the exact final-JSON skeleton > no-evidence path: repair feedback carries the context-only skeleton
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="still just prose"
+
+stderr | test/e5.outputContract.test.ts > E5 — malformed-json repair teaches the exact final-JSON skeleton > evidence path: repair feedback carries the claims/assertions skeleton
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=test-model  rawHead="still not JSON"
+
+stderr | test/e5.outputContract.test.ts > E5 — validator semantics the contract rule targets (protected, unchanged) > unsigned prose ('declined 1.401 percent' with assertion -1.401) is REJECTED — the failure mode the contract targets
+[ai/router] no-evidence reply carried ungroundable content (claims=1, ungroundedNumbers=2) — discarded rejections=["claim 1: claims change=\"1.401\" but the matched change assertion is -1.401 — rejected (audit 2026-10-02)"] answerHead="RELIANCE trades at 1020.5 inr, down 1.401 percent in the session."
+
+ ✓ test/e5.outputContract.test.ts (10 tests) 69ms
+stderr | test/aiEvidence.test.ts > router — structured output is validated before grounding is claimed > unparseable model reply → bounded honest response, raw reply NEVER displayed (G4, expectation FLIPPED)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="Just some plain prose that ignores the JSON contract entirely."
+
+stderr | test/aiEvidence.test.ts > router — structured output is validated before grounding is claimed > Commit M §24 — no evidence + raw (unparseable) reply → discarded, never served
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="plain answer"
+
+ ✓ test/aiEvidence.test.ts (21 tests) 60ms
+stderr | test/ailoop.claimShape.test.ts > the agnes claims-shape defect is contained (production evidence pin) > a reply whose claims are EVIDENCE-ID STRINGS (as agnes-2.5-flash emits) fail-closes — never grounded, never displayed
+[ai/router] structured reply failed parse/zod: schema mismatch provider=chat-api model=test-model [{"expected":"object","code":"invalid_type","path":["claims",0],"message":"Invalid input: expected object, received string"}] rawHead="{\"answer\":\"The latest observed price for RELIANCE is 1167.7 INR, with a change of 0 percent as of October 1, 2026.\",\"claims\":[\"price:RELIANCE:2026-10-01T10:00:00.000Z\"],\"uncertainties\":[]}"
+
+ ✓ test/ailoop.claimShape.test.ts (10 tests) 60ms
+ ✓ test/dockerfile.invariants.test.ts (11 tests) 75ms
+ ✓ test/rishis.route.test.ts (15 tests) 52ms
+stderr | test/aiRouter.fastPath.test.ts > G7 driver 1: deterministic singleton fast path (one completion) > guard: an unavailable observation (no facts) is never fast-pathed — the honest model path stands
+[ai/router] financial-data request answered claims-free after ok tool data — BLOCKED (received data is never restated as unverified context)
+
+ ✓ test/aiRouter.fastPath.test.ts (8 tests) 61ms
+ ✓ test/pulse.currency.null.test.ts (2 tests) 57ms
+ ✓ test/r15.fieldValueDiscipline.test.ts (3 tests) 50ms
+ ✓ test/stateLog.test.ts (20 tests) 46ms
+ ✓ test/wp1.routeMetadata.test.ts (29 tests) 70ms
+ ✓ test/intelligenceEvidence.test.ts (15 tests) 52ms
+ ✓ test/rishiCount.unification.test.ts (8 tests) 47ms
+stderr | test/intelligenceRoute.test.ts > INT-A10 route: the material generation path (ONE loop, shared controls) > a null router answer refunds the quota, releases the reservation, and answers the honest 404
+[intelligence] no approved provider configured
+
+ ✓ test/intelligenceRoute.test.ts (7 tests) 46ms
+ ✓ test/consensus.dispersion.test.ts (10 tests) 43ms
+stdout | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the bulk sweep is spark-first (ceil(N/20) calls, not N) > 50 symbols cost 3 spark calls and ZERO per-symbol chart calls when spark resolves all
+[Yahoo-Bulk] Fetched 50/50 prices (cached: 0, new: 50)
+
+stdout | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the bulk sweep is spark-first (ceil(N/20) calls, not N) > spark misses fall back to the per-symbol chart path (bounded, .BO semantics preserved)
+[Yahoo-Bulk] TCS -> TCS.NS : 2500.00
+
+stdout | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the bulk sweep is spark-first (ceil(N/20) calls, not N) > spark misses fall back to the per-symbol chart path (bounded, .BO semantics preserved)
+[Yahoo-Bulk] INFY -> INFY.NS : 2500.00
+
+stdout | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the bulk sweep is spark-first (ceil(N/20) calls, not N) > spark misses fall back to the per-symbol chart path (bounded, .BO semantics preserved)
+[Yahoo-Bulk] Fetched 3/3 prices (cached: 0, new: 3)
+
+stdout | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the instrument gate is currency, not a ₹20 price floor > a legitimate sub-₹20 INR stock is accepted (was: rejected as an ADR)
+[Yahoo-Bulk] Fetched 2/2 prices (cached: 0, new: 2)
+
+stderr | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the instrument gate is currency, not a ₹20 price floor > a USD masquerade is rejected and the symbol stays honestly absent (fail closed)
+[Yahoo-Bulk] Failed to fetch DEADTICKER after .NS + .BO
+
+stdout | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the instrument gate is currency, not a ₹20 price floor > a USD masquerade is rejected and the symbol stays honestly absent (fail closed)
+[Yahoo-Bulk] Fetched 0/1 prices (cached: 0, new: 1)
+
+stderr | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the instrument gate is currency, not a ₹20 price floor > an absent currency is rejected (fail closed — C2)
+[Yahoo-Bulk] Failed to fetch NOCURRENCY after .NS + .BO
+
+stdout | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the instrument gate is currency, not a ₹20 price floor > an absent currency is rejected (fail closed — C2)
+[Yahoo-Bulk] Fetched 0/1 prices (cached: 0, new: 1)
+
+stderr | test/nse.bulkSpark.test.ts > MUST FAIL PRE-FIX: the shared-cache batch write is ONE upsert > 50 claimed winners are persisted in a single upsert statement
+[quoteCache] state-log append threw: (0 , __vite_ssr_import_1__.getAdminSupabase)(...).from(...).upsert(...).select is not a function
+
+ ✓ test/nse.bulkSpark.test.ts (6 tests) 49ms
+ ✓ test/providerHealth.test.ts (11 tests) 42ms
+ ✓ test/aiProbeSeed.test.ts (2 tests) 42ms
+ ✓ test/chat.grounding.l2.test.ts (14 tests) 49ms
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > falls back to Gemini when CHAT_API_* is unset
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="gemini ok"
+
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > 502s with a generic body when the OpenAI-compatible upstream fails
+[ai/openai] upstream error: 500 upstream exploded
+
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > 502s with a generic body when the OpenAI-compatible upstream fails
+[ai/gemini] upstream error: 500 upstream exploded
+
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > 502s with a generic body when the OpenAI-compatible upstream fails
+[chat] upstream failed: gemini HTTP 500
+
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > 502s when the upstream returns an empty completion
+[ai/openai] empty completion: {"choices":[{"message":{}}]}
+
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > 502s when the upstream returns an empty completion
+[ai/gemini] empty completion: {"choices":[{"message":{}}]}
+
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > 502s when the upstream returns an empty completion
+[chat] upstream failed: gemini empty completion
+
+stderr | test/chat.provider.test.ts > T7 — chat provider selection > 503s when no provider is configured
+[chat] no approved chat provider configured: set CHAT_API_BASE_URL + CHAT_API_KEY (OpenAI-compatible) or GEMINI_API_KEY
+
+ ✓ test/chat.provider.test.ts (9 tests) 37ms
+ ✓ test/health.memo.test.ts (9 tests) 38ms
+stdout | test/phase6Corrective.test.ts > corrective — observedAt is null when the upstream discloses no observation time > FRED bond observation carries FRED's own DATE (not fetch time); in-chain cache replay preserves it
+[FRED] US5Y -> 4.25%
+
+stdout | test/phase6Corrective.test.ts > corrective — persistent storage refuses entries without a disclosed observation time > storage-entitled observation WITH a disclosed time is persisted with exactly that time (positive control)
+[FRED] US30Y -> 4.68%
+
+ ✓ test/phase6Corrective.test.ts (14 tests) 39ms
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > anonymous + canonical persona -> 200 (founder 2026-10-02: no sign-in required)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > anonymous + canonical persona -> 200 (founder 2026-10-02: no sign-in required)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > unknown persona -> 400, no quota, no provider call
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > EVERY canonical persona proceeds for a seeker-equivalent session (was the gated tier)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > persona by DISPLAY NAME resolves canonically and proceeds (no 403 for 'Jim Chanos')
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+stderr | test/chat.route.personaAuth.test.ts > M3 /api/chat persona validation (existence + canonical registry, no tier) > a 400 consumes NO quota and calls NO provider (unchanged ugly-path contract)
+[rateLimit] exception (failing open): unexpected rpc: hit_rate_limit
+
+ ✓ test/chat.route.personaAuth.test.ts (5 tests) 45ms
+stderr | test/phase6-cache.test.ts > T61 captureReferenceObservations > DB errors are counted, never thrown
+[Observations] US3MTB upsert failed: 42501
+
+ ✓ test/phase6-cache.test.ts (8 tests) 38ms
+stderr | test/liveprice-failure.test.ts > fetchLivePrice failure modes (T56) > network outage on every provider → null (never a seed price)
+[NSE] RELIANCE error: fetch failed
+
+stderr | test/liveprice-failure.test.ts > fetchLivePrice failure modes (T56) > malformed payload (invalid JSON) → null
+[NSE] WIPRO error: Unexpected token '<', "<html>Akam"... is not valid JSON
+
+ ✓ test/liveprice-failure.test.ts (10 tests) 37ms
+ ✓ test/c2.deployCadencePr.test.mjs (5 tests) 35ms
+ ✓ test/intelligenceNewsMatch.test.ts (16 tests) 36ms
+ ✓ test/fxStaticYieldNullChange.round9.test.ts (5 tests) 33ms
+ ✓ test/intelligenceNewsWiring.test.ts (9 tests) 33ms
+ ✓ test/chat.multitool.composition.test.ts (2 tests) 33ms
+ ✓ test/freshness.surfaces.test.ts (3 tests) 35ms
+stdout | test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a price-only meta yields change null (was: fabricated 0 via previousClose || price)
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+stdout | test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a missing volume field yields null, never 0
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+stdout | test/yahooBulk.nullSemantics.test.ts > MUST FAIL PRE-O: the bulk path never fabricates change/volume > a genuine disclosed change still flows through
+[Yahoo-Bulk] Fetched 1/1 prices (cached: 0, new: 1)
+
+ ✓ test/yahooBulk.nullSemantics.test.ts (3 tests) 35ms
+ ✓ test/persona.clientProjection.test.ts (6 tests) 33ms
+ ✓ test/migrations.noDrift.test.ts (3 tests) 32ms
+ ✓ test/coingecko-null.test.ts (8 tests) 34ms
+ ✓ test/screener.fundamentals.test.ts (3 tests) 28ms
+stderr | test/chat.limits.test.ts > T7 — chat route limits > anonymous callers share the same bounded path (founder 2026-10-02: no sign-in required)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.limits.test.ts > R6 — atomic quota with refund > refunds the consumed unit when the upstream call fails
+[ai/gemini] upstream error: 500 {"error":"boom"}
+
+stderr | test/chat.limits.test.ts > R6 — atomic quota with refund > refunds the consumed unit when the upstream call fails
+[chat] upstream failed: gemini HTTP 500
+
+stderr | test/chat.limits.test.ts > R6 — atomic quota with refund > fails closed when the quota RPC errors (no unbounded spend)
+[chat] quota consume failed: connection refused
+
+ ✓ test/chat.limits.test.ts (10 tests) 30ms
+ ✓ test/marketData.honesty.test.ts (5 tests) 36ms
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > anonymous caller converses with a canonical persona -> 200
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > anonymous caller converses with a canonical persona -> 200
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="OK"
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > same IP twice -> ONE deterministic quota identity (a pseudonymous digest, never the raw IP)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > same IP twice -> ONE deterministic quota identity (a pseudonymous digest, never the raw IP)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="OK"
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > same IP twice -> ONE deterministic quota identity (a pseudonymous digest, never the raw IP)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > same IP twice -> ONE deterministic quota identity (a pseudonymous digest, never the raw IP)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="OK"
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > different IP -> different quota identity
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > different IP -> different quota identity
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="OK"
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > different IP -> different quota identity
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > different IP -> different quota identity
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="OK"
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > anonymous daily quota is enforced per IP (fail closed, never unbounded spend)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > anonymous quota infra failure still fails closed (429)
+[chat] anon usage read failed (challenge skipped): unexpected rpc: chat_usage_today
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > anonymous quota infra failure still fails closed (429)
+[chat] quota consume failed: connection refused
+
+stderr | test/chat.anonymous.test.ts > anonymous chat (founder 2026-10-02: no sign-in required) > signed-in caller keeps the ACCOUNT id as the quota identity (not the IP uuid)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=chat-api model=agnes-2.5-flash  rawHead="OK"
+
+ ✓ test/chat.anonymous.test.ts (8 tests) 35ms
+ ✓ test/chat.route.canonicalEvidence.test.ts (3 tests) 32ms
+ ✓ test/fundamentals-null.test.ts (4 tests) 31ms
+stderr | test/chat.quota.order.test.ts > N4 — malformed requests never consume quota > a valid request increments the counter by exactly 1 (and refunds nothing)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.order.test.ts > N4 — malformed requests never consume quota > a burst of valid requests increments once per request
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.order.test.ts > N4 — malformed requests never consume quota > a burst of valid requests increments once per request
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.order.test.ts > N4 — malformed requests never consume quota > a burst of valid requests increments once per request
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.order.test.ts > N4 — malformed requests never consume quota > a burst of valid requests increments once per request
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.order.test.ts > N4 — malformed requests never consume quota > a burst of valid requests increments once per request
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.order.test.ts > N4 — x-forwarded-for parsing assumption (Vercel-documented) > a spoofed prefix cannot change the parsed IP (last entry wins)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.order.test.ts > N4 — x-forwarded-for parsing assumption (Vercel-documented) > a single-entry header (the Vercel shape) parses to that entry
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+ ✓ test/chat.quota.order.test.ts (10 tests) 24ms
+ ✓ test/financialIntent.test.ts (47 tests) 25ms
+ ✓ test/chat.route.registrySymbol.test.ts (6 tests) 33ms
+ ✓ test/pulse.moodVocabulary.test.ts (6 tests) 24ms
+ ✓ test/intelligenceChatContext.test.ts (29 tests) 21ms
+ ✓ test/chat.grounding.g3.test.ts (9 tests) 11ms
+ ✓ test/r15.peerNullSemantics.test.ts (3 tests) 30ms
+ ✓ test/g5.registryMerge.test.ts (36 tests) 26ms
+ ✓ test/gurusNullSemantics.test.ts (4 tests) 22ms
+stderr | test/chat.quota.assembly.test.ts > L3 — evidence assembly is failure-safe around quota (§8) > MUST FAIL PRE-FIX: consume quota → assembly throws → generic 502 → quota restored
+[chat] evidence assembly failed: simulated registry corruption
+
+stderr | test/chat.quota.assembly.test.ts > L3 — evidence assembly is failure-safe around quota (§8) > a normal request still consumes exactly one unit and refunds nothing (semantics not weakened)
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+stderr | test/chat.quota.assembly.test.ts > L3 — evidence assembly is failure-safe around quota (§8) > a request WITHOUT a symbol (general chat) skips assembly and consumes normally
+[ai/router] structured reply failed parse/zod: unparseable JSON provider=gemini model=models/gemini-2.5-flash  rawHead="ok"
+
+ ✓ test/chat.quota.assembly.test.ts (3 tests) 23ms
+ ✓ test/account.delete.test.ts (8 tests) 18ms
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > 401 from every candidate -> 502, quota refunded (net 0), generic body
+[ai/openai] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > 401 from every candidate -> 502, quota refunded (net 0), generic body
+[ai/gemini] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > 401 from every candidate -> 502, quota refunded (net 0), generic body
+[chat] upstream failed: gemini HTTP 401
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[ai/openai] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[ai/gemini] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[chat] upstream failed: gemini HTTP 401
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[ai/openai] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[ai/gemini] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[chat] upstream failed: gemini HTTP 401
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[ai/openai] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[ai/gemini] upstream error: 401 {"error":{"code":"invalid_token","message":"Invalid token"}}
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[chat] upstream failed: gemini HTTP 401
+
+stderr | test/chat.provider401.refund.test.ts > R10-10 — provider 401 is a plain provider failure: fail closed, refund, stay generic > repeated 401s: every request fails closed with net-0 quota and the circuit opens, bypassing the dead provider
+[chat] upstream failed: provider gemini in cooldown (circuit open)
+
+ ✓ test/chat.provider401.refund.test.ts (2 tests) 19ms
+stderr | test/y2.quoteWarm.test.ts > Y2 — warmer auth (fail closed at the route level) > missing QUOTES_WARM_SECRET env -> 500, never an open endpoint
+[quotes-warm] QUOTES_WARM_SECRET is not configured — refusing request
+
+ ✓ test/y2.quoteWarm.test.ts (18 tests) 22ms
+ ✓ test/g7Driver2.batchedPrices.test.ts (16 tests) 19ms
+ ✓ test/toolboundary.strict.test.ts (11 tests) 18ms
+stdout | test/pricesRoutes.unavailable.test.ts > Phase 5.1 — /api/prices/batch honest unavailable contract > shared-cache miss for every equity → every symbol present with UNAVAILABLE
+[/api/prices/batch] 3/3 in 0ms (shared-cache equities: 3, direct: 0)
+
+stdout | test/pricesRoutes.unavailable.test.ts > Phase 5.1 — /api/prices/batch honest unavailable contract > mixed outcome: one cache observation + one miss → both symbols present, correct shapes
+[/api/prices/batch] 2/2 in 0ms (shared-cache equities: 2, direct: 0)
+
+stdout | test/pricesRoutes.unavailable.test.ts > Phase 5.1 — /api/prices/batch honest unavailable contract > the batch payload carries the NSE market state top-level (U2 client-hook cadence)
+[/api/prices/batch] 1/1 in 0ms (shared-cache equities: 1, direct: 0)
+
+stdout | test/pricesRoutes.unavailable.test.ts > Phase 5.1 — /api/prices/batch honest unavailable contract > non-equity symbols keep the direct path: success keeps its real observation timestamp
+[/api/prices/batch] 1/1 in 0ms (shared-cache equities: 0, direct: 1)
+
+stdout | test/pricesRoutes.unavailable.test.ts > Phase 5.1 — /api/prices/batch honest unavailable contract > non-equity symbol failing → UNAVAILABLE with no fabricated timestamp
+[/api/prices/batch] 1/1 in 0ms (shared-cache equities: 0, direct: 1)
+
+ ✓ test/pricesRoutes.unavailable.test.ts (8 tests) 18ms
+ ✓ test/portfolio.import.test.ts (13 tests) 17ms
+ ✓ test/rishiInsightContract.test.ts (28 tests) 18ms
+ ✓ test/intelligenceChainProductionShape.test.ts (2 tests) 16ms
+ ✓ test/anonymous.access.test.ts (4 tests) 15ms
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > equity entries carry the cache's provenance; status maps state honestly; market rides top-level
+[/api/prices/batch] 4/4 in 1ms (shared-cache equities: 3, direct: 1)
+
+stdout | test/pricesRoutes.sharedCache.test.ts > U2 — /api/prices/batch serves equities from the shared quote cache > non-equity symbols keep the direct fetchLivePrice path (crypto etc.)
+[/api/prices/batch] 1/1 in 0ms (shared-cache equities: 0, direct: 1)
+
+ ✓ test/pricesRoutes.sharedCache.test.ts (5 tests) 16ms
+ ✓ test/intelligenceMateriality.test.ts (44 tests) 14ms
+ ✓ test/intelligenceThesis.test.ts (24 tests) 15ms
+ ✓ test/anonIdentity.test.ts (44 tests) 15ms
+ ✓ test/intelligenceEvidencePresentation.test.ts (11 tests) 14ms
+ ✓ test/portfolio.importValidation.test.ts (20 tests) 14ms
+ ✓ test/scorerBoundaries.test.ts (18 tests) 15ms
+ ✓ test/intelligenceInsightCache.test.ts (9 tests) 14ms
+ ✓ test/freshness.placeholder.test.ts (7 tests) 13ms
+ ✓ test/intelligenceInsightSummary.test.ts (6 tests) 13ms
+ ✓ test/proxy.access.test.ts (8 tests) 13ms
+ ✓ test/y4.nullNotZero.test.ts (12 tests) 14ms
+ ✓ test/chat.grounding.semantic.test.ts (16 tests) 14ms
+stdout | test/priceObservedAtParity.round9.test.ts > R9 §20 — single and batch prices expose the SAME provenance contract > the BATCH route serves the same observation time — one contract, both APIs
+[/api/prices/batch] 1/1 in 1ms (shared-cache equities: 0, direct: 1)
+
+ ✓ test/priceObservedAtParity.round9.test.ts (4 tests) 13ms
+ ✓ test/chat.grounding.numeric.test.ts (10 tests) 15ms
+ ✓ test/pricingClaim.honesty.test.ts (4 tests) 12ms
+ ✓ test/grounding.yearAndForecast.test.ts (6 tests) 10ms
+ ✓ test/chat.grounding.strict.test.ts (10 tests) 12ms
+stderr | test/pricesBatch.errorContract.test.ts > Rule 10 — upstream exception text can never escape the batch route > a throwing cache/bulk refresh layer yields honest UNAVAILABLE entries — no 500, no details field, no upstream text
+[/api/prices/batch] error: Error: fetch failed: https://query1.finance.yahoo.com/v8/finance/chart — ECONNRESET
+    at /home/z/my-project/rishi-main/test/pricesBatch.errorContract.test.ts:60:7
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:1628:35
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:2783:26
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3319:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3314:10)
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3299:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3257:10)
+    at file:///home/z/my-project/rishi-main/node_modules/vitest/dist/chunks/run.C5UmxDPh.js:3876:64
+
+stderr | test/pricesBatch.errorContract.test.ts > Rule 10 — upstream exception text can never escape the batch route > a malformed request body → generic 500, no internals on the wire
+[/api/prices/batch] error: Error: invalid JSON body 0x90 at position 3 — internal parse state
+    at Object.json (/home/z/my-project/rishi-main/test/pricesBatch.errorContract.test.ts:76:15)
+    at Module.POST (/home/z/my-project/rishi-main/app/api/prices/batch/route.ts:34:37)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at /home/z/my-project/rishi-main/test/pricesBatch.errorContract.test.ts:73:17
+
+ ✓ test/pricesBatch.errorContract.test.ts (2 tests) 12ms
+ ✓ test/score.provenance.truth.test.ts (6 tests) 11ms
+ ✓ test/migrations.rls.test.ts (3 tests) 12ms
+ ✓ test/g4.honesty.test.ts (14 tests) 10ms
+ ✓ test/methodology.coverage.test.ts (5 tests) 22ms
+ ✓ test/persona.registry.test.ts (12 tests) 9ms
+ ✓ test/securityMaster.test.ts (21 tests) 9ms
+ ✓ test/grounding.round5.test.ts (9 tests) 13ms
+ ✓ test/e5.residualClasses.test.ts (4 tests) 9ms
+stderr | test/lp3.providerAliases.test.ts > LP3 — serveQuote keys rows by the requested registry symbol > the provider-query aliasing happens inside the refresher, not before the cache key
+[quoteCache] read failed: Missing Supabase URL or service-role key environment variables
+
+stderr | test/lp3.providerAliases.test.ts > LP3 — serveQuote keys rows by the requested registry symbol > the provider-query aliasing happens inside the refresher, not before the cache key
+[quoteCache] claim rpc failed: Missing Supabase URL or service-role key environment variables
+
+ ✓ test/lp3.providerAliases.test.ts (7 tests) 11ms
+stderr | test/cron.auth.test.ts > T8 — requireCronAuth > fails CLOSED when CRON_SECRET is not configured — never an open endpoint
+[cron] CRON_SECRET is not configured — refusing request
+
+ ✓ test/cron.auth.test.ts (4 tests) 13ms
+stdout | test/e5.fvmAttribution.test.ts > E5-FVM shapes (r18 battery field-value-mismatch reconstructions) > battery shape 1: 'changed to <price>' — price stated under the word change (11/14 rows)
+shape1 grounded: true | rejections: []
+
+stdout | test/e5.fvmAttribution.test.ts > E5-FVM shapes (r18 battery field-value-mismatch reconstructions) > battery shape 2: 'changed by <pct> to <price>' — trailing price near the change verb
+shape2 grounded: true | rejections: []
+
+stdout | test/e5.fvmAttribution.test.ts > E5-FVM shapes (r18 battery field-value-mismatch reconstructions) > battery shape 3: index-name digits — 'Nifty 50 at 22697.4 points' (1/14 rows)
+shape3 grounded: true | rejections: []
+
+stdout | test/e5.fvmAttribution.test.ts > E5-FVM shapes (r18 battery field-value-mismatch reconstructions) > CONTROL (passes today): 'trades at X inr with a positive change of Y percent'
+control grounded: true | rejections: []
+
+stdout | test/e5.fvmAttribution.test.ts > E5-FVM shapes (r18 battery field-value-mismatch reconstructions) > ADVERSARIAL (must stay rejected): prose claims change=999 but assertion says -1.386
+adversarial grounded: false | rejections: ["claim 1: number \"999\" is attributed to price in the claim text but no price assertion was provided — rejected (audit 2026-10-02)"]
+
+ ✓ test/e5.fvmAttribution.test.ts (5 tests) 9ms
+ ✓ test/intelligenceChangeSince.test.ts (19 tests) 8ms
+ ✓ test/fnoStrategyEduLocale.test.ts (2 tests) 10ms
+ ✓ test/canaryContract.test.mjs (19 tests) 8ms
+ ✓ test/pulse.adviceVocabulary.test.ts (5 tests) 10ms
+ ✓ test/rankingsFlag.test.ts (6 tests) 9ms
+ ✓ test/g5.relicMerge.test.ts (22 tests) 7ms
+ ✓ test/provenance.timestamps.test.ts (7 tests) 11ms
+ ✓ test/e4Observer.test.mjs (9 tests) 9ms
+ ✓ test/sourced.test.ts (13 tests) 11ms
+ ✓ test/x3-08.alerts.test.ts (8 tests) 8ms
+ ✓ test/adminProviders.scope.test.ts (2 tests) 6ms
+ ✓ test/c6.rowOwnership.test.ts (2 tests) 8ms
+ ✓ test/nse-schema.test.ts (6 tests) 9ms
+ ✓ test/nameOverrideStatus.test.ts (7 tests) 7ms
+ ✓ test/uiProvenance.round9.test.ts (19 tests) 7ms
+ ✓ test/g6.healthSignal.test.ts (15 tests) 8ms
+ ✓ test/intelligenceVisitState.test.ts (8 tests) 8ms
+ ✓ test/methodology.markdown.test.ts (6 tests) 6ms
+ ✓ test/dashboardSnapshot.test.ts (10 tests) 7ms
+ ✓ test/y2.ssrPeek.test.ts (10 tests) 8ms
+ ✓ test/scoring.admissibility.test.ts (14 tests) 8ms
+ ✓ test/rls.portfolio.test.ts (19 tests) 7ms
+ ✓ test/intelligenceEvents.test.ts (10 tests) 11ms
+ ✓ test/x6.consensusGates.test.ts (11 tests) 13ms
+ ✓ test/pricePresentation.test.ts (18 tests) 6ms
+ ✓ test/yahoo-change.test.ts (6 tests) 5ms
+ ✓ test/health.test.ts (9 tests) 6ms
+ ✓ test/providerRegistry.test.ts (4 tests) 6ms
+stderr | test/ingestion.fmpGate.test.ts > Phase 5.1 — FMP RESEARCH_ONLY is enforced, not nominal > ingestQuarterly skips without touching FMP upstream or the database
+[ingestion] FMP is RESEARCH_ONLY (not APPROVED) — production ingestion skipped (T55)
+
+stderr | test/ingestion.fmpGate.test.ts > Phase 5.1 — FMP RESEARCH_ONLY is enforced, not nominal > ingestAnnual skips without touching FMP upstream or the database
+[ingestion] FMP is RESEARCH_ONLY (not APPROVED) — production ingestion skipped (T55)
+
+stderr | test/ingestion.fmpGate.test.ts > Phase 5.1 — FMP RESEARCH_ONLY is enforced, not nominal > the FMP client primitive itself refuses to fetch while not APPROVED
+[FMP] blocked: provider is RESEARCH_ONLY, not APPROVED (/income-statement/TCS)
+
+ ✓ test/ingestion.fmpGate.test.ts (4 tests) 7ms
+ ✓ test/rls.screens.test.ts (12 tests) 7ms
+ ✓ test/modelStatus.contract.test.ts (7 tests) 5ms
+ ✓ test/chat.prompt.seed.test.ts (4 tests) 5ms
+ ✓ test/y3.observationLabel.test.ts (15 tests) 5ms
+ ✓ test/session.free.test.ts (6 tests) 6ms
+ ✓ test/public.artifacts.test.ts (4 tests) 4ms
+ ✓ test/g7CanonicalStats.test.ts (5 tests) 5ms
+ ✓ test/g4b.observationClock.test.ts (8 tests) 5ms
+ ✓ test/sourced.asOf.test.ts (4 tests) 5ms
+ ✓ test/y1.isrSegmentConfig.test.ts (5 tests) 4ms
+ ✓ test/z3.peekAge.test.ts (6 tests) 5ms
+ ✓ test/philosophyGuard.test.ts (6 tests) 5ms
+ ✓ test/crypto.dominance.test.ts (6 tests) 5ms
+ ✓ test/protectedPaths.test.ts (4 tests) 4ms
+ ✓ test/livePrices.null.test.ts (7 tests) 5ms
+ ✓ test/bundleBoundary.test.ts (5 tests) 5ms
+ ✓ test/seo.robots.test.ts (5 tests) 5ms
+stdout | test/shortRadar.validation.test.ts
+[short-radar-battery] gated n @shuffle date=98 | modelShortIC=0.0803 heuristicShortIC=0.0528 delayedShortIC=0.0271
+[short-radar-battery] shuffledMeanAbs=0.0814 bound=0.0914 | halves 0.0803 vs 0.0802 | epochs=[0.0836,0.0706,0.1026,0.0594]
+[short-radar-battery] pillarIC={"overvaluation":0.019867018416624367,"fundamentalDecay":0.08220268708811532,"governanceRisk":0.0625679389804543,"moatDestruction":null,"growthMirage":null,"catalyst":null} maxPairCorr=0.2738 | cagr base=-0.1314 survivors=-0.0991
+[short-radar-battery] fixture=100.00 seedBands=["DANGEROUS_SHORT"] meanTop3SameSector=0.5104 (dates=96)
+
+ ✓ test/shortRadar.validation.test.ts (8 tests) 4ms
+ ✓ test/assetPageMetadata.test.ts (4 tests) 3ms
+ ✓ test/marketHours.test.ts (7 tests) 4ms
+ ✓ test/safeRedirect.test.ts (5 tests) 4ms
+stdout | test/x6.boundsGate.test.ts
+universe size: 896
+
+Degenerate-denominator incidence (claimed: bvps<=0: 0, tl<=0: 0, ncav<=0: 37):
+  bvps<=0: 0
+  tl<=0:   0
+  ncav<=0: 37
+  OLD pre-W4 Soros Reflexivity for those rows: distinct values = [0] (the branch's comment claims they were ALL 100)
+  sample: [{"sym":"ABFRL","oldSorosReflex":0,"price":280},{"sym":"ADANIENT","oldSorosReflex":0,"price":2800},{"sym":"ADANIGREEN","oldSorosReflex":0,"price":1800},{"sym":"ADANIPOWER","oldSorosReflex":0,"price":550},{"sym":"ADANITRANS","oldSorosReflex":0,"price":950}]
+
+Pabrai Clone ramp saturation (comment claims "100 from 70%"):
+  exact saturation point: 57.80% promoter
+  clone(50)=77.9 clone(57.75)=100.0 clone(60)=100.0 clone(70)=100.0
+
+Per-scorer distributions on the rebased tree (all 916):
+  Pabrai       sd= 16.94  <=5: 0.0%  >=95: 3.5%
+  Porinju      sd= 17.24  <=5: 0.0%  >=95: 0.2%
+  Soros        sd=  8.71  <=5: 0.1%  >=95: 0.0%
+  Greenblatt   sd= 24.10  <=5: 26.6%  >=95: 1.8%
+  Nemish       sd=  9.74  <=5: 0.0%  >=95: 16.8%
+
+X6 gate (sd>=8, <=15% at <=5, <=15% at >=95; Greenblatt low pile allow-listed with the corrected placeholder-seed reason):
+  Greenblatt: allow-listed: the low pile reflects the placeholder seed's earnings values (June np placeholders), not a scorer property
+  NAMED OFFENDERS: Nemish: 16.8% >= 95 (above the 15% bound)
+
+ ✓ test/x6.boundsGate.test.ts (5 tests) 4ms
+ ✓ test/globalSpendReservation.test.ts (3 tests) 4ms
+ ✓ test/r15.deployCadence.test.mjs (5 tests) 4ms
+ ✓ test/authProviderEnv.test.ts (3 tests) 3ms
+ ✓ test/moduleTwins.test.ts (1 test) 3ms
+ ✓ test/footer.contrast.test.ts (2 tests) 3ms
+ ✓ test/csp.headers.test.ts (4 tests) 3ms
+ ✓ test/chatPersonaGreenblattDisclosure.test.ts (3 tests) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/intelligenceDashboardBrief.test.ts > INT-C1 the exact-surface scan (N surfaces, ONE route) > the set of surfaces fetching /api/intelligence is EXACTLY the one remaining declared product surface (the INT-D2 drawer) — the declared set SHRANK from four across the founder-ordered removals (the D3 dossier, then the B1 stock-page panel — both round 45, 2026-10-10; now the C1 dashboard brief, round 45, 2026-10-11: 'remove the whole Rishi Intelligence segment'; declared, never silent)
+AssertionError: expected [ …(2) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
++   "components/dashboard/DashboardBrief.tsx",
+    "components/screener/IntelligenceDrawer.tsx",
+  ]
+
+ ❯ test/intelligenceDashboardBrief.test.ts:209:39
+    207|       /fetch\([^)]*\/api\/intelligence/.test(readFileSync(f, "utf8")),
+    208|     );
+    209|     expect(consumers.map(rel).sort()).toEqual([
+       |                                       ^
+    210|       "components/screener/IntelligenceDrawer.tsx",
+    211|     ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-C1 dashboard brief REMOVED per founder order (2026-10-11) — the absence pins > the brief component file is DELETED (dead code after the mount removal — rule 17)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/intelligenceScreenerDrawer.test.ts:189:79
+    187|
+    188|   it("the brief component file is DELETED (dead code after the mount r…
+    189|     expect(existsSync(join(ROOT, "components/dashboard/DashboardBrief.…
+       |                                                                               ^
+    190|   });
+    191|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/intelligenceScreenerDrawer.test.ts > INT-C1 dashboard brief REMOVED per founder order (2026-10-11) — the absence pins > the dashboard tail no longer imports, mounts, or wires the intelligence brief
+AssertionError: expected '\'use client\';\n\n// components/dash…' not to contain 'DashboardBrief'
+
+- Expected
++ Received
+
+- DashboardBrief
++ 'use client';
++
++ // components/dashboard/DashboardTail.tsx — the dashboard's bottom sections
++ // (CRYPTO grid, EXPLORE MARKETS tiles, RISHI WISDOM banner), extracted in
++ // Z5 (Round 13) so they load with next/dynamic after first paint instead
++ // of shipping in the homepage's first-load JS. Everything here sits below
++ // the fold (the hero, market stats, world markets, stock-of-the-day, top
++ // signals and shorts render first); the section rhythm and styling are
++ // unchanged — this is a move, not a redesign.
++
++ import { useMemo } from 'react';
++ import Link from 'next/link';
++ import { useLanguage } from '@/lib/language';
++ import { TOP_CRYPTO } from '@/lib/dashboardSymbols';
++ import type { PriceData } from '@/hooks/useLivePrices';
++ import type { RankedStock, ShortCandidate, StockOfTheDay } from '@/lib/scoring/rankings';
++ import type { FullFundamentals } from '@/hooks/useFundamentals';
++ import { DataValue } from '@/components/DataValue'; // P0-06: provenance for displayed metrics
++ import { overlaySourced } from '@/lib/types/sourced';
++ import SeedDataBanner from '@/components/shared/SeedDataBanner'; // R1: honest placeholder-data label
++ import { shortRadarStatusLine } from '@/lib/modelStatus'; // round 20: the model-status contract is the ONLY wording source
++ import { DashboardBrief } from './DashboardBrief'; // INT-C1: the ONE intelligence surface for the day's pick
++
++ const C = {
++   text:      '#F8FAFC',
++   textSec:   '#CBD5E1',
++   textMuted: 'var(--text-muted)',
++   gold:      '#D4AF37',
++   green:     '#22C55E',
++   red:       '#EF4444',
++   border:    'rgba(212,175,55,0.15)',
++ };
++
++ function scoreColor(s: number) {
++   if (s >= 75) return '#22C55E';
++   if (s >= 60) return '#D4AF37';
++   if (s >= 45) return '#F59E0B';
++   return '#EF4444';
++ }
++
++ function fmtINR(n?: number | null): string {
++   return typeof n === 'number' && Number.isFinite(n) ? '₹' + n.toLocaleString('en-IN', { maximumFractionDigits: 0 }) : '—';
++ }
++
++ function RankingsDisabledPanel({ title, note }: { title: string; note: string }) {
++   return (
++     <div style={{
++       background: 'rgba(17,24,39,0.5)', border: '1px dashed rgba(100,116,139,0.4)',
++       borderRadius: '16px', padding: '48px 24px', textAlign: 'center', marginBottom: '48px',
++     }}>
++       <div style={{ fontSize: '28px', marginBottom: '12px' }}>📊</div>
++       <div style={{ fontFamily: 'Cinzel, serif', fontSize: '16px', fontWeight: 700, color: C.text, marginBottom: '8px' }}>{title}</div>
++       <div style={{ fontSize: '12px', color: C.textMuted, maxWidth: '420px', margin: '0 auto', lineHeight: 1.7 }}>{note}</div>
++     </div>
++   );
++ }
++
++ const serif = 'Cinzel, serif';
++ const sans  = 'Inter, sans-serif';
++ const mono  = 'JetBrains Mono, monospace';
++
++ const MARKETS = [
++   { href: '/forex',            icon: '💱', label: 'Forex',        desc: '10 currency pairs' },
++   { href: '/commodities',      icon: '🥇', label: 'Commodities',  desc: 'Gold, Oil, Metals' },
++   { href: '/bonds',            icon: '📜', label: 'Bonds',        desc: 'G-Secs & Corporate' },
++   { href: '/pulse?tab=macro',  icon: '📡', label: 'Economy Plus', desc: 'Macro regime & rotation' },
++   // Commit O (#18): /compare never existed — the real compare surface is the Lab's Compare tab.
++   { href: '/lab',              icon: '⚖️', label: 'Compare',      desc: 'Side-by-side analysis' },
++ ];
++
++ function card(): React.CSSProperties {
++   return {
++     background: 'linear-gradient(145deg,rgba(17,24,39,0.9) 0%,rgba(10,15,28,0.95) 100%)',
++     border: `1px solid ${C.border}`,
++     borderRadius: '16px',
++     padding: '22px',
++     transition: 'all 0.25s ease',
++   };
++ }
++
++ function Divider() {
++   return (
++     <div style={{
++       height: '1px', margin: '40px 0',
++       background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.3),transparent)',
++     }} />
++   );
++ }
++
++ function SectionHeader({ title, link, linkLabel }: { title: string; link?: string; linkLabel?: string }) {
++   const { t } = useLanguage();
++   return (
++     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px' }}>
++       <h2 style={{ fontFamily: serif, fontSize: '20px', fontWeight: 700, color: C.text, letterSpacing: '0.01em' }}>
++         {title}
++       </h2>
++       {link && (
++         <Link href={link} style={{ color: C.gold, fontSize: '12px', fontWeight: 600, fontFamily: sans, letterSpacing: '0.03em' }}>
++           {linkLabel ?? t('dashboard2.viewAll')} →
++         </Link>
++       )}
++     </div>
++   );
++ }
++
++ function fmtUSD(v?: number | null): string {
++   return typeof v === 'number' && Number.isFinite(v) ? '$' + v.toLocaleString('en-IN', { maximumFractionDigits: 0 }) : '—';
++ }
++ function fmtPct(v?: number | null): string {
++   return typeof v === 'number' && Number.isFinite(v) ? (v >= 0 ? '+' : '') + v.toFixed(2) + '%' : '—';
++ }
++ function upClr(v?: number | null): React.CSSProperties {
++   return { color: typeof v === 'number' && v >= 0 ? '#22C55E' : '#EF4444' };
++ }
++
++ interface TailProps {
++   prices: Record<string, PriceData>;
++   rankingsEnabled: boolean;
++   stockOfDay: StockOfTheDay | null;
++   sodCommentary: string | null;
++   sodFund: FullFundamentals | null | undefined;
++   rotatingStocks: RankedStock[];
++   rotatingShorts: ShortCandidate[];
++   buyFund: Record<string, FullFundamentals>;
++ }
++
++ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommentary, sodFund, rotatingStocks, rotatingShorts, buyFund }: TailProps) {
++   const { t } = useLanguage();
++   const wisdomBanner = useMemo(() => ({
++     background: 'linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 50%,rgba(139,92,246,0.06) 100%)',
++     border: '1px solid rgba(212,175,55,0.25)',
++     borderRadius: '24px',
++     padding: '40px',
++     boxShadow: '0 8px 32px rgba(0,0,0,0.4),inset 0 1px 0 rgba(212,175,55,0.08)',
++   }), []);
++
++   return (
++     <>
++
++       {/* U4: the ranked trio (Stock of the Day / Top Buy Signals / Short
++         Radar) exists only when the RANKINGS_ENABLED flag is on. Off →
++         one honest disabled panel; the ranking engine never ran. */}
++       {rankingsEnabled && stockOfDay ? (<>
++       {/* ── STOCK OF THE DAY ─────────────────────────────── */}
++       <div style={{ marginBottom:"48px" }}>
++         <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + stockOfDay.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
++         <SeedDataBanner suffix="deterministic daily pick, IST calendar day" />
++         <div style={{
++         background:"linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 40%,rgba(139,92,246,0.05) 100%)",
++         border:"1px solid rgba(212,175,55,0.3)",
++         borderRadius:"20px", padding:"28px",
++         boxShadow:"0 8px 32px rgba(0,0,0,0.4),0 0 40px rgba(212,175,55,0.06)",
++         }}>
++         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"28px", alignItems:"center" }}>
++           <div>
++             <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"16px" }}>
++               <div>
++                 <div style={{ fontFamily:mono, fontSize:"28px", fontWeight:900, color:C.text }}>{stockOfDay.symbol}</div>
++                 <div style={{ fontSize:"13px", color:C.textMuted, marginTop:"2px" }}>{stockOfDay.name}</div>
++               </div>
++               <div style={{
++                 background:"rgba(212,175,55,0.15)", border:"1px solid rgba(212,175,55,0.3)",
++                 color:C.gold, padding:"6px 14px", borderRadius:"20px",
++                 fontSize:"13px", fontWeight:700, flexShrink:0,
++               }}>{stockOfDay.tag}</div>
++             </div>
++
++             <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"16px" }}>
++               {[
++                 { label:t("dashboard2.rishiScore"), value: <DataValue sourced={{ value: stockOfDay.consensus, source: "seed", asOf: null }} format={v => v + "/100"} /> },
++                 { label:"P/E", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.pe, sodFund?.source, sodFund?.lastUpdated ?? null, "pe")} digits={1} unit="x" /> },
++                 { label:"ROE", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.roe, sodFund?.source, sodFund?.lastUpdated ?? null, "roe")} digits={1} unit="%" /> },
++                 { label:"OPM", value: <DataValue sourced={overlaySourced({ value: null, source: "seed", asOf: null }, sodFund?.opm, sodFund?.source, sodFund?.lastUpdated ?? null, "opm")} digits={1} unit="%" /> },
++               ].map(m => (
++                 <div key={m.label} style={{
++                   background:"rgba(31,41,59,0.6)", border:"1px solid rgba(51,65,85,0.5)",
++                   borderRadius:"8px", padding:"8px 12px", textAlign:"center",
++                 }}>
++                   <div style={{ fontSize:"10px", color:C.textMuted, fontFamily:sans, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em" }}>{m.label}</div>
++                   <div style={{ fontSize:"15px", fontWeight:800, color:C.text, fontFamily:mono, marginTop:"2px" }}>{m.value}</div>
++                 </div>
++               ))}
++             </div>
++
++             <div style={{
++               background:"rgba(212,175,55,0.04)",
++               borderLeft:"3px solid " + C.gold,
++               borderRadius:"0 8px 8px 0",
++               padding:"12px 16px",
++               fontSize:"13px", color:C.textSec,
++               fontStyle:"italic", lineHeight:1.7,
++               fontFamily:'"Playfair Display",Georgia,serif',
++             }}>
++               &quot;{sodCommentary}&quot;
++             </div>
++             <div style={{ marginTop:"10px", fontSize:"12px", color:C.textMuted }}>
++               — <span style={{ color:C.gold }}>Rishi {stockOfDay.rishi}</span>
++             </div>
++           </div>
++
++           <div>
++             <div style={{ fontSize:"22px", fontWeight:800, color:C.text, fontFamily:mono, marginBottom:"6px" }}>
++               {fmtINR(prices[stockOfDay.symbol]?.price)}
++             </div>
++             <div style={{ fontSize:"14px", fontWeight:700, fontFamily:mono, marginBottom:"20px", ...upClr(prices[stockOfDay.symbol]?.changePercent24h) }}>
++               {fmtPct(prices[stockOfDay.symbol]?.changePercent24h)} {t("dashboard2.todaySuffix")}
++             </div>
++
++             <div style={{
++               background:"rgba(17,24,39,0.6)", borderRadius:"14px",
++               padding:"16px", border:"1px solid rgba(51,65,85,0.4)",
++               marginBottom:"16px",
++             }}>
++               <div style={{ fontSize:"11px", color:C.textMuted, marginBottom:"10px", fontWeight:600, textTransform:"uppercase", letterSpacing:"0.08em" }}>
++                 {t("dashboard2.rishiConsensus")}
++               </div>
++               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
++                 <span style={{ fontSize:"13px", color:C.green }}>{t("dashboard2.bulls")}</span>
++                 <span style={{ fontSize:"20px", fontWeight:900, color:C.green, fontFamily:mono }}>{stockOfDay.consensus}%</span>
++                 <span style={{ fontSize:"13px", color:C.red }}>{t("dashboard2.bears")} {100 - stockOfDay.consensus}%</span>
++               </div>
++               <div style={{ height:"8px", background:"rgba(239,68,68,0.3)", borderRadius:"4px", overflow:"hidden" }}>
++                 <div style={{ height:"100%", width: stockOfDay.consensus + "%", background:"linear-gradient(90deg,#16A34A,#22C55E)", borderRadius:"4px" }} />
++               </div>
++             </div>
++
++             <Link href={"/stock/" + stockOfDay.symbol} style={{
++               display:"block", textAlign:"center", padding:"12px",
++               background:"linear-gradient(135deg,#A88B20,#D4AF37)",
++               borderRadius:"12px", color:"#0A0F1C", fontWeight:700,
++               fontSize:"14px", textDecoration:"none",
++               boxShadow:"0 4px 20px rgba(212,175,55,0.3)",
++             }}>
++               {t("dashboard2.viewFullAnalysis")} →
++             </Link>
++           </div>
++         </div>
++         </div>
++       </div>
++
++       {/* INT-C1: the dashboard brief — the ONE intelligence surface
++           (/api/intelligence) for the server-resolved pick, rendered
++           through the A8 primitives. No subject here → no brief (the
++           disabled panel above already explains the ranked trio). */}
++       <DashboardBrief subject={stockOfDay.symbol} />
++
++       {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
++       <div style={{ marginBottom:"48px" }}>
++         <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/stocks" linkLabel={t("dashboard2.fullScreener")} />
++         <SeedDataBanner suffix="ranked by Rishi consensus among data-quality-OK stocks" />
++         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
++         {rotatingStocks.map((stock) => {
++           const d  = prices[stock.symbol];
++           const up = (d?.changePercent24h ?? 0) >= 0;
++           const sc = stock.consensus === null ? "var(--text-muted)" : scoreColor(stock.consensus); // T11: null = insufficient data
++           return (
++             <Link href={"/stock/" + stock.symbol} key={stock.symbol} style={{ textDecoration:"none" }}>
++               <div style={{ ...card(), cursor:"pointer" }}
++                 onMouseEnter={e => {
++                   (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(212,175,55,0.4)";
++                   (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
++                   (e.currentTarget as HTMLDivElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.5),0 0 20px rgba(212,175,55,0.1)";
++                 }}
++                 onMouseLeave={e => {
++                   (e.currentTarget as HTMLDivElement).style.borderColor = C.border;
++                   (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
++                   (e.currentTarget as HTMLDivElement).style.boxShadow = "none";
++                 }}
++               >
++                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"16px" }}>
++                   <div>
++                     <div style={{ fontSize:"16px",fontWeight:800,color:C.text,fontFamily:mono }}>{stock.symbol}</div>
++                     <div style={{ fontSize:"11px",color:C.textMuted,marginTop:"2px",maxWidth:"140px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{stock.name}</div>
++                   </div>
++                   <div style={{
++                     background:sc+"18", border:"1px solid "+sc+"40",
++                     color:sc, padding:"3px 10px", borderRadius:"20px",
++                     fontSize:"12px", fontWeight:700, fontFamily:mono, flexShrink:0,
++                   }}>{stock.consensus}%</div>
++                 </div>
++                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
++                   <div>
++                     <div style={{ fontSize:"20px",fontWeight:800,color:C.text,fontFamily:mono }}>
++                       {fmtINR(d?.price)}
++                     </div>
++                     <div style={{ fontSize:"13px",fontWeight:700,marginTop:"3px",fontFamily:mono,...upClr(d?.changePercent24h) }}>
++                       {fmtPct(d?.changePercent24h)}
++                     </div>
++                   </div>
++                   <div style={{ textAlign:"right",color:C.textMuted,fontSize:"11px",lineHeight:1.8,fontFamily:mono }}>
++                     {/* Round-5 audit (finding 22): null handling unified with
++                         the Stock of the Day card — a zero P/E means "not
++                         meaningful" and renders as an em dash, never "PE 0". */}
++                     <div>{t("dashboard2.peLabel")} {(() => { const pe = buyFund[stock.symbol]?.pe ?? stock.pe; return pe > 0 ? pe : "—"; })()}</div>
++                     <div>{t("dashboard2.roeLabel")} {(() => { const roe = buyFund[stock.symbol]?.roe ?? stock.roe; return roe !== 0 ? roe + "%" : "—"; })()}</div>
++                   </div>
++                 </div>
++               </div>
++             </Link>
++           );
++         })}
++         </div>
++       </div>
++
++       <Divider />
++
++       {/* ── SHORT OF THE DAY ──────────────────────────────── */}
++       <div style={{ marginBottom:"48px" }}>
++         <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
++         <SeedDataBanner suffix={shortRadarStatusLine()} />
++         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
++         {rotatingShorts.map(short => (
++           <Link href={"/stock/" + short.symbol} key={short.symbol} style={{ textDecoration:"none" }}>
++             <div style={{
++               ...card(),
++               background:"linear-gradient(135deg,rgba(239,68,68,0.06),rgba(17,24,39,0.85))",
++               border:"1px solid rgba(239,68,68,0.2)",
++               cursor:"pointer",
++             }}
++               onMouseEnter={e => {
++                 (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(239,68,68,0.5)";
++                 (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
++               }}
++               onMouseLeave={e => {
++                 (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(239,68,68,0.2)";
++                 (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
++               }}
++             >
++               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"12px" }}>
++                 <div>
++                   <div style={{ fontSize:"16px",fontWeight:800,color:C.text,fontFamily:mono }}>{short.symbol}</div>
++                   <div style={{ fontSize:"11px",color:C.textMuted,marginTop:"2px" }}>{short.name}</div>
++                 </div>
++                 <div style={{
++                   background:"rgba(239,68,68,0.15)", border:"1px solid rgba(239,68,68,0.3)",
++                   color:C.red, padding:"3px 10px", borderRadius:"20px",
++                   fontSize:"12px", fontWeight:700, fontFamily:mono,
++                   // Round-5 audit (finding 21): this is the QVPS short-mode
++                   // SCORE (0-100), not a percentage — the raw float rendered
++                   // as "16.05% / 15.759% / 15.75%" with an unexplained unit.
++                 }}>📉 {short.shortScore.toFixed(1)}/100</div>
++               </div>
++               <div style={{ fontSize:"12px", color:"#FCA5A5", lineHeight:1.6 }}>
++                 ⚠️ {short.reason}
++               </div>
++             </div>
++           </Link>
++         ))}
++         </div>
++       </div>
++       </>) : (
++         <RankingsDisabledPanel
++         title={t("dashboard2.rankingsDisabled")}
++         note={t("dashboard2.rankingsDisabledNote")}
++         />
++       )}
++
++             {/* ── CRYPTO ────────────────────────────────────────── */}
++       <div style={{ marginBottom: '48px' }}>
++         <SectionHeader title={'₿ ' + t('dashboard2.sections.cryptocurrency')} link='/crypto' />
++         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px,1fr))', gap: '14px' }}>
++           {TOP_CRYPTO.map(crypto => {
++             const d = prices[crypto.symbol];
++             const up = (d?.changePercent24h ?? 0) >= 0;
++             return (
++               <Link href={'/crypto/' + crypto.symbol} key={crypto.symbol} style={{ textDecoration: 'none' }}>
++                 <div style={{ ...card(), cursor: 'pointer' }}
++                   onMouseEnter={e => {
++                     (e.currentTarget as HTMLDivElement).style.borderColor = crypto.color + '44';
++                     (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
++                   }}
++                   onMouseLeave={e => {
++                     (e.currentTarget as HTMLDivElement).style.borderColor = C.border;
++                     (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
++                   }}
++                 >
++                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
++                     <div style={{
++                       width: '42px', height: '42px', borderRadius: '50%',
++                       background: crypto.color + '18', border: '1px solid ' + crypto.color + '33',
++                       display: 'flex', alignItems: 'center', justifyContent: 'center',
++                       fontSize: '18px', fontWeight: 900, color: crypto.color, fontFamily: mono, flexShrink: 0,
++                     }}>{crypto.icon}</div>
++                     <div>
++                       <div style={{ fontWeight: 800, color: C.text, fontFamily: mono, fontSize: '15px' }}>{crypto.symbol}</div>
++                       <div style={{ fontSize: '11px', color: C.textMuted }}>{crypto.name}</div>
++                     </div>
++                   </div>
++                   <div style={{ fontSize: '20px', fontWeight: 800, color: C.text, fontFamily: mono, marginBottom: '6px' }}>
++                     {fmtUSD(d?.price)}
++                   </div>
++                   <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: mono, ...upClr(d?.changePercent24h) }}>
++                     {fmtPct(d?.changePercent24h)}
++                   </div>
++                 </div>
++               </Link>
++             );
++           })}
++         </div>
++       </div>
++
++       <div style={{
++         height: '1px', margin: '40px 0',
++         background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.3),transparent)',
++       }} />
++
++       {/* ── EXPLORE MARKETS ───────────────────────────────── */}
++       <div style={{ marginBottom: '48px' }}>
++         <SectionHeader title={'🌐 ' + t('dashboard2.sections.allMarkets')} />
++         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: '14px' }}>
++           {MARKETS.map(({ href, icon, label, desc }) => (
++             <Link href={href} key={href} style={{ textDecoration: 'none' }}>
++               <div style={{ ...card(), textAlign: 'center', padding: '28px 16px', cursor: 'pointer' }}
++                 onMouseEnter={e => {
++                   (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(212,175,55,0.4)';
++                   (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px)';
++                   (e.currentTarget as HTMLDivElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.5),0 0 20px rgba(212,175,55,0.1)';
++                 }}
++                 onMouseLeave={e => {
++                   (e.currentTarget as HTMLDivElement).style.borderColor = C.border;
++                   (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
++                   (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
++                 }}
++               >
++                 <div style={{ fontSize: '36px', marginBottom: '12px' }}>{icon}</div>
++                 <div style={{ fontSize: '14px', fontWeight: 700, color: C.text, marginBottom: '5px', fontFamily: serif }}>{href === '/forex' ? t('nav.forex') : href === '/commodities' ? t('nav.commodities') : href === '/bonds' ? t('nav.bonds') : href.startsWith('/pulse') ? t('nav.economyPlus') : href === '/lab' ? t('nav.compare') : label}</div>
++                 <div style={{ fontSize: '11px', color: C.textMuted }}>{href === '/forex' ? t('dashboard.markets.forexDesc') : href === '/commodities' ? t('dashboard.markets.commoditiesDesc') : href === '/bonds' ? t('dashboard.markets.bondsDesc') : href.startsWith('/pulse') ? t('dashboard.markets.economyPlusDesc') : href === '/lab' ? t('dashboard.markets.compareDesc') : desc}</div>
++               </div>
++             </Link>
++           ))}
++         </div>
++       </div>
++
++       {/* ── RISHI WISDOM BANNER ───────────────────────────── */}
++       <div style={wisdomBanner}>
++         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
++           <div style={{ flex: 1, minWidth: '260px' }}>
++             <h2 style={{
++               fontFamily: serif, fontSize: '26px', fontWeight: 900,
++               background: 'linear-gradient(135deg,#D4AF37,#A78BFA)',
++               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
++               marginBottom: '12px',
++             }}>
++               🧘 {t('dashboard2.wisdom.title')}
++             </h2>
++             <p style={{ color: C.textMuted, fontSize: '15px', lineHeight: 1.8, maxWidth: '480px' }}>
++               {t('dashboard2.wisdom.body')}
++             </p>
++           </div>
++           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
++             <Link href='/rishis' style={{
++               padding: '13px 26px', background: 'linear-gradient(135deg,#A88B20,#D4AF37)',
++               color: '#0A0F1C', borderRadius: '12px', fontWeight: 700, fontSize: '14px',
++               textDecoration: 'none', boxShadow: '0 4px 20px rgba(212,175,55,0.3)',
++             }}>🧘 Meet the Rishis</Link>
++             {/* Commit M4 (free access): the "View Plans" CTA is gone —
++                 there are no plans. Every feature is free. */}
++           </div>
++         </div>
++       </div>
++
++     </>
++   );
++ }
++
+
+ ❯ test/intelligenceScreenerDrawer.test.ts:194:19
+    192|   it("the dashboard tail no longer imports, mounts, or wires the intel…
+    193|     const s = source(TAIL);
+    194|     expect(s).not.toContain("DashboardBrief");
+       |                   ^
+    195|     // the mount's own comment block went with it
+    196|     expect(s).not.toContain("INT-C1");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 197 passed (199)
+      Tests  3 failed | 2204 passed (2207)
+   Start at  04:01:45
+   Duration  60.84s (import 45%, tests 44%, transform 7%, setup 2%, worker 2%)
+
+     Import  508 modules were evaluated 1091 times · 18.32s total, 45% of tracked time
+             ~9.79s faster with isolate: false — shared modules are evaluated once per worker instead of once per file
+             learn more: https://vitest.dev/guide/improving-performance#test-isolation
+
+VITEST_EXIT=1

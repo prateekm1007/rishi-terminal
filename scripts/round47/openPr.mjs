@@ -19,7 +19,7 @@ if (!m) {
   console.error("FAIL: git-credentials cache does not match the expected shape");
   process.exit(1);
 }
-const [, user, token] = m;
+const [, , token] = m;
 const title = readFileSync(titleFile, "utf8").trim();
 const body = readFileSync(bodyFile, "utf8");
 

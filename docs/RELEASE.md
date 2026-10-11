@@ -365,3 +365,14 @@ pacing discipline above remains the standing rule.
   #342 11:48:14Z (window from #341 10:35:39Z honored). Subsequent
   merges hold the one-per-hour C8 window regardless of deploy state —
   the debt is deployment-side, not merge-side.
+
+### 2026-10-11 follow-up (round 48) — the #342 deploy debt CLEARED
+
+The 11:48Z entry above records #342 landing with deploy debt while the
+quota window was 402-saturated ("production serves 791c7b6 until the debt
+clears"). That present-tense claim is now historical only: #349 merged at
+~12:55Z, built FROM THE MAIN TIP (which already contained #342's changes),
+and deployed — production serves `4c9f7088` (verified live, first probe,
+13:56Z: `GET /api/version` → sha 4c9f7088cb04...; the /stock/RELIANCE
+flight carries the #349 licence-hold content). No debt remains; the
+retry-sporadically protocol stood down unused.

@@ -510,3 +510,55 @@ Round-52 execution notes (coder, not the founder's words):
   item-6 addition (the stale-quote step in the demo spec) rides the P0 PR once
   #391 merges. Item 8's ENG-2 is #390 (built). Item 7 modifies the #388
   disposition (the "macro knowledge graphs" clause now ordered removed).
+
+## Round 53 (2026-10-12, night order) — the audit scorecard + merge queue + the cache P0, words verbatim
+
+Founder's order (12 Oct 2026, evening — score 6/10 at main f9a8494 / production
+641e37c as the founder snapshotted it), recorded verbatim before the first
+change of this round (the Constitution's standing record rule):
+
+> Read CONSTITUTION.md (Core) before the next change. English only. Nothing
+> disabled, removed or hidden.
+>
+> 1. Merge in this order, one per hourly window: #399, #400, #401, #370, #391.
+>    Each merge needs a live proof on the bare URL, with no cache-buster.
+> 2. Stock-page cache (new P0, C1/C6). Find out why the bare /stock/RELIANCE
+>    URL serves a render more than 50 minutes old, even though the code sets
+>    revalidate = 60. Use curl -sI and report age and x-vercel-cache. Then
+>    remove market status from the server-rendered HTML entirely. Render
+>    "as of <time> (server render)" and let the client compute open or closed.
+>    Acceptance: the bare URL never states "market open" from a stale render.
+> 3. Probe (#400). Make the bare URL the authoritative check. Fail if the
+>    observation line is older than 15 minutes while the market is open by IST
+>    time. Record age and x-vercel-cache in the output. Paste the output.
+> 4. Chat formula (#401). Update the system-prompt formula lines to match the
+>    scorer weights in the same PR or a follow-up. This blocks chat going live,
+>    not the demo.
+> 5. Copy (DELIV-4). Remove "live" from the News title ("Market Intelligence —
+>    live news"). Make the title match the honest empty state.
+> 6. Demo spec (#391). Run test/demo/demo-path.spec.ts against the public URL
+>    and paste the result, with screenshots of the RELIANCE honest page. Merge
+>    only when it's green.
+> 7. Still blocked: the demo approach (FOUNDER DECISION NEEDED). Don't build
+>    /demo with seed verdicts on real companies. Continue the unblocked work:
+>    lint to zero on demo-path files, and formula tests for persona docs once
+>    #401 lands.
+>
+> What I need from you:
+> 1. The demo approach. This is the critical one, and I need it by 14 October
+>    to keep the freeze on 20 October.
+> 2. Confirm that "Top Buy Signals" and "Short Radar" stay as named, with
+>    counsel's view still open.
+
+Round-53 execution notes (coder, not the founder's words):
+- Premise correction (rule 28), reported with evidence: the founder's snapshot
+  predates 16:07:38Z — #391 IS merged (origin/main = e8d2c23); production is
+  641e37c, so e8d2c23 carries deploy debt until tonight's first deploy. The
+  merge queue is therefore #399 → #400 → #401 → #370, and the first deploy
+  clears #391's debt.
+- Item 2's fix rides #399 (same STALE-QUOTE token, same widget, same tests):
+  the SSR label change is the completion of the P0 the founder ordered in both
+  orders — merging #399 without it would ship a first byte that still states
+  market status from a render the viewer may read hours later.
+- Item 3's amendments ride #400 (same PROBE-LIVE token); item 4's amendment
+  rides #401 (the founder sanctioned "in the same PR or a follow-up").

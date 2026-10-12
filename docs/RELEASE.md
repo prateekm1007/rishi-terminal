@@ -462,3 +462,21 @@ retry-sporadically protocol stood down unused.
   and "serves aab1eb1d" entries above are SUPERSEDED — `GET /api/version`
   serves `02eac31664013b80d568c55d6d914d86420af357` = current main tip
   (#380). Next production window opens 05:29:41Z (#380 merge + 60 min).
+
+### 2026-10-12 (round 51) — RESP-1/RESP-4: deploy batch dcd4c06 verified live
+
+- **Version.** `GET /api/version` serves `dcd4c0611482393554d4f0c2f220bd9e606d055f`
+  = current main tip (#392 RISHI-21; merged 10:34:03Z, serving within ~8 min —
+  the deploy pipeline is healthy, no debt protocol needed).
+- **Seed-leak probe.** `node scripts/ci/postDeploySmoke.mjs --base
+  https://rishi-terminal.vercel.app --expect-sha dcd4c06…` → PASS, exit 0
+  (dual-key script, #384 hardening): RELIANCE seed record (seed=1, missing=0,
+  verdict-sections=0/2); "HIGH Data" 0, "REDUCE" 0, old QVPS badge 0,
+  QVPS-on-seed 0, on probe key AND bare-cache key; nullzero pins hold
+  ("hidden for banks" control ≥ 1). Full output in the session report.
+- **Chain since the last entry:** 02eac31 (#380) → eef4ab4 (#381 docs) →
+  422cd07 (#384) → 298e5bd (#382 docs) → 5cb830f (#383 docs) → 2f277dd
+  (#371 DELIV-2, live-proven on ea7c244) → ea7c244 (#387 docs) → 76f70d4
+  (#379 guard) → 7ecafc8 (#369 RULES-2) → a50704c (#385 ENG-1b, live-proven:
+  smoke PASS + /methodology/munger serves the null contract) → dcd4c06
+  (#392 RISHI-21, live legs owed to this entry — covered above).

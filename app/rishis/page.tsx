@@ -210,6 +210,13 @@ export default function ChatWithRishisPage() {
                   <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 10, background: tColor + '20', color: tColor, fontWeight: 700, fontFamily: 'monospace' }}>
                     {rishi.rank.toUpperCase()}
                   </span>
+                  {/* Rishi decision (founder, 12 Oct 2026): the chat-only
+                      persona is marked — simulated, never scored. */}
+                  {rishi.chatOnly && (
+                    <span style={{ fontSize: 8, padding: '1px 5px', borderRadius: 10, background: 'var(--bg-secondary)', color: 'var(--text-muted)', fontWeight: 700, fontFamily: 'monospace', border: '1px solid var(--border-primary)' }}>
+                      CHAT-ONLY
+                    </span>
+                  )}
                   {hasChat && (
                     <span style={{ fontSize: 8, color: '#00BA7C' }}>● active</span>
                   )}

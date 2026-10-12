@@ -402,8 +402,10 @@ quoted verbatim; the date is the directive's receipt date, 2026-10-12).
   confirm the 11 Oct delegation in writing." No written confirmation of the delegation exists,
   so the revert is implemented by PR #359 (the 11 Oct record, which quotes the round-48 order)
   and no further change happens without the founder's dated, written confirmation.
-- **Rishi count — FOUNDER DECISION NEEDED (the coder does not choose).** Founder's
-  question (12 Oct): "Rishi count: 20 scored, or 21 with Chanos chat-only?" Verified code
-  state (origin/main): SCORER_REGISTRY holds exactly 20 scorers (TOTAL_RISHIS = 20, no Chanos
-  scorer); the display registry holds 21 ranked personas (Chanos carries rank Master, chat-only);
-  docs/methodology carries no Chanos framework doc. Nothing changes until the founder answers.
+- **Rishi count — DECIDED 12 Oct 2026, implemented this round (was FOUNDER DECISION
+  NEEDED).** Founder's words, verbatim: "21 with Chanos chat-only" (register row
+  docs/ROADMAP.md FD-28). Verified code state stands: 20 scored (TOTAL_RISHIS = 20,
+  no Chanos scorer); 21 display with Chanos flagged `chatOnly` (CHAT-ONLY chip on the
+  /rishis row, simulated label, no score, no methodology doc). Dashboard wisdom body
+  no longer lists Chanos among applied frameworks (en/hi/pseudo; fallback locales
+  follow en).

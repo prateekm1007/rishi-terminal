@@ -4,7 +4,7 @@
  *
  * The public/client projection may carry ONLY rendering fields (id, name,
  * fullName, emoji, color, rank, philosophy, label, bio, formula, bestFor,
- * quote, famousPicks, category, origin). It must NOT carry systemPrompt,
+ * famousPicks, category, origin, chatOnly). It must NOT carry systemPrompt,
  * stockPrompt, engine, or provider/authorization internals.
  *
  * Structural fix: lib/chat/registryDisplay.ts is the prompt-free projection
@@ -42,8 +42,8 @@ const AUTHORITY_KEYS = ["systemPrompt", "stockPrompt", "engine"] as const;
  *  suggest one). */
 const CLIENT_SAFE_KEYS = new Set([
   "id", "name", "fullName", "emoji", "color", "rank",
-  "philosophy", "label", "bio", "formula", "bestFor", "quote",
-  "famousPicks", "category", "origin",
+  "philosophy", "label", "bio", "formula", "bestFor",
+  "famousPicks", "category", "origin", "chatOnly",
 ]);
 
 describe("G10 — the client projection carries no authority fields", () => {

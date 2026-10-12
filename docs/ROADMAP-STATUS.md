@@ -562,3 +562,100 @@ Round-53 execution notes (coder, not the founder's words):
   market status from a render the viewer may read hours later.
 - Item 3's amendments ride #400 (same PROBE-LIVE token); item 4's amendment
   rides #401 (the founder sanctioned "in the same PR or a follow-up").
+
+## Round 55 (2026-10-13) — the free-data adoptions approved + the unofficial-scraper directive, words verbatim
+
+Founder's message (13 Oct 2026, IM), recorded verbatim before the first change
+of this round (the Constitution's standing record rule). IM line-wrapping and
+fragments preserved exactly as received:
+
+> approve the 4 reversible adoptions (acceptance gates are in ch. 8. also use
+> Unofficial data scrapers. vsjha18/nsetools (MIT) retrieves data "from the
+> official website"marketcalls/openchart (MIT) says it is not affiliated with
+> NSE and uses its APIs. LogeshR15/screener-mcp reaches Screener.in and NSE.
+> shashankvemuri/Finance uses Yahoo Finance.
+> "Personal use only". dhananjaym182/india-xbrl-filings is labelled MIT, .
+> Copyleft. BennyThadikaran/NseIndiaApi (GPL-3.0), cloudQuant/backtrader
+> (GPL-3.0), rehanhaider/stocky (GPL-3.0), and lfre/lightkeeper (AGPL-3.0,
+> archived).
+>  hemenkapadia/getbhavcopy and most other bhavcopy and indicator repos.
+> Forecasting and signals. NayakwadiS/NSE-Neuron can be used for   buy or sell
+> rule.
+
+What the message refers to: "the 4 reversible adoptions" and "ch. 8" are the
+Free-Data Licensing research note delivered 13 Oct 2026
+(`Rishi_Free_Data_Licensing_Assessment.pdf` — ch. 5 adoption plan, ch. 8
+Table 8.1 acceptance shapes): the Wikidata metadata pilot, the SEC EDGAR
+cross-check (US-filing subset), the exchange calendar for market-hours, and
+the OpenFIGI symbol-mapping reference.
+
+Round-55 verification pass (coder, C1 — every claim in the founder's message
+checked against the live repositories before acting on it; the full table and
+the raw API evidence live in `docs/evidence/round55/`):
+
+- Verified exactly as the founder stated: nsetools MIT; openchart MIT (raw
+  LICENSE file read; GitHub's API says NOASSERTION — a detection artifact) and
+  its README carries verbatim "not affiliated, endorsed, or vetted by NSE
+  India" + "uses NSE India's publicly available APIs" + "research and
+  educational purposes"; screener-mcp MIT ("live access to Screener.in, NSE,
+  and MCX data"); shashankvemuri/Finance MIT code over Yahoo data (Yahoo's
+  own terms remain the personal-use boundary recorded 11 Oct);
+  india-xbrl-filings carries the MIT label; NseIndiaApi GPL-3.0;
+  cloudQuant/backtrader GPL-3.0; rehanhaider/stocky GPL-3.0;
+  lfre/lightkeeper AGPL-3.0 AND archived (both claims true).
+- Premise corrections found by the pass (rule 28):
+  1. hemenkapadia/getbhavcopy ships NO LICENSE FILE and NO README and has not
+     been pushed since 2020-01 — its code is all-rights-reserved: it serves
+     as a technique reference only, never copied. The bhavcopy FILES it
+     points at are NSE's own published public archives; downloading those
+     directly is display-only tier-C use and needs no code from the repo.
+  2. Round-54 note correction: exchange_calendars contains NO XNSE calendar
+     (GitHub code search: 0 hits; no commit history for the path). The
+     round-54 note's "Apache-2.0 with XNSE" was right about the license and
+     wrong about the calendar. The NSE closed-day facts adopted this round
+     come from pandas_market_calendars (MIT, verified 13 Oct), which carries
+     the NSE closed-day list 1996-2026 sourced from NSE's published holiday
+     circulars.
+
+Binding dispositions this round (the coder's classification carrying out the
+founder's directive; the note's five-tier license model is unchanged):
+
+- USE (the founder-approved unofficial scrapers): nsetools, openchart,
+  screener-mcp, shashankvemuri/Finance, getbhavcopy-as-technique — as code
+  and technique references WITH attribution. An open-source client does not
+  confer open data (T54): the data each one fetches remains governed by the
+  upstream's terms (NSE / Screener.in / Yahoo), so the fetch layer stays
+  display-only, nothing becomes persistable (lib/cache/storageRights.ts is
+  untouched), and provenance (source + as-of) stays on every row (FD-15).
+- PERSONAL USE ONLY (the founder's category, binding): india-xbrl-filings —
+  own use, never the product pipeline.
+- COPYLEFT (no code import): NseIndiaApi, backtrader, stocky, lightkeeper —
+  GPL-3.0/AGPL-3.0 linkage terms; lightkeeper additionally archived.
+- SIGNALS: NSE-Neuron (MIT, verified) may feed a buy-or-sell rule under the
+  founder's directive. Integration is its own gated PR: heuristic-reference
+  framing (FD-23 — labelled, source/attribution/as-of, not a Rishi verdict),
+  with the honest runtime note that the upstream is a Python/TensorFlow
+  deep-learning model that cannot run inside the Next.js serverless runtime,
+  so the adoption shape is a transparent, documented rule or an offline
+  batch — never an unlabelled black box.
+- UNCHANGED by this directive (C9 — no goal traded away silently):
+  PRICE_DATA_LICENSE stays "unresolved" (lib/licensing.ts), "Licence pending"
+  stays on every price-based score (FD-26), the NSE / Angel One
+  written-answer enquiries stay open, and any Screener.in ingest-path
+  unfreeze is its own gated PR, not a silent registry flip.
+
+Execution order for the approved adoptions (gates from ch. 8, Table 8.1):
+1. Exchange calendar for market-hours — sourced from pandas_market_calendars'
+   NSE closed days (MIT, holidays/nse.py at commit 9af1144); market-status
+   fixtures on holiday dates; an annual diff against NSE's official list as
+   the standing verification ritual (NSE's official holiday page is
+   Akamai-denied to robots this pass — recorded in the round evidence).
+2. Wikidata metadata pilot — snapshot + SHA-256 + SOURCES.md like the
+   security master; provenance tests assert CC0 on every adopted field.
+3. OpenFIGI symbol-mapping reference — attribution recorded; no bulk use
+   until the counsel read of its terms page.
+4. EDGAR cross-check (US-filing subset) — gated on the counsel read of
+   sec.gov's public-domain wording; no display path until verified.
+5. Disclosure block update — the ch. 7 investor block gains the scraper
+   attribution lines; pinned verbatim by the copy audit (the DELIV-4
+   pattern).

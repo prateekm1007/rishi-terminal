@@ -1,0 +1,2445 @@
+{
+  "sha": "bbda29fed902374bdb75acab008f421fbd567823",
+  "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/bbda29fed902374bdb75acab008f421fbd567823",
+  "tree": [
+    {
+      "path": ".agents",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d7d2d0702f8bfe2b3ac1ae21deede542546588ea",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/d7d2d0702f8bfe2b3ac1ae21deede542546588ea"
+    },
+    {
+      "path": ".agents/skills",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9205f63232d4cc7713675de36c4a230fdbbe1fd2",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/9205f63232d4cc7713675de36c4a230fdbbe1fd2"
+    },
+    {
+      "path": ".agents/skills/dependencies-management",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "68961b4cf8fdc28ec6cfdbc628ed5c86c6b3862b",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/68961b4cf8fdc28ec6cfdbc628ed5c86c6b3862b"
+    },
+    {
+      "path": ".agents/skills/dependencies-management/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb9ea06cd9bbdcc672d7c029389262608995a05f",
+      "size": 7117,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/bb9ea06cd9bbdcc672d7c029389262608995a05f"
+    },
+    {
+      "path": ".agents/skills/update-agents-md",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "20f229d67adab15dc5a341f213640b3779323f79",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/20f229d67adab15dc5a341f213640b3779323f79"
+    },
+    {
+      "path": ".agents/skills/update-agents-md/SKILL.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f58e3d81906ed6d0e451727611125f6bc111dd1f",
+      "size": 1878,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f58e3d81906ed6d0e451727611125f6bc111dd1f"
+    },
+    {
+      "path": ".claude",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "090a487f33e4c5a7902880771019bce7f17d5ecf",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/090a487f33e4c5a7902880771019bce7f17d5ecf"
+    },
+    {
+      "path": ".claude/settings.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bd7db2ed4ee9d9d11c1de06d6211c4eaeeb3aaa",
+      "size": 354,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9bd7db2ed4ee9d9d11c1de06d6211c4eaeeb3aaa"
+    },
+    {
+      "path": ".devcontainer",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b410c7760e1f1eb4ee9975ff82602be16fd12ac6",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/b410c7760e1f1eb4ee9975ff82602be16fd12ac6"
+    },
+    {
+      "path": ".devcontainer/Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b59637b3e306755b5132d22de57ca6f59c70beb",
+      "size": 1292,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4b59637b3e306755b5132d22de57ca6f59c70beb"
+    },
+    {
+      "path": ".devcontainer/base.Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf7768fc40a2410a36cfaa11b32ddd7c3843b372",
+      "size": 2469,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cf7768fc40a2410a36cfaa11b32ddd7c3843b372"
+    },
+    {
+      "path": ".devcontainer/devcontainer.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6026cff2d88201c34bc73e05fd0cb823a2bddd37",
+      "size": 1773,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6026cff2d88201c34bc73e05fd0cb823a2bddd37"
+    },
+    {
+      "path": ".devcontainer/library-scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e20df12de96aff2657a27f669fd99c00122be398",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/e20df12de96aff2657a27f669fd99c00122be398"
+    },
+    {
+      "path": ".devcontainer/library-scripts/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "844dfe8f617472ea3b2d04bacb77e1e1ef68b1fd",
+      "size": 484,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/844dfe8f617472ea3b2d04bacb77e1e1ef68b1fd"
+    },
+    {
+      "path": ".devcontainer/library-scripts/common-debian.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "2eae386dc42061babad0e2f87955641343c8f792",
+      "size": 10799,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/2eae386dc42061babad0e2f87955641343c8f792"
+    },
+    {
+      "path": ".devcontainer/library-scripts/node-debian.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "b8b3af9b0dad4cda4c0600690b63689672fb93c8",
+      "size": 4022,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b8b3af9b0dad4cda4c0600690b63689672fb93c8"
+    },
+    {
+      "path": ".devcontainer/library-scripts/python-debian.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "3f96a6dbb72b0839bb4a2f0ee39e20aadcf328f4",
+      "size": 5132,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3f96a6dbb72b0839bb4a2f0ee39e20aadcf328f4"
+    },
+    {
+      "path": ".gitattributes",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5f626113be937577844b38c0836b30239684191c",
+      "size": 79,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/5f626113be937577844b38c0836b30239684191c"
+    },
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b9d060c6f207d26e11cd599c66c00c2fa177763e",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/b9d060c6f207d26e11cd599c66c00c2fa177763e"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ee0601d391e0e4556f91c2f4dd2cc6595b436a3",
+      "size": 732,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0ee0601d391e0e4556f91c2f4dd2cc6595b436a3"
+    },
+    {
+      "path": ".github/pull_request_template.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "beca76d2e0b7f2bf6b4583ea027a49471ce8e959",
+      "size": 2041,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/beca76d2e0b7f2bf6b4583ea027a49471ce8e959"
+    },
+    {
+      "path": ".github/release-drafter-config.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6a8daf15d5777feb7e55ab946a63669d3e7726d2",
+      "size": 954,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6a8daf15d5777feb7e55ab946a63669d3e7726d2"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5ad4b5058e4d1c4c11b9021ae114c4f21a111333",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/5ad4b5058e4d1c4c11b9021ae114c4f21a111333"
+    },
+    {
+      "path": ".github/workflows/benchmark.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "770ce1af2e58bff180656c5cc1ee4b3b34b8edb9",
+      "size": 1126,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/770ce1af2e58bff180656c5cc1ee4b3b34b8edb9"
+    },
+    {
+      "path": ".github/workflows/labeler.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "99db967b383bea61c19624ecc8b5eddb97a50c0e",
+      "size": 297,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/99db967b383bea61c19624ecc8b5eddb97a50c0e"
+    },
+    {
+      "path": ".github/workflows/main.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "339be271671208bde116fb8b01e94ab3fc57463e",
+      "size": 1864,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/339be271671208bde116fb8b01e94ab3fc57463e"
+    },
+    {
+      "path": ".github/workflows/master-merge.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "147ff6ff7cf6204f084cb958ee3e5a310413b4c1",
+      "size": 423,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/147ff6ff7cf6204f084cb958ee3e5a310413b4c1"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "89ba63a508bb9b41f4a03e98f509c80740b61032",
+      "size": 1572,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/89ba63a508bb9b41f4a03e98f509c80740b61032"
+    },
+    {
+      "path": ".github/workflows/update_deps.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "70d101a07b7f52dbdc90c00bf21a72243e092bd8",
+      "size": 1862,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/70d101a07b7f52dbdc90c00bf21a72243e092bd8"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "98ccd9fbfe91d9a17441bf369dd7be259db1622b",
+      "size": 2223,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/98ccd9fbfe91d9a17441bf369dd7be259db1622b"
+    },
+    {
+      "path": ".pre-commit-config.yaml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88843a5184372bf58600b301591d0e112b860a87",
+      "size": 377,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/88843a5184372bf58600b301591d0e112b860a87"
+    },
+    {
+      "path": ".python-version",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4db6d7d6be230ede069da534996ef356cb4cbbab",
+      "size": 7,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4db6d7d6be230ede069da534996ef356cb4cbbab"
+    },
+    {
+      "path": "AGENTS.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bcfc7d4b0692d60366921caf7a2822efbce7ec4",
+      "size": 11818,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/8bcfc7d4b0692d60366921caf7a2822efbce7ec4"
+    },
+    {
+      "path": "CLAUDE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c023e3cf25a755d2f9c1ab2557206119edba4ca0",
+      "size": 1325,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c023e3cf25a755d2f9c1ab2557206119edba4ca0"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a49122d9e24358e10888c8ff540a1c3348dcc11d",
+      "size": 11347,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a49122d9e24358e10888c8ff540a1c3348dcc11d"
+    },
+    {
+      "path": "MANIFEST.in",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc96be859608915652aef6f676976a20bf25f7a4",
+      "size": 62,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/fc96be859608915652aef6f676976a20bf25f7a4"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "33a9562b7e4a4320d13d55b7bcf84e96965b973b",
+      "size": 25069,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/33a9562b7e4a4320d13d55b7bcf84e96965b973b"
+    },
+    {
+      "path": "docs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8da7af3f1116bf3bc7119c0b4a3d11e5c9037da5",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/8da7af3f1116bf3bc7119c0b4a3d11e5c9037da5"
+    },
+    {
+      "path": "docs/changes_archive.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "699f545da4875dd44ab213d5988cb5fccaeaeb7b",
+      "size": 3866,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/699f545da4875dd44ab213d5988cb5fccaeaeb7b"
+    },
+    {
+      "path": "docs/dev",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5e59205b97ad6cbb05f688a200fcd6cb44265e9a",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/5e59205b97ad6cbb05f688a200fcd6cb44265e9a"
+    },
+    {
+      "path": "docs/dev/depenencies_update.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "826625cabf1a76ddf7fb818e54286a7f7256f226",
+      "size": 519,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/826625cabf1a76ddf7fb818e54286a7f7256f226"
+    },
+    {
+      "path": "docs/tutorials",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f2fd7c59612a975baa372ede904f7bf3cc4c2d5f",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/f2fd7c59612a975baa372ede904f7bf3cc4c2d5f"
+    },
+    {
+      "path": "docs/tutorials/calendar_methods.ipynb",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1476baba42dc04c327221a7d81d7f757569d4f1c",
+      "size": 90326,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1476baba42dc04c327221a7d81d7f757569d4f1c"
+    },
+    {
+      "path": "docs/tutorials/calendar_properties.ipynb",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff9e725a126d5184b6b3880e408fd3d634de4e94",
+      "size": 37097,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ff9e725a126d5184b6b3880e408fd3d634de4e94"
+    },
+    {
+      "path": "docs/tutorials/minutes.ipynb",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "345aa8e70a975df23cd8d4a8c34d03d25927fb52",
+      "size": 29917,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/345aa8e70a975df23cd8d4a8c34d03d25927fb52"
+    },
+    {
+      "path": "docs/tutorials/sessions.ipynb",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3facaf7578261f01729b365607414b5bf5ec5ecb",
+      "size": 22137,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3facaf7578261f01729b365607414b5bf5ec5ecb"
+    },
+    {
+      "path": "docs/tutorials/trading_index.ipynb",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a5b0a8a0be91fff5eb49b0667d362c6e4a9fa5b5",
+      "size": 149704,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a5b0a8a0be91fff5eb49b0667d362c6e4a9fa5b5"
+    },
+    {
+      "path": "etc",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "53c95a787ff343ab41b03c381f0e25bbd9d062b0",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/53c95a787ff343ab41b03c381f0e25bbd9d062b0"
+    },
+    {
+      "path": "etc/NYSE-Historical-Closings.pdf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60ecd4292cfadbac5d416ae2b0433666209610e8",
+      "size": 141885,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/60ecd4292cfadbac5d416ae2b0433666209610e8"
+    },
+    {
+      "path": "etc/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "etc/bench.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f4c780df4ef2c3638e8f92dd15ca79527369fd4",
+      "size": 1493,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0f4c780df4ef2c3638e8f92dd15ca79527369fd4"
+    },
+    {
+      "path": "etc/check_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ad5819f91d7b2a11ea5989bb082b44bc17b802b9",
+      "size": 5725,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ad5819f91d7b2a11ea5989bb082b44bc17b802b9"
+    },
+    {
+      "path": "etc/ecal",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "f338592270635c2d0a440482d840386bddbd9401",
+      "size": 3612,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f338592270635c2d0a440482d840386bddbd9401"
+    },
+    {
+      "path": "etc/factory_bounds.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a6bdaecaa8ff415cf32e3d1699896252ea698241",
+      "size": 12758,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a6bdaecaa8ff415cf32e3d1699896252ea698241"
+    },
+    {
+      "path": "etc/lunisolar",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "70aa1591df20aeaba61e19fa613547a3d9586a60",
+      "size": 50358,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/70aa1591df20aeaba61e19fa613547a3d9586a60"
+    },
+    {
+      "path": "etc/make_exchange_calendar_test_csv.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "34e19073c0a2f57ca425fec9fe13be6e7791bb89",
+      "size": 2983,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/34e19073c0a2f57ca425fec9fe13be6e7791bb89"
+    },
+    {
+      "path": "etc/update_xkrx_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f93615548ce277e551b85eec1869cc57a1e7e5bd",
+      "size": 4348,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f93615548ce277e551b85eec1869cc57a1e7e5bd"
+    },
+    {
+      "path": "exchange_calendars",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3f2a181c177e6910f8a403b9b88477753644897a",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/3f2a181c177e6910f8a403b9b88477753644897a"
+    },
+    {
+      "path": "exchange_calendars/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78af20d70859eeb247764916590143449521b83e",
+      "size": 1717,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/78af20d70859eeb247764916590143449521b83e"
+    },
+    {
+      "path": "exchange_calendars/always_open.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e76718a87a0435d31ab0164803c2716ccc9c0ee",
+      "size": 411,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/2e76718a87a0435d31ab0164803c2716ccc9c0ee"
+    },
+    {
+      "path": "exchange_calendars/calendar_helpers.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4636912d1d848e11486243726fe01fe7af6d47f0",
+      "size": 24793,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4636912d1d848e11486243726fe01fe7af6d47f0"
+    },
+    {
+      "path": "exchange_calendars/calendar_utils.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f77c8d543b8b619ebd2d271db4a343336d422b1",
+      "size": 21695,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1f77c8d543b8b619ebd2d271db4a343336d422b1"
+    },
+    {
+      "path": "exchange_calendars/common_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39fb87e7873f7400b4c4313cafea313707eb87f0",
+      "size": 11753,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/39fb87e7873f7400b4c4313cafea313707eb87f0"
+    },
+    {
+      "path": "exchange_calendars/ecal.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39d5c2492e7ce32668be81a675281573b81f9977",
+      "size": 3648,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/39d5c2492e7ce32668be81a675281573b81f9977"
+    },
+    {
+      "path": "exchange_calendars/errors.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "11730af1cca081dafc67b113ac72e3245957f024",
+      "size": 10839,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/11730af1cca081dafc67b113ac72e3245957f024"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10fa937f06653b5b66649eeace643ce2369d4fd5",
+      "size": 105955,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/10fa937f06653b5b66649eeace643ce2369d4fd5"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_aixk.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f58a00650ea7f66386a01e3ffc2ae15e3d838f7d",
+      "size": 6691,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f58a00650ea7f66386a01e3ffc2ae15e3d838f7d"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_asex.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "444e0b39ca95d510ffa396c71372a8fb0f1afd6c",
+      "size": 4333,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/444e0b39ca95d510ffa396c71372a8fb0f1afd6c"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_bvmf.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32af83dc686fef6185e29213c9289f82d12b6bbe",
+      "size": 5863,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/32af83dc686fef6185e29213c9289f82d12b6bbe"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_cmes.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c23c46e039a68887fc8bdeca59c5d80391833554",
+      "size": 3281,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c23c46e039a68887fc8bdeca59c5d80391833554"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_iepa.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6d8cebbe1173020f90736efc4633f0db6a94b0d",
+      "size": 2022,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e6d8cebbe1173020f90736efc4633f0db6a94b0d"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xams.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cee282178b908197ed481380a05e4ae7401fe547",
+      "size": 2923,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cee282178b908197ed481380a05e4ae7401fe547"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xasx.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "06b9b23b92e2cb528b5ba8222f67666beaf8d875",
+      "size": 6946,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/06b9b23b92e2cb528b5ba8222f67666beaf8d875"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbda.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91f7e8bb7039c3bf248e266d345168560625b5f1",
+      "size": 6088,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/91f7e8bb7039c3bf248e266d345168560625b5f1"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbel.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a8e214942b1ea299eaeb4be3929e72502d25dbf7",
+      "size": 4495,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a8e214942b1ea299eaeb4be3929e72502d25dbf7"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbkk.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fa7a9aa46d7b7db9722ab6db8e0f062eeccee621",
+      "size": 3449,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/fa7a9aa46d7b7db9722ab6db8e0f062eeccee621"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbog.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b70d386dc456a936060cce7cb0f236f5c721aca",
+      "size": 4720,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7b70d386dc456a936060cce7cb0f236f5c721aca"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbom.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f6ebae46f8a35f9ef1ed4b2ae1d8a8a0dcaf65cd",
+      "size": 12634,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f6ebae46f8a35f9ef1ed4b2ae1d8a8a0dcaf65cd"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbra.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ec37a667562041bce1444c88e86ae3279156986",
+      "size": 2971,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4ec37a667562041bce1444c88e86ae3279156986"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbru.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8292811de19d4aa31ab9088a1a66e1a273cb6ad",
+      "size": 2970,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f8292811de19d4aa31ab9088a1a66e1a273cb6ad"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbse.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f187bc8b314277b33ddddb19a1b71db9291975be",
+      "size": 2730,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f187bc8b314277b33ddddb19a1b71db9291975be"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbud.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "249f43f7a0cf059d04cde9a612b82e171d25143f",
+      "size": 5927,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/249f43f7a0cf059d04cde9a612b82e171d25143f"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xbue.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6021484b1d8e3e8cc7ef2da9fb9d399b4dd4f522",
+      "size": 9001,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6021484b1d8e3e8cc7ef2da9fb9d399b4dd4f522"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xcbf.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "906519090df5bf3a0158b1c5e7787f67ad05fb12",
+      "size": 1948,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/906519090df5bf3a0158b1c5e7787f67ad05fb12"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xcse.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "805f21b77b5c5cc12d6d4737378aa4bbd6dff4a8",
+      "size": 2777,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/805f21b77b5c5cc12d6d4737378aa4bbd6dff4a8"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xcys.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "204597b6c8887ad0ef45da5e7b975a42f6930d0f",
+      "size": 3144,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/204597b6c8887ad0ef45da5e7b975a42f6930d0f"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xdfm.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "870343d98bd04dfdad3ae47c609f77378d4cc9b4",
+      "size": 6545,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/870343d98bd04dfdad3ae47c609f77378d4cc9b4"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xdub.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b2c0959dd62345accf123a0fc10dc4c84d34ac9b",
+      "size": 4353,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b2c0959dd62345accf123a0fc10dc4c84d34ac9b"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xdus.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da1f6511c5e84ab4d1c4b9216c37154ac234bd55",
+      "size": 3221,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/da1f6511c5e84ab4d1c4b9216c37154ac234bd55"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xeee.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "48cbb471a3aaa9ce2534df7fd8b382eb2138e99b",
+      "size": 1546,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/48cbb471a3aaa9ce2534df7fd8b382eb2138e99b"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xetr.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2a0f63830568b92aede2a838b4f6fff94b537be5",
+      "size": 3711,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/2a0f63830568b92aede2a838b4f6fff94b537be5"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xeur.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c33a3e59d2ac68a3eb2325bf46ebd37b476e94c6",
+      "size": 1466,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c33a3e59d2ac68a3eb2325bf46ebd37b476e94c6"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xfra.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f924da9dabaa24de0b687cf354a66535b9a3b00",
+      "size": 3667,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4f924da9dabaa24de0b687cf354a66535b9a3b00"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xham.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b0de32967985af3edf733c36a2bdde89170f305",
+      "size": 3221,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7b0de32967985af3edf733c36a2bdde89170f305"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xhel.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9fbd975c37521845becfc83cd0a43d3b2ae93291",
+      "size": 2458,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9fbd975c37521845becfc83cd0a43d3b2ae93291"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xhkg.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f17571a5267ff826d37088c0548267860dc45fe0",
+      "size": 17050,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f17571a5267ff826d37088c0548267860dc45fe0"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xice.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1a3c565ec8aa072b0b31c9b2f2a6e92f26a1d30",
+      "size": 2904,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e1a3c565ec8aa072b0b31c9b2f2a6e92f26a1d30"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xidx.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c2f5510776c19c936383e118d3927c14ce4482e",
+      "size": 14936,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3c2f5510776c19c936383e118d3927c14ce4482e"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xist.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b84d5c37eab08638ea1a0323ae854665dd1a7de1",
+      "size": 5351,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b84d5c37eab08638ea1a0323ae854665dd1a7de1"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xjse.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "139c116cf273d39c78aa9cdc68207f84e2065566",
+      "size": 5170,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/139c116cf273d39c78aa9cdc68207f84e2065566"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xkar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1efbf279776db4e2018db0b6aa1a9d2baf8fe328",
+      "size": 13031,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1efbf279776db4e2018db0b6aa1a9d2baf8fe328"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xkls.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "98c3ba203abdc8ee393d272e50bf0c4191f9d09d",
+      "size": 3287,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/98c3ba203abdc8ee393d272e50bf0c4191f9d09d"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xkrx.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8425992ec3b84a795596dfa3c0bbe2b2425abf24",
+      "size": 13093,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/8425992ec3b84a795596dfa3c0bbe2b2425abf24"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xlim.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6737b70287a61bc5a6ea59fa04d1362561f95f4",
+      "size": 4404,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b6737b70287a61bc5a6ea59fa04d1362561f95f4"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xlis.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c94988956708005686a92e29a015ea54b8b85402",
+      "size": 3887,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c94988956708005686a92e29a015ea54b8b85402"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xlit.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "734acc93d7676acdd1c10501c7d6d0a19fe1f996",
+      "size": 2602,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/734acc93d7676acdd1c10501c7d6d0a19fe1f996"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xlju.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "079145850b901e26906cd83a459cf9b1b7607b95",
+      "size": 2855,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/079145850b901e26906cd83a459cf9b1b7607b95"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xlon.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a4f107eb4ab060889367239c6ac64ede7a96d004",
+      "size": 7332,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a4f107eb4ab060889367239c6ac64ede7a96d004"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xlux.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aef5d241635b3488090f8b9745522d5dfe002004",
+      "size": 1829,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/aef5d241635b3488090f8b9745522d5dfe002004"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xmad.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b1c571da77d90dd014312427b4f758ee192835f",
+      "size": 4613,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4b1c571da77d90dd014312427b4f758ee192835f"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xmex.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "619e19ca9769a43a0db4e51ae50634bedc42c234",
+      "size": 3683,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/619e19ca9769a43a0db4e51ae50634bedc42c234"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xmil.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "96521e33fc1a595b273edda08cf9033a4051c1dd",
+      "size": 2177,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/96521e33fc1a595b273edda08cf9033a4051c1dd"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xmos.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd89c7f47cd43d54937f882d9a37d5632bfffb6e",
+      "size": 12424,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/fd89c7f47cd43d54937f882d9a37d5632bfffb6e"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xnys.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f692a1693a87f3670b4efe9659f20ec59c5ff8ad",
+      "size": 9403,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f692a1693a87f3670b4efe9659f20ec59c5ff8ad"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xnze.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "130809a1571d7470e1b954bf9988fba0805abc6d",
+      "size": 6943,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/130809a1571d7470e1b954bf9988fba0805abc6d"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xosl.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ff2978de04e4dd5d2cf1dce4b5fb8882989ad33",
+      "size": 2731,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1ff2978de04e4dd5d2cf1dce4b5fb8882989ad33"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xpar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8325061fd98f58bceb222045cec20c0ceb07f044",
+      "size": 2832,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/8325061fd98f58bceb222045cec20c0ceb07f044"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xphs.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "59f2807aa3766f46bd44e0d58729024fc2a3276a",
+      "size": 12925,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/59f2807aa3766f46bd44e0d58729024fc2a3276a"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xpra.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "27027e56b7a473ecd961313ccff89892873cc2f4",
+      "size": 3561,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/27027e56b7a473ecd961313ccff89892873cc2f4"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xris.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3509ba26b44c75ece9888b91d0415d707327bfa2",
+      "size": 3277,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3509ba26b44c75ece9888b91d0415d707327bfa2"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xsau.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0b84dc66d3ffab82f800ce8f80fa59204294e580",
+      "size": 2683,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0b84dc66d3ffab82f800ce8f80fa59204294e580"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xses.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b3acb36064ca22e17f4a10665b9c83055aea228",
+      "size": 11543,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3b3acb36064ca22e17f4a10665b9c83055aea228"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xsgo.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8cb713139bfd5e9c50dce22f9a9a581ee444d833",
+      "size": 8538,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/8cb713139bfd5e9c50dce22f9a9a581ee444d833"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xshg.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a91411a7b542391a79ee34db86f0ed4bdfafdc5",
+      "size": 14758,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7a91411a7b542391a79ee34db86f0ed4bdfafdc5"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xsto.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1fc85ca633a6455a0a67bd627d1a3c101f9637da",
+      "size": 3918,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1fc85ca633a6455a0a67bd627d1a3c101f9637da"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xstu.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af099c41b83fa78abedc947b42fddd8a9e93c77f",
+      "size": 1468,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/af099c41b83fa78abedc947b42fddd8a9e93c77f"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xswx.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d994917070bd9b45b88d14553ca53253f765c5cb",
+      "size": 2476,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/d994917070bd9b45b88d14553ca53253f765c5cb"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xtae.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0b9f29cd1d3450fdc9ad42f4e2a3298edf037bdd",
+      "size": 7838,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0b9f29cd1d3450fdc9ad42f4e2a3298edf037bdd"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xtai.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7fc433a323fee2b6d73d921486d13edf0680db27",
+      "size": 13839,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7fc433a323fee2b6d73d921486d13edf0680db27"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xtal.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "34b649f106ad629658c3c48ebe56d0e748f25c2c",
+      "size": 2215,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/34b649f106ad629658c3c48ebe56d0e748f25c2c"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xtks.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6646d12ddde99bd4cc4139cd9bdcf7fe0678b29c",
+      "size": 4657,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6646d12ddde99bd4cc4139cd9bdcf7fe0678b29c"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xtse.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1c24edf8b30765d9ac052f0b75f2373d0d85cda",
+      "size": 3796,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b1c24edf8b30765d9ac052f0b75f2373d0d85cda"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xwar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab8571b0a90995c12115391fb9c0848ea4403329",
+      "size": 3664,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ab8571b0a90995c12115391fb9c0848ea4403329"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xwbo.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1c34671f343482d6f388b62aec3a113de1b15d6c",
+      "size": 4277,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1c34671f343482d6f388b62aec3a113de1b15d6c"
+    },
+    {
+      "path": "exchange_calendars/exchange_calendar_xzag.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae2394bc4ef8381e5f8f4e0ac717bc4ad1161687",
+      "size": 3326,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ae2394bc4ef8381e5f8f4e0ac717bc4ad1161687"
+    },
+    {
+      "path": "exchange_calendars/lunisolar_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d6002e7b04b7ced256755614d0b2e7032ebe5ff8",
+      "size": 13602,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/d6002e7b04b7ced256755614d0b2e7032ebe5ff8"
+    },
+    {
+      "path": "exchange_calendars/pandas_extensions",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d064296ba20ff28b0ab49a291bd7e1cb92d0d856",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/d064296ba20ff28b0ab49a291bd7e1cb92d0d856"
+    },
+    {
+      "path": "exchange_calendars/pandas_extensions/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "exchange_calendars/pandas_extensions/holiday.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1cf16ba064e5400292da6ac7ea04bc8a680d4785",
+      "size": 6309,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1cf16ba064e5400292da6ac7ea04bc8a680d4785"
+    },
+    {
+      "path": "exchange_calendars/pandas_extensions/korean_holiday.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9ede552cdea0d4c4b86ebd3c0384333ccf12899",
+      "size": 7737,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f9ede552cdea0d4c4b86ebd3c0384333ccf12899"
+    },
+    {
+      "path": "exchange_calendars/pandas_extensions/offsets.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bcad835c6fe232bcfd789bdb5c60dff2d0e7350a",
+      "size": 11604,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/bcad835c6fe232bcfd789bdb5c60dff2d0e7350a"
+    },
+    {
+      "path": "exchange_calendars/precomputed_exchange_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6920c179038cc5218d2b5da55378126fc9e6a0af",
+      "size": 1744,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6920c179038cc5218d2b5da55378126fc9e6a0af"
+    },
+    {
+      "path": "exchange_calendars/tase_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b0db17461754d41fc5e8218498d6c1bc41f22eec",
+      "size": 16165,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b0db17461754d41fc5e8218498d6c1bc41f22eec"
+    },
+    {
+      "path": "exchange_calendars/us_futures_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ca74803b3e81e60e86f996304ebf2aa543ca6d99",
+      "size": 2795,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ca74803b3e81e60e86f996304ebf2aa543ca6d99"
+    },
+    {
+      "path": "exchange_calendars/us_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30a0ac7957562cca93858ff477877229da1e3ea1",
+      "size": 10190,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/30a0ac7957562cca93858ff477877229da1e3ea1"
+    },
+    {
+      "path": "exchange_calendars/utils",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4bc7fbdd483db7c410c2af76faadfc2117b92b11",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/4bc7fbdd483db7c410c2af76faadfc2117b92b11"
+    },
+    {
+      "path": "exchange_calendars/utils/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "exchange_calendars/utils/pandas_utils.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "76821e7d79dadb36d161d4c0ab41a684f60917b0",
+      "size": 4706,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/76821e7d79dadb36d161d4c0ab41a684f60917b0"
+    },
+    {
+      "path": "exchange_calendars/weekday_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9878f3124cf4e3577062c117bdf8954bbf39a060",
+      "size": 399,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9878f3124cf4e3577062c117bdf8954bbf39a060"
+    },
+    {
+      "path": "exchange_calendars/xbkk_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8e5b83ea10435d5250ed455f91c748aaffaaf476",
+      "size": 8791,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/8e5b83ea10435d5250ed455f91c748aaffaaf476"
+    },
+    {
+      "path": "exchange_calendars/xkls_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "628361be40607217a24dd36a0768d5d795c19dcc",
+      "size": 13441,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/628361be40607217a24dd36a0768d5d795c19dcc"
+    },
+    {
+      "path": "exchange_calendars/xkrx_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4e70b865d3c853389db7e7b24f19a23bc24307cc",
+      "size": 37489,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4e70b865d3c853389db7e7b24f19a23bc24307cc"
+    },
+    {
+      "path": "exchange_calendars/xtks_holidays.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "710e9af1eabe01e874e4884169953506ad3332f1",
+      "size": 10349,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/710e9af1eabe01e874e4884169953506ad3332f1"
+    },
+    {
+      "path": "pyproject.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "460862053a31036abd5d886d49e96dfd964b40fc",
+      "size": 3524,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/460862053a31036abd5d886d49e96dfd964b40fc"
+    },
+    {
+      "path": "requirements.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0783b0b58a307d4507b45fc8755d069d7862fd0c",
+      "size": 966,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0783b0b58a307d4507b45fc8755d069d7862fd0c"
+    },
+    {
+      "path": "ruff.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ba263011e8a69cdd4ded5e1fa6c4896c05f5a2ea",
+      "size": 3479,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ba263011e8a69cdd4ded5e1fa6c4896c05f5a2ea"
+    },
+    {
+      "path": "tests",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "260d9226d379ea5ffc8ebcef89549f0dfc7f78e1",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/260d9226d379ea5ffc8ebcef89549f0dfc7f78e1"
+    },
+    {
+      "path": "tests/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "tests/resources",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8fad172eebe3a8c87a52b162548678bef7ed6435",
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/trees/8fad172eebe3a8c87a52b162548678bef7ed6435"
+    },
+    {
+      "path": "tests/resources/24-5.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1668f61f660354033b05ab6bd898b1ecca79b3b2",
+      "size": 16999,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1668f61f660354033b05ab6bd898b1ecca79b3b2"
+    },
+    {
+      "path": "tests/resources/24-7.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38da8c554de8692210650d2f2339065a4dac62d7",
+      "size": 23824,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/38da8c554de8692210650d2f2339065a4dac62d7"
+    },
+    {
+      "path": "tests/resources/aixk.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d14250c727aa58473c4e5e8ef946b95813da654d",
+      "size": 113849,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/d14250c727aa58473c4e5e8ef946b95813da654d"
+    },
+    {
+      "path": "tests/resources/asex.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1c41996834ef0f07be12355a65fc2f46cebe9e2",
+      "size": 496439,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b1c41996834ef0f07be12355a65fc2f46cebe9e2"
+    },
+    {
+      "path": "tests/resources/bvmf.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7089ac2b6c768be9ba0ae8cab242c1040f2f623c",
+      "size": 588609,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7089ac2b6c768be9ba0ae8cab242c1040f2f623c"
+    },
+    {
+      "path": "tests/resources/cmes.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53c6eaa562816dc8b24db41ab84c9a80e8c4b238",
+      "size": 629364,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/53c6eaa562816dc8b24db41ab84c9a80e8c4b238"
+    },
+    {
+      "path": "tests/resources/iepa.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ca5117918d703b4dad95e7e49b2cbb64333cd10b",
+      "size": 461924,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ca5117918d703b4dad95e7e49b2cbb64333cd10b"
+    },
+    {
+      "path": "tests/resources/test.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cefa297f822470ac5e1a34a9696f739c520c3924",
+      "size": 114134,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cefa297f822470ac5e1a34a9696f739c520c3924"
+    },
+    {
+      "path": "tests/resources/xams.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ee254d3bb732eb14b8dcaa813715c8f60ab4d1e",
+      "size": 492279,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7ee254d3bb732eb14b8dcaa813715c8f60ab4d1e"
+    },
+    {
+      "path": "tests/resources/xasx.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1dff1660ea7e73bfe2e5e57a98ed9c8d1fe3fa53",
+      "size": 577884,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1dff1660ea7e73bfe2e5e57a98ed9c8d1fe3fa53"
+    },
+    {
+      "path": "tests/resources/xbda.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7f87216100c338363f4591042f384bcb3b144192",
+      "size": 114044,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7f87216100c338363f4591042f384bcb3b144192"
+    },
+    {
+      "path": "tests/resources/xbel.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d922706b178845ad4756ce83089462b3cd5bef63",
+      "size": 81219,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/d922706b178845ad4756ce83089462b3cd5bef63"
+    },
+    {
+      "path": "tests/resources/xbkk.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78d5edc4acb55e4c452022c316ca7ce430c28c1a",
+      "size": 589064,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/78d5edc4acb55e4c452022c316ca7ce430c28c1a"
+    },
+    {
+      "path": "tests/resources/xbog.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e58e3f741fb8050e7af9955ba467391ac55e0eb0",
+      "size": 486819,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e58e3f741fb8050e7af9955ba467391ac55e0eb0"
+    },
+    {
+      "path": "tests/resources/xbom.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69ce4fd5a0b667df6fb2266721c7bd6862054499",
+      "size": 482269,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/69ce4fd5a0b667df6fb2266721c7bd6862054499"
+    },
+    {
+      "path": "tests/resources/xbra.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "146a4d26f18971b8928a32400cfeecd0cf458446",
+      "size": 97209,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/146a4d26f18971b8928a32400cfeecd0cf458446"
+    },
+    {
+      "path": "tests/resources/xbru.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53cd698becfc90fe6a36e37a649171c431ef2351",
+      "size": 492344,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/53cd698becfc90fe6a36e37a649171c431ef2351"
+    },
+    {
+      "path": "tests/resources/xbse.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aca086c6e7ab4a4b5808313949b8d5deac1a88e6",
+      "size": 560724,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/aca086c6e7ab4a4b5808313949b8d5deac1a88e6"
+    },
+    {
+      "path": "tests/resources/xbud.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e081ce1fa766a28e9b10783aba7ee20debe7687",
+      "size": 499559,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/2e081ce1fa766a28e9b10783aba7ee20debe7687"
+    },
+    {
+      "path": "tests/resources/xbue.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "162efee58753e7aaf9cb81e04e1f98adb938b0d5",
+      "size": 498389,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/162efee58753e7aaf9cb81e04e1f98adb938b0d5"
+    },
+    {
+      "path": "tests/resources/xcbf.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7c187a8c537cca6c8a63a6bb5b898a6ef9eefce3",
+      "size": 547139,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7c187a8c537cca6c8a63a6bb5b898a6ef9eefce3"
+    },
+    {
+      "path": "tests/resources/xcse.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "67b64ef99c1063240a4de959f322e762ce54be7b",
+      "size": 571384,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/67b64ef99c1063240a4de959f322e762ce54be7b"
+    },
+    {
+      "path": "tests/resources/xcys.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de8beeff20c8a2ba4a95f8f0744fd2baf3e33b83",
+      "size": 192304,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/de8beeff20c8a2ba4a95f8f0744fd2baf3e33b83"
+    },
+    {
+      "path": "tests/resources/xdfm.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc1eb72ca8b877ebc12ce1c46141b9eeacf3f7e4",
+      "size": 82064,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/dc1eb72ca8b877ebc12ce1c46141b9eeacf3f7e4"
+    },
+    {
+      "path": "tests/resources/xdub.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c9b31d83d7dbb6e2216c5a0a55fec741fb9aef7",
+      "size": 507099,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4c9b31d83d7dbb6e2216c5a0a55fec741fb9aef7"
+    },
+    {
+      "path": "tests/resources/xdus.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9109a3b12da7fc8ee14f72b0b5056e7b920c3006",
+      "size": 561894,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9109a3b12da7fc8ee14f72b0b5056e7b920c3006"
+    },
+    {
+      "path": "tests/resources/xeee.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aee691fa56cb68af96acf7f06e01a9c7d238ab49",
+      "size": 585684,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/aee691fa56cb68af96acf7f06e01a9c7d238ab49"
+    },
+    {
+      "path": "tests/resources/xetr.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c21a2af529615fca67670ab8efe531f84f52084",
+      "size": 552404,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/5c21a2af529615fca67670ab8efe531f84f52084"
+    },
+    {
+      "path": "tests/resources/xeur.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "057fc08449e33e1d17d8b2bab8448c46799c01a6",
+      "size": 82649,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/057fc08449e33e1d17d8b2bab8448c46799c01a6"
+    },
+    {
+      "path": "tests/resources/xfra.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3304ccbfcfc12802fbbf22bc26ff16cffd1df397",
+      "size": 561894,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3304ccbfcfc12802fbbf22bc26ff16cffd1df397"
+    },
+    {
+      "path": "tests/resources/xham.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9109a3b12da7fc8ee14f72b0b5056e7b920c3006",
+      "size": 561894,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9109a3b12da7fc8ee14f72b0b5056e7b920c3006"
+    },
+    {
+      "path": "tests/resources/xhel.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5255a2d8936060ca06b6f0c28d79a832b7f82694",
+      "size": 486559,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/5255a2d8936060ca06b6f0c28d79a832b7f82694"
+    },
+    {
+      "path": "tests/resources/xhkg.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5e8bdb7317a64db9e9fd0127342f36ea7a36e97",
+      "size": 921779,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e5e8bdb7317a64db9e9fd0127342f36ea7a36e97"
+    },
+    {
+      "path": "tests/resources/xice.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "defadc80567e85f35cfed6535e8dc24cf155d2bd",
+      "size": 145764,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/defadc80567e85f35cfed6535e8dc24cf155d2bd"
+    },
+    {
+      "path": "tests/resources/xidx.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c102ab09daa3dadc4794731b2005ac6655ef5e9a",
+      "size": 603234,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c102ab09daa3dadc4794731b2005ac6655ef5e9a"
+    },
+    {
+      "path": "tests/resources/xist.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3086eea6366f24d6d50d1c8a829ccf97b1541142",
+      "size": 502614,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3086eea6366f24d6d50d1c8a829ccf97b1541142"
+    },
+    {
+      "path": "tests/resources/xjse.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "180c8669bba9f85605410a64c28b62a813b8004c",
+      "size": 499819,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/180c8669bba9f85605410a64c28b62a813b8004c"
+    },
+    {
+      "path": "tests/resources/xkar.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3773e35037a1d5f92927b0384b7494bf38f69c52",
+      "size": 585944,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3773e35037a1d5f92927b0384b7494bf38f69c52"
+    },
+    {
+      "path": "tests/resources/xkls.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a5653f594e2b52e78a12f1052308612b9dbbe38b",
+      "size": 595889,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a5653f594e2b52e78a12f1052308612b9dbbe38b"
+    },
+    {
+      "path": "tests/resources/xkrx.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eccb5034f54e3c10078ae2db0e0c198be39f9f71",
+      "size": 862314,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/eccb5034f54e3c10078ae2db0e0c198be39f9f71"
+    },
+    {
+      "path": "tests/resources/xlim.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c59c7c3e355e8e696c81e7435fc35816da3e8c70",
+      "size": 587179,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c59c7c3e355e8e696c81e7435fc35816da3e8c70"
+    },
+    {
+      "path": "tests/resources/xlis.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d75207651c244affb549aa272340a9f48164e2e",
+      "size": 488119,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1d75207651c244affb549aa272340a9f48164e2e"
+    },
+    {
+      "path": "tests/resources/xlit.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37ad4af5c8e9fc1710862da7d30df3df1edf119f",
+      "size": 64839,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/37ad4af5c8e9fc1710862da7d30df3df1edf119f"
+    },
+    {
+      "path": "tests/resources/xlju.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9db491c26f6af7ee4edf069395579379476499e6",
+      "size": 97339,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9db491c26f6af7ee4edf069395579379476499e6"
+    },
+    {
+      "path": "tests/resources/xlon.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0e561d9c278fc7f4ee515322be209068446b99b8",
+      "size": 553509,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0e561d9c278fc7f4ee515322be209068446b99b8"
+    },
+    {
+      "path": "tests/resources/xlux.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "643a2b7c5d05f3a7f22c7553e04b93bf7b56d54e",
+      "size": 432609,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/643a2b7c5d05f3a7f22c7553e04b93bf7b56d54e"
+    },
+    {
+      "path": "tests/resources/xmad.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "21e5976980ecae53534f65cec034872a86c3b4e5",
+      "size": 592444,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/21e5976980ecae53534f65cec034872a86c3b4e5"
+    },
+    {
+      "path": "tests/resources/xmex.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7984010c855479d59c9a5b70f6a57435b14523c7",
+      "size": 503979,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7984010c855479d59c9a5b70f6a57435b14523c7"
+    },
+    {
+      "path": "tests/resources/xmil.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24247484b49e435be569c6163e1f3e08cd843928",
+      "size": 490784,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/24247484b49e435be569c6163e1f3e08cd843928"
+    },
+    {
+      "path": "tests/resources/xmos.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80ccf8b94c22ebd08a6283c7587263d2bf2e004d",
+      "size": 572034,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/80ccf8b94c22ebd08a6283c7587263d2bf2e004d"
+    },
+    {
+      "path": "tests/resources/xnys.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bcebc113f9281a9f36949a185c9080cd6edb7ac5",
+      "size": 541094,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/bcebc113f9281a9f36949a185c9080cd6edb7ac5"
+    },
+    {
+      "path": "tests/resources/xnze.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "650aa9e12f22d99fff3fb9a14c3fa7b441931d46",
+      "size": 550909,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/650aa9e12f22d99fff3fb9a14c3fa7b441931d46"
+    },
+    {
+      "path": "tests/resources/xosl.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8794c1519f91f55bbcc542093a4287dcf81d4e0f",
+      "size": 486299,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/8794c1519f91f55bbcc542093a4287dcf81d4e0f"
+    },
+    {
+      "path": "tests/resources/xpar.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a4c87ff996079731ef8b9cb4933f9a286e7af154",
+      "size": 493059,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a4c87ff996079731ef8b9cb4933f9a286e7af154"
+    },
+    {
+      "path": "tests/resources/xphs.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6006d09aa9efa91e6ac0f1c42cd131c93f947257",
+      "size": 588609,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6006d09aa9efa91e6ac0f1c42cd131c93f947257"
+    },
+    {
+      "path": "tests/resources/xpra.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d343b9bf0c84bf1da31e25efa6e084ffeada89a",
+      "size": 501184,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6d343b9bf0c84bf1da31e25efa6e084ffeada89a"
+    },
+    {
+      "path": "tests/resources/xris.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "187e2f5a33be5898641eca6f067085352ca85b3e",
+      "size": 64839,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/187e2f5a33be5898641eca6f067085352ca85b3e"
+    },
+    {
+      "path": "tests/resources/xsau.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "71557273ca862c69e7cc5887946812af899ebbab",
+      "size": 145699,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/71557273ca862c69e7cc5887946812af899ebbab"
+    },
+    {
+      "path": "tests/resources/xses.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f0f1859609012ce3ec721e2917bfee746212b8ea",
+      "size": 669209,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f0f1859609012ce3ec721e2917bfee746212b8ea"
+    },
+    {
+      "path": "tests/resources/xsgo.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9044cfb4075ccdeca689154e6fde6ab3d896c9ba",
+      "size": 584189,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9044cfb4075ccdeca689154e6fde6ab3d896c9ba"
+    },
+    {
+      "path": "tests/resources/xshg.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db954c7c069cc4b4df1325b160092fbb1bb3a122",
+      "size": 924979,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/db954c7c069cc4b4df1325b160092fbb1bb3a122"
+    },
+    {
+      "path": "tests/resources/xsto.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b4bc7a2c42663886e01d99e17046a0224dacb68",
+      "size": 486494,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4b4bc7a2c42663886e01d99e17046a0224dacb68"
+    },
+    {
+      "path": "tests/resources/xstu.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c31dac899032e4efbaf5600369ec269f98e08058",
+      "size": 32989,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c31dac899032e4efbaf5600369ec269f98e08058"
+    },
+    {
+      "path": "tests/resources/xswx.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "827bdeb1e252eaafa1fa69b689012e968cb37c19",
+      "size": 485129,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/827bdeb1e252eaafa1fa69b689012e968cb37c19"
+    },
+    {
+      "path": "tests/resources/xtae.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "61896555141b980198e59f86d8e7e70f2cc422ff",
+      "size": 127954,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/61896555141b980198e59f86d8e7e70f2cc422ff"
+    },
+    {
+      "path": "tests/resources/xtai.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0df92ea0b20150a135b9620b84059ba4f06db047",
+      "size": 2044219,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0df92ea0b20150a135b9620b84059ba4f06db047"
+    },
+    {
+      "path": "tests/resources/xtal.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "779088280c4fbb1667a33b176461d688735847aa",
+      "size": 65424,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/779088280c4fbb1667a33b176461d688735847aa"
+    },
+    {
+      "path": "tests/resources/xtks.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "909d20ea3520feeeb70166a0d8af4f41695ff475",
+      "size": 694399,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/909d20ea3520feeeb70166a0d8af4f41695ff475"
+    },
+    {
+      "path": "tests/resources/xtse.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a3af4a214141ea99a5fbbc299a1e78abf35758e9",
+      "size": 486494,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a3af4a214141ea99a5fbbc299a1e78abf35758e9"
+    },
+    {
+      "path": "tests/resources/xwar.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc0e3d24456d5eed63c79b404e371c485e1c1705",
+      "size": 500989,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cc0e3d24456d5eed63c79b404e371c485e1c1705"
+    },
+    {
+      "path": "tests/resources/xwbo.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f25c56b641f8ce0b1b5e1fdeb81839d4e747e9a2",
+      "size": 555134,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f25c56b641f8ce0b1b5e1fdeb81839d4e747e9a2"
+    },
+    {
+      "path": "tests/resources/xzag.csv",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6efea00ef72c4b119e419d3d98c39491d3a4083",
+      "size": 96949,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c6efea00ef72c4b119e419d3d98c39491d3a4083"
+    },
+    {
+      "path": "tests/test_aixk_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ab2c98ac42b077109224570d1cdd27d84fd87b2",
+      "size": 2735,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/4ab2c98ac42b077109224570d1cdd27d84fd87b2"
+    },
+    {
+      "path": "tests/test_always_open.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2fdbd0630e4f5d2fb26cb4ca165b8a2fa4c5237c",
+      "size": 1315,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/2fdbd0630e4f5d2fb26cb4ca165b8a2fa4c5237c"
+    },
+    {
+      "path": "tests/test_asex_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e00c7c7ff9d547e60cc312c07d40835bc8717c83",
+      "size": 5121,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e00c7c7ff9d547e60cc312c07d40835bc8717c83"
+    },
+    {
+      "path": "tests/test_bvmf_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32299967539a5cb8b622e6c403d9e44ff6547745",
+      "size": 2540,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/32299967539a5cb8b622e6c403d9e44ff6547745"
+    },
+    {
+      "path": "tests/test_calendar_dispatcher.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39cb16abf441285136d86f529af1a28cb5e21fc4",
+      "size": 6012,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/39cb16abf441285136d86f529af1a28cb5e21fc4"
+    },
+    {
+      "path": "tests/test_calendar_helpers.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e81d0b099853db65c579415207b629f5cffd53c3",
+      "size": 70626,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e81d0b099853db65c579415207b629f5cffd53c3"
+    },
+    {
+      "path": "tests/test_cmes_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "837f810efb5686299b36aab9718e456002e61c92",
+      "size": 1233,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/837f810efb5686299b36aab9718e456002e61c92"
+    },
+    {
+      "path": "tests/test_exchange_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ee7148d5989fbd2fcea784ec54e5fd1fbfe14c88",
+      "size": 164411,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ee7148d5989fbd2fcea784ec54e5fd1fbfe14c88"
+    },
+    {
+      "path": "tests/test_iepa_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0b912ea008c88bb49156f913aab32dbb1f34f70a",
+      "size": 1226,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0b912ea008c88bb49156f913aab32dbb1f34f70a"
+    },
+    {
+      "path": "tests/test_utils.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d27b906bbdcddd24f5ea47cf5a3b7c1fdf6a8cfa",
+      "size": 73,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/d27b906bbdcddd24f5ea47cf5a3b7c1fdf6a8cfa"
+    },
+    {
+      "path": "tests/test_weekday_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b57a72f30bb0ac021706d3a6f2fd6722a52d540f",
+      "size": 1446,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b57a72f30bb0ac021706d3a6f2fd6722a52d540f"
+    },
+    {
+      "path": "tests/test_xams_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3a6b4c0c7a19be1316569335fba48439d9f26c4c",
+      "size": 976,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3a6b4c0c7a19be1316569335fba48439d9f26c4c"
+    },
+    {
+      "path": "tests/test_xasx_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2705444ffa6df8b30ff20d9c5fc9adae430cf2e2",
+      "size": 3473,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/2705444ffa6df8b30ff20d9c5fc9adae430cf2e2"
+    },
+    {
+      "path": "tests/test_xbda_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2472cb9e0068d07cba6e3515a73a86f8f5eaa322",
+      "size": 5314,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/2472cb9e0068d07cba6e3515a73a86f8f5eaa322"
+    },
+    {
+      "path": "tests/test_xbel_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a9108e1084997a94fe7bb1f9dc73c09c13008303",
+      "size": 1339,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a9108e1084997a94fe7bb1f9dc73c09c13008303"
+    },
+    {
+      "path": "tests/test_xbkk_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5d9f17bba9b3408ccba1536bf060b78b2230088",
+      "size": 3745,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/d5d9f17bba9b3408ccba1536bf060b78b2230088"
+    },
+    {
+      "path": "tests/test_xbog_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eb6593244ed7fe9f983c34086d85defed9bf9bc6",
+      "size": 3740,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/eb6593244ed7fe9f983c34086d85defed9bf9bc6"
+    },
+    {
+      "path": "tests/test_xbom_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3976fe896d9fbb4150774b49fe7bd2e068b99b2c",
+      "size": 1338,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/3976fe896d9fbb4150774b49fe7bd2e068b99b2c"
+    },
+    {
+      "path": "tests/test_xbra_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "04acca4e32ea3ee6830f3304f0435e62da107f49",
+      "size": 1615,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/04acca4e32ea3ee6830f3304f0435e62da107f49"
+    },
+    {
+      "path": "tests/test_xbru_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5d4e3ead0869da901ee8fb70a779cc1056735ec",
+      "size": 1002,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c5d4e3ead0869da901ee8fb70a779cc1056735ec"
+    },
+    {
+      "path": "tests/test_xbse_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6b0d922b98b3304c44a72319f3c4f6e7eef57f8",
+      "size": 3560,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c6b0d922b98b3304c44a72319f3c4f6e7eef57f8"
+    },
+    {
+      "path": "tests/test_xbud_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eacdc164c8c037a67591c435ed2911c74f4e70b8",
+      "size": 4839,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/eacdc164c8c037a67591c435ed2911c74f4e70b8"
+    },
+    {
+      "path": "tests/test_xbue_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2ba4666c39494ecb651186e9243d799a9d0972a",
+      "size": 3717,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a2ba4666c39494ecb651186e9243d799a9d0972a"
+    },
+    {
+      "path": "tests/test_xcbf_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "992bae66bc808cedb2dad33b26885a2bef53ffa7",
+      "size": 1633,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/992bae66bc808cedb2dad33b26885a2bef53ffa7"
+    },
+    {
+      "path": "tests/test_xcse_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "647d53fe2297d72e96e643dc9682f165670ef259",
+      "size": 2125,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/647d53fe2297d72e96e643dc9682f165670ef259"
+    },
+    {
+      "path": "tests/test_xcys_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "860d5f697c90c96d9d3abaff079d8f751fbd74fd",
+      "size": 1912,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/860d5f697c90c96d9d3abaff079d8f751fbd74fd"
+    },
+    {
+      "path": "tests/test_xdfm_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc9d447dd9805be9c1eab8bac333bc78674aada6",
+      "size": 1433,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cc9d447dd9805be9c1eab8bac333bc78674aada6"
+    },
+    {
+      "path": "tests/test_xdub_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "541517b20f8442c4e587749ef0707739bc173beb",
+      "size": 3233,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/541517b20f8442c4e587749ef0707739bc173beb"
+    },
+    {
+      "path": "tests/test_xdus_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "322a4da06b65c57ddbe0d35f957c932c4518bc92",
+      "size": 2370,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/322a4da06b65c57ddbe0d35f957c932c4518bc92"
+    },
+    {
+      "path": "tests/test_xeee_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c68a91b388256da791b40e0b8688d76db8853952",
+      "size": 1756,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c68a91b388256da791b40e0b8688d76db8853952"
+    },
+    {
+      "path": "tests/test_xetr_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "92d6d6ff4c54ec65de0727869d326dbb4c3e33c1",
+      "size": 2389,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/92d6d6ff4c54ec65de0727869d326dbb4c3e33c1"
+    },
+    {
+      "path": "tests/test_xeur_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dbce7d5f39ff58e675c67130f386d763d4dac501",
+      "size": 1845,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/dbce7d5f39ff58e675c67130f386d763d4dac501"
+    },
+    {
+      "path": "tests/test_xfra_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "339da2d302d4d9bc45234034d73e0c9e50d64281",
+      "size": 2390,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/339da2d302d4d9bc45234034d73e0c9e50d64281"
+    },
+    {
+      "path": "tests/test_xham_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ceea05b20796089db0543d2f7fe3a982894b7d6",
+      "size": 2370,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/7ceea05b20796089db0543d2f7fe3a982894b7d6"
+    },
+    {
+      "path": "tests/test_xhel_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f24a9c3f36a9651e77b6d97f9b503f9a8bd3eab",
+      "size": 2652,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9f24a9c3f36a9651e77b6d97f9b503f9a8bd3eab"
+    },
+    {
+      "path": "tests/test_xhkg_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c34aad64956e72eb3069302687e92f1442edd11f",
+      "size": 9394,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/c34aad64956e72eb3069302687e92f1442edd11f"
+    },
+    {
+      "path": "tests/test_xice_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4fe162ea2d6598b108061de18de4652cebceba7",
+      "size": 2206,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b4fe162ea2d6598b108061de18de4652cebceba7"
+    },
+    {
+      "path": "tests/test_xidx_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dde10b664711a27fb36f9874c2f676008d4c3afd",
+      "size": 6743,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/dde10b664711a27fb36f9874c2f676008d4c3afd"
+    },
+    {
+      "path": "tests/test_xist_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32ac43b6dbb25d9c391c7d5a1e4cd8b0ebfdae6c",
+      "size": 3673,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/32ac43b6dbb25d9c391c7d5a1e4cd8b0ebfdae6c"
+    },
+    {
+      "path": "tests/test_xjse_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a4551d9c057ef2c71f1ffc3f904dbce43be21a16",
+      "size": 3861,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a4551d9c057ef2c71f1ffc3f904dbce43be21a16"
+    },
+    {
+      "path": "tests/test_xkar_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "370c9ede4741ef77b33a0580c7b74bb178dd5056",
+      "size": 2513,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/370c9ede4741ef77b33a0580c7b74bb178dd5056"
+    },
+    {
+      "path": "tests/test_xkls_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f737760e6505329e2c92018df47d39b3302a0c32",
+      "size": 3322,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/f737760e6505329e2c92018df47d39b3302a0c32"
+    },
+    {
+      "path": "tests/test_xkrx_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "159b9081c89b38d7248270355a54dd004219321e",
+      "size": 5169,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/159b9081c89b38d7248270355a54dd004219321e"
+    },
+    {
+      "path": "tests/test_xlim_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9ad925ab3ad393b98a0b84b321a7078eea04c36",
+      "size": 3238,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/d9ad925ab3ad393b98a0b84b321a7078eea04c36"
+    },
+    {
+      "path": "tests/test_xlis_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50bab83cf481875c2755848d76d3c63b0e03a39f",
+      "size": 1857,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/50bab83cf481875c2755848d76d3c63b0e03a39f"
+    },
+    {
+      "path": "tests/test_xlit_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80e972e48b6563837f99eafd3b785974c90c222a",
+      "size": 1485,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/80e972e48b6563837f99eafd3b785974c90c222a"
+    },
+    {
+      "path": "tests/test_xlju_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "97690b4433465a64aa6661b0f8f19c47be52a24d",
+      "size": 1455,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/97690b4433465a64aa6661b0f8f19c47be52a24d"
+    },
+    {
+      "path": "tests/test_xlon_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d494621bbe21dc44e5201bc0d7a3204c08850dd",
+      "size": 1904,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0d494621bbe21dc44e5201bc0d7a3204c08850dd"
+    },
+    {
+      "path": "tests/test_xlux_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb845bbbe470d71fba7216d3dc5186d81524d630",
+      "size": 2920,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cb845bbbe470d71fba7216d3dc5186d81524d630"
+    },
+    {
+      "path": "tests/test_xmad_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5b9301fc577dc702f936a0cce15ba45b04cadab",
+      "size": 4086,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e5b9301fc577dc702f936a0cce15ba45b04cadab"
+    },
+    {
+      "path": "tests/test_xmex_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b353715ed1c0c6eaa85ec81e6fc8fbfac653b543",
+      "size": 4404,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b353715ed1c0c6eaa85ec81e6fc8fbfac653b543"
+    },
+    {
+      "path": "tests/test_xmil_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "676f779c4dd7bd6d8515bc939c94e819db9f423a",
+      "size": 1979,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/676f779c4dd7bd6d8515bc939c94e819db9f423a"
+    },
+    {
+      "path": "tests/test_xmos_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed712f12f3cd0ad8869fce4abb1a204cec76fbe4",
+      "size": 3790,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ed712f12f3cd0ad8869fce4abb1a204cec76fbe4"
+    },
+    {
+      "path": "tests/test_xnys_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a07845ac2a1151a9315265db2e59f509abae55b1",
+      "size": 3745,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a07845ac2a1151a9315265db2e59f509abae55b1"
+    },
+    {
+      "path": "tests/test_xnze_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "224e9d2dc08c6c772816e086db61c1df49e7b223",
+      "size": 3589,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/224e9d2dc08c6c772816e086db61c1df49e7b223"
+    },
+    {
+      "path": "tests/test_xosl_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9fe863a673fca4dc219c80de36293a58df5e2f19",
+      "size": 2622,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/9fe863a673fca4dc219c80de36293a58df5e2f19"
+    },
+    {
+      "path": "tests/test_xpar_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce106bb63dd806bfbf6b90377135a9e113d94c5b",
+      "size": 892,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ce106bb63dd806bfbf6b90377135a9e113d94c5b"
+    },
+    {
+      "path": "tests/test_xphs_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "224a33d5823d38a40333cf899ec6d8d45c49c494",
+      "size": 3612,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/224a33d5823d38a40333cf899ec6d8d45c49c494"
+    },
+    {
+      "path": "tests/test_xpra_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "36ca8893c0feba76738db56770323ea2b1d0dfef",
+      "size": 3369,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/36ca8893c0feba76738db56770323ea2b1d0dfef"
+    },
+    {
+      "path": "tests/test_xris_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db2cf265a78cecff5c1ea4f08952492cf40c9a9c",
+      "size": 1337,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/db2cf265a78cecff5c1ea4f08952492cf40c9a9c"
+    },
+    {
+      "path": "tests/test_xsau_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef8eea4f8e1f149fe6fda756f33a6c5b2e481d7b",
+      "size": 670,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/ef8eea4f8e1f149fe6fda756f33a6c5b2e481d7b"
+    },
+    {
+      "path": "tests/test_xses_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "040d2ee6ed5debd08c73e0debe874d92d67ace54",
+      "size": 1128,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/040d2ee6ed5debd08c73e0debe874d92d67ace54"
+    },
+    {
+      "path": "tests/test_xsgo_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a2bd586775e2f6522a34c2f155f6ac2c178e736",
+      "size": 8540,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/0a2bd586775e2f6522a34c2f155f6ac2c178e736"
+    },
+    {
+      "path": "tests/test_xshg_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc2899575ebac2795091b359e8d2cd3d302d0d7b",
+      "size": 3485,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cc2899575ebac2795091b359e8d2cd3d302d0d7b"
+    },
+    {
+      "path": "tests/test_xsto_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb537ad7fcb24c80ae67bead3ee35534b592164b",
+      "size": 3445,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/cb537ad7fcb24c80ae67bead3ee35534b592164b"
+    },
+    {
+      "path": "tests/test_xstu_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e774326226792057eb512559348c38b1e771323c",
+      "size": 1755,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e774326226792057eb512559348c38b1e771323c"
+    },
+    {
+      "path": "tests/test_xswx_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a8946e324a0e9026ed0a146e9c57e0dc8d0ea1f0",
+      "size": 1094,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a8946e324a0e9026ed0a146e9c57e0dc8d0ea1f0"
+    },
+    {
+      "path": "tests/test_xtae_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "568e84451d69d16afb5c6b285d8f3d2151b94946",
+      "size": 4923,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/568e84451d69d16afb5c6b285d8f3d2151b94946"
+    },
+    {
+      "path": "tests/test_xtai_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "99d1e97e1835d6acd762496ae134a52ee57a7b65",
+      "size": 3728,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/99d1e97e1835d6acd762496ae134a52ee57a7b65"
+    },
+    {
+      "path": "tests/test_xtal_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fe59f3b1d1f9df954698fd5e3cd07b6ce943c943",
+      "size": 1383,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/fe59f3b1d1f9df954698fd5e3cd07b6ce943c943"
+    },
+    {
+      "path": "tests/test_xtks_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e2409a1f9348c8198cc5b30c027c079bc5d16671",
+      "size": 14486,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/e2409a1f9348c8198cc5b30c027c079bc5d16671"
+    },
+    {
+      "path": "tests/test_xtse_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f2dec54d8274c2d3e329f71211e354daf761965",
+      "size": 2767,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/6f2dec54d8274c2d3e329f71211e354daf761965"
+    },
+    {
+      "path": "tests/test_xwar_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a71ea6e2328792ab5d5782438eba48306160bf4c",
+      "size": 3350,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/a71ea6e2328792ab5d5782438eba48306160bf4c"
+    },
+    {
+      "path": "tests/test_xwbo_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1771b89bfc41ff45f89d94cacfcc1a6dd2b13ffb",
+      "size": 3896,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1771b89bfc41ff45f89d94cacfcc1a6dd2b13ffb"
+    },
+    {
+      "path": "tests/test_xzag_calendar.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b34e65c66cbc553652d25de27403978375c7abd3",
+      "size": 1385,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/b34e65c66cbc553652d25de27403978375c7abd3"
+    },
+    {
+      "path": "uv.lock",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b08b4819e7c9851776a3832895a944c4c898122",
+      "size": 193829,
+      "url": "https://api.github.com/repos/gerrymanoim/exchange_calendars/git/blobs/1b08b4819e7c9851776a3832895a944c4c898122"
+    }
+  ],
+  "truncated": false
+}

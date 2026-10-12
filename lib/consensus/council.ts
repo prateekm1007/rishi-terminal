@@ -242,7 +242,9 @@ export const SCORER_LEVERS: ReadonlyArray<{ name: string; levers: Lever[] }> = [
 
 export interface CouncilDriver {
   pillar: string;
-  v: number;
+  /** ENG-1b: null = the pillar abstained (not assessed) — sorts last,
+   *  never compared numerically. */
+  v: number | null;
   detail: string;
 }
 
@@ -306,7 +308,7 @@ function rerun(fn: ScorerFn, s: Stock): number | null {
 
 /** The lever search: single levers first (fewest changes), then the
  *  declared order. Every reported step was VERIFIED by a re-run. */
-function findChange(fn: ScorerFn, levers: Lever[], stock: Stock, pillarV: Map<string, number>): CouncilChange | null {
+function findChange(fn: ScorerFn, levers: Lever[], stock: Stock, pillarV: Map<string, number | null>): CouncilChange | null {
   // 1) single-lever candidates, weakest-pillar-first
   const ordered = [...levers].sort((a, b) => (pillarV.get(a.pillar) ?? 100) - (pillarV.get(b.pillar) ?? 100));
   for (const lever of ordered) {
@@ -342,11 +344,14 @@ export function buildCouncil(stock: Stock, verdicts?: RishiScore[]): CouncilRepo
       return { name: v.name, full: v.full, label: v.label, score: null, status: 'no-verdict' as const, drivers: insufficient };
     }
     if (v.score >= COUNCIL_PASS_BAR) {
-      const strongest = drivers.sort((a, b) => b.v - a.v).slice(0, 2);
+      // ENG-1b: abstained pillars (null) sort last — strongest means
+      // strongest ASSESSED evidence, never an unassessed pillar.
+      const strongest = drivers.sort((a, b) => (b.v ?? -1) - (a.v ?? -1)).slice(0, 2);
       return { name: v.name, full: v.full, label: v.label, score: v.score, status: 'pass' as const, drivers: strongest };
     }
-    // fail: weakest drivers first + the verified lever path
-    const weakest = drivers.sort((a, b) => a.v - b.v).slice(0, 2);
+    // fail: weakest ASSESSED drivers first (an abstention is not a
+    // weakness) + the verified lever path
+    const weakest = drivers.sort((a, b) => (a.v ?? 101) - (b.v ?? 101)).slice(0, 2);
     const pillarV = new Map(v.comps.map(c => [c.label, c.v]));
     const leverEntry = SCORER_LEVERS.find(l => l.name === v.name);
     const change = leverEntry ? findChange(fns.get(v.name)!, leverEntry.levers, stock, pillarV) : null;

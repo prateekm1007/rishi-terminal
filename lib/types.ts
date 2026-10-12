@@ -58,7 +58,12 @@ export interface RishiScore {
   origin: 'Global' | 'India' | 'Bharat' | 'Crypto' | 'Commodity' | 'Forex/Macro';
   comps: Array<{
     label: string;
-    v: number;
+    /** ENG-1b (founder order 2026-10-12): null = the pillar abstains —
+     *  its inputs were not observed, so it contributes no value and its
+     *  weight is excluded from the aggregation (renormalized, never
+     *  zero-filled). The detail says why ('not assessed'). Consumers must
+     *  null-guard: never Math.round/sort-compare a null v. */
+    v: number | null;
     wt: number;
     detail: string;
   }>;

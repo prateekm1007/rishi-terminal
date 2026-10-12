@@ -26,12 +26,13 @@ export function LensInsights({ stock, scores }: Props) {
           <div key={idx} className="p-3 bg-secondary/50 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <div className="text-sm font-medium">{comp.label}</div>
-              <div className="text-sm font-mono text-accent-gold">{Math.round(comp.v)}/100</div>
+              {/* ENG-1b: an abstained pillar names itself — never 0, never NaN. */}
+              <div className="text-sm font-mono text-accent-gold">{comp.v === null ? 'not assessed' : `${Math.round(comp.v)}/100`}</div>
             </div>
             <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent-gold rounded-full transition-all duration-500"
-                style={{ width: `${comp.v}%` }}
+                style={{ width: comp.v === null ? '0%' : `${comp.v}%` }}
               />
             </div>
             <div className="text-xs text-muted mt-2">{comp.detail}</div>

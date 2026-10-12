@@ -1,24 +1,27 @@
 /**
- * Round-47 P1-MUNGER-NOT-ASSESSED (founder audit, 2026-10-11):
+ * Round-47 P1-MUNGER-NOT-ASSESSED (founder audit, 2026-10-11), REVERSED
+ * by ENG-1b (founder order, 2026-10-12: "return null, 'not assessed',
+ * when forensic inputs are absent" + "Remove the 50 default"):
  *
  *   "Munger: lib/scorers/munger.ts:24 passes by default unless a red flag
  *    is detected. 'PASS: No red flags' is asserted with no forensic data
  *    behind it."
- *   CODER order: "Change Munger's default from 'pass' to 'not assessed'
- *    until forensic checks exist."
+ *   CODER order (round 47): "Change Munger's default from 'pass' to
+ *    'not assessed' until forensic checks exist." — implemented then as
+ *    the neutral 50; ENG-1b replaces the 50 with null (abstain).
  *
- * What this pin enforces:
- *   1. The Inversion Check NEVER asserts a clearance by default: with the
- *      two observed screens clean (D/E <= 2, FCF >= 0) and NO forensic
- *      data in the pipeline (no accounting flags, related-party %, or
- *      auditor notes are observed for any record), the pillar holds the
- *      neutral 50 under the literal "NOT ASSESSED" label.
+ * What this pin enforces now:
+ *   1. The Inversion Check NEVER asserts a clearance by default AND never
+ *      fills the absence with a neutral number: with the two observed
+ *      screens clean (D/E <= 2, FCF >= 0) and NO forensic data in the
+ *      pipeline, the pillar is null under the literal "NOT ASSESSED"
+ *      label, and the total renormalizes over the assessed pillars.
  *   2. The observed screens still bite: high debt or negative FCF scores
  *      the pillar 0 with its FAIL detail (the red-flag path is unchanged).
  *   3. The "PASS: No red flags" string is gone from the scorer (grep-zero)
  *      — and the positive control: the honest replacement exists.
- *   4. The methodology doc states the not-assessed default (docs are part
- *      of the change, rule 30).
+ *   4. The methodology doc states the null contract (docs are part of
+ *      the change, rule 30).
  *   5. The patterns bite (C5).
  */
 import { describe, expect, it } from "vitest";
@@ -39,10 +42,10 @@ const findInversion = (r: ReturnType<typeof scoreMunger>) =>
   r.comps.find((c) => c.label === "Inversion Check")!;
 
 describe("P1 — Munger's Inversion Check defaults to NOT ASSESSED, never a clearance", () => {
-  it("clean screens + no forensic data -> neutral 50 under the NOT ASSESSED label", () => {
+  it("clean screens + no forensic data -> null under the NOT ASSESSED label (ENG-1b: abstain, never 50)", () => {
     const r = scoreMunger(base);
     const inv = findInversion(r);
-    expect(inv.v).toBe(50);
+    expect(inv.v).toBeNull();
     expect(inv.detail).toContain("NOT ASSESSED");
     expect(inv.detail).toContain("forensic");
   });
@@ -57,15 +60,22 @@ describe("P1 — Munger's Inversion Check defaults to NOT ASSESSED, never a clea
     expect(findInversion(negFcf).detail).toContain("FAIL: Negative FCF");
   });
 
-  it("the honest score is lower than the clearance-inflated one (the arithmetic follows)", () => {
-    // Pre-fix: clean screens awarded the pillar 100 (25 weighted points).
-    // Post-fix: neutral 50 (12.5 weighted points). A fully clean record
-    // loses exactly 12.5 — the inflation removed.
+  it("the honest score renormalizes over the assessed pillars (ENG-1b: the abstention is not a zero-fill)", () => {
+    // Pre-ENG-1b: clean screens held the neutral 50 (12.5 weighted points).
+    // Now the pillar abstains: the total is the assessed mean, and the
+    // breakdown reconstructs it (test/scoring.explain.test.ts pins this
+    // null-aware for every scorer).
     const r = scoreMunger(base);
     expect(r.scoreRaw).not.toBeNull();
     expect(Number.isFinite(r.scoreRaw)).toBe(true);
-    // circle 100 * .30 + inversion 50 * .25 + lolla 100 * .25 + patience 100 * .20
-    expect(r.scoreRaw).toBeCloseTo(100 * 0.3 + 50 * 0.25 + 100 * 0.25 + 100 * 0.2, 3);
+    // circle 100 * 30 + lolla 100 * 25 + patience 100 * 20, over assessed
+    // weight 75 (base fixture saturates circle/lolla/patience).
+    const assessed = r.comps.filter((c) => c.v !== null);
+    expect(assessed.length).toBe(3);
+    const w = assessed.reduce((a, c) => a + c.wt, 0);
+    expect(w).toBe(75);
+    expect(r.scoreRaw).toBeCloseTo(
+      assessed.reduce((a, c) => a + (c.v as number) * c.wt, 0) / w, 8);
   });
 
   it("'PASS: No red flags' is gone; the replacement is present (grep-zero + positive control)", () => {

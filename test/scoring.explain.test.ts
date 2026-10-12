@@ -55,16 +55,25 @@ describe("S2-05 — every score is reconstructible from its published breakdown"
           const wtSum = rishi.comps.reduce((a, c) => a + c.wt, 0);
           expect(wtSum, `${stock.symbol} ${rishi.name}: comps weights sum to ${wtSum}, not 100 (hidden pillar)`).toBe(100);
 
-          // (2) every pillar value is a score in [0, 100].
+          // (2) every pillar value is a score in [0, 100] — or an
+          // ENG-1b abstention (null, shown with its 'not assessed'
+          // detail; founder order 2026-10-12 reverses the neutral-50
+          // default). Null is a real value here, never a 0 and never
+          // outside-range.
           for (const comp of rishi.comps) {
             expect(
-              comp.v >= 0 && comp.v <= 100,
-              `${stock.symbol} ${rishi.name}: pillar "${comp.label}" v=${comp.v} outside [0,100]`,
+              comp.v === null || (comp.v >= 0 && comp.v <= 100),
+              `${stock.symbol} ${rishi.name}: pillar "${comp.label}" v=${comp.v} outside [0,100] and not null`,
             ).toBe(true);
           }
 
-          // (3) the contributions reconstruct the raw sum (1e-6).
-          const sum = rishi.comps.reduce((a, c) => a + (c.v * c.wt) / 100, 0);
+          // (3) the contributions reconstruct the raw sum (1e-6) —
+          // ENG-1b: over the ASSESSED pillars (an abstained pillar
+          // contributes no value and its weight is excluded —
+          // renormalized, never zero-filled). With no abstentions the
+          // assessed weight is 100 and this is exactly the old formula.
+          const assessedW = rishi.comps.reduce((a, c) => a + (c.v === null ? 0 : c.wt), 0);
+          const sum = rishi.comps.reduce((a, c) => a + ((c.v === null ? 0 : c.v * c.wt) / assessedW), 0);
           expect(
             Math.abs(sum - (rishi.scoreRaw as number)),
             `${stock.symbol} ${rishi.name}: breakdown sums to ${sum}, scorer says ${rishi.scoreRaw}`,

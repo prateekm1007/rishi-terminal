@@ -90,13 +90,17 @@ const RISHI_PHILOSOPHY: Record<string, { lens: string; keyFocus: string; signatu
 
 function generateReasoning(score: RishiScore, stock: Stock, stance: 'bull' | 'bear' | 'neutral'): string {
   const p = RISHI_PHILOSOPHY[score.name] || { lens: 'fundamental', keyFocus: 'core metrics', signature: '' };
-  const topComp = score.comps.sort((a, b) => b.v - a.v)[0];
-  const bottomComp = score.comps.sort((a, b) => a.v - b.v)[0];
+  // ENG-1b: abstained pillars (null v) sort last and never render as a
+  // number — an unassessed pillar is named as not assessed, not scored.
+  const topComp = score.comps.sort((a, b) => (b.v ?? -1) - (a.v ?? -1))[0];
+  const bottomComp = score.comps.sort((a, b) => (a.v ?? 101) - (b.v ?? 101))[0];
+  const compLine = (c: { label: string; v: number | null; detail: string } | undefined, only = false) =>
+    c ? `The ${c.label} ${c.v === null ? 'is not assessed' : `scores ${only ? 'only ' : ''}${c.v}/100`} -- ${c.detail}` : '';
 
   if (stance === 'bull') {
-    return `Through my ${p.lens} lens, ${stock.name} shows clear merit. ${topComp ? `The ${topComp.label} scores ${topComp.v}/100 -- ${topComp.detail}` : ''}. With ROE of ${stock.roe}% and a PE of ${stock.pe}x, the ${p.keyFocus} argument is compelling. ${score.insight}`;
+    return `Through my ${p.lens} lens, ${stock.name} shows clear merit. ${compLine(topComp)}. With ROE of ${stock.roe}% and a PE of ${stock.pe}x, the ${p.keyFocus} argument is compelling. ${score.insight}`;
   } else if (stance === 'bear') {
-    return `My ${p.lens} framework raises red flags here. ${bottomComp ? `The ${bottomComp.label} scores only ${bottomComp.v}/100 -- ${bottomComp.detail}` : ''}. Focusing on ${p.keyFocus}, the risk-reward does not justify current price. ${score.insight}`;
+    return `My ${p.lens} framework raises red flags here. ${compLine(bottomComp, true)}. Focusing on ${p.keyFocus}, the risk-reward does not justify current price. ${score.insight}`;
   } else {
     return `Applying my ${p.lens} approach, ${stock.name} sits at a crossroads. The ${p.keyFocus} picture is mixed -- I need more data before committing. ${score.insight}`;
   }
@@ -108,9 +112,10 @@ function generatePhilosophy(score: RishiScore, stock: Stock, stance: 'bull' | 'b
 }
 
 function generateKeyMetric(score: RishiScore, stance: 'bull' | 'bear'): string {
+  // ENG-1b: abstained pillars never surface as the key metric.
   const topComp = stance === 'bull'
-    ? score.comps.sort((a, b) => b.v - a.v)[0]
-    : score.comps.sort((a, b) => a.v - b.v)[0];
+    ? score.comps.sort((a, b) => (b.v ?? -1) - (a.v ?? -1))[0]
+    : score.comps.sort((a, b) => (a.v ?? 101) - (b.v ?? 101))[0];
   return topComp?.label || (stance === 'bull' ? 'Strong Fundamentals' : 'Risk Factor');
 }
 
@@ -238,7 +243,7 @@ function buildTimeline(scores: RishiScore[], stock: Stock): TimelineEntry[] {
       'deterioration_signal';
 
     const p = RISHI_PHILOSOPHY[rishi.name] || { lens: 'fundamental', keyFocus: 'metrics', signature: '' };
-    const topComp = rishi.comps.sort((a, b) => b.v - a.v)[0];
+    const topComp = rishi.comps.sort((a, b) => (b.v ?? -1) - (a.v ?? -1))[0];
 
     const contextMap: Record<TimelineEntry['event'], string> = {
       favorable_signal: `${rishi.full} model reads strongly favorable. ${p.lens} score: ${rishi.score}/100. Primary driver: ${topComp?.label || 'overall quality'}. ${topComp?.detail || rishi.insight}`,

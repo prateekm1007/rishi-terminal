@@ -159,15 +159,23 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
                       {comp.label}
                     </span>
                     <div className="flex items-center gap-2 shrink-0">
-                      <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${getScoreBarColor(comp.v)}`}
-                          style={{ width: `${comp.v}%` }}
-                        />
-                      </div>
-                      <span className={`font-mono w-6 text-right ${getScoreColor(comp.v)}`}>
-                        {Math.round(comp.v)}
-                      </span>
+                      {/* ENG-1b: an abstained pillar (null v) shows its
+                          honest label — never a 0 bar, never NaN. */}
+                      {comp.v === null ? (
+                        <span className="font-mono text-muted">not assessed</span>
+                      ) : (
+                        <>
+                          <div className="w-16 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${getScoreBarColor(comp.v)}`}
+                              style={{ width: `${comp.v}%` }}
+                            />
+                          </div>
+                          <span className={`font-mono w-6 text-right ${getScoreColor(comp.v)}`}>
+                            {Math.round(comp.v)}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -196,6 +204,10 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
                   {rishi.score !== null && rishi.scoreRaw != null && (
                     <div className="text-muted text-xs font-mono">
                       Σ pillar × weight = {rishi.scoreRaw.toFixed(2)} → score {rishi.score}
+                      {/* ENG-1b: a null pillar abstains — the sum above is
+                          renormalized over the assessed pillars, so the
+                          published math stays the actual math. */}
+                      {rishi.comps.some((c) => c.v === null) ? ' (renormalized over assessed pillars)' : ''}
                     </div>
                   )}
 

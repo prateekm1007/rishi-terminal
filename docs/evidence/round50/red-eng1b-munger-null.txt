@@ -1,0 +1,71 @@
+node.exe : (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned 
+to become the default in a future major version of Vite:
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((!) Your V...ersion of Vite::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` 
+in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 C:/Users/Administrator/AppData/Local/Temp/opencode/rishi-terminal
+
+ Γ¥» test/mungerInversionNull.test.ts (4 tests | 2 failed) 25ms
+   Γ¥» ENG-1b ΓÇö the Inversion Check is null when forensic inputs are absent (4)
+     ├ù clean observed inputs with no forensic data: the pillar is null, labelled not assessed 15ms
+     Γ£ô the two observed screens still bite: high debt or negative FCF score 0 1ms
+     ├ù the total renormalizes over the assessed pillars (abstain ΓÇö never zero-fill, never 50-fill) 6ms
+     Γ£ô bite proof (C5): the pre-fix default 50 does not satisfy the null pin 1ms
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 2 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  test/mungerInversionNull.test.ts > ENG-1b ΓÇö the Inversion Check is null when 
+forensic inputs are absent > clean observed inputs with no forensic data: the pillar is null, labelled not 
+assessed
+AssertionError: expected 50 to be null
+
+- Expected:
+null
+
++ Received:
+50
+
+ Γ¥» test/mungerInversionNull.test.ts:39:19
+     37|   it('clean observed inputs with no forensic data: the pillar is null,ΓÇª
+     38|     const inv = inversionOf(stock({}));
+     39|     expect(inv.v).toBeNull();
+       |                   ^
+     40|     expect(inv.detail.toLowerCase()).toContain('not assessed');
+     41|   });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/2]ΓÄ»
+
+ FAIL  test/mungerInversionNull.test.ts > ENG-1b ΓÇö the Inversion Check is null when 
+forensic inputs are absent > the total renormalizes over the assessed pillars (abstain ΓÇö never zero-fill, 
+never 50-fill)
+AssertionError: expected 4 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 4
+
+ Γ¥» test/mungerInversionNull.test.ts:51:29
+     49|     const r = scoreMunger(stock({}), LIVE);
+     50|     const assessed = r.comps.filter((c) => c.v !== null);
+     51|     expect(assessed.length).toBe(r.comps.length - 1);
+       |                             ^
+     52|     const w = assessed.reduce((a, c) => a + c.wt, 0);
+     53|     const expected = assessed.reduce((a, c) => a + (c.v as number) * cΓÇª
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/2]ΓÄ»
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 2 passed (4)
+   Start at  10:49:25
+   Duration  792ms (transform 43%, import 38%, setup 9%, tests 6%, worker 3%)
+

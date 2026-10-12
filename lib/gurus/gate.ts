@@ -53,7 +53,9 @@ export interface GatedGuruVerdict {
    *  output-type label the card renders. */
   label: string;
   insight: string;
-  comps: Array<{ label: string; v: number; wt: number; detail: string }>;
+  // ENG-1b (rule 14): the canonical comp shape — never a local duplicate
+  // (a duplicate is how a pillar-type change breaks this gate silently).
+  comps: RishiScore['comps'];
 }
 
 /** The P0-6 category for a score — the one vocabulary, reused (rule 14). */

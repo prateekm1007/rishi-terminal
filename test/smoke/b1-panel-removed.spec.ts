@@ -35,7 +35,22 @@ test.describe("INT-B1 stock-page surface REMOVED per founder order (2026-10-10)"
     // positive control FIRST: the no-verdict record renders (the P0-1
     // verdict gate is live: the record's dataQuality is 'seed' and the
     // page says so instead of scoring it).
-    await expect(page.getByText("NO VERDICT — ILLUSTRATIVE SEED DATA")).toBeVisible({ timeout: 20_000 });
+    //
+    // Main-scoped (rule-23 justification, 2026-10-12): the bare strict
+    // locator raced React's streaming-SSR reveal on contended CI runners —
+    // main push-CI run 38176708451 (merge 7682263) failed with a strict-
+    // mode violation: the record resolved to 2 elements, one inside <main>
+    // and one outside it (React's hidden streaming-completion container
+    // still holding the streamed copy while hydration committed the in-main
+    // copy; the poll log shows the single element "hidden" before the
+    // second appeared). Not reproducible across ~250 local loads (isolated,
+    // full-suite, cold-server, network-throttled); the app has exactly one
+    // conditional render path for the record. The pin's contract — the
+    // honest record is VISIBLE in the page's main content — is unchanged;
+    // scoping to <main> matches Playwright's own suggested locator for the
+    // surviving element, and the sibling spec's tolerance (smoke.spec.ts
+    // uses .first() on the same text and passed the same CI run).
+    await expect(page.getByRole("main").getByText("NO VERDICT — ILLUSTRATIVE SEED DATA")).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PINS: no panel section skeleton anywhere in the DOM.
     // (Pre-removal each was 1 — the SSR skeleton, its aria label, and the

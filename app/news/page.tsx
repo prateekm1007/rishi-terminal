@@ -301,11 +301,15 @@ export default function NewsPage() {
         )}
 
         {/* Round-5 audit (finding 16): explicit fetch-failure state — a blank
-            page with no explanation is indistinguishable from "no news". */}
+            page with no explanation is indistinguishable from "no news".
+            Round 53 (founder item 5, DELIV-4): the "Live" word overclaimed —
+            the page aggregates RSS feeds (revalidated, delayed), so the
+            failure state names the FEED, matching the honest empty state's
+            vocabulary ("No headlines yet"). */}
         {!loading && liveNews.length === 0 && fetchFailed && (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
             <div style={{ fontSize: 28, marginBottom: 12 }}>📡</div>
-            <div style={{ fontSize: 14, marginBottom: 6 }}>Live news is unavailable right now.</div>
+            <div style={{ fontSize: 14, marginBottom: 6 }}>The news feed is unavailable right now.</div>
             <div style={{ fontSize: 12, marginBottom: 16 }}>Nothing is shown rather than made-up headlines.</div>
             <button
               onClick={() => { setFetchFailed(false); window.location.reload(); }}

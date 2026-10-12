@@ -77,10 +77,12 @@ describe("DELIV-4 — the copy audit zero-greps", () => {
       "WISDOM TIERS",
       "Elite Knowledge Graph",
       "Derived from live prices x reference market caps",
+      "Market Intelligence — live news",
+      "Live news is unavailable right now.",
     ];
     for (const s of offenders) {
       expect(
-        /every verdict|live prices|WISDOM TIERS|Elite Knowledge Graph/i.test(s),
+        /every verdict|live prices|WISDOM TIERS|Elite Knowledge Graph|live news/i.test(s),
       ).toBe(true);
     }
     // the survivors' wording must NOT match (the rewrites are clean)
@@ -90,10 +92,12 @@ describe("DELIV-4 — the copy audit zero-greps", () => {
       "the full verdict set",
       "LIVE-where-labelled prices",
       "Derived from LIVE price inputs x reference market caps",
+      "Market Intelligence — aggregated headlines",
+      "The news feed is unavailable right now.",
     ];
     for (const s of survivors) {
       expect(
-        /every verdict|live prices|WISDOM TIERS|Elite Knowledge Graph/i.test(s),
+        /every verdict|live prices|WISDOM TIERS|Elite Knowledge Graph|live news/i.test(s),
       ).toBe(false);
     }
   });
@@ -108,6 +112,20 @@ describe("DELIV-4 — the copy audit zero-greps", () => {
 
   it("'WISDOM TIERS' appears nowhere in the product scope", () => {
     expect(grepProduct("WISDOM TIERS")).toEqual([]);
+  });
+
+  it("'live news' appears nowhere in the product scope (round-53 item 5 — the News title/failure copy matches the honest aggregation)", () => {
+    expect(grepProduct("live news")).toEqual([]);
+    // the dead pre-round-47 live keys stay dead in every locale (rule 17:
+    // deleted, not left as a loaded gun for the next import)
+    for (const f of messageFiles()) {
+      const d = JSON.parse(read(f)) as { news?: Record<string, unknown> };
+      if (d.news) {
+        for (const k of ["liveRss", "live", "fetchingLive", "liveRssActive", "liveCricket"]) {
+          expect(d.news).not.toHaveProperty(k);
+        }
+      }
+    }
   });
 
   it("the dead 'Elite Knowledge Graph' claim is gone from every locale", () => {
@@ -137,6 +155,14 @@ describe("DELIV-4 — positive controls (B-18): the audit cannot pass on a missi
     expect(en.pricing.free.knowledgeGraph).toBe(
       "Stock and macro knowledge graphs (bulls-vs-bears views)",
     );
+    // 5 — the News route's honest title + failure/empty vocabulary
+    //     (round-53 item 5: "Make the title match the honest empty state")
+    expect(read("app/news/layout.tsx")).toContain(
+      "Market Intelligence — aggregated headlines | Rishi Terminal",
+    );
+    const newsPage = read("app/news/page.tsx");
+    expect(newsPage).toContain("The news feed is unavailable right now.");
+    expect(newsPage).toContain("No headlines yet.");
   });
 
   it("the knowledge-graph labels are BACKED: both views are mounted and pinned", () => {

@@ -1148,7 +1148,7 @@ function statedNumbers(text: string): StatedNumber[] {
       if (MOVEMENT_LANGUAGE_RE.test(windowText)) field = "change";
     }
     // ── E5-FVM (Round 18, 2026-10-06): change is ALWAYS percent in the
-    // fact model (FACT_UNIT_BY_FIELD.change; live prices compute
+    // fact model (FACT_UNIT_BY_FIELD.change; live price inputs compute
     // (price-prev)/prev*100). A number attributed to `change` that is
     // denominated in CURRENCY (inr / inr_crore — including the literal
     // "inr" token the fact annotations write) is therefore never the

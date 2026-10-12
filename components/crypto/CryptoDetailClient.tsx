@@ -61,7 +61,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     change24h: displayChange,
   };
   // R3 (round 2) + Commit M3 (free access): guru verdicts come from
-  // /api/gurus (server-computed, every verdict in full for every caller).
+  // /api/gurus (server-computed, the full verdict set for every caller).
   // This component renders only what it is served.
   const [verdicts, setVerdicts] = useState<Array<{
     id: string; name: string; score: number | null; label: string;

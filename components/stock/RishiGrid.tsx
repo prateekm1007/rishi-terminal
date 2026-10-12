@@ -60,7 +60,7 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
   const { t } = useLanguage();
   const [expandedRishi, setExpandedRishi] = useState<string | null>(null);
 
-  // Free access: the server sent every verdict — nothing is locked.
+  // Free access: the server sent the full verdict set — nothing is locked.
   const visibleScores = verdicts;
 
   return (

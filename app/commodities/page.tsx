@@ -60,7 +60,7 @@ export default function CommoditiesPage() {
   const headerState: 'live' | 'derived' | 'reference' =
     observedCount === 0 ? 'reference' : observedCount >= COMMODITIES.length ? 'live' : 'derived';
 
-  // Merge live prices into commodities. Audit 2026-10-02 (P1): a
+  // Merge the price overlay into commodities. Audit 2026-10-02 (P1): a
   // no-live fallback keeps the STATIC reference price but is explicitly
   // labelled — and the change renders '—' (unavailable), not a fabricated
   // 0% move on a reference price.

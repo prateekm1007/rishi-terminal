@@ -7,8 +7,8 @@ import Link from 'next/link';
 // slim index. The list rows carry a BOUNDED summary slice (payload budget,
 // not an entitlement); EVERY caller — signed in or not — upgrades each
 // holding's verdicts to the FULL set through GET /api/rishis/[symbol] —
-// the engine never ships in the client bundle, and every verdict is free
-// for everyone on the stock pages.
+// the engine never ships in the client bundle, and the full verdict set is
+// free for everyone on the stock pages.
 import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import type { RishiScore } from '@/lib/types';
 import { loadPortfolio, type PortfolioHolding } from '@/lib/portfolio/index';

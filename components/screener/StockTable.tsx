@@ -2,7 +2,7 @@
 
 // N1 (round 3): the table receives the server-generated slim rows —
 // consensus, category, and the free display fields come precomputed;
-// live prices and live fundamentals overlay client-side as before.
+// the price overlay and live fundamentals hydrate client-side as before.
 // No scoring engine, no seed dataset in the bundle (the old topRishi /
 // topRishiScore enrichment was computed here and never rendered —
 // dropped as dead code).

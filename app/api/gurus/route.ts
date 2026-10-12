@@ -23,7 +23,7 @@ import { normalizeSymbolInput } from '@/lib/registry/validateInput';
  *
  * Commit M3 (founder decision 2026-10-02 — every feature free): the
  * tier-slicing is GONE. Every caller — anonymous or signed in — receives
- * every verdict in full. The historical score>=50 teaser rule (crypto) and
+ * the full computed verdict set. The historical score>=50 teaser rule (crypto) and
  * the Energy-only free rule (commodities) are deleted; there is no
  * `locked` field on the wire and no locked remainder to render.
  */

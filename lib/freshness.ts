@@ -1,10 +1,10 @@
 /**
  * Data-freshness display helpers (remediation T14).
  *
- * UI rule: a seed price is NEVER rendered as a live price. When the live
+ * UI rule: a seed price is NEVER rendered as live. When the live
  * feed has no price, UIs show an em dash with an explanatory tooltip and
- * never fall back to the static seed value. Live prices are always shown
- * with their update time in IST.
+ * never fall back to the static seed value. Prices shown live always
+ * carry their update time in IST.
  */
 
 export const IST_TIMEZONE = "Asia/Kolkata";

@@ -1,0 +1,56 @@
+PASS  version — live sha 5455fd22ad9a (matches expected)
+edge-headers  bare-cache /stock/SBIN — age: 0 · x-vercel-cache: PRERENDER
+PASS  bare-cache page-integrity /stock/SBIN — <h1 present: true; title marker: true; 74678 bytes
+PASS  bare-cache section /stock/SBIN "Key Metrics" — 3 occurrence(s)
+PASS  bare-cache section /stock/SBIN "Peer Comparison" — 2 occurrence(s)
+PASS  bare-cache verdict-state /stock/SBIN "RISHI COMMENTARY" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  bare-cache verdict-state /stock/SBIN "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  bare-cache price /stock/SBIN "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  bare-cache release-marker /stock/SBIN "Licence pending" — 4 occurrence(s) (must be >= 1 — DELIV-2)
+PASS  bare-cache render-freshness /stock/SBIN — no observation line (unavailable page) — nothing to age
+PASS  page-integrity /stock/SBIN — <h1 present: true; title marker: true; 74678 bytes
+PASS  section /stock/SBIN "Key Metrics" — 3 occurrence(s)
+PASS  section /stock/SBIN "Peer Comparison" — 2 occurrence(s)
+PASS  verdict-state /stock/SBIN "RISHI COMMENTARY" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  verdict-state /stock/SBIN "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  price /stock/SBIN "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  release-marker /stock/SBIN "Licence pending" — 4 occurrence(s) (must be >= 1 — DELIV-2)
+PASS  render-freshness /stock/SBIN — no observation line (unavailable page) — nothing to age
+edge-headers  bare-cache /stock/BANKBARODA — age: 0 · x-vercel-cache: PRERENDER
+PASS  bare-cache page-integrity /stock/BANKBARODA — <h1 present: true; title marker: true; 74725 bytes
+PASS  bare-cache section /stock/BANKBARODA "Key Metrics" — 3 occurrence(s)
+PASS  bare-cache section /stock/BANKBARODA "Peer Comparison" — 2 occurrence(s)
+PASS  bare-cache verdict-state /stock/BANKBARODA "RISHI COMMENTARY" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  bare-cache verdict-state /stock/BANKBARODA "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  bare-cache price /stock/BANKBARODA "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  bare-cache render-freshness /stock/BANKBARODA — no observation line (unavailable page) — nothing to age
+PASS  page-integrity /stock/BANKBARODA — <h1 present: true; title marker: true; 74725 bytes
+PASS  section /stock/BANKBARODA "Key Metrics" — 3 occurrence(s)
+PASS  section /stock/BANKBARODA "Peer Comparison" — 2 occurrence(s)
+PASS  verdict-state /stock/BANKBARODA "RISHI COMMENTARY" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  verdict-state /stock/BANKBARODA "Pillar Breakdown" suppressed — 0 occurrence(s) (must be 0 on seed data — P0-1)
+PASS  price /stock/BANKBARODA "PRICE UNAVAILABLE" — 0 occurrence(s) (must be 0)
+PASS  render-freshness /stock/BANKBARODA — no observation line (unavailable page) — nothing to age
+edge-headers  bare-cache seedleak RELIANCE — age: 0 · x-vercel-cache: PRERENDER
+PASS  bare-cache seedleak RELIANCE page-integrity — <h1 present: true; title marker: true; 84080 bytes
+PASS  bare-cache seedleak RELIANCE record-control — record class: seed (seed=1 missing=0 verdict-sections=0/2)
+PASS  bare-cache seedleak RELIANCE "HIGH Data" — 0 occurrence(s) (must be 0 — the QVPS coverage grade was renamed to coverage, P0-1 rule 2)
+PASS  bare-cache seedleak RELIANCE "REDUCE" — 0 occurrence(s) (must be 0 — the action vocabulary is retired, P0-6)
+PASS  bare-cache seedleak RELIANCE old QVPS badge "v2.0 · <grade> Data" — 0 occurrence(s) (must be 0 — retired markup, renders a score for a seed record)
+PASS  bare-cache seedleak RELIANCE QVPS score on seed record — 0 occurrence(s) of the tile label (must be 0 on seed/missing — P0-1; 0 on the page overall)
+PASS  bare-cache render-freshness RELIANCE — no observation line (unavailable page) — nothing to age
+PASS  seedleak RELIANCE page-integrity — <h1 present: true; title marker: true; 84080 bytes
+PASS  seedleak RELIANCE record-control — record class: seed (seed=1 missing=0 verdict-sections=0/2)
+PASS  seedleak RELIANCE "HIGH Data" — 0 occurrence(s) (must be 0 — the QVPS coverage grade was renamed to coverage, P0-1 rule 2)
+PASS  seedleak RELIANCE "REDUCE" — 0 occurrence(s) (must be 0 — the action vocabulary is retired, P0-6)
+PASS  seedleak RELIANCE old QVPS badge "v2.0 · <grade> Data" — 0 occurrence(s) (must be 0 — retired markup, renders a score for a seed record)
+PASS  seedleak RELIANCE QVPS score on seed record — 0 occurrence(s) of the tile label (must be 0 on seed/missing — P0-1; 0 on the page overall)
+PASS  render-freshness RELIANCE — no observation line (unavailable page) — nothing to age
+PASS  rishis roster region — region present: true (positive control)
+PASS  release-marker /rishis "CHAT-ONLY" — 1 occurrence(s) (must be >= 1 — RISHI-21)
+PASS  bare-cache rishis roster region — region present: true (positive control)
+PASS  bare-cache release-marker /rishis "CHAT-ONLY" — 1 occurrence(s) (must be >= 1 — RISHI-21)
+PASS  nullzero "Promoter Hold0.0%" — 0 occurrence(s) (must be 0)
+PASS  nullzero "D/E Ratio0.0x" — 0 occurrence(s) (must be 0)
+PASS  nullzero panel control "hidden for banks" — 1 occurrence(s) (must be >= 1)
+post-deploy-smoke: PASS (https://rishi-terminal.vercel.app, sha 5455fd22ad9a)

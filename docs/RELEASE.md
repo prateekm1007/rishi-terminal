@@ -602,3 +602,80 @@ retry-sporadically protocol stood down unused.
   integration.
 - **Next production-relevant merge window:** 18:19:27Z (#399 merge + 60 min)
   → #400 (probe), then #401, #370, and the item-5 copy PR, one per window.
+## Round 53 (2026-10-12, night — session 2) — the queue driven to completion + deploy debt
+
+The founder's order and items 1-6 execution continued from the first
+round-53 ledger entry above. This session (Task ID 35 in the multi-agent
+worklog) drove the merge queue through the hourly cadence windows.
+
+- **Queue (item 1, one production merge per window):**
+  - #399 STALE-QUOTE merged a104ee91 17:19:27Z — deployed + live proof
+    recorded in the entry above (C6 complete).
+  - #400 PROBE-LIVE (amended: bare URL authoritative, absolute
+    open-session >15-min rule, edge-headers recorded) merged 5455fd22 at
+    18:27:41Z. **Deploy anomaly:** the git-integration deployment did NOT
+    fire (no deployment object 6+ min; #399's had fired in 4 s). Deployed
+    via the v13 API instead — which now requires `gitSource.repoId`
+    (numeric GitHub repo id); `scripts/trigger-production-deploy.mjs`
+    patched. dpl_ECV7n6VAiy READY 18:36:08Z. **Live proof re-run from
+    main:** postDeploySmoke `--expect-sha 5455fd22` → **52 PASS / 0 FAIL /
+    exit 0**, every bare-cache leg FIRST with its edge-headers line (age +
+    x-vercel-cache); output pasted on the PR thread and preserved at
+    `docs/evidence/round53/probe-400-live-5455fd2.txt`. Item-3 acceptance
+    ("Record age and x-vercel-cache in the output. Paste the output.")
+    met.
+  - #401 RISHIS-FORMULA (amended: all 16 system-prompt Formula lines
+    regenerated to the scorer texts) merged 53be6c56 at 19:36:40Z.
+    **Deploy debt** (below). RED captured pre-merge: production /rishis
+    carried the drifted "Sentiment (10%)" and Soros 25/25/20/20/10.
+  - #370 FD24-RANKED-NAMES merged 4b4b520 at 21:56:51Z — the founder's
+    ask-2 confirmation on record ("Top Buy Signals" and "Short Radar" keep
+    their names, the P0-6 exception documented). **Deploy debt.**
+  - #404 DELIV-4 news title (item 5) merged f5286b8 at 23:16:24Z.
+- **Docs merges (cadence-exempt, no deploy owed):** #403 demo-public-run
+  evidence (item 6) 8bb839fd; #410 DEMO-APPROACH proposal 05c9660. The
+  parallel session merged its own docs/code on the same tips (#407-#409).
+- **DEMO-APPROACH delivered (founder ask 1, due 14 Oct):** PR #410 —
+  `docs/DEMO-APPROACH.md`: the constraint set, options A-D, the A+B
+  recommendation (the real honest path + ONE fictional instrument under an
+  unmissable "ILLUSTRATIVE — FICTIONAL COMPANY" banner), the P0-1 `demo`
+  record-class amendment scoped for founder sanction, the FD-6
+  revive-or-reword rider, the build order inside the freeze window, and
+  the fallbacks. No /demo route was built — the standing guardrail holds
+  until the founder's written decision.
+- **Deploy debt (C6 pending, recorded):** #401 (53be6c56), #408
+  (c001b80, parallel session's r55-holidays, production-relevant), #370
+  (4b4b520), #404 (f5286b8) — all owed a production deploy at session end.
+  **Quota:** the v13 API deploy path 402'd at 19:39Z
+  (api-deployments-free-per-day 100/100, remaining 0; the reset field
+  decodes to 13 Oct 19:39Z and slides with attempt time — the B-22/B-26
+  pattern). The git-integration path fired for #399 (17:19Z) but was
+  silent for #400/#401/#370 — its silence coincides with the counter
+  filling; deleting deployments does not free it (round-51 census).
+  Retries: sporadic per B-22; the realistic catch-up is 13 Oct as the
+  12-Oct deployment creations age out of the 24h window. **The deferred
+  live proofs** (formula GREEN pair, ranked names on the dashboard, news
+  feed wording) run on the first successful catch-up deploy — same
+  procedure as the round-51 catch-up.
+- **GitHub secondary rate limit incident:** sustained REST 403s from
+  ~19:48Z (core quota showed 5000/5000 — abuse detection, not the hourly
+  limit; two active sessions + CI polling). Git transport unaffected.
+  **Mitigation built:** GraphQL-based monitoring + merge
+  (`ghql_status.py`, `ghql_merge.py`) with EVERY merge-guard condition
+  replicated and printed before use (required check green on head,
+  base==tip via ls-remote, cadence/docs-exemption via the same
+  skip-pathspecs as deployCadence.mjs). Used for #410 and #370; the
+  REST merge-guard remains the primary path when available.
+- **Parallel-session coordination:** the parallel session executed the
+  #400 window push at 18:20:02Z (tree-identical to this session's
+  fast-gated candidate), ran its own R55 docs/code wave (#405-#409, #411
+  ENG-4), and its #408 merge landed between #370's push and merge — both
+  merge guards correctly refused (base≠tip); #370 re-rebased and merged at
+  the next window (21:46:43Z push, 21:56:51Z merge). No collisions;
+  division of labor held (this session: the founder's round-53 queue; the
+  parallel session: R55 registers + ENG work).
+- **ENG-6 census (item 7 continuation, measured for tomorrow):** 24
+  warnings / 0 errors on the demo-path files — 12
+  @typescript-eslint/no-explicit-any, 4 no-unused-vars, WisdomChat purity
+  (Date.now in handlers) ×2, 1 exhaustive-deps (LivePriceWidget), the
+  rest scattered (news page, charts). Ratchet 273 ≤ 278.

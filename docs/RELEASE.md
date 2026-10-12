@@ -552,3 +552,53 @@ retry-sporadically protocol stood down unused.
   'Finance' sector labels = 0 (the only "Real Estate" text is Indiabulls'
   company name; its sector field reads Realty).
 - **Next production-relevant merge window:** 15:01:47Z (#389 merge + 60 min).
+
+### 2026-10-12 (round 53) — the founder's night order: #399 merged+deployed+live-proven; the queue
+
+- **Premise correction (rule 28, recorded for the auditor).** The founder's
+  scorecard snapshot (main f9a8494, #391 unmerged) predates 16:07:38Z:
+  #391 IS merged (origin/main was e8d2c23 at session start); production was
+  641e37c, so e8d2c23 carried deploy debt until this round's first deploy.
+  The merge queue is therefore #399 → #400 → #401 → #370 (+ the item-5
+  copy PR), each with a bare-URL live proof per the founder's order.
+- **#399 (STALE-QUOTE, amended per the founder's item 2).** Branch
+  fix/stale-quote-freshness at ff87593 (5 commits, token normalized to
+  STALE-QUOTE after a C7 branch-hygiene CI failure — the branch had carried
+  both P0-STALE-QUOTE and STALE-QUOTE subjects; all five normalized, guard
+  PASS). CI 5/5 green at 17:18Z. **Merged a104ee91 at 17:19:27Z** (GitHub
+  auto-merge fired when checks passed — the guard then correctly refused a
+  double-merge; auto-merge is OFF on #400/#401/#370, verified).
+  **Deployed:** the Git-integration deployment fired (READY 17:19:31Z);
+  `/api/version` = a104ee91 — one deploy cleared the e8d2c23 debt and
+  shipped #399 together. **Live proof (bare URL, no cache-buster):**
+  `age: 0`, `x-vercel-cache: PRERENDER`, "market open|market closed" = 0
+  occurrences in the served HTML; the origin-control regen's first byte
+  renders `as of Mon 12 Oct, 15:15 IST · stale (server render)` — the
+  founder's item-2 acceptance holds with margin (no market status at all in
+  the server render). Evidence pasted on the PR thread.
+- **Cache diagnosis (item 2, recorded).** `revalidate = 60` holds in code;
+  ISR regeneration works (x-nextjs-prerender: 1; the served prerender
+  demonstrably regenerated post-deploy). The >50-minute staleness the
+  founder measured is DATA-layer: the quote cache's newest observation was
+  13:28→15:15 IST (browser-warmed via the client hook — curl fetches run no
+  JS and never warm), and the GH Actions warmer fired only ONCE on 12 Oct
+  (10:37:46Z, post-close no-op; ~1.4 runs/day since the Oct 5 re-registration
+  vs the ~32/weekday the schedule asks — GitHub schedule drops). Every
+  regeneration re-baked the same cached quote; the pre-P0 label then granted
+  "intraday" by calendar-date match. The probe's new absolute open-session
+  rule (item 3) fails on this class during market hours by design — the
+  warmer's reliability is a founder-visible ops finding, reported in the
+  round summary (options: accept client-hook warming, an external scheduler
+  pinging workflow_dispatch, or both).
+- **postDeploySmoke (the amended probe, branch head): 52/52 PASS, exit 0**
+  against a104ee91 — bare-cache legs first (authoritative) with edge-headers
+  lines (age + x-vercel-cache recorded), origin-control legs second,
+  RELIANCE seed-leak zeros, CHAT-ONE... CHAT-ONLY marker, nullzero pins.
+  Full output pasted in the round report; the probe PR (#400) merges at its
+  window with the same proof re-run from main.
+- **Quota.** API-created deployments: 402 at 17:25Z (api-deployments-free-per-day
+  exhausted; the git-integration deploys are a separate path and still fire,
+  as #399's deploy proves). Production deploys this round ride the Git
+  integration.
+- **Next production-relevant merge window:** 18:19:27Z (#399 merge + 60 min)
+  → #400 (probe), then #401, #370, and the item-5 copy PR, one per window.

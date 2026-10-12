@@ -66,8 +66,8 @@ const SECTOR_VALUES: readonly string[] = [
   'Chemicals', 'Capital Goods', 'Pharma', 'FMCG', 'IT', 'Auto Ancillaries',
   'NBFC', 'Banking', 'Consumer', 'Metals', 'Infra', 'Textiles', 'Energy',
   'Fintech', 'Logistics', 'Healthcare', 'Cement', 'Defence', 'Realty',
-  'Auto', 'Retail', 'Media', 'Tech', 'Hospitality', 'Agri', 'Telecom',
-  'Finance', 'RealEstate', 'Insurance', 'Electronics', 'Renewables',
+  'Auto', 'Retail', 'Media', 'Hospitality', 'Agri', 'Telecom',
+  'Insurance', 'Electronics', 'Renewables',
   'Mining', 'Industrials', 'Food', 'Paints', 'Power', 'Entertainment',
   'Jewellery', 'Internet', 'Electricals', 'Education', 'Utilities',
   'Packaging', 'Oil & Gas', 'E-commerce', 'Railways', 'Engineering',
@@ -91,9 +91,11 @@ export const SECTOR_SYNONYMS: Record<string, string> = {
   defence: 'Defence',
   defense: 'Defence',
   realty: 'Realty',
-  'real estate': 'RealEstate',
-  'real-estate': 'RealEstate',
-  realestate: 'RealEstate',
+  // DELIV-5 (founder order 2026-10-12): the dataset carries the canonical
+  // labels — dead-label synonyms repointed (RealEstate->Realty, Tech->IT).
+  'real estate': 'Realty',
+  'real-estate': 'Realty',
+  realestate: 'Realty',
   automobiles: 'Auto',
   'auto components': 'Auto Ancillaries',
   'auto-components': 'Auto Ancillaries',
@@ -106,7 +108,7 @@ export const SECTOR_SYNONYMS: Record<string, string> = {
   'oil and gas': 'Oil & Gas',
   'oil & gas': 'Oil & Gas',
   'oil-and-gas': 'Oil & Gas',
-  tech: 'Tech',
+  tech: 'IT',
 };
 
 /** Field synonyms → the ONE field registry (SCREENER_FIELDS keys). */

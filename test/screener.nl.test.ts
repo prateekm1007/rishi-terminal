@@ -357,7 +357,9 @@ describe("INT-D1 nlToQuery — translation pins per phrase class (byte-exact)", 
     translates("information technology", '(sector = "IT")');
     translates("sector oil & gas", '(sector = "Oil & Gas")');
     translates("defence", '(sector = "Defence")');
-    translates("real estate", '(sector = "RealEstate")');
+    // DELIV-5 (founder order 2026-10-12): the dataset merged RealEstate
+    // into Realty — the translator follows (was '(sector = "RealEstate")').
+    translates("real estate", '(sector = "Realty")');
     translates("sector it", '(sector = "IT")');
     translates("capital goods", '(sector = "Capital Goods")');
     translates("auto ancillaries", '(sector = "Auto Ancillaries")');

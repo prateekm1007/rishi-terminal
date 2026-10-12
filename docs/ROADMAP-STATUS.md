@@ -380,8 +380,9 @@ quoted verbatim; the date is the directive's receipt date, 2026-10-12).
   static reference inputs, not a verdict', with source, attribution and as-of time. Show no BUY,
   SELL, HOLD or AVOID. Stock verdicts stay null on seed data." Implementing PR: #369.
 - **The price-based override ("licence pending" label) — implemented as FD-26.** Founder's
-  words (12 Oct, DELIV-2): "Every price-based score carries 'licence pending'. The status stays
-  'unresolved' in code." FD-26 recorded 11 Oct (PR #368). Implementing PR: #371.
+  words (11 Oct): "price based scores enabled again." Founder's words (12 Oct, DELIV-2):
+  "Every price-based score carries 'licence pending'. The status stays 'unresolved' in code."
+  FD-26 recorded 11 Oct (PR #368). Implementing PR: #371.
 - **"Top Buy Signals" name exception to P0-6 — implemented as FD-24.** Recorded 11 Oct
   (PR #368): "Keep 'Top Buy Signals' as the name." Implementing PR: #370.
 - **Persona labels (Michael Saylor, Vitalik) — implemented as FD-25.** Recorded 11 Oct

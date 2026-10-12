@@ -1,0 +1,50 @@
+node.exe : (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to 
+become the default in a future major version of Vite:
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((!) Your Vite c...ersion of Vite::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` 
+in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 C:/Users/Administrator/AppData/Local/Temp/opencode/rishi-terminal
+
+post-deploy-smoke: unknown argument '--self-test'
+post-deploy-smoke: unknown argument '--definitely-not-a-flag'
+ Γ¥» test/probeLiveness.selfTest.test.ts (2 tests | 1 failed) 283ms
+   Γ¥» probe liveness ΓÇö release markers + render freshness discriminate old vs current (2)
+     ├ù the self-test passes (old render fails every new check; current passes) 167ms
+     Γ£ô bites: an unknown flag still refuses (the script is reachable and argument-parsing is live) 112ms
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 1 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  test/probeLiveness.selfTest.test.ts > probe liveness ΓÇö release markers + render freshness discriminate old vs 
+current > the self-test passes (old render fails every new check; current passes)
+AssertionError: expected 'post-deploy-smoke: unknown argument \ΓÇª' to contain 'self-test GREEN'
+
+- Expected
++ Received
+
+- self-test GREEN
++ post-deploy-smoke: unknown argument '--self-test'
++
+
+ Γ¥» test/probeLiveness.selfTest.test.ts:36:20
+     34|     }
+     35|     // positive control (B-18): the self-test speaks its GREEN line
+     36|     expect(stdout).toContain("self-test GREEN");
+       |                    ^
+     37|     expect(ok).toBe(true);
+     38|   });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]ΓÄ»
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  20:23:39
+   Duration  761ms (tests 70%, transform 14%, import 10%, setup 4%, worker 2%)
+

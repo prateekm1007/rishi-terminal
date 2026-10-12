@@ -65,6 +65,15 @@
 //               public /stock/RELIANCE page served stale leak-era content
 //               because the two shared no cache key; the C6 "live" leg now
 //               covers both. Bare-cache labels carry the "bare-cache " prefix.
+//   Round 53 (founder item 3, 2026-10-12): the BARE leg is the AUTHORITATIVE
+//               check and runs FIRST — "the bare URL is the one users see".
+//               Its evidence line records the response's age and
+//               x-vercel-cache headers. Render-freshness now fails on ANY
+//               observation line older than 15 minutes while the market is
+//               open by IST time, whatever the label wording — a stale
+//               honestly-labelled line still means the quote pipeline is not
+//               delivering during the session (the 13:28-all-afternoon
+//               class; the warmer/ingest outage the probe now exposes).
 //
 // Usage:
 //   node scripts/ci/postDeploySmoke.mjs [--base https://…] [--expect-sha <sha>]
@@ -131,7 +140,110 @@ const SEEDLEAK_REDUCE = /\bREDUCE\b/g;
 const SEEDLEAK_OLD_BADGE = /v2\.0\s*·\s*(?:HIGH|MEDIUM|LOW)\s*Data/g;
 const SEEDLEAK_QVPS_LABEL = "QVPS Score";
 
+const STALE_AFTER_MS = 15 * 60 * 1000;
+const IST_MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+// IST session mirror (lib/marketHours: Mon–Fri 09:15–15:30 IST). Duplicated
+// bounds (not imported — this script is plain node .mjs); the vitest suite
+// for the freshness rule is the contract owner, this mirror only decides
+// which honesty leg applies at probe time.
+const NSE_OPEN_MIN = 9 * 60 + 15, NSE_CLOSE_MIN = 15 * 60 + 30;
+
 const argv = process.argv.slice(2);
+
+// ── 0. Self-test (founder order 12 Oct 2026, C5/C6 liveness teeth) ───────
+// Runs BEFORE any network: fixture HTML discriminates the release-marker
+// and freshness checks — the pre-release render MUST fail, the current
+// render MUST pass. Invoked by test/probeLiveness.selfTest.test.ts (the
+// merge-guard --self-test precedent: no network, fixtures only).
+if (argv.includes("--self-test")) {
+  runLivenessSelfTest();
+}
+
+function runLivenessSelfTest() {
+  // Exact strings from real captures (session evidence, round 51): the OLD
+  // fixture replicates the 02eac31-era render (pre-licence-label,
+  // pre-CHAT-ONLY, same-session stale quote called intraday); the NEW
+  // fixture replicates the current honest render.
+  const OLD_STOCK =
+    `<h1>SBIN</h1><div>Rishi Terminal</div>` +
+    `<div>NO VERDICT - ILLUSTRATIVE SEED DATA</div>` +
+    `<div>Key Metrics</div><div>Peer Comparison</div>` +
+    `<title>State Bank of India (SBIN) — verdicts paused (exchange-data license pending) | Rishi Terminal</title>` +
+    `<div>No verdict — the Ashish Kacholia Whale Small-Cap Hunter framework is price-based: its verdict reads price-derived inputs</div>` +
+    `<div>Mon 12 Oct, 09:45 IST · market open · intraday quote</div>`;
+  const OLD_RISHIS =
+    `<div role="region" aria-label="Rishi list"><span>MASTER</span></div><div>Rishi Terminal</div>`;
+  const NEW_STOCK =
+    `<h1>SBIN</h1><div>Rishi Terminal</div>` +
+    `<div>NO VERDICT - ILLUSTRATIVE SEED DATA</div>` +
+    `<div>Key Metrics</div><div>Peer Comparison</div>` +
+    `<div>Licence pending — no verdict: the Ashish Kacholia Whale Small-Cap Hunter framework is price-based: its verdict reads price-derived inputs</div>` +
+    `<div>Mon 12 Oct, 15:15 IST · market closed · last session quote</div>`;
+  const NEW_RISHIS =
+    `<div role="region" aria-label="Rishi list"><span>MASTER</span><span>CHAT-ONLY</span></div><div>Rishi Terminal</div>`;
+  // Fixed display moments (deterministic, never wall-clock): Monday open
+  // session 15:20 IST, Monday evening 18:58 IST (closed).
+  const OPEN_NOW = Date.parse("2026-10-12T09:50:00.000Z");
+  const CLOSED_NOW = Date.parse("2026-10-12T13:28:00.000Z");
+  const results = [];
+  const expect = (label, actual, want) => {
+    const ok = actual === want;
+    console.log(`self-test ${ok ? "PASS" : "FAIL"}  ${label} (got ${actual}, want ${want})`);
+    results.push(ok);
+  };
+  // The old render fails every new check (the positive control: a stale
+  // release can never go green).
+  expect("old stock lacks the licence marker", hasLicenceLabel(OLD_STOCK), false);
+  expect("old rishis lacks CHAT-ONLY", hasChatOnlyTag(OLD_RISHIS), false);
+  expect("old stock mislabels a stale quote as intraday",
+    checkRenderFreshness(OLD_STOCK, OPEN_NOW).ok, false);
+  // The current render passes (closed-session leg + fresh-open leg).
+  expect("new stock carries the licence marker", hasLicenceLabel(NEW_STOCK), true);
+  expect("new rishis carries CHAT-ONLY", hasChatOnlyTag(NEW_RISHIS), true);
+  expect("new stock closed-session label passes",
+    checkRenderFreshness(NEW_STOCK, CLOSED_NOW).ok, true);
+  expect("fresh intraday passes",
+    checkRenderFreshness(
+      NEW_STOCK.replace("15:15 IST · market closed · last session quote",
+        "15:15 IST · market open · intraday quote"),
+      Date.parse("2026-10-12T09:50:00.000Z"),
+    ).ok, true);
+  // Round 53 (founder item 3): the absolute open-session rule and the
+  // server-render forms.
+  expect("open session: a stale HONESTLY-LABELLED line fails (the 13:28-all-afternoon class)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST · stale"),
+      OPEN_NOW,
+    ).ok, false);
+  expect("open session: a >15-min-old server-render line fails, whatever the wording",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST (server render)"),
+      OPEN_NOW,
+    ).ok, false);
+  expect("open session: a fresh server-render line passes",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 15:15 IST (server render)"),
+      OPEN_NOW,
+    ).ok, true);
+  expect("closed session: the server-render disclosure passes (no market claim in the first byte)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 15:15 IST (server render)"),
+      CLOSED_NOW,
+    ).ok, true);
+  expect("closed session: a stale server-render line passes (age is honest when the market is closed)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST · stale (server render)"),
+      CLOSED_NOW,
+    ).ok, true);
+  const green = results.every(Boolean);
+  console.log(green ? "self-test GREEN: liveness checks discriminate old vs current" : "self-test RED");
+  process.exit(green ? 0 : 1);
+}
 let base = DEFAULT_BASE;
 let expectSha = null;
 const extraSections = [];
@@ -211,12 +323,29 @@ try {
 const requiredSections = [...extraSections];
 
 /** Plain fetch: no cache-busting query param, no custom headers — the
- * closest reproduction of a user's request, sharing the user's CDN cache
- * key (the edge ISR entry, x-vercel-cache HIT/STALE). */
+ *  closest reproduction of a user's request, sharing the user's CDN cache
+ *  key (the edge ISR entry, x-vercel-cache HIT/STALE).
+ *
+ *  Round 53 (founder item 3, words verbatim: "Record age and
+ *  x-vercel-cache in the output"): the bare leg now CAPTURES those two
+ *  response headers so every authoritative evidence line carries the
+ *  edge's own disclosure of what it served. */
 async function fetchBare(url) {
   const res = await fetch(url, { redirect: "follow" });
   const text = await res.text();
-  return { status: res.status, text };
+  return {
+    status: res.status,
+    text,
+    edgeAge: res.headers.get("age"),
+    edgeCache: res.headers.get("x-vercel-cache"),
+  };
+}
+
+/** Round 53 (founder item 3): print the edge's cache headers for a bare
+ *  leg — the diagnostic the founder asked to see in every output. */
+function reportEdgeHeaders(label, r) {
+  if (r.edgeAge === undefined && r.edgeCache === undefined) return;
+  console.log(`edge-headers  ${label} — age: ${r.edgeAge ?? "—"} · x-vercel-cache: ${r.edgeCache ?? "—"}`);
 }
 
 /** Content checks for one stock page, shared by the probe and bare-cache
@@ -270,19 +399,37 @@ function checkStockPage(prefix, page, html) {
 
   const priceUnavail = countOccurrences(html, "PRICE UNAVAILABLE");
   report(priceUnavail === 0, `${prefix}price ${page} "PRICE UNAVAILABLE"`, `${priceUnavail} occurrence(s) (must be 0)`);
+
+  // ── Release markers + render freshness (founder order 12 Oct 2026) ──
+  // DELIV-2 marker where it applies: the SBIN seed page carries
+  // price-based refusals, each labelled 'Licence pending' first.
+  if (page === "/stock/SBIN") {
+    const lic = countOccurrences(stripSsrComments(html), "Licence pending");
+    report(lic >= 1, `${prefix}release-marker ${page} "Licence pending"`, `${lic} occurrence(s) (must be >= 1 — DELIV-2)`);
+  }
+  // STALE-QUOTE liveness: the observation line must be recency-honest at
+  // probe time — an intraday label on a >15-minute-old quote fails, on any
+  // code vintage (C6 teeth against stale edge objects).
+  const fresh = checkRenderFreshness(stripSsrComments(html), Date.now());
+  report(fresh.ok, `${prefix}render-freshness ${page}`, fresh.detail);
 }
 
-// Two legs per page: the origin-proving probe key, then the user-facing
-// bare URL. The bare leg fails the whole smoke when the edge serves stale
-// content — the class the founder caught on 2026-10-12 (RESP-1R).
+// Two legs per page. Round 53 (founder item 3): the BARE URL is the
+// AUTHORITATIVE check — it runs FIRST, and its evidence carries the edge's
+// age/x-vercel-cache headers — because the bare URL is the render users
+// get (the founder's words: "The bare URL is the one users see"). The
+// probe-key leg (?smoke=<ts>) stays as the ORIGIN control: it always
+// misses the edge ISR cache and proves what a fresh regeneration serves,
+// isolating edge-staleness from origin-staleness when the two disagree.
 for (const page of PAGES) {
   const legs = [
+    { prefix: "bare-cache ", label: `bare-cache ${page}`, url: `${base}${page}`, fetcher: fetchBare, bare: true },
     { prefix: "", label: `sections ${page}`, url: `${base}${page}?smoke=${Date.now()}`, fetcher: fetchText },
-    { prefix: "bare-cache ", label: `bare-cache ${page}`, url: `${base}${page}`, fetcher: fetchBare },
   ];
   for (const leg of legs) {
     try {
       const r = await leg.fetcher(leg.url);
+      if (leg.bare) reportEdgeHeaders(leg.label, r);
       if (r.status !== 200) {
         report(false, leg.label, `HTTP ${r.status}`);
         continue;
@@ -345,14 +492,19 @@ function checkSeedleak(prefix, rawText) {
     `${prefix}seedleak RELIANCE QVPS score on ${recordClass} record`,
     `${qvpsOnSeed} occurrence(s) of the tile label (must be 0 on seed/missing — P0-1; ${qvpsLabel} on the page overall)`,
   );
+
+  // STALE-QUOTE liveness on the canary page too (same rule as §6).
+  const fresh = checkRenderFreshness(html, Date.now());
+  report(fresh.ok, `${prefix}render-freshness RELIANCE`, fresh.detail);
 }
 
 for (const leg of [
+  { prefix: "bare-cache ", label: "bare-cache seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}`, fetcher: fetchBare, bare: true },
   { prefix: "", label: "seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}?smoke=${Date.now()}`, fetcher: fetchText },
-  { prefix: "bare-cache ", label: "bare-cache seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}`, fetcher: fetchBare },
 ]) {
   try {
     const r = await leg.fetcher(leg.url);
+    if (leg.bare) reportEdgeHeaders(leg.label, r);
     if (r.status !== 200) {
       report(false, leg.label, `HTTP ${r.status}`);
       continue;
@@ -363,7 +515,126 @@ for (const leg of [
   }
 }
 
+// ── Release markers + render freshness: pure check functions (founder order 12 Oct 2026) ───
+// C6 liveness teeth: every shipped release leaves a marker the probe
+// asserts, so an old build fails on absence (C5 positive control runs in
+// --self-test above):
+//   - RISHI-21 → the CHAT-ONLY chip on /rishis.
+//   - DELIV-2 → the 'Licence pending' label where price-based refusals
+//     render (/stock/SBIN seed page).
+//   - STALE-QUOTE → the observation line is recency-honest: a quote older
+//     than 15 minutes is never 'market open · intraday quote'.
+
+/** CHAT-ONLY presence (RISHI-21 release marker). */
+function hasChatOnlyTag(html) {
+  return html.includes("CHAT-ONLY");
+}
+
+/** Licence-label presence (DELIV-2 release marker). */
+function hasLicenceLabel(html) {
+  return html.includes("Licence pending");
+}
+
+function istOpenAt(nowMs) {
+  const ist = new Date(nowMs + 330 * 60_000);
+  const wd = ist.getUTCDay();
+  if (wd < 1 || wd > 5) return false;
+  const mins = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+  return mins >= NSE_OPEN_MIN && mins < NSE_CLOSE_MIN;
+}
+
+/** Parse Y3 observation stamps in rendered HTML → [{ms, qualifier}]. The
+ *  stamp carries no year ("Mon 12 Oct, 15:15 IST"); resolve against the
+ *  probe year with a day-boundary slide. Returns [] when the page exposes
+ *  no observation line (unavailable pages have no age to check). */
+function parseObsLines(html, nowMs) {
+  const out = [];
+  const re = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec), (\d{2}):(\d{2}) IST/g;
+  let m;
+  const probeYear = new Date(nowMs).getUTCFullYear();
+  while ((m = re.exec(html)) !== null) {
+    let ms = Date.UTC(probeYear, IST_MONTHS[m[3]], Number(m[2]), Number(m[4]), Number(m[5])) - 330 * 60_000;
+    if (ms > nowMs + 24 * 3600_000) ms = Date.UTC(probeYear - 1, IST_MONTHS[m[3]], Number(m[2]), Number(m[4]), Number(m[5])) - 330 * 60_000;
+    const tail = html.slice(m.index, m.index + 160);
+    out.push({ ms, tail });
+  }
+  return out;
+}
+
+/** Render-freshness verdict for one page render at a display moment.
+ *  Round 53 (founder item 3, words verbatim: "Make the bare URL the
+ *  authoritative check. Fail if the observation line is older than 15
+ *  minutes while the market is open by IST time."):
+ *  - session open → EVERY observation line must be at most 15 minutes old,
+ *    whatever its wording. A stale-but-honestly-labelled line still means
+ *    the quote pipeline is not delivering during the session — the
+ *    13:28-all-afternoon class — and the founder's rule is absolute. (The
+ *    label WORDING honesty is pinned separately by the label unit tests.)
+ *  - session closed → no intraday claim anywhere; the honest forms are
+ *    closed-labelled lines, stale-disclosed lines, and the round-53
+ *    server-render disclosure "(server render)" (the first byte carries
+ *    no market claim by design — the client computes it after hydration).
+ *  - no observation line → pass-skipped (unavailable pages expose no
+ *    age to check). */
+function checkRenderFreshness(html, nowMs) {
+  const lines = parseObsLines(html, nowMs);
+  if (lines.length === 0) return { ok: true, skipped: true, detail: "no observation line (unavailable page) — nothing to age" };
+  const open = istOpenAt(nowMs);
+  if (open) {
+    for (const l of lines) {
+      const ageMin = Math.round((nowMs - l.ms) / 60000);
+      if (nowMs - l.ms > STALE_AFTER_MS) {
+        return {
+          ok: false,
+          detail: `open session: a ${ageMin}-minute-old observation line (must be ≤15) — "${l.tail.slice(0, 72)}"`,
+        };
+      }
+    }
+    return { ok: true, detail: "open session: every observation line is ≤15 minutes old" };
+  }
+  const hasIntraday = lines.some((l) => l.tail.includes("market open · intraday quote"));
+  if (hasIntraday) {
+    return { ok: false, detail: "closed session: an intraday claim still renders" };
+  }
+  const honest = lines.some((l) =>
+    l.tail.includes("market closed") || l.tail.includes("stale") || l.tail.includes("server render"));
+  return {
+    ok: honest,
+    detail: honest
+      ? "closed session: honest label forms (closed / stale / server-render disclosed)"
+      : "closed session: no honest label form found",
+  };
+}
+
 // ── 5. Y4 null-not-zero on the bank page ──────────────────────────────────
+/** RISHI-21 release marker on /rishis (both cache keys): the roster region
+ *  must render (positive control) and carry the CHAT-ONLY chip. */
+// ── 5. RISHI-21 marker on /rishis ─────────────────────────────────────────
+function checkRishis(prefix, html) {
+  const region = html.includes("Rishi list");
+  report(region, `${prefix}rishis roster region`, `region present: ${region} (positive control)`);
+  if (!region) return;
+  const chip = countOccurrences(stripSsrComments(html), "CHAT-ONLY");
+  report(chip >= 1, `${prefix}release-marker /rishis "CHAT-ONLY"`, `${chip} occurrence(s) (must be >= 1 — RISHI-21)`);
+}
+
+for (const leg of [
+  { prefix: "", label: "rishis", url: `${base}/rishis?smoke=${Date.now()}`, fetcher: fetchText },
+  { prefix: "bare-cache ", label: "bare-cache rishis", url: `${base}/rishis`, fetcher: fetchBare },
+]) {
+  try {
+    const r = await leg.fetcher(leg.url);
+    if (r.status !== 200) {
+      report(false, leg.label, `HTTP ${r.status}`);
+      continue;
+    }
+    checkRishis(leg.prefix, r.text);
+  } catch (err) {
+    report(false, leg.label, `transport error: ${err.message}`);
+  }
+}
+
+// ── 6. Y4 null-not-zero on the bank page ──────────────────────────────────
 try {
   const rz = await fetchText(`${base}${NULLZERO_SYMBOL}?smoke=${Date.now()}`);
   if (rz.status !== 200) {

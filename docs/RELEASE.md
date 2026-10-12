@@ -679,3 +679,20 @@ worklog) drove the merge queue through the hourly cadence windows.
   @typescript-eslint/no-explicit-any, 4 no-unused-vars, WisdomChat purity
   (Date.now in handlers) ×2, 1 exhaustive-deps (LivePriceWidget), the
   rest scattered (news page, charts). Ratchet 273 ≤ 278.
+
+### Round-53 session-2 correction (23:30Z): the deploy debt CLEARED itself
+
+The ledger above recorded #401/#408/#370/#404 as deploy-debt pending the
+quota drain. Minutes after #404's merge (23:16:24Z), the git-integration
+deployment fired for f5286b8 — shipping #401 (53be6c5), #408 (c001b80),
+#370 (4b4b520) and #404 together. `/api/version` = f5286b8. **The deferred
+live proofs ran immediately, all green (bare URL, no cache-buster):**
+- #401 formula: the RED→GREEN pair flipped — "Sentiment (10%)" 1→0,
+  "Neutral Base (10%)" 0→1 on /rishis.
+- #370 names: "Top Buy Signals" ×2 and "Short Radar" ×2 on the dashboard.
+- #404 news: "LIVE RSS" 1→0 in the served payload (dead keys gone); the
+  auto-refresh disclosure present.
+- Full postDeploySmoke vs f5286b8: **52 PASS / 0 FAIL / exit 0**.
+Proofs pasted on PRs #401/#370/#404 (comments 6134584328/6134584503/
+6134584669). Every production merge of round 53 is now
+merged + deployed + live-proofed (C6 complete).

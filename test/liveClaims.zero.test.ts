@@ -187,8 +187,10 @@ describe("P0-8 — unbacked live claims removed; News stays in the nav (RESP-2)"
     // the pricing title describes the CURRENT access model (FD-7 + 410
     // payment routes), not a permanence promise
     expect(en).toContain('"title": "Free — No Tiers, No Checkout"');
-    // "every framework" is true under the verdict gate (896/896 seed -> no verdicts)
-    expect(en).toContain("every persona, every framework");
+    // RULES-3 (founder, 12 Oct 2026): the count claim is the canonical
+    // one-wording sentence — "every persona, every framework" phrasing is
+    // retired with the "All 21 Rishis" form it rode in.
+    expect(en).toContain("21 Rishis: 20 scored, Jim Chanos chat-only");
     // the forex subtitle qualifies liveness instead of claiming it wholesale
     expect(en).toContain("Currency markets with macro lenses — live rates where labelled LIVE, reference data otherwise");
     // the knowledge-graph unavailability renders honestly (nothing is 'building')

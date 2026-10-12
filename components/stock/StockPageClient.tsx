@@ -410,7 +410,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                         borderRadius: 6,
                       }}
                     >
-                      {t('stock.viewAll20')}
+                      {t('stock.viewAllRishis')}
                     </button>
                   </div>
 

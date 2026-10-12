@@ -480,3 +480,47 @@ retry-sporadically protocol stood down unused.
   (#379 guard) → 7ecafc8 (#369 RULES-2) → a50704c (#385 ENG-1b, live-proven:
   smoke PASS + /methodology/munger serves the null contract) → dcd4c06
   (#392 RISHI-21, live legs owed to this entry — covered above).
+
+### 2026-10-12 (round 50, continued) — RESP-4: #388 merged; deploy debt (Vercel quota exhausted)
+
+- **PR #388 (DELIV-4 copy audit) MERGED 8c004675 at 11:44:29Z** (head
+  edab096, CI all five jobs green on the re-run at window open). The merge
+  created **NO production deployment** — the Vercel deployment-quota
+  response on the sanctioned A3 single-shot retry was
+  `402 api-deployments-free-per-day, remaining: 0` (the B-22 pattern:
+  100/day rolling window including canceled preview events; today's PR
+  rebase pushes consumed the budget). Production still serves dcd4c06.
+- **Drain schedule (C8: the counter expires on oldest-event age):** the
+  oldest counted event ages out ~12:52:00Z; further slots free at
+  ~13:01Z, 13:10Z, 13:30Z, 13:44Z, 13:59Z. Sporadic retries scheduled;
+  the debt is expected to clear within the hour. No further
+  production-relevant merges until the deploy catches up (C8: check the
+  quota against this ledger before merging).
+- Live proof for #388's copy changes (grep-zero of the four claim
+  families on the served HTML) rides the deploy.
+
+### 2026-10-12 (round 50, third entry) — RESP-4: #395 merged; quota reset decoded (CORRECTION of the drain estimate above)
+
+- **PR #395 (RULES-3 Rishi-count wording) MERGED d659595 at 12:51:55Z**
+  (head 37a962d, CI all five jobs green on the window re-run at 12:45:30Z;
+  merge-guard base==main verified before the merge). The merge created **NO
+  production deployment** (the Git integration did not fire — the #311
+  pattern).
+- **A3 single-shot retry at 12:53:35Z: `402 api-deployments-free-per-day`,
+  remaining 0, `reset: 1791895929520` = 2026-10-13T12:52:09Z.**
+- **CORRECTION (C1: the entry above mis-decoded the reset).** The "drain
+  within the hour / slots free at 13:01Z…" schedule was wrong: the 402's own
+  reset field decodes to **tomorrow** (13 Oct 12:52:09Z), not today 12:52Z.
+  The visible team-wide census (78 deployment objects in the trailing 24h:
+  67 rishi-terminal + 11 staging, oldest 11 Oct 13:01:54Z) is BELOW the
+  100 counted — deleted-branch preview objects stay counted in the quota
+  counter while disappearing from the listing, so the visible oldest does
+  not bound the counter. Expect no quota until the reset timestamp unless a
+  retry succeeds earlier (sporadic retries continue per B-26).
+- **Decision (C10 protocol, logged):** the 12 Oct queue merges continue —
+  the founder's timeline (22 Oct demo from main) outweighs stacking debt
+  that one catch-up deploy clears; each merge's debt is recorded here, and
+  the catch-up deploy + live proofs (postDeploySmoke, DELIV-4 grep-zero,
+  RULES-3 canonical sentence) run the moment a retry succeeds. Chain so
+  far: dcd4c06 → 8c00467 (#388, deploy owed) → d659595 (#395, deploy
+  owed). Production still serves dcd4c06.

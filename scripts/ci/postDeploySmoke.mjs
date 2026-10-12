@@ -55,6 +55,16 @@
 //               payload can carry precomputed results for suppressed client
 //               components (the flight-payload trap disclosed in the
 //               round-46 P0-1 production legs).
+//   bare-cache— RESP-1R (founder, 2026-10-12, C6): every content probe runs
+//               TWICE, on both cache keys. The probe leg (?smoke=<ts>) always
+//               misses the edge ISR cache and verifies what the ORIGIN
+//               serves; the bare-cache leg (plain user-facing URL — no query
+//               param, no custom headers) verifies what a USER's first
+//               request can get from the edge (x-vercel-cache HIT/STALE,
+//               stale-while-revalidate). The old probe passed while the
+//               public /stock/RELIANCE page served stale leak-era content
+//               because the two shared no cache key; the C6 "live" leg now
+//               covers both. Bare-cache labels carry the "bare-cache " prefix.
 //
 // Usage:
 //   node scripts/ci/postDeploySmoke.mjs [--base https://…] [--expect-sha <sha>]
@@ -196,121 +206,161 @@ try {
   report(false, "version", `transport error: ${err.message}`);
 }
 
-// ── 2/3. First-byte anchors + the P0-1 verdict trichotomy on both pages ──
+// ── 2/3. First-byte anchors + the P0-1 verdict trichotomy, on BOTH cache keys
+// (probe key + bare user-facing key — see "bare-cache" in the header) ──────
 const requiredSections = [...extraSections];
-for (const page of PAGES) {
-  try {
-    const r = await fetchText(`${base}${page}?smoke=${Date.now()}`);
-    if (r.status !== 200) {
-      report(false, `sections ${page}`, `HTTP ${r.status}`);
-      continue;
-    }
-    const html = r.text;
 
-    // Page integrity control (B-18): a zero-count absence check is only
-    // meaningful on a page that actually rendered.
-    const hasH1 = /<h1[^>]*>/.test(html);
-    const hasTitle = /Rishi Terminal/.test(html);
-    report(hasH1 && hasTitle, `page-integrity ${page}`, `<h1 present: ${hasH1}; title marker: ${hasTitle}; ${html.length} bytes`);
+/** Plain fetch: no cache-busting query param, no custom headers — the
+ * closest reproduction of a user's request, sharing the user's CDN cache
+ * key (the edge ISR entry, x-vercel-cache HIT/STALE). */
+async function fetchBare(url) {
+  const res = await fetch(url, { redirect: "follow" });
+  const text = await res.text();
+  return { status: res.status, text };
+}
 
-    // ── P0-1 verdict trichotomy (rule-23 re-pin, founder audit
-    // 2026-10-11 "seed rows show no verdict") — exactly one of:
-    // seed record | whole-page missing record | full verdict record.
-    const seedMarker = countOccurrences(html, NO_VERDICT_SEED_MARKER);
-    const missingMarker = countOccurrences(html, NO_VERDICT_MISSING_MARKER);
-    if (missingMarker >= 1) {
-      // (b) missing class: the whole-page record REPLACES the page — no
-      // metrics, no peers, no verdict sections, and no seed in-page record.
-      report(seedMarker === 0, `verdict-state ${page} missing-record`, `seed marker ${seedMarker} occurrence(s) (must be 0 beside the whole-page record)`);
-      for (const section of VERDICT_SECTIONS) {
-        const n = countOccurrences(html, section);
-        report(n === 0, `verdict-state ${page} "${section}" suppressed`, `${n} occurrence(s) (must be 0 on the missing record)`);
-      }
-    } else if (seedMarker >= 1) {
-      // (a) seed class: the in-page record keeps the honest surfaces
-      // (metrics, peers) and suppresses every verdict section.
-      for (const section of ALWAYS_SECTIONS) {
-        const n = countOccurrences(html, section);
-        report(n >= 1, `section ${page} "${section}"`, `${n} occurrence(s)`);
-      }
-      for (const section of VERDICT_SECTIONS) {
-        const n = countOccurrences(html, section);
-        report(n === 0, `verdict-state ${page} "${section}" suppressed`, `${n} occurrence(s) (must be 0 on seed data — P0-1)`);
-      }
-    } else {
-      // (c) live/delayed: the full verdict record — the original A1
-      // probes, unmodified. These return the moment licensed live
-      // fundamentals cover a probe symbol (P0-8 decision pending).
-      for (const section of [...ALWAYS_SECTIONS, ...VERDICT_SECTIONS]) {
-        const n = countOccurrences(html, section);
-        report(n >= 1, `section ${page} "${section}"`, `${n} occurrence(s)`);
-      }
-    }
+/** Content checks for one stock page, shared by the probe and bare-cache
+ * legs. `prefix` distinguishes the evidence lines ("" for the probe key,
+ * "bare-cache " for the user-facing key); labels are otherwise identical. */
+function checkStockPage(prefix, page, html) {
+  // Page integrity control (B-18): a zero-count absence check is only
+  // meaningful on a page that actually rendered.
+  const hasH1 = /<h1[^>]*>/.test(html);
+  const hasTitle = /Rishi Terminal/.test(html);
+  report(hasH1 && hasTitle, `${prefix}page-integrity ${page}`, `<h1 present: ${hasH1}; title marker: ${hasTitle}; ${html.length} bytes`);
 
-    for (const section of requiredSections) {
+  // ── P0-1 verdict trichotomy (rule-23 re-pin, founder audit
+  // 2026-10-11 "seed rows show no verdict") — exactly one of:
+  // seed record | whole-page missing record | full verdict record.
+  const seedMarker = countOccurrences(html, NO_VERDICT_SEED_MARKER);
+  const missingMarker = countOccurrences(html, NO_VERDICT_MISSING_MARKER);
+  if (missingMarker >= 1) {
+    // (b) missing class: the whole-page record REPLACES the page — no
+    // metrics, no peers, no verdict sections, and no seed in-page record.
+    report(seedMarker === 0, `${prefix}verdict-state ${page} missing-record`, `seed marker ${seedMarker} occurrence(s) (must be 0 beside the whole-page record)`);
+    for (const section of VERDICT_SECTIONS) {
       const n = countOccurrences(html, section);
-      report(n >= 1, `section ${page} "${section}"`, `${n} occurrence(s)`);
+      report(n === 0, `${prefix}verdict-state ${page} "${section}" suppressed`, `${n} occurrence(s) (must be 0 on the missing record)`);
     }
+  } else if (seedMarker >= 1) {
+    // (a) seed class: the in-page record keeps the honest surfaces
+    // (metrics, peers) and suppresses every verdict section.
+    for (const section of ALWAYS_SECTIONS) {
+      const n = countOccurrences(html, section);
+      report(n >= 1, `${prefix}section ${page} "${section}"`, `${n} occurrence(s)`);
+    }
+    for (const section of VERDICT_SECTIONS) {
+      const n = countOccurrences(html, section);
+      report(n === 0, `${prefix}verdict-state ${page} "${section}" suppressed`, `${n} occurrence(s) (must be 0 on seed data — P0-1)`);
+    }
+  } else {
+    // (c) live/delayed: the full verdict record — the original A1
+    // probes, unmodified. These return the moment licensed live
+    // fundamentals cover a probe symbol (P0-8 decision pending).
+    for (const section of [...ALWAYS_SECTIONS, ...VERDICT_SECTIONS]) {
+      const n = countOccurrences(html, section);
+      report(n >= 1, `${prefix}section ${page} "${section}"`, `${n} occurrence(s)`);
+    }
+  }
 
-    const priceUnavail = countOccurrences(html, "PRICE UNAVAILABLE");
-    report(priceUnavail === 0, `price ${page} "PRICE UNAVAILABLE"`, `${priceUnavail} occurrence(s) (must be 0)`);
-  } catch (err) {
-    report(false, `sections ${page}`, `transport error: ${err.message}`);
+  for (const section of requiredSections) {
+    const n = countOccurrences(html, section);
+    report(n >= 1, `${prefix}section ${page} "${section}"`, `${n} occurrence(s)`);
+  }
+
+  const priceUnavail = countOccurrences(html, "PRICE UNAVAILABLE");
+  report(priceUnavail === 0, `${prefix}price ${page} "PRICE UNAVAILABLE"`, `${priceUnavail} occurrence(s) (must be 0)`);
+}
+
+// Two legs per page: the origin-proving probe key, then the user-facing
+// bare URL. The bare leg fails the whole smoke when the edge serves stale
+// content — the class the founder caught on 2026-10-12 (RESP-1R).
+for (const page of PAGES) {
+  const legs = [
+    { prefix: "", label: `sections ${page}`, url: `${base}${page}?smoke=${Date.now()}`, fetcher: fetchText },
+    { prefix: "bare-cache ", label: `bare-cache ${page}`, url: `${base}${page}`, fetcher: fetchBare },
+  ];
+  for (const leg of legs) {
+    try {
+      const r = await leg.fetcher(leg.url);
+      if (r.status !== 200) {
+        report(false, leg.label, `HTTP ${r.status}`);
+        continue;
+      }
+      checkStockPage(leg.prefix, page, r.text);
+    } catch (err) {
+      report(false, leg.label, `transport error: ${err.message}`);
+    }
   }
 }
 
 // ── 4. RELIANCE seed-leak probe (founder directive 2026-10-11, C5/C6) ─────
-try {
-  const r = await fetchText(`${base}${SEEDLEAK_SYMBOL}?smoke=${Date.now()}`);
-  if (r.status !== 200) {
-    report(false, "seedleak RELIANCE", `HTTP ${r.status}`);
-  } else {
-    // Page integrity control first (B-18): absence/presence checks mean
-    // nothing on a page that did not actually render.
-    const hasH1 = /<h1[^>]*>/.test(r.text);
-    const hasTitle = /Rishi Terminal/.test(r.text);
-    report(hasH1 && hasTitle, "seedleak RELIANCE page-integrity", `<h1 present: ${hasH1}; title marker: ${hasTitle}; ${r.text.length} bytes`);
+// Runs on BOTH cache keys (probe key + bare user-facing URL — see the
+// "bare-cache" note in the header). A stale edge copy of RELIANCE now
+// fails the smoke exactly like a stale origin render would.
 
-    const html = stripSsrComments(r.text);
+/** Seed-leak detectors for one page render, shared by the probe and
+ * bare-cache legs. `prefix` distinguishes the evidence lines. */
+function checkSeedleak(prefix, rawText) {
+  // Page integrity control first (B-18): absence/presence checks mean
+  // nothing on a page that did not actually render.
+  const hasH1 = /<h1[^>]*>/.test(rawText);
+  const hasTitle = /Rishi Terminal/.test(rawText);
+  report(hasH1 && hasTitle, `${prefix}seedleak RELIANCE page-integrity`, `<h1 present: ${hasH1}; title marker: ${hasTitle}; ${rawText.length} bytes`);
 
-    // Record-state control: at least one honest record class must render
-    // (seed marker | whole-page missing marker | full verdict record), so
-    // the zero counts below cannot come from a missing page (B-18) and the
-    // QVPS-label detector can be scoped to the record class honestly.
-    const seedMarker = countOccurrences(html, NO_VERDICT_SEED_MARKER);
-    const missingMarker = countOccurrences(html, NO_VERDICT_MISSING_MARKER);
-    const verdictSections = VERDICT_SECTIONS.filter((s) => countOccurrences(html, s) >= 1).length;
-    const recordClass =
-      missingMarker >= 1 ? "missing" : seedMarker >= 1 ? "seed" : verdictSections === VERDICT_SECTIONS.length ? "verdict" : "none";
-    report(
-      recordClass !== "none",
-      "seedleak RELIANCE record-control",
-      `record class: ${recordClass} (seed=${seedMarker} missing=${missingMarker} verdict-sections=${verdictSections}/${VERDICT_SECTIONS.length})`,
-    );
+  const html = stripSsrComments(rawText);
 
-    // Detector 1 — the founder's named literal, any record class.
-    const highData = countOccurrences(html, SEEDLEAK_HIGH_DATA);
-    report(highData === 0, `seedleak RELIANCE "HIGH Data"`, `${highData} occurrence(s) (must be 0 — the QVPS coverage grade was renamed to coverage, P0-1 rule 2)`);
+  // Record-state control: at least one honest record class must render
+  // (seed marker | whole-page missing marker | full verdict record), so
+  // the zero counts below cannot come from a missing page (B-18) and the
+  // QVPS-label detector can be scoped to the record class honestly.
+  const seedMarker = countOccurrences(html, NO_VERDICT_SEED_MARKER);
+  const missingMarker = countOccurrences(html, NO_VERDICT_MISSING_MARKER);
+  const verdictSections = VERDICT_SECTIONS.filter((s) => countOccurrences(html, s) >= 1).length;
+  const recordClass =
+    missingMarker >= 1 ? "missing" : seedMarker >= 1 ? "seed" : verdictSections === VERDICT_SECTIONS.length ? "verdict" : "none";
+  report(
+    recordClass !== "none",
+    `${prefix}seedleak RELIANCE record-control`,
+    `record class: ${recordClass} (seed=${seedMarker} missing=${missingMarker} verdict-sections=${verdictSections}/${VERDICT_SECTIONS.length})`,
+  );
 
-    // Detector 2 — the retired action word, any record class (P0-6).
-    const reduce = countPattern(html, new RegExp(SEEDLEAK_REDUCE.source, "g"));
-    report(reduce === 0, `seedleak RELIANCE "REDUCE"`, `${reduce} occurrence(s) (must be 0 — the action vocabulary is retired, P0-6)`);
+  // Detector 1 — the founder's named literal, any record class.
+  const highData = countOccurrences(html, SEEDLEAK_HIGH_DATA);
+  report(highData === 0, `${prefix}seedleak RELIANCE "HIGH Data"`, `${highData} occurrence(s) (must be 0 — the QVPS coverage grade was renamed to coverage, P0-1 rule 2)`);
 
-    // Detector 3 — a QVPS score for a seed record: the retired badge
-    // markup can never honestly render (any record class); the QVPS tile
-    // label must not render when the record is seed/missing (P0-1).
-    const oldBadge = countPattern(html, new RegExp(SEEDLEAK_OLD_BADGE.source, "g"));
-    report(oldBadge === 0, `seedleak RELIANCE old QVPS badge "v2.0 · <grade> Data"`, `${oldBadge} occurrence(s) (must be 0 — retired markup, renders a score for a seed record)`);
-    const qvpsLabel = countOccurrences(html, SEEDLEAK_QVPS_LABEL);
-    const qvpsOnSeed = recordClass === "seed" || recordClass === "missing" ? qvpsLabel : 0;
-    report(
-      qvpsOnSeed === 0,
-      `seedleak RELIANCE QVPS score on ${recordClass} record`,
-      `${qvpsOnSeed} occurrence(s) of the tile label (must be 0 on seed/missing — P0-1; ${qvpsLabel} on the page overall)`,
-    );
+  // Detector 2 — the retired action word, any record class (P0-6).
+  const reduce = countPattern(html, new RegExp(SEEDLEAK_REDUCE.source, "g"));
+  report(reduce === 0, `${prefix}seedleak RELIANCE "REDUCE"`, `${reduce} occurrence(s) (must be 0 — the action vocabulary is retired, P0-6)`);
+
+  // Detector 3 — a QVPS score for a seed record: the retired badge
+  // markup can never honestly render (any record class); the QVPS tile
+  // label must not render when the record is seed/missing (P0-1).
+  const oldBadge = countPattern(html, new RegExp(SEEDLEAK_OLD_BADGE.source, "g"));
+  report(oldBadge === 0, `${prefix}seedleak RELIANCE old QVPS badge "v2.0 · <grade> Data"`, `${oldBadge} occurrence(s) (must be 0 — retired markup, renders a score for a seed record)`);
+  const qvpsLabel = countOccurrences(html, SEEDLEAK_QVPS_LABEL);
+  const qvpsOnSeed = recordClass === "seed" || recordClass === "missing" ? qvpsLabel : 0;
+  report(
+    qvpsOnSeed === 0,
+    `${prefix}seedleak RELIANCE QVPS score on ${recordClass} record`,
+    `${qvpsOnSeed} occurrence(s) of the tile label (must be 0 on seed/missing — P0-1; ${qvpsLabel} on the page overall)`,
+  );
+}
+
+for (const leg of [
+  { prefix: "", label: "seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}?smoke=${Date.now()}`, fetcher: fetchText },
+  { prefix: "bare-cache ", label: "bare-cache seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}`, fetcher: fetchBare },
+]) {
+  try {
+    const r = await leg.fetcher(leg.url);
+    if (r.status !== 200) {
+      report(false, leg.label, `HTTP ${r.status}`);
+      continue;
+    }
+    checkSeedleak(leg.prefix, r.text);
+  } catch (err) {
+    report(false, leg.label, `transport error: ${err.message}`);
   }
-} catch (err) {
-  report(false, "seedleak RELIANCE", `transport error: ${err.message}`);
 }
 
 // ── 5. Y4 null-not-zero on the bank page ──────────────────────────────────

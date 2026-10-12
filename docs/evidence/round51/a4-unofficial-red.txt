@@ -1,0 +1,17 @@
+gate self-check GREEN (6 extractor fixtures + inventory parses, 11 declared hosts)
+node : unofficial-sources gate TRIPPED ΓÇö undeclared runtime hostnames:
+At line:1 char:45
++ ...  $env:PATH; node scripts/ci/unofficialSourcesGate.mjs > C:\Users\ADMI ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (unofficial-sour...time hostnames::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  economictimes.indiatimes.com (first seen in \app\api\news\route.ts)
+  www.livemint.com (first seen in \app\api\news\route.ts)
+  news.google.com (first seen in \app\api\news\route.ts)
+  www.investing.com (first seen in \app\api\news\route.ts)
+  cointelegraph.com (first seen in \app\api\news\route.ts)
+  coindesk.com (first seen in \app\api\news\route.ts)
+  www.espncricinfo.com (first seen in \app\api\news\route.ts)
+  timesofindia.indiatimes.com (first seen in \app\api\news\route.ts)
+Declare each in docs/licences/UNOFFICIAL_SOURCES.md (founder decision pending) or remove the call.

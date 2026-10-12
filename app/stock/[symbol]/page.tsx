@@ -95,8 +95,9 @@ export async function generateMetadata({ params }: StockPageProps): Promise<Meta
   // verdicts are not published — the metadata must not promise the
   // consensus or the QVPS the page does not render (rule 1).
   if (!priceScoresPublic()) {
-    const title = `${stock.name} (${canonicalSym}) — verdicts paused (exchange-data license pending) | Rishi Terminal`;
-    const description = `${stock.name} (${canonicalSym}, ${stock.sector}) — price-based framework verdicts and the consensus are own-use only while the exchange-data license is pending (NSE display / non-display enquiry). Fundamental-only framework checks and labelled metrics are shown with their own provenance.`;
+    // FD-26 (founder default, 11 Oct 2026): the canonical label.
+    const title = `${stock.name} (${canonicalSym}) — licence pending | Rishi Terminal`;
+    const description = `${stock.name} (${canonicalSym}, ${stock.sector}) — licence pending: price-based framework verdicts and the consensus are own-use only while the exchange-data licence is pending (NSE display / non-display enquiry). Fundamental-only framework checks and labelled metrics are shown with their own provenance.`;
     return {
       title,
       description,

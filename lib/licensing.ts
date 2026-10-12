@@ -57,6 +57,16 @@ export const PRICE_DATA_LICENSE: PriceDataLicense = {
 } as const;
 
 /**
+ * FD-26 (founder default, 11 Oct 2026, recorded in ROADMAP): "licence
+ * pending" is the label on EVERY price-based score while the licence is
+ * unresolved — recorded as the FOUNDER'S DEFAULT, not as the coder's
+ * instruction. The canonical short form every surface renders (scorer
+ * refusals, the QVPS absent state, the stock-page metadata); the full
+ * P0-8 disclosure text stays beneath it.
+ */
+export const PRICE_SCORES_LABEL = "Licence pending";
+
+/**
  * THE publication switch: price-based scores may be rendered only when
  * the exchange's written answer is recorded. Anything other than an
  * explicit "licensed" refuses (fail-closed, rule 6).

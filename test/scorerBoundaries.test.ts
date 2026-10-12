@@ -106,7 +106,9 @@ describe('W4 closure — Pabrai ramp boundaries (direction 10)', () => {
     expect(lowRisk(0, 100)).toBe(100);
     expect(lowRisk(1, 100)).toBe(55);          // 100 - 45
     expect(lowRisk(0, 0)).toBe(60);            // 100 * 0.6
-    expect(Math.round(lowRisk(100 / 45, 100))).toBe(0); // the exact zero of the ramp
+    // ENG-1b: Low Risk never abstains (Pabrai has no null pillars) — the
+    // ?? NaN keeps the type honest: an abstention would fail loudly here.
+    expect(Math.round(lowRisk(100 / 45, 100) ?? NaN)).toBe(0); // the exact zero of the ramp
   });
 
   it('weights sum to 100 and the score stays finite in 0-100 across a wide grid', () => {

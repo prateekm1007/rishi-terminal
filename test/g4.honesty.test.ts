@@ -100,27 +100,41 @@ describe("G4 — a missing observation time is stated, never a bare dash", () =>
 });
 
 describe("G4 — market pages never present a fetch time as an observation", () => {
+  // FD-15 (founder order 2026-10-11) superseded the commodities pins'
+  // premise: no commodity source is licensed for display, so the page runs
+  // NO live fetch — there is no header clock, no observation count and no
+  // stat tile to key off anything. The pins below keep every "never"
+  // assertion and re-pin the positive side to the licence-pending contract
+  // (a future re-enable must reintroduce the observation clock to pass).
   it("the commodities header derives from the observation clock, not lastUpdated", () => {
     const src = read("app/commodities/page.tsx");
     // Pre-fix: '⚡ Live • Updated {lastUpdated.toLocaleTimeString}' keyed
     // off the fetch clock with an unconditional LIVE word.
     expect(src).not.toMatch(/Live • Updated/);
-    expect(src).toMatch(/observedAt/);
+    // FD-15 licence-pending era: no fetch runs, so no clock exists — pin
+    // that the page never presents ANY time as an observation.
+    expect(src).not.toMatch(/lastUpdated\.toLocaleTimeString/);
+    expect(src).not.toMatch(/new Date\(\)/);
+    expect(src).toMatch(/licence pending/);
   });
 
   it("the commodities header chip counts observations, not price-map keys", () => {
     const src = read("app/commodities/page.tsx");
     expect(src).not.toMatch(/Object\.keys\(prices\)\.length > 0 \? 'live'/);
-    expect(src).toMatch(/observedCount/);
+    // FD-15: with no fetch there is no count to fake — pin the contract
+    // cells instead (every row carries the licence-pending source cell).
+    expect(src).toMatch(/MarketSourceCell|licencePending/);
   });
 
   it("the commodities stat tiles carry a provenance chip (no unlabeled static price)", () => {
     const src = read("app/commodities/page.tsx");
-    // The four key-stat tiles (GOLD/SILVER/WTI/BRENT) must label each
-    // value live vs reference exactly like the cards below them do.
-    const statTiles = src.split("Live Key Stats")[1]?.split("Category Filter")[0] ?? "";
-    expect(statTiles).toMatch(/ProvenanceChip/);
-    expect(statTiles).toMatch(/statIsLive/);
+    // The four key-stat tiles (GOLD/SILVER/WTI/BRENT) previously labelled
+    // each value live vs reference. FD-15: unsourced values render "—"
+    // through the contract cells — the chip is the MarketStateChip row
+    // state, and no static price renders anywhere.
+    expect(src).toMatch(/MarketStateChip/);
+    expect(src).toMatch(/wireEntryToRow/);
+    expect(src).not.toMatch(/statIsLive/); // the live/reference tile split is gone with the values
   });
 
   it("the crypto header derives from the observation clock, not the arrival effect", () => {
@@ -135,9 +149,15 @@ describe("G4 — BTC/ETH/SILVER/WTI/SOL stay on the canonical quote path (positi
   it("the founder-named tiles are fetched through useLivePrices, not hard-coded values", () => {
     const dash = read("components/dashboard/DashboardClient.tsx");
     expect(dash).toContain("useLivePrices");
-    expect(dash).toContain('["BTC","ETH","SOL","BNB","GOLD","SILVER","WTI"]');
-    const commodities = read("app/commodities/page.tsx");
-    expect(commodities).toContain("useLivePrices");
+    // FD-15: BTC/ETH/SOL/BNB render through the ticker gate (USD class);
+    // GOLD/SILVER/WTI are licence-pending — they stay ON the wire (the
+    // transport still fetches them for the pulse surfaces) but render
+    // "—" on the dashboard until a source is cleared.
+    expect(dash).toContain('["BTC","ETH","SOL","BNB"]');
+    expect(dash).toMatch(/TICKER_LICENCE_PENDING/);
+    for (const sym of ["GOLD", "SILVER", "WTI"]) {
+      expect(dash).toMatch(new RegExp(`TICKER_LICENCE_PENDING[^;]*"${sym}"`));
+    }
     const crypto = read("app/crypto/page.tsx");
     expect(crypto).toContain("useLivePrices");
   });

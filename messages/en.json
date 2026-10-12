@@ -731,7 +731,7 @@
   "forex": {
     "breadcrumb": "FOREX",
     "title": "FOREX",
-    "subtitle": "Currency markets with macro lenses — live rates where labelled LIVE, reference data otherwise",
+    "subtitle": "Currency reference with macro context — values return with their source and as-of time once a display licence is cleared",
     "pairs": "PAIRS",
     "inrCrossRates": "INR Cross Rates",
     "avgVolatility": "AVG VOLATILITY",

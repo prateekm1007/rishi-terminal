@@ -1,154 +1,38 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FOREX_PAIRS } from '../../data/forex';
 import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
 import { useLanguage } from '../../lib/language';
-import { useLivePrices } from '../../hooks/useLivePrices';
+// FD-15 (founder order 2026-10-11): the sourced-rows contract. No live
+// fetch runs on this page — no forex source is licensed for display yet,
+// so every value renders "—" with the source reading "licence pending"
+// until the founder clears one. The static seed rates in data/forex.ts
+// never render as data (rules 3/4: the constitution does not allow seed
+// numbers to be shown as data).
+import {
+  wireEntryToRow,
+  type MarketRow,
+} from '../../lib/markets/sourcedRow';
+import {
+  MarketValueCell,
+  MarketSourceCell,
+  MarketAsOfCell,
+  MarketStateChip,
+  MarketUnitNote,
+} from '../../components/shared/MarketRowCells';
 
-function InfoTooltip({ text }: { text: string }) {
-  const [show, setShow] = useState(false);
-  const [pos, setPos] = useState<{ top: number; left: number; below: boolean } | null>(null);
-
-  const place = (el: HTMLElement) => {
-    if (typeof window === 'undefined') return;
-    const r = el.getBoundingClientRect();
-    const pad = 10;
-    const w = 280;
-
-    let left = r.left + r.width / 2 - w / 2;
-    left = Math.max(pad, Math.min(left, window.innerWidth - w - pad));
-
-    const aboveTop = r.top - 12;
-    const below = aboveTop < 70;
-    const top = below ? (r.bottom + 10) : aboveTop;
-
-    setPos({ top, left, below });
-  };
-
-  return (
-    <span
-      style={{ display: 'inline-block', marginLeft: 6, cursor: 'help' }}
-      onMouseEnter={(e) => { place(e.currentTarget as HTMLElement); setShow(true); }}
-      onMouseLeave={() => setShow(false)}
-      onFocus={(e) => { place(e.currentTarget as HTMLElement); setShow(true); }}
-      onBlur={() => setShow(false)}
-      tabIndex={0}
-      aria-label={text}
-    >
-      <span style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 14,
-        height: 14,
-        borderRadius: '50%',
-        border: '1px solid var(--accent-gold)',
-        color: 'var(--accent-gold)',
-        fontSize: 9,
-        fontWeight: 800,
-        lineHeight: 1,
-        verticalAlign: 'middle'
-      }}>ⓘ</span>
-
-      {show && pos && (
-        <div style={{
-          position: 'fixed',
-          top: pos.top,
-          left: pos.left,
-          transform: pos.below ? 'none' : 'translateY(-100%)',
-          width: 280,
-          maxWidth: 'calc(100vw - 20px)',
-          padding: '8px 12px',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--accent-gold)',
-          borderRadius: 8,
-          fontSize: 11,
-          color: 'var(--text-primary)',
-          whiteSpace: 'normal',
-          zIndex: 99999,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-          pointerEvents: 'none'
-        }}>
-          {text}
-        </div>
-      )}
-    </span>
-  );
-}
-/** Round-5 audit (finding 14): decimal places must follow the magnitude —
- * a 0.55-yen or 0.88-franc rate rendered at 2dp becomes "0.01"/"0.89"
- * and destroys the value. Small rates get 4dp, sub-10 rates 3dp. */
-export function fxDp(v: number | null | undefined): number {
-  if (v == null || !Number.isFinite(v)) return 2;
-  const a = Math.abs(v);
-  if (a < 1) return 4;
-  if (a < 10) return 3;
-  return 2;
+/** Every forex row is licence-pending: value "—", source "licence pending". */
+function licencePendingRow(unit: string): MarketRow {
+  return wireEntryToRow(null, { unit, licencePending: true });
 }
 
 export default function ForexPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const pairList = Object.values(FOREX_PAIRS);
-
-  // Extract symbols for live price fetching
-  const symbols = useMemo(() => pairList.map(p => p.pair), []);
-  const { prices, loading, error, lastUpdated } = useLivePrices(symbols);
-
-  // Merge live prices with static data. Audit 2026-10-02 (P1): a pair
-  // without a live quote keeps its STATIC reference values but is labelled;
-  // the change renders '—' (unavailable), never a fabricated 0% move.
-  // volume24h stays reference-only unless the transport actually carries a
-  // live volume (the forex rate API discloses none today).
-  const enrichedPairs = useMemo(() => {
-    return pairList.map(pair => {
-      const liveData = prices[pair.pair];
-      // G6: a live entry without a price observation is NOT a live spot —
-      // the static reference rate/bid/ask stay and are labelled reference;
-      // only a genuine price observation marks the pair spotIsLive.
-      if (liveData && typeof liveData.price === 'number' && liveData.price > 0) {
-        const liveSpot = liveData.price;
-        const spread = pair.spread || (pair.ask - pair.bid);
-        const liveVol = typeof liveData.volume24h === 'number' && liveData.volume24h > 0
-          ? liveData.volume24h : null;
-        return {
-          ...pair,
-          spotRate: liveSpot,
-          bid: liveSpot - spread / 2,
-          ask: liveSpot + spread / 2,
-                    change24h:
-            typeof liveData.changePercent24h === 'number'
-              ? liveData.changePercent24h
-              : (typeof liveData.change === 'number' ? liveData.change : null),
-          volume24h: liveVol ?? pair.volume24h,
-          volumeIsLive: liveVol !== null,
-          spotIsLive: true,
-        };
-      }
-      return { ...pair, change24h: null, spotIsLive: false, volumeIsLive: false };
-    });
-  }, [prices, pairList]);
-
-  const avgVol = (enrichedPairs.reduce((sum, p) => sum + p.volatility, 0) / enrichedPairs.length).toFixed(1);
-  // P1: only genuinely live volumes count toward the total — the forex rate
-  // API discloses none, so this renders the static total WITH a reference
-  // chip instead of posing as a live aggregate next to the LIVE badge.
-  const liveVolumes = enrichedPairs.filter(p => p.volumeIsLive).map(p => p.volume24h);
-  const totalVolume = (liveVolumes.length > 0 ? liveVolumes : enrichedPairs.map(p => p.volume24h))
-    .reduce((sum, v) => sum + v, 0);
-  const volumeIsLive = liveVolumes.length > 0;
-
-  const usdInrPair = enrichedPairs.find(p => p.symbol === 'USDINR');
-  const eurInrPair = enrichedPairs.find(p => p.symbol === 'EURINR');
-
-  const volColor = (vol: number) =>
-    vol < 5 ? 'var(--accent-green)' : vol < 7 ? 'var(--accent-gold)' : 'var(--accent-red)';
-
-  const changeColor = (change: number) =>
-    change > 0 ? 'var(--accent-green)' : change < 0 ? 'var(--accent-red)' : 'var(--text-muted)';
+  const pairList = FOREX_PAIRS;
 
   return (
     <main className="page-bg">
@@ -170,11 +54,6 @@ export default function ForexPage() {
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', maxWidth: 480, lineHeight: 1.6 }}>
                 {t('forex.subtitle')}
               </p>
-              {lastUpdated && (
-                <div style={{ fontSize: 10, fontFamily: 'monospace', color: 'var(--text-muted)', marginTop: 8 }}>
-                  ⚡ Live • Updated {lastUpdated.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }) + ' IST'}
-                </div>
-              )}
             </div>
 
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 12, padding: '16px 24px', minWidth: 160 }}>
@@ -182,7 +61,7 @@ export default function ForexPage() {
                 {t('forex.pairs')}
               </div>
               <div style={{ fontSize: 48, fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent-gold)', lineHeight: 1 }}>
-                {enrichedPairs.length}
+                {pairList.length}
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
                 {t('forex.inrCrossRates')}
@@ -190,87 +69,31 @@ export default function ForexPage() {
             </div>
           </div>
 
-          {/* Quick Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
-            {[
-              { label: t('forex.avgVolatility'), value: avgVol + '%', color: 'var(--accent-gold)', bg: 'rgba(255,215,0,0.08)', border: 'rgba(255,215,0,0.2)', chipState: 'reference' as const, chipTitle: 'Static reference volatilities — illustrative' },
-              { label: t('forex.volume24h'), value: '$' + (totalVolume / 1e9).toFixed(1) + 'B', color: 'var(--accent-green)', bg: 'rgba(0,186,124,0.08)', border: 'rgba(0,186,124,0.2)', chipState: volumeIsLive ? ('live' as const) : ('reference' as const), chipTitle: volumeIsLive ? 'Sum of live volumes' : 'FX is over-the-counter — no consolidated volume exists. Static reference aggregates, illustrative only; the rate API discloses no live volume' },
-              { 
-                label: t('forex.usdInrSpot'), 
-                value: usdInrPair ? usdInrPair.spotRate.toFixed(2) : '—',
-                change: usdInrPair?.change24h ?? undefined,
-                color: '#60a5fa', 
-                bg: 'rgba(96,165,250,0.08)', 
-                border: 'rgba(96,165,250,0.2)',
-                chipState: usdInrPair?.spotIsLive ? ('live' as const) : ('reference' as const),
-                chipTitle: usdInrPair?.spotIsLive ? 'Live spot observation' : 'Static reference rate — live quote unavailable',
-              },
-              { 
-                label: t('forex.eurInrSpot'), 
-                value: eurInrPair ? eurInrPair.spotRate.toFixed(2) : '—',
-                change: eurInrPair?.change24h ?? undefined,
-                color: '#c084fc', 
-                bg: 'rgba(192,132,252,0.08)', 
-                border: 'rgba(192,132,252,0.2)',
-                chipState: eurInrPair?.spotIsLive ? ('live' as const) : ('reference' as const),
-                chipTitle: eurInrPair?.spotIsLive ? 'Live spot observation' : 'Static reference rate — live quote unavailable',
-              },
-            ].map(stat => (
-              <div
-                key={stat.label}
-                style={{
-                  background: stat.bg,
-                  border: '1px solid ' + stat.border,
-                  borderRadius: 10,
-                  padding: '12px 16px',
-                }}
-              >
-                <div style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--text-muted)', marginBottom: 4, letterSpacing: 1, display: 'flex', alignItems: 'center' }}>
-                  <span>{stat.label.toUpperCase()}</span>
-                  <ProvenanceChip state={stat.chipState} title={stat.chipTitle} />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                  <div style={{ fontSize: 22, fontFamily: 'monospace', fontWeight: 700, color: stat.color }}>
-                    {stat.value}
-                  </div>
-                  {stat.change !== undefined && (
-                    <div style={{ fontSize: 11, fontFamily: 'monospace', color: changeColor(stat.change) }}>
-                      {stat.change > 0 ? '+' : ''}{stat.change.toFixed(2)}%
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+          {/* Licence-pending notice — the honest state of this page. The old
+              live-clock and live-rate loader lines described a feed that
+              is no longer displayed. */}
+          <div style={{
+            background: 'rgba(245,158,11,0.08)',
+            border: '1px solid rgba(245,158,11,0.3)',
+            borderRadius: 10,
+            padding: '14px 18px',
+            fontSize: 12,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.7,
+          }}>
+            <span style={{ color: '#F59E0B', fontWeight: 700, fontFamily: 'monospace', letterSpacing: 1 }}>DATA LICENCE PENDING</span>
+            {' — '}
+            No currency-pair source is licensed for display yet, so every value on this page shows
+            &ldquo;—&rdquo; with its source reading <span style={{ color: '#F59E0B' }}>licence pending</span>.
+            Rates will appear, each with its source and observation time, once a source is cleared.
+            For live rates use your broker or an official reference (e.g. the RBI/FBIL reference rate).
           </div>
         </div>
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="content-wrapper" style={{ padding: '28px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-            ⚡ Fetching live forex rates...
-          </div>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && (
-        <div className="content-wrapper" style={{ padding: '28px 24px' }}>
-          <div style={{ 
-            background: 'rgba(239,68,68,0.1)', 
-            border: '1px solid rgba(239,68,68,0.3)', 
-            borderRadius: 8, 
-            padding: 16, 
-            fontSize: 12, 
-            color: 'var(--accent-red)' 
-          }}>
-            ⚠️ {error}
-          </div>
-        </div>
-      )}
-
-      {/* Forex Table */}
+      {/* Forex Table — the FD-15 contract columns: instrument, value, unit,
+          source, as-of, state. No analytics columns render: bid/ask/spread/
+          forwards/PPP had no source and never will without one. */}
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
         <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, marginBottom: 16, fontFamily: 'monospace' }}>
           {t('forex.currencyPairs')}
@@ -282,93 +105,71 @@ export default function ForexPage() {
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--border-primary)', background: 'var(--bg-secondary)' }}>
                   {[
-  { label: t('forex.pair') },
-  { label: t('forex.spot') },
-  { label: '24H CHANGE' },
-  { label: t('forex.bid'), tip: 'Approx exit price (bid side)' },
-  { label: t('forex.ask'), tip: 'Approx entry price (ask side)' },
-  { label: t('forex.spread'), tip: 'Bid–Ask difference (transaction cost)' },
-  { label: t('forex.forward1m'), tip: '1M forward (interest-diff estimate)' },
-  { label: t('forex.volatility'), tip: 'Typical movement (risk proxy)' },
-  { label: t('forex.ppp'), tip: 'PPP: fair value based on cost of goods' }
-].map((h: any, i) => (
-  <th key={h.label} style={{
-    textAlign: i === 0 ? 'left' : 'right',
-    padding: '14px 24px',
-    fontSize: 9,
-    fontFamily: 'monospace',
-    color: 'var(--text-muted)',
-    letterSpacing: 1,
-    fontWeight: 600,
-  }}>
-    {h.label.toUpperCase()}{h.tip ? <InfoTooltip text={h.tip} /> : null}
-  </th>
-))}
+                    { label: t('forex.pair') },
+                    { label: t('forex.spot'), tip: 'The pair rate — shows once a licensed source is wired' },
+                    { label: '24H CHANGE', tip: 'Shows with the rate once a licensed source is wired' },
+                    { label: 'SOURCE' },
+                    { label: 'AS OF' },
+                    { label: 'STATE' },
+                  ].map((h, i) => (
+                    <th key={h.label} title={h.tip} style={{
+                      textAlign: i === 0 ? 'left' : 'right',
+                      padding: '14px 24px',
+                      fontSize: 9,
+                      fontFamily: 'monospace',
+                      color: 'var(--text-muted)',
+                      letterSpacing: 1,
+                      fontWeight: 600,
+                    }}>{h.label.toUpperCase()}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {enrichedPairs.map(pair => (
-                  <tr
-                    key={pair.symbol}
-                    style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s' }}
-                    onClick={() => router.push('/forex/' + pair.symbol)}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '16px 24px' }}>
-                      <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, marginBottom: 4, display: 'flex', alignItems: 'center' }}>
-                        <span>{pair.baseCurrency}/{pair.quoteCurrency}</span>
-                        <ProvenanceChip state={pair.spotIsLive ? 'live' : 'reference'} title={pair.spotIsLive ? 'Live spot observation (bid/ask derived with the reference spread)' : 'Static reference rate — live quote unavailable'} />
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{pair.name}</div>
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px', fontWeight: 700, fontSize: 18, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
-                      {pair.spotRate.toFixed(fxDp(pair.spotRate))}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace' }}>
-                      <span style={{ 
-                        color: changeColor(pair.change24h ?? 0), 
-                        fontSize: 13, 
-                        fontWeight: 600 
-                      }}>
-                        {pair.change24h === null || pair.change24h === undefined
-                          ? '—'
-                          : (pair.change24h > 0 ? '+' : '') + pair.change24h.toFixed(2) + '%'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--accent-green)', fontFamily: 'monospace' }}>
-                      {pair.bid.toFixed(fxDp(pair.bid))}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--accent-red)', fontFamily: 'monospace' }}>
-                      {pair.ask.toFixed(fxDp(pair.ask))}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace', fontSize: 12 }}>
-                      {((pair as any).spread || (pair.ask - pair.bid)).toFixed(fxDp(pair.spread ?? (pair.ask - pair.bid)))}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                      {((pair as any).forward1M || pair.forward3M).toFixed(fxDp(pair.forward1M || pair.forward3M))}
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px' }}>
-                      <span style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        padding: '4px 10px',
-                        borderRadius: 6,
-                        background: volColor(pair.volatility) + '20',
-                        color: volColor(pair.volatility),
-                        fontFamily: 'monospace',
-                      }}>
-                        {pair.volatility.toFixed(1)}%
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right', padding: '16px 24px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                      {pair.pppRate.toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
+                {pairList.map(pair => {
+                  const rateRow = licencePendingRow(pair.quote === 'INR' ? `INR per ${pair.base}` : `${pair.quote} per ${pair.base}`);
+                  return (
+                    <tr
+                      key={pair.symbol}
+                      style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s' }}
+                      onClick={() => router.push('/forex/' + pair.symbol)}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,215,0,0.03)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
+                      <td style={{ padding: '16px 24px' }}>
+                        <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 16, marginBottom: 4, display: 'flex', alignItems: 'center' }}>
+                          <span>{pair.baseCurrency}/{pair.quoteCurrency}</span>
+                          <MarketStateChip row={rateRow} />
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{pair.name}</div>
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontSize: 18, fontFamily: 'monospace' }}>
+                        <MarketValueCell row={rateRow} />
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px', fontFamily: 'monospace', color: 'var(--text-muted)' }}>
+                        —
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px' }}>
+                        <MarketSourceCell row={rateRow} />
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px' }}>
+                        <MarketAsOfCell row={rateRow} />
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '16px 24px' }}>
+                        <MarketUnitNote row={rateRow} />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div style={{ marginTop: 16, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+          <ProvenanceChip state="unavailable" title="No forex source is licensed for display yet — values stay — until one is cleared" />
+          {' '}
+          The unit column states each pair&rsquo;s quotation basis. Pair definitions are reference data;
+          no rate, change, spread or forward renders without a licensed source and an observation time.
         </div>
       </div>
     </main>

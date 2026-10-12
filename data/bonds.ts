@@ -17,10 +17,14 @@ export interface Bond {
 }
 
 export const BONDS: Bond[] = [
-  // Round-5 audit (finding 5): 'SOV' marks a sovereign obligation —
-  // sovereigns are not CRA-rated, and invented AAA/AA ratings read as
-  // verified data. Corporate rows keep illustrative ratings under the
-  // page's REFERENCE labelling.
+  // FD-15 (founder order 2026-10-11): the numeric fields below (ytm, price,
+  // duration, spread) and the rating/riskRating markers are the STATIC
+  // REFERENCE dataset that feeds the FD-12 heuristic scorers and the detail
+  // pages — they are UNVERIFIED and never render as data on the bonds list
+  // page. The list page renders value/unit/source/as-of/state through the
+  // sourced-rows contract; unsourced values render "—". Ratings have no
+  // cleared source (SOV marks a sovereign obligation, not a CRA rating;
+  // corporate AA/AA+ are illustrative) — the page's rating column shows "—".
   { symbol: 'IN6YS',           name: 'India 6Y G-Sec',                  issuer: 'Govt of India',     type: 'G-Sec',        country: 'India', maturityYears: 6,    maturityDate: '2032-01-15', coupon: 6.80, couponRate: 6.80, ytm: 6.95, price: 99.50,  duration: 5.2,  riskRating: 'SOV', rating: 'SOV', spread: 0   },
   { symbol: 'IN10YS',          name: 'India 10Y G-Sec',                 issuer: 'Govt of India',     type: 'G-Sec',        country: 'India', maturityYears: 10,   maturityDate: '2036-04-15', coupon: 7.10, couponRate: 7.10, ytm: 7.08, price: 101.20, duration: 8.5,  riskRating: 'SOV', rating: 'SOV', spread: 0   },
   { symbol: 'IN15YS',          name: 'India 15Y G-Sec',                 issuer: 'Govt of India',     type: 'G-Sec',        country: 'India', maturityYears: 15,   maturityDate: '2041-06-15', coupon: 7.25, couponRate: 7.25, ytm: 7.18, price: 102.10, duration: 12.8, riskRating: 'SOV', rating: 'SOV', spread: 0   },
@@ -44,3 +48,38 @@ export const BONDS: Bond[] = [
 export function getBondBySymbol(symbol: string): Bond | undefined {
   return BONDS.find(b => b?.symbol && symbol && b.symbol.toUpperCase() === symbol.toUpperCase());
 }
+
+// ── FD-15 (founder order 2026-10-11, item 3): the bonds page's source routing.
+//
+// "Bonds: take G-secs, T-bills and repo from RBI DBIE, the single macro
+//  source named in the licensing review." G-secs, T-bills and the repo
+//  rate are ROUTED to RBI DBIE — the values render "—" until the first
+//  verified DBIE observation lands (sandbox egress to rbi.org.in answers
+//  418 to non-browser clients; the licensing review records "first
+//  fetches founder-side, no unverified loader ships" — rule 20). SDLs,
+//  corporates and US rows have NO cleared source yet: "—" with
+//  "no source until a source is cleared" (SDL inclusion under DBIE is a
+//  founder call — flagged in the FD-15 PR thread).
+export const BOND_ROW_SOURCE: Record<Bond['type'] | 'Repo', string | null> = {
+  'G-Sec': 'RBI DBIE',
+  'T-Bill': 'RBI DBIE',
+  'Repo': 'RBI DBIE',
+  'SDL': null,
+  'Corporate': null,
+  'US-Treasury': null,
+};
+
+/** The RBI policy repo rate — a POLICY RATE, not a tradable instrument:
+ *  no detail page, no seed numbers, nothing but the DBIE routing. The
+ *  bonds list page renders it with value "—" until DBIE wiring lands. */
+export interface RepoRow {
+  symbol: 'REPO';
+  name: string;
+  type: 'Repo';
+}
+
+export const REPO_ROW: RepoRow = {
+  symbol: 'REPO',
+  name: 'RBI Repo Rate (policy)',
+  type: 'Repo',
+};

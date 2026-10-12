@@ -37,6 +37,10 @@ export interface InitialPriceEntry {
   change: number | null;
   changePercent24h: number | null;
   volume24h: number | null;
+  /** FD-15 (2026-10-11): the same-payload CoinGecko market cap — rides
+   *  the SSR snapshot exactly like the client contract (null when the
+   *  upstream disclosed none; only crypto populates it today). */
+  marketCap: number | null;
   lastUpdated: string | null;
   /** Round 9: the SSR snapshot carries the same provenance fields the
    *  client contract now transports — status/source verbatim from the
@@ -52,6 +56,7 @@ export interface PriceDataLike {
   change?: unknown;
   changePercent24h?: unknown;
   volume24h?: unknown;
+  marketCap?: unknown;
   lastUpdated?: unknown;
   status?: unknown;
   symbol?: unknown;
@@ -78,6 +83,9 @@ export function toPriceData(point: PriceDataLike | null | undefined): InitialPri
     change: num(point.change),
     changePercent24h: point.changePercent24h !== undefined ? num(point.changePercent24h) : num(point.change),
     volume24h: num(point.volume24h),
+    // FD-15: the disclosed market cap rides the snapshot verbatim — never
+    // a seed cap, never a derived one (same-snapshot rule).
+    marketCap: num(point.marketCap),
     lastUpdated: typeof point.lastUpdated === "string" && point.lastUpdated ? point.lastUpdated : null,
     // Round 9: provenance rides through the SSR snapshot too — verbatim
     // when disclosed, null otherwise (never guessed, Rule 16).

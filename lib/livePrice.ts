@@ -434,7 +434,7 @@ export const COINGECKO_IDS: Record<string, string> = {
   SHIB: 'shiba-inu',
 };
 
-const coinGeckoCache: Record<string, { price: number | null; change: number | null; volume24h: number | null; observedAt: string | null; fetchedAt: number }> = {};
+const coinGeckoCache: Record<string, { price: number | null; change: number | null; volume24h: number | null; marketCap: number | null; observedAt: string | null; fetchedAt: number }> = {};
 let lastCoinGeckoFetch = 0;
 let coinGeckoFetchPromise: Promise<void> | null = null;
 
@@ -447,6 +447,12 @@ export interface CoinGeckoParsedEntry {
   change: number | null;
   /** Disclosed 24h volume; null when absent — 0 would claim zero trading. */
   volume24h: number | null;
+  /** FD-15 (founder order 2026-10-11): the disclosed market cap, from the
+   *  SAME simple/price payload as the price (include_market_cap=true) —
+   *  dominance and totals derive from this snapshot only, never from a
+   *  live price times a seed cap (that mixes snapshots). Null when the
+   *  payload did not disclose one. */
+  marketCap: number | null;
   /** R9 §20: the upstream's own observation time (last_updated_at, unix
    *  seconds → ISO) — null when not disclosed. This is the field the
    *  single-route provenance gap was missing: without it the client has no
@@ -467,6 +473,9 @@ export function coinGeckoEntryFromPayload(entry: unknown): CoinGeckoParsedEntry 
   const usd = num(e.usd);
   const chg = num(e.usd_24h_change);
   const vol = num(e.usd_24h_vol);
+  // FD-15: the same-payload market cap (usd_market_cap). A non-positive
+  // cap is not an observation — same rule as the price.
+  const cap = num(e.usd_market_cap);
   // R9 §20: last_updated_at is unix SECONDS. Only a finite positive value
   // becomes an ISO instant; anything else is "not disclosed" (null) — the
   // client must never receive a fabricated observation time.
@@ -477,6 +486,7 @@ export function coinGeckoEntryFromPayload(entry: unknown): CoinGeckoParsedEntry 
     price: Number.isFinite(usd) && usd > 0 ? usd : null,
     change: Number.isFinite(chg) ? chg : null,
     volume24h: Number.isFinite(vol) && vol > 0 ? vol : null,
+    marketCap: Number.isFinite(cap) && cap > 0 ? cap : null,
     observedAt,
   };
 }
@@ -495,7 +505,10 @@ async function fetchAllCoinGecko(): Promise<void> {
       // R9 §20: include_last_updated_at — the upstream observation time is
       // part of the provenance contract (the single-route gap: crypto
       // served observedAt null because it was never requested).
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_last_updated_at=true`;
+      // FD-15 (2026-10-11): include_market_cap — market cap comes from the
+      // SAME payload as the price so dominance/totals derive from one
+      // snapshot (never a live price times a seed cap).
+      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_last_updated_at=true&include_market_cap=true`;
       // Y2 follow-up (2026-10-04): the free tier throttles per IP (live
       // proof: the warmer's sweep hit "CoinGecko HTTP 429" on every crypto
       // tile while the direct path succeeded in the same minute). One 429
@@ -546,14 +559,14 @@ async function fetchAllCoinGecko(): Promise<void> {
   return coinGeckoFetchPromise;
 }
 
-async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number | null; volume24h: number | null; observedAt: string | null } | null> {
+async function getCoinGeckoPrice(symbol: string): Promise<{ price: number; change: number | null; volume24h: number | null; marketCap: number | null; observedAt: string | null } | null> {
   await fetchAllCoinGecko();
   const cached = coinGeckoCache[symbol];
   // A cached null price is NOT an observation: the provider answered but
   // disclosed nothing usable → null (honest unavailability downstream),
   // never a zero-priced LIVE quote.
   if (!cached || cached.price === null) return null;
-  return { price: cached.price, change: cached.change, volume24h: cached.volume24h, observedAt: cached.observedAt };
+  return { price: cached.price, change: cached.change, volume24h: cached.volume24h, marketCap: cached.marketCap, observedAt: cached.observedAt };
 }
 
 // =============================================================================
@@ -900,6 +913,11 @@ export interface PricePoint {
    *  NOT 0 — absent volume is unavailability, not zero trading
    *  (audit 2026-10-02 P1). */
   volume24h?: number | null;
+  /** FD-15 (2026-10-11): the market cap disclosed by the SAME CoinGecko
+   *  simple/price payload as the price — same snapshot, so dominance and
+   *  totals derive from one observation. Null when not disclosed; only
+   *  the crypto path populates it today. */
+  marketCap?: number | null;
   /** Phase 6: ISO time of the ORIGINAL upstream observation (never the
    *  serve time — a CACHED replay keeps the observation timestamp).
    *  Corrective gate 3: string|null — null means the upstream disclosed no

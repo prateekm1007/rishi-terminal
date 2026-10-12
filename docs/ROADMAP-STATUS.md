@@ -370,7 +370,7 @@ Recorded BEFORE any code change this round, per the founder's order ("Record eac
 instruction with your exact words and the date before changing code" — the directive's words are
 quoted verbatim; the date is the directive's receipt date, 2026-10-12).
 
-- **FD-22 — Rankings on.** Founder's words: "Set `RANKINGS_ENABLED=true` in production."
+- **FD-22 — Rankings on.** Founder's words (11 Oct): "enable all the top buy signals." Implementation note (brief wording, not the founder's words): rankings enabled in production via `RANKINGS_ENABLED=true`.
   (Phase 0, DELIV-1.) Env verified already set (production target, `true`, created 2026-10-06).
   Implementing PR (the honest flag-on-no-candidates state + probe): the round-49 rankings PR.
   Register row: docs/ROADMAP.md FD-22.

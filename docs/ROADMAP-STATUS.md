@@ -455,3 +455,58 @@ founder's own):
 - **Blocked on the founder:** the demo approach; the venue (live site recommended);
   FD-1, FD-8, FD-5, the NSE answer, the monitoring vendor (deferred until after
   22 October).
+
+## Round 52 (2026-10-12, evening order) — the stale-quote P0 + probe liveness + formula text, words verbatim
+
+Founder's order (12 Oct 2026), recorded verbatim before the first change of this
+round (the Constitution's standing record rule):
+
+> Read CONSTITUTION.md (Core) before the next change. English only.
+>
+> Now (12–13 Oct)
+>
+> Fix the stale quote (new P0, C1). Find out why /stock/RELIANCE serves a 13:28
+> render: check x-vercel-cache and age, and check whether ISR regeneration fails
+> on that route. Add a freshness rule in lib/pricePresentation.ts. A quote older
+> than 15 minutes shows "as of <time> · stale" and never "market open · intraday
+> quote". Compute market status from IST trading hours at display time.
+> Acceptance: a test with a six-hour-old quote shows "stale", and the live page
+> shows the current time.
+>
+> Make the probe prove liveness (C6, C5). It currently passes an old page. Add
+> presence checks for each release: the CHAT-ONLY tag on /rishis, the licence
+> label where it applies, and a render time no more than 15 minutes old.
+> Positive control: the probe must fail on the 02eac31 HTML and pass on dcd4c06.
+>
+> Fix the /rishis formula. Jhunjhunwala's displayed formula (P/CF 25%, growth
+> 25%, quality 20%, conviction 20%, sentiment 10%) doesn't match his council
+> criteria. Generate the text from the scorer config. Acceptance: a test that
+> the displayed formula matches the code.
+>
+> Next (14–16 Oct)
+>
+> 4. Today view (DEMO-4): build it on the public dashboard with an honest empty
+>    state, "No live verdicts yet", and no seed rankings.
+> 5. Activation events (DEMO-5): five events behind a consent hook.
+> 6. Demo spec (DEMO-6): test/demo/demo-path.spec.ts against the public site. It
+>    covers dashboard, then the RELIANCE "No verdict" page, then chat
+>    "unavailable", then watchlist add. Include a step that fails if the quote
+>    is stale.
+> 7. Copy residue (DELIV-4): "knowledge graph" is backed by
+>    KnowledgeGraphView for stocks. The "macro knowledge graphs" clause in the
+>    translation files has no built macro view, so remove it.
+>
+> Then (16–19 Oct)
+>
+> 8. Lint to zero on the demo-path files first (ENG-6). Formula tests for every
+>    persona doc (ENG-2). LCP of 2.5 seconds or less, and zero serious axe
+>    violations, on the demo path (ENG-3, ENG-4).
+> 9. Build /demo only after your written decision on the approach.
+>
+> Freeze at 20 Oct, 18:00 IST. Rehearse on 21 Oct. Demo on 22 Oct.
+
+Round-52 execution notes (coder, not the founder's words):
+- Items 4–6 were already built on #391 (TODAY-TRACKING) ahead of this order; the
+  item-6 addition (the stale-quote step in the demo spec) rides the P0 PR once
+  #391 merges. Item 8's ENG-2 is #390 (built). Item 7 modifies the #388
+  disposition (the "macro knowledge graphs" clause now ordered removed).

@@ -1,0 +1,128 @@
+node.exe : (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to 
+become the default in a future major version of Vite:
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((!) Your Vite c...ersion of Vite::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` 
+in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 C:/Users/Administrator/AppData/Local/Temp/opencode/rishi-terminal
+
+ Γ¥» test/rishisFormula.generated.test.ts (3 tests | 1 failed) 30ms
+   Γ¥» rishis formula ΓÇö displayed text matches the scorer config (3)
+     ├ù every scored persona: registry display string equals the generated text 23ms
+     Γ£ô chanos (chat-only, no scorer): display formula present, never equated to code 2ms
+     Γ£ô bite proof (C5): the pre-fix Jhunjhunwala string fails this pin 1ms
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 1 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  test/rishisFormula.generated.test.ts > rishis formula ΓÇö displayed text matches the scorer config > every 
+scored persona: registry display string equals the generated text
+AssertionError: drifted formulas:
+jhunjhunwala: display="P/CF (25%) + Growth (25%) + Quality (20%) + Conviction (20%) + Sentiment (10%)" code="P/CF 
+Ratio (25%) + Growth Composite (25%) + Quality ROCE/Debt/FCF (20%) + Promoter Conviction (20%) + Neutral Base (10%)"
+damani: display="Zero-Debt (30%) + ROCE (25%) + Cash Flow (20%) + Moat (15%) + Management (10%)" code="Zero-Debt 
+Filter (30%) + ROCE Sustainability (25%) + Cash Flow Predictability (20%) + Defensive Moat (15%) + Neutral Base (10%)"
+kacholia: display="Promoter (30%) + FCF (25%) + ROCE (20%) + Size (15%) + Momentum (10%)" code="Promoter Skin (30%) + 
+FCF Acceleration (25%) + Niche ROCE (20%) + Small-Cap Size (15%) + Neutral Base (10%)"
+kedia: display="Small (20%) + Manageable (20%) + Innovation (20%) + Listing Premium (20%) + Emerging (20%)" 
+code="Small (Size) (20%) + Manageable (Debt) (20%) + Innovative (Margins) (20%) + Emerging (Growth) (20%) + Neutral 
+Base (20%)"
+porinju: display="Contrarian (30%) + Management (25%) + Undervalue (25%) + Catalyst (20%)" code="Contrarian (30%) + 
+Management (25%) + Undervaluation (25%) + Catalyst (20%)"
+nemish: display="EPS Growth (35%) + Debt-Free (30%) + Management Quality (20%) + Valuation (15%)" code="EPS 
+Consistency (35%) + Debt Free (30%) + Management (20%) + Valuation (15%)"
+basant: display="Consumer Theme (30%) + Revenue Growth (25%) + Margins (25%) + PE Premium (20%)" code="Consumer Trend 
+(30%) + Revenue Trend (25%) + Margin Visibility (25%) + Valuation (20%)"
+buffett: display="ROE (30%) + Economic Moat (25%) + Earnings Power (20%) + Management (15%) + Price (10%)" code="ROE 
+Sustainability (30%) + Economic Moat (25%) + Owner Earnings Yield (20%) + Management Skin (15%) + Neutral Base (10%)"
+graham: display="NCAV (40%) + P/E Below Market (25%) + Low Debt (20%) + Earnings Stability (15%)" code="NCAV Discount 
+(40%) + P/E Value (25%) + Current Ratio Safety (15%) + Debt Safety (20%)"
+lynch: display="PEG Ratio (30%) + Earnings Growth (25%) + FCF (20%) + Category (15%) + Story (10%)" code="PEG Ratio 
+(30%) + EPS Growth Rate (25%) + Free Cash Flow (20%) + Revenue Story (15%) + Neutral Base (10%)"
+munger: display="Circle of Competence (30%) + Inversion (25%) + Quality Business (25%) + Fair Price (20%)" 
+code="Circle of Competence (30%) + Inversion Check (25%) + Lollapalooza Effect (25%) + Patience Filter (20%)"
+pabrai: display="Clone Score (30%) + Owner-Operator (25%) + Downside Protection (25%) + Upside (20%)" code="Clone 
+Score (30%) + Owner Operator (25%) + Low Risk (25%) + High Uncertainty Discount (20%)"
+philipfisher: display="Management Quality (25%) + R&D Strength (25%) + Revenue Growth (25%) + Margins (25%)" 
+code="Management Quality (25%) + RandD Investment (25%) + Growth Rate (25%) + Market Size (25%)"
+howardmarks: display="Cycle Position (30%) + Margin of Safety (25%) + Risk Asymmetry (25%) + Sentiment (20%)" 
+code="Cycle Position (30%) + Safety Margin (25%) + Asymmetric Payoff (25%) + Market Opp (20%)"
+sethklarman: display="Downside Protection (40%) + Asymmetric Return (30%) + Margin of Safety (15%) + Catalyst (15%)" 
+code="Downside Protection (40%) + Asymmetric (30%) + Margin Safety (15%) + Catalyst (15%)"
+templeton: display="Pessimism Score (35%) + Global Discount (30%) + Quality Business (20%) + Catalyst (15%)" 
+code="Maximum Pessimism (35%) + Discount to Book (30%) + Quality (20%) + Contrarian (15%)"
+schloss: display="Price-to-Book (40%) + Zero Debt (30%) + Insider Buying (20%) + Low PE (10%)" code="Price to Book 
+(40%) + Zero Debt (30%) + Insider Owner (20%) + Size (10%)"
+soros: display="Macro Cycle (20%) + Reflexivity (20%) + Policy Shift (20%) + Trend Stage (20%) + Capital Flows (20%)" 
+code="Reflexivity Signal (30%) + Macro Tailwind (25%) + Momentum Confirm (20%) + Leverage Tolerance (15%) + Liquidity 
+Buffer (10%)": expected [ ΓÇª(18) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "jhunjhunwala: display=\"P/CF (25%) + Growth (25%) + Quality (20%) + Conviction (20%) + Sentiment (10%)\" 
+code=\"P/CF Ratio (25%) + Growth Composite (25%) + Quality ROCE/Debt/FCF (20%) + Promoter Conviction (20%) + Neutral 
+Base (10%)\"",
++   "damani: display=\"Zero-Debt (30%) + ROCE (25%) + Cash Flow (20%) + Moat (15%) + Management (10%)\" 
+code=\"Zero-Debt Filter (30%) + ROCE Sustainability (25%) + Cash Flow Predictability (20%) + Defensive Moat (15%) + 
+Neutral Base (10%)\"",
++   "kacholia: display=\"Promoter (30%) + FCF (25%) + ROCE (20%) + Size (15%) + Momentum (10%)\" code=\"Promoter Skin 
+(30%) + FCF Acceleration (25%) + Niche ROCE (20%) + Small-Cap Size (15%) + Neutral Base (10%)\"",
++   "kedia: display=\"Small (20%) + Manageable (20%) + Innovation (20%) + Listing Premium (20%) + Emerging (20%)\" 
+code=\"Small (Size) (20%) + Manageable (Debt) (20%) + Innovative (Margins) (20%) + Emerging (Growth) (20%) + Neutral 
+Base (20%)\"",
++   "porinju: display=\"Contrarian (30%) + Management (25%) + Undervalue (25%) + Catalyst (20%)\" code=\"Contrarian 
+(30%) + Management (25%) + Undervaluation (25%) + Catalyst (20%)\"",
++   "nemish: display=\"EPS Growth (35%) + Debt-Free (30%) + Management Quality (20%) + Valuation (15%)\" code=\"EPS 
+Consistency (35%) + Debt Free (30%) + Management (20%) + Valuation (15%)\"",
++   "basant: display=\"Consumer Theme (30%) + Revenue Growth (25%) + Margins (25%) + PE Premium (20%)\" 
+code=\"Consumer Trend (30%) + Revenue Trend (25%) + Margin Visibility (25%) + Valuation (20%)\"",
++   "buffett: display=\"ROE (30%) + Economic Moat (25%) + Earnings Power (20%) + Management (15%) + Price (10%)\" 
+code=\"ROE Sustainability (30%) + Economic Moat (25%) + Owner Earnings Yield (20%) + Management Skin (15%) + Neutral 
+Base (10%)\"",
++   "graham: display=\"NCAV (40%) + P/E Below Market (25%) + Low Debt (20%) + Earnings Stability (15%)\" code=\"NCAV 
+Discount (40%) + P/E Value (25%) + Current Ratio Safety (15%) + Debt Safety (20%)\"",
++   "lynch: display=\"PEG Ratio (30%) + Earnings Growth (25%) + FCF (20%) + Category (15%) + Story (10%)\" code=\"PEG 
+Ratio (30%) + EPS Growth Rate (25%) + Free Cash Flow (20%) + Revenue Story (15%) + Neutral Base (10%)\"",
++   "munger: display=\"Circle of Competence (30%) + Inversion (25%) + Quality Business (25%) + Fair Price (20%)\" 
+code=\"Circle of Competence (30%) + Inversion Check (25%) + Lollapalooza Effect (25%) + Patience Filter (20%)\"",
++   "pabrai: display=\"Clone Score (30%) + Owner-Operator (25%) + Downside Protection (25%) + Upside (20%)\" 
+code=\"Clone Score (30%) + Owner Operator (25%) + Low Risk (25%) + High Uncertainty Discount (20%)\"",
++   "philipfisher: display=\"Management Quality (25%) + R&D Strength (25%) + Revenue Growth (25%) + Margins (25%)\" 
+code=\"Management Quality (25%) + RandD Investment (25%) + Growth Rate (25%) + Market Size (25%)\"",
++   "howardmarks: display=\"Cycle Position (30%) + Margin of Safety (25%) + Risk Asymmetry (25%) + Sentiment (20%)\" 
+code=\"Cycle Position (30%) + Safety Margin (25%) + Asymmetric Payoff (25%) + Market Opp (20%)\"",
++   "sethklarman: display=\"Downside Protection (40%) + Asymmetric Return (30%) + Margin of Safety (15%) + Catalyst 
+(15%)\" code=\"Downside Protection (40%) + Asymmetric (30%) + Margin Safety (15%) + Catalyst (15%)\"",
++   "templeton: display=\"Pessimism Score (35%) + Global Discount (30%) + Quality Business (20%) + Catalyst (15%)\" 
+code=\"Maximum Pessimism (35%) + Discount to Book (30%) + Quality (20%) + Contrarian (15%)\"",
++   "schloss: display=\"Price-to-Book (40%) + Zero Debt (30%) + Insider Buying (20%) + Low PE (10%)\" code=\"Price to 
+Book (40%) + Zero Debt (30%) + Insider Owner (20%) + Size (10%)\"",
++   "soros: display=\"Macro Cycle (20%) + Reflexivity (20%) + Policy Shift (20%) + Trend Stage (20%) + Capital Flows 
+(20%)\" code=\"Reflexivity Signal (30%) + Macro Tailwind (25%) + Momentum Confirm (20%) + Leverage Tolerance (15%) + 
+Liquidity Buffer (10%)\"",
++ ]
+
+ Γ¥» test/rishisFormula.generated.test.ts:64:65
+     62|       if (display !== code) drifted.push(`${p.id}: display=${JSON.striΓÇª
+     63|     }
+     64|     expect(drifted, `drifted formulas:\n${drifted.join('\n')}`).toEquaΓÇª
+       |                                                                 ^
+     65|   });
+     66|
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]ΓÄ»
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  20:32:42
+   Duration  1.56s (transform 48%, import 47%, tests 2%, setup 2%, worker 1%)
+

@@ -19,6 +19,25 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("demo path — the honest walk (DEMO-6)", () => {
+  // The first-visit disclaimer modal (LegalDisclaimer → DisclaimerModal,
+  // zIndex 9999, fixed) overlays every fresh browser until accepted —
+  // every CLICK leg below is intercepted by it. The established pattern
+  // (hydration-pins, evidence-fixtures) pre-seeds the acceptance key so
+  // the modal never mounts. The four failing legs of the first CI run
+  // (search result click, wisdom tab click ×2, watchlist input) were all
+  // this — the spec's original "runs green" claim was never true
+  // (Playwright had never run on the branch; cadence aborts killed every
+  // prior attempt before this job).
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem("rishi_disclaimer_v2", "accepted");
+      } catch {
+        /* storage unavailable — the modal mounts and the legs fail loudly */
+      }
+    });
+  });
+
   test("search finds a stock and lands on its honest record", async ({ page }) => {
     await page.goto("/");
     const search = page.getByLabel("Search instruments").first();
@@ -43,36 +62,48 @@ test.describe("demo path — the honest walk (DEMO-6)", () => {
     await expect(main.getByText(/Peer Comparison/i).first()).toBeVisible();
   });
 
-  test("dissent expand: the wisdom tab opens and a Rishi card expands honestly", async ({ page }) => {
+  test("dissent expand: the wisdom tab opens to the honest no-verdict record", async ({ page }) => {
     await page.goto("/stock/RELIANCE");
     const main = page.locator("main");
     await main.getByText(/Rishi Wisdom/i).first().click({ timeout: 20_000 });
-    // the grid renders the council; the first card expands to its detail
-    const firstCard = main.locator("[class*='cursor-pointer']").first();
-    await firstCard.click();
-    // the expanded body renders the framework's honest detail — on seed
-    // data every score is null and the card says so (P0-2/P0-5 records)
-    await expect(main.getByText(/Inspired by/i).first()).toBeVisible();
+    // HONEST CONTRACT (P0-1): on seed data the wisdom tab body IS the
+    // NoVerdictRecord — StockPageClient renders the grid (and its
+    // expandable cards) only when verdictsAllowed(dataQuality). There is
+    // no council output to expand into, so the honest walk asserts the
+    // record itself. When licensed live data lands, this leg flips to
+    // the card-expansion interaction (the DEMO-5 dissent_expanded event
+    // is already wired on the card's expand handler in RishiGrid — the
+    // surface exists in code; seed data simply cannot reach it, the same
+    // finding as flip_expanded).
+    await expect(main.getByText(/NO VERDICT — ILLUSTRATIVE SEED DATA/i).first()).toBeVisible({ timeout: 15_000 });
+    // B-18 positive control: the tab BODY rendered (the record text
+    // above proves it) — and no expandable council card exists on seed
+    // data (the grid never mounts; a cursor-pointer card here would mean
+    // a verdict leaked onto a seed row).
+    expect(await main.locator("[class*='cursor-pointer']").count()).toBe(0);
   });
 
   test("flip expand: the honest state on seed data is the no-verdict record", async ({ page }) => {
     await page.goto("/stock/RELIANCE");
     const main = page.locator("main");
     await main.getByText(/Rishi Wisdom/i).first().click({ timeout: 20_000 });
-    const firstCard = main.locator("[class*='cursor-pointer']").first();
-    await firstCard.click();
     // KNOWN SHAPE (DEMO-5 finding): the flip-conditions VIEW is the dead
-    // RishiCouncil component (zero importers) — the live flip content is
-    // the expanded card's threshold language. On seed data NO verdict
-    // exists, so there is NOTHING to flip: the honest state is the
-    // no-verdict record — never a fabricated flip path.
-    await expect(main.getByText(/NO VERDICT — ILLUSTRATIVE SEED DATA/i).first()).toBeVisible();
+    // RishiCouncil component (zero importers) — and on seed data there is
+    // no verdict AT ALL, so there is NOTHING to flip: the honest state is
+    // the no-verdict record — never a fabricated flip path. (The original
+    // leg tried to expand a council card; the grid never mounts on seed
+    // data — verdictsAllowed gates it — so the card interaction is
+    // unreachable today and the record itself is the assertion.)
+    await expect(main.getByText(/NO VERDICT — ILLUSTRATIVE SEED DATA/i).first()).toBeVisible({ timeout: 15_000 });
     // the dead flip-conditions surface must NOT resurrect silently
     expect(await main.getByText(/no single-input path to a pass/i).count()).toBeLessThanOrEqual(1);
   });
 
   test("watchlist add: the anonymous lab accepts a symbol and shows the row", async ({ page }) => {
-    await page.goto("/lab");
+    // The lab defaults to the overview tab — the watchlist surface is the
+    // tab=watchlist deep link the tab bar itself renders (LabContent reads
+    // the param); a bare /lab shows no symbol input.
+    await page.goto("/lab?tab=watchlist");
     const input = page.locator("input[placeholder*='symbol']").first();
     await input.waitFor({ state: "visible", timeout: 20_000 });
     await input.fill("RELIANCE");

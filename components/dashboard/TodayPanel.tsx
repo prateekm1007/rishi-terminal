@@ -79,13 +79,13 @@ export function TodayPanel({ stockOfDay }: { stockOfDay: StockOfTheDay | null })
         </div>
 
         <div style={{ color: "var(--text-muted)" }}>
-          News: <Link href="/news" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>No headlines yet</Link>{" "}
+          News: <Link href="/news" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>No headlines yet</Link>{" "}
           — the feed has honest empties until a real feed lands.
         </div>
 
         <div style={{ color: "var(--text-muted)" }}>
           Forward-return tracking: <strong data-tracking-status style={{ color: "var(--text-secondary)" }}>{TRACKING_STATUS}</strong>{" "}
-          — <Link href="/methodology" style={{ color: "var(--text-secondary)", textDecoration: "none" }}>methodology</Link> carries the
+          — <Link href="/methodology" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>methodology</Link> carries the
           same line; it retires when the calibration track begins.
         </div>
       </div>

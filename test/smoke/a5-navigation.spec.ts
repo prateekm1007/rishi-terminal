@@ -22,11 +22,22 @@ test("the shell nav does NOT link /methodology (positive control: nav rendered)"
   expect(res.status()).toBe(200);
   const html = await res.text();
   // Positive control: the sidebar region exists and rendered its items.
-  // (The sidebar's opening markup carries a large inline logo SVG — the
-  // window must extend past it to the nav groups.)
+  // Scope correction (2026-10-12): the audited region is the sidebar
+  // ELEMENT — from its opening tag to the matching </aside>. The previous
+  // 40,000-character window was a proxy for "the sidebar" that predated
+  // the homepage Today panel (DEMO-4); the panel's CONTEXTUAL methodology
+  // link (the founder's directive 11: "hide ≠ delete" — contextual links
+  // STAY, like the stock page's footer link this spec already pins) fell
+  // inside the proxy window and tripped the check. Narrowing to the real
+  // element boundary keeps every sidebar assertion (positive controls and
+  // the hide) — it only stops auditing main-content links the contract
+  // explicitly allows. NOT a weakening: the sidebar itself is still fully
+  // checked.
   const sidebarStart = html.indexOf('class="shell-sidebar"');
   expect(sidebarStart).toBeGreaterThanOrEqual(0);
-  const sidebarHtml = html.slice(sidebarStart, sidebarStart + 40000);
+  const sidebarEnd = html.indexOf("</aside>", sidebarStart);
+  expect(sidebarEnd).toBeGreaterThan(sidebarStart);
+  const sidebarHtml = html.slice(sidebarStart, sidebarEnd);
   expect(sidebarHtml).toContain('href="/stocks"');
   expect(sidebarHtml).toContain('href="/rishis"');
   // The hide: no methodology link inside the sidebar region.

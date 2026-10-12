@@ -1,0 +1,8 @@
+PRE-FIX verdict on the live #378 shape: {'Lint, typecheck, test, validate': ('completed', 'failure')}
+=> RED reproduced: the pre-fix guard reads the STALE failure (the live refusal, PR #378, 2026-10-12T03:31Z)
+self-test GREEN: latest-wins holds in all cases (order-agnostic; red-latest refuses; running waits)
+exit=0
+GREEN: python3 scripts/ci/merge-guard.py --self-test -> exit 0
+(latest-wins, order-agnostic; a newer RED run still refuses; a newer
+in-progress run still waits — the guard got STRICTER-or-equal, never weaker)
+CI wrapper: test/mergeGuard.selfTest.test.ts runs the self-test in vitest.

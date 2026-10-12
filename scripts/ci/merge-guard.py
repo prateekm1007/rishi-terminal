@@ -71,6 +71,78 @@ def die(code: int, reason: str) -> None:
     sys.exit(code)
 
 
+def latest_check_runs(check_runs: list) -> dict:
+    """Per check name, the MOST RECENT run's (status, conclusion).
+
+    One SHA can carry several check-runs per name: a branch rename or a
+    re-run creates a second suite on the same commit (observed live on
+    PR #378's head 151b5d0, 2026-10-12: the renamed branch's green suite
+    and the deleted branch's red suite, and the pre-fix dict
+    comprehension read the STALE red one as the verdict). The merge
+    verdict must follow the freshest evidence per name, never the API's
+    listing order. A run still in progress counts as the latest evidence
+    (status != completed -> the guard waits), because it is the run that
+    will supersede everything before it.
+    """
+    latest: dict = {}
+    for c in check_runs:
+        name = c["name"]
+        stamp = c.get("completed_at") or c.get("started_at") or ""
+        key = (stamp, c.get("id", 0))
+        if name not in latest or key >= latest[name][0]:
+            latest[name] = (key, (c["status"], c.get("conclusion")))
+    return {n: v[1] for n, v in latest.items()}
+
+
+def self_test() -> None:
+    """Fail-first evidence for latest-wins aggregation (CI rides it via
+    test/mergeGuard.selfTest.test.ts). Fixtures mirror the live #378 defect."""
+    import datetime as _dt
+
+    def run(name, i, completed_at, started_at, status, conclusion):
+        return {"name": name, "id": i, "status": status, "conclusion": conclusion,
+                "completed_at": completed_at, "started_at": started_at}
+
+    old_t, new_t = "2026-10-12T03:09:37Z", "2026-10-12T03:25:11Z"
+    qual = "Lint, typecheck, test, validate"
+    smoke = "Playwright smoke (blocking since round 2 — green on 4+ consecutive runs)"
+
+    # Case 1 (the live defect): renamed branch — old suite red, new suite
+    # green. API order is NOT trusted: both orders must yield the green read.
+    old_suite = [run(qual, 1, old_t, old_t, "completed", "failure"),
+                 run(smoke, 2, old_t, old_t, "completed", "skipped")]
+    new_suite = [run(qual, 3, new_t, new_t, "completed", "success"),
+                 run(smoke, 4, new_t, new_t, "completed", "success")]
+    for label, order in (("new-first", new_suite + old_suite),
+                         ("old-first", old_suite + new_suite)):
+        seen = latest_check_runs(order)
+        if seen.get(qual) != ("completed", "success") or seen.get(smoke) != ("completed", "success"):
+            print(f"self-test RED [{label}]: expected the LATEST (green) suite to win, got {seen}")
+            sys.exit(1)
+
+    # Case 2 (the fix must not merely 'prefer success'): old suite green,
+    # NEW suite red -> the latest red run is the verdict.
+    old_green = [run(qual, 5, old_t, old_t, "completed", "success")]
+    new_red = [run(qual, 6, new_t, new_t, "completed", "failure")]
+    for label, order in (("red-last", old_green + new_red),
+                         ("red-first", new_red + old_green)):
+        seen = latest_check_runs(order)
+        if seen.get(qual) != ("completed", "failure"):
+            print(f"self-test RED [{label}]: expected the LATEST (red) run to win, got {seen}")
+            sys.exit(1)
+
+    # Case 3: a still-running newer run is the latest evidence -> not completed.
+    completed_old = [run(qual, 7, old_t, old_t, "completed", "success")]
+    inprog_new = [run(qual, 8, None, new_t, "in_progress", None)]
+    seen = latest_check_runs(completed_old + inprog_new)
+    if seen.get(qual) != ("in_progress", None):
+        print(f"self-test RED [in-progress]: expected the running run to be the latest evidence, got {seen}")
+        sys.exit(1)
+
+    print("self-test GREEN: latest-wins holds in all cases (order-agnostic; red-latest refuses; running waits)")
+    sys.exit(0)
+
+
 def sh(args: list[str], cwd: str) -> tuple[int, str]:
     p = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
     return p.returncode, (p.stdout + p.stderr).strip()
@@ -102,11 +174,18 @@ def api(token: str, method: str, path: str, body: dict | None = None):
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Hard merge gate — refuses, never just reports")
-    ap.add_argument("--pr", type=int, required=True)
+    ap.add_argument("--pr", type=int, required=False)
     ap.add_argument("--repo", default=REPO_DEFAULT)
     ap.add_argument("--repo-dir", default=os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     ap.add_argument("--dry-run", action="store_true", help="evaluate every gate but do not merge")
+    ap.add_argument("--self-test", action="store_true", help="run the aggregation fixtures and exit (no network, no merge)")
     args = ap.parse_args()
+
+    if args.self_test:
+        self_test()
+        return
+    if args.pr is None:
+        die(3, "--pr is required unless --self-test")
 
     token = os.environ.get("GITHUB_PAT", "")
     if not token:
@@ -154,8 +233,8 @@ def main() -> None:
     st, crs = api(token, "GET", f"/repos/{args.repo}/commits/{head}/check-runs?per_page=100")
     if st != 200:
         die(3, f"check-runs fetch failed: HTTP {st}")
-    seen = {c["name"]: (c["status"], c["conclusion"]) for c in crs.get("check_runs", [])}
-    print(f"[gate 3] check-runs on {head[:12]}: {json.dumps(seen, ensure_ascii=False)}")
+    seen = latest_check_runs(crs.get("check_runs", []))
+    print(f"[gate 3] check-runs on {head[:12]} (latest per name): {json.dumps(seen, ensure_ascii=False)}")
     for name in REQUIRED_CHECKS:
         if name not in seen:
             die(2, f"required check MISSING on head: {name!r} (CI not started, or the job was renamed — "

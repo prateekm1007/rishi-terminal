@@ -436,3 +436,29 @@ retry-sporadically protocol stood down unused.
   for the five checks, merge through the guard, rebase the next PR onto
   the moved tip. One production-relevant merge per window; docs-only
   merges ride free.
+
+### 2026-10-12 (round 50) — RESP-1R: the live claim reconciled; production serves 02eac31
+
+- **The probe and the page agree.** `node scripts/ci/postDeploySmoke.mjs
+  --base https://rishi-terminal.vercel.app --expect-sha
+  02eac31664013b80d568c55d6d914d86420af357` → PASS, all 22 checks, exit 0
+  (version sha match; SBIN/BANKBARODA seed-record trichotomy; RELIANCE
+  seedleak: "HIGH Data" 0, "REDUCE" 0, old QVPS badge 0, QVPS-on-seed 0;
+  nullzero pins hold). Independent `curl -sI /stock/RELIANCE` → HTTP 200,
+  `X-Vercel-Cache: STALE`, `Age: 1318`; body 84,827 bytes with "HIGH Data"
+  x 0 ("REDUCE" x 0, "Avoid" x 0). The 7 QVPS mentions are provenance copy
+  ("no QVPS are produced on seed data"), not score tiles; Key Metrics x 3
+  and Peer Comparison x 2 hold as positive controls. A cache-busted fetch
+  (`?cb=02eac31verify`, edge STALE Age 115) also returns "HIGH Data" x 0.
+- **Why the ~10:00 IST fetch disagreed.** It coincided with the #380 merge
+  (02eac31, 04:29:41Z): the edge served STALE objects through the deploy
+  transition. No code path on main can render the observed strings — the
+  only "HIGH Data" hit in source is a comment
+  (`components/score/RishiScoreDual.tsx:149`), and "REDUCE" occurs 0 times
+  under app/components/lib/data/messages. The founder's purge condition
+  ("the page still shows HIGH Data") is therefore NOT met from any vantage
+  now; no purge ran.
+- **Ledger correction (C6):** the "production serves 7682263" (#378 entry)
+  and "serves aab1eb1d" entries above are SUPERSEDED — `GET /api/version`
+  serves `02eac31664013b80d568c55d6d914d86420af357` = current main tip
+  (#380). Next production window opens 05:29:41Z (#380 merge + 60 min).

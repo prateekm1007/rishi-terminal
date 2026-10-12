@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useActivationEvents } from "@/hooks/useActivationEvents"; // DEMO-5: consent-gated activation events
 
 type Category = "stock" | "crypto" | "commodity" | "forex" | "bond";
 
@@ -31,6 +32,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function GlobalSearchBar() {
   const router = useRouter();
+  const { track } = useActivationEvents(); // DEMO-5: fail-closed consent gate
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [focused, setFocused] = useState(false);
@@ -41,13 +43,17 @@ export function GlobalSearchBar() {
   const abortRef = useRef<AbortController | null>(null);
 
   const navigate = useCallback((r: SearchResult) => {
+    // DEMO-5 (G7-01): the search activation event — consent-gated in the
+    // hook; the query TEXT never leaves this component (length only, no
+    // PII in events).
+    track("search_performed", { query_length: query.length, result_symbol: r.url.split("/").pop() ?? "" });
     router.push(r.url);
     setQuery("");
     setResults([]);
     setFocused(false);
     setSelected(-1);
     inputRef.current?.blur();
-  }, [router]);
+  }, [router, track, query]);
 
   // Fetch results (debounced)
   useEffect(() => {

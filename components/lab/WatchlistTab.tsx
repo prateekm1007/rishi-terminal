@@ -10,6 +10,7 @@ import type { SlimStockRow } from '@/lib/scoring/slimIndex';
 import { addHolding } from '@/lib/portfolio/index';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '../../lib/language';
+import { useActivationEvents } from '@/hooks/useActivationEvents'; // DEMO-5: the watchlist_added activation event (consent-gated)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -62,6 +63,7 @@ interface Props {
 
 export default function WatchlistTab({ rows }: Props) {
   const { t } = useLanguage();
+  const { track } = useActivationEvents(); // DEMO-5: fail-closed consent gate
   const rowMap = useMemo(() => new Map(rows.map(r => [r.symbol, r])), [rows]);
 
   const [items, setItems] = useState<WatchlistItem[]>([]);
@@ -140,6 +142,10 @@ export default function WatchlistTab({ rows }: Props) {
     if (!sym) { setError('Enter a symbol'); return; }
     if (!rowMap.has(sym)) { setError('Symbol not in database'); return; }
     if (items.some(x => x.symbol === sym)) { setError('Already in watchlist'); return; }
+    // DEMO-5 (G7-01): the watchlist_added activation event — one of the
+    // two PROPOSED activation paths (3 adds or 1 import in 7 days);
+    // consent-gated in the hook.
+    track("watchlist_added", { symbol: sym });
     persist([{ symbol: sym, addedDate: new Date().toISOString(), conviction: 5, notes: '' }, ...items]);
     setSearchQuery(''); setAddSymbol(''); setShowDropdown(false);
   }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { listMethodologyDocs } from '@/lib/methodology';
+import { trackingLine, TRACKING_STATUS } from '@/lib/demoState'; // DEMO-2: the honest tracking line (one source with the Today panel)
 import { routeMetadata } from "@/lib/seo/routeMetadata";
 
 export const metadata = routeMetadata({
@@ -27,6 +28,14 @@ export default async function MethodologyPage() {
           describe what the code does — the panel is an educational simulation inspired by well-known
           investors, not the real people, and not investment advice.
         </p>
+
+        <div
+          data-methodology-tracking
+          style={{ fontSize: 13, color: 'var(--text-secondary)', padding: '10px 14px', marginTop: 16, border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12 }}
+        >
+          Forward-return tracking: <strong style={{ color: 'var(--text-primary)' }}>{TRACKING_STATUS}</strong> ({trackingLine()}) — the
+          S2-03/S2-04 calibration track has not begun; this line retires when it does.
+        </div>
 
         <div className="card-unified" style={{ padding: 20, marginTop: 24 }}>
           {docs.map((doc) => (

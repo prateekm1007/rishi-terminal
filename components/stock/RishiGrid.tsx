@@ -6,6 +6,7 @@ import { RishiScore } from "../../lib/types";
 import { RISHI_WEIGHT_CONFIG } from "../../lib/gurus/weights";
 import { useState } from "react";
 import { useLanguage } from '../../lib/language';
+import { useActivationEvents } from '@/hooks/useActivationEvents'; // DEMO-5: the dissent_expanded activation event (consent-gated)
 
 interface Props {
   symbol: string;
@@ -56,8 +57,9 @@ function getWeightForRishi(name: string): number {
   return config?.weight ?? 1.0;
 }
 
-export function RishiGrid({ verdicts, totalRishis }: Props) {
+export function RishiGrid({ verdicts, totalRishis, symbol }: Props) {
   const { t } = useLanguage();
+  const { track } = useActivationEvents(); // DEMO-5: fail-closed consent gate
   const [expandedRishi, setExpandedRishi] = useState<string | null>(null);
 
   // Free access: the server sent the full verdict set — nothing is locked.
@@ -108,7 +110,13 @@ export function RishiGrid({ verdicts, totalRishis }: Props) {
               key={rishi.name}
               className="border border-border-primary rounded-xl p-4 hover:border-accent-gold/40 transition-all duration-200 cursor-pointer group"
               style={{ animationDelay: `${idx * 30}ms` }}
-              onClick={() => setExpandedRishi(isExpanded ? null : rishi.name)}
+              onClick={() => {
+                // DEMO-5: dissent_expanded fires when a Rishi card OPENS
+                // (the dissent/flip detail lives in the expanded body);
+                // collapsing stays silent.
+                if (!isExpanded) track("dissent_expanded", { symbol });
+                setExpandedRishi(isExpanded ? null : rishi.name);
+              }}
             >
               {/* Card Header */}
               <div className="flex items-start justify-between mb-3">

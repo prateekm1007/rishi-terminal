@@ -1,0 +1,94 @@
+import 'server-only';
+
+import Link from 'next/link';
+import type { StockOfTheDay } from '@/lib/scoring/rankings';
+import { TRACKING_STATUS } from '@/lib/demoState';
+import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the panel's SOD pick is seed-derived — the mandatory label
+
+/**
+ * DEMO-4 (founder order, 2026-10-12): the dashboard's "Today" view with an
+ * HONEST empty state. It renders the demo path's starting surface — what
+ * exists today and what honestly does not:
+ *
+ *   - the deterministic IST-date Stock of the Day (when the rankings flag
+ *     is on and a verdict-allowed pick exists — U4/P0-1 semantics ride the
+ *     prop: the page passes null when there is nothing, and this panel
+ *     renders the honest "no pick" state, never a fabricated subject);
+ *   - verdicts produced today: NONE — the record set is seed data (P0-1:
+ *     seed rows show no verdict; the count is a literal 0, not a computed
+ *     one pretending to be observed);
+ *   - news: the honest empty state the founder worded ("No headlines yet"
+ *     — the /news surface's own wording, linked);
+ *   - forward-return tracking: not started (DEMO-2, lib/demoState — the
+ *     ONE source, shared with the methodology line).
+ *
+ * SERVER component — zero first-load JS (the C9 pairing for the demo LCP
+ * budget, ENG-3). The IST date renders from the ISR-baked render time
+ * (deterministic per regeneration, the same class as the SOD pick — the
+ * page revalidates every 60 s, so the date rotates within a minute of
+ * IST midnight).
+ */
+export function TodayPanel({ stockOfDay }: { stockOfDay: StockOfTheDay | null }) {
+  const istDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+
+  return (
+    <section
+      data-today-panel
+      className="card-unified"
+      style={{
+        padding: 20,
+        marginTop: 24,
+        border: "1px solid rgba(212,175,55,0.2)",
+      }}
+      aria-label="Today"
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--accent-gold)", margin: 0 }}>Today</h2>
+        <span data-today-date style={{ fontSize: 12, color: "var(--text-muted)" }}>{istDate} IST</span>
+      </div>
+
+      {/* N3: the SOD pick is seed-derived — the same mandatory label the
+          ranked trio carries in DashboardTail (a client component rendered
+          inside this server tree is fine in Next 16). */}
+      <div style={{ marginTop: 8 }}>
+        <SeedDataBanner suffix="deterministic daily pick, IST calendar day" />
+      </div>
+
+      <div style={{ display: "grid", gap: 8, marginTop: 12, fontSize: 13, lineHeight: 1.6 }}>
+        {stockOfDay ? (
+          <div>
+            <span style={{ color: "var(--text-secondary)" }}>Stock of the Day: </span>
+            <Link
+              href={`/stock/${stockOfDay.symbol}`}
+              data-today-sod
+              style={{ color: "var(--accent-gold)", textDecoration: "none", fontWeight: 600 }}
+            >
+              {stockOfDay.symbol}
+            </Link>
+            <span style={{ color: "var(--text-muted)" }}> — {stockOfDay.name} (deterministic IST pick)</span>
+          </div>
+        ) : (
+          <div data-today-sod-empty style={{ color: "var(--text-muted)" }}>
+            Stock of the Day: — no verdict-allowed pick exists (rankings find nothing to rank on the current record set)
+          </div>
+        )}
+
+        <div style={{ color: "var(--text-muted)" }}>
+          Verdicts produced today: <strong style={{ color: "var(--text-secondary)" }}>none</strong> — the record set is
+          illustrative seed data, so no Rishi verdicts are produced (P0-1); the honest record renders on every stock page.
+        </div>
+
+        <div style={{ color: "var(--text-muted)" }}>
+          News: <Link href="/news" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>No headlines yet</Link>{" "}
+          — the feed has honest empties until a real feed lands.
+        </div>
+
+        <div style={{ color: "var(--text-muted)" }}>
+          Forward-return tracking: <strong data-tracking-status style={{ color: "var(--text-secondary)" }}>{TRACKING_STATUS}</strong>{" "}
+          — <Link href="/methodology" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>methodology</Link> carries the
+          same line; it retires when the calibration track begins.
+        </div>
+      </div>
+    </section>
+  );
+}

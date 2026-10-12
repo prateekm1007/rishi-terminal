@@ -98,7 +98,7 @@ export default function ForexPage() {
   const symbols = useMemo(() => pairList.map(p => p.pair), []);
   const { prices, loading, error, lastUpdated } = useLivePrices(symbols);
 
-  // Merge live prices with static data. Audit 2026-10-02 (P1): a pair
+  // Merge the price overlay with static data. Audit 2026-10-02 (P1): a pair
   // without a live quote keeps its STATIC reference values but is labelled;
   // the change renders '—' (unavailable), never a fabricated 0% move.
   // volume24h stays reference-only unless the transport actually carries a

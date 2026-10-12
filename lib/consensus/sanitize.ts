@@ -11,7 +11,7 @@ import type { DataQuality } from '../dataQuality';
  * narrative insight) is computed server-side and sanitized here — the
  * client receives RESULTS, never the engine (N1). Under the free-access
  * product (founder decision 2026-10-02) there is NO visibility slice:
- * every caller receives every verdict. The historical tier-slice parameter
+ * every caller receives the full verdict set. The historical tier-slice parameter
  * was removed; if a surface needs a bounded LIST summary for payload
  * budget, it slices its own display rows (lib/scoring/slimIndex.ts) and
  * says so — that is a transport decision, never an entitlement.
@@ -71,7 +71,7 @@ export function sanitizeConsensus(consensus: ConsensusResult): SanitizedConsensu
     scoresCount: consensus.scores.length,
     topBull: trim(consensus.topBull),
     topBear: trim(consensus.topBear),
-    // Free access: every verdict crosses — there is no hidden remainder.
+    // Free access: the full verdict set crosses — there is no hidden remainder.
     verdicts: consensus.scores,
   };
 }

@@ -3,7 +3,7 @@
 // N1 (round 3): the interactive dashboard. All rankings, the Stock of the
 // Day, and its QVPS commentary arrive precomputed from the server (RSC
 // props, hourly ISR) — the scoring engine and seed dataset never enter
-// the client bundle. Live prices and live fundamentals still hydrate
+// the client bundle. The price overlay and live fundamentals still hydrate
 // client-side through the existing hooks.
 
 import { useState, useEffect, useMemo } from "react";

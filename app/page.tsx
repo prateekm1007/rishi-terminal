@@ -2,7 +2,7 @@
 //
 // All ranking calls run here, on the single engine: Top Buys, the Short
 // Radar, and the deterministic IST-date Stock of the Day. The interactive
-// half (ticker, live prices, hydration) lives in
+// half (ticker, price hydration, live overlays) lives in
 // components/dashboard/DashboardClient.tsx and receives these results as
 // RSC props — the 944-record seed dataset and the scoring engine never
 // enter the client bundle.

@@ -48,7 +48,7 @@ export default function CryptoPage() {
   // Extract all crypto symbols
   const cryptoSymbols = useMemo(() => CRYPTO_ASSETS.map(c => c.symbol), []);
 
-  // Fetch live prices. G4 (founder round 23): observedAt is the
+  // Fetch the LIVE-where-labelled price overlay. G4 (founder round 23): observedAt is the
   // server-disclosed OBSERVATION clock — the header below keys off it,
   // never off a fetch/arrival time, and the LIVE word is earned by
   // actual observations (a fetch is not a freshness claim).
@@ -74,7 +74,7 @@ export default function CryptoPage() {
   const fgColor = fgValue >= 60 ? 'var(--accent-green)' : fgValue >= 40 ? 'var(--accent-gold)' : 'var(--accent-red)';
   const fgLabel = fgValue >= 75 ? t('crypto.extremeGreed') : fgValue >= 55 ? t('crypto.greed') : fgValue >= 45 ? t('crypto.neutral') : fgValue >= 25 ? t('crypto.fear') : t('crypto.extremeFear');
 
-  // Calculate metrics with live prices
+  // Calculate metrics with the fetched prices
   const totalMarketCap = useMemo(() => {
     let sum = 0;
     CRYPTO_ASSETS.forEach(asset => {
@@ -127,7 +127,7 @@ export default function CryptoPage() {
               value: '$' + (totalMarketCap / 1e12).toFixed(2) + 'T', color: 'var(--accent-gold)',
               state: (Object.values(prices).length > 0 ? 'derived' : 'reference') as 'derived' | 'reference',
               title: Object.values(prices).length > 0
-                ? 'Derived from live prices x reference market caps'
+                ? 'Derived from LIVE price inputs x reference market caps'
                 : 'Static reference dataset — illustrative',
             },
             {

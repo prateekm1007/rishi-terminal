@@ -2,7 +2,7 @@
  * ProvenanceChip — the field-level data-state label (audit 2026-10-02 P1).
  *
  * Rule 3: LIVE / REFERENCE / UNAVAILABLE must be materially distinguishable
- * on every market surface. Pages mixing live prices with static reference
+ * on every market surface. Pages mixing LIVE-where-labelled prices with static reference
  * analytics used one page-level "Live" badge (or none) — this chip labels
  * the actual state of the value it sits next to.
  *

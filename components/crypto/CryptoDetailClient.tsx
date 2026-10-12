@@ -65,7 +65,7 @@ export function CryptoDetailClient({ asset }: { asset: CryptoAsset }) {
     change24h: displayChange,
   };
   // R3 (round 2) + Commit M3 (free access): guru verdicts come from
-  // /api/gurus (server-computed, every verdict in full for every caller).
+  // /api/gurus (server-computed, the full verdict set for every caller).
   // This component renders only what it is served. FD-23 (11 Oct 2026):
   // on reference data the wire serves the heuristic-reference output —
   // score + P0-6 category + the founder's label; verdict content withheld.

@@ -127,7 +127,7 @@ G7-01..G7-06: all ⬜ / 🚫 (G7-01 needs FD-4, G7-06 needs D1-01 licence terms)
 | FD-16 | Banks scored with non-bank metrics — NIM/GNPA/CRAR modelling needs a data-source decision | bank scoring surfaces | OPEN. |
 | FD-17 | Soft-404 on unknown stock symbols (HTTP 200 + not-found UI) — fix vs leave | SEO hygiene | OPEN. |
 | FD-18 | `data/security-master/populate.sql` mirrors the pre-round-5 symbol list — regeneration owned by the D1 pipeline | D1-04/D1-05 (must not resurrect removed symbols) | OPEN (flagged). |
-| FD-22 | Rankings on: `RANKINGS_ENABLED=true` in production (detail in docs/ROADMAP.md FD-22) | dashboard ranked widgets | **RESOLVED 2026-10-12 (founder words verbatim in docs/ROADMAP.md FD-22).** Env verified set (production target, `true`, created 2026-10-06). Honest-state probe (three widgets show honest empties, no seed ranking renders) rides the round-49 evidence; the flag-on-no-candidates note fix is the round-49 implementation PR. |
+| FD-22 | Rankings on — founder words verbatim: "enable all the top buy signals" (11 Oct; `RANKINGS_ENABLED=true` in production is the implementation note, detail in docs/ROADMAP.md FD-22) | dashboard ranked widgets | **RESOLVED 2026-10-12 (founder words verbatim in docs/ROADMAP.md FD-22; record corrected 12 Oct 2026, RULES-1a — the env-var line had been misquoted as the founder's words).** Env verified set (production target, `true`, created 2026-10-06). Honest-state probe (three widgets show honest empties, no seed ranking renders) rides the round-49 evidence; the flag-on-no-candidates note fix is the round-49 implementation PR. |
 
 ### Round-4 additions (Q6) — pending founder approval
 
@@ -370,8 +370,10 @@ Recorded BEFORE any code change this round, per the founder's order ("Record eac
 instruction with your exact words and the date before changing code" — the directive's words are
 quoted verbatim; the date is the directive's receipt date, 2026-10-12).
 
-- **FD-22 — Rankings on.** Founder's words: "Set `RANKINGS_ENABLED=true` in production."
-  (Phase 0, DELIV-1.) Env verified already set (production target, `true`, created 2026-10-06).
+- **FD-22 — Rankings on.** Founder's words, verbatim: "enable all the top buy signals"
+  (11 Oct). Implementation note (the mechanism, not the founder's words): `RANKINGS_ENABLED=true`
+  is verified already set (production target, `true`, created 2026-10-06). The record was
+  corrected 12 Oct 2026 (RULES-1a): the env-var line had been misquoted as the founder's words.
   Implementing PR (the honest flag-on-no-candidates state + probe): the round-49 rankings PR.
   Register row: docs/ROADMAP.md FD-22.
 - **FD-12 — crypto/commodity cards (implemented as FD-23).** Founder's words (11 Oct, recorded
@@ -382,6 +384,12 @@ quoted verbatim; the date is the directive's receipt date, 2026-10-12).
 - **The price-based override ("licence pending" label) — implemented as FD-26.** Founder's
   words (12 Oct, DELIV-2): "Every price-based score carries 'licence pending'. The status stays
   'unresolved' in code." FD-26 recorded 11 Oct (PR #368). Implementing PR: #371.
+- **The price instruction — recorded 12 Oct 2026 (RULES-1b of the founder's order).**
+  Founder's words, verbatim: "price based scores enabled again" (11 Oct). Reconciliation note
+  (coder): `PRICE_DATA_LICENSE.status` stays `"unresolved"` (DELIV-2, same order) — the
+  instruction stands on record and coexists with the standing default: price-based score
+  surfaces render under the `Licence pending` label while the licence remains unresolved,
+  never unlabelled. Register row: docs/ROADMAP.md FD-26.
 - **"Top Buy Signals" name exception to P0-6 — implemented as FD-24.** Recorded 11 Oct
   (PR #368): "Keep 'Top Buy Signals' as the name." Implementing PR: #370.
 - **Persona labels (Michael Saylor, Vitalik) — implemented as FD-25.** Recorded 11 Oct

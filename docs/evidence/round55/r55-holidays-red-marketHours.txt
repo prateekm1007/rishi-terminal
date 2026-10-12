@@ -1,0 +1,142 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/z/rishi-terminal
+
+ ❯ test/marketHours.test.ts (14 tests | 6 failed) 13ms
+   ✓ istParts (1)
+     ✓ converts a UTC instant to the IST calendar wall clock 1ms
+   ❯ the adopted holiday data (single source of truth) (1)
+     × carries the 2026 scope and the sourced facts 5ms
+   ✓ marketState (6)
+     ✓ Friday 10:00 IST (2026-10-09, NOT a holiday) → open, 60s TTL, live-delayed 0ms
+     ✓ Friday 09:14 IST (pre-open) → NOT open (no wasted refreshes) 0ms
+     ✓ Friday 16:00 IST (after close) → close label, sessionDate today, no TTL 0ms
+     ✓ Saturday 12:00 IST → closed, sessionDate = Friday 0ms
+     ✓ Sunday 12:00 IST → closed, sessionDate = Friday (walks back over the weekend) 0ms
+     ✓ Friday 08:00 IST (before open on a trading day) → sessionDate = the PRIOR trading day 0ms
+   ❯ marketState on sourced NSE holidays (round-55 adoption) (6)
+     × Republic Day (Mon 2026-01-26) 10:00 IST → closed, sessionDate = the prior Friday 1ms
+     × Gandhi Jayanti (Fri 2026-10-02) 10:00 IST → closed, sessionDate = Thursday 1ms
+     × a holiday AFTER close (2026-10-02 16:00) → sessionDate = 2026-10-01, never the holiday 1ms
+     ✓ a holiday BEFORE open (2026-01-26 08:00) → sessionDate = 2026-01-23 (the prior-day rule must not fire on a non-trading day) 0ms
+     × the Saturday after a holiday Friday (2026-10-03) walks back PAST the holiday to 2026-10-01 1ms
+     × Dussehra (Tue 2026-10-20) 10:00 IST → closed (the probe's holiday leg mirrors this fixture) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/marketHours.test.ts > the adopted holiday data (single source of truth) > carries the 2026 scope and the sourced facts
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/marketHours.test.ts:42:48
+     40|     // The set is built from data/nse-holidays.json — the SAME file the
+     41|     // post-deploy probe reads (rule 14: one source of truth per conce…
+     42|     expect(NSE_HOLIDAYS_IST.has("2026-01-26")).toBe(true); // Republic…
+       |                                                ^
+     43|     expect(NSE_HOLIDAYS_IST.has("2026-10-02")).toBe(true); // Gandhi J…
+     44|     expect(NSE_HOLIDAYS_IST.has("2026-10-20")).toBe(true); // Dussehra…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  test/marketHours.test.ts > marketState on sourced NSE holidays (round-55 adoption) > Republic Day (Mon 2026-01-26) 10:00 IST → closed, sessionDate = the prior Friday
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/marketHours.test.ts:105:20
+    103|   it("Republic Day (Mon 2026-01-26) 10:00 IST → closed, sessionDate = …
+    104|     const s = marketState(istMs(2026, 1, 26, 10, 0));
+    105|     expect(s.open).toBe(false);
+       |                    ^
+    106|     expect(s.ttlSeconds).toBeNull();
+    107|     expect(s.freshness).toBe("close");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  test/marketHours.test.ts > marketState on sourced NSE holidays (round-55 adoption) > Gandhi Jayanti (Fri 2026-10-02) 10:00 IST → closed, sessionDate = Thursday
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/marketHours.test.ts:113:20
+    111|   it("Gandhi Jayanti (Fri 2026-10-02) 10:00 IST → closed, sessionDate …
+    112|     const s = marketState(istMs(2026, 10, 2, 10, 0));
+    113|     expect(s.open).toBe(false);
+       |                    ^
+    114|     expect(s.ttlSeconds).toBeNull();
+    115|     expect(s.sessionDate).toBe("2026-10-01");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  test/marketHours.test.ts > marketState on sourced NSE holidays (round-55 adoption) > a holiday AFTER close (2026-10-02 16:00) → sessionDate = 2026-10-01, never the holiday
+AssertionError: expected '2026-10-02' to be '2026-10-01' // Object.is equality
+
+Expected: "2026-10-01"
+Received: "2026-10-02"
+
+ ❯ test/marketHours.test.ts:121:27
+    119|     const s = marketState(istMs(2026, 10, 2, 16, 0));
+    120|     expect(s.open).toBe(false);
+    121|     expect(s.sessionDate).toBe("2026-10-01");
+       |                           ^
+    122|   });
+    123|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  test/marketHours.test.ts > marketState on sourced NSE holidays (round-55 adoption) > the Saturday after a holiday Friday (2026-10-03) walks back PAST the holiday to 2026-10-01
+AssertionError: expected '2026-10-02' to be '2026-10-01' // Object.is equality
+
+Expected: "2026-10-01"
+Received: "2026-10-02"
+
+ ❯ test/marketHours.test.ts:133:27
+    131|     const s = marketState(istMs(2026, 10, 3, 12, 0));
+    132|     expect(s.open).toBe(false);
+    133|     expect(s.sessionDate).toBe("2026-10-01");
+       |                           ^
+    134|   });
+    135|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/marketHours.test.ts > marketState on sourced NSE holidays (round-55 adoption) > Dussehra (Tue 2026-10-20) 10:00 IST → closed (the probe's holiday leg mirrors this fixture)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/marketHours.test.ts:138:20
+    136|   it("Dussehra (Tue 2026-10-20) 10:00 IST → closed (the probe's holida…
+    137|     const s = marketState(istMs(2026, 10, 20, 10, 0));
+    138|     expect(s.open).toBe(false);
+       |                    ^
+    139|     expect(s.freshness).toBe("close");
+    140|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 8 passed (14)
+   Start at  19:01:26
+   Duration  195ms (transform 59%, tests 20%, import 9%, setup 7%, worker 5%)
+

@@ -31,7 +31,10 @@ interface Row {
 let table: Record<string, Row> = {};
 let upstreamCalls = 0;
 let upstreamBatchCalls = 0;
-let nowMs = Date.UTC(2026, 9, 2, 4, 30); // 10:00 IST Friday — market open
+// Fixture dates re-pinned 2026-10-02 → 2026-10-09 (round-55 NSE-calendar
+// adoption: 2026-10-02, Gandhi Jayanti, is in the sourced closed-day
+// calendar, so the trading-Friday fixtures moved to a real trading Friday).
+let nowMs = Date.UTC(2026, 9, 9, 4, 30); // 10:00 IST Friday — market open
 
 function claimEmulation(sym: string, claimSecs: number): boolean {
   const row = table[sym];
@@ -113,7 +116,7 @@ beforeEach(() => {
   table = {};
   upstreamCalls = 0;
   upstreamBatchCalls = 0;
-  nowMs = Date.UTC(2026, 9, 2, 4, 30);
+  nowMs = Date.UTC(2026, 9, 9, 4, 30);
   for (const k of Object.keys(upstreamFixture)) delete upstreamFixture[k];
 });
 
@@ -155,28 +158,28 @@ describe("U2 — classifyPriceSymbols (one classification source)", () => {
 describe("U2 — serveQuote (single-symbol shared-cache surface)", () => {
   it("cold symbol: claims, fetches upstream once, writes through, reports LIVE with provenance", async () => {
     upstreamFixture["TCS"] = {
-      price: 3120.5, change: 0.62, source: "yahoo", observedAt: "2026-10-02T04:29:00.000Z", volume24h: null,
+      price: 3120.5, change: 0.62, source: "yahoo", observedAt: "2026-10-09T04:29:00.000Z", volume24h: null,
     };
     const r = await serveQuote("TCS", { nowMs: NOW });
     expect(r).not.toBeNull();
     expect(r!.status).toBe("LIVE");
     expect(r!.price).toBe(3120.5);
     expect(r!.change).toBe(0.62);
-    expect(r!.observedAt).toBe("2026-10-02T04:29:00.000Z");
-    expect(r!.lastUpdated).toBe("2026-10-02T04:29:00.000Z");
+    expect(r!.observedAt).toBe("2026-10-09T04:29:00.000Z");
+    expect(r!.lastUpdated).toBe("2026-10-09T04:29:00.000Z");
     expect(r!.marketOpen).toBe(true);
     expect(r!.marketFreshness).toBe("live-delayed");
-    expect(r!.sessionDate).toBe("2026-10-02");
+    expect(r!.sessionDate).toBe("2026-10-09");
     expect(upstreamCalls).toBe(1);
     // written through to the shared table with upstream provenance intact
     expect(table["TCS"].price).toBe(3120.5);
-    expect(table["TCS"].observed_at).toBe("2026-10-02T04:29:00.000Z");
+    expect(table["TCS"].observed_at).toBe("2026-10-09T04:29:00.000Z");
   });
 
   it("fresh row serves CACHED with no upstream call (the O(1)-per-TTL contract)", async () => {
     table["RELIANCE"] = {
       symbol: "RELIANCE", price: 1420, change: 1.1, currency: "INR", source: "yahoo",
-      observed_at: "2026-10-02T04:28:00.000Z", refreshed_at: new Date(nowMs - 5_000).toISOString(),
+      observed_at: "2026-10-09T04:28:00.000Z", refreshed_at: new Date(nowMs - 5_000).toISOString(),
       ttl_seconds: 60, volume24h: 1_234_567, refresh_claim: null,
     };
     const r = await serveQuote("RELIANCE", { nowMs: NOW });
@@ -187,10 +190,10 @@ describe("U2 — serveQuote (single-symbol shared-cache surface)", () => {
   });
 
   it("closed market: the last close serves with no refresh — marketFreshness 'close'", async () => {
-    nowMs = Date.UTC(2026, 9, 2, 10, 30); // 16:00 IST Friday — closed
+    nowMs = Date.UTC(2026, 9, 9, 10, 30); // 16:00 IST Friday — closed
     table["INFY"] = {
       symbol: "INFY", price: 1580, change: -0.4, currency: "INR", source: "yahoo",
-      observed_at: "2026-10-02T09:55:00.000Z", refreshed_at: new Date(nowMs - 3 * 3600_000).toISOString(),
+      observed_at: "2026-10-09T09:55:00.000Z", refreshed_at: new Date(nowMs - 3 * 3600_000).toISOString(),
       ttl_seconds: 60, volume24h: null, refresh_claim: null,
     };
     const r = await serveQuote("INFY", { nowMs: NOW });
@@ -244,7 +247,7 @@ describe("U2 — cachedQuoteBatch (batch surface, bulk refresher)", () => {
   it("fresh rows serve without upstream; only stale/missing symbols reach the bulk refresher", async () => {
     table["TCS"] = {
       symbol: "TCS", price: 3120, change: 0.6, currency: "INR", source: "yahoo",
-      observed_at: "2026-10-02T04:28:00.000Z", refreshed_at: new Date(nowMs - 5_000).toISOString(),
+      observed_at: "2026-10-09T04:28:00.000Z", refreshed_at: new Date(nowMs - 5_000).toISOString(),
       ttl_seconds: 60, volume24h: null, refresh_claim: null,
     };
     const got = await cachedQuoteBatch(["TCS", "RELIANCE", "INFY"], {
@@ -287,10 +290,10 @@ describe("U2 — cachedQuoteBatch (batch surface, bulk refresher)", () => {
   });
 
   it("closed market: existing rows serve as the close with no refresh; a MISSING row still populates (honest cold fetch of the close)", async () => {
-    nowMs = Date.UTC(2026, 9, 2, 10, 30); // 16:00 IST — closed
+    nowMs = Date.UTC(2026, 9, 9, 10, 30); // 16:00 IST — closed
     table["TCS"] = {
       symbol: "TCS", price: 3100, change: 0.2, currency: "INR", source: "yahoo",
-      observed_at: "2026-10-02T09:55:00.000Z", refreshed_at: new Date(nowMs - 5 * 3600_000).toISOString(),
+      observed_at: "2026-10-09T09:55:00.000Z", refreshed_at: new Date(nowMs - 5 * 3600_000).toISOString(),
       ttl_seconds: 60, volume24h: null, refresh_claim: null,
     };
     const got = await cachedQuoteBatch(["TCS", "WIPRO"], {

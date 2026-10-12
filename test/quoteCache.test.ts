@@ -20,7 +20,7 @@ interface Row {
 }
 let table: Record<string, Row> = {};
 let upstreamCalls = 0;
-let nowMs = Date.UTC(2026, 9, 2, 4, 30); // 10:00 IST Friday — market open
+let nowMs = Date.UTC(2026, 9, 9, 4, 30); // 10:00 IST Friday (2026-10-09, not a sourced NSE holiday — round-55 re-pin; 2026-10-02 Gandhi Jayanti is in the adopted calendar) — market open
 
 vi.mock("@/lib/services/supabaseAdmin", () => ({
   getAdminSupabase: () => ({
@@ -89,7 +89,7 @@ function makeDeps(): QuoteCacheDeps {
 beforeEach(() => {
   table = {};
   upstreamCalls = 0;
-  nowMs = Date.UTC(2026, 9, 2, 4, 30); // 10:00 IST Friday — open
+  nowMs = Date.UTC(2026, 9, 9, 4, 30); // 10:00 IST Friday (2026-10-09 re-pin, see above) — open
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -117,7 +117,7 @@ describe("MUST FAIL PRE-U2: the shared cache bounds upstream calls", () => {
   });
 
   it("closed market: a row from this session never goes stale — zero refreshes", async () => {
-    nowMs = Date.UTC(2026, 9, 2, 11, 0); // 16:30 IST Friday — closed
+    nowMs = Date.UTC(2026, 9, 9, 11, 0); // 16:30 IST Friday (2026-10-09 re-pin, see above) — closed
     const deps = makeDeps();
     await cachedQuote("RELIANCE", deps); // seeds (first read refreshes)
     const before = upstreamCalls;

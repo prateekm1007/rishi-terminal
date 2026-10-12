@@ -111,7 +111,11 @@ describe("P0-3 — the sector gate", () => {
 
   it("every lender row: no scorer requiring an inapplicable field returns a number", () => {
     const rows = (Object.values(STOCKS) as Stock[]).filter(isLender);
-    expect(rows.length).toBe(84); // Banking 36 + NBFC 38 + Finance 10 (census)
+    // DELIV-5 (founder order 2026-10-12): the Finance-10 dataset rows merged
+    // into Fintech, so the lender census is Banking 36 + NBFC 38 = 74 (was 84).
+    // The LENDER_SECTORS vocabulary itself is UNCHANGED (still closed on
+    // Banking | NBFC | Finance) — the data moved, not the gate.
+    expect(rows.length).toBe(74); // Banking 36 + NBFC 38 (census)
     const offenders: string[] = [];
     for (const row of rows) {
       for (const r of panel(row)) {

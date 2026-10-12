@@ -1,0 +1,100 @@
+node.exe : (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to 
+become the default in a future major version of Vite:
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((!) Your Vite c...ersion of Vite::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` 
+in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 C:/Users/Administrator/AppData/Local/Temp/opencode/rishi-terminal
+
+ Γ¥» test/sectors.merge.test.ts (5 tests | 4 failed) 49ms
+   Γ¥» DELIV-5 ΓÇö the three duplicate sector pairs are merged (5)
+     ├ù post-merge census on the 896-row universe 28ms
+     ├ù zero residual dead labels (exact match) 3ms
+     ├ù spot checks: known symbols sit in the canonical label 3ms
+     ├ù the natural-language translator follows the merge (no dead-label queries) 9ms
+     Γ£ô bite proof (C5): the pre-merge census fails these pins 1ms
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 4 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  test/sectors.merge.test.ts > DELIV-5 ΓÇö the three duplicate sector pairs are merged > post-merge census on the 
+896-row universe
+AssertionError: expected 17 to be 26 // Object.is equality
+
+- Expected
++ Received
+
+- 26
++ 17
+
+ Γ¥» test/sectors.merge.test.ts:27:29
+     25|   it('post-merge census on the 896-row universe', () => {
+     26|     expect(sectors.length).toBe(896);
+     27|     expect(count('Realty')).toBe(26);
+       |                             ^
+     28|     expect(count('IT')).toBe(57);
+     29|     expect(count('Fintech')).toBe(33);
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/4]ΓÄ»
+
+ FAIL  test/sectors.merge.test.ts > DELIV-5 ΓÇö the three duplicate sector pairs are merged > zero residual dead 
+labels (exact match)
+AssertionError: expected 9 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 9
+
+ Γ¥» test/sectors.merge.test.ts:33:33
+     31|
+     32|   it('zero residual dead labels (exact match)', () => {
+     33|     expect(count('RealEstate')).toBe(0);
+       |                                 ^
+     34|     expect(count('Tech')).toBe(0);
+     35|     expect(count('Finance')).toBe(0);
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[2/4]ΓÄ»
+
+ FAIL  test/sectors.merge.test.ts > DELIV-5 ΓÇö the three duplicate sector pairs are merged > spot checks: known 
+symbols sit in the canonical label
+AssertionError: expected [ 'AJMERA', 'ANANTRAJ', ΓÇª(15) ] to include 'DLF'
+ Γ¥» test/sectors.merge.test.ts:40:34
+     38|   it('spot checks: known symbols sit in the canonical label', () => {
+     39|     for (const sym of ['DLF', 'SOBHA', 'PRESTIGE']) {
+     40|       expect(bySector('Realty')).toContain(sym);
+       |                                  ^
+     41|     }
+     42|     for (const sym of ['NAUKRI', 'AFFLE', 'TANLA']) {
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[3/4]ΓÄ»
+
+ FAIL  test/sectors.merge.test.ts > DELIV-5 ΓÇö the three duplicate sector pairs are merged > the natural-language 
+translator follows the merge (no dead-label queries)
+AssertionError: expected '(sector = "RealEstate")' to be '(sector = "Realty")' // Object.is equality
+
+Expected: "(sector = "Realty")"
+Received: "(sector = "RealEstate")"
+
+ Γ¥» test/sectors.merge.test.ts:57:36
+     55|       return res.ok ? res.query : '';
+     56|     };
+     57|     expect(queryOf('real estate')).toBe('(sector = "Realty")');
+       |                                    ^
+     58|     expect(queryOf('tech')).toBe('(sector = "IT")');
+     59|     expect(queryOf('fintech')).toBe('(sector = "Fintech")');
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[4/4]ΓÄ»
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  11:22:06
+   Duration  1.98s (transform 70%, import 24%, tests 3%, setup 2%, worker 1%)
+

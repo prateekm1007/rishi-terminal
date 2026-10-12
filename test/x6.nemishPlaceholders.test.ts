@@ -184,9 +184,14 @@ describe("X6 — engine-level contract (every entry path agrees)", () => {
     // 296: the 48 lender rows (Banking/NBFC/Finance) whose D/E was an
     // observed seed value with no placeholder pillar now refuse on the
     // sector gate — D/E does not exist for their balance sheets.
+    // DELIV-5 (founder order 2026-10-12, sector merge) moves it 296 -> 291:
+    // the Finance-10 rows are Fintech now — five with fully observed Nemish
+    // pillars (ANGELONE, CHOLAHLDNG, CRISIL, KNESL, SUVIDHAFIN) score, five
+    // with placeholder zeros (BAJAJHLDNG, BSE, CDSL, HDFCAMC de=0; MCX
+    // de=0/promo=0) still refuse on the placeholder guard.
     const all = Object.values(STOCKS);
     const nulls = all.filter((s) => scoreNemish(s).score === null).length;
-    expect(nulls).toBe(296);
+    expect(nulls).toBe(291);
     expect(all.length).toBe(896);
   });
 

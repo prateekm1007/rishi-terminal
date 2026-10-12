@@ -34,7 +34,17 @@ test.describe("INT-D3 REMOVED per founder order (2026-10-10)", () => {
     // verdict gate is live: the record's dataQuality is 'seed' and the
     // page says so instead of scoring it. The council was the original
     // control until the round-46 P0-1 order suppressed verdicts on seed).
-    await expect(page.getByText("NO VERDICT — ILLUSTRATIVE SEED DATA")).toBeVisible({ timeout: 20_000 });
+    //
+    // Main-scoped (NOVERDICT-SMOKE-SCOPE, 2026-10-12): the SECOND live
+    // strike of the streaming-reveal race #376 fixed for b1-panel-removed
+    // — this spec carried the same bare strict locator and failed the
+    // same way on FD-23's CI run (04:12:33Z: 2 elements, one in <main>,
+    // one in React's off-main hidden completion container). Same rule-23
+    // justification: the pin's contract is the record VISIBLE in the
+    // page's main content, not a DOM-uniqueness claim against a hydration
+    // transient. This was the LAST bare instance (smoke.spec.ts:53 already
+    // uses .first(); b1-panel-removed.spec.ts is main-scoped since #376).
+    await expect(page.getByRole("main").getByText("NO VERDICT — ILLUSTRATIVE SEED DATA")).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PIN: no dossier section skeleton anywhere in the DOM.
     // (Pre-removal this was 1 — the honest-absent skeleton; the RED.)

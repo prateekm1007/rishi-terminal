@@ -99,6 +99,51 @@ test.describe("demo path — the honest walk (DEMO-6)", () => {
     expect(await main.getByText(/no single-input path to a pass/i).count()).toBeLessThanOrEqual(1);
   });
 
+  test("the quote never stale-masquerades: the page discloses its render time and an intraday claim is fresh (P0)", async ({ page }) => {
+    await page.goto("/stock/RELIANCE");
+    const main = page.locator("main");
+    // P0 (round 52, founder order 12 Oct 2026): "Include a step that fails
+    // if the quote is stale." The page DISCLOSES its ISR generation time —
+    // the attribute must exist, parse, and not claim the future.
+    const renderedAt = await main.locator("[data-rendered-at]").first().getAttribute("data-rendered-at");
+    expect(renderedAt).toBeTruthy();
+    const renderedMs = Date.parse(renderedAt as string);
+    expect(Number.isFinite(renderedMs)).toBe(true);
+    expect(renderedMs).toBeLessThanOrEqual(Date.now());
+    // The quote invariant: the observation line (when a quote renders at
+    // all) may claim "market open · intraday quote" ONLY for a stamp no
+    // older than 15 minutes — anything older renders "as of … · stale"
+    // (lib/pricePresentation STALE_AFTER_MS, computed at display time).
+    // On a quote-less record (CI's hermetic server, honest UNAVAILABLE)
+    // there is no observation line and the invariant holds vacuously —
+    // the leg exists to bite on the LIVE demo path.
+    const labelLocator = main.getByText(/IST · (market|as of)/i).first();
+    if ((await labelLocator.count()) > 0) {
+      const label = (await labelLocator.textContent()) ?? "";
+      if (/intraday quote/i.test(label)) {
+        const stampMatch = label.match(/(\d{2}):(\d{2}) IST/);
+        expect(stampMatch).toBeTruthy();
+        // The stamp's freshness is checked against the page's own render
+        // clock: an intraday claim baked at render time must be within
+        // the 15-minute window OF that render (display-time computation
+        // keeps it honest for the viewer's clock as well).
+        const stampMinutes = Number(stampMatch![1]) * 60 + Number(stampMatch![2]);
+        const rendered = new Date(renderedMs);
+        const renderedIstMinutes = rendered.getUTCHours() * 60 + rendered.getUTCMinutes() + 330;
+        const sameDay = label.match(/(\d{1,2}) (\w{3})/)?.[0] ===
+          `${rendered.getUTCDate()} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][rendered.getUTCMonth()]}`;
+        if (sameDay) {
+          const ageMinutes = ((renderedIstMinutes - stampMinutes) + 1440) % 1440;
+          expect(ageMinutes).toBeLessThanOrEqual(15);
+        }
+      } else {
+        // Any OTHER wording is honest by construction (stale / last
+        // session / not-from-today all disclose their own age).
+        expect(/stale|last session|not from/i.test(label)).toBe(true);
+      }
+    }
+  });
+
   test("watchlist add: the anonymous lab accepts a symbol and shows the row", async ({ page }) => {
     // The lab defaults to the overview tab — the watchlist surface is the
     // tab=watchlist deep link the tab bar itself renders (LabContent reads

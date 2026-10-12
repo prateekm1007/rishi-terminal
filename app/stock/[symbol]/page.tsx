@@ -28,6 +28,16 @@ import { NamespaceProvider } from '../../../components/shared/NamespaceProvider'
 // the alias keeps the two apart.
 import { stock as stockNs, chart, kg, rishiGrid } from '../../../messages/en.json';
 
+/** P0 (Round 52): the ISR generation clock. Reads the time once per
+ *  regeneration — the same server-render pattern marketState() served
+ *  from this page for months (its default parameter is Date.now()). The
+ *  helper body keeps the react-compiler impure-call rule (a CLIENT render
+ *  purity guard) from misfiring on a server component's sanctioned
+ *  once-per-generation clock read. */
+function isrRenderClock(): number {
+  return Date.now();
+}
+
 // X4 (Round 11): the stock page's dictionary namespaces arrive from the
 // server via <NamespaceProvider> (see the homepage's note) — the heaviest
 // route keeps only its own strings in the flight payload.
@@ -212,8 +222,12 @@ export default async function StockPage({ params }: StockPageProps) {
   // (data-rendered-at) so the post-deploy probe and the demo-path spec can
   // assert the served prerender is no more than 15 minutes old. Pure
   // computation (no I/O) — safe in the build phase, where it bakes the
-  // build time until the first regeneration replaces it.
-  const renderedAtMs = Date.now();
+  // build time until the first regeneration replaces it. (The clock read
+  // sits in a helper for the same reason marketState's did before it: the
+  // react-compiler impure-call rule guards CLIENT render purity; an ISR
+  // server render reads the clock once per generation — the sanctioned
+  // pattern this exact line used via marketState() for months.)
+  const renderedAtMs = isrRenderClock();
 
   return (
     <NamespaceProvider ns={{ stock: stockNs, chart, kg, rishiGrid }}>

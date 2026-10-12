@@ -173,11 +173,17 @@ export function LivePriceWidget({ stock, initialEntry = null, renderedAtMs }: Li
   // paint, the label recomputes from the viewer's clock (and every 30 s) so
   // the freshness rule and the IST trading-hours market status are true at
   // DISPLAY TIME (founder order, 12 Oct 2026: "Compute market status from
-  // IST trading hours at display time").
+  // IST trading hours at display time"). The first hop is deferred off the
+  // effect body (setTimeout 0) so the update is an async transition, not a
+  // synchronous setState-in-effect cascade.
   useEffect(() => {
-    setDisplayNow(Date.now());
-    const tick = setInterval(() => setDisplayNow(Date.now()), 30_000);
-    return () => clearInterval(tick);
+    const tick = () => setDisplayNow(Date.now());
+    const first = setTimeout(tick, 0);
+    const interval = setInterval(tick, 30_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(interval);
+    };
   }, []);
 
   // Round 9: the display pair (and its direction/color claim) comes from

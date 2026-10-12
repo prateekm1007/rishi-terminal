@@ -6,24 +6,41 @@
 //   - open:  Mon–Fri 09:15–15:30 IST (pre-open 09:00–09:15 is NOT "open"
 //     for quote-freshness purposes — prices barely move and the 60 s TTL
 //     would be wasted upstream volume).
-//   - closed: nights, weekends → the last close is the honest observation;
-//     NO polling (the client hook receives "market open: false" and stops).
+//   - closed: nights, weekends, sourced NSE holidays → the last close is
+//     the honest observation; NO polling (the client hook receives
+//     "market open: false" and stops).
 //
-// Holidays: Rule 4 — the NSE publishes its trading calendar per year; this
-// module carries ONLY the weekend rule until the holiday list is sourced and
-// reviewed. FOUNDER DECISION NEEDED: confirm the NSE holiday calendar source
-// (e.g. an annual data file reviewed each December) before holiday handling
-// is enabled. An empty list with weekend-only logic is honest and safe: it
-// can only cause a few extra 60 s refreshes on holiday days, never a wrong
-// label.
+// Holidays — ADOPTED (round 55, 13 Oct 2026). The founder approved the
+// free-data adoptions and designated the in-app source (GauravSh-7/
+// nse-trading-holidays-2018-2026, MIT, community-compiled "cross-verified
+// against official NSE India holiday calendars and exchange circulars"),
+// which resolves the U2 FOUNDER DECISION NEEDED on the calendar source.
+// The closed-day facts live in data/nse-holidays.json — the single source
+// of truth shared with the post-deploy probe (rule 14) — and carry their
+// provenance inline: 15 dates agreed by the designated source and the
+// offline cross-check (pandas_market_calendars, MIT, tooling only — never
+// an app dependency); the disputed 2026-01-15 is excluded pending the
+// NSE-circular check (fail-closed direction; see the JSON block and
+// docs/evidence/round55/r55-holidays-crosscheck.md). Scope is the 2026
+// calendar year; outside it the module degrades to the honest weekend-only
+// behavior (extra 60 s refreshes on unknown holidays, never a wrong
+// label). The annual December ritual diffs the file against NSE's official
+// list before each January and resolves the disputed date
+// (docs/DATA_SOURCES.md row 16).
+
+import holidaysData from "@/data/nse-holidays.json";
 
 /** NSE equity session bounds in IST, as minutes-from-midnight. */
 export const NSE_OPEN_MIN = 9 * 60 + 15; // 09:15 IST
 export const NSE_CLOSE_MIN = 15 * 60 + 30; // 15:30 IST
 
-/** The NSE trading-calendar holiday list is NOT sourced yet (Rule 4 — no
- *  invented dates). Weekends only, until the founder sources the calendar. */
-export const NSE_HOLIDAYS_IST: ReadonlySet<string> = new Set();
+/** The sourced NSE closed days (2026 scope) — built from
+ *  data/nse-holidays.json, the same file the post-deploy probe reads. */
+export const NSE_HOLIDAYS_IST: ReadonlySet<string> = new Set(
+  holidaysData.holidays as readonly string[],
+);
+/** The calendar year the adopted holiday facts cover (from the same file). */
+export const NSE_HOLIDAYS_SCOPE_YEAR: number = holidaysData.year;
 
 /** Offset of IST from UTC, in minutes (+5:30). */
 export const IST_OFFSET_MIN = 330;

@@ -3,11 +3,20 @@
 // deployed + LIVE") and C10 (positive controls), answering founder Round-15
 // B1: a post-deploy smoke that FAILS when the production HTML lacks the
 // first-byte content sections.
+import { readFileSync } from "node:fs";
 //
 // Why this exists (B-20/B-21 lineage): "merged" was reported done twice
 // while production still served the pre-fix build. A smoke that only runs
 // against a LOCAL build (the Playwright job) cannot catch that class —
 // this script runs against the DEPLOYED site.
+//
+// The adopted NSE closed-day facts (round 55) load FIRST — the self-test
+// below runs during module evaluation and needs them. The file carries its
+// own provenance block (source, as-of, scope); the site's
+// lib/marketHours.ts reads the same file (rule 14: one source of truth).
+const NSE_HOLIDAYS = new Set(
+  JSON.parse(readFileSync(new URL("../../data/nse-holidays.json", import.meta.url), "utf8")).holidays,
+);
 //
 // Calibration note (measured 2026-10-04, this is the point of the rewrite):
 // the Round-14 acceptance `grep -c "Key Metrics\|..."` counts matching
@@ -240,6 +249,24 @@ function runLivenessSelfTest() {
         "as of Mon 12 Oct, 09:45 IST · stale (server render)"),
       CLOSED_NOW,
     ).ok, true);
+  // Round 55 (the adopted NSE closed-day calendar, data/nse-holidays.json):
+  // the probe's open-session clock must agree with the site's — on a sourced
+  // NSE holiday the freshness rule's open branch does NOT fire, so a stale
+  // line stays honest. Pre-adoption this leg FAILED: istOpenAt was
+  // weekend-only and read Dussehra (Tue 2026-10-20) as an open session.
+  const HOLIDAY_NOW = Date.parse("2026-10-20T04:30:00.000Z"); // 10:00 IST, Dussehra
+  expect("sourced NSE holiday (Dussehra): a stale line passes (probe and site agree the market is closed)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST · stale (server render)"),
+      HOLIDAY_NOW,
+    ).ok, true);
+  expect("sourced NSE holiday: an intraday claim still fails (closed is closed, whatever the calendar says)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST · market open · intraday quote"),
+      HOLIDAY_NOW,
+    ).ok, false);
   const green = results.every(Boolean);
   console.log(green ? "self-test GREEN: liveness checks discriminate old vs current" : "self-test RED");
   process.exit(green ? 0 : 1);
@@ -539,6 +566,14 @@ function istOpenAt(nowMs) {
   const ist = new Date(nowMs + 330 * 60_000);
   const wd = ist.getUTCDay();
   if (wd < 1 || wd > 5) return false;
+  // Round 55: the probe's open-session clock reads the SAME sourced NSE
+  // closed-day calendar the site reads (data/nse-holidays.json — one source
+  // of truth, rule 14). Without this, a holiday deploy would classify as
+  // "open" here while the site honestly computes closed, and the 15-minute
+  // freshness rule would fail on honestly-stale lines. Outside the file's
+  // year scope the weekend rule alone applies (documented degradation).
+  const isoDate = `${ist.getUTCFullYear()}-${String(ist.getUTCMonth() + 1).padStart(2, "0")}-${String(ist.getUTCDate()).padStart(2, "0")}`;
+  if (NSE_HOLIDAYS.has(isoDate)) return false;
   const mins = ist.getUTCHours() * 60 + ist.getUTCMinutes();
   return mins >= NSE_OPEN_MIN && mins < NSE_CLOSE_MIN;
 }

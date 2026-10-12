@@ -1,0 +1,23 @@
+{
+  "source": "GauravSh-7/nse-trading-holidays-2018-2026 (MIT; the founder-designated in-app source, 13 Oct 2026) — community-compiled, README: 'independently compiled and cross-verified against official NSE India holiday calendars and exchange circulars' for 2018-2026; segment NSE F&O; weekday rows extracted (their weekend rows are handled by lib/marketHours.ts, not this file). Offline cross-check (tooling only, NOT in the app): pandas_market_calendars (MIT) holidays/nse.py @ 9af1144af406eac48bb113692d81fe33b3f20589, whose stated upstream is NSE's published holiday circulars. The two sources agree on all 15 dates carried here. One disputed date — 2026-01-15 (Makar Sankranti), a closed day per pandas_market_calendars but a trading day per the designated source — is EXCLUDED pending the NSE-circular check: the exchange page is unreachable from the build environment (Akamai 403, docs/evidence/round55/), and the fail-closed direction is to omit a disputed closed-day (a missing holiday can only cause extra quote refreshes and a stricter probe; a false holiday would silence the 15-minute freshness rule on a live session). The December ritual resolves this date against NSE's official list before January. Holiday and session dates are facts; the MIT licenses cover the upstream code and this attribution carries the provenance (C1/FD-15).",
+  "asOf": "2026-10-13",
+  "year": 2026,
+  "scope": "2026 calendar year, weekday closures only (weekends are handled separately by lib/marketHours.ts). Muhurat special sessions (Diwali evening) are NOT modelled. The annual December ritual adds the next year and re-diffs the full list against NSE's official list (including the disputed 2026-01-15) before January (docs/DATA_SOURCES.md row 16). A year outside this scope degrades to weekend-only behavior: extra quote refreshes on unknown holidays, never a wrong label.",
+  "holidays": [
+    "2026-01-26",
+    "2026-03-03",
+    "2026-03-26",
+    "2026-03-31",
+    "2026-04-03",
+    "2026-04-14",
+    "2026-05-01",
+    "2026-05-28",
+    "2026-06-26",
+    "2026-09-14",
+    "2026-10-02",
+    "2026-10-20",
+    "2026-11-10",
+    "2026-11-24",
+    "2026-12-25"
+  ]
+}

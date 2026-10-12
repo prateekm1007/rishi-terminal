@@ -66,16 +66,30 @@ describe("Y3/P0 — observationLabel (stamp + freshness + market state at displa
     expect(label).toBe("as of Fri 2 Oct, 15:14 IST · stale");
   });
 
-  it("weekend, minutes after the session close: fresh last-session wording survives", () => {
-    // Saturday 09:00 IST; observation Friday 15:29 IST — hmm, that is ~17.5 h
-    // old, so the P0 rule says stale. Use the same-evening case instead:
-    // Friday 18:00 IST displaying the 15:29 close observation (2.5 h old) —
-    // still beyond the window; the honest fresh case is 15:40 IST:
+  it("Friday, minutes after the session close: fresh last-session wording survives", () => {
+    // Displayed Fri 15:40 IST (closed); observation Fri 15:29 IST — 11
+    // minutes old, within the 15-minute window, so the honest fresh case
+    // keeps the last-session wording. Fixture re-pinned 2026-10-02 →
+    // 2026-10-09 (round-55 adoption: 2026-10-02, Gandhi Jayanti, is in the
+    // sourced closed-day calendar, so it stopped being a trading-day
+    // fixture).
     const label = observationLabel(
-      "2026-10-02T09:59:00.000Z", // Fri 15:29 IST
-      Date.parse("2026-10-02T10:10:00.000Z"), // Fri 15:40 IST — closed
+      "2026-10-09T09:59:00.000Z", // Fri 15:29 IST
+      Date.parse("2026-10-09T10:10:00.000Z"), // Fri 15:40 IST — closed
     );
-    expect(label).toBe("Fri 2 Oct, 15:29 IST · market closed · last session quote");
+    expect(label).toBe("Fri 9 Oct, 15:29 IST · market closed · last session quote");
+  });
+
+  it("a sourced NSE holiday: an observation stamped during exchange hours is NOT from the last session (round-55 adoption)", () => {
+    // Displayed Fri 2026-10-02 15:40 IST — Gandhi Jayanti, in the adopted
+    // closed-day calendar. The exchange never opened that day, so a quote
+    // stamped 15:29 IST is honestly "not from the last session" even though
+    // the clock sits inside what would be session hours on a trading day.
+    const label = observationLabel(
+      "2026-10-02T09:59:00.000Z", // Fri 15:29 IST — no session that day
+      Date.parse("2026-10-02T10:10:00.000Z"), // Fri 15:40 IST — holiday
+    );
+    expect(label).toBe("Fri 2 Oct, 15:29 IST · market closed · stale — not from the last session");
   });
 
   it("closed market + observation NOT from the last session says so (fresh quote, wrong session)", () => {

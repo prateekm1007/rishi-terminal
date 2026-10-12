@@ -480,3 +480,21 @@ retry-sporadically protocol stood down unused.
   (#379 guard) → 7ecafc8 (#369 RULES-2) → a50704c (#385 ENG-1b, live-proven:
   smoke PASS + /methodology/munger serves the null contract) → dcd4c06
   (#392 RISHI-21, live legs owed to this entry — covered above).
+
+### 2026-10-12 (round 50, continued) — RESP-4: #388 merged; deploy debt (Vercel quota exhausted)
+
+- **PR #388 (DELIV-4 copy audit) MERGED 8c004675 at 11:44:29Z** (head
+  edab096, CI all five jobs green on the re-run at window open). The merge
+  created **NO production deployment** — the Vercel deployment-quota
+  response on the sanctioned A3 single-shot retry was
+  `402 api-deployments-free-per-day, remaining: 0` (the B-22 pattern:
+  100/day rolling window including canceled preview events; today's PR
+  rebase pushes consumed the budget). Production still serves dcd4c06.
+- **Drain schedule (C8: the counter expires on oldest-event age):** the
+  oldest counted event ages out ~12:52:00Z; further slots free at
+  ~13:01Z, 13:10Z, 13:30Z, 13:44Z, 13:59Z. Sporadic retries scheduled;
+  the debt is expected to clear within the hour. No further
+  production-relevant merges until the deploy catches up (C8: check the
+  quota against this ledger before merging).
+- Live proof for #388's copy changes (grep-zero of the four claim
+  families on the served HTML) rides the deploy.

@@ -524,3 +524,31 @@ retry-sporadically protocol stood down unused.
   RULES-3 canonical sentence) run the moment a retry succeeds. Chain so
   far: dcd4c06 → 8c00467 (#388, deploy owed) → d659595 (#395, deploy
   owed). Production still serves dcd4c06.
+
+### 2026-10-12 (round 51) — RESP-1/RESP-4: catch-up deploy 641e37c verified live; the whole round-50/51 chain is deployed
+
+- **Version.** `GET /api/version` serves `641e37cf653efa08abae91423b4ca597f196f080`
+  = the main tip at 14:35:42Z. The #389 merge's Git-integration deployment
+  **dpl_9diN2o (READY, created 14:01:50Z)** fired successfully — the quota
+  window opened between the 13:19Z 402 and 14:01:50Z (the counter drained;
+  the "reset 13 Oct" worst case did not materialise). One deploy covered the
+  whole chain: dcd4c06 → 8c00467 (#388 DELIV-4) → d659595 (#395 RULES-3) →
+  679f449 (#397 docs, no deploy owed) → 641e37c (#389 DELIV-5). Deploy debt:
+  **cleared**.
+- **postDeploySmoke** (dual-key seed-leak probe, #384 hardening):
+  `node scripts/ci/postDeploySmoke.mjs --base https://rishi-terminal.vercel.app
+  --expect-sha 641e37c…` → PASS, exit 0 (RELIANCE seed record trichotomy;
+  "HIGH Data" 0, "REDUCE" 0, QVPS-on-seed 0, bare-cache key too; nullzero
+  pins hold). The post-deploy-smoke workflow also ran green on the
+  deployment_status event (run 38260179713).
+- **Live proofs per merge (all PASS, cache-busted fetches 14:36–14:37Z).**
+  #388 DELIV-4: 'every verdict' / 'WISDOM TIERS' / 'Elite Knowledge Graph' /
+  'live prices' = 0 occurrences on /, /pricing, /stock/RELIANCE, /rishis;
+  positive controls hold (the stock-page Knowledge Graph view mounts; /pricing
+  names the built KG views). #395 RULES-3: the canonical sentence
+  "21 Rishis: 20 scored, Jim Chanos chat-only" renders on /stock/RELIANCE (x2)
+  and /pricing (x1); "VIEW ALL RISHIS" present, "VIEW ALL 20" = 0. #389
+  DELIV-5: /stocks pills Banking/NBFC/Realty/Fintech; raw 'RealEstate' and
+  'Finance' sector labels = 0 (the only "Real Estate" text is Indiabulls'
+  company name; its sector field reads Realty).
+- **Next production-relevant merge window:** 15:01:47Z (#389 merge + 60 min).

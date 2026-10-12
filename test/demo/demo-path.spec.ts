@@ -117,7 +117,12 @@ test.describe("demo path — the honest walk (DEMO-6)", () => {
     // On a quote-less record (CI's hermetic server, honest UNAVAILABLE)
     // there is no observation line and the invariant holds vacuously —
     // the leg exists to bite on the LIVE demo path.
-    const labelLocator = main.getByText(/IST · (market|as of)/i).first();
+    // Round 53 (founder item 2): the locator must catch EVERY observation
+    // line form, or the invariant holds vacuously (C5 — a gate that cannot
+    // bite is theater): the SSR form "… IST (server render)" (and its
+    // "· stale" variant), plus the hydrated forms "… IST · market …" and
+    // "as of … IST · stale".
+    const labelLocator = main.getByText(/IST( · | \()/i).first();
     if ((await labelLocator.count()) > 0) {
       const label = (await labelLocator.textContent()) ?? "";
       if (/intraday quote/i.test(label)) {
@@ -138,8 +143,9 @@ test.describe("demo path — the honest walk (DEMO-6)", () => {
         }
       } else {
         // Any OTHER wording is honest by construction (stale / last
-        // session / not-from-today all disclose their own age).
-        expect(/stale|last session|not from/i.test(label)).toBe(true);
+        // session / not-from-today disclose their own age; the round-53
+        // SSR form discloses its provenance instead of a market claim).
+        expect(/stale|last session|not from|server render/i.test(label)).toBe(true);
       }
     }
   });

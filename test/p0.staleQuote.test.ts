@@ -108,3 +108,77 @@ describe("P0 — the stale-quote freshness rule (founder order 12 Oct 2026)", ()
     expect(observationLabel(undefined, MON_1600_IST_MS)).toBeNull();
   });
 });
+
+// ── Round 53 (founder order 12 Oct 2026, item 2 — the cache P0) ────────────
+//
+//   "Then remove market status from the server-rendered HTML entirely.
+//    Render 'as of <time> (server render)' and let the client compute open
+//    or closed. Acceptance: the bare URL never states 'market open' from a
+//    stale render."
+//
+// Fail-first: on the pre-amendment tree observationLabelServer does not
+// exist (import-fail RED — the established pattern), AND the pre-amendment
+// SSR path itself is pinned RED by the display-time tests above: the widget
+// called observationLabel(observedIso, regenClock), whose fresh-in-session
+// output IS "… · market open · intraday quote" — market status baked into
+// the first byte, exactly what the founder's 20:30 fetch of the 13:28
+// render caught.
+import { observationLabelServer } from "../lib/pricePresentation";
+
+describe("Round 53 — market status leaves the server render (founder item 2)", () => {
+  it("the founder's acceptance: a fresh same-session quote during market hours carries NO market status in the server label", () => {
+    // Pre-amendment SSR rendered "… · market open · intraday quote" here —
+    // the exact first-byte defect (the bare URL stated "market open" from
+    // a render the viewer might read hours later).
+    const label = observationLabelServer(MON_1428_IST, MON_1435_IST_MS);
+    expect(label).toBe("as of Mon 12 Oct, 14:28 IST (server render)");
+    expect(label).not.toMatch(/market/i);
+  });
+
+  it("a stale observation keeps the monotonic stale marker plus the disclosure", () => {
+    // Stale at the regeneration clock stays stale at every later display
+    // time — the marker survives the server render honestly.
+    const label = observationLabelServer(MON_OPEN_1015_IST, MON_1600_IST_MS);
+    expect(label).toBe("as of Mon 12 Oct, 10:15 IST · stale (server render)");
+    expect(label).not.toMatch(/market/i);
+  });
+
+  it("property: across regen clocks (open/closed/weekend) and observation ages, the server label NEVER states market status or intraday", () => {
+    const regenClocks = [
+      MON_1435_IST_MS,                        // Mon 14:35 IST — market open
+      MON_1600_IST_MS,                        // Mon 16:00 IST — after close
+      Date.parse("2026-10-12T18:30:00.000Z"), // Mon 00:00 IST — midnight
+      Date.parse("2026-10-17T10:30:00.000Z"), // Sat 16:00 IST — weekend
+    ];
+    const observations = [
+      MON_OPEN_1015_IST,
+      MON_1428_IST,
+      "2026-10-09T09:59:00.000Z", // Fri 15:29 IST — a prior session
+    ];
+    for (const regen of regenClocks) {
+      for (const obs of observations) {
+        const label = observationLabelServer(obs, regen);
+        expect(label, `regen=${regen} obs=${obs}`).not.toMatch(/market/i);
+        expect(label, `regen=${regen} obs=${obs}`).not.toContain("intraday");
+        expect(label, `regen=${regen} obs=${obs}`).toMatch(/\(server render\)$/);
+      }
+    }
+  });
+
+  it("the display-time contract survives the SSR removal — after hydration the client still computes market status", () => {
+    // Pinned so the SSR amendment cannot silently delete the display-time
+    // behavior the round-52 order established.
+    expect(observationLabel(MON_1428_IST, MON_1435_IST_MS)).toBe(
+      "Mon 12 Oct, 14:28 IST · market open · intraday quote",
+    );
+    expect(observationLabel(MON_OPEN_1015_IST, MON_1600_IST_MS)).toBe(
+      "as of Mon 12 Oct, 10:15 IST · stale",
+    );
+  });
+
+  it("fail-closed like the display label: missing or unparsable observation time → null", () => {
+    expect(observationLabelServer(null, MON_1435_IST_MS)).toBeNull();
+    expect(observationLabelServer("not-a-date", MON_1435_IST_MS)).toBeNull();
+    expect(observationLabelServer(undefined, MON_1600_IST_MS)).toBeNull();
+  });
+});

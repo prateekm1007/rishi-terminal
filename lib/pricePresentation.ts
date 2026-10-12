@@ -424,3 +424,43 @@ export function observationLabel(
     ? `${stamp} · market closed · last session quote`
     : `${stamp} · market closed · stale — not from the last session`;
 }
+
+/**
+ * Round 53 (founder order 12 Oct 2026, item 2 — the cache P0): the
+ * SERVER-render label. Founder's words verbatim: "remove market status from
+ * the server-rendered HTML entirely. Render 'as of <time> (server render)'
+ * and let the client compute open or closed. Acceptance: the bare URL never
+ * states 'market open' from a stale render."
+ *
+ * Why this exists: a prerender cannot know when the viewer will read it —
+ * the founder's fetches pulled a 13:28-stamped render at 20:30 IST. Any
+ * market-status wording baked at regeneration time can be hours wrong at
+ * display time. The server render therefore claims NOTHING that depends on
+ * the viewer's clock: only the observation stamp, the monotonic staleness
+ * marker, and the "(server render)" disclosure. Market status and the
+ * intraday claim move to the client, which computes them from the viewer's
+ * clock after hydration (LivePriceWidget's display-time tick).
+ *
+ * Staleness is monotonic — an observation stale at the regeneration clock
+ * is stale at every later display time — so the "· stale" marker survives
+ * the server render honestly. Freshness is NOT monotonic (a fresh-at-regen
+ * observation may be stale by the time the viewer reads the page), which is
+ * exactly why no other freshness claim is made here.
+ *
+ * Fail-closed exactly like observationLabel: a missing or unparsable
+ * observation time returns null — the UI renders no clock at all.
+ */
+export function observationLabelServer(
+  observedIso: string | null | undefined,
+  nowMs: number,
+): string | null {
+  if (typeof observedIso !== "string" || !observedIso) return null;
+  const ms = Date.parse(observedIso);
+  if (!Number.isFinite(ms)) return null;
+
+  const stamp = formatIstStamp(new Date(ms));
+  if (nowMs - ms > STALE_AFTER_MS) {
+    return `as of ${stamp} · stale (server render)`;
+  }
+  return `as of ${stamp} (server render)`;
+}

@@ -3,6 +3,7 @@ import 'server-only';
 import Link from 'next/link';
 import type { StockOfTheDay } from '@/lib/scoring/rankings';
 import { TRACKING_STATUS } from '@/lib/demoState';
+import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the panel's SOD pick is seed-derived — the mandatory label
 
 /**
  * DEMO-4 (founder order, 2026-10-12): the dashboard's "Today" view with an
@@ -44,6 +45,13 @@ export function TodayPanel({ stockOfDay }: { stockOfDay: StockOfTheDay | null })
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--accent-gold)", margin: 0 }}>Today</h2>
         <span data-today-date style={{ fontSize: 12, color: "var(--text-muted)" }}>{istDate} IST</span>
+      </div>
+
+      {/* N3: the SOD pick is seed-derived — the same mandatory label the
+          ranked trio carries in DashboardTail (a client component rendered
+          inside this server tree is fine in Next 16). */}
+      <div style={{ marginTop: 8 }}>
+        <SeedDataBanner suffix="deterministic daily pick, IST calendar day" />
       </div>
 
       <div style={{ display: "grid", gap: 8, marginTop: 12, fontSize: 13, lineHeight: 1.6 }}>

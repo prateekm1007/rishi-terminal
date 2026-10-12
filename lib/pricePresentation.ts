@@ -10,12 +10,20 @@
 // quote renders "DELAYED", not "LIVE" — delayed is not realtime.
 //
 // Y3 (Round 12): observation labels carry the full honest stamp — IST date,
-// clock, timezone, and the server-disclosed market state with a session
-// qualifier ("market closed · last session quote") — and the transport chip
-// names its source in plain language ("Delayed · Yahoo Finance
-// (unofficial)"), never transport jargon like "YAHOO-BULK".
+// clock, timezone, and market state with a session qualifier ("market
+// closed · last session quote") — and the transport chip names its source
+// in plain language ("Delayed · Yahoo Finance (unofficial)"), never
+// transport jargon like "YAHOO-BULK".
+//
+// P0 (Round 52, founder order 2026-10-12, words verbatim): "A quote older
+// than 15 minutes shows 'as of <time> · stale' and never 'market open ·
+// intraday quote'. Compute market status from IST trading hours at display
+// time." The observation label therefore takes the DISPLAY-TIME clock and
+// derives the market state itself (marketState(nowMs)) — the ISR-frozen
+// server state and the calendar-date-only match that granted "intraday"
+// to a 13:28 quote are both gone.
 
-import { istParts } from "./marketHours";
+import { istParts, marketState } from "./marketHours";
 
 export type PresentationState =
   | "loading"
@@ -334,9 +342,15 @@ export function aggregateMarketLabel(
 // Founder defect 4: "Observed 9:44:59 am" carried no date and no timezone,
 // and on a weekend it presented a stale mid-session quote with no market
 // cue. The stamp and the session qualifier live HERE (Rule 14 — one owner
-// for presentation wording), derive ONLY from the observation timestamp and
-// the server-disclosed market state (Rule 18 — no client clock), and fail
-// closed to null when no honest stamp can be formed.
+// for presentation wording) and fail closed to null when no honest stamp
+// can be formed.
+//
+// P0 (Round 52, founder order 2026-10-12): the freshness rule. The label
+// is computed from the DISPLAY-TIME clock the caller passes (the widget's
+// first paint uses the page's regeneration time so SSR and hydration stay
+// byte-identical — Rule 18 — and a post-hydration effect recomputes with
+// the viewer's clock). Market status derives from IST trading hours AT
+// THAT TIME, never from the state frozen into the ISR HTML.
 
 const IST_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const IST_MONTHS = [
@@ -358,39 +372,48 @@ export function formatIstStamp(date: Date): string {
   return `${IST_WEEKDAYS[p.weekday]} ${p.day} ${IST_MONTHS[p.month - 1]}, ${hh}:${mm} IST`;
 }
 
-/** The server-disclosed market state the label needs (U2 wire shape). */
-export interface ObservationMarketState {
-  open: boolean;
-  /** IST date (YYYY-MM-DD) of the last — or current — session. */
-  sessionDate: string;
-}
+/** P0 (Round 52, founder order 2026-10-12): a quote older than this is
+ * STALE — "as of <time> · stale" — and never "market open · intraday
+ * quote". The intraday claim requires freshness, not a calendar-date
+ * match. */
+export const STALE_AFTER_MS = 15 * 60 * 1000;
 
 /**
- * Y3: the full observation line — stamp + market state + session qualifier.
+ * P0/Y3: the full observation line — stamp, freshness, market state,
+ * session qualifier — computed at DISPLAY TIME.
  *
- *   "Thu 1 Oct, 09:44 IST · market closed · last session quote"
- *   "Thu 1 Oct, 09:44 IST · market open · intraday quote"
+ *   "Thu 1 Oct, 09:44 IST · market open · intraday quote"       (fresh, open)
+ *   "Thu 1 Oct, 09:44 IST · market closed · last session quote" (fresh, closed)
  *   "Thu 1 Oct, 09:44 IST · market closed · stale — not from the last session"
- *   "Thu 1 Oct, 09:44 IST"                    (no market state disclosed)
+ *   "as of Thu 1 Oct, 09:44 IST · stale"                        (older than 15 min)
  *
  * Fail-closed (Rules 3/16): a missing or unparsable observation time
  * returns null — the UI renders no clock at all, never a fabricated one.
- * With no disclosed market state the stamp stands alone: the line makes no
- * open/closed claim it cannot ground. The session qualifier compares the
- * observation's IST calendar date with the server-disclosed sessionDate —
- * an observation older than the last session says so explicitly.
+ * The market state is DERIVED from IST trading hours at `nowMs`
+ * (marketState — the same pure computation the server uses), and the
+ * session qualifier compares the observation's IST calendar date with
+ * that state's session date. An observation older than STALE_AFTER_MS is
+ * labelled stale whatever the market state — the founder's order is
+ * absolute (the pre-P0 tree granted "intraday quote" to any same-date
+ * observation, so a 13:28 quote kept claiming intraday all afternoon).
  */
 export function observationLabel(
   observedIso: string | null | undefined,
-  market: ObservationMarketState | null | undefined,
+  nowMs: number,
 ): string | null {
   if (typeof observedIso !== "string" || !observedIso) return null;
   const ms = Date.parse(observedIso);
   if (!Number.isFinite(ms)) return null;
 
   const stamp = formatIstStamp(new Date(ms));
-  if (!market) return stamp;
 
+  // P0: the freshness rule comes first — an old quote never renders the
+  // intraday (or last-session) claim, whatever the market state is.
+  if (nowMs - ms > STALE_AFTER_MS) {
+    return `as of ${stamp} · stale`;
+  }
+
+  const market = marketState(nowMs);
   const obsDate = istParts(ms).isoDate;
   if (market.open) {
     return obsDate === market.sessionDate
@@ -400,4 +423,44 @@ export function observationLabel(
   return obsDate === market.sessionDate
     ? `${stamp} · market closed · last session quote`
     : `${stamp} · market closed · stale — not from the last session`;
+}
+
+/**
+ * Round 53 (founder order 12 Oct 2026, item 2 — the cache P0): the
+ * SERVER-render label. Founder's words verbatim: "remove market status from
+ * the server-rendered HTML entirely. Render 'as of <time> (server render)'
+ * and let the client compute open or closed. Acceptance: the bare URL never
+ * states 'market open' from a stale render."
+ *
+ * Why this exists: a prerender cannot know when the viewer will read it —
+ * the founder's fetches pulled a 13:28-stamped render at 20:30 IST. Any
+ * market-status wording baked at regeneration time can be hours wrong at
+ * display time. The server render therefore claims NOTHING that depends on
+ * the viewer's clock: only the observation stamp, the monotonic staleness
+ * marker, and the "(server render)" disclosure. Market status and the
+ * intraday claim move to the client, which computes them from the viewer's
+ * clock after hydration (LivePriceWidget's display-time tick).
+ *
+ * Staleness is monotonic — an observation stale at the regeneration clock
+ * is stale at every later display time — so the "· stale" marker survives
+ * the server render honestly. Freshness is NOT monotonic (a fresh-at-regen
+ * observation may be stale by the time the viewer reads the page), which is
+ * exactly why no other freshness claim is made here.
+ *
+ * Fail-closed exactly like observationLabel: a missing or unparsable
+ * observation time returns null — the UI renders no clock at all.
+ */
+export function observationLabelServer(
+  observedIso: string | null | undefined,
+  nowMs: number,
+): string | null {
+  if (typeof observedIso !== "string" || !observedIso) return null;
+  const ms = Date.parse(observedIso);
+  if (!Number.isFinite(ms)) return null;
+
+  const stamp = formatIstStamp(new Date(ms));
+  if (nowMs - ms > STALE_AFTER_MS) {
+    return `as of ${stamp} · stale (server render)`;
+  }
+  return `as of ${stamp} (server render)`;
 }

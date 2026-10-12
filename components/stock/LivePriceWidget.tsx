@@ -9,7 +9,7 @@ import {
   absChangeFromPercent,
   formatChangePair,
   observationLabel,
-  type ObservationMarketState,
+  observationLabelServer,
   type PresentationState,
 } from '../../lib/pricePresentation';
 
@@ -33,11 +33,14 @@ interface LivePriceWidgetProps {
    *  the first paint then shows the honest UNAVAILABLE state (never
    *  "FETCHING") and the client fetch on mount fills the tile. */
   initialEntry?: LiveEntry | null;
-  /** Y3: the server-disclosed NSE market state at the first byte (page
-   *  regeneration time, frozen into the ISR HTML). The refresh path
-   *  replaces it with the state the batch payload discloses — the label
-   *  never derives a market claim from the viewer's clock (Rule 18). */
-  initialMarket?: ObservationMarketState | null;
+  /** P0 (Round 52, founder order 2026-10-12): the page's regeneration
+   *  clock (epoch ms). The first paint computes the observation label
+   *  from THIS value — SSR and hydration render byte-identical output
+   *  (Rule 18) — and the mount effect recomputes with the viewer's clock
+   *  so the freshness rule ("a quote older than 15 minutes shows
+   *  'as of <time> · stale'") and the market status are true at DISPLAY
+   *  TIME, never at the ISR regeneration time frozen into the HTML. */
+  renderedAtMs: number;
 }
 
 /**
@@ -49,7 +52,7 @@ interface LivePriceWidgetProps {
  * pulsing "LIVE" badge even when the API returned UNAVAILABLE — was a
  * provenance violation and is removed.
  */
-export function LivePriceWidget({ stock, initialEntry = null, initialMarket = null }: LivePriceWidgetProps) {
+export function LivePriceWidget({ stock, initialEntry = null, renderedAtMs }: LivePriceWidgetProps) {
   // X3: the first paint renders the SSR observation verbatim (or the
   // honest UNAVAILABLE state) — hydration and the server render produce
   // identical output, and "⟳ FETCHING" only ever appears for
@@ -78,14 +81,27 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
   const [state, setState]                     = useState<PresentationState>(presentationState(initialEntry));
   const [source, setSource]                   = useState<string | undefined>(initialEntry?.source);
   const [loading, setLoading]                 = useState(false);
-  // Y3: the observed-at ISO string is kept so the observation line renders
-  // from the shared label builder (date + tz + market state), and the
-  // market state itself is server-disclosed (initialMarket, then the batch
-  // payload's top-level `market`) — never the viewer's clock (Rule 18).
-  // (The legacy `lastUpdated` Date state is gone — the label no longer
-  // renders a bare toLocaleTimeString clock.)
+  // Y3/P0: the observed-at ISO string is kept so the observation line renders
+  // from the shared label builder (date + tz + freshness + market state).
+  // P0 (Round 52): the label's clock is DISPLAY TIME — initialised to the
+  // page's regeneration clock (deterministic first paint, Rule 18) and
+  // recomputed with the viewer's clock after hydration, then every 30 s so
+  // a tab left open honestly transitions a quote past the 15-minute stale
+  // line even when its refetches stop landing. Market status derives from
+  // IST trading hours at that clock (founder order 12 Oct 2026) — the
+  // regen-time market state is no longer frozen into the label.
   const [observedIso, setObservedIso]         = useState<string | null>(initialUsable && initialEntry != null ? (initialEntry.observedAt ?? initialEntry.lastUpdated ?? null) : null);
-  const [market, setMarket]                   = useState<ObservationMarketState | null>(initialMarket);
+  const [displayNow, setDisplayNow]           = useState<number>(renderedAtMs);
+  // Round 53 (founder order 12 Oct 2026, item 2): while the label clock is
+  // still the page's regeneration clock (SSR + the hydration-matching first
+  // paint — Rule 18), the observation line renders the SERVER variant —
+  // stamp + monotonic staleness + "(server render)" disclosure, and NO
+  // market status: a prerender cannot know when the viewer will read it.
+  // The first display-time tick (and any successful client refetch) flips
+  // this flag and the full display-time label takes over — market status
+  // computed from the viewer's clock, per the founder's words: "let the
+  // client compute open or closed."
+  const [liveClock, setLiveClock]              = useState(false);
   const [flashGreen, setFlashGreen]           = useState(false);
   const [flashRed, setFlashRed]               = useState(false);
   const prevPriceRef                          = useRef<number | null>(initialPrice);
@@ -104,11 +120,6 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
       });
       if (!res.ok) throw new Error('API error');
       const data = await res.json();
-      // Y3: the batch payload discloses the NSE market state top-level (U2)
-      // — the server decides, the label only repeats it (Rule 7).
-      if (data?.market && typeof data.market.open === 'boolean' && typeof data.market.sessionDate === 'string') {
-        setMarket({ open: data.market.open, sessionDate: data.market.sessionDate });
-      }
       const entry = data?.[stock.symbol] as LiveEntry | undefined;
       if (!entry) {
         setState('unavailable');
@@ -154,6 +165,11 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
         // re-render from the shared builder (the legacy lastUpdated Date
         // state is gone — no bare clock is rendered anywhere).
         setObservedIso(entry.observedAt ?? entry.lastUpdated ?? null);
+        // Round 53: a client-fetched observation is displayed with the
+        // CLIENT's clock — the "(server render)" disclosure no longer
+        // applies to it the moment this refresh lands.
+        setLiveClock(true);
+        setDisplayNow(Date.now());
       }
     } catch (err) {
       console.error('[LivePriceWidget] fetch error:', err);
@@ -168,6 +184,26 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
     const interval = setInterval(fetchPrice, 60000);
     return () => clearInterval(interval);
   }, [stock.symbol]);
+
+  // P0 (Round 52): the display-time clock — after the deterministic first
+  // paint, the label recomputes from the viewer's clock (and every 30 s) so
+  // the freshness rule and the IST trading-hours market status are true at
+  // DISPLAY TIME (founder order, 12 Oct 2026: "Compute market status from
+  // IST trading hours at display time"). The first hop is deferred off the
+  // effect body (setTimeout 0) so the update is an async transition, not a
+  // synchronous setState-in-effect cascade.
+  useEffect(() => {
+    const tick = () => {
+      setDisplayNow(Date.now());
+      setLiveClock(true);
+    };
+    const first = setTimeout(tick, 0);
+    const interval = setInterval(tick, 30_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Round 9: the display pair (and its direction/color claim) comes from
   // the shared formatter — a missing change renders "—" with no arrow and
@@ -276,9 +312,11 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
       </div>
 
       {/* Last updated — the UPSTREAM observation time when disclosed
-          (Round 9), stamped Y3-style: IST date + clock + timezone + the
-          server-disclosed market state ("… · market closed · last session
-          quote"). R16 C5: absent an observation the line's GEOMETRY is
+          (Round 9), stamped Y3-style: IST date + clock + timezone. Round 53
+          (founder item 2): the FIRST BYTE carries no market status at all —
+          "as of <time> (server render)" (plus the monotonic "· stale" marker
+          when stale at regeneration); after hydration the display-time label
+          takes over ("… · market open · intraday quote" / "as of … · stale"). R16 C5: absent an observation the line's GEOMETRY is
           still reserved — the late-arriving attribution used to grow the
           tile and push the whole content-wrapper down (measured CLS 0.053
           on mobile, Lighthouse layout-shift trace).
@@ -292,7 +330,14 @@ export function LivePriceWidget({ stock, initialEntry = null, initialMarket = nu
           the shift is structurally impossible; no honest text is
           truncated. */}
       {(() => {
-        const obsLabel = observationLabel(observedIso, market);
+        // Round 53 (founder item 2): the server render (and the identical
+        // first hydration paint) uses observationLabelServer — NO market
+        // status in the first byte, only "as of <time> (server render)".
+        // Once the display-time clock is live, the full label (market
+        // status from IST hours at the viewer's clock) takes over.
+        const obsLabel = liveClock
+          ? observationLabel(observedIso, displayNow)
+          : observationLabelServer(observedIso, displayNow);
         if (!obsLabel) {
           return <div aria-hidden="true" style={{ fontSize: 9, fontFamily: 'monospace', marginTop: 10, lineHeight: '14px', height: 28 }} />;
         }

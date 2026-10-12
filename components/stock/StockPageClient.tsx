@@ -26,7 +26,6 @@ import { useActivationEvents } from '@/hooks/useActivationEvents'; // DEMO-5: th
 // dataset/detector live in lib/wisdom/historicalParallels, server-side).
 import type { HistoricalParallel } from '../../lib/wisdom/historicalParallels';
 import type { ServedQuote } from '../../lib/quotePath'; // X3: type-only — erased at compile time, no runtime reachability into the server-only price path
-import type { ObservationMarketState } from '../../lib/pricePresentation'; // Y3: type-only — same erasure rule
 import type { InitialPriceEntry } from '../../lib/dashboardSnapshot'; // Y2: type-only — same erasure rule
 
 // A1 (Round 14) contract, after measuring Next 16 behavior:
@@ -81,23 +80,25 @@ interface Props {
    *  cached (the tile then renders the honest "price unavailable" state
    *  and the client hook fills it on mount). */
   initialQuote: ServedQuote | null;
-  /** Y3: the server-disclosed NSE market state at regeneration (frozen
-   *  into the ISR HTML until the next regen). Null never renders a state
-   *  claim — the observation line then shows the stamp alone. */
-  initialMarket: ObservationMarketState | null;
   /** Y2 (Round 12): the regen-time cache peek for the PEER table — the
    *  mapped entries (dashboardSnapshot.toPriceData) for every peer the
    *  shared quote cache held, keyed by symbol. Empty when nothing is
    *  cached: the peer prices render the honest "—" and the client hook
    *  fills them on mount. */
   initialPeerPrices: Record<string, InitialPriceEntry>;
+  /** P0 (Round 52): the page's regeneration clock (epoch ms). The price
+   *  widget's first paint computes the observation label from THIS value
+   * (deterministic SSR + hydration, Rule 18); a post-hydration effect
+   * recomputes with the viewer's clock so the label is true at display
+   * time (founder order 12 Oct 2026). */
+  renderedAtMs: number;
   /** A1 (Round 14): the server-resolved historical parallel for the
    *  wisdom rail (null = honest "no parallels detected"). The dataset
    *  and detector live server-side — the client bundle carries neither. */
   parallel: HistoricalParallel | null;
 }
 
-export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialQuote, initialPeerPrices, initialMarket, parallel }: Props) {
+export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, eliteGraph, initialQuote, initialPeerPrices, renderedAtMs, parallel }: Props) {
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
@@ -138,7 +139,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
     s >= 75 ? 'rgba(0,186,124,0.1)' : s >= 55 ? 'rgba(255,215,0,0.1)' : s >= 35 ? 'rgba(245,158,11,0.1)' : 'rgba(244,33,46,0.1)';
 
   return (
-    <div className="rishi-page">
+    <div className="rishi-page" data-rendered-at={new Date(renderedAtMs).toISOString()}>
 
       {/* N3 (round 3): every number on this page (consensus, QVPS, metrics,
           verdicts, graph) is seed-derived while SEED_STATUS === 'placeholder'. */}
@@ -308,7 +309,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
                 Y3 observation line) can never re-flow or re-wrap the header
                 row — the pre-fix reflow measured +0.08 CLS on throttled CI. */}
             <div style={{ width: 380, flexShrink: 0, display: 'flex', justifyContent: 'flex-end' }}>
-            <LivePriceWidget stock={stock} initialMarket={initialMarket} initialEntry={initialQuote ? {
+            <LivePriceWidget stock={stock} renderedAtMs={renderedAtMs} initialEntry={initialQuote ? {
               price: initialQuote.price,
               change: initialQuote.change ?? undefined,
               changePercent24h: initialQuote.change ?? undefined,

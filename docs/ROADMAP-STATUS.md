@@ -455,3 +455,110 @@ founder's own):
 - **Blocked on the founder:** the demo approach; the venue (live site recommended);
   FD-1, FD-8, FD-5, the NSE answer, the monitoring vendor (deferred until after
   22 October).
+
+## Round 52 (2026-10-12, evening order) — the stale-quote P0 + probe liveness + formula text, words verbatim
+
+Founder's order (12 Oct 2026), recorded verbatim before the first change of this
+round (the Constitution's standing record rule):
+
+> Read CONSTITUTION.md (Core) before the next change. English only.
+>
+> Now (12–13 Oct)
+>
+> Fix the stale quote (new P0, C1). Find out why /stock/RELIANCE serves a 13:28
+> render: check x-vercel-cache and age, and check whether ISR regeneration fails
+> on that route. Add a freshness rule in lib/pricePresentation.ts. A quote older
+> than 15 minutes shows "as of <time> · stale" and never "market open · intraday
+> quote". Compute market status from IST trading hours at display time.
+> Acceptance: a test with a six-hour-old quote shows "stale", and the live page
+> shows the current time.
+>
+> Make the probe prove liveness (C6, C5). It currently passes an old page. Add
+> presence checks for each release: the CHAT-ONLY tag on /rishis, the licence
+> label where it applies, and a render time no more than 15 minutes old.
+> Positive control: the probe must fail on the 02eac31 HTML and pass on dcd4c06.
+>
+> Fix the /rishis formula. Jhunjhunwala's displayed formula (P/CF 25%, growth
+> 25%, quality 20%, conviction 20%, sentiment 10%) doesn't match his council
+> criteria. Generate the text from the scorer config. Acceptance: a test that
+> the displayed formula matches the code.
+>
+> Next (14–16 Oct)
+>
+> 4. Today view (DEMO-4): build it on the public dashboard with an honest empty
+>    state, "No live verdicts yet", and no seed rankings.
+> 5. Activation events (DEMO-5): five events behind a consent hook.
+> 6. Demo spec (DEMO-6): test/demo/demo-path.spec.ts against the public site. It
+>    covers dashboard, then the RELIANCE "No verdict" page, then chat
+>    "unavailable", then watchlist add. Include a step that fails if the quote
+>    is stale.
+> 7. Copy residue (DELIV-4): "knowledge graph" is backed by
+>    KnowledgeGraphView for stocks. The "macro knowledge graphs" clause in the
+>    translation files has no built macro view, so remove it.
+>
+> Then (16–19 Oct)
+>
+> 8. Lint to zero on the demo-path files first (ENG-6). Formula tests for every
+>    persona doc (ENG-2). LCP of 2.5 seconds or less, and zero serious axe
+>    violations, on the demo path (ENG-3, ENG-4).
+> 9. Build /demo only after your written decision on the approach.
+>
+> Freeze at 20 Oct, 18:00 IST. Rehearse on 21 Oct. Demo on 22 Oct.
+
+Round-52 execution notes (coder, not the founder's words):
+- Items 4–6 were already built on #391 (TODAY-TRACKING) ahead of this order; the
+  item-6 addition (the stale-quote step in the demo spec) rides the P0 PR once
+  #391 merges. Item 8's ENG-2 is #390 (built). Item 7 modifies the #388
+  disposition (the "macro knowledge graphs" clause now ordered removed).
+
+## Round 53 (2026-10-12, night order) — the audit scorecard + merge queue + the cache P0, words verbatim
+
+Founder's order (12 Oct 2026, evening — score 6/10 at main f9a8494 / production
+641e37c as the founder snapshotted it), recorded verbatim before the first
+change of this round (the Constitution's standing record rule):
+
+> Read CONSTITUTION.md (Core) before the next change. English only. Nothing
+> disabled, removed or hidden.
+>
+> 1. Merge in this order, one per hourly window: #399, #400, #401, #370, #391.
+>    Each merge needs a live proof on the bare URL, with no cache-buster.
+> 2. Stock-page cache (new P0, C1/C6). Find out why the bare /stock/RELIANCE
+>    URL serves a render more than 50 minutes old, even though the code sets
+>    revalidate = 60. Use curl -sI and report age and x-vercel-cache. Then
+>    remove market status from the server-rendered HTML entirely. Render
+>    "as of <time> (server render)" and let the client compute open or closed.
+>    Acceptance: the bare URL never states "market open" from a stale render.
+> 3. Probe (#400). Make the bare URL the authoritative check. Fail if the
+>    observation line is older than 15 minutes while the market is open by IST
+>    time. Record age and x-vercel-cache in the output. Paste the output.
+> 4. Chat formula (#401). Update the system-prompt formula lines to match the
+>    scorer weights in the same PR or a follow-up. This blocks chat going live,
+>    not the demo.
+> 5. Copy (DELIV-4). Remove "live" from the News title ("Market Intelligence —
+>    live news"). Make the title match the honest empty state.
+> 6. Demo spec (#391). Run test/demo/demo-path.spec.ts against the public URL
+>    and paste the result, with screenshots of the RELIANCE honest page. Merge
+>    only when it's green.
+> 7. Still blocked: the demo approach (FOUNDER DECISION NEEDED). Don't build
+>    /demo with seed verdicts on real companies. Continue the unblocked work:
+>    lint to zero on demo-path files, and formula tests for persona docs once
+>    #401 lands.
+>
+> What I need from you:
+> 1. The demo approach. This is the critical one, and I need it by 14 October
+>    to keep the freeze on 20 October.
+> 2. Confirm that "Top Buy Signals" and "Short Radar" stay as named, with
+>    counsel's view still open.
+
+Round-53 execution notes (coder, not the founder's words):
+- Premise correction (rule 28), reported with evidence: the founder's snapshot
+  predates 16:07:38Z — #391 IS merged (origin/main = e8d2c23); production is
+  641e37c, so e8d2c23 carries deploy debt until tonight's first deploy. The
+  merge queue is therefore #399 → #400 → #401 → #370, and the first deploy
+  clears #391's debt.
+- Item 2's fix rides #399 (same STALE-QUOTE token, same widget, same tests):
+  the SSR label change is the completion of the P0 the founder ordered in both
+  orders — merging #399 without it would ship a first byte that still states
+  market status from a render the viewer may read hours later.
+- Item 3's amendments ride #400 (same PROBE-LIVE token); item 4's amendment
+  rides #401 (the founder sanctioned "in the same PR or a follow-up").

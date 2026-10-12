@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Stock, RishiScore } from '../../lib/types';
@@ -21,6 +21,7 @@ import SeedDataBanner             from '../shared/SeedDataBanner';
 import LicencePendingNote         from '../shared/LicencePendingNote'; // FD-26: the licence-pending label on the withheld QVPS
 import { priceScoresPublic }      from '@/lib/licensing';
 import { useLanguage } from '../../lib/language';
+import { useActivationEvents } from '@/hooks/useActivationEvents'; // DEMO-5: the stock_viewed activation event (consent-gated)
 // A1: server-resolved historical parallel for the wisdom rail (the
 // dataset/detector live in lib/wisdom/historicalParallels, server-side).
 import type { HistoricalParallel } from '../../lib/wisdom/historicalParallels';
@@ -100,6 +101,14 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
   const [activeTab, setActiveTab] = useState('overview');
   const [showGraph, setShowGraph] = useState(false);
   const { t } = useLanguage();
+  const { track } = useActivationEvents(); // DEMO-5: the stock_viewed activation event (consent-gated, fail-closed)
+
+  // DEMO-5: one stock_viewed event per mounted symbol — the effect keys on
+  // the symbol, so a client-side navigation to another record re-fires
+  // exactly once for the new symbol. Consent-gated in the hook (fail-closed).
+  useEffect(() => {
+    track("stock_viewed", { symbol: stock.symbol });
+  }, [track, stock.symbol]);
 
   // Commit M3 (free access): the server embeds the FULL verdict set and the
   // full-set knowledge graph for every visitor — there is no client-side

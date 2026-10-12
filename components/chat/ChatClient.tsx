@@ -62,7 +62,7 @@ export function ChatClient({ rows }: Props) {
             💬 Chat with Rishis
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            Have philosophical conversations with 7 legendary investors. Get investment advice in their distinct voice.
+            Have philosophical conversations with 21 Rishis: 20 scored, Jim Chanos chat-only. Get investment advice in their distinct voice.
           </p>
         </div>
 

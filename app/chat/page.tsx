@@ -12,7 +12,7 @@ import { routeMetadata } from "@/lib/seo/routeMetadata";
 export const metadata = routeMetadata({
   path: "/chat",
   title: "Chat with Rishis — AI simulation | Rishi Terminal",
-  description: "AI-powered investment wisdom from 20 legendary investors.",
+  description: "AI-powered investment wisdom from 21 legendary investors.",
 });
 
 // X4 (Round 11): the chat namespace arrives from the server as an RSC prop

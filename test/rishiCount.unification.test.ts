@@ -43,13 +43,20 @@
  *   8. The client projection mirror stays field-exact for all 21 (the
  *      G10 split-script invariant, now covering the two new cards).
  *
- * Council-count surfaces are deliberately NOT forced to 21 here:
- * stock.wisdomDesc ("All 20 Philosopher Scores") labels the wisdom-tab
- * verdict set, which the scoring council (20) produces — that 20 is the
- * honest number for THAT surface and is pinned by tests 7/8 boundaries.
+ * RULES-3 follow-through (founder order 2026-10-12, words verbatim:
+ * "Use one wording everywhere: '21 Rishis: 20 scored, Jim Chanos
+ * chat-only'."): the two surfaces this file previously exempted —
+ * stock.wisdomDesc ("All 20 Philosopher Scores") and the pricing
+ * "All 21 Rishis" form — now carry the canonical sentence, and the
+ * count-bearing button key stock.viewAll20 is renamed viewAllRishis
+ * ("VIEW ALL RISHIS": no count claim; the canonical sentence rides in
+ * stock.wisdomDesc on the same tab definition). The council-count
+ * boundary itself is unchanged: the grid header still renders the live
+ * "{visibleScores.length} of {totalRishis} sages" from server data.
  */
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import {
   CANONICAL_PERSONAS,
   MARKETING_PERSONAS,
@@ -83,9 +90,11 @@ function localeString(locale: string, dottedKey: string): string | undefined {
   return typeof node === "string" ? node : undefined;
 }
 
-/** The count-bearing locale keys the round-43/44 survey found dead:
+/** The count-bearing locale keys the surveys found dead:
  * zero component references (grep-proven in the PR), all carrying the
- * stale 20. Deleted, never re-translated. */
+ * stale 20. Deleted, never re-translated. RULES-3 adds asset.viewAll20
+ * (count-bearing, zero renderers) and the RENAMED stock.viewAll20 —
+ * its successor stock.viewAllRishis is live and count-free. */
 const DEAD_COUNT_KEYS = [
   "common.exploreAllRishis",
   "stock.allRishiScores",
@@ -93,6 +102,8 @@ const DEAD_COUNT_KEYS = [
   "dashboard.rishiConsensus",
   "header.subtitle",
   "asset.wisdomDesc",
+  "asset.viewAll20",
+  "stock.viewAll20",
 ];
 
 /** Live keys adjacent to each deletion — the positive controls proving
@@ -100,9 +111,21 @@ const DEAD_COUNT_KEYS = [
 const LIVE_CONTROL_KEYS = [
   "screener.title",
   "stock.wisdomDesc",
+  "stock.viewAllRishis",
   "pricing.free.allRishis",
   "header.title",
 ];
+
+/** RULES-3 (founder, 12 Oct 2026): the ONE wording. en is the source of
+ * truth; every locale ships its translation. The digit forms differ by
+ * script (Latin 21/20, Bengali ২১/২০, Devanagari २१/२०) and "Chanos"
+ * transliterates per locale — the pins below test the CONTENT (both
+ * counts + the Chanos qualifier), not the bytes. */
+const CANONICAL_RISHI_COUNT = "21 Rishis: 20 scored, Jim Chanos chat-only";
+const COUNT_21 = /21|২১|२१/;
+const COUNT_20 = /20|২০|२०/;
+const CHANOS_FORM = /Chanos|चानोस|চ্যানোস|ચેનોસ|चॅनोस|சானோஸ்|చానోస్/;
+const CANONICAL_KEYS = ["stock.wisdomDesc", "pricing.free.allRishis"];
 
 describe("RISHI-COUNT — one concept, one number: the roster is 21 everywhere it is claimed", () => {
   it("the /rishis roster is 21 personas — ALL_RISHIS equals MARKETING_PERSONAS (the 19-split is closed)", () => {
@@ -178,6 +201,42 @@ describe("RISHI-COUNT — one concept, one number: the roster is 21 everywhere i
     }
   });
 
+  it("RULES-3 (straggler sweep): every HARDCODED count claim carries the canonical wording or the display-sense 21 — no stale 7/19/20 anywhere", () => {
+    // The /chat hero (a hardcoded string, not a locale key) carries the
+    // canonical sentence verbatim.
+    const hero = readFileSync("components/chat/ChatClient.tsx", "utf8");
+    expect(hero).toContain(CANONICAL_RISHI_COUNT);
+    // Route metadata follows the FD-28 convention: display-sense surfaces
+    // (chat, rishis) say 21 legendary investors, like layout + manifest.
+    for (const file of ["app/chat/page.tsx", "app/rishis/layout.tsx"]) {
+      const src = readFileSync(file, "utf8");
+      expect(
+        src.includes("21 legendary investors"),
+        `${file} must describe 21 legendary investors (display sense)`,
+      ).toBe(true);
+      expect(
+        /\b(7|19|20) legendary/i.test(src),
+        `${file} still carries a stale legendary-investors count`,
+      ).toBe(false);
+    }
+    // The F&O radar card's Rishi-panel tag counts the panel (21), never
+    // the stale 7.
+    expect(readFileSync("app/fno/page.tsx", "utf8")).toContain('"21 Rishis"');
+    // Zero-scan with a bite (C5): the pre-fix tree matched all three
+    // patterns — 'with 7 legendary', 'from 20 legendary', 'tag: "7 Rishis"'.
+    for (const dir of ["app", "components"]) {
+      let out = "";
+      try {
+        out = execFileSync("git", ["grep", "-nE", "with [0-9]+ legendary|of [0-9]+ legendary investors|\"[0-9]+ Rishis\"", "--", dir], { encoding: "utf8" });
+      } catch { /* git grep exits 1 on zero hits — the passing case */ }
+      const offenders = out
+        .split("\n")
+        .filter(Boolean)
+        .filter((l) => !/:\s*\/\//.test(l) && !/21 Rishis: 20 scored/.test(l) && !/"21 Rishis"/.test(l) && !/21 legendary/.test(l));
+      expect(offenders, `hardcoded count claims outside the canonical forms:\n${offenders.join("\n")}`).toEqual([]);
+    }
+  });
+
   it("the count-bearing dead locale keys are deleted from EVERY locale (live neighbours stay)", () => {
     for (const locale of localeFiles()) {
       for (const key of DEAD_COUNT_KEYS) {
@@ -202,23 +261,51 @@ describe("RISHI-COUNT — one concept, one number: the roster is 21 everywhere i
   it("the /pricing roster copy equals the ACTUAL roster length (copy-vs-data drift gate)", () => {
     const copy = localeString("en", "pricing.free.allRishis");
     expect(copy, "en pricing.free.allRishis exists").toBeTruthy();
-    const claimed = copy!.match(/All (\d+) Rishis/);
-    expect(claimed, "copy carries the 'All N Rishis' form").toBeTruthy();
-    expect(Number(claimed![1])).toBe(ALL_RISHIS.length);
-    // The same claim is shipped in every locale (pseudo decorates with its
-    // bracket/padding convention — compare the COUNT, not the bytes).
+    // RULES-3: the ONE wording, verbatim (founder order 12 Oct 2026).
+    expect(copy).toBe(CANONICAL_RISHI_COUNT);
+    // Copy-vs-data drift gate: the canonical sentence's numbers are forced
+    // to match the ACTUAL roster and council sizes — a future roster or
+    // council change must force this copy (and every translation).
+    expect(Number(CANONICAL_RISHI_COUNT.match(/(\d+) Rishis/)![1])).toBe(ALL_RISHIS.length);
+    expect(Number(CANONICAL_RISHI_COUNT.match(/(\d+) scored/)![1])).toBe(RISHI_WEIGHT_CONFIG.length);
+    // The same canonical content ships in every locale (translated; the
+    // pseudo locale decorates en — it matches en by construction).
     for (const locale of localeFiles()) {
       const localized = localeString(locale, "pricing.free.allRishis");
       expect(localized, `${locale} pricing.free.allRishis exists`).toBeTruthy();
-      const localizedCount = localized!.match(/All (\d+) Rishis/);
       expect(
-        localizedCount,
-        `${locale} copy carries the 'All N Rishis' form`,
-      ).toBeTruthy();
+        COUNT_21.test(localized!),
+        `${locale} pricing copy must carry the 21 roster count, got: ${localized}`,
+      ).toBe(true);
       expect(
-        Number(localizedCount![1]),
-        `${locale} pricing count must equal the roster`,
-      ).toBe(ALL_RISHIS.length);
+        COUNT_20.test(localized!),
+        `${locale} pricing copy must carry the 20 scored count, got: ${localized}`,
+      ).toBe(true);
+      expect(
+        CHANOS_FORM.test(localized!),
+        `${locale} pricing copy must name Chanos as chat-only, got: ${localized}`,
+      ).toBe(true);
+    }
+  });
+
+  it("RULES-3: the canonical count wording rides every count-bearing copy surface (stock.wisdomDesc; no 'All 20'/'All 21' claim remains)", () => {
+    for (const locale of localeFiles()) {
+      for (const key of CANONICAL_KEYS) {
+        const value = localeString(locale, key);
+        expect(value, `${locale}.${key} exists`).toBeTruthy();
+        expect(
+          COUNT_21.test(value!) && COUNT_20.test(value!) && CHANOS_FORM.test(value!),
+          `${locale}.${key} must carry the canonical wording (21 roster, 20 scored, Chanos chat-only), got: ${value}`,
+        ).toBe(true);
+      }
+    }
+    // The old claim forms are gone from every catalog (the founder's
+    // audit found 'All 21' in 8 files, 'All 20'/'VIEW ALL 20' in 4).
+    for (const locale of localeFiles()) {
+      const raw = JSON.stringify(loadLocale(locale));
+      expect(raw.includes("All 21"), `${locale} still claims 'All 21'`).toBe(false);
+      expect(raw.includes("All 20"), `${locale} still claims 'All 20'`).toBe(false);
+      expect(raw.includes("VIEW ALL 20"), `${locale} still claims 'VIEW ALL 20'`).toBe(false);
     }
   });
 

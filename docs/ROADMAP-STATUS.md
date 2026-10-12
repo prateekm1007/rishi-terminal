@@ -409,3 +409,49 @@ quoted verbatim; the date is the directive's receipt date, 2026-10-12).
   /rishis row, simulated label, no score, no methodology doc). Dashboard wisdom body
   no longer lists Chanos among applied frameworks (en/hi/pseudo; fallback locales
   follow en).
+
+## Round 50 (2026-10-12, afternoon order) — the scorecard work order, words verbatim
+
+Recorded BEFORE the implementing changes, per the standing rule. The founder's
+12 Oct afternoon order (receipt 16:04 IST scorecard; the task citations are the
+founder's own):
+
+- **RESP-1/RESP-4 — the deploy batch.** Founder's words: "Deploy one batch: dcd4c06.
+  The window has been open since 05:29Z. Verify that `/api/version` returns dcd4c06,
+  then run the seed-leak probe and paste both results into the ledger." State: the
+  #392 merge auto-deployed; production serves dcd4c06 (verified); the smoke probe
+  PASS; ledger PR #393 merged (14ad9013).
+- **DELIV-4 — the copy audit.** Founder's words: "Still present: 'every verdict'
+  (6 files), 'live prices' (9), 'knowledge graph' (16) and 'WISDOM TIERS' (2). Remove
+  each claim the build can't support, or build and test it. Acceptance: grep-zero in
+  messages and UI." Implementing PR: #388 (rebased this round).
+- **RULES-3 follow-through — one Rishi-count wording.** Founder's words, verbatim:
+  "Use one wording everywhere: '21 Rishis: 20 scored, Jim Chanos chat-only'. The copy
+  still says 'All 21' in 8 files and 'All 20' or 'VIEW ALL 20' in 4. The CHAT-ONLY
+  label on /rishis is correct." This supersedes FD-28's "stand as written" note for
+  the /pricing "All 21 Rishis" string and the wisdomDesc exemption in the round-44
+  unification pin. Implementing PR: this round's RULES-3 branch.
+- **DELIV-5 — sector duplicates.** Founder's words: "Realty is 17 and RealEstate 9.
+  Tech is 11 and IT 46. Fintech is 23 and FinTech 0. Merge each pair, with a
+  migration test. Keep it off the demo path until merged." Implementing PR: #389
+  (rebased this round).
+- **DEMO-4/DEMO-5/DEMO-6 — Today view, activation events, demo spec.** Founder's
+  words: the Today view carries "an honest empty state: 'No live verdicts yet', and
+  no seed rankings"; the five activation events (search, verdict view, dissent expand,
+  flip expand, watchlist add) ride "behind a consent hook"; the demo spec is
+  `test/demo/demo-path.spec.ts` against the public site, "Keep it honest. Point it at
+  /demo once the approach is approved." Implementing PR: #391 (rebased this round).
+- **ENG-2/ENG-6/ENG-3/ENG-4.** Formula tests on every persona doc; lint to zero on
+  the demo-path files first; LCP ≤ 2.5 s and zero serious axe violations on the public
+  demo path. Implementing PRs: #390 (rebased) + this round's follow-ups.
+- **The demo guardrail (standing).** Founder's words, verbatim: "Do not build any
+  demo that shows seed verdicts on real companies. Build `/demo` only after your
+  written decision on the approach." The approach itself remains FOUNDER DECISION
+  NEEDED (recommended default on record: a hypothetical company with labelled inputs).
+- **Timeline (founder's words):** 12 Oct deploy+copy+Rishi wording; 13–15 Oct Today
+  view, activation events, demo spec, lint; 16–19 Oct formula tests, performance and
+  accessibility, `/demo` once approved; 20 Oct 18:00 IST freeze (demo-path fixes
+  only after); 21 Oct rehearsal; 22 Oct demo, from main, probe green.
+- **Blocked on the founder:** the demo approach; the venue (live site recommended);
+  FD-1, FD-8, FD-5, the NSE answer, the monitoring vendor (deferred until after
+  22 October).

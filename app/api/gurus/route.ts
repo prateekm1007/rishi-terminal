@@ -4,7 +4,7 @@ import { CRYPTO_ASSETS } from '@/data/crypto';
 import { COMMODITIES } from '@/data/markets';
 import { fetchLivePrice } from '@/lib/livePrice';
 import { dataQualityFromAssetInputs, type DataQuality } from '@/lib/dataQuality';
-import { gateAssetVerdict } from '@/lib/gurus/gate';
+import { gateAssetVerdict, type GatedGuruVerdict } from '@/lib/gurus/gate';
 import { scoreSatoshiBodhi } from '@/lib/scorers/crypto/satoshibodhi';
 import { scoreVitalikVeda } from '@/lib/scorers/crypto/vitalikVeda';
 import { scoreMichaelSaylor } from '@/lib/scorers/crypto/michaelsaylor';
@@ -12,6 +12,12 @@ import { scoreJimRogers } from '@/lib/scorers/commodity/jimrogers';
 import { scoreRickRule } from '@/lib/scorers/commodity/rickrule';
 import { scoreDanielYergin } from '@/lib/scorers/commodity/danielyergin';
 import { normalizeSymbolInput } from '@/lib/registry/validateInput';
+import { guruCategory } from '@/lib/gurus/gate';
+
+/** The P0-6 category of a heuristic average (FD-23). */
+function gateCategoryOf(avg: number): string {
+  return guruCategory(avg);
+}
 
 /**
  * GET /api/gurus?kind=crypto[&symbol=BTC] — the SERVER-side surface for
@@ -28,14 +34,13 @@ import { normalizeSymbolInput } from '@/lib/registry/validateInput';
  * `locked` field on the wire and no locked remainder to render.
  */
 
-interface GuruVerdict {
-  id: string;
-  name: string;
-  score: number | null;
-  label: string;
-  insight: string;
-  comps: Array<{ label: string; v: number; wt: number; detail: string }>;
-}
+/**
+ * The gated guru-card shape /api/gurus serves (lib/gurus/gate.ts is the
+ * ONE gate — rule 14). FD-23 (11 Oct 2026): on reference data the card
+ * is a heuristic-reference OUTPUT (score + P0-6 category, verdict content
+ * withheld) — a separate output type, never a data-quality class.
+ */
+export type GuruVerdict = GatedGuruVerdict;
 
 /**
  * Round-47 P0-5 (founder order 2026-10-11: every surface calls the ONE
@@ -167,9 +172,11 @@ export async function GET(req: NextRequest) {
     };
 
     if (detail) {
-      // Detail page: every per-guru verdict, in full, for every caller —
-      // GATED by the record's dataQuality (P0-5: a verdict over reference
-      // indicators is a seed verdict; it is withheld, not displayed).
+      // Detail page: every per-guru card, in full, for every caller —
+      // gated by the record's dataQuality (P0-5). FD-23 reverses the
+      // seed branch for these cards: reference inputs serve the
+      // heuristic-reference output (score + P0-6 category, no verdict
+      // content); the verdict itself returns only on live/delayed inputs.
       const dq = commodityAssetQuality(detail, overlayC[detail.symbol]);
       const gurus: GuruVerdict[] = COMMODITY_SCORERS.map((g, i) => {
         const scored = scoreCommodity(detail)[i];
@@ -182,11 +189,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // List page: per-commodity average plus the per-guru verdict rows.
+    // List page: per-commodity average plus the per-guru score rows.
     // (List mode keeps scores only — verdict text/comps are per-symbol
     // detail; this is a payload decision, not a gate: ?symbol= serves the
-    // full text to anyone.) The average is over GATED verdicts: seed
-    // quality nulls every score, so avg is null (T11: never 0).
+    // full text to anyone.) FD-23: the average is over the GATED outputs —
+    // on reference data every gated score is the heuristic score, so the
+    // average is the heuristic average with its P0-6 category; a null
+    // score (insufficient data) keeps the average null (T11: never 0).
     const commodities = COMMODITIES.map((c) => {
       const dq = commodityAssetQuality(c, overlayC[c.symbol]);
       const results = scoreCommodity(c).map((r) => gateAssetVerdict(r, dq));
@@ -200,7 +209,9 @@ export async function GET(req: NextRequest) {
         category: c.category,
         dataQuality: dq,
         avg,
-        gurus: results.map((r, i) => ({ id: COMMODITY_SCORERS[i].id, initials: COMMODITY_SCORERS[i].name.slice(0, 2).toUpperCase(), score: r.score })),
+        // FD-23: the P0-6 category of the heuristic average (null with avg).
+        avgCategory: avg === null ? null : gateCategoryOf(avg),
+        gurus: results.map((r, i) => ({ id: COMMODITY_SCORERS[i].id, initials: COMMODITY_SCORERS[i].name.slice(0, 2).toUpperCase(), score: r.score, category: r.category })),
       };
     });
     return NextResponse.json(
@@ -212,11 +223,13 @@ export async function GET(req: NextRequest) {
   const gurus: GuruVerdict[] = GURU_SCORERS.filter((g) => !symbol || g.target === symbol).map((g) => {
     const asset = CRYPTO_ASSETS.find((a) => a.symbol === g.target);
     if (!asset) {
-      return { id: g.id, name: g.name, score: null, label: 'Insufficient Data', insight: '', comps: [] };
+      return { id: g.id, name: g.name, outputType: 'no-verdict' as const, score: null, category: null, label: 'Insufficient Data', insight: '', comps: [] };
     }
     const live = overlay[g.target];
     // P0-5: the ONE verdict gate — the asset record's dataQuality decides
-    // whether the guru verdict is served or withheld (seed inputs → null).
+    // which output the card serves. FD-23: reference (seed) inputs serve
+    // the heuristic-reference output (score + P0-6 category, no verdict
+    // content); live inputs serve the verdict.
     const dq = cryptoAssetQuality(asset, live);
     const scored = g.scorer({
       ...asset,

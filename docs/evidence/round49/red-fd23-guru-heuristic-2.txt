@@ -1,0 +1,30 @@
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  test/guruHeuristic.reference.test.ts > FD-23 G — the card surfaces render the contract (source pins, B-18) > no attributed quotation of a real person renders on any guru card (P0-7)
+AssertionError: expected [ 'philosophy', index: 4438, …(2) ] to be null
+
+- Expected:
+null
+
++ Received:
+[
+  "philosophy",
+]
+
+ ❯ test/guruHeuristic.reference.test.ts:249:49
+    247|     for (const f of CARD_SURFACES) {
+    248|       const src = readFileSync(f, 'utf8');
+    249|       expect(src.match(/philosophy|\.quote\b/)).toBeNull();
+       |                                                 ^
+    250|     }
+    251|     // and the metadata modules no longer carry quote fields (rule 17)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 5 passed (11)
+   Start at  16:50:29
+   Duration  819ms (transform 72%, tests 14%, import 13%, setup 1%, worker 1%)
+

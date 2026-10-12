@@ -20,9 +20,18 @@
 //     boundary).
 //
 // The asset-side pins (D) extend the same ONE gate to the crypto /
-// commodity guru verdict cards ("/rishis cards" on the asset surfaces):
-// a verdict built on static reference indicators is a seed-quality
-// verdict and returns no verdict, identically to stocks.
+// commodity guru cards ("/rishis cards" on the asset surfaces).
+//
+// FD-23 REVERSAL (founder order 11 Oct 2026, recorded in ROADMAP + the
+// incident log B-28, words verbatim: "Crypto cards score and category
+// back on reference data."): on reference (seed-quality) inputs the
+// asset-side guru cards now serve the heuristic-reference OUTPUT —
+// score + P0-6 category, verdict content withheld, the founder's label
+// on every card. The stock-side pins (A/B/C) are UNCHANGED: stocks show
+// no verdict on seed data. The D-block pins are re-pinned to the new
+// contract (rule 23: a sanctioned founder reversal, documented here —
+// no assertion silently weakened; every old "never" keeps biting on
+// the stock side).
 
 import { describe, it, expect } from 'vitest';
 
@@ -159,7 +168,7 @@ describe('P0-5 D — the asset-side rishis cards call the same gate', () => {
     expect(verdictsAllowed(dq)).toBe(false);
   });
 
-  it('gateAssetVerdict nulls the verdict on seed quality and keeps it on live', () => {
+  it('gateAssetVerdict serves the heuristic-reference output on seed (FD-23) and the verdict on live', () => {
     const scored: RishiScore = {
       name: 'Satoshi Bodhi',
       full: 'Sound Money Sage',
@@ -172,17 +181,32 @@ describe('P0-5 D — the asset-side rishis cards call the same gate', () => {
       insight: 'Strong HODLer conviction.',
     };
 
+    // FD-23: seed quality (reference inputs) serves the heuristic — the
+    // score and the P0-6 category are NOT withheld; the verdict content
+    // (insight, comps) IS; the label is the founder's exact string.
     const seedDq: DataQuality = 'seed';
-    const gated = gateAssetVerdict(scored, seedDq);
-    expect(gated.score).toBeNull();
-    expect(gated.label).toBe('No Verdict — Seed Data');
-    expect(gated.comps).toEqual([]);
-    expect(gated.insight).toContain('reference');
+    const heuristic = gateAssetVerdict(scored, seedDq);
+    expect(heuristic.outputType).toBe('heuristic-reference');
+    expect(heuristic.score).toBe(78);
+    expect(heuristic.category).toBe('Favorable'); // P0-6 vocabulary
+    expect(heuristic.label).toBe('Heuristic reference — static reference inputs, not a verdict');
+    expect(heuristic.comps).toEqual([]);
+    expect(heuristic.insight).toBe('');
 
+    // Live quality still serves the full verdict, now with its category.
     const liveDq: DataQuality = 'live';
     const kept = gateAssetVerdict(scored, liveDq);
+    expect(kept.outputType).toBe('verdict');
     expect(kept.score).toBe(78);
+    expect(kept.category).toBe('Favorable');
     expect(kept.label).toBe('Digital Scarcity');
     expect(kept.comps).toEqual(scored.comps);
+    expect(kept.insight).toBe('Strong HODLer conviction.');
+
+    // Missing quality: nothing to compute on — the honest no-verdict.
+    const none = gateAssetVerdict(scored, 'missing');
+    expect(none.outputType).toBe('no-verdict');
+    expect(none.score).toBeNull();
+    expect(none.category).toBeNull();
   });
 });

@@ -7,6 +7,8 @@ import { COMMODITIES } from '../../data/markets';
 import { useLanguage } from '../../lib/language';
 import { useLivePrices } from '../../hooks/useLivePrices';
 import { ProvenanceChip } from '../../components/shared/ProvenanceChip';
+import GuruHeuristicNote from '../../components/shared/GuruHeuristicNote';
+import SimulatedPersonaChip from '../../components/shared/SimulatedPersonaChip';
 
 
 function scoreColor(score: number): string {
@@ -30,7 +32,7 @@ export default function CommoditiesPage() {
   // R3 (round 2) + Commit M3 (free access): the average on each card is
   // computed SERVER-SIDE (/api/gurus?kind=commodity); every detail page
   // serves the full per-guru verdicts to every caller.
-  const [guruTeasers, setGuruTeasers] = useState<Record<string, { avg: number | null; gurus: Array<{ id: string; initials: string; score: number | null }> }>>({});
+  const [guruTeasers, setGuruTeasers] = useState<Record<string, { avg: number | null; avgCategory: string | null; gurus: Array<{ id: string; initials: string; score: number | null; category: string | null }> }>>({});
   useEffect(() => {
     let cancelled = false;
     fetch('/api/gurus?kind=commodity', { cache: 'no-store' })
@@ -38,7 +40,7 @@ export default function CommoditiesPage() {
       .then((d) => {
         if (cancelled || !Array.isArray(d?.commodities)) return;
         const map: typeof guruTeasers = {};
-        for (const c of d.commodities) map[c.symbol] = { avg: c.avg, gurus: c.gurus ?? [] };
+        for (const c of d.commodities) map[c.symbol] = { avg: c.avg, avgCategory: c.avgCategory ?? null, gurus: c.gurus ?? [] };
         setGuruTeasers(map);
       })
       .catch(() => {});
@@ -238,6 +240,7 @@ export default function CommoditiesPage() {
             // P1 audit 2026-10-02: null renders '—', never a fabricated 0)
             const teaser = guruTeasers[commodity.symbol];
             const avgScore: number | null = teaser?.avg ?? null;
+            const avgCategory: string | null = teaser?.avgCategory ?? null;
             const rishiScores = (teaser?.gurus ?? []).map(g => ({ id: g.id, tag: g.initials, result: { score: g.score } }));
             // G6: LIVE is only claimed for a genuine price observation —
             // an entry whose price is null keeps the reference chip.
@@ -277,14 +280,20 @@ export default function CommoditiesPage() {
                       </div>
                     </div>
                   </div>
-                  <div style={{
-                    fontSize: 11, fontWeight: 700,
-                    padding: '4px 10px', borderRadius: 6,
-                    background: (avgScore === null ? '#64748B' : scoreColor(avgScore)) + '20',
-                    color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore),
-                    fontFamily: 'monospace',
-                  }}>
-                    {avgScore === null ? '—' : avgScore}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 700,
+                      padding: '4px 10px', borderRadius: 6,
+                      background: (avgScore === null ? '#64748B' : scoreColor(avgScore)) + '20',
+                      color: avgScore === null ? 'var(--text-muted)' : scoreColor(avgScore),
+                      fontFamily: 'monospace',
+                    }}>
+                      {avgScore === null ? '—' : avgScore}
+                    </div>
+                    {/* FD-23: the P0-6 category of the heuristic average. */}
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 3 }}>
+                      {avgScore === null ? 'No Verdict' : avgCategory}
+                    </div>
                   </div>
                 </div>
 
@@ -322,7 +331,21 @@ export default function CommoditiesPage() {
                   </div>
                 )}
 
-                {/* Rishi Score Bar */}
+                {/* FD-23: every card that shows heuristic-reference guru
+                    scores carries the founder's label + provenance. */}
+                {avgScore !== null && (
+                  <div style={{ marginBottom: 10 }}>
+                    <GuruHeuristicNote compact />
+                  </div>
+                )}
+
+                {/* Rishi Score Bar — the bars carry persona attributions
+                    (initials), so the simulated-persona disclosure rides
+                    with them (FD-25). */}
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 2, fontFamily: 'monospace' }}>RISHI SCORES</span>
+                  <SimulatedPersonaChip />
+                </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {rishiScores.map(r => (
                     <div key={r.id} style={{ flex: 1, textAlign: 'center' }}>

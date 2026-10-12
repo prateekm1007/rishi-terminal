@@ -71,25 +71,29 @@ describe("§14 /api/gurus — unavailable change is NEVER a fabricated 0%", () =
     const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=crypto"));
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      gurus: Array<{ id: string; score: number | null; label: string; insight: string; comps: Array<{ detail: string }> }>;
+      gurus: Array<{ id: string; outputType: string; score: number | null; category: string | null; label: string; insight: string; comps: Array<{ detail: string }> }>;
     };
 
     // No verdict anywhere claims a 0.00% move (the fabricated no-move).
     const allText = body.gurus.map((g) => [g.insight, ...g.comps.map((c) => c.detail)].join(" | ")).join(" || ");
     expect(allText).not.toContain("0.00%");
 
-    // Round-47 P0-5 re-pin (founder order 2026-10-11: "every surface
-    // calls it"): with reference-only indicators the crypto record is
-    // seed quality — the verdict is WITHHELD, so the seed-change wording
-    // ("2.45%") no longer renders in the insight at all. The §14
-    // fallback still feeds the SCORER INPUT (route line: change24h:
-    // live?.changePct ?? asset.change24h) — pinned by the structure of
-    // the gated response below, and it will render again verbatim the
+    // Round-47 P0-5 re-pin, SUPERSEDED by FD-23 (founder order 11 Oct
+    // 2026, words verbatim: "Crypto cards score and category back on
+    // reference data."): with reference-only indicators the crypto
+    // record is seed quality — the wire now serves the heuristic-reference
+    // OUTPUT (score + P0-6 category, the founder's label) while the
+    // VERDICT CONTENT (insight/comps) stays withheld, so the seed-change
+    // wording ("2.45%") still never renders. The §14 fallback still feeds
+    // the SCORER INPUT (route line: change24h: live?.changePct ??
+    // asset.change24h) — and the insight will render again verbatim the
     // day live indicators make a record live-quality.
     const satoshi = body.gurus.find((g) => g.id === "satoshi");
-    expect(satoshi?.score).toBeNull();
-    expect(satoshi?.label).toBe("No Verdict — Seed Data");
-    expect(satoshi?.insight).toContain("reference");
+    expect(satoshi?.outputType).toBe("heuristic-reference");
+    expect(typeof satoshi?.score).toBe("number");
+    expect(satoshi?.category).not.toBeNull();
+    expect(satoshi?.label).toBe("Heuristic reference — static reference inputs, not a verdict");
+    expect(satoshi?.insight).toBe("");
     expect(satoshi?.comps).toEqual([]);
   });
 
@@ -98,15 +102,19 @@ describe("§14 /api/gurus — unavailable change is NEVER a fabricated 0%", () =
       symbol === "BTC" ? point({ price: 99000, change: -1.25 }) : symbol === "ETH" ? point({ price: 3900, change: 0.5 }) : null,
     );
     const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=crypto"));
-    const body = (await res.json()) as { gurus: Array<{ id: string; score: number | null; label: string; insight: string }> };
+    const body = (await res.json()) as { gurus: Array<{ id: string; outputType: string; score: number | null; category: string | null; label: string; insight: string }> };
     const satoshi = body.gurus.find((g) => g.id === "satoshi");
-    // Round-47 P0-5 re-pin: a live price + live change does NOT make the
-    // record live quality — the RSI / 200D MA / ATH indicators are still
-    // reference values, so the verdict stays withheld (the insight no
-    // longer renders "-1.25%"; the scorer input regression is covered by
-    // the gate structure — the §14 input path is unchanged in the route).
-    expect(satoshi?.score).toBeNull();
-    expect(satoshi?.label).toBe("No Verdict — Seed Data");
+    // Round-47 P0-5 re-pin, SUPERSEDED by FD-23 (11 Oct 2026): a live
+    // price + live change does NOT make the record live quality — the
+    // RSI / 200D MA / ATH indicators are still reference values, so the
+    // wire serves the heuristic-reference output, not the verdict (the
+    // insight still never renders "-1.25%"; the scorer input regression
+    // is covered by the gate structure — the §14 input path is unchanged
+    // in the route).
+    expect(satoshi?.outputType).toBe("heuristic-reference");
+    expect(typeof satoshi?.score).toBe("number");
+    expect(satoshi?.category).not.toBeNull();
+    expect(satoshi?.insight).toBe("");
   });
 
   it("commodity detail: a live price with no disclosed change falls back to the SEED changePct, never 0", async () => {
@@ -117,7 +125,7 @@ describe("§14 /api/gurus — unavailable change is NEVER a fabricated 0%", () =
     const res = await gurusGET(makeGetReq("http://x/api/gurus?kind=commodity&symbol=GOLD"));
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
-      gurus: Array<{ id: string; comps: Array<{ label: string; detail: string }> }>;
+      gurus: Array<{ id: string; outputType: string; comps: Array<{ label: string; detail: string }> }>;
     };
     const allDetails = body.gurus.flatMap((g) => g.comps.map((c) => c.detail)).join(" | ");
     // The fabricated flat move:

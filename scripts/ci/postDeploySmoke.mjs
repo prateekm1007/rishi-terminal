@@ -65,6 +65,15 @@
 //               public /stock/RELIANCE page served stale leak-era content
 //               because the two shared no cache key; the C6 "live" leg now
 //               covers both. Bare-cache labels carry the "bare-cache " prefix.
+//   Round 53 (founder item 3, 2026-10-12): the BARE leg is the AUTHORITATIVE
+//               check and runs FIRST — "the bare URL is the one users see".
+//               Its evidence line records the response's age and
+//               x-vercel-cache headers. Render-freshness now fails on ANY
+//               observation line older than 15 minutes while the market is
+//               open by IST time, whatever the label wording — a stale
+//               honestly-labelled line still means the quote pipeline is not
+//               delivering during the session (the 13:28-all-afternoon
+//               class; the warmer/ingest outage the probe now exposes).
 //
 // Usage:
 //   node scripts/ci/postDeploySmoke.mjs [--base https://…] [--expect-sha <sha>]
@@ -199,6 +208,38 @@ function runLivenessSelfTest() {
         "15:15 IST · market open · intraday quote"),
       Date.parse("2026-10-12T09:50:00.000Z"),
     ).ok, true);
+  // Round 53 (founder item 3): the absolute open-session rule and the
+  // server-render forms.
+  expect("open session: a stale HONESTLY-LABELLED line fails (the 13:28-all-afternoon class)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST · stale"),
+      OPEN_NOW,
+    ).ok, false);
+  expect("open session: a >15-min-old server-render line fails, whatever the wording",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST (server render)"),
+      OPEN_NOW,
+    ).ok, false);
+  expect("open session: a fresh server-render line passes",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 15:15 IST (server render)"),
+      OPEN_NOW,
+    ).ok, true);
+  expect("closed session: the server-render disclosure passes (no market claim in the first byte)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 15:15 IST (server render)"),
+      CLOSED_NOW,
+    ).ok, true);
+  expect("closed session: a stale server-render line passes (age is honest when the market is closed)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "as of Mon 12 Oct, 09:45 IST · stale (server render)"),
+      CLOSED_NOW,
+    ).ok, true);
   const green = results.every(Boolean);
   console.log(green ? "self-test GREEN: liveness checks discriminate old vs current" : "self-test RED");
   process.exit(green ? 0 : 1);
@@ -282,12 +323,29 @@ try {
 const requiredSections = [...extraSections];
 
 /** Plain fetch: no cache-busting query param, no custom headers — the
- * closest reproduction of a user's request, sharing the user's CDN cache
- * key (the edge ISR entry, x-vercel-cache HIT/STALE). */
+ *  closest reproduction of a user's request, sharing the user's CDN cache
+ *  key (the edge ISR entry, x-vercel-cache HIT/STALE).
+ *
+ *  Round 53 (founder item 3, words verbatim: "Record age and
+ *  x-vercel-cache in the output"): the bare leg now CAPTURES those two
+ *  response headers so every authoritative evidence line carries the
+ *  edge's own disclosure of what it served. */
 async function fetchBare(url) {
   const res = await fetch(url, { redirect: "follow" });
   const text = await res.text();
-  return { status: res.status, text };
+  return {
+    status: res.status,
+    text,
+    edgeAge: res.headers.get("age"),
+    edgeCache: res.headers.get("x-vercel-cache"),
+  };
+}
+
+/** Round 53 (founder item 3): print the edge's cache headers for a bare
+ *  leg — the diagnostic the founder asked to see in every output. */
+function reportEdgeHeaders(label, r) {
+  if (r.edgeAge === undefined && r.edgeCache === undefined) return;
+  console.log(`edge-headers  ${label} — age: ${r.edgeAge ?? "—"} · x-vercel-cache: ${r.edgeCache ?? "—"}`);
 }
 
 /** Content checks for one stock page, shared by the probe and bare-cache
@@ -356,17 +414,22 @@ function checkStockPage(prefix, page, html) {
   report(fresh.ok, `${prefix}render-freshness ${page}`, fresh.detail);
 }
 
-// Two legs per page: the origin-proving probe key, then the user-facing
-// bare URL. The bare leg fails the whole smoke when the edge serves stale
-// content — the class the founder caught on 2026-10-12 (RESP-1R).
+// Two legs per page. Round 53 (founder item 3): the BARE URL is the
+// AUTHORITATIVE check — it runs FIRST, and its evidence carries the edge's
+// age/x-vercel-cache headers — because the bare URL is the render users
+// get (the founder's words: "The bare URL is the one users see"). The
+// probe-key leg (?smoke=<ts>) stays as the ORIGIN control: it always
+// misses the edge ISR cache and proves what a fresh regeneration serves,
+// isolating edge-staleness from origin-staleness when the two disagree.
 for (const page of PAGES) {
   const legs = [
+    { prefix: "bare-cache ", label: `bare-cache ${page}`, url: `${base}${page}`, fetcher: fetchBare, bare: true },
     { prefix: "", label: `sections ${page}`, url: `${base}${page}?smoke=${Date.now()}`, fetcher: fetchText },
-    { prefix: "bare-cache ", label: `bare-cache ${page}`, url: `${base}${page}`, fetcher: fetchBare },
   ];
   for (const leg of legs) {
     try {
       const r = await leg.fetcher(leg.url);
+      if (leg.bare) reportEdgeHeaders(leg.label, r);
       if (r.status !== 200) {
         report(false, leg.label, `HTTP ${r.status}`);
         continue;
@@ -436,11 +499,12 @@ function checkSeedleak(prefix, rawText) {
 }
 
 for (const leg of [
+  { prefix: "bare-cache ", label: "bare-cache seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}`, fetcher: fetchBare, bare: true },
   { prefix: "", label: "seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}?smoke=${Date.now()}`, fetcher: fetchText },
-  { prefix: "bare-cache ", label: "bare-cache seedleak RELIANCE", url: `${base}${SEEDLEAK_SYMBOL}`, fetcher: fetchBare },
 ]) {
   try {
     const r = await leg.fetcher(leg.url);
+    if (leg.bare) reportEdgeHeaders(leg.label, r);
     if (r.status !== 200) {
       report(false, leg.label, `HTTP ${r.status}`);
       continue;
@@ -498,30 +562,48 @@ function parseObsLines(html, nowMs) {
 }
 
 /** Render-freshness verdict for one page render at a display moment.
- *  - no observation line → pass-skipped (unavailable pages expose no age).
- *  - session open → every 'market open · intraday quote' line must be at
- *    most 15 minutes old (the stale-quote defect class, any code vintage).
- *  - session closed → at least one 'market closed' line and zero intraday
- *    lines (last-session quotes are honestly old; mislabeling is not). */
+ *  Round 53 (founder item 3, words verbatim: "Make the bare URL the
+ *  authoritative check. Fail if the observation line is older than 15
+ *  minutes while the market is open by IST time."):
+ *  - session open → EVERY observation line must be at most 15 minutes old,
+ *    whatever its wording. A stale-but-honestly-labelled line still means
+ *    the quote pipeline is not delivering during the session — the
+ *    13:28-all-afternoon class — and the founder's rule is absolute. (The
+ *    label WORDING honesty is pinned separately by the label unit tests.)
+ *  - session closed → no intraday claim anywhere; the honest forms are
+ *    closed-labelled lines, stale-disclosed lines, and the round-53
+ *    server-render disclosure "(server render)" (the first byte carries
+ *    no market claim by design — the client computes it after hydration).
+ *  - no observation line → pass-skipped (unavailable pages expose no
+ *    age to check). */
 function checkRenderFreshness(html, nowMs) {
   const lines = parseObsLines(html, nowMs);
   if (lines.length === 0) return { ok: true, skipped: true, detail: "no observation line (unavailable page) — nothing to age" };
   const open = istOpenAt(nowMs);
   if (open) {
     for (const l of lines) {
-      if (l.tail.includes("market open · intraday quote")) {
-        const ageMin = Math.round((nowMs - l.ms) / 60000);
-        if (nowMs - l.ms > STALE_AFTER_MS) {
-          return { ok: false, detail: `intraday label on a ${ageMin}-minute-old quote (must be ≤15)` };
-        }
+      const ageMin = Math.round((nowMs - l.ms) / 60000);
+      if (nowMs - l.ms > STALE_AFTER_MS) {
+        return {
+          ok: false,
+          detail: `open session: a ${ageMin}-minute-old observation line (must be ≤15) — "${l.tail.slice(0, 72)}"`,
+        };
       }
     }
-    return { ok: true, detail: "open session: every intraday line is fresh" };
+    return { ok: true, detail: "open session: every observation line is ≤15 minutes old" };
   }
-  const hasClosed = lines.some((l) => l.tail.includes("market closed"));
   const hasIntraday = lines.some((l) => l.tail.includes("market open · intraday quote"));
-  if (hasClosed && !hasIntraday) return { ok: true, detail: "closed session: honest closed label, no intraday claim" };
-  return { ok: false, detail: `closed session but closed-label=${hasClosed} intraday=${hasIntraday}` };
+  if (hasIntraday) {
+    return { ok: false, detail: "closed session: an intraday claim still renders" };
+  }
+  const honest = lines.some((l) =>
+    l.tail.includes("market closed") || l.tail.includes("stale") || l.tail.includes("server render"));
+  return {
+    ok: honest,
+    detail: honest
+      ? "closed session: honest label forms (closed / stale / server-render disclosed)"
+      : "closed session: no honest label form found",
+  };
 }
 
 // ── 5. Y4 null-not-zero on the bank page ──────────────────────────────────

@@ -131,7 +131,78 @@ const SEEDLEAK_REDUCE = /\bREDUCE\b/g;
 const SEEDLEAK_OLD_BADGE = /v2\.0\s*·\s*(?:HIGH|MEDIUM|LOW)\s*Data/g;
 const SEEDLEAK_QVPS_LABEL = "QVPS Score";
 
+const STALE_AFTER_MS = 15 * 60 * 1000;
+const IST_MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+// IST session mirror (lib/marketHours: Mon–Fri 09:15–15:30 IST). Duplicated
+// bounds (not imported — this script is plain node .mjs); the vitest suite
+// for the freshness rule is the contract owner, this mirror only decides
+// which honesty leg applies at probe time.
+const NSE_OPEN_MIN = 9 * 60 + 15, NSE_CLOSE_MIN = 15 * 60 + 30;
+
 const argv = process.argv.slice(2);
+
+// ── 0. Self-test (founder order 12 Oct 2026, C5/C6 liveness teeth) ───────
+// Runs BEFORE any network: fixture HTML discriminates the release-marker
+// and freshness checks — the pre-release render MUST fail, the current
+// render MUST pass. Invoked by test/probeLiveness.selfTest.test.ts (the
+// merge-guard --self-test precedent: no network, fixtures only).
+if (argv.includes("--self-test")) {
+  runLivenessSelfTest();
+}
+
+function runLivenessSelfTest() {
+  // Exact strings from real captures (session evidence, round 51): the OLD
+  // fixture replicates the 02eac31-era render (pre-licence-label,
+  // pre-CHAT-ONLY, same-session stale quote called intraday); the NEW
+  // fixture replicates the current honest render.
+  const OLD_STOCK =
+    `<h1>SBIN</h1><div>Rishi Terminal</div>` +
+    `<div>NO VERDICT - ILLUSTRATIVE SEED DATA</div>` +
+    `<div>Key Metrics</div><div>Peer Comparison</div>` +
+    `<title>State Bank of India (SBIN) — verdicts paused (exchange-data license pending) | Rishi Terminal</title>` +
+    `<div>No verdict — the Ashish Kacholia Whale Small-Cap Hunter framework is price-based: its verdict reads price-derived inputs</div>` +
+    `<div>Mon 12 Oct, 09:45 IST · market open · intraday quote</div>`;
+  const OLD_RISHIS =
+    `<div role="region" aria-label="Rishi list"><span>MASTER</span></div><div>Rishi Terminal</div>`;
+  const NEW_STOCK =
+    `<h1>SBIN</h1><div>Rishi Terminal</div>` +
+    `<div>NO VERDICT - ILLUSTRATIVE SEED DATA</div>` +
+    `<div>Key Metrics</div><div>Peer Comparison</div>` +
+    `<div>Licence pending — no verdict: the Ashish Kacholia Whale Small-Cap Hunter framework is price-based: its verdict reads price-derived inputs</div>` +
+    `<div>Mon 12 Oct, 15:15 IST · market closed · last session quote</div>`;
+  const NEW_RISHIS =
+    `<div role="region" aria-label="Rishi list"><span>MASTER</span><span>CHAT-ONLY</span></div><div>Rishi Terminal</div>`;
+  // Fixed display moments (deterministic, never wall-clock): Monday open
+  // session 15:20 IST, Monday evening 18:58 IST (closed).
+  const OPEN_NOW = Date.parse("2026-10-12T09:50:00.000Z");
+  const CLOSED_NOW = Date.parse("2026-10-12T13:28:00.000Z");
+  const results = [];
+  const expect = (label, actual, want) => {
+    const ok = actual === want;
+    console.log(`self-test ${ok ? "PASS" : "FAIL"}  ${label} (got ${actual}, want ${want})`);
+    results.push(ok);
+  };
+  // The old render fails every new check (the positive control: a stale
+  // release can never go green).
+  expect("old stock lacks the licence marker", hasLicenceLabel(OLD_STOCK), false);
+  expect("old rishis lacks CHAT-ONLY", hasChatOnlyTag(OLD_RISHIS), false);
+  expect("old stock mislabels a stale quote as intraday",
+    checkRenderFreshness(OLD_STOCK, OPEN_NOW).ok, false);
+  // The current render passes (closed-session leg + fresh-open leg).
+  expect("new stock carries the licence marker", hasLicenceLabel(NEW_STOCK), true);
+  expect("new rishis carries CHAT-ONLY", hasChatOnlyTag(NEW_RISHIS), true);
+  expect("new stock closed-session label passes",
+    checkRenderFreshness(NEW_STOCK, CLOSED_NOW).ok, true);
+  expect("fresh intraday passes",
+    checkRenderFreshness(
+      NEW_STOCK.replace("15:15 IST · market closed · last session quote",
+        "15:15 IST · market open · intraday quote"),
+      Date.parse("2026-10-12T09:50:00.000Z"),
+    ).ok, true);
+  const green = results.every(Boolean);
+  console.log(green ? "self-test GREEN: liveness checks discriminate old vs current" : "self-test RED");
+  process.exit(green ? 0 : 1);
+}
 let base = DEFAULT_BASE;
 let expectSha = null;
 const extraSections = [];
@@ -270,6 +341,19 @@ function checkStockPage(prefix, page, html) {
 
   const priceUnavail = countOccurrences(html, "PRICE UNAVAILABLE");
   report(priceUnavail === 0, `${prefix}price ${page} "PRICE UNAVAILABLE"`, `${priceUnavail} occurrence(s) (must be 0)`);
+
+  // ── Release markers + render freshness (founder order 12 Oct 2026) ──
+  // DELIV-2 marker where it applies: the SBIN seed page carries
+  // price-based refusals, each labelled 'Licence pending' first.
+  if (page === "/stock/SBIN") {
+    const lic = countOccurrences(stripSsrComments(html), "Licence pending");
+    report(lic >= 1, `${prefix}release-marker ${page} "Licence pending"`, `${lic} occurrence(s) (must be >= 1 — DELIV-2)`);
+  }
+  // STALE-QUOTE liveness: the observation line must be recency-honest at
+  // probe time — an intraday label on a >15-minute-old quote fails, on any
+  // code vintage (C6 teeth against stale edge objects).
+  const fresh = checkRenderFreshness(stripSsrComments(html), Date.now());
+  report(fresh.ok, `${prefix}render-freshness ${page}`, fresh.detail);
 }
 
 // Two legs per page: the origin-proving probe key, then the user-facing
@@ -345,6 +429,10 @@ function checkSeedleak(prefix, rawText) {
     `${prefix}seedleak RELIANCE QVPS score on ${recordClass} record`,
     `${qvpsOnSeed} occurrence(s) of the tile label (must be 0 on seed/missing — P0-1; ${qvpsLabel} on the page overall)`,
   );
+
+  // STALE-QUOTE liveness on the canary page too (same rule as §6).
+  const fresh = checkRenderFreshness(html, Date.now());
+  report(fresh.ok, `${prefix}render-freshness RELIANCE`, fresh.detail);
 }
 
 for (const leg of [
@@ -363,7 +451,108 @@ for (const leg of [
   }
 }
 
+// ── Release markers + render freshness: pure check functions (founder order 12 Oct 2026) ───
+// C6 liveness teeth: every shipped release leaves a marker the probe
+// asserts, so an old build fails on absence (C5 positive control runs in
+// --self-test above):
+//   - RISHI-21 → the CHAT-ONLY chip on /rishis.
+//   - DELIV-2 → the 'Licence pending' label where price-based refusals
+//     render (/stock/SBIN seed page).
+//   - STALE-QUOTE → the observation line is recency-honest: a quote older
+//     than 15 minutes is never 'market open · intraday quote'.
+
+/** CHAT-ONLY presence (RISHI-21 release marker). */
+function hasChatOnlyTag(html) {
+  return html.includes("CHAT-ONLY");
+}
+
+/** Licence-label presence (DELIV-2 release marker). */
+function hasLicenceLabel(html) {
+  return html.includes("Licence pending");
+}
+
+function istOpenAt(nowMs) {
+  const ist = new Date(nowMs + 330 * 60_000);
+  const wd = ist.getUTCDay();
+  if (wd < 1 || wd > 5) return false;
+  const mins = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+  return mins >= NSE_OPEN_MIN && mins < NSE_CLOSE_MIN;
+}
+
+/** Parse Y3 observation stamps in rendered HTML → [{ms, qualifier}]. The
+ *  stamp carries no year ("Mon 12 Oct, 15:15 IST"); resolve against the
+ *  probe year with a day-boundary slide. Returns [] when the page exposes
+ *  no observation line (unavailable pages have no age to check). */
+function parseObsLines(html, nowMs) {
+  const out = [];
+  const re = /(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec), (\d{2}):(\d{2}) IST/g;
+  let m;
+  const probeYear = new Date(nowMs).getUTCFullYear();
+  while ((m = re.exec(html)) !== null) {
+    let ms = Date.UTC(probeYear, IST_MONTHS[m[3]], Number(m[2]), Number(m[4]), Number(m[5])) - 330 * 60_000;
+    if (ms > nowMs + 24 * 3600_000) ms = Date.UTC(probeYear - 1, IST_MONTHS[m[3]], Number(m[2]), Number(m[4]), Number(m[5])) - 330 * 60_000;
+    const tail = html.slice(m.index, m.index + 160);
+    out.push({ ms, tail });
+  }
+  return out;
+}
+
+/** Render-freshness verdict for one page render at a display moment.
+ *  - no observation line → pass-skipped (unavailable pages expose no age).
+ *  - session open → every 'market open · intraday quote' line must be at
+ *    most 15 minutes old (the stale-quote defect class, any code vintage).
+ *  - session closed → at least one 'market closed' line and zero intraday
+ *    lines (last-session quotes are honestly old; mislabeling is not). */
+function checkRenderFreshness(html, nowMs) {
+  const lines = parseObsLines(html, nowMs);
+  if (lines.length === 0) return { ok: true, skipped: true, detail: "no observation line (unavailable page) — nothing to age" };
+  const open = istOpenAt(nowMs);
+  if (open) {
+    for (const l of lines) {
+      if (l.tail.includes("market open · intraday quote")) {
+        const ageMin = Math.round((nowMs - l.ms) / 60000);
+        if (nowMs - l.ms > STALE_AFTER_MS) {
+          return { ok: false, detail: `intraday label on a ${ageMin}-minute-old quote (must be ≤15)` };
+        }
+      }
+    }
+    return { ok: true, detail: "open session: every intraday line is fresh" };
+  }
+  const hasClosed = lines.some((l) => l.tail.includes("market closed"));
+  const hasIntraday = lines.some((l) => l.tail.includes("market open · intraday quote"));
+  if (hasClosed && !hasIntraday) return { ok: true, detail: "closed session: honest closed label, no intraday claim" };
+  return { ok: false, detail: `closed session but closed-label=${hasClosed} intraday=${hasIntraday}` };
+}
+
 // ── 5. Y4 null-not-zero on the bank page ──────────────────────────────────
+/** RISHI-21 release marker on /rishis (both cache keys): the roster region
+ *  must render (positive control) and carry the CHAT-ONLY chip. */
+// ── 5. RISHI-21 marker on /rishis ─────────────────────────────────────────
+function checkRishis(prefix, html) {
+  const region = html.includes("Rishi list");
+  report(region, `${prefix}rishis roster region`, `region present: ${region} (positive control)`);
+  if (!region) return;
+  const chip = countOccurrences(stripSsrComments(html), "CHAT-ONLY");
+  report(chip >= 1, `${prefix}release-marker /rishis "CHAT-ONLY"`, `${chip} occurrence(s) (must be >= 1 — RISHI-21)`);
+}
+
+for (const leg of [
+  { prefix: "", label: "rishis", url: `${base}/rishis?smoke=${Date.now()}`, fetcher: fetchText },
+  { prefix: "bare-cache ", label: "bare-cache rishis", url: `${base}/rishis`, fetcher: fetchBare },
+]) {
+  try {
+    const r = await leg.fetcher(leg.url);
+    if (r.status !== 200) {
+      report(false, leg.label, `HTTP ${r.status}`);
+      continue;
+    }
+    checkRishis(leg.prefix, r.text);
+  } catch (err) {
+    report(false, leg.label, `transport error: ${err.message}`);
+  }
+}
+
+// ── 6. Y4 null-not-zero on the bank page ──────────────────────────────────
 try {
   const rz = await fetchText(`${base}${NULLZERO_SYMBOL}?smoke=${Date.now()}`);
   if (rz.status !== 200) {

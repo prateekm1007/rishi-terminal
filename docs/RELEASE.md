@@ -498,3 +498,29 @@ retry-sporadically protocol stood down unused.
   quota against this ledger before merging).
 - Live proof for #388's copy changes (grep-zero of the four claim
   families on the served HTML) rides the deploy.
+
+### 2026-10-12 (round 50, third entry) — RESP-4: #395 merged; quota reset decoded (CORRECTION of the drain estimate above)
+
+- **PR #395 (RULES-3 Rishi-count wording) MERGED d659595 at 12:51:55Z**
+  (head 37a962d, CI all five jobs green on the window re-run at 12:45:30Z;
+  merge-guard base==main verified before the merge). The merge created **NO
+  production deployment** (the Git integration did not fire — the #311
+  pattern).
+- **A3 single-shot retry at 12:53:35Z: `402 api-deployments-free-per-day`,
+  remaining 0, `reset: 1791895929520` = 2026-10-13T12:52:09Z.**
+- **CORRECTION (C1: the entry above mis-decoded the reset).** The "drain
+  within the hour / slots free at 13:01Z…" schedule was wrong: the 402's own
+  reset field decodes to **tomorrow** (13 Oct 12:52:09Z), not today 12:52Z.
+  The visible team-wide census (78 deployment objects in the trailing 24h:
+  67 rishi-terminal + 11 staging, oldest 11 Oct 13:01:54Z) is BELOW the
+  100 counted — deleted-branch preview objects stay counted in the quota
+  counter while disappearing from the listing, so the visible oldest does
+  not bound the counter. Expect no quota until the reset timestamp unless a
+  retry succeeds earlier (sporadic retries continue per B-26).
+- **Decision (C10 protocol, logged):** the 12 Oct queue merges continue —
+  the founder's timeline (22 Oct demo from main) outweighs stacking debt
+  that one catch-up deploy clears; each merge's debt is recorded here, and
+  the catch-up deploy + live proofs (postDeploySmoke, DELIV-4 grep-zero,
+  RULES-3 canonical sentence) run the moment a retry succeeds. Chain so
+  far: dcd4c06 → 8c00467 (#388, deploy owed) → d659595 (#395, deploy
+  owed). Production still serves dcd4c06.

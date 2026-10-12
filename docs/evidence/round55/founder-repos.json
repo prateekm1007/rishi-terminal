@@ -1,0 +1,212 @@
+[
+  {
+    "repo": "vsjha18/nsetools",
+    "founderClaim": "MIT; retrieves data from the official website (nseindia.com)",
+    "license_spdx": "MIT",
+    "license_name": "MIT License",
+    "stars": 907,
+    "pushed_at": "2025-03-18T11:22:56Z",
+    "archived": false,
+    "description": "Realtime Data From National Stock Exchange (India)",
+    "default_branch": "master",
+    "html_url": "https://github.com/vsjha18/nsetools",
+    "license_file": "LICENSE",
+    "license_head": "The MIT License (MIT)\n\nCopyright (c) 2025 Vivek Jha\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit per",
+    "readme_head": "# NSETools\n\nPython library for extracting data from National Stock Exchange (India)\n\n## Table of Contents\n\n- [Disclaimer](#disclaimer)\n- [Installation](#installation)\n- [Usage](#usage)\n- [API Reference](#api-reference)\n  - [Stock APIs](#stock-apis)\n    - [Get Stock Codes](#1-get-stock-codes)\n    - [Get Stock Quote](#2-get-stock-quote)\n    - [Check Valid Stock Code](#3-check-valid-stock-code)\n    - [52 Week High/Low](#4-52-week-highlow)\n  - [Index APIs](#index-apis)\n    - [Get Index Quote](#1-get-index-quote)\n    - [Get Index List](#2-get-index-list)\n    - [Get All Index Quotes](#3-get-all-index-quotes)\n    - [Top Gainers & Losers](#4-top-gainers--losers)\n    - [Advances & Declines](#5-advances--declines)\n    - [Get Stocks in Index](#6-get-stocks-in-index)\n    - [Get Stock Quotes in Index](#7-get-stock-quotes-in-index)\n  - [Derivatives APIs](#derivatives-apis)\n    - [Get Future Quote](#1-get-future-quote)\n- [Response Formats](#response-formats)\n- [Response Examples](#response-examples)\n  - [Stock Quote Response](#stock-quote-response)\n  - [Index Quote Response](#index-quote-response)\n- [Setting up Dev Environment](#setting-up-dev-environment)\n  - [Clone and Install](#clone-the-repo-",
+    "readme_keyword_hits": {
+      "official website": 1,
+      "not affiliated": 1,
+      "NSE": 81
+    }
+  },
+  {
+    "repo": "marketcalls/openchart",
+    "founderClaim": "MIT; not affiliated with NSE; uses NSE APIs",
+    "license_spdx": "NOASSERTION",
+    "license_name": "Other",
+    "stars": 77,
+    "pushed_at": "2026-01-16T07:53:46Z",
+    "archived": false,
+    "description": "OpenChart is a Python library for downloading intraday and EOD (End of Day) historical data from the NSE (National Stock Exchange of India) and NFO (NSE Futures and Options) exchanges",
+    "default_branch": "master",
+    "html_url": "https://github.com/marketcalls/openchart",
+    "license_file": "LICENSE",
+    "license_head": "MIT License\n\nCopyright (c) 2024 Rajandran R\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to ",
+    "readme_head": "# OpenChart - NSE India Market Data\n\n<table border=1 cellpadding=10><tr><td>\n\n#### \\*\\*\\* IMPORTANT LEGAL DISCLAIMER \\*\\*\\*\n\n---\n\nOpenChart is **not** affiliated, endorsed, or vetted by NSE India. It's\nan open-source tool that uses NSE India's publicly available APIs, and is\nintended for research and educational purposes.\n\n</td></tr></table>\n\n## Overview\n\nOpenChart is a Python library for downloading intraday and EOD (End of Day) historical data from NSE India's charting platform. It supports indices, equities, futures, and options.\n\n## Features\n\n- Search for symbols across indices, equities, and F&O segments\n- Fetch historical OHLCV data\n- Support for multiple timeframes from 1-minute to monthly\n- No authentication required\n\n## Installation\n\n```bash\npip install openchart\n```\n\nOr install from GitHub:\n\n```bash\npip install git+https://github.com/marketcalls/openchart.git\n```\n\n## Quick Start\n\n```python\nfrom openchart import NSEData\nfrom datetime import datetime, timedelta\n\nnse = NSEData()\nend = datetime.now()\nstart = end - timedelta(days=30)\n\n# Get NIFTY 50 daily data\ndata = nse.historical('NIFTY 50', 'IDX', start, end, '1d')\nprint(data)\n```\n\n## Market Segments\n\n| Segment | Descriptio",
+    "readme_keyword_hits": {
+      "NSE": 52
+    }
+  },
+  {
+    "repo": "LogeshR15/screener-mcp",
+    "founderClaim": "reaches Screener.in and NSE",
+    "license_spdx": "MIT",
+    "license_name": "MIT License",
+    "stars": 15,
+    "pushed_at": "2026-09-28T12:42:55Z",
+    "archived": false,
+    "description": "Indian Stock Research MCP server — turn Claude into a personal equity analyst powered by live Screener.in data",
+    "default_branch": "main",
+    "html_url": "https://github.com/LogeshR15/screener-mcp",
+    "license_file": "LICENSE",
+    "license_head": "MIT License\n\nCopyright (c) 2026 Logesh Ramasamy\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons",
+    "readme_head": "# screener-mcp\n\nAn MCP (Model Context Protocol) server that gives Claude live access to [Screener.in](https://www.screener.in), NSE, and MCX data — turning Claude into a research assistant for Indian stocks.\n\n[![PyPI](https://img.shields.io/pypi/v/screener-mcp)](https://pypi.org/project/screener-mcp/)\n[![Python](https://img.shields.io/pypi/pyversions/screener-mcp)](https://pypi.org/project/screener-mcp/)\n[![CI](https://github.com/LogeshR15/screener-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/LogeshR15/screener-mcp/actions/workflows/ci.yml)\n[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)\n\n[Report an issue](https://github.com/LogeshR15/screener-mcp/issues) · [LinkedIn](https://linkedin.com/in/logesh-ramasamy/) · logeshl2003@gmail.com\n\n`screener-mcp` connects Claude (Claude Code, Claude Desktop, or any MCP client) to Indian equity data: company financials, stock screening, annual reports, earnings calls, corporate announcements, and a local portfolio tracker. Point Claude at a company or a screen, and it does the research using real, current data instead of its training-data knowledge of the stock.\n\n---\n\n## What you can do\n\n```\n\"Compare I",
+    "readme_keyword_hits": {
+      "Yahoo": 6,
+      "Screener": 101,
+      "NSE": 45,
+      "sell": 1
+    }
+  },
+  {
+    "repo": "shashankvemuri/Finance",
+    "founderClaim": "uses Yahoo Finance",
+    "license_spdx": "MIT",
+    "license_name": "MIT License",
+    "stars": 4317,
+    "pushed_at": "2026-09-12T01:00:07Z",
+    "archived": false,
+    "description": "Python toolkit for quantitative finance: stock analysis, technical indicators, strategy backtesting, portfolio optimization, and financial modeling.",
+    "default_branch": "master",
+    "html_url": "https://github.com/shashankvemuri/Finance",
+    "license_file": "LICENSE",
+    "license_head": "MIT License\n\nCopyright (c) 2021 Shashank Vemuri\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons",
+    "readme_head": "# Finance\n\nFinance is a Python toolkit for market data, technical indicators, financial analysis,\nstock screening, strategy research, backtesting, portfolios and statistical models.\nCalculations use explicit inputs, a small dependency set and tested execution conventions.\nModels and trading rules are research tools; runnable examples are the starting point.\n\n## Install\n\nPython 3.12 or newer:\n\n```bash\ngit clone https://github.com/shashankvemuri/Finance.git\ncd Finance\npython -m venv .venv\nsource .venv/bin/activate  # Windows: .venv\\Scripts\\activate\npython -m pip install -e .\n```\n\nCore dependencies are NumPy and pandas. Add only the features you need:\n\n```bash\npython -m pip install -e '.[data]'             # Public data, Finviz and financial statements\npython -m pip install -e '.[portfolio,models]' # Optimization and statistical/ML experiments\npython -m pip install -e '.[plot,sentiment]'   # Charts and VADER text scoring\npython -m pip install -e '.[apps,reports]'     # Interactive app and Excel exports\n```\n\n## Use\n\nDownload normalized, consistently adjusted OHLCV with the `data` extra:\n\n```python\nfrom finance.data import YahooFinance\n\nprices = YahooFinance().history('AAPL', '2023-01-0",
+    "readme_keyword_hits": {
+      "Yahoo": 2,
+      "NSE": 2,
+      "forecast": 2
+    }
+  },
+  {
+    "repo": "dhananjaym182/india-xbrl-filings",
+    "founderClaim": "labelled MIT; founder category: personal use only",
+    "license_spdx": "MIT",
+    "license_name": "MIT License",
+    "stars": 0,
+    "pushed_at": "2026-10-01T17:29:18Z",
+    "archived": false,
+    "description": "Discover and download Indian listed-company financial-result XBRL filings (NSE + BSE) with full provenance. Personal/educational use.",
+    "default_branch": "main",
+    "html_url": "https://github.com/dhananjaym182/india-xbrl-filings",
+    "license_file": "LICENSE",
+    "license_head": "MIT License\n\nCopyright (c) 2026 india-xbrl-filings contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and t",
+    "readme_head": "# india-xbrl-filings\n\nDiscover and download **Indian listed-company financial-result XBRL filings** (NSE and BSE) with full provenance.\n\n> [!IMPORTANT]\n> **Personal/educational use only — not for commercial use.** Unofficial endpoints,\n> not affiliated with NSE/BSE/SEBI, no warranty. See [Legal note](#legal-note--read-this).\n\n**Scope:** download + preserve + index only. Parsing XBRL into normalized financial\nstatements is a non-goal for v1 (see [Parsing](#parsing) below).\n\n- Raw payloads preserved **byte-exact, gzipped, with SHA-256 recorded** — normalization\n  must be rebuildable from disk without re-fetching.\n- **The manifest IS the checkpoint**: an append-only JSONL file, rewritten atomically.\n  Resume = skip `ok` records whose file still exists AND still hash-matches. No database.\n- **Revisions preserved, never collapsed.** Multiple filings for the same\n  `(symbol, period_end, basis)` are the norm (consolidated vs standalone, re-filings);\n  dedup is a downstream decision recorded there, never a silent deletion here.\n- Every outcome is **recorded, not thrown**: `ok`, `no_xbrl_link`,\n  `skipped_standalone_redundant`, `pending`, `failed`.\n\n## How to use\n\n### 1. Install\n\nFrom PyPI:",
+    "readme_keyword_hits": {
+      "not affiliated": 2,
+      "NSE": 18
+    }
+  },
+  {
+    "repo": "BennyThadikaran/NseIndiaApi",
+    "founderClaim": "GPL-3.0",
+    "license_spdx": "GPL-3.0",
+    "license_name": "GNU General Public License v3.0",
+    "stars": 160,
+    "pushed_at": "2026-10-10T08:42:49Z",
+    "archived": false,
+    "description": "Unofficial Python Api for NSE India stock exchange",
+    "default_branch": "main",
+    "html_url": "https://github.com/BennyThadikaran/NseIndiaApi",
+    "license_file": "LICENSE",
+    "license_head": "                    GNU GENERAL PUBLIC LICENSE\n                       Version 3, 29 June 2007\n\n Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>\n Everyone is permitted to copy and distribute verbatim copies\n of this license document, but changing it is not allowed.\n\n                            Preamble\n\n  The GNU General Public License is a free, copyleft license for\nsoftware a",
+    "readme_head": "# NSE — Unofficial Python API for NSE India\n\nA lightweight Python client for the National Stock Exchange of India. Built for traders, analysts,\nand quant developers who need reliable programmatic access to NSE data without having to worry about\ncookie handling, rate limits, and retries under flaky network conditions.\n\n**Python:** >= 3.8\n\n> [!IMPORTANT]\n> **Python 3.8 and 3.9 support restored in v5.1.0**\n>\n> This release restores compatibility with Python 3.8 and 3.9 while retaining support for Python 3.10 and above.\n>\n> If you use a shared rate limiter, see [Shared rate limiter configuration for Python 3.8 and 3.9](#python-38-and-39-users-shared-rate-limiter-configuration)\n\n> [!IMPORTANT]\n> **NseIndiaApi 5.0.0 is a major release with breaking changes.**\n>\n> Before upgrading from **4.x**, please read the **[v5.0.0 Migration Guide](https://bennythadikaran.github.io/NseIndiaApi/migration.html)**.\n>\n> The guide explains the breaking changes and how to migrate existing code to v5.0.0.\n\nIf you ❤️ my work so far, please 🌟 this repo.\n\n## Installation\n\n```bash\npip install nse\n```\n\nFor http2 support\n\n```bash\npip install \"nse[http2]\"\n```\n\nSee the documentation for installation, configuration",
+    "readme_keyword_hits": {
+      "Screener": 1,
+      "NSE": 20,
+      "bhavcopy": 5
+    }
+  },
+  {
+    "repo": "cloudQuant/backtrader",
+    "founderClaim": "GPL-3.0",
+    "license_spdx": "GPL-3.0",
+    "license_name": "GNU General Public License v3.0",
+    "stars": 198,
+    "pushed_at": "2026-10-09T15:38:48Z",
+    "archived": false,
+    "description": "Optimized Python fork of Backtrader for strategy backtesting and live trading, with vectorized and event-driven modes, multi-timeframe data, technical indicators, and portfolio analytics.",
+    "default_branch": "development",
+    "html_url": "https://github.com/cloudQuant/backtrader",
+    "license_file": "LICENSE",
+    "license_head": "                    GNU GENERAL PUBLIC LICENSE\r\n                       Version 3, 29 June 2007\r\n\r\n Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>\r\n Everyone is permitted to copy and distribute verbatim copies\r\n of this license document, but changing it is not allowed.\r\n\r\n                            Preamble\r\n\r\n  The GNU General Public License is a free, copyleft license for\r\ns",
+    "readme_head": "<div align=\"center\">\n\n# 🚀 Backtrader\n\n**Professional Python Algorithmic Trading Backtesting Framework**\n\n[![Version](https://img.shields.io/badge/Version-1.4.0-blue.svg)](https://github.com/cloudQuant/backtrader)\n[![Python](https://img.shields.io/badge/Python-3.8%2B-green.svg)](https://www.python.org/)\n[![License](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)\n[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#)\n\n**English** | [**中文**](#-中文文档)\n\n[📖 Documentation (EN)](https://backtrader.readthedocs.io/en/latest/) ·\n[📖 中文文档](https://backtrader-zh.readthedocs.io/zh-cn/latest/) ·\n[🌐 GitHub Pages](https://cloudquant.github.io/backtrader/)\n\n[🐛 Report Bug](https://github.com/cloudQuant/backtrader/issues) ·\n[💬 Discussions](https://github.com/cloudQuant/backtrader/discussions)\n\n</div>\n\n---\n\n## Installation\n\nInstall the pure-Python package directly from PyPI:\n\n```bash\npip install back-trader-python\n```\n\n> **Note**: `back-trader-python` is the PyPI distribution name; the import name remains `backtrader` (`import backtrader as bt`).\n\nFor the pybind11-accelerated C++ wheel (order-of-magnitu",
+    "readme_keyword_hits": {
+      "Yahoo": 6,
+      "NSE": 8,
+      "buy": 10,
+      "sell": 4
+    }
+  },
+  {
+    "repo": "rehanhaider/stocky",
+    "founderClaim": "GPL-3.0",
+    "license_spdx": "GPL-3.0",
+    "license_name": "GNU General Public License v3.0",
+    "stars": 31,
+    "pushed_at": "2026-10-04T17:53:02Z",
+    "archived": false,
+    "description": "Library that will generate ISIN to symbol mapping from NSE, BSE, Yahoo, and Zerodha",
+    "default_branch": "main",
+    "html_url": "https://github.com/rehanhaider/stocky",
+    "license_file": "LICENSE.md",
+    "license_head": "# GNU GENERAL PUBLIC LICENSE\n*Version 3, 29 June 2007*\n\n Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>\n Everyone is permitted to copy and distribute verbatim copies\n of this license document, but changing it is not allowed.\n\n## Preamble\n\nThe GNU General Public License is a free, copyleft license for software and other kinds of works.\n\nThe licenses for most software and other",
+    "readme_head": "[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-46a4ff.svg)](https://docs.astral.sh/ruff/)\n[![license](https://img.shields.io/github/license/rehanhaider/stocky)](https://choosealicense.com/licenses/gpl-3.0/)\n\n# Stocky McStockface\n**Stocky Will help you generate a consolidated list of Instruments**\n1. by mapping their ISIN codes to\n    1. BSE Stock codes and symbols\n    2. NSE symbols\n    3. Zerodha symbols\n    4. Yahoo symbols (Both .NS and .BO)\n\n## The consolidated table\n\n`data/output/stocky.db` holds one `consolidated` row per ISIN. A share keeps the same ISIN on NSE and BSE, but its\nsymbol can differ, so every symbol column belongs to one exchange. A column stays empty when that exchange does not list\nthe ISIN in the bhavcopy used for the rebuild.\n\n| Column | NSE | BSE | Source |\n| --- | --- | --- | --- |\n| `nse_symbol` / `bse_symbol` | yes | yes | `TckrSymb` in each exchange's bhavcopy |\n| `bse_sc_code`, `bse_sc_name` | | yes | BSE bhavcopy |\n| `zd_ns` / `zd_bo` | yes | yes | Zerodha instruments, matched by the exchange's instrument token, such as `AAREYDRUGS-BE`. When an NSE token has changed, the NSE symbol is looked up in Zerodha's NSE list only |\n| `yq_n",
+    "readme_keyword_hits": {
+      "Yahoo": 48,
+      "NSE": 62,
+      "bhavcopy": 17
+    }
+  },
+  {
+    "repo": "lfre/lightkeeper",
+    "founderClaim": "AGPL-3.0; archived",
+    "license_spdx": "AGPL-3.0",
+    "license_name": "GNU Affero General Public License v3.0",
+    "stars": 85,
+    "pushed_at": "2025-05-31T15:57:12Z",
+    "archived": true,
+    "description": "Run Lighthouse tests in Pull Requests for multiple URLs with custom budgets",
+    "default_branch": "master",
+    "html_url": "https://github.com/lfre/lightkeeper",
+    "license_file": "LICENSE",
+    "license_head": "GNU AFFERO GENERAL PUBLIC LICENSE\n   Version 3, 19 November 2007\n\nCopyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>\nEveryone is permitted to copy and distribute verbatim copies\nof this license document, but changing it is not allowed.\n\n        Preamble\n\nThe GNU Affero General Public License is a free, copyleft license for\nsoftware and other kinds of works, specifically designed ",
+    "readme_head": "<div align=\"center\">\n\n![](https://raw.githubusercontent.com/wiki/lfre/lightkeeper/images/lightkeeper-header-250.png)\n\n# ⚓ _Lightkeeper_ (alpha)\n\n![](https://badgen.net/github/status/lfre/lightkeeper/master)\n[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://raw.githubusercontent.com/lfre/lightkeeper/master/LICENSE)\n[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/alfredolo/5)\n\nRun [Lighthouse](https://developers.google.com/web/tools/lighthouse/) tests in Pull Request URLs with multiple routes. Prevent regressions through custom budgets in a flexible and extensible configuration.\n\n[![](https://img.shields.io/static/v1.svg?label=INSTALL&message=GITHUB&color=brightgreen&link=https://github.com/apps/lightkeeper-ci&style=for-the-badge)](https://github.com/apps/lightkeeper-ci)\n\n![](https://raw.githubusercontent.com/wiki/lfre/lightkeeper/images/lightkeeper-status.gif)\n![](https://raw.githubusercontent.com/wiki/lfre/lightkeeper/images/warnings.png) ![](https://raw.githubusercontent.com/wiki/lfre/lightkeeper/images/failures.png)\n---\n## It works with:\n\n_Any Github Check Run, Deployment or Status, including:_\n\n![](http",
+    "readme_keyword_hits": {
+      "NSE": 5
+    }
+  },
+  {
+    "repo": "hemenkapadia/getbhavcopy",
+    "founderClaim": "bhavcopy fetcher; license to verify",
+    "license_spdx": null,
+    "license_name": null,
+    "stars": 121,
+    "pushed_at": "2020-01-07T08:36:49Z",
+    "archived": false,
+    "description": "Free NSE and BSE data downloader",
+    "default_branch": "master",
+    "html_url": "https://github.com/hemenkapadia/getbhavcopy"
+  },
+  {
+    "repo": "NayakwadiS/NSE-Neuron",
+    "founderClaim": "forecasting/signals; buy-or-sell rule candidate",
+    "license_spdx": "MIT",
+    "license_name": "MIT License",
+    "stars": 22,
+    "pushed_at": "2026-09-16T04:40:19Z",
+    "archived": false,
+    "description": "🧠 AI based Indian stock market prediction with deep learning framework. Predicts 5-day OHLC prices + Buy/Hold/Sell Signals with candlestick visualization.",
+    "default_branch": "main",
+    "html_url": "https://github.com/NayakwadiS/NSE-Neuron",
+    "license_file": "LICENSE",
+    "license_head": "MIT License\n\nCopyright (c) 2026 pythonwadi\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to w",
+    "readme_head": "<div align=\"center\">\n  <img src=\"images/nse-neuron-logo.svg\" alt=\"NSE-Neuron Logo\" width=\"420\"/>\n  <h3>Deep Learning powered Stock Price Forecasting for NSE India</h3>\n\n  ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)\n  ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.5%2B-orange?logo=tensorflow&logoColor=white)\n  ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)\n  ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)\n  [![GitHub stars](https://img.shields.io/github/stars/NayakwadiS/NSE-Neuron?style=social)](https://github.com/NayakwadiS/NSE-Neuron/stargazers)\n</div>\n\n---\n\n![UI Demo](images/demo_UI.gif)\n\n---\n\n## What it does\n\nNSE-Neuron fetches historical data for any NSE-listed stock and uses deep learning to forecast the next **5 trading days** — giving you predicted **High, Low, Close** prices along with **BUY / HOLD / SELL signals** and **market regime detection**.\n\nAvailable as a **web UI** (one-click launch) and a **command-line tool**.\n\n---\n\n## Screenshots\n\n<img src=\"images/Home_screen1.jpg\" width=\"900\"/>\n<img src=\"images/Home_screen2.jpg\" width=\"900\"/>\n<img src=\"im",
+    "readme_keyword_hits": {
+      "NSE": 16,
+      "buy": 1,
+      "sell": 1,
+      "forecast": 3
+    }
+  }
+]

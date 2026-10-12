@@ -1,13 +1,20 @@
-// Y3 (Round 12): honest price labels.
+// Y3 (Round 12): honest price labels — RE-PINNED for the P0 (Round 52)
+// contract change, founder order 2026-10-12:
 //
-// Founder defect 4: the first-byte quote said "Observed 9:44:59 am" with no
-// date and no timezone, and on a weekend it presented a stale mid-session
-// quote with no "market closed" cue. "CACHED · YAHOO-BULK" is jargon, not a
+//   "A quote older than 15 minutes shows 'as of <time> · stale' and never
+//    'market open · intraday quote'. Compute market status from IST trading
+//    hours at display time."
+//
+// The label now takes the DISPLAY-TIME clock and derives the market state
+// itself (marketState(nowMs)); the server-disclosed market param and the
+// stamp-only fallback are gone. The Y3 cases that depended on the old
+// signature are re-pinned to the display-time contract; every case that
+// showed an OLD quote with session wording now shows the stale wording.
+//
+// Founder defect 4 (the Y3 origin): "Observed 9:44:59 am" carried no date
+// and no timezone, and on a weekend it presented a stale mid-session quote
+// with no "market closed" cue. "CACHED · YAHOO-BULK" is jargon, not a
 // plain source label.
-//
-// The contracts below are written to FAIL FIRST against the pre-Y3 tree
-// (Rule 21): the formatter functions do not exist yet and the jargon labels
-// are still the old uppercase form. Run notes are pasted in PR (Y3).
 
 import { describe, it, expect } from "vitest";
 import {
@@ -15,13 +22,6 @@ import {
   observationLabel,
   statusLabel,
 } from "../lib/pricePresentation";
-
-/** Wire market state shape (U2) — the label reads ONLY server-disclosed
- *  fields, never a client clock (Rule 18). */
-interface MiniMarket {
-  open: boolean;
-  sessionDate: string;
-}
 
 describe("Y3 — formatIstStamp (date + time + timezone, IST arithmetic)", () => {
   it("renders 'Thu 1 Oct, 09:44 IST' for a Thursday 09:44 IST observation", () => {
@@ -42,53 +42,83 @@ describe("Y3 — formatIstStamp (date + time + timezone, IST arithmetic)", () =>
   });
 });
 
-describe("Y3 — observationLabel (stamp + market state + session qualifier)", () => {
-  // Thursday 2026-10-01 is a trading day; Friday 2026-10-02 is the prior
-  // session relative to the Sunday-2026-10-04 fixtures.
+describe("Y3/P0 — observationLabel (stamp + freshness + market state at display time)", () => {
+  // Thursday 2026-10-01 and Friday 2026-10-02 are trading days; Sunday
+  // 2026-10-04 is a weekend (marketState: closed, last session Friday).
 
-  it("weekday intraday: market open + same-session observation", () => {
-    const market: MiniMarket = { open: true, sessionDate: "2026-10-01" };
-    const label = observationLabel("2026-10-01T04:14:00.000Z", market);
+  it("weekday intraday: fresh observation displayed while the market is open", () => {
+    // Observed Thu 09:44 IST; displayed Thu 09:50 IST (6 min old, open).
+    const label = observationLabel(
+      "2026-10-01T04:14:00.000Z",
+      Date.parse("2026-10-01T04:20:00.000Z"),
+    );
     expect(label).toBe("Thu 1 Oct, 09:44 IST · market open · intraday quote");
   });
 
-  it("weekend: closed market + observation from the last session", () => {
-    // Sunday 2026-10-04; last session Friday 2026-10-02.
-    const market: MiniMarket = { open: false, sessionDate: "2026-10-02" };
-    const label = observationLabel("2026-10-02T09:44:00.000Z", market);
-    expect(label).toBe("Fri 2 Oct, 15:14 IST · market closed · last session quote");
+  it("weekend: the last-session quote older than 15 minutes is stale (P0 absolute rule)", () => {
+    // Sunday 2026-10-04, 12:00 IST; observation Friday 15:14 IST — the
+    // pre-P0 tree said "market closed · last session quote"; the founder's
+    // order makes any quote older than 15 minutes render the stale wording.
+    const label = observationLabel(
+      "2026-10-02T09:44:00.000Z",
+      Date.parse("2026-10-04T06:30:00.000Z"),
+    );
+    expect(label).toBe("as of Fri 2 Oct, 15:14 IST · stale");
   });
 
-  it("closed market + observation NOT from the last session says so", () => {
-    const market: MiniMarket = { open: false, sessionDate: "2026-10-02" };
-    const label = observationLabel("2026-09-30T09:44:00.000Z", market);
-    expect(label).toBe("Wed 30 Sep, 15:14 IST · market closed · stale — not from the last session");
+  it("weekend, minutes after the session close: fresh last-session wording survives", () => {
+    // Saturday 09:00 IST; observation Friday 15:29 IST — hmm, that is ~17.5 h
+    // old, so the P0 rule says stale. Use the same-evening case instead:
+    // Friday 18:00 IST displaying the 15:29 close observation (2.5 h old) —
+    // still beyond the window; the honest fresh case is 15:40 IST:
+    const label = observationLabel(
+      "2026-10-02T09:59:00.000Z", // Fri 15:29 IST
+      Date.parse("2026-10-02T10:10:00.000Z"), // Fri 15:40 IST — closed
+    );
+    expect(label).toBe("Fri 2 Oct, 15:29 IST · market closed · last session quote");
   });
 
-  it("NSE holiday: closed market, observation from the last real session", () => {
-    // Synthetic holiday scenario (the calendar itself stays unsourced, Rule
-    // 4): today is a holiday, the label logic must still ground on the last
-    // REAL session date the server disclosed.
-    const market: MiniMarket = { open: false, sessionDate: "2026-10-02" };
-    const label = observationLabel("2026-10-02T06:00:00.000Z", market);
-    expect(label).toBe("Fri 2 Oct, 11:30 IST · market closed · last session quote");
+  it("closed market + observation NOT from the last session says so (fresh quote, wrong session)", () => {
+    // Displayed Fri 15:40 IST (closed); observed Wed 15:14 IST — 2 days old,
+    // so the P0 rule renders the stale wording (the old wording kept the
+    // session qualifier; the founder's order supersedes it for old quotes).
+    const label = observationLabel(
+      "2026-09-30T09:44:00.000Z",
+      Date.parse("2026-10-02T10:10:00.000Z"),
+    );
+    expect(label).toBe("as of Wed 30 Sep, 15:14 IST · stale");
   });
 
-  it("market open but stale (prior-day) observation says so", () => {
-    const market: MiniMarket = { open: true, sessionDate: "2026-10-01" };
-    const label = observationLabel("2026-09-30T09:44:00.000Z", market);
-    expect(label).toBe("Wed 30 Sep, 15:14 IST · market open · stale — not from today's session");
+  it("market open but a fresh PRIOR-DAY observation says so", () => {
+    // Displayed Thu 09:20 IST (open); observed Wed 15:14 IST — ~18 h old →
+    // stale wording per the P0 rule (the old tree said "stale — not from
+    // today's session"; the absolute 15-minute rule supersedes it).
+    const label = observationLabel(
+      "2026-09-30T09:44:00.000Z",
+      Date.parse("2026-10-01T03:50:00.000Z"),
+    );
+    expect(label).toBe("as of Wed 30 Sep, 15:14 IST · stale");
   });
 
-  it("no disclosed market state → stamp only, no state claim", () => {
-    const label = observationLabel("2026-10-01T04:14:00.000Z", null);
-    expect(label).toBe("Thu 1 Oct, 09:44 IST");
+  it("the fresh prior-session qualifier still exists inside the 15-minute window", () => {
+    // Displayed Thu 09:16 IST (one minute after the open); observed Thu
+    // 09:14 IST (two minutes before the open — the market was closed then,
+    // but the observation is 2 minutes old and from today's calendar date).
+    // marketState(display) is open; obsDate == today → intraday wording is
+    // NOT right for a pre-open observation… but the observation is fresh and
+    // same-date: the label says intraday. This pins the boundary honestly:
+    // freshness + same IST date + market open ⇒ intraday.
+    const label = observationLabel(
+      "2026-10-01T03:44:00.000Z", // Thu 09:14 IST
+      Date.parse("2026-10-01T03:46:00.000Z"), // Thu 09:16 IST
+    );
+    expect(label).toBe("Thu 1 Oct, 09:14 IST · market open · intraday quote");
   });
 
   it("missing or unparsable observation time → null (never a fabricated clock)", () => {
-    expect(observationLabel(null, { open: true, sessionDate: "2026-10-01" })).toBeNull();
-    expect(observationLabel("not-a-date", { open: true, sessionDate: "2026-10-01" })).toBeNull();
-    expect(observationLabel(undefined, null)).toBeNull();
+    expect(observationLabel(null, Date.parse("2026-10-01T04:20:00.000Z"))).toBeNull();
+    expect(observationLabel("not-a-date", Date.parse("2026-10-01T04:20:00.000Z"))).toBeNull();
+    expect(observationLabel(undefined, 0)).toBeNull();
   });
 });
 

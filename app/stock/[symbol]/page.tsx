@@ -14,7 +14,9 @@ import { buildEliteKnowledgeGraph } from '@/lib/consensus/eliteGraph';
 import { resolveTickerSymbol } from '@/lib/registry/registryAudit'; // T12: ticker aliases (seed-validated server path)
 import { generateStockDetail } from '../../../data/stockDetails';
 import { serveCachedQuotes } from '@/lib/quotePath'; // X3+Y1+Y2: SSR peek — the last cached quotes, read-only
-import { marketState } from '@/lib/marketHours'; // Y3: server-disclosed NSE state for the observation label
+// P0 (Round 52): the observation label derives market state from IST
+// trading hours at display time (lib/pricePresentation) — the page no
+// longer freezes a regen-time market state into the HTML.
 import { isBuildPhase, toPriceData, type InitialPriceEntry } from '@/lib/dashboardSnapshot'; // Y1: builds fetch nothing, hermetically; Y2: peer entries
 import { StockPageClient } from '../../../components/stock/StockPageClient';
 import { InsufficientDataRecord } from '../../../components/stock/InsufficientDataRecord';
@@ -204,11 +206,14 @@ export default async function StockPage({ params }: StockPageProps) {
   const archetypeKey = detectArchetype(stock);
   const parallel = archetypeKey ? HISTORICAL_PARALLELS[archetypeKey] : null;
 
-  // Y3: the NSE session state at regeneration, frozen into the ISR HTML
-  // and refreshed on the next regen (same lifecycle as the quote peek).
-  // Pure computation (no I/O) — safe in the build phase, where it bakes
-  // the build-time state until the first regeneration replaces it.
-  const initialMarket = marketState();
+  // P0 (Round 52): the page's regeneration clock — passed to the price
+  // widget so its first paint is deterministic (SSR and hydration share
+  // the same `now`, Rule 18) and DISCLOSED on the root element
+  // (data-rendered-at) so the post-deploy probe and the demo-path spec can
+  // assert the served prerender is no more than 15 minutes old. Pure
+  // computation (no I/O) — safe in the build phase, where it bakes the
+  // build time until the first regeneration replaces it.
+  const renderedAtMs = Date.now();
 
   return (
     <NamespaceProvider ns={{ stock: stockNs, chart, kg, rishiGrid }}>
@@ -221,7 +226,7 @@ export default async function StockPage({ params }: StockPageProps) {
         eliteGraph={eliteGraph}
         initialQuote={initialQuote}
         initialPeerPrices={initialPeerPrices}
-        initialMarket={initialMarket}
+        renderedAtMs={renderedAtMs}
         parallel={parallel}
       />
       {/* P0-1: the council is verdict content — suppressed on seed data. */}

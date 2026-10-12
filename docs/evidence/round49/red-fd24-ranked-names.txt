@@ -1,0 +1,4 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected [ …(8) ] to deeply equal []
+AssertionError: expected '{\n  "common": {\n    "loading": "Loa…' to contain '"topBuySignals": "Top Ranked"'
+      Tests  2 failed | 4 passed (6)

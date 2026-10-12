@@ -507,8 +507,8 @@
     "oemLabel": "OPM",
     "sections": {
       "stockOfTheDay": "இன்றைய பங்கு",
-      "topBuySignals": "சிறந்த தரவரிசை",
-      "shortRadar": "சீர்கேடு ரேடார்",
+      "topBuySignals": "முதன்மை வாங்கல் சிக்னல்கள்",
+      "shortRadar": "குறுகிய ரேடார்",
       "cryptocurrency": "க்ரிப்டோகரன்சி",
       "allMarkets": "அனைத்து சந்தைகள்"
     },

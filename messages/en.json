@@ -509,8 +509,8 @@
     "oemLabel": "OPM",
     "sections": {
       "stockOfTheDay": "Stock of the Day",
-      "topBuySignals": "Top Ranked",
-      "shortRadar": "Deterioration Radar",
+      "topBuySignals": "Top Buy Signals",
+      "shortRadar": "Short Radar",
       "cryptocurrency": "Cryptocurrency",
       "allMarkets": "All Markets"
     },
@@ -521,7 +521,7 @@
       "exploreBtn": "Explore All Rishis"
     },
     "rankingsDisabled": "Ranked picks are disabled",
-    "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Ranked, Deterioration Radar) are switched off. Everything else — market data where available, the stock list, chat — keeps working.",
+    "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Everything else — market data where available, the stock list, chat — keeps working.",
     "rankingsAwaiting": "Rankings are on — nothing qualifies yet",
     "rankingsAwaitingNote": "Rankings are enabled, but no record currently qualifies for a ranked pick — the exchange-data licence is pending, so no consensus exists yet. The ranked widgets appear the moment a record qualifies; no seed-derived ranking is shown."
   },

@@ -28,7 +28,7 @@ const FEATURES = [
   {
     href:  "/stocks",
     icon:  "🔴",
-    title: "Deterioration Radar",
+    title: "Short Radar",
     desc:  "The Rishi deterioration model identifies structurally weak candidates with high conviction.",
     tag:   "Deterioration Screen",
     color: "#EF4444",

@@ -56,6 +56,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import {
   CANONICAL_PERSONAS,
   MARKETING_PERSONAS,
@@ -197,6 +198,42 @@ describe("RISHI-COUNT — one concept, one number: the roster is 21 everywhere i
         /20 legendary/i.test(src),
         `${file} still claims 20 legendary investors`,
       ).toBe(false);
+    }
+  });
+
+  it("RULES-3 (straggler sweep): every HARDCODED count claim carries the canonical wording or the display-sense 21 — no stale 7/19/20 anywhere", () => {
+    // The /chat hero (a hardcoded string, not a locale key) carries the
+    // canonical sentence verbatim.
+    const hero = readFileSync("components/chat/ChatClient.tsx", "utf8");
+    expect(hero).toContain(CANONICAL_RISHI_COUNT);
+    // Route metadata follows the FD-28 convention: display-sense surfaces
+    // (chat, rishis) say 21 legendary investors, like layout + manifest.
+    for (const file of ["app/chat/page.tsx", "app/rishis/layout.tsx"]) {
+      const src = readFileSync(file, "utf8");
+      expect(
+        src.includes("21 legendary investors"),
+        `${file} must describe 21 legendary investors (display sense)`,
+      ).toBe(true);
+      expect(
+        /\b(7|19|20) legendary/i.test(src),
+        `${file} still carries a stale legendary-investors count`,
+      ).toBe(false);
+    }
+    // The F&O radar card's Rishi-panel tag counts the panel (21), never
+    // the stale 7.
+    expect(readFileSync("app/fno/page.tsx", "utf8")).toContain('"21 Rishis"');
+    // Zero-scan with a bite (C5): the pre-fix tree matched all three
+    // patterns — 'with 7 legendary', 'from 20 legendary', 'tag: "7 Rishis"'.
+    for (const dir of ["app", "components"]) {
+      let out = "";
+      try {
+        out = execFileSync("git", ["grep", "-nE", "with [0-9]+ legendary|of [0-9]+ legendary investors|\"[0-9]+ Rishis\"", "--", dir], { encoding: "utf8" });
+      } catch { /* git grep exits 1 on zero hits — the passing case */ }
+      const offenders = out
+        .split("\n")
+        .filter(Boolean)
+        .filter((l) => !/:\s*\/\//.test(l) && !/21 Rishis: 20 scored/.test(l) && !/"21 Rishis"/.test(l) && !/21 legendary/.test(l));
+      expect(offenders, `hardcoded count claims outside the canonical forms:\n${offenders.join("\n")}`).toEqual([]);
     }
   });
 

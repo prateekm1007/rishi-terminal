@@ -12,7 +12,7 @@ const FEATURES = [
     icon:  "🧘",
     title: "Rishi Advisor",
     desc:  "Options strategy education with contextual framework reads from the Rishi panel (AI simulations).",
-    tag:   "7 Rishis",
+    tag:   "21 Rishis",
     color: "#8B5CF6",
   },
   {

@@ -65,7 +65,7 @@ const KnowledgeGraphView  = dynamic(() => import('./KnowledgeGraphView').then(m 
 interface Props {
   stock: Stock;
   /** Server-sanitized consensus — carries the FULL verdict set (free
-   *  access: every visitor receives every verdict in the RSC payload). */
+   *  access: every visitor receives it whole in the RSC payload). */
   consensus: SanitizedConsensus;
   detail: any;
   /** N1: server-computed seed-baseline resolution (live overlay happens in
@@ -108,7 +108,7 @@ export function StockPageClient({ stock, consensus, detail, resolved, qvpsDual, 
   const verdicts: RishiScore[] = consensus.verdicts;
   const graph: EliteKnowledgeGraph | null = eliteGraph;
   // Round-46 P0-1 (founder audit 2026-10-11: "Seed rows show no verdict"):
-  // every verdict surface on this page — consensus hero, QVPS tile, top
+  // each verdict surface on this page — consensus hero, QVPS tile, top
   // scores, wisdom tab, knowledge graph, sidebar scores — renders ONLY
   // when the record's dataQuality allows verdicts (live | delayed). On
   // seed data the page shows the honest no-verdict record instead; the

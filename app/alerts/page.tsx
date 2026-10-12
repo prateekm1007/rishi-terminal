@@ -51,7 +51,7 @@ export default function AlertsPage() {
   const marketState = aggregatePresentationState(marketEntries);
   const marketLabel = marketEntries.length > 0 ? aggregateMarketLabel(marketEntries) : null;
 
-  // Check alerts against live prices
+  // Check alerts against the price overlay (live where labelled)
   useEffect(() => {
     if (Object.keys(prices).length === 0) return;
     const triggered = checkAlerts(alerts, prices);

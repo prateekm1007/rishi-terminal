@@ -11,7 +11,7 @@ import { checkRateLimit } from '@/lib/rateLimit';
  * free; Portfolio Lab works without sign-in): per-Rishi verdicts are served
  * ONLY from this server route, to EVERY caller.
  *
- * - The response contains EVERY verdict — the tier-visibility slice is
+ * - The response carries the full verdict set — the tier-visibility slice is
  *   gone. There is no locked remainder to tease or upsell.
  * - The same full verdict set is public on every stock page RSC, so this
  *   route gates nothing confidential; the per-IP rate limit below is

@@ -224,7 +224,7 @@
     "deepDive": "গভীর বিশ্লেষণ"
   },
   "pricing": {
-    "breadcrumb": "জ্ঞান স্তর",
+    "breadcrumb": "মূল্য নির্ধারণ",
     "free": {
       "title": "Free — No Tiers, No Checkout",
       "subtitle": "Every feature on Rishi Terminal is free — all Rishis, AI chat, the screener, portfolio tools and market data where available. No tiers, no subscriptions, no checkout.",
@@ -235,7 +235,7 @@
       "aiChat": "AI Rishi chat with per-answer grounding provenance",
       "screener": "Full screener with every filter and field",
       "portfolio": "Portfolio, watchlist and lab analytics",
-      "knowledgeGraph": "Knowledge graphs and council tension views",
+      "knowledgeGraph": "Stock and macro knowledge graphs (bulls-vs-bears views)",
       "livePrices": "Delayed equity quotes and live crypto/FX where labelled LIVE",
       "signUpNote": "Sign-in is optional — it only persists your own data. Not investment advice; educational tool only."
     }
@@ -563,7 +563,6 @@
     "noBullishMacro": "কোনো বুলিশ ম্যাক্রো সংকেত নেই",
     "noBearishMacro": "কোনো বেয়ারিশ ম্যাক্রো সংকেত নেই",
     "unavailable": "জ্ঞান গ্রাফ অনুপলব্ধ",
-    "elite": "এলিট জ্ঞান গ্রাফ",
     "consensusArchitecture": "ঐকমত্য আর্কিটেকচার"
   },
   "overview": {

@@ -187,7 +187,7 @@ export default function HoldingsTab({ rows }: Props) {
           {/* Add button */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              {loading ? 'Fetching live prices...' : `${holdings.length} position${holdings.length !== 1 ? 's' : ''}`}
+              {loading ? 'Fetching prices…' : `${holdings.length} position${holdings.length !== 1 ? 's' : ''}`}
             </div>
             <button onClick={() => setShowAdd(!showAdd)} style={btnGold}>
               {showAdd ? '✕ Cancel' : '+ Add Position'}

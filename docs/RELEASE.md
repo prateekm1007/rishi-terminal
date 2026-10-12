@@ -399,3 +399,40 @@ retry-sporadically protocol stood down unused.
   drains, then the round-49 live probes run against the deployed SHA
   (/api/version, the RELIANCE seed-leak probe, the News nav + empty state,
   the FD-22 awaiting panel).
+
+### 2026-10-12 (round 49, continued) — the tenth-exhaustion debt CLEARED by the #372 deployment; #376 landed
+
+- **The debt cleared itself the RESP-1 way (one batched deploy).** The
+  #372 merge (7682263, 21:31:11Z) auto-fired a deployment — `post-deploy-
+  smoke` (event `deployment_success`) completed SUCCESS at 21:32:45Z, and
+  `GET /api/version` served sha `7682263…` when probed at 02:08Z (before
+  any later merge). Production therefore went 16cd0a9 → 7682263 in ONE
+  deployment carrying the whole debt queue (#346, #353, #354, #359, #360,
+  #372, #373, #375): the quota window drained as B-26 predicted (the
+  counter expires on oldest-event age, not a fixed clock), and the armed
+  sporadic-retry loop was never needed (sandbox background processes do
+  not survive tool-call boundaries — the round-45 finding — so no retry
+  ever fired; the auto-deploy path did all the work).
+- **The #372 merge exposed a smoke flake, fixed as #376.** The push-CI on
+  7682263 failed `Playwright smoke` (run 38176708451): a strict-mode
+  violation in `test/smoke/b1-panel-removed.spec.ts` — the NO-VERDICT
+  record resolved to 2 elements (one in `<main>`, one in React's off-main
+  hidden streaming-completion container) on a contended runner. Diagnosis,
+  reproduction matrix (~250 local loads, never duplicated) and the
+  main-scoped-locator fix: PR #376 + `docs/evidence/round49/
+  b1-smoke-streaming-race.md`. #376 merged through the merge-guard at
+  02:50Z (all six gates green; cadence 320.1 min honored) → merge commit
+  aab1eb1d; deployed (post-deploy-smoke SUCCESS 02:53:06Z); production
+  serves aab1eb1d (verified: `GET /api/version` → aab1eb1d…); the push-CI
+  on aab1eb1d is ALL GREEN including `Live content smoke (production)`.
+- **Merge-queue state at this entry (for the next session):** the round-49
+  implementing PRs are rebased onto aab1eb1d and pushed — #369 (FD-23,
+  f98c77b), #370 (FD-24, e7d514d), #371 (FD-26, 2d4dd30), #361 (FD-15,
+  9ffa540, incl. the #346-pin re-anchor and the ratchet re-measured to
+  264 on the union). Their first CI runs aborted at the C8 cadence step
+  (pushed inside the 02:50Z window — by design; lint/tsc/tests never
+  ran, branch hygiene passed). The pattern per PR: at the open window,
+  re-run the failed quality job (the cadence verdict then passes), wait
+  for the five checks, merge through the guard, rebase the next PR onto
+  the moved tip. One production-relevant merge per window; docs-only
+  merges ride free.

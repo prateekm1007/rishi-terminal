@@ -88,9 +88,16 @@ describe("P0-8 — unbacked live claims removed; News stays in the nav (RESP-2)"
     const footer = read("components/ui/LegalDisclaimer.tsx");
     expect(footer).toContain("live quotes from CoinGecko where labelled LIVE");
     const en = read("messages/en.json");
-    // the news route keeps its honest LIVE-RSS label (the feed is real:
-    // production probe 2026-10-11 returned 223 fresh RSS items)
-    expect(en).toContain("LIVE RSS");
+    // Round 53 (DELIV-4 item 5): the old "LIVE RSS" pin was STALE — the
+    // news.liveRss key never had a renderer (grep of app/components/lib:
+    // zero references; its only production appearance was the inert i18n
+    // ns payload embedded in flight data, not a rendered label). The key
+    // is deleted per rule 17 (dead code), pinned by the copyAudit
+    // dead-keys-for-every-locale family. The honest liveness control for
+    // the feed — which IS real (production probe 2026-10-11 returned 223
+    // fresh RSS items) — is the auto-refresh disclosure:
+    expect(en).toContain("Auto-refreshes every 5 minutes");
+    expect(en).not.toContain("\"liveRss\"");
   });
 
   it("the /news metadata no longer claims 'live news'", () => {

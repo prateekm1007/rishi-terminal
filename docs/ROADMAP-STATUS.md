@@ -402,3 +402,8 @@ quoted verbatim; the date is the directive's receipt date, 2026-10-12).
   confirm the 11 Oct delegation in writing." No written confirmation of the delegation exists,
   so the revert is implemented by PR #359 (the 11 Oct record, which quotes the round-48 order)
   and no further change happens without the founder's dated, written confirmation.
+- **Rishi count — FOUNDER DECISION NEEDED (the coder does not choose).** Founder's
+  question (12 Oct): "Rishi count: 20 scored, or 21 with Chanos chat-only?" Verified code
+  state (origin/main): SCORER_REGISTRY holds exactly 20 scorers (TOTAL_RISHIS = 20, no Chanos
+  scorer); the display registry holds 21 ranked personas (Chanos carries rank Master, chat-only);
+  docs/methodology carries no Chanos framework doc. Nothing changes until the founder answers.

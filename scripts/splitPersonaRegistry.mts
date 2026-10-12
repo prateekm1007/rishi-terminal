@@ -12,8 +12,8 @@ import { CANONICAL_PERSONAS } from "../lib/chat/registry";
 
 const CLIENT_SAFE_KEYS = [
   "id", "name", "fullName", "emoji", "color", "rank",
-  "philosophy", "label", "bio", "formula", "bestFor", "quote",
-  "famousPicks", "category", "origin",
+  "philosophy", "label", "bio", "formula", "bestFor",
+  "famousPicks", "category", "origin", "chatOnly",
 ] as const;
 
 type Display = Record<string, unknown>;
@@ -53,7 +53,11 @@ export type PersonaDisplay = {
   bio?: string;
   formula?: string;
   bestFor?: string[];
-  quote?: string;
+  // P0-7 (round 47): the quote field is REMOVED — no attributed
+  // quotations of real persons render anywhere (founder order).
+  // Rishi decision (founder, 12 Oct 2026): chanos-only flag, projected
+  // so the roster can mark the chat-only card without touching authority.
+  chatOnly?: boolean;
   famousPicks?: string[];
   category?: string;
   origin?: string;

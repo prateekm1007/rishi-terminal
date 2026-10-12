@@ -39,6 +39,9 @@ export interface Persona {
   formula: string;
   bestFor: string[];
   famousPicks: string[];
+  /** Rishi decision (founder, 12 Oct 2026): true only for the chat-only
+   *  persona (chanos) — projected from the registry, never authored here. */
+  chatOnly?: boolean;
 }
 
 function toCard(p: PersonaDisplay): Persona {
@@ -55,6 +58,7 @@ function toCard(p: PersonaDisplay): Persona {
     formula: p.formula ?? '',
     bestFor: p.bestFor ?? [],
     famousPicks: p.famousPicks ?? [],
+    chatOnly: p.chatOnly ?? false,
   };
 }
 

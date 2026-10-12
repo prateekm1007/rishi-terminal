@@ -26,6 +26,9 @@ export type PersonaDisplay = {
   bestFor?: string[];
   // P0-7 (round 47): the quote field is REMOVED — no attributed
   // quotations of real persons render anywhere (founder order).
+  // Rishi decision (founder, 12 Oct 2026): chanos-only flag, projected
+  // so the roster can mark the chat-only card without touching authority.
+  chatOnly?: boolean;
   famousPicks?: string[];
   category?: string;
   origin?: string;
@@ -488,7 +491,8 @@ export const PERSONA_DISPLAY: PersonaDisplay[] =
       "Enron (short)"
     ],
     "category": "Stock",
-    "origin": "Global"
+    "origin": "Global",
+    "chatOnly": true
   },
   {
     "id": "soros",

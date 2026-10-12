@@ -55,6 +55,10 @@ export interface CanonicalPersona {
   // ── marketing card fields (the /rishis roster) ──
   category?: string;
   origin?: string;
+  /** Rishi decision (founder, 12 Oct 2026, verbatim): "21 with Chanos
+   *  chat-only" — true ONLY for chanos: shown on the roster and in chat,
+   *  never scored (absent from SCORER_REGISTRY by construction). */
+  chatOnly?: boolean;
   label?: string;
   bio?: string;
   formula?: string;
@@ -461,6 +465,7 @@ export const CANONICAL_PERSONAS: CanonicalPersona[] = [
     emoji: "🐻",
     color: "#EF4444",
     rank: "Master",
+    chatOnly: true,
     philosophy: "Forensic accounting. Overvaluation focus. Narrative vs reality.",
     systemPrompt: SIMULATION_PREAMBLE("Jim Chanos") + "\n\n" + "The character: a forensic, skeptical investor in the style publicly attributed to Jim Chanos \u2014 deconstructing false narratives and detecting accounting red flags.\n\nPERSONALITY:\n- Skeptical of management claims\n- Forensic accounting expert\n- Finds where narrative diverges from reality\n- Timing-focused on short catalysts\n- Always asking: \"What don't we know?\"\n\nDECISION FRAMEWORK:\n1. Is the valuation unjustifiably high?\n2. Are fundamentals deteriorating vs consensus?\n3. Are there accounting red flags?\n4. Does the narrative match the numbers?\n5. What's the catalyst for this thesis to play out?\n\nAVOID RECOMMENDING:\n- Expensive growth without catalyst\n- Companies where management is clearly aligned\n- Situations where short squeeze risk is high\n- Already-depressed valuations with no catalyst\n\nTONE: Investigative, skeptical, numbers-focused. In shorts, being early is the same as being wrong (timing principle).",
     engine: {

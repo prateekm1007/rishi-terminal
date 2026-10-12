@@ -27,9 +27,12 @@ const IntelligenceDrawer = dynamic(
 
 interface Props {
   rows: ScreenerPickerRow[];
+  /** FD-13: the seed-residual marks (pipe-joined symbols), computed
+   * server-side over the full dataset. */
+  residuals?: { boilerplate: string; mktcapArtifact: string };
 }
 
-export function ScreenerClient({ rows }: Props) {
+export function ScreenerClient({ rows, residuals }: Props) {
   const { t, locale } = useLanguage();
   const [activePreset, setActivePreset] = useState<string | null>(null);
   // X3-05: custom-expression results (server-evaluated). Null = the
@@ -182,7 +185,7 @@ export function ScreenerClient({ rows }: Props) {
 
       <div style={{ maxWidth: 1400, margin: '0 auto', padding: '32px 24px' }}>
         <SeedDataBanner suffix="all fundamentals on this page are illustrative placeholders" />
-        <StockTable stocks={filteredStocks} onOpenIntelligence={setIntelligenceSubject} />
+        <StockTable stocks={filteredStocks} onOpenIntelligence={setIntelligenceSubject} residuals={residuals} />
       </div>
 
       {intelligenceSubject && (

@@ -8,6 +8,8 @@
 // the product surface name changed (founder directive 6, 2026-10-06).
 import { getSlimIndex } from '@/lib/scoring/slimIndex';
 import { toScreenerRows } from '@/lib/transport/slimWire';
+import { seedResidualMarks } from '@/lib/seedResiduals';
+import { STOCKS } from '@/data/stocks';
 import { ScreenerClient } from '@/components/screener/ScreenerClient';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { screener } from '@/messages/en.json';
@@ -34,9 +36,15 @@ export default function StocksPage() {
   // shape) and remain assignable (API routes keep their paths — internal
   // transport, not the product surface).
   const rows = toScreenerRows(getSlimIndex());
+  // FD-13 (founder directive 2026-10-11: "label or hide the boilerplate
+  // rows and market-cap artifacts"): the residual marks are computed
+  // SERVER-side over the full dataset and handed to the table as ONE
+  // compact prop — the wire contract is untouched, and the labels keep
+  // the data visible (the reversible choice the directive allows).
+  const residuals = seedResidualMarks(Object.values(STOCKS));
   return (
     <NamespaceProvider ns={{ screener }}>
-      <ScreenerClient rows={rows} />
+      <ScreenerClient rows={rows} residuals={residuals} />
     </NamespaceProvider>
   );
 }

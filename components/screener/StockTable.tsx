@@ -19,6 +19,12 @@ import { IntelligenceBadge } from '@/components/screener/IntelligenceBadge';
 
 interface Props {
   stocks: ScreenerPickerRow[];
+  /** FD-13 (founder directive 2026-10-11: "label or hide the boilerplate
+   *  rows and market-cap artifacts"): the seed-residual marks as
+   *  pipe-joined symbol lists, computed server-side over the full
+   *  dataset (the slim rows do not carry ocf/rev/sh/np, so the table
+   *  cannot derive them). Optional — absent means no chips render. */
+  residuals?: { boilerplate: string; mktcapArtifact: string };
   /** INT-D2: opening a row's intelligence drawer. The badge is a
    *  presentational affordance — the table itself imports NO
    *  intelligence module and fetches NOTHING (the ONE intelligence
@@ -63,7 +69,7 @@ function scoreSourced(consensus: number | null): Sourced<number> {
   return { value: consensus, source: "seed", asOf: null };
 }
 
-export function StockTable({ stocks, onOpenIntelligence }: Props) {
+export function StockTable({ stocks, onOpenIntelligence, residuals }: Props) {
   const dark = true;
 
   const [search, setSearch] = useState("");
@@ -72,6 +78,12 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
   const [sortDesc, setSortDesc] = useState(true);
 
   const stockSymbols = useMemo(() => stocks.map(s => s.symbol), [stocks]);
+
+  // FD-13: the seed-residual sets (from the server-computed marks).
+  const residualSets = useMemo(() => ({
+    boilerplate: new Set((residuals?.boilerplate ?? "").split("|").filter(Boolean)),
+    mktcapArtifact: new Set((residuals?.mktcapArtifact ?? "").split("|").filter(Boolean)),
+  }), [residuals?.boilerplate, residuals?.mktcapArtifact]);
 
   const { prices } = useLivePrices(stockSymbols);
 
@@ -283,6 +295,27 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
                       title={stock.dataQuality === "missing" ? "No usable data — no verdict produced" : "Illustrative seed data — no verdict produced"}
                     >
                       {stock.dataQuality === "missing" ? "no data · no verdict" : "seed · no verdict"}
+                    </span>
+                  )}
+                  {residualSets.boilerplate.has(stock.symbol) && (
+                    /* FD-13 (founder directive 2026-10-11): the row's
+                       ocf/rev/sh/np tuple is byte-identical to other rows'
+                       — placeholder financials, labelled not hidden. */
+                    <span
+                      className="ml-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-mono font-semibold border bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700"
+                      title="Boilerplate seed row — the financials (OCF, revenue, shares, net profit) are byte-identical placeholder values shared with other rows; they are not observations."
+                    >
+                      boilerplate financials
+                    </span>
+                  )}
+                  {residualSets.mktcapArtifact.has(stock.symbol) && (
+                    /* FD-13: mktcap === price x 1000 exactly — the
+                       ingestion-era placeholder arithmetic, labelled. */
+                    <span
+                      className="ml-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-mono font-semibold border bg-orange-50 text-orange-700 border-orange-300 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700"
+                      title="Market-cap placeholder — the recorded market cap is exactly the seed price x 1000 (the ingestion-era arithmetic), not an observation."
+                    >
+                      mktcap placeholder
                     </span>
                   )}
                 </td>

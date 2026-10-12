@@ -65,3 +65,24 @@ $ npx tsc --noEmit
 The fix scopes the positive control to `getByRole('main')` — the pin's
 contract (the honest record is VISIBLE in the page's main content) is
 unchanged; the absence pins and the no-thesis-fetch pin are untouched.
+
+## Second strike (same race, different spec) — 2026-10-12T04:12:33Z
+
+FD-23's CI smoke run (head 7ac47f8, run 38202502924) failed the SAME race
+in `test/smoke/dossier-removed.spec.ts:37` — the one remaining bare strict
+locator on the NO-VERDICT text (b1 was main-scoped by #376; smoke.spec.ts:53
+uses `.first()`):
+
+```
+1) test/smoke/dossier-removed.spec.ts:23:7 › INT-D3 REMOVED ... › the honest no-verdict record renders
+    Error: strict mode violation: getByText('NO VERDICT — ILLUSTRATIVE SEED DATA') resolved to 2 elements:
+        1) <div>NO VERDICT — ILLUSTRATIVE SEED DATA</div> aka getByRole('main').getByText('NO VERDICT — ILLUSTRATIVE')
+        2) <div>NO VERDICT — ILLUSTRATIVE SEED DATA</div> aka getByText('NO VERDICT — ILLUSTRATIVE').nth(1)
+  53 passed (1.5m)
+```
+
+Identical signature (one element in `<main>`, one off-main in the hidden
+streaming-completion container). The b1 spec (already main-scoped) PASSED
+in the same run — the fix class is validated by the control. The dossier
+spec is now main-scoped the same way (NOVERDICT-SMOKE-SCOPE); this was the
+last bare instance (grep-verified: smoke.spec.ts:53 uses `.first()`).

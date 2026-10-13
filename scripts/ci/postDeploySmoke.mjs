@@ -187,9 +187,33 @@ function runLivenessSelfTest() {
     `<div>NO VERDICT - ILLUSTRATIVE SEED DATA</div>` +
     `<div>Key Metrics</div><div>Peer Comparison</div>` +
     `<div>Licence pending — no verdict: the Ashish Kacholia Whale Small-Cap Hunter framework is price-based: its verdict reads price-derived inputs</div>` +
-    `<div>Mon 12 Oct, 15:15 IST · market closed · last session quote</div>`;
+    `<div>as of Mon 12 Oct, 15:15 IST (server render)</div>`;
   const NEW_RISHIS =
     `<div role="region" aria-label="Rishi list"><span>MASTER</span><span>CHAT-ONLY</span></div><div>Rishi Terminal</div>`;
+  // Round 55 (founder order 13 Oct): the RELIANCE fixtures — the founder's
+  // "Add the RELIANCE HTML captured above as a fixture". Two classes,
+  // each labelled by provenance (C1 — never fabricate):
+  //   1. RELIANCE_CAPTURED — REAL bytes: the observation-line context
+  //      captured from production /stock/RELIANCE on 12 Oct 14:53:35Z
+  //      (20:23 IST, evening) — the pre-#399 build baking a market state
+  //      into the server render. The exact bytes survive in the session
+  //      capture logs/reliance-live.html; the line is used verbatim.
+  //   2. RELIANCE_NIGHT_CLASS — the founder's documented night sighting
+  //      ("market open" at night): a page regenerated during market
+  //      hours froze "market open · intraday quote" and served it all
+  //      evening. The wording is the round-54 record's; the founder's
+  //      exact capture bytes are not in this session's possession, so
+  //      this fixture is the sighting CLASS, not a byte-for-byte copy.
+  const RELIANCE_CAPTURED =
+    `<h1>RELIANCE</h1><div>Rishi Terminal</div>` +
+    `<div>NO VERDICT - ILLUSTRATIVE SEED DATA</div>` +
+    `<div>Key Metrics</div><div>Peer Comparison</div>` +
+    `<div>t:14px;height:28px;overflow:hidden">Mon 12 Oct, 15:15 IST · market closed · last session quote</div>`;
+  const RELIANCE_NIGHT_CLASS =
+    `<h1>RELIANCE</h1><div>Rishi Terminal</div>` +
+    `<div>NO VERDICT - ILLUSTRATIVE SEED DATA</div>` +
+    `<div>Key Metrics</div><div>Peer Comparison</div>` +
+    `<div>Mon 12 Oct, 14:58 IST · market open · intraday quote</div>`;
   // Fixed display moments (deterministic, never wall-clock): Monday open
   // session 15:20 IST, Monday evening 18:58 IST (closed).
   const OPEN_NOW = Date.parse("2026-10-12T09:50:00.000Z");
@@ -206,46 +230,50 @@ function runLivenessSelfTest() {
   expect("old rishis lacks CHAT-ONLY", hasChatOnlyTag(OLD_RISHIS), false);
   expect("old stock mislabels a stale quote as intraday",
     checkRenderFreshness(OLD_STOCK, OPEN_NOW).ok, false);
-  // The current render passes (closed-session leg + fresh-open leg).
+  // The current render passes: the stateless first byte (the round-53
+  // server-render disclosure) in both sessions.
   expect("new stock carries the licence marker", hasLicenceLabel(NEW_STOCK), true);
   expect("new rishis carries CHAT-ONLY", hasChatOnlyTag(NEW_RISHIS), true);
-  expect("new stock closed-session label passes",
+  expect("new stock closed-session stateless line passes",
     checkRenderFreshness(NEW_STOCK, CLOSED_NOW).ok, true);
-  expect("fresh intraday passes",
-    checkRenderFreshness(
-      NEW_STOCK.replace("15:15 IST · market closed · last session quote",
-        "15:15 IST · market open · intraday quote"),
-      Date.parse("2026-10-12T09:50:00.000Z"),
-    ).ok, true);
+  expect("new stock open-session fresh stateless line passes",
+    checkRenderFreshness(NEW_STOCK, OPEN_NOW).ok, true);
+  // Round 55 (founder order 13 Oct, words verbatim: "The server HTML must
+  // never state a market state"): the RELIANCE fixtures. RELIANCE_CAPTURED
+  // carries the REAL bytes captured from production /stock/RELIANCE on
+  // 12 Oct 14:53:35Z (20:23 IST — the pre-#399 build baking a market
+  // state into the server render; the capture survives in the session
+  // logs). It fails EVEN THOUGH its baked state ("market closed") happens
+  // to match the night clock: the same render served at 09:00 the next
+  // morning is wrong, and a prerender cannot know the read time.
+  // RELIANCE_NIGHT_CLASS is the founder's documented night sighting
+  // ("market open" at night — a market-hours regen frozen into the HTML;
+  // the wording per the round-54 record, not a byte-for-byte copy).
+  expect("RELIANCE capture (real bytes, 12 Oct 14:53Z): the baked 'market closed' state fails at night (coincidentally correct is still wrong)",
+    checkRenderFreshness(RELIANCE_CAPTURED, CLOSED_NOW).ok, false);
+  expect("RELIANCE capture: the baked state fails in an OPEN session too (the absolute rule)",
+    checkRenderFreshness(RELIANCE_CAPTURED, OPEN_NOW).ok, false);
+  expect("RELIANCE night-sighting class ('market open' baked at regen): fails at night",
+    checkRenderFreshness(RELIANCE_NIGHT_CLASS, CLOSED_NOW).ok, false);
+  expect("RELIANCE night-sighting class: fails in an open session (a fresh-intraday AGE cannot rescue a baked STATE)",
+    checkRenderFreshness(RELIANCE_NIGHT_CLASS, OPEN_NOW).ok, false);
   // Round 53 (founder item 3): the absolute open-session rule and the
   // server-render forms.
   expect("open session: a stale HONESTLY-LABELLED line fails (the 13:28-all-afternoon class)",
     checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+      NEW_STOCK.replace("as of Mon 12 Oct, 15:15 IST (server render)",
         "as of Mon 12 Oct, 09:45 IST · stale"),
       OPEN_NOW,
     ).ok, false);
   expect("open session: a >15-min-old server-render line fails, whatever the wording",
     checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+      NEW_STOCK.replace("as of Mon 12 Oct, 15:15 IST (server render)",
         "as of Mon 12 Oct, 09:45 IST (server render)"),
       OPEN_NOW,
     ).ok, false);
-  expect("open session: a fresh server-render line passes",
-    checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
-        "as of Mon 12 Oct, 15:15 IST (server render)"),
-      OPEN_NOW,
-    ).ok, true);
-  expect("closed session: the server-render disclosure passes (no market claim in the first byte)",
-    checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
-        "as of Mon 12 Oct, 15:15 IST (server render)"),
-      CLOSED_NOW,
-    ).ok, true);
   expect("closed session: a stale server-render line passes (age is honest when the market is closed)",
     checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+      NEW_STOCK.replace("as of Mon 12 Oct, 15:15 IST (server render)",
         "as of Mon 12 Oct, 09:45 IST · stale (server render)"),
       CLOSED_NOW,
     ).ok, true);
@@ -257,13 +285,13 @@ function runLivenessSelfTest() {
   const HOLIDAY_NOW = Date.parse("2026-10-20T04:30:00.000Z"); // 10:00 IST, Dussehra
   expect("sourced NSE holiday (Dussehra): a stale line passes (probe and site agree the market is closed)",
     checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+      NEW_STOCK.replace("as of Mon 12 Oct, 15:15 IST (server render)",
         "as of Mon 12 Oct, 09:45 IST · stale (server render)"),
       HOLIDAY_NOW,
     ).ok, true);
-  expect("sourced NSE holiday: an intraday claim still fails (closed is closed, whatever the calendar says)",
+  expect("sourced NSE holiday: a baked market state still fails (closed is closed, whatever the calendar says)",
     checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+      NEW_STOCK.replace("as of Mon 12 Oct, 15:15 IST (server render)",
         "as of Mon 12 Oct, 09:45 IST · market open · intraday quote"),
       HOLIDAY_NOW,
     ).ok, false);
@@ -274,19 +302,23 @@ function runLivenessSelfTest() {
   // "stale" (an honest-form marker). Both wordings must now FAIL at night.
   expect("closed session: a 'market open · stale' wording fails (the round-54 gap, leg 1)",
     checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+      NEW_STOCK.replace("as of Mon 12 Oct, 15:15 IST (server render)",
         "Mon 12 Oct, 11:00 IST · market open · stale — not from today's session"),
       CLOSED_NOW,
     ).ok, false);
   expect("closed session: a 'market open · stale — not from the last session' wording fails (the round-54 gap, leg 2)",
     checkRenderFreshness(
-      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+      NEW_STOCK.replace("as of Mon 12 Oct, 15:15 IST (server render)",
         "Mon 12 Oct, 11:00 IST · market open · stale — not from the last session"),
       CLOSED_NOW,
     ).ok, false);
   // Positive control (B-18): the state rule does not overfire — the
-  // "fresh intraday passes" leg above proves an OPEN session still passes
-  // a market-open line on age alone (the open branch judges AGE only).
+  // stateless server-render forms pass in BOTH sessions (the legs above:
+  // "new stock closed-session stateless line passes" and "new stock
+  // open-session fresh stateless line passes"). The old "fresh intraday
+  // passes" control is retired: a market-open line in SERVER HTML is
+  // exactly what the round-55 rule bans — the client computes the state
+  // at display time, so no fetched byte ever legitimately carries one.
   const green = results.every(Boolean);
   console.log(green ? "self-test GREEN: liveness checks discriminate old vs current" : "self-test RED");
   process.exit(green ? 0 : 1);
@@ -625,25 +657,44 @@ function parseObsLines(html, nowMs) {
  *    the quote pipeline is not delivering during the session — the
  *    13:28-all-afternoon class — and the founder's rule is absolute. (The
  *    label WORDING honesty is pinned separately by the label unit tests.)
- *  - session closed → NO "market open" claim in ANY observation line,
- *    whatever its suffix. Round 54 (founder order 13 Oct 2026, item #400,
- *    words verbatim: "Its bare-cache leg must read the rendered observation
- *    line and check 'market open' against IST time."): the pre-fix check
- *    only failed the exact phrase "market open · intraday quote", so the
- *    label builder's OTHER open-session wording — "market open · stale —
- *    not from today's session" — passed a night probe because the line
- *    also contains "stale" (an honest-form marker). The state claim
- *    itself ("market open") is what the IST clock falsifies, so THAT is
- *    what the check reads now.
- *  - the honest closed-session forms are closed-labelled lines,
- *    stale-disclosed lines, and the round-53 server-render disclosure
- *    "(server render)" (the first byte carries no market claim by design —
- *    the client computes it after hydration).
+ *  - Round 55 (founder order 13 Oct, words verbatim: "The server HTML must
+ *    never state a market state"): ANY "market open" or "market closed"
+ *    wording in a fetched observation line fails, in EITHER session. The
+ *    #414 rule (fail "market open" against the IST clock at night) left
+ *    the coincidentally-correct class passing: a "market closed · last
+ *    session quote" render baked after the close was green at night and
+ *    wrong at 09:00 the next morning. A prerender cannot know the read
+ *    time, so the first byte states NO market condition at all — the
+ *    client computes it at display time after hydration.
+ *  - the honest first-byte forms are stale-disclosed lines and the
+ *    round-53 server-render disclosure "(server render)".
  *  - no observation line → pass-skipped (unavailable pages expose no
  *    age to check). */
 function checkRenderFreshness(html, nowMs) {
   const lines = parseObsLines(html, nowMs);
   if (lines.length === 0) return { ok: true, skipped: true, detail: "no observation line (unavailable page) — nothing to age" };
+  // Round 55 (founder order 13 Oct, words verbatim: "The server HTML must
+  // never state a market state"): a prerender cannot know when the viewer
+  // will read it — ANY market-state wording baked into the fetched server
+  // HTML fails, open or closed, coincidentally right or wrong. This
+  // closes the class the #414 fix left open: a "market closed · last
+  // session quote" line baked after the close passed a night probe (the
+  // state happened to match the clock) even though the same render served
+  // at 09:00 the next morning would have been wrong. The client computes
+  // the state at display time after hydration — never the first byte.
+  // Both real pre-#399 classes fail here: the founder's night sighting
+  // ("market open · intraday quote", frozen from a market-hours regen)
+  // and the 12 Oct 14:53Z RELIANCE capture ("market closed · last
+  // session quote").
+  const stateLine = lines.find(
+    (l) => l.tail.includes("market open") || l.tail.includes("market closed"),
+  );
+  if (stateLine) {
+    return {
+      ok: false,
+      detail: `server HTML states a market state — the server render must never state one, whatever the clock says — "${stateLine.tail.slice(0, 72)}"`,
+    };
+  }
   const open = istOpenAt(nowMs);
   if (open) {
     for (const l of lines) {
@@ -657,21 +708,14 @@ function checkRenderFreshness(html, nowMs) {
     }
     return { ok: true, detail: "open session: every observation line is ≤15 minutes old" };
   }
-  // Round 54: the market-STATE claim is checked against the IST clock —
-  // any "market open" wording in a closed session fails, intraday or not.
-  const marketOpenLine = lines.find((l) => l.tail.includes("market open"));
-  if (marketOpenLine) {
-    return {
-      ok: false,
-      detail: `closed session: a "market open" claim still renders (the IST clock says closed) — "${marketOpenLine.tail.slice(0, 72)}"`,
-    };
-  }
+  // Closed session: with states banned outright, the honest first-byte
+  // forms are the staleness marker and the server-render disclosure.
   const honest = lines.some((l) =>
-    l.tail.includes("market closed") || l.tail.includes("stale") || l.tail.includes("server render"));
+    l.tail.includes("stale") || l.tail.includes("server render"));
   return {
     ok: honest,
     detail: honest
-      ? "closed session: honest label forms (closed / stale / server-render disclosed)"
+      ? "closed session: honest label forms (stale / server-render disclosed)"
       : "closed session: no honest label form found",
   };
 }

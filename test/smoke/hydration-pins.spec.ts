@@ -5,10 +5,14 @@
  *
  *   1. /news — headlines render hydrated (>= 1 story card with its
  *      accessible name) or the page shows an EXPLICIT honest empty state
- *      ("Live news is unavailable right now." / "No stories available
- *      right now."). The SSR markdown shows none of this (the list is
- *      client-fetched), so the browser-level settled state is the only
- *      honest proof.
+ *      ("The news feed is unavailable right now." / "No headlines yet."
+ *      — the round-53 DELIV-4 wording; the pre-round-53 texts
+ *      "Live news is unavailable right now." / "No stories available
+ *      right now." no longer render and were re-pinned in round 54
+ *      after the #404 copy change left this locator matching nothing).
+ *      The list is client-fetched, so the browser-level settled state is
+ *      the honest proof (the first-byte empty state is pinned in
+ *      ssr-content.spec.ts).
  *   2. /pulse FX — the currency section settles to labelled live FX
  *      (>= 1 pair card) or the honest unavailable state; the transient
  *      "Fetching live currency rates…" is never terminal. The
@@ -31,10 +35,11 @@ test.describe("HYD-PINS — hydrated-or-empty states on the real surfaces", () =
 
     // The settled-state poll (the R43 atomic discipline): the page shows
     // EITHER >= 1 hydrated story card (a role=link card with an accessible
-    // name — the headline) OR one of the two explicit honest empty texts.
-    // A skeleton grid alone never satisfies the poll.
+    // name — the headline) OR one of the two explicit honest empty texts
+    // (the round-53 DELIV-4 wordings). A skeleton grid alone never
+    // satisfies the poll.
     const honestEmpty = page.getByText(
-      /Live news is unavailable right now\.|No stories available right now\./,
+      /The news feed is unavailable right now\.|No headlines yet\./,
     );
     await expect(async () => {
       const cards = await page.locator("main [role='link'][aria-label]").count();

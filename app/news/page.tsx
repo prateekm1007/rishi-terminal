@@ -144,7 +144,16 @@ export default function NewsPage() {
   const [category, setCategory]   = useState<Category>('All');
   const [saved, setSaved]         = useState<string[]>([]);
   const [liveNews, setLiveNews]   = useState<LiveNewsItem[]>([]);
-  const [loading, setLoading]     = useState(true);
+  // Round 54 (founder order 2026-10-13): the first byte renders the
+  // HONEST empty state, never a loading affordance — "No headlines yet."
+  // is server-rendered (a no-JS viewer sees the honest state, not a
+  // skeleton that never resolves). The skeleton appears only for
+  // post-hydration fetches (the X3 pattern from LivePriceWidget), so the
+  // SSR render and the hydration-matching first paint stay byte-identical
+  // (Rule 18): both start from loading=false and the mount effect flips
+  // it once an actual fetch is in flight.
+  const [loading, setLoading]     = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
 
   const tickerSymbols = useMemo(() => ['BTC', 'ETH', 'GOLD', 'SILVER', 'WTI', 'RELIANCE', 'TCS', 'INFY'], []);
@@ -193,7 +202,14 @@ export default function NewsPage() {
       } catch {
         if (!cancelled) setFetchFailed(true);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          // Round 54: once a fetch has COMPLETED, the empty state may
+          // claim what it verified — "the feed is empty". Before that
+          // (the first byte), the honest subline discloses the loading
+          // mechanism instead of asserting a feed state.
+          setHasFetched(true);
+        }
       }
     }
 
@@ -275,6 +291,25 @@ export default function NewsPage() {
       </div>
 
       <div className="content-wrapper" style={{ padding: '28px 24px' }}>
+        {/* Region filter (round 54, founder order 2026-10-13: "Remove
+            'region and category filters' from the meta description, or
+            build the filters" — BUILT): the region state and the
+            region-aware filtering already existed with no UI to reach
+            them; these pills complete the promised filter. Counts are
+            whole-feed per region (the category row below is
+            region-aware, matching the list). */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 8, WebkitOverflowScrolling: 'touch' }}>
+          {(['ALL', 'INDIA', 'GLOBAL', 'CRYPTO', 'SPORTS'] as Region[]).map(r => {
+            const count = r === 'ALL' ? allNews.length : allNews.filter(n => n.region === r).length;
+            if (r !== 'ALL' && count === 0) return null;
+            return (
+              <button key={r} onClick={() => setRegion(r)} aria-pressed={region === r} style={{ padding: '8px 16px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontWeight: region === r ? 700 : 500, border: region === r ? '1px solid rgba(245,158,11,0.5)' : '1px solid rgba(30,41,59,0.8)', background: region === r ? 'rgba(245,158,11,0.15)' : 'rgba(17,24,39,0.85)', color: region === r ? '#F59E0B' : 'var(--text-muted)', fontFamily: 'monospace', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                {r} {count > 0 && <span style={{ opacity: 0.6 }}>({count})</span>}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Filters */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 8, WebkitOverflowScrolling: 'touch' }}>
           {categories.map(c => {
@@ -293,7 +328,9 @@ export default function NewsPage() {
           })}
         </div>
 
-        {/* Skeleton while loading with no cache */}
+        {/* Skeleton while loading with no cache — post-hydration only
+            (round 54): the first byte renders the honest empty state
+            below; the skeleton appears once a real fetch is in flight. */}
         {loading && liveNews.length === 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
             {Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
@@ -323,9 +360,19 @@ export default function NewsPage() {
         {!loading && liveNews.length === 0 && !fetchFailed && (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
             {/* RESP-2 (founder order 2026-10-12): the founder named the
-                empty state's exact words — "No headlines yet". */}
+                empty state's exact words — "No headlines yet". Round 54:
+                this state is the SERVER-rendered first byte (no-JS
+                viewers see it verbatim); the subline is state-honest —
+                before a fetch completes it discloses the loading
+                mechanism (never claiming a feed state it has not
+                checked); after a fetch returns zero items it states the
+                verified emptiness. */}
             <div style={{ fontSize: 14, marginBottom: 8 }}>No headlines yet.</div>
-            <div style={{ fontSize: 12 }}>The feed is empty right now — nothing is shown rather than made-up headlines.</div>
+            <div style={{ fontSize: 12 }}>
+              {hasFetched
+                ? 'The feed is empty right now — nothing is shown rather than made-up headlines.'
+                : 'Headlines load in the browser — nothing is shown rather than made-up headlines.'}
+            </div>
           </div>
         )}
 

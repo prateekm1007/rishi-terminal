@@ -1,0 +1,28 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /home/claude/work/rishi
+
+ ❯ test/universeVerified.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/universeVerified.test.ts [ test/universeVerified.test.ts ]
+Error: Cannot find module '../lib/securityMaster/verifiedUniverse' imported from /home/claude/work/rishi/test/universeVerified.test.ts
+ ❯ test/universeVerified.test.ts:14:1
+     12| import path from "node:path";
+     13| import crypto from "node:crypto";
+     14| import {
+       | ^
+     15|   classifyUniverse,
+     16|   type OfficialListingRow,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  13:03:22
+   Duration  418ms (transform 57%, setup 26%, worker 16%, environment 1%)
+

@@ -1,0 +1,130 @@
+productSymbol,status,productName,candidateOfficialSymbol,evidenceSource,reason
+ABCL,CANDIDATE_RENAME,Aditya Birla Capital,ABCAPITAL,seed:placeholder:2026-10-01,ISIN INE674K01013 links to official symbol ABCAPITAL (source seed:placeholder:2026-10-01)
+ADANITRANS,UNMATCHED,Adani Transmission,,,no official symbol and no ISIN link in symbol history
+AKZOINDIA,UNMATCHED,Akzo Nobel,,,no official symbol and no ISIN link in symbol history
+ALLSEC,UNMATCHED,Allsec Technologies,,,no official symbol and no ISIN link in symbol history
+AMARAJABAT,CANDIDATE_RENAME,Amara Raja Energy & Mobility,ARE&M,seed:placeholder:2026-10-01,ISIN INE885A01032 links to official symbol ARE&M (source seed:placeholder:2026-10-01)
+ANDHRAPET,UNMATCHED,Andhra Petrochemicals,,,no official symbol and no ISIN link in symbol history
+AROHAN,UNMATCHED,Arohan Financial Services,,,no official symbol and no ISIN link in symbol history
+BAJAJAUTO,UNMATCHED,Bajaj Auto,,,no official symbol and no ISIN link in symbol history
+BALAJI,CANDIDATE_RENAME,Balaji Amines,BALAMINES,seed:placeholder:2026-10-01,ISIN INE050E01027 links to official symbol BALAMINES (source seed:placeholder:2026-10-01)
+BALLARPUR,UNMATCHED,Ballarpur Industries,,,no official symbol and no ISIN link in symbol history
+BANSWARA,CANDIDATE_RENAME,Banswara Syntex,BANSWRAS,seed:placeholder:2026-10-01,ISIN INE629D01020 links to official symbol BANSWRAS (source seed:placeholder:2026-10-01)
+BARBEQUE,UNMATCHED,Barbeque Nation,,,no official symbol and no ISIN link in symbol history
+BECKBIES,UNMATCHED,Beckbies Infrastructure,,,no official symbol and no ISIN link in symbol history
+BNRSEC,CANDIDATE_RENAME,Bannari Amman Sugars,BANARISUG,seed:placeholder:2026-10-01,ISIN INE459A01010 links to official symbol BANARISUG (source seed:placeholder:2026-10-01)
+BOOKMYSHOW,UNMATCHED,BookMyShow,,,no official symbol and no ISIN link in symbol history
+BRAHMASTRA,UNMATCHED,Brahmastra Realty,,,no official symbol and no ISIN link in symbol history
+BRAINBEES,UNMATCHED,FirstCry,,,no official symbol and no ISIN link in symbol history
+CENTURYTEX,UNMATCHED,Century Textiles,,,no official symbol and no ISIN link in symbol history
+COSMOFILMS,UNMATCHED,Cosmo Films,,,no official symbol and no ISIN link in symbol history
+DFL,UNMATCHED,DFL,,,no official symbol and no ISIN link in symbol history
+DISH,CANDIDATE_RENAME,Dish TV India,DISHTV,seed:placeholder:2026-10-01,ISIN INE836F01026 links to official symbol DISHTV (source seed:placeholder:2026-10-01)
+DRONE,UNMATCHED,Dronacharya Aerial,,,no official symbol and no ISIN link in symbol history
+DRONEAERO,UNMATCHED,Drone Aero,,,no official symbol and no ISIN link in symbol history
+ELDECO,CANDIDATE_RENAME,Eldeco Housing,ELDEHSG,seed:placeholder:2026-10-01,ISIN INE668G01021 links to official symbol ELDEHSG (source seed:placeholder:2026-10-01)
+ELID,CANDIDATE_RENAME,Electronics Mart India,EMIL,seed:placeholder:2026-10-01,ISIN INE02YR01019 links to official symbol EMIL (source seed:placeholder:2026-10-01)
+ETHOS,CANDIDATE_RENAME,Ethos,ETHOSLTD,seed:placeholder:2026-10-01,ISIN INE04TZ01018 links to official symbol ETHOSLTD (source seed:placeholder:2026-10-01)
+EXCELCROP,CANDIDATE_RENAME,Excel Industries,EXCELINDUS,seed:placeholder:2026-10-01,ISIN INE369A01029 links to official symbol EXCELINDUS (source seed:placeholder:2026-10-01)
+GANESHHOUC,CANDIDATE_RENAME,Ganesh Housing Corporation,GANESHHOU,seed:placeholder:2026-10-01,ISIN INE460C01014 links to official symbol GANESHHOU (source seed:placeholder:2026-10-01)
+GARWARE,CANDIDATE_RENAME,Garware Technical Fibres,GARFIBRES,seed:placeholder:2026-10-01,ISIN INE276A01018 links to official symbol GARFIBRES (source seed:placeholder:2026-10-01)
+GATI,UNMATCHED,Gati Limited,,,no official symbol and no ISIN link in symbol history
+GEPIL,CANDIDATE_RENAME,GE Power India,GVPIL,seed:placeholder:2026-10-01,ISIN INE878A01011 links to official symbol GVPIL (source seed:placeholder:2026-10-01)
+GMDC,CANDIDATE_RENAME,Gujarat Mineral,GMDCLTD,seed:placeholder:2026-10-01,ISIN INE131A01031 links to official symbol GMDCLTD (source seed:placeholder:2026-10-01)
+GSPL,CANDIDATE_RENAME,GSPL,GSPLTRANS,seed:placeholder:2026-10-01,ISIN INE1TUG01013 links to official symbol GSPLTRANS (source seed:placeholder:2026-10-01)
+GUJGASLTD,UNMATCHED,Gujarat Gas,,,no official symbol and no ISIN link in symbol history
+HBLPOWER,UNMATCHED,HBL Power Systems,,,no official symbol and no ISIN link in symbol history
+HEG,CANDIDATE_RENAME,HEG Limited,HEGAM,seed:placeholder:2026-10-01,ISIN INE545A01024 links to official symbol HEGAM (source seed:placeholder:2026-10-01)
+HIL,UNMATCHED,HIL Limited,,,no official symbol and no ISIN link in symbol history
+HLE,CANDIDATE_RENAME,HLE Glascoat,HLEGLAS,seed:placeholder:2026-10-01,ISIN INE461D01028 links to official symbol HLEGLAS (source seed:placeholder:2026-10-01)
+HOVS,UNMATCHED,HOV Services,,,no official symbol and no ISIN link in symbol history
+IBREALEST,UNMATCHED,Indiabulls Real Estate,,,no official symbol and no ISIN link in symbol history
+IBULHSGFIN,UNMATCHED,Indiabulls Housing,,,no official symbol and no ISIN link in symbol history
+IIFLSEC,UNMATCHED,IIFL Securities,,,no official symbol and no ISIN link in symbol history
+INDIGRID,UNMATCHED,IndiGrid InvIT,,,no official symbol and no ISIN link in symbol history
+INFIBEAM,UNMATCHED,Infibeam,,,no official symbol and no ISIN link in symbol history
+ISEC,UNMATCHED,ICICI Securities,,,no official symbol and no ISIN link in symbol history
+ISMT,UNMATCHED,ISMT Limited,,,no official symbol and no ISIN link in symbol history
+ITDCEM,UNMATCHED,ITD Cementation,,,no official symbol and no ISIN link in symbol history
+JAYASWAL,CANDIDATE_RENAME,Jayaswal Neco,JAYNECOIND,seed:placeholder:2026-10-01,ISIN INE854B01010 links to official symbol JAYNECOIND (source seed:placeholder:2026-10-01)
+JBCHEMPHAR,UNMATCHED,JB Chemicals,,,no official symbol and no ISIN link in symbol history
+JINDALALKM,CANDIDATE_RENAME,Jindal Poly Films,JINDALPOLY,seed:placeholder:2026-10-01,ISIN INE197D01010 links to official symbol JINDALPOLY (source seed:placeholder:2026-10-01)
+JMCPROJECT,UNMATCHED,JMC Projects,,,no official symbol and no ISIN link in symbol history
+JMTAUTOLTD,UNMATCHED,JMT Auto,,,no official symbol and no ISIN link in symbol history
+JPASSOCIAT,UNMATCHED,Jaiprakash Associates,,,no official symbol and no ISIN link in symbol history
+JSLHISAR,UNMATCHED,Jindal Stainless (Hisar),,,no official symbol and no ISIN link in symbol history
+JUBILANT,CANDIDATE_RENAME,Jubilant Pharmova,JUBLPHARMA,seed:placeholder:2026-10-01,ISIN INE700A01033 links to official symbol JUBLPHARMA (source seed:placeholder:2026-10-01)
+JUPITER,CANDIDATE_RENAME,Jupiter Life Line,JLHL,seed:placeholder:2026-10-01,ISIN INE682M01020 links to official symbol JLHL (source seed:placeholder:2026-10-01)
+KALPATPOWR,UNMATCHED,Kalpataru Power,,,no official symbol and no ISIN link in symbol history
+KALYANAJW,UNMATCHED,Kalyan Jewelers,,,no official symbol and no ISIN link in symbol history
+KAPIL,UNMATCHED,Kapil Raj Feeds (Avanti),,,no official symbol and no ISIN link in symbol history
+KHOOBSURAT,UNMATCHED,Khoobsurat,,,no official symbol and no ISIN link in symbol history
+KNESL,UNMATCHED,KNL,,,no official symbol and no ISIN link in symbol history
+KSOLV,UNMATCHED,K Somaiya Chemicals,,,no official symbol and no ISIN link in symbol history
+KWALITY,UNMATCHED,Kwality,,,no official symbol and no ISIN link in symbol history
+LAXMIMACH,UNMATCHED,Lakshmi Machine Works,,,no official symbol and no ISIN link in symbol history
+LINGFORGER,UNMATCHED,Ling Forger,,,no official symbol and no ISIN link in symbol history
+LTIM,UNMATCHED,LTIMindtree,,,no official symbol and no ISIN link in symbol history
+MAGADHSUGAR,CANDIDATE_RENAME,Magadh Sugar,MAGADSUGAR,seed:placeholder:2026-10-01,ISIN INE347W01011 links to official symbol MAGADSUGAR (source seed:placeholder:2026-10-01)
+MAHINDCIE,UNMATCHED,Mahindra CIE Automotive,,,no official symbol and no ISIN link in symbol history
+MAHINDRAHOL,CANDIDATE_RENAME,Mahindra Holidays,MHRIL,seed:placeholder:2026-10-01,ISIN INE998I01010 links to official symbol MHRIL (source seed:placeholder:2026-10-01)
+MANGCHEFER,UNMATCHED,Mangalore Chemicals,,,no official symbol and no ISIN link in symbol history
+MEDHA,UNMATCHED,Medha Servo Drives,,,no official symbol and no ISIN link in symbol history
+MEGH,CANDIDATE_RENAME,Meghmani Organics,MOL,seed:placeholder:2026-10-01,ISIN INE0CT101020 links to official symbol MOL (source seed:placeholder:2026-10-01)
+MENON,CANDIDATE_RENAME,Menon Bearings,MENONBE,seed:placeholder:2026-10-01,ISIN INE071D01033 links to official symbol MENONBE (source seed:placeholder:2026-10-01)
+MERCK,UNMATCHED,Merck Limited,,,no official symbol and no ISIN link in symbol history
+MUKAND,CANDIDATE_RENAME,Mukand Limited,MUKANDLTD,seed:placeholder:2026-10-01,ISIN INE304A01026 links to official symbol MUKANDLTD (source seed:placeholder:2026-10-01)
+NAINITAL,UNMATCHED,Nainital Bank,,,no official symbol and no ISIN link in symbol history
+NAMINDIA,UNMATCHED,Nippon Life India AMC,,,no official symbol and no ISIN link in symbol history
+NARAYANA,CANDIDATE_RENAME,Narayana Hrudayalaya,NH,seed:placeholder:2026-10-01,ISIN INE410P01011 links to official symbol NH (source seed:placeholder:2026-10-01)
+NECTARLIF,CANDIDATE_RENAME,Nectar Lifesciences,NECLIFE,seed:placeholder:2026-10-01,ISIN INE023H01027 links to official symbol NECLIFE (source seed:placeholder:2026-10-01)
+NSDL,UNMATCHED,NSDL,,,no official symbol and no ISIN link in symbol history
+PENNAR,CANDIDATE_RENAME,Pennar Industries,PENIND,seed:placeholder:2026-10-01,ISIN INE932A01024 links to official symbol PENIND (source seed:placeholder:2026-10-01)
+PRICOL,CANDIDATE_RENAME,Pricol,PRICOLLTD,seed:placeholder:2026-10-01,ISIN INE726V01018 links to official symbol PRICOLLTD (source seed:placeholder:2026-10-01)
+PRISMJOHNSN,CANDIDATE_RENAME,Prism Johnson,PRSMJOHNSN,seed:placeholder:2026-10-01,ISIN INE010A01011 links to official symbol PRSMJOHNSN (source seed:placeholder:2026-10-01)
+PTON,UNMATCHED,Prime Textiles,,,no official symbol and no ISIN link in symbol history
+PUDUMJEE,CANDIDATE_RENAME,Pudumjee Paper,PDMJEPAPER,seed:placeholder:2026-10-01,ISIN INE865T01018 links to official symbol PDMJEPAPER (source seed:placeholder:2026-10-01)
+PURAVANKARA,CANDIDATE_RENAME,Puravankara,PURVA,seed:placeholder:2026-10-01,ISIN INE323I01011 links to official symbol PURVA (source seed:placeholder:2026-10-01)
+RADICON,UNMATCHED,Radicon,,,no official symbol and no ISIN link in symbol history
+RANEENGINE,UNMATCHED,Rane Engine Valve,,,no official symbol and no ISIN link in symbol history
+RAYMOND2,CANDIDATE_RENAME,Raymond Realty,RAYMONDREL,seed:placeholder:2026-10-01,ISIN INE1SY401010 links to official symbol RAYMONDREL (source seed:placeholder:2026-10-01)
+REVATHI,CANDIDATE_RENAME,Revathi Equipment,RVTH,seed:placeholder:2026-10-01,ISIN INE0DAB01012 links to official symbol RVTH (source seed:placeholder:2026-10-01)
+RMCL,UNMATCHED,Raj Petro Specialities,,,no official symbol and no ISIN link in symbol history
+RRVL,UNMATCHED,Reliance Retail Ventures,,,no official symbol and no ISIN link in symbol history
+SADHAV,UNMATCHED,Sadhav Shipping,,,no official symbol and no ISIN link in symbol history
+SANDUMANG,CANDIDATE_RENAME,Sandur Manganese,SANDUMA,seed:placeholder:2026-10-01,ISIN INE149K01016 links to official symbol SANDUMA (source seed:placeholder:2026-10-01)
+SANGAM,CANDIDATE_RENAME,Sangam India,SANGAMIND,seed:placeholder:2026-10-01,ISIN INE495C01010 links to official symbol SANGAMIND (source seed:placeholder:2026-10-01)
+SELAN,UNMATCHED,Selan Exploration Technology,,,no official symbol and no ISIN link in symbol history
+SEQUENT,UNMATCHED,Sequent Scientific,,,no official symbol and no ISIN link in symbol history
+SESAPAPER,CANDIDATE_RENAME,Seshasayee Paper,SESHAPAPER,seed:placeholder:2026-10-01,ISIN INE630A01024 links to official symbol SESHAPAPER (source seed:placeholder:2026-10-01)
+SHREYASHIP,UNMATCHED,Shreyas Shipping,,,no official symbol and no ISIN link in symbol history
+SHRIRAMEPC,UNMATCHED,Shriram EPC,,,no official symbol and no ISIN link in symbol history
+SIYARAM,CANDIDATE_RENAME,Siyaram Silk Mills,SIYSIL,seed:placeholder:2026-10-01,ISIN INE076B01028 links to official symbol SIYSIL (source seed:placeholder:2026-10-01)
+SMLISUZU,UNMATCHED,SML Isuzu,,,no official symbol and no ISIN link in symbol history
+SOMDISTILL,CANDIDATE_RENAME,Som Distilleries,SDBL,seed:placeholder:2026-10-01,ISIN INE480C01038 links to official symbol SDBL (source seed:placeholder:2026-10-01)
+SONATASOFT,CANDIDATE_RENAME,Sonata Software,SONATSOFTW,seed:placeholder:2026-10-01,ISIN INE269A01021 links to official symbol SONATSOFTW (source seed:placeholder:2026-10-01)
+SPICEJET,UNMATCHED,SpiceJet,,,no official symbol and no ISIN link in symbol history
+SRTRANSFIN,CANDIDATE_RENAME,Shriram Finance,SHRIRAMFIN,seed:placeholder:2026-10-01,ISIN INE721A01047 links to official symbol SHRIRAMFIN (source seed:placeholder:2026-10-01)
+STRIDES,CANDIDATE_RENAME,Strides Pharma,STAR,seed:placeholder:2026-10-01,ISIN INE939A01011 links to official symbol STAR (source seed:placeholder:2026-10-01)
+SUVENPHAR,UNMATCHED,Suven Pharma,,,no official symbol and no ISIN link in symbol history
+SUVIDHAFIN,UNMATCHED,Suvidha Finance,,,no official symbol and no ISIN link in symbol history
+SWANENERGY,UNMATCHED,Swan Energy,,,no official symbol and no ISIN link in symbol history
+TATAMOTORS,UNMATCHED,Tata Motors,,,no official symbol and no ISIN link in symbol history
+TCNSBRANDS,UNMATCHED,TCNS Clothing,,,no official symbol and no ISIN link in symbol history
+TECHNO,CANDIDATE_RENAME,Techno Electric,TECHNOE,seed:placeholder:2026-10-01,ISIN INE285K01026 links to official symbol TECHNOE (source seed:placeholder:2026-10-01)
+TILAKNAGAR,CANDIDATE_RENAME,Tilaknagar Industries,TI,seed:placeholder:2026-10-01,ISIN INE133E01013 links to official symbol TI (source seed:placeholder:2026-10-01)
+TINPLATE,UNMATCHED,Tinplate Company of India,,,no official symbol and no ISIN link in symbol history
+TIPSIND,UNMATCHED,Tips Industries,,,no official symbol and no ISIN link in symbol history
+TMVFINANCE,UNMATCHED,TMB Bank,,,no official symbol and no ISIN link in symbol history
+UJJIVAN,UNMATCHED,Ujjivan Financial Services,,,no official symbol and no ISIN link in symbol history
+UPDATER,CANDIDATE_RENAME,Updater Services,UDS,seed:placeholder:2026-10-01,ISIN INE851I01011 links to official symbol UDS (source seed:placeholder:2026-10-01)
+VFL,CANDIDATE_RENAME,Viceroy Hotels,VHLTD,seed:placeholder:2026-10-01,ISIN INE048C01025 links to official symbol VHLTD (source seed:placeholder:2026-10-01)
+VIPUL,CANDIDATE_RENAME,Vipul Limited,VIPULLTD,seed:placeholder:2026-10-01,ISIN INE946H01037 links to official symbol VIPULLTD (source seed:placeholder:2026-10-01)
+VRLOG,CANDIDATE_RENAME,VRL Logistics,VRLLOG,seed:placeholder:2026-10-01,ISIN INE366I01010 links to official symbol VRLLOG (source seed:placeholder:2026-10-01)
+WABCO,UNMATCHED,WABCO India,,,no official symbol and no ISIN link in symbol history
+WEBSOL,CANDIDATE_RENAME,Websol Energy,WEBELSOLAR,seed:placeholder:2026-10-01,ISIN INE855C01023 links to official symbol WEBELSOLAR (source seed:placeholder:2026-10-01)
+WELSPUNIND,UNMATCHED,Welspun India,,,no official symbol and no ISIN link in symbol history
+WORTH,CANDIDATE_RENAME,Worth Peripherals,WORTHPERI,seed:placeholder:2026-10-01,ISIN INE196Y01018 links to official symbol WORTHPERI (source seed:placeholder:2026-10-01)
+ZEN,CANDIDATE_RENAME,Zen Technologies,ZENTEC,seed:placeholder:2026-10-01,ISIN INE251B01027 links to official symbol ZENTEC (source seed:placeholder:2026-10-01)
+ZENSAR,CANDIDATE_RENAME,Zensar Technologies,ZENSARTECH,seed:placeholder:2026-10-01,ISIN INE520A01027 links to official symbol ZENSARTECH (source seed:placeholder:2026-10-01)
+ZUARIGLOB,UNMATCHED,Zuari Global,,,no official symbol and no ISIN link in symbol history

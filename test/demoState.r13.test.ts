@@ -51,7 +51,11 @@ describe("R13 — the Today view and the tracking line", () => {
   it("the homepage mounts the honest Today view", () => {
     const page = read("app/page.tsx");
     expect(page).toContain("TodayPanel");
-    expect(page).toContain("<TodayPanel stockOfDay={stockOfDay} />");
+    // LIVE-TODAY (round 56): the mount now also passes the movers
+    // snapshot (the live Top Winners / Top Losers view). The pin moves
+    // WITH the contract — it still bites on the exact mount shape.
+    expect(page).toContain("<TodayPanel stockOfDay={stockOfDay} movers={movers} />");
+    expect(page).toContain("readMoversSnapshot");
   });
 
   it("the TodayPanel is a server component with honest literals (B-18 positive control)", () => {
@@ -69,5 +73,8 @@ describe("R13 — the Today view and the tracking line", () => {
     expect(panel).toContain("{TRACKING_STATUS}");
     // the deterministic IST date renders (rule 18 class: fixed timezone)
     expect(panel).toContain("Asia/Kolkata");
+    // LIVE-TODAY: the movers view mounts inside the panel
+    expect(panel).toContain("MoversPanel");
+    expect(panel).toContain("movers");
   });
 });

@@ -4,19 +4,27 @@ import Link from 'next/link';
 import type { StockOfTheDay } from '@/lib/scoring/rankings';
 import { TRACKING_STATUS } from '@/lib/demoState';
 import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the panel's SOD pick is seed-derived — the mandatory label
+import { MoversPanel } from '@/components/dashboard/MoversPanel'; // LIVE-TODAY: the live Top Winners / Top Losers view
+import type { MoversSnapshot } from '@/lib/movers/types';
 
 /**
- * DEMO-4 (founder order, 2026-10-12): the dashboard's "Today" view with an
- * HONEST empty state. It renders the demo path's starting surface — what
- * exists today and what honestly does not:
+ * DEMO-4 (founder order, 2026-10-12): the dashboard's "Today" view with
+ * an HONEST empty state. LIVE-TODAY (founder order, 2026-10-13): "make
+ * the site live. make sure today page on dashboard is fully working.
+ * Also add top 5 losers and top 5 winner stocks on dashboard. use
+ * Unofficial data scrapers." — the panel now carries the LIVE market
+ * view (the MoversPanel: NSE's movers endpoint / the quote-cache
+ * computation, each row source + as-of stamped) while the parts that
+ * are NOT live yet stay honestly labelled:
  *
- *   - the deterministic IST-date Stock of the Day (when the rankings flag
- *     is on and a verdict-allowed pick exists — U4/P0-1 semantics ride the
- *     prop: the page passes null when there is nothing, and this panel
- *     renders the honest "no pick" state, never a fabricated subject);
+ *   - the deterministic IST-date Stock of the Day (when the rankings
+ *     flag is on and a verdict-allowed pick exists — U4/P0-1 semantics
+ *     ride the prop: the page passes null when there is nothing, and
+ *     this panel renders the honest "no pick" state, never a fabricated
+ *     subject) — still seed-derived, still banner-labelled;
  *   - verdicts produced today: NONE — the record set is seed data (P0-1:
- *     seed rows show no verdict; the count is a literal 0, not a computed
- *     one pretending to be observed);
+ *     seed rows show no verdict; the count is a literal 0, not a
+ *     computed one pretending to be observed);
  *   - news: the honest empty state the founder worded ("No headlines yet"
  *     — the /news surface's own wording, linked);
  *   - forward-return tracking: not started (DEMO-2, lib/demoState — the
@@ -28,7 +36,7 @@ import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the pane
  * page revalidates every 60 s, so the date rotates within a minute of
  * IST midnight).
  */
-export function TodayPanel({ stockOfDay }: { stockOfDay: StockOfTheDay | null }) {
+export function TodayPanel({ stockOfDay, movers }: { stockOfDay: StockOfTheDay | null; movers: MoversSnapshot | null }) {
   const istDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
 
   return (
@@ -47,10 +55,15 @@ export function TodayPanel({ stockOfDay }: { stockOfDay: StockOfTheDay | null })
         <span data-today-date style={{ fontSize: 12, color: "var(--text-muted)" }}>{istDate} IST</span>
       </div>
 
+      {/* LIVE-TODAY: the live market view — Top 5 Winners / Top 5 Losers,
+          every row source + as-of stamped (FD-15 wording), the derivation
+          line disclosing how the list was produced. */}
+      <MoversPanel movers={movers} />
+
       {/* N3: the SOD pick is seed-derived — the same mandatory label the
           ranked trio carries in DashboardTail (a client component rendered
           inside this server tree is fine in Next 16). */}
-      <div style={{ marginTop: 8 }}>
+      <div style={{ marginTop: 14 }}>
         <SeedDataBanner suffix="deterministic daily pick, IST calendar day" />
       </div>
 

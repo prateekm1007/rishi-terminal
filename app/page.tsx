@@ -38,10 +38,11 @@
 import { rankTopBuy, computeShortRadar, pickStockOfTheDay } from '@/lib/scoring/rankings'; // T13: real rankings
 import { resolveStockMetrics, getQvps } from '@/lib/scoring'; // T10: single scoring surface
 import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
-import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
+import { initialPriceSnapshot, isBuildPhase } from '@/lib/dashboardSnapshot';
+import { readMoversSnapshot } from '@/lib/movers/store'; // LIVE-TODAY: the Top Winners / Top Losers snapshot
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
-import { TodayPanel } from '@/components/dashboard/TodayPanel'; // DEMO-4: the honest Today view (server component, zero JS)
+import { TodayPanel } from '@/components/dashboard/TodayPanel'; // DEMO-4 + LIVE-TODAY: the honest Today view (server component, zero JS)
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { dashboard, dashboard2 } from '@/messages/en.json';
 
@@ -91,9 +92,17 @@ export default async function Page() {
     ...(stockOfDay ? [stockOfDay.symbol] : []),
   ]);
 
+  // LIVE-TODAY: the movers snapshot — ONE cheap read of market_movers
+  // (migration 033), the same cache-read class as initialPriceSnapshot:
+  // never a vendor fetch in the render path (the Y1 contract), and the
+  // build phase fetches NOTHING (prerender stays hermetic — the panel
+  // renders its honest not-generated state until the first ISR
+  // regeneration after a warmer tick).
+  const movers = isBuildPhase() ? null : await readMoversSnapshot();
+
   return (
     <NamespaceProvider ns={{ dashboard, dashboard2 }}>
-      <TodayPanel stockOfDay={stockOfDay} />
+      <TodayPanel stockOfDay={stockOfDay} movers={movers} />
       <DashboardClient
         rankingsEnabled={rankings}
         rotatingStocks={rotatingStocks}

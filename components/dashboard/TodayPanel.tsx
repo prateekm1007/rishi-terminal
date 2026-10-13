@@ -1,10 +1,9 @@
 import 'server-only';
 
 import Link from 'next/link';
-import type { StockOfTheDay } from '@/lib/scoring/rankings';
 import { TRACKING_STATUS } from '@/lib/demoState';
-import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the panel's SOD pick is seed-derived — the mandatory label
-import { MoversPanel } from '@/components/dashboard/MoversPanel'; // LIVE-TODAY: the live Top Winners / Top Losers view
+import { MoversPanel } from '@/components/dashboard/MoversPanel'; // LIVE-TODAY: the live Top Winners / Losers / Movers view
+import { livePickFace } from '@/lib/movers/presentation'; // TODAY-FULL: the live Stock of the Day's rendered face
 import type { MoversSnapshot } from '@/lib/movers/types';
 
 /** TODAY-MOVERS: the news state the page hands the panel — the
@@ -21,25 +20,31 @@ export interface TodayLatestNews {
  * an HONEST empty state. LIVE-TODAY (founder order, 2026-10-13): "make
  * the site live. make sure today page on dashboard is fully working.
  * Also add top 5 losers and top 5 winner stocks on dashboard. use
- * Unofficial data scrapers." — the panel now carries the LIVE market
- * view (the MoversPanel: NSE's movers endpoint / the quote-cache
- * computation, each row source + as-of stamped) while the parts that
- * are NOT live yet stay honestly labelled:
+ * Unofficial data scrapers." NSEPERM/TODAY-FULL (founder order,
+ * 2026-10-14: "finish and tune it to world class now that we have
+ * permission … make sure the full today panel is populated on
+ * dashboard") — the panel's rows now render LIVE market state:
  *
- *   - the deterministic IST-date Stock of the Day (when the rankings
- *     flag is on and a verdict-allowed pick exists — U4/P0-1 semantics
- *     ride the prop: the page passes null when there is nothing, and
- *     this panel renders the honest "no pick" state, never a fabricated
- *     subject) — still seed-derived, still banner-labelled;
+ *   - the three movers lists (Winners / Losers / Movers — the
+ *     MoversPanel, NSE's licensed endpoint first, the quote-cache
+ *     computation behind it, each row source + as-of stamped);
+ *   - Stock of the Day: TODAY-FULL — the LIVE pick (the session's
+ *     most-traded stock by value, from the same gated pool, disclosed
+ *     pool size, per-figure provenance). A raw market fact, NOT a
+ *     verdict: no score, no rishi commentary, no advice (P0-1/P0-8
+ *     clean — the same raw-display class as the movers rows). The
+ *     seed-derived verdict-gated pick this row used to render (and its
+ *     N3 banner) is retired HERE only; the ranked trio's own SOD card
+ *     in DashboardTail keeps its honest seed-gated semantics;
  *   - verdicts produced today: NONE — the record set is seed data (P0-1:
  *     seed rows show no verdict; the count is a literal 0, not a
  *     computed one pretending to be observed);
- *   - news: TODAY-MOVERS (founder order, 2026-10-13): the live RSS
- *     aggregation's ACTUAL state (lib/news/server — the ONE source the
- *     /api/news route also serves). The real latest headline (publisher
- *     · age) when the feed returned one; the founder's honest empty
- *     wording ("No headlines yet") when it did not — the row reflects
- *     the feed, never a static claim;
+ *   - news: TODAY-MOVERS: the live RSS aggregation's ACTUAL state
+ *     (lib/news/server — the ONE source the /api/news route also
+ *     serves). The real latest headline (publisher · age) when the feed
+ *     returned one; the founder's honest empty wording ("No headlines
+ *     yet") when it did not — the row reflects the feed, never a
+ *     static claim;
  *   - forward-return tracking: not started (DEMO-2, lib/demoState — the
  *     ONE source, shared with the methodology line).
  *
@@ -50,15 +55,14 @@ export interface TodayLatestNews {
  * IST midnight).
  */
 export function TodayPanel({
-  stockOfDay,
   movers,
   latestNews,
 }: {
-  stockOfDay: StockOfTheDay | null;
   movers: MoversSnapshot | null;
   latestNews: TodayLatestNews | null;
 }) {
   const istDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+  const pick = movers?.pick ? livePickFace(movers.pick) : null;
 
   return (
     <section
@@ -76,34 +80,49 @@ export function TodayPanel({
         <span data-today-date style={{ fontSize: 12, color: "var(--text-muted)" }}>{istDate} IST</span>
       </div>
 
-      {/* LIVE-TODAY: the live market view — Top 5 Winners / Top 5 Losers,
-          every row source + as-of stamped (FD-15 wording), the derivation
-          line disclosing how the list was produced. */}
+      {/* LIVE-TODAY: the live market view — Top 5 Winners / Top 5 Losers /
+          Top 5 Movers, every row source + as-of stamped (FD-15 wording),
+          the derivation line disclosing how the list was produced. */}
       <MoversPanel movers={movers} />
 
-      {/* N3: the SOD pick is seed-derived — the same mandatory label the
-          ranked trio carries in DashboardTail (a client component rendered
-          inside this server tree is fine in Next 16). */}
-      <div style={{ marginTop: 14 }}>
-        <SeedDataBanner suffix="deterministic daily pick, IST calendar day" />
-      </div>
-
-      <div style={{ display: "grid", gap: 8, marginTop: 12, fontSize: 13, lineHeight: 1.6 }}>
-        {stockOfDay ? (
-          <div>
+      <div style={{ display: "grid", gap: 8, marginTop: 14, fontSize: 13, lineHeight: 1.6 }}>
+        {/* TODAY-FULL: the LIVE Stock of the Day — the session's
+            most-traded stock by value. Real market data, disclosed pool
+            and provenance, explicitly NOT a verdict (the ranked trio's
+            seed-gated SOD semantics live in DashboardTail, untouched). */}
+        {pick && movers?.pick ? (
+          <div data-today-sod-row>
             <span style={{ color: "var(--text-secondary)" }}>Stock of the Day: </span>
-            <Link
-              href={`/stock/${stockOfDay.symbol}`}
-              data-today-sod
-              style={{ color: "var(--accent-gold)", textDecoration: "none", fontWeight: 600 }}
+            {pick.href ? (
+              <Link
+                href={pick.href}
+                data-today-sod
+                style={{ color: "var(--accent-gold)", textDecoration: "none", fontWeight: 600 }}
+              >
+                {pick.symbol}
+              </Link>
+            ) : (
+              <span data-today-sod style={{ color: "var(--accent-gold)", fontWeight: 600 }}>
+                {pick.symbol}
+              </span>
+            )}
+            <span style={{ color: "var(--text-muted)" }}>
+              {" — "}
+              {pick.name ?? "untracked symbol"} · {pick.priceText} {pick.changeText} · {pick.turnoverText} traded
+              today — the session&apos;s most-traded stock by value (live market data, not a verdict)
+            </span>
+            <span
+              data-today-sod-attribution
+              style={{ display: "block", fontSize: 10.5, color: "var(--text-muted)" }}
             >
-              {stockOfDay.symbol}
-            </Link>
-            <span style={{ color: "var(--text-muted)" }}> — {stockOfDay.name} (deterministic IST pick)</span>
+              {pick.attribution} · top of {movers.pick.universeObserved} tracked symbols with today&apos;s
+              session data
+            </span>
           </div>
         ) : (
           <div data-today-sod-empty style={{ color: "var(--text-muted)" }}>
-            Stock of the Day: — no verdict-allowed pick exists (rankings find nothing to rank on the current record set)
+            Stock of the Day: — no live pick yet (today&apos;s session has not produced ranked market data;
+            nothing is estimated in the meantime)
           </div>
         )}
 

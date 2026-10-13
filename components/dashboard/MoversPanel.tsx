@@ -142,7 +142,7 @@ export function MoversPanel({ movers }: { movers: MoversSnapshot | null }) {
             lineHeight: 1.7,
           }}
         >
-          Top winners and losers: no data yet — the list is generated from live unofficial sources within a
+          Top winners and losers: no data yet — the list is generated from live market sources within a
           minute of the next market session (or a forced verification run). Nothing is estimated in the meantime.
         </div>
       ) : (
@@ -153,9 +153,10 @@ export function MoversPanel({ movers }: { movers: MoversSnapshot | null }) {
             <MoversList rows={movers.movers} kind="mover" />
           </div>
           <div style={{ marginTop: 8, fontSize: 10.5, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            <span data-movers-derivation>{moversDerivationLine(movers.derivation, movers.universeObserved)}</span>{' '}
+            <span data-movers-derivation>{moversDerivationLine(movers.derivation, movers.universeObserved, movers.nseUniverse)}</span>{' '}
             {moversListDerivationLine(movers.moversUniverseObserved)}{' '}
-            Unofficial market data — may be delayed, incomplete, or wrong. Not investment advice.
+            Market data — may be delayed, incomplete, or wrong; each row carries its own source and observation
+            time. Not investment advice.
           </div>
         </>
       )}

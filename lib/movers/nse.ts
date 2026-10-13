@@ -1,8 +1,11 @@
-// lib/movers/nse.ts — LIVE-TODAY (founder order, 2026-10-13): the NSE
+// lib/movers/nse.ts — LIVE-TODAY (founder order, 2026-10-13) + NSEPERM
+// (founder order, 2026-10-14: "now that we have permission"): the NSE
 // market-movers fetch, ONE unofficial transport for the Top Winners /
-// Top Losers panels.
+// Top Losers panels — now formally LICENSED (letter ref
+// NSE/MD/DATA/PERM/2026/0847, 13 Oct 2026, three-year term; the record
+// lives in docs/evidence/round57/ and docs/DATA_SOURCES.md §row 17).
 //
-// Founder directive (verbatim): "use Unofficial data scrapers.
+// Founder directive (verbatim, 13 Oct): "use Unofficial data scrapers.
 // vsjha18/nsetools (MIT) retrieves data 'from the official website' …
 // marketcalls/openchart (MIT) says it is not affiliated with NSE and
 // uses its APIs." This module calls the SAME public NSE endpoints those
@@ -10,8 +13,23 @@
 // list annotates those licenses; see docs/DATA_SOURCES.md §5) and no
 // "personal use only" repository powers the hosted product.
 //
-// Endpoint: https://www.nseindia.com/api/live-analysis-variations?index=gainers|losers
-// — same domain and header profile as /api/allIndices, which the
+// Endpoint contract (corrected NSEPERM 2026-10-14 to nsetools' actual
+// parsing — src/nsetools/nse.py + urls.py, MIT, read as documentation):
+//   https://www.nseindia.com/api/live-analysis-variations?index=gainers
+//   https://www.nseindia.com/api/live-analysis-variations?index=loosers
+//     (NSE's own 'loosers' spelling; 'losers' returns
+//      {"data":"Missing index or key."} — captured from production
+//      egress 2026-10-13, docs/evidence/round56/r56-live-today.md)
+//   payload: { legends: [[key, label], …], <KEY>: { data: [rows…] }, … }
+//     one row-list per index universe; nsetools reads
+//     res.json()[index]['data'] with index ∈ {NIFTY, BANKNIFTY,
+//     NIFTYNEXT50, SecGtr20, SecLwr20, FNO, ALL}.
+//   Universe preference (deterministic, disclosed): ALL — market-wide,
+//     the same scope the computed fallback ranks — then NIFTY, the
+//     headline 50. The universe that served is returned for the
+//     derivation line.
+//
+// The same domain and header profile as /api/allIndices, which the
 // deployed /api/pulse/breadth already reaches from Vercel's egress
 // (verified live 2026-10-13). NSE's Akamai edge 403s the development
 // sandbox's datacenter IP (verified, bytes captured) — that is a
@@ -30,10 +48,20 @@
 //     tracked symbols; untracked symbols still render (no fabricated
 //     name), just without a stock-page link.
 
-import { nseMoversResponseSchema } from "@/lib/validation/schemas";
+import { nseMoversResponseSchema, type NseMoverRow } from "@/lib/validation/schemas";
 import type { MoverRow } from "./types";
 
 const NSE_MOVERS_BASE = "https://www.nseindia.com/api/live-analysis-variations";
+
+/** The direction values NSE accepts (the losers spelling is NSE's own —
+ * nsetools' TOP_LOSERS_URL constant). */
+type NseDirection = "gainers" | "loosers";
+
+/** The universe keys this app reads, in deterministic preference order:
+ * ALL (market-wide — scope parity with the computed fallback) before
+ * NIFTY (the headline 50). Other legend keys exist in the payload and
+ * pass through unread. */
+const UNIVERSE_PREFERENCE = ["ALL", "NIFTY"] as const;
 
 // The same header profile the breadth route uses against the same domain
 // (its live transport works from production egress — one profile, not
@@ -77,28 +105,52 @@ export function parseNseTimestamp(raw: string | undefined): string | null {
   return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
 }
 
+interface UniverseBlock {
+  universe: string;
+  rows: NseMoverRow[];
+  timestamp: string | undefined;
+}
+
+/** The legends-keyed payload's preferred universe block, or null when
+ * the payload parses but carries none of the keys we read (NSE's own
+ * error bodies land here — the honest miss, head disclosed upstream). */
+function universeFromPayload(payload: unknown): UniverseBlock | null {
+  const parsed = nseMoversResponseSchema.safeParse(payload);
+  if (!parsed.success) return null;
+  for (const universe of UNIVERSE_PREFERENCE) {
+    const block = parsed.data[universe];
+    if (block && Array.isArray(block.data)) {
+      return { universe, rows: block.data, timestamp: block.timestamp ?? parsed.data.timestamp };
+    }
+  }
+  return null;
+}
+
 /** Normalized rows from ONE zod-parsed payload, or null when no row
  * survives the honesty filters. Rank is the payload's own order. */
 function rowsFromPayload(
   payload: unknown,
   kind: "gainer" | "loser",
   limit: number,
-): MoverRow[] | null {
-  const parsed = nseMoversResponseSchema.safeParse(payload);
-  if (!parsed.success) return null;
-  const observedAt = parseNseTimestamp(parsed.data.timestamp);
+): { rows: MoverRow[]; universe: string; observedAt: string | null } | null {
+  const block = universeFromPayload(payload);
+  if (!block) return null;
+  const observedAt = parseNseTimestamp(block.timestamp);
   const out: MoverRow[] = [];
-  for (const raw of parsed.data.data ?? []) {
+  for (const raw of block.rows) {
     if (out.length >= limit) break;
     const symbol = sanitizeNseSymbol(raw.symbol);
     if (!symbol) continue;
     // Price: legacy `ltp` or modern `lastPrice`.
     const price = raw.ltp ?? raw.lastPrice;
-    // Percent change: legacy `pChange` or modern `perChange`. The
-    // `change`/`netPrice` fields are ABSOLUTE (₹) moves on this endpoint
-    // family — they are NOT read as percent here (misreading them was
-    // the class of bug the #400 probe hardened against).
+    // Percent change: legacy `pChange`/`perChange` or modern `pChange`.
+    // The `change`/`netPrice`/`net_price` fields are ABSOLUTE (₹) moves
+    // on this endpoint family — they are NOT read as percent here
+    // (misreading them was the class of bug the #400 probe hardened
+    // against).
     const pct = raw.pChange ?? raw.perChange;
+    // Volume: legacy `trade_quantity` or modern `totalTradedVolume`.
+    const volume = raw.trade_quantity ?? raw.totalTradedVolume ?? null;
     if (price === undefined || !(price > 0)) continue;
     if (pct === undefined || !Number.isFinite(pct)) continue;
     out.push({
@@ -108,24 +160,24 @@ function rowsFromPayload(
       name: null, // the panel joins the registry server-side
       price,
       changePct: pct,
-      volume: raw.totalTradedVolume ?? null,
+      volume: typeof volume === "number" && Number.isFinite(volume) ? volume : null,
       source: "nse-movers",
       observedAt,
     });
   }
-  return out.length > 0 ? out : null;
+  return out.length > 0 ? { rows: out, universe: block.universe, observedAt } : null;
 }
 
 /** Injectable fetch for tests (the real transport is global fetch). */
 export type NseFetchLike = (url: string, init: RequestInit) => Promise<Response>;
 
 async function fetchMoversList(
-  which: "gainers" | "losers",
+  direction: NseDirection,
   kind: "gainer" | "loser",
   limit: number,
   doFetch: NseFetchLike,
-): Promise<{ rows: MoverRow[] | null; error: string | null }> {
-  const url = `${NSE_MOVERS_BASE}?index=${which}`;
+): Promise<{ rows: MoverRow[] | null; universe: string | null; error: string | null }> {
+  const url = `${NSE_MOVERS_BASE}?index=${direction}`;
   try {
     const res = await doFetch(url, {
       headers: NSE_MOVERS_HEADERS,
@@ -133,25 +185,25 @@ async function fetchMoversList(
       cache: "no-store",
     });
     if (!res.ok) {
-      return { rows: null, error: `HTTP ${res.status}` };
+      return { rows: null, universe: null, error: `HTTP ${res.status}` };
     }
     const body = await res.json();
-    const rows = rowsFromPayload(body, kind, limit);
-    if (!rows) {
+    const parsed = rowsFromPayload(body, kind, limit);
+    if (!parsed) {
       // Operator-facing detail (the warmer is a Bearer-gated infra
       // endpoint and already discloses per-page ping outcomes): the zod
       // issue + a truncated payload head, so a schema drift is fixable
       // from the disclosure alone.
       const probe = nseMoversResponseSchema.safeParse(body);
       const issue = probe.success
-        ? "no rankable rows (every row lacked price or percent change)"
+        ? `no ${UNIVERSE_PREFERENCE.join("/")} universe with rankable rows`
         : probe.error.issues[0]?.message ?? "unknown zod issue";
       const head = JSON.stringify(body).slice(0, 200);
-      return { rows: null, error: `schema: ${issue}; payload head: ${head}` };
+      return { rows: null, universe: null, error: `schema: ${issue}; payload head: ${head}` };
     }
-    return { rows, error: null };
+    return { rows: parsed.rows, universe: parsed.universe, error: null };
   } catch (err) {
-    return { rows: null, error: err instanceof Error ? err.message : String(err) };
+    return { rows: null, universe: null, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -159,6 +211,9 @@ export interface NseMoversResult {
   gainers: MoverRow[];
   losers: MoverRow[];
   observedAt: string | null;
+  /** The universe that served (ALL | NIFTY) — the derivation line's
+   * scope disclosure. */
+  universe: string;
 }
 
 /**
@@ -174,7 +229,7 @@ export async function fetchNseMovers(
 ): Promise<{ result: NseMoversResult | null; error: string | null }> {
   const [g, l] = await Promise.all([
     fetchMoversList("gainers", "gainer", limit, doFetch),
-    fetchMoversList("losers", "loser", limit, doFetch),
+    fetchMoversList("loosers", "loser", limit, doFetch),
   ]);
   if (!g.rows || !l.rows) {
     const errors = [g.error, l.error].filter(Boolean).join(" | ");
@@ -183,5 +238,11 @@ export async function fetchNseMovers(
   const observedAt = g.rows.find((r) => r.observedAt)?.observedAt
     ?? l.rows.find((r) => r.observedAt)?.observedAt
     ?? null;
-  return { result: { gainers: g.rows, losers: l.rows, observedAt }, error: null };
+  // Both lists come from the same payload family; a universe mismatch
+  // between them would be a mixed-scope serve — the gainers universe
+  // wins the disclosure (it is the same preference order on both).
+  return {
+    result: { gainers: g.rows, losers: l.rows, observedAt, universe: g.universe ?? l.universe ?? "NIFTY" },
+    error: null,
+  };
 }

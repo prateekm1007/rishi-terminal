@@ -341,8 +341,43 @@ async function fetchFeed(feed: typeof RSS_FEEDS[0]): Promise<LiveNewsItem[]> {
 
 /** The ONE live-news aggregation (moved verbatim from the route): fetch
  * every feed for the region (or all), dedupe by headline key, sort by
- * recency. Failures degrade to an honest empty list — never a throw. */
+ * recency. Failures degrade to an honest empty list — never a throw.
+ *
+ * NSEPERM tuning (round 57, founder order 2026-10-14: "finish and tune
+ * it to world class"): ONE aggregation per region per TTL window, shared
+ * by every caller. Without this, the homepage's ISR regeneration (every
+ * 60 s) re-fetched EVERY feed on every regen — 28 outbound RSS requests
+ * per minute from the render path alone, a freshness-behavior change
+ * #434 introduced when the panel joined the route as a reader. The TTL
+ * mirrors the route's own Cache-Control (s-maxage=120): same freshness
+ * discipline, now enforced at the source so both callers share it.
+ * Concurrent callers within a window await the SAME in-flight round
+ * (never a thundering herd per lambda instance). */
+const AGG_TTL_MS = 120_000;
+const aggCache = new Map<string, { at: number; items: LiveNewsItem[] }>();
+const aggInflight = new Map<string, Promise<LiveNewsItem[]>>();
+
 export async function aggregateLiveNews(region?: string | null): Promise<LiveNewsItem[]> {
+  const key = region ?? 'all';
+  const hit = aggCache.get(key);
+  if (hit && Date.now() - hit.at < AGG_TTL_MS) return hit.items;
+  const existing = aggInflight.get(key);
+  if (existing) return existing;
+  const round = aggregateLiveNewsUncached(region)
+    .then(items => {
+      aggCache.set(key, { at: Date.now(), items });
+      aggInflight.delete(key);
+      return items;
+    })
+    .catch(err => {
+      aggInflight.delete(key);
+      throw err;
+    });
+  aggInflight.set(key, round);
+  return round;
+}
+
+async function aggregateLiveNewsUncached(region?: string | null): Promise<LiveNewsItem[]> {
   const feedsToFetch = region
     ? RSS_FEEDS.filter(f => f.region === region)
     : RSS_FEEDS;
@@ -364,6 +399,13 @@ export async function aggregateLiveNews(region?: string | null): Promise<LiveNew
 
   all.sort((a, b) => a.minutesAgo - b.minutesAgo);
   return all;
+}
+
+/** Test seam: drop the aggregation caches so test legs never observe
+ * each other's TTL windows. */
+export function __resetLiveNewsCacheForTests(): void {
+  aggCache.clear();
+  aggInflight.clear();
 }
 
 /** The feed count for a region (the route's disclosure field). */

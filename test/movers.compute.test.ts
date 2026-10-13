@@ -25,7 +25,7 @@
  * with a huge pct MUST NOT top the list).
  */
 import { describe, expect, it } from "vitest";
-import { computeMoversFromRows, type MoverCacheRow } from "../lib/movers/compute";
+import { computeLivePickFromRows, computeMoversFromRows, type MoverCacheRow } from "../lib/movers/compute";
 
 const SESSION = "2026-10-13";
 
@@ -184,5 +184,85 @@ describe("TODAY-MOVERS — the movers ranking (biggest absolute swings)", () => 
   it("a fully flat session renders an empty movers list (no padding)", () => {
     const out = computeMoversFromRows([], SESSION, 5);
     expect(out.movers).toEqual([]);
+  });
+});
+
+describe("TODAY-FULL — computeLivePickFromRows (the LIVE Stock of the Day)", () => {
+  it("picks the session's most-traded stock BY VALUE (price × volume), not by volume alone", () => {
+    // PNB trades 2× the shares of ITC but at 1/4 the price — ITC has 2×
+    // the traded value and must win the pick.
+    const out = computeLivePickFromRows(
+      [
+        row("PNB", 100, 1.0, TODAY, { volume24h: 2_000_000 }),
+        row("ITC", 400, -0.5, TODAY, { volume24h: 1_000_000 }),
+      ],
+      SESSION,
+    );
+    expect(out).not.toBeNull();
+    expect(out!.symbol).toBe("ITC");
+    expect(out!.turnover).toBe(400_000_000);
+  });
+
+  it("the pick keeps every provenance figure and the counted pool size", () => {
+    const out = computeLivePickFromRows(
+      [
+        row("RELIANCE", 1218.5, 3.25, TODAY, { volume24h: 12_345_678, source: "yahoo-bulk" }),
+        row("TCS", 3895.2, 3.6, TODAY, { volume24h: 2_345_678 }),
+      ],
+      SESSION,
+    );
+    expect(out!.symbol).toBe("RELIANCE");
+    expect(out!.name).toBeTruthy(); // registry name joined
+    expect(out!.price).toBe(1218.5);
+    expect(out!.changePct).toBe(3.25);
+    expect(out!.volume).toBe(12_345_678);
+    expect(out!.source).toBe("yahoo-bulk");
+    expect(out!.observedAt).toBe(TODAY);
+    expect(out!.universeObserved).toBe(2);
+  });
+
+  it("a percent change is NOT required to rank — the pick renders '—' change, not excluded", () => {
+    const out = computeLivePickFromRows(
+      [row("TCS", 3895.2, null, TODAY, { volume24h: 500_000 })],
+      SESSION,
+    );
+    expect(out).not.toBeNull();
+    expect(out!.symbol).toBe("TCS");
+    expect(out!.changePct).toBeNull();
+  });
+
+  it("the same gates as the movers: registry-only, session-fresh, price>0, volume>0", () => {
+    const out = computeLivePickFromRows(
+      [
+        row("NIFTY50", 24405, 0.5, TODAY, { volume24h: 99_999_999 }), // tile: not registry
+        row("SBIN", 500, 20.0, YESTERDAY, { volume24h: 99_999_999 }), // wrong session
+        row("ITC", 500, 1.0, TODAY),                                 // no disclosed volume
+        row("PNB", 500, 1.0, TODAY, { volume24h: 0 }),               // zero is not a volume
+        row("TCS", 0, 1.0, TODAY, { volume24h: 500_000 }),           // degenerate price
+      ],
+      SESSION,
+    );
+    expect(out).toBeNull(); // nothing eligible — the honest empty, never a fallback guess
+  });
+
+  it("deterministic tie-break: equal turnover picks the symbol-asc winner (Rule 18)", () => {
+    const out = computeLivePickFromRows(
+      [
+        row("SBIN", 100, 1.0, TODAY, { volume24h: 1_000 }),
+        row("PNB", 100, 1.0, TODAY, { volume24h: 1_000 }),
+      ],
+      SESSION,
+    );
+    expect(out!.symbol).toBe("PNB"); // PNB < SBIN symbol-asc
+  });
+
+  it("computeMoversFromRows carries the pick in the SAME read (one pool, one pass)", () => {
+    const out = computeMoversFromRows(
+      [row("RELIANCE", 1218.5, 3.25, TODAY, { volume24h: 12_345_678 })],
+      SESSION,
+      5,
+    );
+    expect(out.livePick).not.toBeNull();
+    expect(out.livePick!.symbol).toBe("RELIANCE");
   });
 });

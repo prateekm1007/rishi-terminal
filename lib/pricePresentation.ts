@@ -124,12 +124,14 @@ export function sourceDisplayName(source: string | null | undefined): string {
   if (s === "yahoo" || s.startsWith("yahoo-") || s.startsWith("yahoo_")) {
     return "Yahoo Finance (unofficial)";
   }
-  // LIVE-TODAY (round 56): the NSE transports (the movers endpoint and
-  // any future nse* id) attribute in the same plain-language form the
-  // founder's scraper list uses — NSE data reached through unofficial
-  // endpoints, not an affiliation claim.
+  // NSEPERM (round 57, founder order 2026-10-14: "now that we have
+  // permission"): NSE market data reached through these transports is
+  // formally LICENSED (letter ref NSE/MD/DATA/PERM/2026/0847, 13 Oct
+  // 2026) — and the letter PRESCRIBES the attribution wording for every
+  // page or screen where the data or a derived figure appears: exactly
+  // "Source: NSE" (§4), "not … altered, obscured or minimised".
   if (s === "nse" || s.startsWith("nse-")) {
-    return "NSE (unofficial)";
+    return "Source: NSE";
   }
   // FD-15 (round 54): the ticker rows attribute CoinGecko-transported
   // crypto quotes by their branded name (the same wording the #361

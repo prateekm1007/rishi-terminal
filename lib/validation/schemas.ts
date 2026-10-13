@@ -103,15 +103,27 @@ export const nseBlockDealsSchema = z.object({
 
 export type NseBlockDeal = z.infer<typeof nseBlockDealSchema>;
 
-// ── NSE India: /api/live-analysis-variations?index=gainers|losers ────
-// LIVE-TODAY (founder order, 2026-10-13): the market-movers endpoint the
-// MIT-licensed unofficial scrapers (vsjha18/nsetools,
-// marketcalls/openchart) document. The field spellings below accept BOTH
-// the legacy dynaContent shape (ltp / netPrice / pChange) and the modern
-// API shape (lastPrice / change / perChange) because the payload was NOT
-// capturable from this repo's development egress (NSE's Akamai edge
-// 403s datacenter IPs — verified 2026-10-13) and the schema is pinned to
-// the documented contract, not to captured bytes. A mismatch fails the
+// ── NSE India: /api/live-analysis-variations?index=gainers|loosers ────
+// LIVE-TODAY (founder order, 2026-10-13) + NSEPERM (2026-10-14): the
+// market-movers endpoint the MIT-licensed unofficial scrapers
+// (vsjha18/nsetools, marketcalls/openchart) document. NSEPERM corrected
+// the contract to nsetools' ACTUAL parsing (src/nsetools/nse.py + urls.py,
+// MIT — read as documentation, nothing vendored) after the round-56
+// production attempt served the computed fallback:
+//   - the ?index= param selects the DIRECTION, and the losers direction
+//     is spelled 'loosers' (nsetools' TOP_LOSERS_URL constant; the
+//     correctly-spelled 'losers' returns {"data":"Missing index or key."}
+//     — captured from production egress 2026-10-13);
+//   - the payload is legends-keyed: { legends: [[key, label], …],
+//     <KEY>: { data: [rows…] } } with one row-list per index universe
+//     (nsetools reads res.json()[index]['data'], index ∈ {NIFTY,
+//     BANKNIFTY, NIFTYNEXT50, SecGtr20, SecLwr20, FNO, ALL});
+//   - numeric fields arrive as STRINGS (nsetools ships a recursive
+//     string→number caster) — nseNumeric already coerces those.
+// The field spellings below accept BOTH the legacy shape (ltp /
+// net_price / pChange / perChange / trade_quantity) and the modern API
+// shape (lastPrice / change / pChange / totalTradedVolume). A mismatch
+// fails the
 // whole parse (fail closed, R4) and the warmer discloses the zod issue
 // so the first production capture can correct the schema in one commit.
 export const nseMoverRowSchema = z
@@ -120,17 +132,34 @@ export const nseMoverRowSchema = z
     ltp: nseNumeric,
     lastPrice: nseNumeric,
     netPrice: nseNumeric,
+    net_price: nseNumeric,
     change: nseNumeric,
     pChange: nseNumeric,
     perChange: nseNumeric,
     totalTradedVolume: nseNumeric,
+    trade_quantity: nseNumeric,
   })
   .passthrough();
 
+/** One universe's row-list inside the legends-keyed movers payload. */
+export const nseMoversUniverseSchema = z
+  .object({
+    data: z.array(nseMoverRowSchema),
+    timestamp: z.string().optional(),
+  })
+  .passthrough();
+
+/** The legends-keyed movers payload. Only the universes this app reads
+ * are declared (preference order lives in lib/movers/nse.ts); the other
+ * legend keys pass through unread. NSE's own error body for a bad
+ * direction ({"data":"Missing index or key."}) parses to NO universes —
+ * the honest miss with the head disclosed. */
 export const nseMoversResponseSchema = z
   .object({
-    data: z.array(nseMoverRowSchema).optional(),
+    legends: z.array(z.tuple([z.string(), z.string()])).optional(),
     timestamp: z.string().optional(),
+    ALL: nseMoversUniverseSchema.optional(),
+    NIFTY: nseMoversUniverseSchema.optional(),
   })
   .passthrough();
 

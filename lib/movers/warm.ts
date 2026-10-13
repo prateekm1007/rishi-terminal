@@ -58,7 +58,8 @@ export async function refreshMovers(nowMs: number = Date.now()): Promise<MoversW
   // shared quote cache (NSE's endpoint ranks only its own gainers and
   // losers — a movers list built from those rows would be a lie by
   // omission). ONE read per tick: the computed path reuses these rows
-  // for its winners/losers too.
+  // for its winners/losers too, and TODAY-FULL's live Stock-of-the-Day
+  // pick (most-traded by value) rides the SAME read.
   const computed = await computeMoversFromCache(MOVERS_LIMIT, nowMs);
 
   // Path 1: NSE's own movers ranking.
@@ -71,6 +72,8 @@ export async function refreshMovers(nowMs: number = Date.now()): Promise<MoversW
       moversDerivation: computed ? "computed" : null,
       moversUniverseObserved: computed ? computed.universeObserved : null,
       derivation: "nse",
+      nseUniverse: nse.result.universe,
+      pick: computed ? computed.livePick : null,
       universeObserved: null,
       writtenAt: new Date(nowMs).toISOString(),
     };
@@ -102,6 +105,8 @@ export async function refreshMovers(nowMs: number = Date.now()): Promise<MoversW
       moversDerivation: "computed",
       moversUniverseObserved: computed.universeObserved,
       derivation: "computed",
+      nseUniverse: null,
+      pick: computed.livePick,
       universeObserved: computed.universeObserved,
       writtenAt: new Date(nowMs).toISOString(),
     };

@@ -16,7 +16,7 @@ import {
   formatIstStamp,
   sourceDisplayName,
 } from "@/lib/pricePresentation";
-import type { MoverRow } from "./types";
+import type { LivePick, MoverRow } from "./types";
 
 export interface MoverRowFace {
   /** The ticker as displayed (already sanitized upstream). */
@@ -84,18 +84,95 @@ export function moverRowFace(row: MoverRow): MoverRowFace {
 }
 
 /** The panel-level derivation line — how the list was produced (Rule 3:
- * label data by what it is). Pure. */
+ * label data by what it is). Pure.
+ *
+ * NSEPERM (round 57): the NSE line carries the universe that served
+ * (scope disclosure) and the licensed-use note — the permission
+ * letter (NSE/MD/DATA/PERM/2026/0847) is the licensing record; the
+ * line stays plain-language for the panel reader. */
 export function moversDerivationLine(
   derivation: "nse" | "computed",
   universeObserved: number | null,
+  nseUniverse: string | null = null,
 ): string {
   if (derivation === "nse") {
-    return "List: NSE live-analysis movers endpoint (unofficial).";
+    const scope = nseUniverseLabel(nseUniverse);
+    return `List: NSE's own movers ranking — ${scope} (licensed use, NSE/MD/DATA/PERM/2026/0847).`;
   }
   const n = typeof universeObserved === "number" ? universeObserved : null;
   return n === null
     ? "List: computed from the freshest cached observations (Yahoo Finance (unofficial) transport)."
     : `List: computed from this session's cached observations — ${n} tracked symbols observed (Yahoo Finance (unofficial) transport).`;
+}
+
+/** The NSE universe key as a reader-facing scope label (pure). */
+export function nseUniverseLabel(universe: string | null): string {
+  if (universe === "ALL") return "all securities";
+  if (universe === "NIFTY") return "Nifty 50";
+  return universe ?? "NSE's universe";
+}
+
+/** TODAY-FULL: the live Stock of the Day's rendered face (pure) — the
+ * same FD-15 discipline as a movers row: no source → no numbers; no
+ * observation time → em-dash as-of; missing change → "—" (never 0).
+ * The turnover (the day's traded value) is formatted in Indian
+ * crore/lakh grouping so the pick's scale reads at a glance. */
+export function livePickFace(pick: LivePick): {
+  symbol: string;
+  name: string | null;
+  href: string | null;
+  priceText: string;
+  changeText: string;
+  turnoverText: string;
+  attribution: string;
+  positive: boolean | null;
+} {
+  const tracked = STOCKS[pick.symbol] !== undefined;
+  const href = tracked ? `/stock/${encodeURIComponent(pick.symbol)}` : null;
+
+  if (typeof pick.source !== "string" || !pick.source) {
+    return {
+      symbol: pick.symbol,
+      name: pick.name,
+      href,
+      priceText: "—",
+      changeText: "—",
+      turnoverText: "—",
+      attribution: "no source yet",
+      positive: null,
+    };
+  }
+
+  const asOf =
+    typeof pick.observedAt === "string" && pick.observedAt &&
+    Number.isFinite(Date.parse(pick.observedAt))
+      ? formatIstStamp(new Date(Date.parse(pick.observedAt)))
+      : "—";
+  const attribution = `${sourceDisplayName(pick.source)} · ${asOf}`;
+
+  const priceText =
+    pick.price > 0 && Number.isFinite(pick.price)
+      ? "₹" + pick.price.toLocaleString("en-IN", { maximumFractionDigits: 2 })
+      : "—";
+  const pair =
+    pick.changePct !== null && Number.isFinite(pick.changePct)
+      ? formatChangePair(pick.changePct, absChangeFromPercent(pick.price, pick.changePct))
+      : null;
+  const turnoverText =
+    pick.turnover > 0 && Number.isFinite(pick.turnover)
+      ? "₹" + Math.round(pick.turnover).toLocaleString("en-IN")
+      : "—";
+
+  return {
+    symbol: pick.symbol,
+    name: pick.name,
+    href,
+    priceText,
+    changeText: pair ? `${pair.pctText} ${pair.absText}` : "—",
+    turnoverText,
+    attribution,
+    positive: pick.changePct === null ? null : pick.changePct >= 0,
+  };
 }
 
 /** TODAY-MOVERS: the movers list's own derivation line — the list is

@@ -57,8 +57,13 @@ describe("R13 — the Today view and the tracking line", () => {
     // TODAY-MOVERS (founder order, 2026-10-13): the mount literal gains
     // the live-news prop — the gate still pins the mounting AND the SOD
     // and movers props (unchanged intent, updated shape).
+    // TODAY-FULL (founder order, 2026-10-14): the seed-gated stockOfDay
+    // prop is RETIRED from this mount (the SOD row renders the LIVE pick
+    // from the movers snapshot; the ranked trio's own SOD card in
+    // DashboardTail keeps its seed-gated semantics) — the gate still
+    // pins the mounting AND the movers/news props (updated shape).
     expect(page).toContain(
-      "<TodayPanel stockOfDay={stockOfDay} movers={movers} latestNews={latestNews} />",
+      "<TodayPanel movers={movers} latestNews={latestNews} />",
     );
     expect(page).toContain("readMoversSnapshot");
   });
@@ -71,7 +76,13 @@ describe("R13 — the Today view and the tracking line", () => {
     // the honest states are present as literals
     expect(panel).toContain("Verdicts produced today");
     expect(panel).toContain("none");
-    expect(panel).toContain("no verdict-allowed pick exists");
+    // TODAY-FULL (founder order, 2026-10-14): the SOD row went LIVE —
+    // the pick renders from the movers snapshot with the not-a-verdict
+    // label; the no-pick state is the honest live empty (the OLD
+    // seed-gated "no verdict-allowed pick exists" wording retired
+    // WITH the row's seed derivation).
+    expect(panel).toContain("no live pick yet");
+    expect(panel).toContain("not a verdict");
     expect(panel).toContain("No headlines yet");
     // the tracking status rides the ONE source, not a local literal
     expect(panel).toContain("from '@/lib/demoState'");

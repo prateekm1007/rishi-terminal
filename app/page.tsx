@@ -116,7 +116,7 @@ export default async function Page() {
 
   return (
     <NamespaceProvider ns={{ dashboard, dashboard2 }}>
-      <TodayPanel stockOfDay={stockOfDay} movers={movers} latestNews={latestNews} />
+      <TodayPanel movers={movers} latestNews={latestNews} />
       <DashboardClient
         rankingsEnabled={rankings}
         rotatingStocks={rotatingStocks}

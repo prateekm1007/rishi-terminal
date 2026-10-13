@@ -15,8 +15,10 @@
 
 import 'server-only';
 
+import { z } from "zod";
+
 import { getAdminSupabase } from "@/lib/services/supabaseAdmin";
-import type { MoversDerivation, MoversSnapshot, MoverRow } from "./types";
+import type { LivePick, MoversDerivation, MoversSnapshot, MoverRow } from "./types";
 
 const META_ID = 1;
 
@@ -25,7 +27,28 @@ interface MetaRow {
   universe_observed: number | null;
   movers_derivation: string | null;
   movers_universe_observed: number | null;
+  nse_universe: string | null;
+  pick: unknown;
   written_at: string;
+}
+
+/** TODAY-FULL: the pick column is jsonb — validated on read (a
+ * malformed cell is the honest null, never a partial pick). */
+const livePickSchema = z.object({
+  symbol: z.string().min(1).max(24),
+  name: z.string().nullable(),
+  price: z.number().positive(),
+  changePct: z.number().nullable(),
+  volume: z.number().nullable(),
+  turnover: z.number().positive(),
+  source: z.string().nullable(),
+  observedAt: z.string().nullable(),
+  universeObserved: z.number().int().nonnegative(),
+});
+
+function pickFromCell(cell: unknown): LivePick | null {
+  const parsed = livePickSchema.safeParse(cell);
+  return parsed.success ? parsed.data : null;
 }
 
 interface MoverDbRow {
@@ -76,6 +99,8 @@ export async function writeMoversSnapshot(snap: MoversSnapshot): Promise<void> {
       universe_observed: snap.universeObserved,
       movers_derivation: snap.moversDerivation,
       movers_universe_observed: snap.moversUniverseObserved,
+      nse_universe: snap.nseUniverse,
+      pick: snap.pick,
       written_at: snap.writtenAt,
     });
   if (metaUpsert.error) throw new Error(metaUpsert.error.message);
@@ -91,7 +116,7 @@ export async function readMoversSnapshot(): Promise<MoversSnapshot | null> {
     const db = getAdminSupabase();
     const metaRes = await db
       .from("market_movers_meta")
-      .select("derivation, universe_observed, movers_derivation, movers_universe_observed, written_at")
+      .select("derivation, universe_observed, movers_derivation, movers_universe_observed, nse_universe, pick, written_at")
       .eq("id", META_ID)
       .maybeSingle();
     if (metaRes.error) throw new Error(metaRes.error.message);
@@ -125,6 +150,8 @@ export async function readMoversSnapshot(): Promise<MoversSnapshot | null> {
       moversDerivation: meta.movers_derivation === "computed" ? "computed" : null,
       moversUniverseObserved: meta.movers_universe_observed,
       derivation: meta.derivation === "nse" ? "nse" : "computed",
+      nseUniverse: meta.nse_universe == null ? null : String(meta.nse_universe),
+      pick: pickFromCell(meta.pick),
       universeObserved: meta.universe_observed,
       writtenAt: String(meta.written_at),
     };

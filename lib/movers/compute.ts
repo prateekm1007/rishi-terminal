@@ -25,7 +25,7 @@
 
 import { STOCKS } from "@/data/stocks";
 import { istParts, marketState } from "@/lib/marketHours";
-import type { MoverRow } from "./types";
+import type { LivePick, MoverRow } from "./types";
 
 /** The quote_cache columns the computation reads (snake_case wire shape). */
 export interface MoverCacheRow {
@@ -45,6 +45,9 @@ export interface ComputedMovers {
    *  disclosed change) — deterministic |pct| desc, symbol asc. */
   movers: MoverRow[];
   universeObserved: number;
+  /** TODAY-FULL: the live Stock of the Day (most-traded by value), or
+   *  null when no tracked symbol had a session-fresh price+volume. */
+  livePick: LivePick | null;
 }
 
 /** The IST calendar date of an ISO timestamp, or null (unparsable). */
@@ -114,7 +117,66 @@ export function computeMoversFromRows(
     .slice(0, limit)
     .map((e, i) => toMover(e, "mover", i + 1));
 
-  return { gainers, losers, movers, universeObserved: eligible.length };
+  return {
+    gainers,
+    losers,
+    movers,
+    universeObserved: eligible.length,
+    livePick: computeLivePickFromRows(rows, sessionDate),
+  };
+}
+
+/**
+ * PURE (TODAY-FULL, founder order 2026-10-14: "make sure the full today
+ * panel is populated"): the LIVE Stock of the Day — the session's
+ * most-traded stock BY VALUE (price × volume), from the same gated
+ * pool family as the movers lists.
+ *
+ * Honesty contract (the same Rules 1/3/16 the movers carry):
+ *   - registry symbols only (Rule 9); session-fresh observations only
+ *     (an overnight-stale observation is not "today's" market);
+ *   - a row without BOTH a usable price and a disclosed volume cannot
+ *     rank by value (missing is not 0);
+ *   - the percent change is NOT required to rank (it renders as " —"
+ *     when absent — a pick without a disclosed change is still the
+ *     day's most-traded stock);
+ *   - deterministic tie-break: turnover desc, then symbol asc
+ *     (Rule 18) — same IST session, same pick, everywhere.
+ */
+export function computeLivePickFromRows(
+  rows: MoverCacheRow[],
+  sessionDate: string,
+): LivePick | null {
+  let best: { row: MoverCacheRow; turnover: number } | null = null;
+  let universeObserved = 0;
+  for (const row of rows) {
+    if (!STOCKS[row.symbol]) continue; // registry check (Rule 9)
+    if (!(row.price > 0)) continue; // claim placeholder / degenerate
+    const volume = row.volume24h ?? null;
+    if (!(volume && volume > 0)) continue; // no disclosed volume → cannot rank by value
+    if (istDateOf(row.observed_at) !== sessionDate) continue; // not this session
+    universeObserved++;
+    const turnover = row.price * volume;
+    if (
+      !best ||
+      turnover > best.turnover ||
+      (turnover === best.turnover && row.symbol.localeCompare(best.row.symbol) < 0)
+    ) {
+      best = { row, turnover };
+    }
+  }
+  if (!best) return null;
+  return {
+    symbol: best.row.symbol,
+    name: STOCKS[best.row.symbol]?.name ?? null,
+    price: best.row.price,
+    changePct: best.row.change,
+    volume: best.row.volume24h ?? null,
+    turnover: best.turnover,
+    source: best.row.source ?? null,
+    observedAt: best.row.observed_at,
+    universeObserved,
+  };
 }
 
 /**

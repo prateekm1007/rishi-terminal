@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Stock, RishiScore } from '../../lib/types';
+import type { StockDetail } from '../../data/stockDetails';
 import type { SanitizedConsensus } from '../../lib/consensus/sanitize';
 import type { ResolvedStockMetrics } from '@/lib/scoring';
 import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
@@ -67,7 +68,9 @@ interface Props {
   /** Server-sanitized consensus — carries the FULL verdict set (free
    *  access: every visitor receives it whole in the RSC payload). */
   consensus: SanitizedConsensus;
-  detail: any;
+  /** The page's detail record (data/stockDetails — peers, about, key
+   *  events). ENG-6: typed — was `any`. */
+  detail: StockDetail;
   /** N1: server-computed seed-baseline resolution (live overlay happens in
    *  MetricsPanel via overlaySourced — the engine itself never ships). */
   resolved: ResolvedStockMetrics | null;

@@ -9,7 +9,7 @@ import type { TrimmedVerdict } from '../../lib/consensus/sanitize';
 // N1 (round 3): the graph arrives precomputed from the server (free-set
 // graph via RSC props; tier-aware graph via /api/rishis/[symbol] for paid
 // tiers). The engine builder is server-only.
-import type { EliteKnowledgeGraph } from '../../lib/consensus/eliteGraph';
+import type { EliteKnowledgeGraph, DebateEntry, TechnicalEdgeEntry } from '../../lib/consensus/eliteGraph';
 import { GLOBAL_RISHI_PLAYS, RishiPlay } from '../../data/rishi-portfolios/global-plays';
 
 interface Props {
@@ -116,7 +116,7 @@ function PlayCard({ play, relevanceNote }: {
 }
 
 /* -- Technical Bar --------------------------------------------- */
-function TechnicalBar({ comp, stockName }: { comp: any; stockName: string }) {
+function TechnicalBar({ comp, stockName }: { comp: TechnicalEdgeEntry; stockName: string }) {
   const stockVal = Number(comp.stockValue ?? 0);
   const sectorVal = Number(comp.sectorAvg ?? 0);
   const maxVal = Math.max(stockVal, sectorVal, 0.001);
@@ -417,7 +417,7 @@ export function KnowledgeGraphView({ stock, topBull, topBear, graph }: Props) {
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#22C55E", letterSpacing: "0.1em", marginBottom: 12 }}>
                       🐂 BULL ARGUMENTS ({graphData.debate.bulls.length})
                     </div>
-                    {graphData.debate.bulls.map((debate: any, i: number) => (
+                    {graphData.debate.bulls.map((debate: DebateEntry, i: number) => (
                       <div key={`bull-${i}`} style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 10, padding: "12px 14px", marginBottom: 10 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                           <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>{debate.rishi}</span>
@@ -436,7 +436,7 @@ export function KnowledgeGraphView({ stock, topBull, topBear, graph }: Props) {
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#EF4444", letterSpacing: "0.1em", marginBottom: 12 }}>
                       🐻 BEAR ARGUMENTS ({graphData.debate.bears.length})
                     </div>
-                    {graphData.debate.bears.map((debate: any, i: number) => (
+                    {graphData.debate.bears.map((debate: DebateEntry, i: number) => (
                       <div key={`bear-${i}`} style={{ background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "12px 14px", marginBottom: 10 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                           <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>{debate.rishi}</span>
@@ -455,7 +455,7 @@ export function KnowledgeGraphView({ stock, topBull, topBear, graph }: Props) {
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#D4AF37", letterSpacing: "0.1em", marginBottom: 12 }}>
                       ⚖️ NEUTRAL POSITIONS ({graphData.debate.neutrals.length})
                     </div>
-                    {graphData.debate.neutrals.map((debate: any, i: number) => (
+                    {graphData.debate.neutrals.map((debate: DebateEntry, i: number) => (
                       <div key={`neutral-${i}`} style={{ background: "rgba(212,175,55,0.05)", border: "1px solid rgba(212,175,55,0.3)", borderRadius: 10, padding: "12px 14px", marginBottom: 10 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                           <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>{debate.rishi}</span>
@@ -500,7 +500,7 @@ export function KnowledgeGraphView({ stock, topBull, topBear, graph }: Props) {
             </div>
             {graphData.technicalEdge && graphData.technicalEdge.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {graphData.technicalEdge.map((comp: any, i: number) => (
+                {graphData.technicalEdge.map((comp: TechnicalEdgeEntry, i: number) => (
                   <TechnicalBar key={i} comp={comp} stockName={stock.name} />
                 ))}
               </div>

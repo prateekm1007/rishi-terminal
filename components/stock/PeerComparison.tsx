@@ -6,14 +6,7 @@ import { Stock } from '@/lib/types';
 import { useLivePrices, type PriceData } from '@/hooks/useLivePrices';
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
 
-interface PeerStock {
-  symbol: string;
-  name: string;
-  price: number;
-  marketCap: number;
-  pe: number;
-  roe: number;
-}
+import type { PeerStock } from '@/data/stockDetails';
 
 interface Props {
   stock: Stock;
@@ -69,7 +62,7 @@ export function PeerComparison({ stock, peers, initialPrices }: Props) {
     })),
   ];
 
-  const safeFixed = (v: any, d = 1) => {
+  const safeFixed = (v: unknown, d = 1) => {
     const n = Number(v);
     return isNaN(n) ? 'N/A' : n.toFixed(d);
   };

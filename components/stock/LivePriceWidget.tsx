@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { Stock } from '../../lib/types';
 import {
   presentationState,
@@ -106,7 +106,9 @@ export function LivePriceWidget({ stock, initialEntry = null, renderedAtMs }: Li
   const [flashRed, setFlashRed]               = useState(false);
   const prevPriceRef                          = useRef<number | null>(initialPrice);
 
-  const fetchPrice = async () => {
+  // ENG-6: useCallback keyed on the only reactive input (stock.symbol)
+  // so the mount effect can depend on the function itself honestly.
+  const fetchPrice = useCallback(async () => {
     // X3: the ⟳ FETCHING badge only ever appears for REfetches — a tile
     // that already renders an observation refreshing itself, post-hydration.
     // It must never appear in the first byte (SSR renders the cached
@@ -177,13 +179,17 @@ export function LivePriceWidget({ stock, initialEntry = null, renderedAtMs }: Li
     } finally {
       setLoading(false);
     }
-  };
+  }, [stock.symbol]);
 
   useEffect(() => {
-    fetchPrice();
+    // ENG-6: the initial refetch is deferred one tick off the effect body
+    // (a synchronous setLoading(true) cascaded renders); the 60 s
+    // revalidation cadence is unchanged and the first paint keeps its
+    // deterministic SSR-matching state (Rule 18).
+    const first = setTimeout(fetchPrice, 0);
     const interval = setInterval(fetchPrice, 60000);
-    return () => clearInterval(interval);
-  }, [stock.symbol]);
+    return () => { clearTimeout(first); clearInterval(interval); };
+  }, [fetchPrice]);
 
   // P0 (Round 52): the display-time clock — after the deterministic first
   // paint, the label recomputes from the viewer's clock (and every 30 s) so

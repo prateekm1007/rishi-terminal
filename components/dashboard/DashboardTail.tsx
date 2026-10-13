@@ -244,7 +244,6 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
         {rotatingStocks.map((stock) => {
           const d  = prices[stock.symbol];
-          const up = (d?.changePercent24h ?? 0) >= 0;
           const sc = stock.consensus === null ? "var(--text-muted)" : scoreColor(stock.consensus); // T11: null = insufficient data
           return (
             <Link href={"/stock/" + stock.symbol} key={stock.symbol} style={{ textDecoration:"none" }}>
@@ -383,7 +382,6 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px,1fr))', gap: '14px' }}>
           {TOP_CRYPTO.map(crypto => {
             const d = prices[crypto.symbol];
-            const up = (d?.changePercent24h ?? 0) >= 0;
             return (
               <Link href={'/crypto/' + crypto.symbol} key={crypto.symbol} style={{ textDecoration: 'none' }}>
                 <div style={{ ...card(), cursor: 'pointer' }}

@@ -22,7 +22,6 @@ import { tickerRowFace } from "@/lib/markets/sourcedRow";
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";
 import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
-import SeedDataBanner from "@/components/shared/SeedDataBanner"; // R1: honest placeholder-data label
 import dynamic from "next/dynamic";
 
 // Z5 (Round 13): the below-fold tail (crypto grid, explore-markets tiles,
@@ -30,24 +29,14 @@ import dynamic from "next/dynamic";
 // below the hero, market stats, world markets, stock-of-the-day, top
 // signals and shorts. The homepage's first-load JS stays lean.
 const DashboardTail = dynamic(() => import("./DashboardTail").then(m => m.DashboardTail), { ssr: false });
-import { DataValue } from "@/components/DataValue"; // P0-06: provenance for displayed metrics
-import { overlaySourced } from "@/lib/types/sourced";
 
 /* ── Constants ─────────────────────────────────────────────── */
 // U2: the dashboard's symbol surface moved to lib/dashboardSymbols.ts — the
 // server page builds the SSR initial-price snapshot from the SAME list
-// (Rule 14). MARKETS (nav tiles) stays here: it is presentation-only.
-import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS, STATS } from "@/lib/dashboardSymbols";
+// (Rule 14). The nav-tiles list lives with the Explore Markets section in
+// DashboardTail (Z5) — nothing presentation-only stays here.
 
-const MARKETS = [
-  { href:"/forex",       icon:"💱", label:"Forex",        desc:"10 currency pairs" },
-  { href:"/commodities", icon:"🥇", label:"Commodities",  desc:"Gold, Oil, Metals" },
-  { href:"/bonds",       icon:"📜", label:"Bonds",        desc:"G-Secs & Corporate" },
-  { href:"/pulse?tab=macro",       icon:"📡", label:"Economy Plus", desc:"Macro regime & rotation" },
-  // Commit O (#18): /compare never existed — the real compare surface is the Lab's Compare tab.
-  { href:"/lab",         icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
-  
-];
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS, STATS } from "@/lib/dashboardSymbols";
 
 /* ── Style Helpers ─────────────────────────────────────────── */
 
@@ -84,10 +73,6 @@ function card(extra?: object) {
     transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)",
     ...extra,
   };
-}
-
-function scoreColor(s: number) {
-  return s >= 80 ? C.green : s >= 65 ? C.amber : C.red;
 }
 
 /* ── Sub-Components ────────────────────────────────────────── */
@@ -139,22 +124,9 @@ interface DashboardProps {
   initialPrices?: Record<string, PriceData> | null;
 }
 
-/** U4 (founder round 7): the honest state shown when RANKINGS_ENABLED is
- *  off. No fake picks, no empty shells — the sections are gone and this
- *  panel says why. */
-function RankingsDisabledPanel({ title, note }: { title: string; note: string }) {
-  return (
-    <div style={{
-      marginBottom:"48px",
-      background:"rgba(17,24,39,0.6)",
-      border:"1px solid rgba(51,65,85,0.5)",
-      borderRadius:"14px", padding:"22px 26px",
-    }}>
-      <div style={{ fontSize:"15px", fontWeight:800, color:C.text, fontFamily:mono, marginBottom:"8px" }}>🚦 {title}</div>
-      <div style={{ fontSize:"13px", color:C.textSec, lineHeight:1.7 }}>{note}</div>
-    </div>
-  );
-}
+/* ENG-6 (round 54): the RankingsDisabledPanel that used to live here was
+ * dead in this file since Z5 moved the ranked sections to DashboardTail
+ * (which defines and renders its own); deleted with its last caller. */
 
 export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, rankingsEnabled, initialPrices }: DashboardProps) {
   const { t } = useLanguage();
@@ -168,7 +140,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     ...(stockOfDay ? [stockOfDay.symbol] : []),
   ], [rotatingStocks, rotatingShorts, stockOfDay]);
 
-  const { prices, loading, lastUpdated, observedAt } = useLivePrices(allSyms, 60000, initialPrices);
+  const { prices, loading, observedAt } = useLivePrices(allSyms, 60000, initialPrices);
 
   // Round 9 (directive 14 — dashboard provenance): the badge is DERIVED from
   // the actual entry statuses via the shared presentation contract. The old
@@ -180,7 +152,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
   const marketLabel = tickerEntries.length > 0 ? aggregateMarketLabel(tickerEntries) : null;
   // U4: no pick when rankings are off — the empty symbol skips the fetch.
   const { fundamentals: sodFund } = useFundamentals(stockOfDay?.symbol ?? "");
-  const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
+  const { fundamentals: buyFund } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
 
   const [timeAgo, setTimeAgo] = useState("—");
 

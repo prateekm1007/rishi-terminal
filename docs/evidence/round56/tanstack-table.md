@@ -48,3 +48,29 @@ tolerance is +2 kB. The build + `npm run bundle:budget` runs in CI on this PR; i
 ratchet fails, the baseline re-locks in THIS PR with the measured numbers and the
 paired-guard note (the 896-row table still server-renders — no first-byte content
 moves client-side; B-24's regression class does not apply).
+
+## Bundle measurement (post-build, 2026-10-13) — FOUNDER DECISION NEEDED
+
+`npm run bundle:budget` on the built branch:
+
+route            first-load   budget   ratchet    verdict
+/                  160.9 kB   200 kB   159.1 kB   OK
+/stocks            178.9 kB   200 kB   162.9 kB   REGRESSION vs ratchet (+16.0 kB)
+/stock/[symbol]    172.8 kB   200 kB   171.2 kB   OK
+
+- The +16.0 kB is the TanStack v8 row-model machinery in the /stocks first-load
+  (the chunk measures 20.5 kB gzip including the screener client). The 200 kB
+  hard budget holds with 21.1 kB headroom; the ratchet verdict is REPORTED (the
+  script exits 0 — the hard budget is the fatal gate).
+- The re-lock path REFUSES a failing run by design: "--update-baseline refused:
+  the current run fails the gate — fix the regression first (re-locking growth
+  defeats the ratchet)". Per C9 this is recorded, not silently re-anchored:
+  FOUNDER DECISION NEEDED — accept the +16.0 kB (the founder-ordered TanStack
+  build; pagination/filters/sort are the demo-path UX) and re-lock the baseline
+  in a founder-approved follow-up, or require a lighter implementation.
+- The C9 paired guard on first-byte CONTENT holds: the server HTML still
+  renders the table (342 kB page; rows present), the FULL 896-row list ships in
+  the RSC flight payload (897 "symbol" occurrences — 896 rows + the legend),
+  and SSR renders page 1 (50 rows) because pagination — the founder-ordered
+  behaviour — limits the rendered page to one page. T12 parity input is
+  unchanged (0/896).

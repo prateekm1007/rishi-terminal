@@ -124,7 +124,9 @@ export default function InvestorsPage(): ReactNode {
           The investor view shows company fundamentals from a reviewed data
           file: every figure carries its source, page, date, checked-by and
           checked-on. Prices and valuation readings are deliberately absent —
-          the exchange-data licence is pending, and this route tells the truth
+          this route renders only its reviewed file. The exchange-data
+          licence is recorded (NSE permission letter, 13 October 2026), and
+          this route still tells the truth
           about what it does and does not show.
         </p>
         <ul style={{ fontSize: 13, lineHeight: 1.8 }}>

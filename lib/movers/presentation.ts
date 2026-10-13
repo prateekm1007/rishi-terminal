@@ -187,3 +187,4 @@ export function moversListDerivationLine(
     ? "Movers list: computed from the freshest cached observations (Yahoo Finance (unofficial) transport)."
     : `Movers list: computed from this session's cached observations — ${n} tracked symbols observed (Yahoo Finance (unofficial) transport).`;
 }
+

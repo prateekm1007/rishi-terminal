@@ -9,7 +9,7 @@
 // renders "Source · IST stamp" per row, or "— · no source yet" when the
 // source is missing (the honest state, never a guessed attribution).
 
-export type MoverKind = "gainer" | "loser";
+export type MoverKind = "gainer" | "loser" | "mover";
 
 export interface MoverRow {
   kind: MoverKind;
@@ -38,6 +38,19 @@ export type MoversDerivation = "nse" | "computed";
 export interface MoversSnapshot {
   gainers: MoverRow[];
   losers: MoverRow[];
+  /** TODAY-MOVERS (founder order, 2026-10-13): the third panel — the
+   *  biggest absolute swings across BOTH directions. ALWAYS computed
+   *  from the shared quote cache over the tracked universe: NSE's
+   *  movers endpoint ranks only its own gainers/losers, so a movers
+   *  list built from those rows would be a lie by omission. */
+  movers: MoverRow[];
+  /** The movers list's own derivation — always "computed" when the
+   *  cache read returned something, null when it returned nothing
+   *  (the honest empty state, never a fabricated list). */
+  moversDerivation: "computed" | null;
+  /** Computed-movers path: the tracked symbols observed this session
+   *  (the movers list's own coverage disclosure). */
+  moversUniverseObserved: number | null;
   /** The production path that won (NSE endpoint vs quote-cache
    *  computation) — rendered as the panel's derivation line. */
   derivation: MoversDerivation;

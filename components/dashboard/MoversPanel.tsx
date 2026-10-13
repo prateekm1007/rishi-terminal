@@ -2,7 +2,7 @@ import 'server-only';
 
 import Link from 'next/link';
 import type { MoversSnapshot, MoverRow } from '@/lib/movers/types';
-import { moverRowFace, moversDerivationLine } from '@/lib/movers/presentation';
+import { moverRowFace, moversDerivationLine, moversListDerivationLine } from '@/lib/movers/presentation';
 
 /**
  * LIVE-TODAY (founder order, 2026-10-13): the dashboard's Top Winners /
@@ -34,9 +34,10 @@ const GOLD = 'var(--accent-gold, #D4AF37)';
 const GREEN = '#22C55E';
 const RED = '#EF4444';
 
-function MoversList({ rows, kind }: { rows: MoverRow[]; kind: 'gainer' | 'loser' }) {
-  const accent = kind === 'gainer' ? GREEN : RED;
-  const title = kind === 'gainer' ? "Today's Top 5 Winners" : "Today's Top 5 Losers";
+function MoversList({ rows, kind }: { rows: MoverRow[]; kind: 'gainer' | 'loser' | 'mover' }) {
+  const accent = kind === 'gainer' ? GREEN : kind === 'mover' ? GOLD : RED;
+  const title =
+    kind === 'gainer' ? "Today's Top 5 Winners" : kind === 'mover' ? "Today's Top 5 Movers" : "Today's Top 5 Losers";
   return (
     <div
       data-movers-kind={kind}
@@ -54,7 +55,7 @@ function MoversList({ rows, kind }: { rows: MoverRow[]; kind: 'gainer' | 'loser'
       </h3>
       {rows.length === 0 ? (
         <div data-movers-empty style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.7 }}>
-          No {kind === 'gainer' ? 'winners' : 'losers'} to list yet — nothing is shown rather than estimated.
+          No {kind === 'gainer' ? 'winners' : kind === 'mover' ? 'movers to list' : 'losers'} yet — nothing is shown rather than estimated.
         </div>
       ) : (
         <div style={{ display: 'grid', gap: 8 }}>
@@ -149,9 +150,11 @@ export function MoversPanel({ movers }: { movers: MoversSnapshot | null }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             <MoversList rows={movers.gainers} kind="gainer" />
             <MoversList rows={movers.losers} kind="loser" />
+            <MoversList rows={movers.movers} kind="mover" />
           </div>
           <div style={{ marginTop: 8, fontSize: 10.5, color: 'var(--text-muted)', lineHeight: 1.6 }}>
             <span data-movers-derivation>{moversDerivationLine(movers.derivation, movers.universeObserved)}</span>{' '}
+            {moversListDerivationLine(movers.moversUniverseObserved)}{' '}
             Unofficial market data — may be delayed, incomplete, or wrong. Not investment advice.
           </div>
         </>

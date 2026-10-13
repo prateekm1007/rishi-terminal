@@ -97,3 +97,16 @@ export function moversDerivationLine(
     ? "List: computed from the freshest cached observations (Yahoo Finance (unofficial) transport)."
     : `List: computed from this session's cached observations — ${n} tracked symbols observed (Yahoo Finance (unofficial) transport).`;
 }
+
+/** TODAY-MOVERS: the movers list's own derivation line — the list is
+ *  ALWAYS the computed path (NSE's endpoint ranks only its own gainers
+ *  and losers), so the disclosure says exactly that, with the observed
+ *  count when the cache read produced one. Pure. */
+export function moversListDerivationLine(
+  moversUniverseObserved: number | null,
+): string {
+  const n = typeof moversUniverseObserved === "number" ? moversUniverseObserved : null;
+  return n === null
+    ? "Movers list: computed from the freshest cached observations (Yahoo Finance (unofficial) transport)."
+    : `Movers list: computed from this session's cached observations — ${n} tracked symbols observed (Yahoo Finance (unofficial) transport).`;
+}

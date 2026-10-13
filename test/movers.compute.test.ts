@@ -142,3 +142,47 @@ describe("LIVE-TODAY — computeMoversFromRows (the quote-cache ranking)", () =>
     expect(out.losers).toHaveLength(1); // the same row is both the top gainer and the top loser
   });
 });
+
+// TODAY-MOVERS (founder order, 2026-10-13, this session): "add top 5
+// movers" — the THIRD panel ranks the biggest absolute swings across
+// BOTH directions, from the SAME gated pool (registry + session +
+// usable price + disclosed change), with deterministic tie-breaks.
+describe("TODAY-MOVERS — the movers ranking (biggest absolute swings)", () => {
+  it("ranks movers by |pct| desc mixing directions, tie-break symbol asc", () => {
+    const rows = [
+      row("RELIANCE", 1200, 1.0, TODAY),
+      row("TCS", 3800, -4.5, TODAY),
+      row("INFY", 1600, 4.0, TODAY),
+      row("ITC", 420, 0.5, TODAY),
+      row("HDFCBANK", 1500, -0.2, TODAY),
+    ];
+    const out = computeMoversFromRows(rows, SESSION, 5);
+    expect(out.movers.map(m => m.symbol)).toEqual(["TCS", "INFY", "RELIANCE", "ITC", "HDFCBANK"]);
+    expect(out.movers.every(m => m.kind === "mover")).toBe(true);
+    expect(out.movers.map(m => m.rank)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("movers rows keep the FD-15 provenance pair and the registry name", () => {
+    const rows = [row("RELIANCE", 1200, -2.5, TODAY, { source: "yahoo-bulk", volume24h: 12345 })];
+    const out = computeMoversFromRows(rows, SESSION, 5);
+    const m = out.movers[0];
+    expect(m.source).toBe("yahoo-bulk");
+    expect(m.observedAt).toBe(TODAY);
+    expect(m.name).toBe("Reliance Industries");
+    expect(m.changePct).toBe(-2.5);
+  });
+
+  it("the movers pool obeys the same gates: a prior-session row never ranks", () => {
+    const rows = [
+      row("RELIANCE", 1200, 9.0, YESTERDAY), // big move, wrong session
+      row("TCS", 3800, 1.0, TODAY),
+    ];
+    const out = computeMoversFromRows(rows, SESSION, 5);
+    expect(out.movers.map(m => m.symbol)).toEqual(["TCS"]);
+  });
+
+  it("a fully flat session renders an empty movers list (no padding)", () => {
+    const out = computeMoversFromRows([], SESSION, 5);
+    expect(out.movers).toEqual([]);
+  });
+});

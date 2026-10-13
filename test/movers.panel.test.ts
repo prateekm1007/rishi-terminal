@@ -32,7 +32,7 @@ import { TodayPanel } from "../components/dashboard/TodayPanel";
 import { MoversPanel } from "../components/dashboard/MoversPanel";
 import type { MoverRow, MoversSnapshot } from "../lib/movers/types";
 
-function mover(partial: Partial<MoverRow> & { symbol: string; kind: "gainer" | "loser"; rank: number }): MoverRow {
+function mover(partial: Partial<MoverRow> & { symbol: string; kind: "gainer" | "loser" | "mover"; rank: number }): MoverRow {
   return {
     name: null,
     price: 100,
@@ -53,6 +53,15 @@ const SNAPSHOT: MoversSnapshot = {
     mover({ symbol: "BANKBARODA", kind: "loser", rank: 1, price: 248.3, changePct: -4.5, source: "yahoo-bulk" }),
     mover({ symbol: "NOSOURCE", kind: "loser", rank: 2, price: 90.0, changePct: -2.0, source: null, observedAt: null }),
   ],
+  // TODAY-MOVERS: the third panel — biggest absolute swings, computed
+  // from the quote-cache session observations (NEVER a subset of the
+  // NSE endpoint's own top lists — that would be a lie by omission).
+  movers: [
+    mover({ symbol: "TCS", kind: "mover", rank: 1, name: "Tata Consultancy Services", price: 3800, changePct: -4.5, source: "yahoo-bulk" }),
+    mover({ symbol: "INFY", kind: "mover", rank: 2, name: "Infosys", price: 1600, changePct: 4.0, source: "yahoo-bulk" }),
+  ],
+  moversDerivation: "computed",
+  moversUniverseObserved: 836,
   derivation: "nse",
   universeObserved: null,
   writtenAt: "2026-10-13T10:16:00.000Z",
@@ -123,10 +132,43 @@ describe("LIVE-TODAY — MoversPanel render (B-18 positive control)", () => {
   });
 });
 
+describe("TODAY-MOVERS — the third panel (biggest absolute swings, founder order 2026-10-13)", () => {
+  it("renders the movers list with BOTH-direction rows, ordered by |pct| desc", () => {
+    const html = renderToStaticMarkup(React.createElement(MoversPanel, { movers: SNAPSHOT }));
+    expect(html).toContain("Today&#x27;s Top 5 Movers");
+    expect(html).toContain('data-movers-kind="mover"');
+    // both directions render (a movers list is direction-agnostic)
+    expect(html).toContain("TCS");
+    expect(html).toContain("INFY");
+    // the FD-15 attribution rides the mover rows too
+    expect(html).toContain("Yahoo Finance (unofficial) · Tue 13 Oct, 15:45 IST");
+    // registry names + links work for movers as well
+    expect(html).toContain('href="/stock/TCS"');
+    expect(html).toContain('href="/stock/INFY"');
+  });
+
+  it("the movers list discloses its own computed derivation and observed count", () => {
+    const html = renderToStaticMarkup(React.createElement(MoversPanel, { movers: SNAPSHOT }));
+    // the movers list is ALWAYS computed (NSE's endpoint only ranks its
+    // own gainers/losers) — the panel says so, with the count
+    expect(html).toContain("836 tracked symbols observed");
+  });
+
+  it("a snapshot whose cache read returned nothing renders the movers list honestly empty", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(MoversPanel, {
+        movers: { ...SNAPSHOT, movers: [], moversDerivation: null, moversUniverseObserved: null },
+      }),
+    );
+    expect(html).toContain("Today&#x27;s Top 5 Movers");
+    expect(html).toContain("No movers to list yet");
+  });
+});
+
 describe("LIVE-TODAY — TodayPanel render (the honest literals survive)", () => {
   it("the Today panel mounts the movers view and keeps every honest literal", () => {
     const html = renderToStaticMarkup(
-      React.createElement(TodayPanel, { stockOfDay: null, movers: SNAPSHOT }),
+      React.createElement(TodayPanel, { stockOfDay: null, movers: SNAPSHOT, latestNews: null }),
     );
     expect(html).toContain("data-today-panel");
     expect(html).toContain("data-movers-panel");
@@ -140,7 +182,7 @@ describe("LIVE-TODAY — TodayPanel render (the honest literals survive)", () =>
 
   it("a null movers snapshot keeps the Today panel honest, not broken", () => {
     const html = renderToStaticMarkup(
-      React.createElement(TodayPanel, { stockOfDay: null, movers: null }),
+      React.createElement(TodayPanel, { stockOfDay: null, movers: null, latestNews: null }),
     );
     expect(html).toContain("data-today-panel");
     expect(html).toContain("data-movers-notgenerated");

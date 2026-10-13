@@ -29,7 +29,7 @@ function Column({
 }) {
   return (
     <div>
-      <h3>{title}</h3>
+      <h4>{title}</h4>
       {rows.length === 0 ? (
         <p>{emptyText}</p>
       ) : (
@@ -51,7 +51,7 @@ function Column({
 export function TopMoversPanel({ result }: { result: MoversResult }) {
   return (
     <section aria-label="Top movers">
-      <h2>Top movers</h2>
+      <h3>Top movers</h3>
       {result.status === "insufficient" ? (
         <p>{`Waiting for quotes: ${result.eligible} of ${result.considered} have a fresh, dated change.`}</p>
       ) : null}

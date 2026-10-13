@@ -4,6 +4,8 @@ import Link from 'next/link';
 import type { StockOfTheDay } from '@/lib/scoring/rankings';
 import { TRACKING_STATUS } from '@/lib/demoState';
 import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the panel's SOD pick is seed-derived — the mandatory label
+import { TopMoversPanel } from '@/components/dashboard/TopMoversPanel';
+import type { MoversResult } from '@/lib/markets/topMovers';
 
 /**
  * DEMO-4 (founder order, 2026-10-12): the dashboard's "Today" view with an
@@ -28,7 +30,13 @@ import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the pane
  * page revalidates every 60 s, so the date rotates within a minute of
  * IST midnight).
  */
-export function TodayPanel({ stockOfDay }: { stockOfDay: StockOfTheDay | null }) {
+export function TodayPanel({
+  stockOfDay,
+  movers,
+}: {
+  stockOfDay: StockOfTheDay | null;
+  movers: MoversResult | null;
+}) {
   const istDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
 
   return (
@@ -87,6 +95,16 @@ export function TodayPanel({ stockOfDay }: { stockOfDay: StockOfTheDay | null })
           Forward-return tracking: <strong data-tracking-status style={{ color: "var(--text-secondary)" }}>{TRACKING_STATUS}</strong>{" "}
           — <Link href="/methodology" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>methodology</Link> carries the
           same line; it retires when the calibration track begins.
+        </div>
+
+        <div data-today-movers style={{ marginTop: 8 }}>
+          {movers ? (
+            <TopMoversPanel result={movers} />
+          ) : (
+            <div data-today-movers-unavailable style={{ color: 'var(--text-muted)' }}>
+              Top movers: unavailable — the quote cache could not be read.
+            </div>
+          )}
         </div>
       </div>
     </section>

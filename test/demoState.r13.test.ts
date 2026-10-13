@@ -51,7 +51,7 @@ describe("R13 — the Today view and the tracking line", () => {
   it("the homepage mounts the honest Today view", () => {
     const page = read("app/page.tsx");
     expect(page).toContain("TodayPanel");
-    expect(page).toContain("<TodayPanel stockOfDay={stockOfDay} />");
+    expect(page).toContain("<TodayPanel stockOfDay={stockOfDay}");  // still mounted with the SOD prop; movers prop added (DASHBOARD-MOVERS)
   });
 
   it("the TodayPanel is a server component with honest literals (B-18 positive control)", () => {

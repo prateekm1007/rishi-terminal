@@ -42,7 +42,6 @@ import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
 import { TodayPanel } from '@/components/dashboard/TodayPanel'; // DEMO-4: the honest Today view (server component, zero JS)
-import { TopMoversPanel } from '@/components/dashboard/TopMoversPanel';
 import { loadTopMovers } from '@/lib/markets/topMoversLoader';
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { dashboard, dashboard2 } from '@/messages/en.json';
@@ -98,8 +97,7 @@ export default async function Page() {
 
   return (
     <NamespaceProvider ns={{ dashboard, dashboard2 }}>
-      <TodayPanel stockOfDay={stockOfDay} />
-      <TopMoversPanel result={topMovers} />
+      <TodayPanel stockOfDay={stockOfDay} movers={topMovers} />
       <DashboardClient
         rankingsEnabled={rankings}
         rotatingStocks={rotatingStocks}

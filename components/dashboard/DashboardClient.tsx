@@ -14,6 +14,10 @@ import {
   aggregatePresentationState,
   statusColor,
 } from "@/lib/pricePresentation";
+// FD-15: the sourced-rows builder lives in lib/markets/sourcedRow (its
+// bytes load with the dashboard chunk — pricePresentation is shared with
+// /stocks, and the bundle ratchet caught the first version there).
+import { tickerRowFace } from "@/lib/markets/sourcedRow";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";
 import { useLanguage } from "@/lib/language";
@@ -194,15 +198,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     return () => clearInterval(interval);
   }, [observedAt, t]);
 
-  // G6: null (unobserved) renders '—' / neutral — never a fabricated 0 or 0.00%.
-  const fmtINR = (n?: number | null) =>
-    n ? "" + n.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "—";
-  const fmtUSD = (n?: number | null) =>
-    n ? "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "—";
-  const fmtPct = (n?: number | null) =>
-    n != null ? (n >= 0 ? "+" : "") + n.toFixed(2) + "%" : "—";
-  const upClr = (n?: number | null): React.CSSProperties =>
-    ({ color: n == null ? C.textMuted : n >= 0 ? C.green : C.red });
+  // FD-15 (round 54): the INR/USD/pct/direction formatters moved into
+  // tickerRowFace (lib/pricePresentation — one owner, Rule 14); every
+  // market-value row on this surface renders through the sourced-rows
+  // builder now.
 
   return (
     <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }}>
@@ -216,9 +215,15 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
       }}>
         <div className="animate-ticker" style={{ whiteSpace:"nowrap", display:"flex" }}>
           {[...TICKER_SYMS, ...TICKER_SYMS].map((sym, i) => {
-            const d = prices[sym];
-            const up = (d?.changePercent24h ?? 0) >= 0;
-            const useUSD = ["BTC","ETH","SOL","BNB","GOLD","SILVER","WTI"].includes(sym);
+            // FD-15 (founder order 2026-10-13): "Each row shows its source
+            // and as-of time, or '—' with 'no source yet'." The row face
+            // comes from the ONE pure builder (tickerRowFace — Rule 14):
+            // the value is gated on the SOURCE, so an unlabelled number
+            // can never render; a source that disclosed no time keeps its
+            // name with an em-dash as-of (Rule 3).
+            const face = tickerRowFace(prices[sym], {
+              usd: ["BTC","ETH","SOL","BNB","GOLD","SILVER","WTI"].includes(sym),
+            });
             return (
               <span key={i} style={{
                 display:"inline-flex", alignItems:"center", gap:"10px",
@@ -226,14 +231,21 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                 flexShrink:0,
               }}>
                 <span style={{ color:C.textMuted, fontSize:"11px", fontWeight:700, letterSpacing:"0.08em", fontFamily:mono }}>{sym}</span>
-                <span style={{ color:C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
-                  {d?.price ? (useUSD ? "$" : "") + d.price.toLocaleString("en-IN",{maximumFractionDigits:2}) : "—"}
+                <span style={{ color: face.positive == null ? C.textMuted : C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
+                  {face.value}
                 </span>
                 {/* Round-5 audit (finding 9): a missing quote used to render
                     "▼ 0.00%" — a fabricated direction and magnitude. No
-                    data -> no arrow, no number. */}
-                <span style={{ fontSize:"12px", fontWeight:600, color: up ? C.green : C.red, fontFamily:mono }}>
-                  {d?.changePercent24h == null ? "—" : `${up ? "▲" : "▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%`}
+                    data -> no arrow, no number. FD-15: the change renders
+                    only beside a sourced value. */}
+                <span style={{ fontSize:"12px", fontWeight:600, color: face.positive == null ? C.textMuted : face.positive ? C.green : C.red, fontFamily:mono }}>
+                  {face.change}
+                </span>
+                {/* FD-15: the row's attribution — "Source · as-of" or the
+                    founder's sourceless wording. Muted and small: it rides
+                    every scrolling row without competing with the value. */}
+                <span style={{ fontSize:"9px", color:C.textMuted, fontFamily:mono, letterSpacing:"0.02em" }}>
+                  {face.attribution}
                 </span>
               </span>
             );
@@ -265,14 +277,19 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
               <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.priceUnavailable")}</span>
             )}
           </div>
-          <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
-            {/* Round 9: the age keys off the SERVER observation time; no
-                disclosed observation → the honest not-disclosed state,
-                never a bare dash that reads like a glitch (G4). */}
-            {observedAt
-              ? (t("dashboard.updatedPrefix") + timeAgo)
-              : (marketLabel ? t("dashboard.observationTimeNotDisclosed") : t("dashboard.priceUnavailable"))}
-          </span>
+          {/* FD-15 (founder order 2026-10-13): "Remove 'Observation time
+              not disclosed' next to values." Every ticker row now carries
+              its OWN source and as-of, so the aggregate not-disclosed
+              wording is gone; the aggregate age line renders only when an
+              observation was actually disclosed ("Updated …"), and the
+              no-quotes-at-all state is carried by the left side's honest
+              label alone. */}
+          {observedAt && (
+            <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
+              {/* Round 9: the age keys off the SERVER observation time. */}
+              {t("dashboard.updatedPrefix") + timeAgo}
+            </span>
+          )}
         </div>
       </div>
 
@@ -351,8 +368,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           <SectionHeader title="Market Overview" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
             {STATS.map(({ label, sym, usd }) => {
-              const d  = prices[sym];
-              const up = (d?.changePercent24h ?? 0) >= 0;
+              // FD-15: the overview tiles follow the ticker's sourced-rows
+              // contract — same builder, same gate (value requires a
+              // source; attribution rides every tile).
+              const face = tickerRowFace(prices[sym], { usd });
               return (
                 <Link href="/pulse/markets" key={sym} style={{ textDecoration:"none" }}>
                   <div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
@@ -363,11 +382,16 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                     <div className="skeleton" style={{ height:"28px", marginBottom:"8px" }} />
                   ) : (
                     <>
-                      <div style={{ fontSize:"22px",fontWeight:800,color:C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
-                        {usd ? fmtUSD(d?.price) : fmtINR(d?.price)}
+                      <div style={{ fontSize:"22px",fontWeight:800,color: face.positive == null ? C.textMuted : C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
+                        {face.value}
                       </div>
-                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
+                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono, color: face.positive == null ? C.textMuted : face.positive ? C.green : C.red }}>
+                        {face.change}
+                      </div>
+                      {/* FD-15: the tile's source and as-of (or the honest
+                          sourceless wording) — same contract as the ticker. */}
+                      <div style={{ fontSize:"9px", color:C.textMuted, fontFamily:mono, marginTop:"6px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                        {face.attribution}
                       </div>
                     </>
                   )}
@@ -385,8 +409,8 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           <Link href="/pulse?tab=markets" style={{ textDecoration:"none" }}><SectionHeader title="🌍 World Markets →" /></Link>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
             {WORLD_MARKETS.map(({ label, sym }) => {
-              const d  = prices[sym];
-              const up = (d?.changePercent24h ?? 0) >= 0;
+              // FD-15: same sourced-rows contract as the ticker.
+              const face = tickerRowFace(prices[sym], { usd: true });
               return (
                 <Link href="/pulse?tab=markets" key={sym} style={{ textDecoration:"none" }}><div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
                   <div style={{ fontSize:"10px",fontWeight:700,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px",fontFamily:sans }}>
@@ -396,11 +420,14 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                     <div className="skeleton" style={{ height:"28px", marginBottom:"8px" }} />
                   ) : (
                     <>
-                      <div style={{ fontSize:"22px",fontWeight:800,color:C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
-                        {d?.price ? d.price.toLocaleString("en-US",{maximumFractionDigits:2}) : "—"}
+                      <div style={{ fontSize:"22px",fontWeight:800,color: face.positive == null ? C.textMuted : C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
+                        {face.value}
                       </div>
-                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
+                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono, color: face.positive == null ? C.textMuted : face.positive ? C.green : C.red }}>
+                        {face.change}
+                      </div>
+                      <div style={{ fontSize:"9px", color:C.textMuted, fontFamily:mono, marginTop:"6px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                        {face.attribution}
                       </div>
                     </>
                   )}

@@ -92,6 +92,14 @@ test.describe("smoke — core surfaces", () => {
     const homeHtml = await home.text();
     expect(homeHtml).not.toContain("Connecting");
     expect(homeHtml).not.toContain("RANKINGS_ENABLED");
+    // FD-15 (round 54): every ticker row carries its attribution IN THE
+    // FIRST BYTE — on a cold cache that is the honest "no source yet"
+    // (the positive control that the sourced-rows contract renders
+    // server-side, not only after hydration).
+    expect(homeHtml).toContain("no source yet");
+    // and the removed aggregate wording stays gone (founder order:
+    // "Remove 'Observation time not disclosed' next to values")
+    expect(homeHtml).not.toContain("Observation time not disclosed");
   });
 
   // Audit M6/B.3: canonical + Open Graph were absent sitewide (0 occurrences

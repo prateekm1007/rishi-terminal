@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useLanguage } from '../../lib/language';
 import { ALL_RISHIS } from '../../lib/chat/personas';
 
 
@@ -36,7 +35,6 @@ const RANK_COLORS: Record<string, string> = {
 };
 
 export default function ChatWithRishisPage() {
-  const { t } = useLanguage();
   const [selectedRishi, setSelectedRishi] = useState(ALL_RISHIS[0]);
   const [chatHistories, setChatHistories]   = useState<ChatHistory>({});
   const [input, setInput]                   = useState('');
@@ -47,6 +45,14 @@ export default function ChatWithRishisPage() {
   const inputRef                             = useRef<HTMLTextAreaElement>(null);
 
   const currentMessages = chatHistories[selectedRishi.id] || [];
+  // ENG-6 (round 55): the scroll effect's dependency is the ARRAY IDENTITY
+  // the logical expression builds — pinning `chatHistories` + the selected
+  // rishi (the two things that produce it) satisfies exhaustive-deps without
+  // the unstable-expression warning, and the behavior is identical (the
+  // scroll fires exactly when either input changes).
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistories, selectedRishi, isLoading]);
 
   // The most recent assistant reply's actual model (provenance rides on
   // every reply) — never an invented vendor name. When no reply with
@@ -63,10 +69,6 @@ export default function ChatWithRishisPage() {
       r.name.toLowerCase().includes(search.toLowerCase()) ||
       r.label.toLowerCase().includes(search.toLowerCase())
     ), [search]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentMessages, isLoading]);
 
   const selectRishi = (rishi: typeof ALL_RISHIS[0]) => {
     setSelectedRishi(rishi);

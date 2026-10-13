@@ -14,8 +14,10 @@ import crypto from "node:crypto";
 import {
   classifyUniverse,
   type OfficialListingRow,
+  type UniverseRow,
 } from "../lib/securityMaster/verifiedUniverse";
 import type { SymbolHistoryRow } from "../lib/db/securityMaster";
+import { isClaimable, claimableCounts } from "../lib/securityMaster/verifiedUniverse";
 
 const ROOT = process.cwd();
 const SM = path.join(ROOT, "data/security-master");
@@ -181,5 +183,74 @@ describe("verified universe artifact", () => {
   it("negative control: an invented symbol is absent from the artifact", () => {
     const art = JSON.parse(fs.readFileSync(ARTIFACT, "utf-8"));
     expect(art.rows.find((r: { productSymbol: string }) => r.productSymbol === "ZZNOTREAL")).toBeUndefined();
+  });
+});
+
+// ---------- founder policy FD-29 (13 Oct 2026): BE/BZ included with a series label; claim the verified count ----------
+describe("claim rule (FD-29)", () => {
+  it("claims VERIFIED_EQ, VERIFIED_OTHER_SERIES and CONFIRMED_RENAME; never candidates or unmatched", () => {
+    expect(isClaimable("VERIFIED_EQ")).toBe(true);
+    expect(isClaimable("VERIFIED_OTHER_SERIES")).toBe(true);
+    expect(isClaimable("CONFIRMED_RENAME")).toBe(true);
+    expect(isClaimable("CANDIDATE_RENAME")).toBe(false);
+    expect(isClaimable("UNMATCHED")).toBe(false);
+  });
+
+  it("counts EQ and other series apart and keeps candidates out of the claim", () => {
+    const rows = [
+      { status: "VERIFIED_EQ", series: "EQ" },
+      { status: "VERIFIED_EQ", series: "EQ" },
+      { status: "VERIFIED_OTHER_SERIES", series: "BE" },
+      { status: "CANDIDATE_RENAME", series: "EQ" },
+      { status: "UNMATCHED", series: null },
+    ] as unknown as UniverseRow[];
+    expect(claimableCounts(rows)).toEqual({
+      total: 3,
+      eq: 2,
+      otherSeries: 1,
+      confirmedRenames: 0,
+      notClaimable: 2,
+    });
+  });
+});
+
+describe("claim policy in the artifact (FD-29)", () => {
+  it("records the founder's words verbatim", () => {
+    const art = JSON.parse(fs.readFileSync(ARTIFACT, "utf-8"));
+    expect(art.policy.decided_by).toBe("founder");
+    expect(art.policy.decided_on).toBe("2026-10-13");
+    expect(art.policy.quotes).toEqual([
+      "BE/BZ policy: include with a series label",
+      "Use the verified count",
+    ]);
+  });
+
+  it("the decision register carries the same founder words", () => {
+    const register = fs.readFileSync(path.join(ROOT, "docs/ROADMAP.md"), "utf-8");
+    expect(register).toContain("BE/BZ policy: include with a series label");
+    expect(register).toContain("Use the verified count");
+  });
+
+  it("each row's claimable flag follows its status", () => {
+    const art = JSON.parse(fs.readFileSync(ARTIFACT, "utf-8"));
+    for (const r of art.rows) {
+      expect(r.claimable).toBe(isClaimable(r.status));
+    }
+  });
+
+  it("every claimed row carries its series label, and the count is the verified count", () => {
+    const art = JSON.parse(fs.readFileSync(ARTIFACT, "utf-8"));
+    const claimed = art.rows.filter((r: { claimable: boolean }) => r.claimable);
+    expect(claimed.length).toBeGreaterThan(0);
+    for (const r of claimed) {
+      expect(String(r.series)).toMatch(/^[A-Z]{1,3}$/);
+    }
+    const by = art.counts.by_status;
+    expect(art.counts.claimable_total).toBe(claimed.length);
+    expect(art.counts.claimable_total).toBe(
+      by.VERIFIED_EQ + by.VERIFIED_OTHER_SERIES + by.CONFIRMED_RENAME,
+    );
+    expect(art.counts.claimable_eq).toBe(by.VERIFIED_EQ);
+    expect(art.counts.claimable_other_series).toBe(by.VERIFIED_OTHER_SERIES);
   });
 });

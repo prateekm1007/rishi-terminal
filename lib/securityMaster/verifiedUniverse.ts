@@ -2,17 +2,16 @@
  * Investor universe verification (14 October deliverable).
  *
  * Pure classifier: no I/O. Each product symbol is classified against the
- * official NSE equity list and, only when the official list has no entry
- * for the symbol, against the symbol history via the D1-02 resolver
+ * official NSE equity list and, only when the official list has no entry for
+ * the symbol, against the symbol history via the D1-02 resolver
  * (lib/db/securityMaster.ts). A rename is only ever linked through an ISIN.
  *
- * Status meanings (only VERIFIED_* is claimable on an investor surface):
- *   VERIFIED_EQ            symbol is in the official list, series EQ
- *   VERIFIED_OTHER_SERIES  symbol is in the official list, another series
- *   CONFIRMED_RENAME       ISIN links to an official symbol via an nse: source
- *   CANDIDATE_RENAME       ISIN links to an official symbol via a non-official
- *                          (seed or placeholder) source; not claimable
- *   UNMATCHED              no official symbol and no ISIN link; not claimable
+ * Status meanings:
+ *   VERIFIED_EQ            in the official list, series EQ            (claimed)
+ *   VERIFIED_OTHER_SERIES  in the official list, series BE or BZ      (claimed, labelled)
+ *   CONFIRMED_RENAME       ISIN links to an official symbol via an nse: source (claimed)
+ *   CANDIDATE_RENAME       ISIN links via a seed or placeholder source (never claimed until confirmed)
+ *   UNMATCHED              no official symbol and no ISIN link         (never claimed)
  */
 import { resolveSymbolToIsin, type SymbolHistoryRow } from "../db/securityMaster";
 
@@ -126,4 +125,40 @@ export function classifyUniverse(
     }
   }
   return rows;
+}
+
+// ---------- claim rule (FD-29, 13 Oct 2026) ----------
+
+const CLAIMABLE: ReadonlySet<UniverseStatus> = new Set<UniverseStatus>([
+  "VERIFIED_EQ",
+  "VERIFIED_OTHER_SERIES",
+  "CONFIRMED_RENAME",
+]);
+
+/** Only verified statuses are claimed. BE and BZ are claimed with their series label. */
+export function isClaimable(status: UniverseStatus): boolean {
+  return CLAIMABLE.has(status);
+}
+
+export interface ClaimCounts {
+  total: number;
+  eq: number;
+  otherSeries: number;
+  confirmedRenames: number;
+  notClaimable: number;
+}
+
+export function claimableCounts(rows: readonly Pick<UniverseRow, "status">[]): ClaimCounts {
+  const c: ClaimCounts = { total: 0, eq: 0, otherSeries: 0, confirmedRenames: 0, notClaimable: 0 };
+  for (const r of rows) {
+    if (!isClaimable(r.status)) {
+      c.notClaimable += 1;
+      continue;
+    }
+    c.total += 1;
+    if (r.status === "VERIFIED_EQ") c.eq += 1;
+    else if (r.status === "VERIFIED_OTHER_SERIES") c.otherSeries += 1;
+    else c.confirmedRenames += 1;
+  }
+  return c;
 }

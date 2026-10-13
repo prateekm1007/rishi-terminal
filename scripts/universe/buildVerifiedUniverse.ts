@@ -11,6 +11,8 @@ import crypto from "node:crypto";
 import { STOCKS } from "../../data/stocks/index";
 import {
   classifyUniverse,
+  claimableCounts,
+  isClaimable,
   type OfficialListingRow,
   type UniverseRow,
 } from "../../lib/securityMaster/verifiedUniverse";
@@ -130,9 +132,18 @@ function main(): void {
     VERIFIED_EQ: 0, VERIFIED_OTHER_SERIES: 0, CONFIRMED_RENAME: 0, CANDIDATE_RENAME: 0, UNMATCHED: 0,
   };
   for (const r of rows) by[r.status] += 1;
+  const claim = claimableCounts(rows);
 
   const artifact = {
-    schema: "verified-universe/v1",
+    schema: "verified-universe/v2",
+    policy: {
+      decided_by: "founder",
+      decided_on: "2026-10-13",
+      register: "docs/ROADMAP.md FD-29",
+      quotes: ["BE/BZ policy: include with a series label", "Use the verified count"],
+      series_policy: "BE and BZ rows are claimed and carry their series label on every row",
+      count_policy: "the claim is the verified count; candidate and unmatched rows are never counted",
+    },
     sources: {
       official_csv: `data/security-master/${CSV_FILE}`,
       official_csv_sha256: csvSha,
@@ -144,11 +155,13 @@ function main(): void {
     counts: {
       products: rows.length,
       by_status: by,
-      claimable_eq: by.VERIFIED_EQ,
-      claimable_with_other_series: by.VERIFIED_EQ + by.VERIFIED_OTHER_SERIES,
-      not_claimable: by.CANDIDATE_RENAME + by.UNMATCHED,
+      claimable_total: claim.total,
+      claimable_eq: claim.eq,
+      claimable_other_series: claim.otherSeries,
+      claimable_confirmed_renames: claim.confirmedRenames,
+      not_claimable: claim.notClaimable,
     },
-    rows,
+    rows: rows.map((r) => ({ ...r, claimable: isClaimable(r.status) })),
   };
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(path.join(OUT, "verified-universe-2026-10-01.json"), JSON.stringify(artifact, null, 2) + "\n");

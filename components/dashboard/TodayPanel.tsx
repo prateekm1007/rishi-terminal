@@ -1,10 +1,12 @@
 import 'server-only';
 
 import Link from 'next/link';
-import { TRACKING_STATUS } from '@/lib/demoState';
+import { trackingStatusFor, trackingLineFor } from '@/lib/demoState';
 import { MoversPanel } from '@/components/dashboard/MoversPanel'; // LIVE-TODAY: the live Top Winners / Losers / Movers view
 import { livePickFace } from '@/lib/movers/presentation'; // TODAY-FULL: the live Stock of the Day's rendered face
+import { verdictsRowText } from '@/lib/verdicts/presentation'; // TODAY-VERDICTS: the verdicts row's ONE face owner
 import type { MoversSnapshot } from '@/lib/movers/types';
+import type { TrackingState, VerdictsTodayFace } from '@/lib/verdicts/types';
 
 /** TODAY-MOVERS: the news state the page hands the panel — the
  *  aggregation's top item (source + age disclosed), or null when the
@@ -36,17 +38,25 @@ export interface TodayLatestNews {
  *     seed-derived verdict-gated pick this row used to render (and its
  *     N3 banner) is retired HERE only; the ranked trio's own SOD card
  *     in DashboardTail keeps its honest seed-gated semantics;
- *   - verdicts produced today: NONE — the record set is seed data (P0-1:
- *     seed rows show no verdict; the count is a literal 0, not a
- *     computed one pretending to be observed);
+ *   - verdicts produced today: TODAY-VERDICTS (founder order,
+ *     2026-10-14) — the verdicts LEDGER's real state (migration 036):
+ *     the count produced today on live fundamentals, the latest
+ *     verdict with its data-quality class and transport, the disclosed
+ *     candidate set. The empty state keeps the P0-1 honesty (nothing
+ *     produced → nothing claimed);
  *   - news: TODAY-MOVERS: the live RSS aggregation's ACTUAL state
  *     (lib/news/server — the ONE source the /api/news route also
  *     serves). The real latest headline (publisher · age) when the feed
  *     returned one; the founder's honest empty wording ("No headlines
  *     yet") when it did not — the row reflects the feed, never a
  *     static claim;
- *   - forward-return tracking: not started (DEMO-2, lib/demoState — the
- *     ONE source, shared with the methodology line).
+ *   - forward-return tracking: TODAY-VERDICTS — the calibration
+ *     track's state derives from the SAME ledger (baselines recorded
+ *     per produced verdict): "not started" (DEMO-2, lib/demoState)
+ *     until the first baseline lands, then the honest started state
+ *     (start date + baseline count + when forward returns become
+ *     measurable). One state source (the ledger), one wording source
+ *     (lib/demoState) — shared with the methodology page.
  *
  * SERVER component — zero first-load JS (the C9 pairing for the demo LCP
  * budget, ENG-3). The IST date renders from the ISR-baked render time
@@ -57,9 +67,13 @@ export interface TodayLatestNews {
 export function TodayPanel({
   movers,
   latestNews,
+  verdicts,
+  tracking,
 }: {
   movers: MoversSnapshot | null;
   latestNews: TodayLatestNews | null;
+  verdicts: VerdictsTodayFace | null;
+  tracking: TrackingState | null;
 }) {
   const istDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
   const pick = movers?.pick ? livePickFace(movers.pick) : null;
@@ -126,10 +140,26 @@ export function TodayPanel({
           </div>
         )}
 
-        <div style={{ color: "var(--text-muted)" }}>
-          Verdicts produced today: <strong style={{ color: "var(--text-secondary)" }}>none</strong> — the record set is
-          illustrative seed data, so no Rishi verdicts are produced (P0-1); the honest record renders on every stock page.
-        </div>
+        {/* TODAY-VERDICTS: the verdicts row renders the LEDGER's real
+            state — the count produced today on live fundamentals (the
+            P0-1 gate refuses seed-mixed records upstream, so a rendered
+            verdict is live/delayed by construction), the latest verdict
+            with its class and transport, the disclosed candidate set.
+            Empty ledger → the honest P0-1 wording, nothing estimated. */}
+        {verdicts && verdicts.count > 0 ? (
+          <div data-today-verdicts-row style={{ color: "var(--text-muted)" }}>
+            Verdicts produced today:{" "}
+            <strong style={{ color: "var(--text-secondary)" }} data-today-verdicts-count>
+              {verdicts.count}
+            </strong>{" "}
+            — {verdictsRowText(verdicts)}
+          </div>
+        ) : (
+          <div data-today-verdicts-empty style={{ color: "var(--text-muted)" }}>
+            Verdicts produced today: <strong style={{ color: "var(--text-secondary)" }}>none</strong> — the record set is
+            illustrative seed data, so no Rishi verdicts are produced (P0-1); the honest record renders on every stock page.
+          </div>
+        )}
 
         {/* TODAY-MOVERS: the news row renders the live aggregation's
             ACTUAL state — the real headline (source + age) when the feed
@@ -152,10 +182,19 @@ export function TodayPanel({
           </div>
         )}
 
+        {/* TODAY-VERDICTS: the tracking row derives from the SAME ledger
+            the verdicts row reads (one state source): the not-started
+            literal until the first baseline is recorded, the honest
+            started state after — the wording is owned by lib/demoState
+            (one wording source, shared with the methodology page). */}
         <div style={{ color: "var(--text-muted)" }}>
-          Forward-return tracking: <strong data-tracking-status style={{ color: "var(--text-secondary)" }}>{TRACKING_STATUS}</strong>{" "}
-          — <Link href="/methodology" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>methodology</Link> carries the
-          same line; it retires when the calibration track begins.
+          Forward-return tracking:{" "}
+          <strong data-tracking-status style={{ color: "var(--text-secondary)" }}>
+            {trackingStatusFor(tracking)}
+          </strong>{" "}
+          ({trackingLineFor(tracking)}) —{" "}
+          <Link href="/methodology" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>methodology</Link> carries the
+          same line; forward-return measurements begin after the next session close.
         </div>
       </div>
     </section>

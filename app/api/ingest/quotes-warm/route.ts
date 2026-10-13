@@ -58,6 +58,7 @@ import {
   serveQuote,
 } from "@/lib/quotePath";
 import { refreshMovers } from "@/lib/movers/warm";
+import { refreshVerdicts } from "@/lib/verdicts/warm"; // TODAY-VERDICTS: the verdicts-ledger step
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -247,6 +248,19 @@ export async function POST(req: NextRequest) {
   // tick succeeds.
   const moversOutcome = await refreshMovers();
 
+  // ── TODAY-VERDICTS: the verdicts step — produces Rishi verdicts on
+  // LIVE fundamentals for the disclosed candidate set (Screener.in
+  // primary — with the balance-sheet D/E derivation — Yahoo+NSE
+  // fallback), through the SAME scoring surface the stock page runs
+  // (the P0-1 gate refuses seed-mixed records upstream). Produced
+  // verdicts + their day-0 baselines are written to verdicts_produced
+  // (migration 036) and DISCLOSED here. A candidate that already
+  // produced today is NOT re-fetched (fundamentals move quarterly —
+  // the (symbol, ist_date) key is the TTL); `force` re-produces for the
+  // operator's acceptance run. A failure never fails the tick (the
+  // same class as the movers step).
+  const verdictsOutcome = await refreshVerdicts({ force });
+
   // G6 (round 23): this slice IS a price ingestion — record it so
   // /api/health's price signal tracks the REAL freshness mechanism (the
   // pg_cron warmer) instead of a job name nothing writes. records_out
@@ -280,6 +294,7 @@ export async function POST(req: NextRequest) {
       pages: pageOutcomes,
     },
     movers: moversOutcome,
+    verdicts: verdictsOutcome,
     market: ms,
     forced: force && !ms.open,
   });

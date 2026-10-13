@@ -42,10 +42,16 @@ describe("R13 — the Today view and the tracking line", () => {
     expect(page).toContain("from '@/lib/demoState'");
     expect(page).toContain("data-methodology-tracking");
     expect(page).toContain("S2-03/S2-04");
-    // the line is not hardcoded to a computed-looking state — the literal
-    // rides the import
-    expect(page).toContain("trackingLine()");
-    expect(page).toContain("TRACKING_STATUS");
+    // TODAY-VERDICTS (founder order, 2026-10-14): the line still rides
+    // the ONE source — now the state-derived pair (trackingLineFor /
+    // trackingStatusFor, both exported by lib/demoState) fed by the
+    // verdicts ledger's tracking state. The literal import retired WITH
+    // the state-dependence: a build-baked "not started" would outlive
+    // the first recorded baseline (rule 1).
+    expect(page).toContain("trackingLineFor");
+    expect(page).toContain("trackingStatusFor");
+    // the state comes from the ONE ledger read, not a local literal
+    expect(page).toContain("readTrackingState");
   });
 
   it("the homepage mounts the honest Today view", () => {
@@ -62,10 +68,15 @@ describe("R13 — the Today view and the tracking line", () => {
     // from the movers snapshot; the ranked trio's own SOD card in
     // DashboardTail keeps its seed-gated semantics) — the gate still
     // pins the mounting AND the movers/news props (updated shape).
+    // TODAY-VERDICTS (founder order, 2026-10-14): the mount gains the
+    // verdicts-ledger pair — the panel's verdicts row and tracking row
+    // render from the ledger (one read each, the movers read's class).
     expect(page).toContain(
-      "<TodayPanel movers={movers} latestNews={latestNews} />",
+      "<TodayPanel movers={movers} latestNews={latestNews} verdicts={verdicts} tracking={tracking} />",
     );
     expect(page).toContain("readMoversSnapshot");
+    expect(page).toContain("readVerdictsToday");
+    expect(page).toContain("readTrackingState");
   });
 
   it("the TodayPanel is a server component with honest literals (B-18 positive control)", () => {
@@ -86,7 +97,11 @@ describe("R13 — the Today view and the tracking line", () => {
     expect(panel).toContain("No headlines yet");
     // the tracking status rides the ONE source, not a local literal
     expect(panel).toContain("from '@/lib/demoState'");
-    expect(panel).toContain("{TRACKING_STATUS}");
+    // TODAY-VERDICTS: the state-derived pair (lib/demoState exports
+    // both the literal fallback and the ledger-state wording — the
+    // panel renders the pair, never a local literal)
+    expect(panel).toContain("trackingStatusFor");
+    expect(panel).toContain("trackingLineFor");
     // the deterministic IST date renders (rule 18 class: fixed timezone)
     expect(panel).toContain("Asia/Kolkata");
     // LIVE-TODAY: the movers view mounts inside the panel

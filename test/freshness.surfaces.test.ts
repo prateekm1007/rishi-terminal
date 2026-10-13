@@ -45,6 +45,8 @@ const EXEMPTED_SURFACES: Record<string, string> = {
     "server component; the banner renders in its client child components/stock/StockPageClient.tsx (covers hero, QVPS, metrics, verdicts, graph)",
   "components/screener/StockTable.tsx":
     "rendered inside ScreenerClient, which shows the banner directly above the table",
+  "components/screener/stocksTableOptions.ts":
+    "headless TanStack options factory (TANSTACK-STOCKS) — renders no UI of its own; the rows it shapes flow into components/screener/StockTable.tsx under ScreenerClient's page-level banner (the same documented pattern as the StockTable entry)",
   "components/screener/ScreenerQueryBar.tsx":
     "rendered inside ScreenerClient above the same page-level banner; renders match COUNTS and the query input only — the matching rows themselves flow into StockTable under the banner (X3-05)",
   "components/lab/OverviewTab.tsx":

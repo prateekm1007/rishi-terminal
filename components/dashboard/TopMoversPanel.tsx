@@ -1,6 +1,6 @@
 import type { MoverRow, MoversResult } from "../../lib/markets/topMovers";
 
-/** Attribution required by the NSE permission letter: "Source: NSE", unaltered. */
+/** NSE attribution as the permission letter requires it. Shown on every panel that carries NSE data. */
 const NOTICE = "Source: NSE · delayed · not investment advice";
 
 function istTime(iso: string | null): string {

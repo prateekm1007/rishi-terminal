@@ -103,6 +103,40 @@ export const nseBlockDealsSchema = z.object({
 
 export type NseBlockDeal = z.infer<typeof nseBlockDealSchema>;
 
+// ── NSE India: /api/live-analysis-variations?index=gainers|losers ────
+// LIVE-TODAY (founder order, 2026-10-13): the market-movers endpoint the
+// MIT-licensed unofficial scrapers (vsjha18/nsetools,
+// marketcalls/openchart) document. The field spellings below accept BOTH
+// the legacy dynaContent shape (ltp / netPrice / pChange) and the modern
+// API shape (lastPrice / change / perChange) because the payload was NOT
+// capturable from this repo's development egress (NSE's Akamai edge
+// 403s datacenter IPs — verified 2026-10-13) and the schema is pinned to
+// the documented contract, not to captured bytes. A mismatch fails the
+// whole parse (fail closed, R4) and the warmer discloses the zod issue
+// so the first production capture can correct the schema in one commit.
+export const nseMoverRowSchema = z
+  .object({
+    symbol: z.string().min(1).max(24),
+    ltp: nseNumeric,
+    lastPrice: nseNumeric,
+    netPrice: nseNumeric,
+    change: nseNumeric,
+    pChange: nseNumeric,
+    perChange: nseNumeric,
+    totalTradedVolume: nseNumeric,
+  })
+  .passthrough();
+
+export const nseMoversResponseSchema = z
+  .object({
+    data: z.array(nseMoverRowSchema).optional(),
+    timestamp: z.string().optional(),
+  })
+  .passthrough();
+
+export type NseMoverRow = z.infer<typeof nseMoverRowSchema>;
+export type NseMoversResponse = z.infer<typeof nseMoversResponseSchema>;
+
 // ── Google Gemini: generateContent completion ────────────────────────
 export const geminiCompletionSchema = z.object({
   candidates: z

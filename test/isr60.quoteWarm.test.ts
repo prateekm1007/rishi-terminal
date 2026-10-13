@@ -201,17 +201,28 @@ describe("ISR60 — the quick set warms, revalidates and re-renders every tick",
     for (const sym of quick) {
       expect(revalidatePathMock).toHaveBeenCalledWith(`/stock/${sym}`);
     }
+    // LIVE-TODAY (round 56): the homepage joins the revalidate/ping set —
+    // the Today view's movers panels ride the same 60 s contract as the
+    // quick-set stock pages.
+    expect(revalidatePathMock).toHaveBeenCalledWith("/");
     for (const sym of quick) {
       const called = pageFetchMock.mock.calls.some(
         (c) => String(c[0]) === `https://terminal.test/stock/${sym}`,
       );
       expect(called, `the ping must re-render /stock/${sym}`).toBe(true);
     }
+    expect(
+      pageFetchMock.mock.calls.some((c) => String(c[0]) === "https://terminal.test/"),
+      "the ping must re-render the homepage (movers panels)",
+    ).toBe(true);
     expect(body.isr60.pages).toBeDefined();
+    // The outcomes map is PATH-keyed (self-describing: "/stock/RELIANCE",
+    // "/") — the contract this pin moved with in LIVE-TODAY.
     for (const sym of quick) {
-      expect(body.isr60.pages[sym]).toBe(200);
+      expect(body.isr60.pages[`/stock/${sym}`]).toBe(200);
     }
-    expect(body.isr60.revalidated).toBe(quick.length);
+    expect(body.isr60.pages["/"]).toBe(200);
+    expect(body.isr60.revalidated).toBe(quick.length + 1);
   });
 
   it("a failed ping is DISCLOSED, not swallowed and not counted as refreshed", async () => {
@@ -220,8 +231,9 @@ describe("ISR60 — the quick set warms, revalidates and re-renders every tick",
     expect(res.status).toBe(200);
     const body = await res.json();
     for (const sym of quickRefreshSymbols()) {
-      expect(String(body.isr60.pages[sym])).toContain("edge timeout");
+      expect(String(body.isr60.pages[`/stock/${sym}`])).toContain("edge timeout");
     }
+    expect(String(body.isr60.pages["/"])).toContain("edge timeout");
     expect(body.isr60.pagesRendered).toBe(0);
   });
 

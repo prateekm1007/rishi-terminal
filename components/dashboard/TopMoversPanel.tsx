@@ -1,7 +1,7 @@
 import type { MoverRow, MoversResult } from "../../lib/markets/topMovers";
 
-const NOTICE =
-  "Source: NSE quote feed (unofficial endpoint) · delayed · display permission pending · not investment advice";
+/** Attribution required by the NSE permission letter: "Source: NSE", unaltered. */
+const NOTICE = "Source: NSE · delayed · not investment advice";
 
 function istTime(iso: string | null): string {
   if (!iso) return "time not disclosed";
@@ -39,7 +39,7 @@ function Column({
               <a href={`/stock/${encodeURIComponent(r.symbol)}`}>{r.symbol}</a>{" "}
               <span>{r.name}</span> <span>{r.price.toFixed(2)}</span>{" "}
               <span>{`${r.change > 0 ? "+" : ""}${r.change.toFixed(2)}%`}</span>{" "}
-              <span>{`${istTime(r.observedAt)} · ${r.source}`}</span>
+              <span>{istTime(r.observedAt)}</span>
             </li>
           ))}
         </ol>

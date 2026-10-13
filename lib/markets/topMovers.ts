@@ -1,12 +1,14 @@
 /**
  * Top movers (13 Oct 2026): pure ranking for the dashboard panel.
  *
- * A null change is unavailability, never zero, so it is never ranked. A quote
- * without an upstream observation time is not ranked, and neither is one older
- * than the window. Ties break by symbol, so the order is deterministic.
+ * Only quotes sourced from NSE are ranked. The NSE permission letter covers
+ * NSE's quote endpoints and nothing else. A null change is unavailability,
+ * never zero. A quote without an upstream observation time is not ranked, and
+ * neither is one older than the window. Ties break by symbol.
  */
 export const MOVER_COUNT = 5;
 export const MOVER_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+export const PERMITTED_MOVER_SOURCE = "nse";
 
 export interface MoverInput {
   symbol: string;
@@ -22,6 +24,7 @@ export interface MoverRow extends MoverInput {
 }
 
 export interface MoversExcluded {
+  notPermittedSource: number;
   nullChange: number;
   undated: number;
   stale: number;
@@ -43,9 +46,19 @@ export function rankTopMovers(
   opts: { nowMs: number; maxAgeMs?: number },
 ): MoversResult {
   const maxAge = opts.maxAgeMs ?? MOVER_MAX_AGE_MS;
-  const excluded: MoversExcluded = { nullChange: 0, undated: 0, stale: 0, invalidPrice: 0 };
+  const excluded: MoversExcluded = {
+    notPermittedSource: 0,
+    nullChange: 0,
+    undated: 0,
+    stale: 0,
+    invalidPrice: 0,
+  };
   const eligible: MoverRow[] = [];
   for (const r of inputs) {
+    if (r.source !== PERMITTED_MOVER_SOURCE) {
+      excluded.notPermittedSource += 1;
+      continue;
+    }
     if (r.change === null || !Number.isFinite(r.change)) {
       excluded.nullChange += 1;
       continue;

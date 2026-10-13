@@ -18,7 +18,7 @@ const q = (symbol: string, change: number | null, observedAt: string | null = ag
   price: 100,
   change,
   observedAt,
-  source: "NSE quote feed",
+  source: "nse",
 });
 
 describe("rankTopMovers", () => {
@@ -66,6 +66,12 @@ describe("rankTopMovers", () => {
     expect(r.losers.map((x) => x.symbol)).toEqual(["B"]);
   });
 
+  it("quotes not sourced from NSE are never ranked: the letter covers NSE only", () => {
+    const r = rankTopMovers([{ ...q("Y1", 9), source: "yahoo" }, q("N1", 1), q("N2", 2)], { nowMs: NOW });
+    expect(r.winners.map((x) => x.symbol)).toEqual(["N2", "N1"]);
+    expect(r.excluded.notPermittedSource).toBe(1);
+  });
+
   it("ties break by symbol, so the order is deterministic", () => {
     const r = rankTopMovers([q("ZED", 2), q("ABC", 2), q("MID", 2)], { nowMs: NOW });
     expect(r.winners.map((x) => x.symbol)).toEqual(["ABC", "MID", "ZED"]);
@@ -101,8 +107,18 @@ describe("TopMoversPanel", () => {
     const html = renderToStaticMarkup(createElement(TopMoversPanel, { result: r }));
     for (const s of ["W1", "W2", "W3", "W4", "W5"]) expect(html).toContain(s);
     expect(html).not.toContain("W6");
-    expect(html).toContain("unofficial");
-    expect(html).toContain("display permission pending");
+    expect(html).toContain("Source: NSE");
+    expect(html).not.toContain("unofficial");
+    expect(html).not.toContain("display permission pending");
+  });
+
+  it("a non-NSE quote never reaches the rendered page", () => {
+    const r = rankTopMovers(
+      [{ ...q("YAHOOROW", 9), source: "yahoo" }, q("A", 1), q("B", 2), q("C", 3), q("D", 4), q("E", 5)],
+      { nowMs: NOW },
+    );
+    const html = renderToStaticMarkup(createElement(TopMoversPanel, { result: r }));
+    expect(html).not.toContain("YAHOOROW");
   });
 
   it("a null-change quote never reaches the rendered page", () => {

@@ -1,0 +1,10 @@
+{
+  "id": "faithful-verified-surface",
+  "question": "What is RELIANCE's return on equity?",
+  "answer": "RELIANCE returned 12 percent on equity.",
+  "contexts": [
+    "roe = 12 percent — live (observed/as-of 2026-09-30)"
+  ],
+  "expected": { "support_ratio": 1.0, "verdict": "pass" },
+  "note": "The repo's verified-surface shape: every number in the answer is a server-generated verified statement backed by the cited evidence."
+}

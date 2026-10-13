@@ -1,0 +1,4 @@
+FAIL: faithful-verified-surface gate verdict fail != recorded pass (ratio 1.0 vs threshold 1.1)
+ok: unfaithful-figure ratio=0.0 verdict=fail
+plumbing: 1 failure(s) — the gate BITES
+bite exit: 1

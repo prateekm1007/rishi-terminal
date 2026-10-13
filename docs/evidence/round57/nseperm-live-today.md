@@ -184,3 +184,55 @@ With the cache:
 
 Appended after the deployment lands (the production warmer's force=1 run,
 the bare-URL homepage checks, postDeploySmoke).
+
+## 5. The C6 acceptance (merged + deployed + live — 2026-10-13, 18:44–18:56Z)
+
+```
+[18:44Z]  PR #437 MERGED 1ee332fcb8eb7657e59af9a82890ad39e7cff9ff (all six CI checks green
+          after the cadence-window rerun; the first run failed ONLY the C8 gate by design)
+[18:48Z]  deploy READY (the git integration fired — quota healthy: 7 deployments/24h)
+[18:53Z]  /api/version: {"sha":"1ee332fcb8eb7657e59af9a82890ad39e7cff9ff"}
+[18:53Z]  force=1 warm 200 (31.2s): movers={"path":"nse","gainers":5,"losers":4,
+          "universeObserved":null,"error":null}   <-- THE NSE PATH SERVED (first time;
+          round-56's attempt had failed schema-first into the computed fallback)
+          isr60.revalidated=8 pagesRendered=8
+[18:54Z]  bare-URL homepage (fresh fetch):
+          Winners (NSE, 5 rows):  HCLTECH, TCS, SHRIRAMFIN, TECHM, INFY
+          Losers  (NSE, 4 rows):  KOTAKBANK, ETERNAL, MARUTI, MAXHEALTH   (honest short
+                                  list — NSE's own ranking, nothing padded)
+          Movers (computed, 5):   HATHWAY, BANDHANBNK, PNCINFRA, BSOFT, HCLTECH
+          derivation: "List: NSE's own movers ranking — Nifty 50 (licensed use,
+          NSE/MD/DATA/PERM/2026/0847)."
+          movers-list derivation: "Movers list: computed from this session's cached
+          observations — 827 tracked symbols observed (Yahoo Finance (unofficial)
+          transport)."
+          attributions: "Source: NSE · Tue 13 Oct, 16:00 IST" (the §4 prescribed wording,
+          NSE's own timestamp) on every NSE row; "Yahoo Finance (unofficial) · …" on the
+          computed list's rows — mixed provenance disclosed PER ROW, never within a list
+          SOD row: "Stock of the Day: HCLTECH — HCL Technologies · ₹1,320.1 ▲ +7.94%
+          (+97.09) · ₹28,38,15,41,434 traded today — the session's most-traded stock by
+          value (live market data, not a verdict) Yahoo Finance (unofficial) · Tue 13
+          Oct, 15:15 IST · top of 827 tracked symbols with today's session data"
+          caveat: "Market data — may be delayed, incomplete, or wrong; each row carries
+          its own source and observation time. Not investment advice."
+          news row: "Nvidia buys stakes in four French tech startups: Report — ET
+          Corporate · 7 min ago" (live RSS from the production egress)
+[18:56Z]  postDeploySmoke: PASS (https://rishi-terminal.vercel.app, sha 1ee332fcb8eb)
+```
+
+Notes from the live run:
+
+- The NIFTY universe served (not ALL) — the disclosure adapts to whatever
+  the payload carried at fetch time ("Nifty 50"); if NSE's payload carries
+  the ALL block at another hour, the preference order picks it and the
+  line changes to "all securities". Either way the scope is disclosed,
+  never guessed.
+- The losers list carries 4 rows — NSE's own ranking at that timestamp
+  (the honesty filters drop rows without both a price and a disclosed
+  percent; nothing is padded to five).
+- The SOD pick (HCLTECH) is ALSO the top NSE gainer tonight — a
+  coincidence of the day (the most-traded stock by value happened to
+  close +7.94%); the two rankings are independent computations.
+- The pick's own provenance is Yahoo (the quote-cache observation) — the
+  pick keeps ITS source's attribution, not the panel's NSE derivation
+  (FD-15: the attribution travels with the value).

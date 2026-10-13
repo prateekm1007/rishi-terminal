@@ -46,6 +46,10 @@ export async function fetchNSEFundamentals(symbol: string): Promise<Partial<Live
     try {
       res = await fetch(url, {
         headers: NSE_HEADERS,
+        // no-store: a live quote scrape must never be response-cached
+        // (the movers/nse semantic — the warmer's ISR60 pin asserts it
+        // on every tick fetch).
+        cache: "no-store",
         signal: ac.signal,
       });
     } finally {
@@ -118,6 +122,8 @@ export async function fetchYahooFundamentals(symbol: string): Promise<Partial<Li
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           'Accept': 'application/json',
         },
+        // no-store: a live quote fetch must never be response-cached.
+        cache: "no-store",
         signal: ac.signal,
       });
     } finally {

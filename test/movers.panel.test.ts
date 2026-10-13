@@ -205,7 +205,7 @@ describe("TODAY-MOVERS — the third panel (biggest absolute swings, founder ord
 describe("TODAY-FULL — the LIVE Stock of the Day row (founder order, 2026-10-14)", () => {
   it("a pick renders: symbol link, price, change, traded value, pool size, provenance, NOT-a-verdict label", () => {
     const html = renderToStaticMarkup(
-      React.createElement(TodayPanel, { movers: SNAPSHOT, latestNews: null }),
+      React.createElement(TodayPanel, { movers: SNAPSHOT, latestNews: null, verdicts: null, tracking: null }),
     );
     expect(html).toContain("data-today-sod-row");
     expect(html).toContain('data-today-sod');
@@ -233,6 +233,8 @@ describe("TODAY-FULL — the LIVE Stock of the Day row (founder order, 2026-10-1
           pick: { ...SNAPSHOT.pick!, price: 777.7, changePct: null },
         },
         latestNews: null,
+        verdicts: null,
+        tracking: null,
       }),
     );
     expect(html).toContain("data-today-sod-row");
@@ -251,6 +253,8 @@ describe("TODAY-FULL — the LIVE Stock of the Day row (founder order, 2026-10-1
       React.createElement(TodayPanel, {
         movers: { ...SNAPSHOT, pick: { ...SNAPSHOT.pick!, price: 777.7, source: null } },
         latestNews: null,
+        verdicts: null,
+        tracking: null,
       }),
     );
     expect(html).toContain("data-today-sod-row");
@@ -261,7 +265,7 @@ describe("TODAY-FULL — the LIVE Stock of the Day row (founder order, 2026-10-1
 
   it("no pick renders the honest empty — never a fabricated subject", () => {
     const html = renderToStaticMarkup(
-      React.createElement(TodayPanel, { movers: { ...SNAPSHOT, pick: null }, latestNews: null }),
+      React.createElement(TodayPanel, { movers: { ...SNAPSHOT, pick: null }, latestNews: null, verdicts: null, tracking: null }),
     );
     expect(html).toContain("data-today-sod-empty");
     expect(html).toContain("no live pick yet");
@@ -273,6 +277,8 @@ describe("TODAY-FULL — the LIVE Stock of the Day row (founder order, 2026-10-1
       React.createElement(TodayPanel, {
         movers: { ...SNAPSHOT, pick: { ...SNAPSHOT.pick!, source: "yahoo-bulk" } },
         latestNews: null,
+        verdicts: null,
+        tracking: null,
       }),
     );
     expect(html).toContain("Yahoo Finance (unofficial) · Tue 13 Oct, 15:45 IST");
@@ -282,7 +288,7 @@ describe("TODAY-FULL — the LIVE Stock of the Day row (founder order, 2026-10-1
 describe("LIVE-TODAY — TodayPanel render (the honest literals survive)", () => {
   it("the Today panel mounts the movers view and keeps every honest literal", () => {
     const html = renderToStaticMarkup(
-      React.createElement(TodayPanel, { movers: SNAPSHOT, latestNews: null }),
+      React.createElement(TodayPanel, { movers: SNAPSHOT, latestNews: null, verdicts: null, tracking: null }),
     );
     expect(html).toContain("data-today-panel");
     expect(html).toContain("data-movers-panel");
@@ -295,7 +301,7 @@ describe("LIVE-TODAY — TodayPanel render (the honest literals survive)", () =>
 
   it("a null movers snapshot keeps the Today panel honest, not broken", () => {
     const html = renderToStaticMarkup(
-      React.createElement(TodayPanel, { movers: null, latestNews: null }),
+      React.createElement(TodayPanel, { movers: null, latestNews: null, verdicts: null, tracking: null }),
     );
     expect(html).toContain("data-today-panel");
     expect(html).toContain("data-movers-notgenerated");
@@ -308,6 +314,8 @@ describe("LIVE-TODAY — TodayPanel render (the honest literals survive)", () =>
       React.createElement(TodayPanel, {
         movers: SNAPSHOT,
         latestNews: { headline: "Markets close higher", source: "Economic Times", minutesAgo: 12 },
+        verdicts: null,
+        tracking: null,
       }),
     );
     expect(html).toContain("Markets close higher");

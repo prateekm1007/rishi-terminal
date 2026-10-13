@@ -838,3 +838,56 @@ the redacted record in `docs/evidence/round57/nseperm-live-today.md`).
 - **#432 closed** (C7 hygiene per the round-56 escalation + the C10
   decision protocol — superseded by #433/#434/#437; the FD-30/FD-31
   licensing record preserved on the closed thread, comment 6151541705).
+
+## Round 58 (2026-10-14 IST) — TODAY-VERDICTS: the full Today panel — real verdicts on live fundamentals (#440)
+
+Founder order (verbatim): "finish and tune it to world class now that we
+have permission … make sure the full today panel is populated on
+dashboard."
+
+- **#440 MERGED `75283db4` at 21:25:08Z** (all seven checks green on
+  `949de4b`; the first run failed only the PROVENANCE freshness gate —
+  /methodology's reclassification none → sourced, the audit's own
+  demand, regenerated + committed). **DEPLOYED**: the quota freed on the
+  sporadic B-22 retry — manual v13 `dpl_3TDMKUaRxxrDK8CoCsSHCs1dSTPb`
+  READY 21:52:25Z; `/api/version = 75283db46af1`.
+- **LIVE (C6, verified 21:53–22:05Z)**: the Today panel's last two
+  honest-empty rows are now LIVE — **"Verdicts produced today: 3 — 3
+  verdicts produced today on live fundamentals — latest: INFY
+  (Balanced Risk-Reward, 60.0/100, delayed live data (undated provider
+  observations)) · fundamentals via Screener.in (unofficial) · candidate
+  set: RELIANCE, TCS, INFY, ITC, HDFCBANK · produced 14 Oct, 02:18 IST.
+  A heuristic score, not investment advice."** and **"Forward-return
+  tracking: started (tracking: started 2026-10-14 — 3 verdict baselines
+  recorded; forward returns measurable after the next session close)"**
+  — both empty states gone, the three Top-5 lists, the live SOD and the
+  news row unchanged. The force=1 warm's verdicts step: produced 3,
+  refused ITC + HDFCBANK (`data-quality:seed`, disclosed — ITC's page
+  carries no promoter row; bank pages carry no Borrowings/OPM rows),
+  notReached none, error null. postDeploySmoke **PASS** vs `75283db…`
+  (run from main; the pre-#439 local smoke's 2 stale-gate legs were the
+  exact bug #439 fixed). Full C6 evidence:
+  `docs/evidence/round58/today-verdicts.md`.
+- **The unblocking fix**: the Screener D/E derivation — the current
+  page format exposes no "Debt to equity" ratio (debtToEquity parsed
+  null for EVERY stock, leaving every Screener-resolved record
+  seed-mixed under P0-1); the value now derives from the balance-sheet
+  rows (latest-column Borrowings / (Equity Capital + Reserves);
+  RELIANCE 0.4457, the public ~0.45 reality). Fail-first: 3 RED → 9/9
+  GREEN + the real captured bytes validated.
+- **Migration 036** applied + verified on production ahead of the deploy
+  (additive: `verdicts_produced` unique (symbol, ist_date) + RLS
+  deny-all + the live|delayed check; `verdicts_meta`; CI's Postgres-16
+  job validated it on the PR).
+- **The architecture**: `lib/verdicts` mirrors the LIVE-TODAY movers
+  pattern — the producer drives the SAME single scoring surface every
+  stock page runs (the P0-1 gate refuses upstream; refusals disclosed
+  with reasons), the ledger records each verdict's consensus, category,
+  class, per-field source map, transport, and the day-0 BASELINE (the
+  same quote-cache observation the stock-page header renders) — the
+  S2-03/S2-04 calibration track measures forward returns from it. The
+  methodology page carries the same tracking line via hourly ISR (one
+  state source, one wording source).
+- **Battery**: tsc 0; eslint 236 = ratchet exactly; vitest 231 files /
+  2530 tests (17 new legs); encoding PASS; validate:stocks 896 clean;
+  parity 0; build 1020/1020; ISR gate PASS; budgets OK.

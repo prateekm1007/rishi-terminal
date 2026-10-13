@@ -11,7 +11,7 @@
 // model, grounded flag, per-claim evidence ids) moves here unchanged from
 // the sidebar — never hidden (aiLoopAudit).
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Stock, RishiScore } from '../../lib/types';
 
 interface MessageProvenance {
@@ -50,7 +50,7 @@ export function WisdomChat({ stock, scores }: Props) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return;
 
     setError(null);
@@ -107,7 +107,7 @@ export function WisdomChat({ stock, scores }: Props) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, messages, selectedRishi, stock]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "500px" }}>
@@ -241,7 +241,7 @@ export function WisdomChat({ stock, scores }: Props) {
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !isLoading && sendMessage(input)}
+            onKeyDown={e => { if (e.key === 'Enter' && !isLoading) sendMessage(input); }}
             disabled={isLoading}
             placeholder={`Ask ${selectedRishi}...`}
             style={{

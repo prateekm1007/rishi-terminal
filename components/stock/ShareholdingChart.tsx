@@ -48,8 +48,9 @@ export function ShareholdingChart({ symbol, refreshMs = 3_600_000 }: Props) {
           setHistory(h);
           setError(null);
         }
-      } catch (e: any) {
-        if (mounted) setError(e?.message ?? "Failed");
+      } catch (e) {
+        // ENG-6: unknown-typed catch — same guard as QuarterlyChart.
+        if (mounted) setError(e instanceof Error ? e.message : typeof e === "string" && e ? e : "Failed");
       } finally {
         if (mounted) setLoading(false);
       }

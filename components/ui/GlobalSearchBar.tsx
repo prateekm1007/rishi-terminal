@@ -61,9 +61,15 @@ export function GlobalSearchBar() {
     if (abortRef.current) abortRef.current.abort();
 
     if (!query.trim()) {
-      setResults([]);
-      setSelected(-1);
-      return;
+      // ENG-6: the empty-query reset is deferred one tick off the effect
+      // body — synchronous setState in the effect cascaded renders; the
+      // reset itself is unchanged (clears stale results immediately after
+      // the input empties).
+      const reset = setTimeout(() => {
+        setResults([]);
+        setSelected(-1);
+      }, 0);
+      return () => clearTimeout(reset);
     }
 
     debounceRef.current = setTimeout(async () => {

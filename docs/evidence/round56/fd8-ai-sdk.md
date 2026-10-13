@@ -51,6 +51,20 @@ call; the A4 static no-model-surface pin stays untouched.")
   ONE AI entry point; no second path).
 - tsc 0; eslint 0 on changed files.
 
+## Closeout addendum (2026-10-13, round 57): the missed third observation
+
+The rebase onto main (c400223) exposed that a FOURTH file observed the raw gemini
+wire body but was not in the normalisation set: test/chat.limits.test.ts (the two
+T7 injected-prompt pins read system_instruction.parts). The first CI run on the
+rebased head failed exactly there (2F/2416P). Wire probe (scripts/r57/probe-gemini-wire.mts
+against the installed SDK, fetch-stubbed, zero network; captured output
+docs/evidence/round57/fd8-gemini-wire-probe.txt):
+the SDK emits systemInstruction (camelCase) with the server persona ONLY — the
+client-supplied systemPrompt never appears — and the user text lands solely in
+the last user turn. The two pins now read systemInstruction ?? system_instruction
+(same normalisation the proof above already documents for chat.provider.test.ts);
+the invariants are byte-identical. Local: test/chat.limits.test.ts 10/10.
+
 ## No provider call happens (the founder's condition)
 
 Every test mocks globalThis.fetch; no CI step holds a provider key; chat stays

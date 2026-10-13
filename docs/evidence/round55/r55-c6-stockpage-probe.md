@@ -146,3 +146,26 @@ two-character sequence from `branches: [main]`; `od -c` proved the file
 intact (twice: ci.yml in round 54, `IST_MONTHS[m[3]]` in
 postDeploySmoke.mjs today). The Y5 "fix the corrupted trigger" item was
 based on a phantom defect.
+
+## 7. The live proofs (post-merge, 13 Oct ~09:00Z — added before the ledger merge)
+
+- **#422 (ISR60) — merged 4b996fa, deployed, live.** The deploy was
+  triggered manually at 08:53:35Z (the git integration stayed silent;
+  the v13 API 402'd on the B-22 quota until the 12-Oct creations aged
+  out of the rolling window) — READY 08:55:31Z, `/api/version` =
+  4b996fa3. pg_cron re-pinned out-of-band per migration 030
+  (`* 3-10 * * 1-5`, jobid 5, active, single `?rotate=1&of=15` POST).
+  The 60-second regeneration, three bare-URL samples a minute apart
+  (market open): `age: 11 · HIT` → `age: 0 · REVALIDATED` →
+  `age: 0 · REVALIDATED`; the page re-renders every tick. The residual
+  observation lag is the UPSTREAM's own observedAt (Yahoo
+  regularMarketTime, ~4-5 min for NSE — quote_cache: refreshed_at 1.4
+  min old, observed_at 4.5 min old at check), disclosed by the line
+  itself. The morning defect (age 1591, 29-minute-old observation) is
+  dead.
+- **#423 (PROBE-NOSTATE) — merged 639f40ab (deploy-exempt), live.** The
+  hardened probe vs production 4b996fa at 09:01:53Z / 14:31 IST (market
+  open, bare URLs, `--expect-sha` matched): **52 PASS / 0 FAIL /
+  exit 0** — the replacement green for the withdrawn 52/52, on the
+  stricter probe (the absolute no-state rule + the RELIANCE fixtures).
+- Proof comments pasted on PRs #422 (6142093044) and #423 (6142093377).

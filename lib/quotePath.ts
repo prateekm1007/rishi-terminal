@@ -65,6 +65,33 @@ export function classifyPriceSymbols(symbols: string[]): {
   return { equities, others };
 }
 
+/** ISR60 (founder round-55 order, 13 Oct 2026 — "Fix the regeneration so
+ *  the page updates within 60 seconds"): the equity symbols the warmer
+ *  refreshes EVERY minute tick, and whose stock pages it revalidates and
+ *  re-renders within the same tick, so the served HTML for these pages
+ *  never sits un-regenerated the way /stock/SBIN did on 13 Oct (edge age
+ *  1591 s, observation 29 minutes old in an open session).
+ *
+ *  Composition (labelled per Rule 3 — this is NOT the confirmed demo
+ *  roster; the #418 company checkboxes are founder-pending):
+ *   - the post-deploy probe's stock symbols (RELIANCE, SBIN,
+ *     BANKBARODA) — the probe's open-session freshness rule (≤15 min)
+ *     must hold with margin on exactly the pages it checks;
+ *   - the demo-path proposal set (TCS, INFOSYS, ITC, HDFCBANK) — the
+ *     #418 proposal's large caps; they ride the same 60 s mechanism so
+ *     the demo pages cannot regress the same way before 22 Oct.
+ *
+ *  ONE derivation (Rule 14): the warmer sweeps exactly this set and the
+ *  ping loop re-renders exactly this set; test/isr60.quoteWarm.test.ts
+ *  pins the probe-symbol subset contract (the probe mirrors it — plain
+ *  .mjs, same discipline as the NSE bounds). */
+export function quickRefreshSymbols(): string[] {
+  // Registry keys (NSE tickers — INFY is Infosys; the membership test
+  // pins every entry to a real STOCKS key after "INFOSYS" slipped in
+  // on the first draft and the route's guard would have dropped it).
+  return ["RELIANCE", "SBIN", "BANKBARODA", "TCS", "INFY", "ITC", "HDFCBANK"];
+}
+
 /** Y2 (Round 12): the NON-EQUITY tile set the warmer keeps fresh — the
  *  dashboard's world-market + crypto tiles, the index aliases the search
  *  and registry surfaces accept, and gold. ONE derivation (Rule 14): the

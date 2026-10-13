@@ -143,3 +143,14 @@ bakes the honest not-started state; the first post-deploy regeneration
 reads the ledger) — verified below.
 
 **C6 verdict: merged + deployed + live, with evidence.**
+
+## 9. The methodology flip (verified 22:56Z)
+
+The hourly ISR regenerated the page at age 3628 s (the first
+post-deploy regeneration, ~22:53Z) and both surfaces now carry the SAME
+started line — rule 14 held end to end:
+
+```
+Forward-return tracking: started ( tracking: started 2026-10-14 — 3
+verdict baselines recorded; forward returns measurable after the next
+session close ) — the S2-03/S2-04 calibration tracks

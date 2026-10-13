@@ -41,6 +41,24 @@ describe("FD-22 — the flag-on-nothing-qualifies state is honest (round 49)", (
     expect(tail).toContain('t("dashboard2.rankingsDisabledNote")');
   });
 
+  it("round 54 (#370 acceptance): the awaiting state SHOWS the two named sections", () => {
+    // Founder order 2026-10-13: "When it's on, the awaiting state must
+    // show 'Top Buy Signals' and 'Short Radar' with the honest empty
+    // copy." The awaiting branch (not just the ranked branch) renders
+    // both section headers, each followed by the honest panel.
+    const awaiting = tail.slice(
+      tail.indexOf(") : rankingsEnabled ? ("),
+      tail.indexOf(") : (", tail.indexOf(") : rankingsEnabled ? (")),
+    );
+    expect(awaiting.length).toBeGreaterThan(0);
+    expect(awaiting).toContain('t("dashboard2.sections.topBuySignals")');
+    expect(awaiting).toContain('t("dashboard2.sections.shortRadar")');
+    expect(awaiting).toContain('t("dashboard2.rankingsAwaiting")');
+    expect(awaiting).toContain('t("dashboard2.rankingsAwaitingNote")');
+    // the awaiting branch must NOT claim the widgets are switched off
+    expect(awaiting).not.toContain("rankingsDisabled");
+  });
+
   it("the switched-off note renders only in the flag-off branch (source structure)", () => {
     // the awaiting branch must be reachable WITHOUT the disabled note:
     // the ternary order is widgets ? ... : rankingsEnabled ? awaiting : disabled

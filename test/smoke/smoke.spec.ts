@@ -24,6 +24,16 @@ test.describe("smoke — core surfaces", () => {
     await expect(page.getByText(/licence is pending/i).first()).toBeVisible();
     await expect(page.getByText(/no seed-derived ranking is shown/i).first()).toBeVisible();
     await expect(page.getByText(/switched off/i).first()).toHaveCount(0);
+    // Round 54 (#370 acceptance, founder order 2026-10-13): the awaiting
+    // state SHOWS the two named sections — "Top Buy Signals" and "Short
+    // Radar" — each with the honest empty copy (no merged nameless panel).
+    // SectionHeader renders an <h2>, so the headings are role-checked.
+    await expect(
+      page.getByRole("heading", { name: /Top Buy Signals/i }).first()
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.getByRole("heading", { name: /Short Radar/i }).first()
+    ).toBeVisible();
     // The trio's heading may survive as a dictionary string inside the RSC
     // flight <script>, and the panel's own note names the widgets —
     // so the absence pin targets the SECTION HEADING's distinctive suffix

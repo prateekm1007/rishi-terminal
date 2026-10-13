@@ -11,6 +11,22 @@
 //     (STOCKS key order): the caller (the workflow) fires one request per
 //     slice so every invocation stays far inside the function timeout.
 //     Defaults slice=0&of=1 (whole universe — for local/manual runs).
+//   - ISR60 (founder round-55, 13 Oct): `rotate=1` — the slice for THIS
+//     tick is the UTC minute-of-hour modulo `of`. The production pg_cron
+//     job fires every minute with rotate=1&of=15, so the whole universe
+//     sweeps every 15 minutes at the SAME upstream volume as the retired
+//     6-slices-per-tick command (896 fetches / 15 min), spread evenly —
+//     and the quick set (below) refreshes every 60 seconds. rotate and
+//     an explicit slice are mutually exclusive (400): a caller asking
+//     for both has a broken command; refuse, do not guess.
+//   - ISR60 quick set: quotePath.quickRefreshSymbols (the probe symbols
+//     + the demo-path proposal) is warmed on EVERY invocation, then each
+//     of its stock pages is revalidated (revalidatePath) and re-rendered
+//     by a same-tick self-ping, so the served HTML for those pages
+//     updates within 60 seconds — the founder's order, and the fix for
+//     the 13 Oct /stock/SBIN sighting (age 1591, observation 29 min old
+//     in an open session). Per-page ping outcomes are DISCLOSED in the
+//     response; a failed ping is reported, never counted as refreshed.
 //   - Market-hours gate: outside the NSE session (Mon-Fri 09:15-15:30 IST,
 //     marketState's own contract — no second clock) the endpoint NO-OPS
 //     honestly: 200 + { skipped: "market closed", ... }. `force=1` (same
@@ -30,6 +46,7 @@
 // infra path, not a user surface).
 
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireQuotesWarmAuth } from "@/lib/auth/cron";
 import { marketState } from "@/lib/marketHours";
 import { STOCKS } from "@/data/stocks";
@@ -37,6 +54,7 @@ import { logIngestion } from "@/lib/services/ingestion";
 import {
   cachedQuoteBatchForEquities,
   nonEquityTileSymbols,
+  quickRefreshSymbols,
   serveQuote,
 } from "@/lib/quotePath";
 
@@ -49,11 +67,31 @@ function parseSlice(req: NextRequest): { slice: number; of: number } {
   return { slice, of };
 }
 
+/** ISR60: the rotating slice — the UTC minute-of-hour modulo `of`, so a
+ * minute-cadence scheduler sweeps the universe deterministically without
+ * carrying a tick counter between stateless invocations. */
+function rotateSlice(of: number): number {
+  return new Date().getUTCMinutes() % of;
+}
+
 export async function POST(req: NextRequest) {
   const denied = requireQuotesWarmAuth(req);
   if (denied) return denied;
 
   const force = req.nextUrl.searchParams.get("force") === "1";
+  const rotate = req.nextUrl.searchParams.get("rotate") === "1";
+  const explicitSlice = req.nextUrl.searchParams.get("slice") !== null;
+  if (rotate && explicitSlice) {
+    // Fail closed (Rule 6): rotate derives the slice from the clock; an
+    // explicit slice in the same call is a broken caller command — refuse
+    // rather than guess which one was meant.
+    return NextResponse.json(
+      {
+        error: "rotate and slice are mutually exclusive — rotate derives the slice from the UTC minute; fix the caller command",
+      },
+      { status: 400 },
+    );
+  }
   const ms = marketState();
   if (!ms.open && !force) {
     // G6: an off-session no-op ingests nothing, so it logs nothing — a
@@ -71,7 +109,9 @@ export async function POST(req: NextRequest) {
   const started_at = new Date().toISOString();
 
   const universe = Object.keys(STOCKS);
-  const { slice, of } = parseSlice(req);
+  const parsed = parseSlice(req);
+  const { of } = parsed;
+  const slice = rotate ? rotateSlice(of) : parsed.slice;
   const mine = universe.filter((_, i) => i % of === slice);
 
   // Equity slice: the existing claim+bulk path, chunked so one slice's
@@ -120,18 +160,79 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── ISR60: the quick set — warmed EVERY tick, then its stock pages are
+  // revalidated and re-rendered within this same tick. The self-ping is
+  // the "next visit" revalidatePath needs (Next 16 route-handler
+  // semantics: the revalidation happens on the next visit to the path),
+  // so the ISR cache for these pages is re-baked on the warmer's own
+  // request — a visitor always hits a page at most one tick (~60 s) old
+  // during market hours. The origin comes from the request the scheduler
+  // made (req.nextUrl.origin) so the ping lands on this deployment's
+  // public URL, not a loopback the CDN would not serve.
+  const quick = quickRefreshSymbols().filter((s) => s in STOCKS);
+  let quickUpstreamWrites = 0;
+  let quickServed = 0;
+  let quickMisses = 0;
+  if (quick.length > 0) {
+    const r = await cachedQuoteBatchForEquities(quick);
+    for (const sym of quick) {
+      const entry = r.quotes[sym];
+      if (entry && entry.quote) {
+        quickServed++;
+        if (entry.state === "stale-revalidated") quickUpstreamWrites++;
+      } else {
+        quickMisses++;
+      }
+    }
+  }
+
+  // Revalidate + re-render each quick-set page. Outcomes are disclosed
+  // per page (HTTP status, or the transport error string) — a failed
+  // ping is never counted as a refresh (Rule 3: label data by what it
+  // is). The pings run in parallel; each is bounded by the fetch's own
+  // abort so one slow page cannot eat the whole tick.
+  const pageOutcomes: Record<string, number | string> = {};
+  let pagesRendered = 0;
+  if (quick.length > 0) {
+    for (const sym of quick) {
+      revalidatePath(`/stock/${sym}`);
+    }
+    const origin = req.nextUrl.origin;
+    const pingOne = async (sym: string): Promise<void> => {
+      try {
+        const abort = new AbortController();
+        const timer = setTimeout(() => abort.abort(), 20_000);
+        try {
+          const res = await fetch(`${origin}/stock/${encodeURIComponent(sym)}`, {
+            cache: "no-store",
+            signal: abort.signal,
+          });
+          pageOutcomes[sym] = res.status;
+          if (res.status === 200) pagesRendered++;
+        } finally {
+          clearTimeout(timer);
+        }
+      } catch (err) {
+        pageOutcomes[sym] = err instanceof Error ? err.message : String(err);
+      }
+    };
+    await Promise.all(quick.map(pingOne));
+  }
+
   // G6 (round 23): this slice IS a price ingestion — record it so
   // /api/health's price signal tracks the REAL freshness mechanism (the
   // pg_cron warmer) instead of a job name nothing writes. records_out
   // counts upstream WRITES only (fresh-cache serves prove the cache is
   // current but are not new data); misses make the row "partial" — the
   // log must not imply complete coverage. The off-session no-op path
-  // above deliberately does NOT log (nothing was ingested).
-  const totalMisses = misses + (slice === 0 ? tileMisses : 0);
+  // above deliberately does NOT log (nothing was ingested). ISR60: the
+  // quick set's writes and misses are folded into the same row — one
+  // ingestion per tick, whatever it warmed.
+  const totalMisses = misses + quickMisses + (slice === 0 ? tileMisses : 0);
   await logIngestion({
     job_name: "quotes_warm",
     status: totalMisses > 0 ? "partial" : "success",
-    records_out: upstreamWrites + (slice === 0 ? tileWrites : 0),
+    records_out: upstreamWrites + quickUpstreamWrites + (slice === 0 ? tileWrites : 0),
     source: "quotes-cache-warmer",
     started_at,
   });
@@ -139,10 +240,17 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     slice,
     of,
+    rotated: rotate,
     universe: universe.length,
     inSlice: mine.length,
     equities: { upstreamWrites, served, misses },
     tiles: slice === 0 ? { upstreamWrites: tileWrites, served: tilesServed, misses: tileMisses } : { skipped: "non-zero slice" },
+    isr60: {
+      quick: { upstreamWrites: quickUpstreamWrites, served: quickServed, misses: quickMisses },
+      revalidated: quick.length,
+      pagesRendered,
+      pages: pageOutcomes,
+    },
     market: ms,
     forced: force && !ms.open,
   });

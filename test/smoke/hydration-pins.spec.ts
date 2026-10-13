@@ -35,15 +35,24 @@ test.describe("HYD-PINS — hydrated-or-empty states on the real surfaces", () =
 
     // The settled-state poll (the R43 atomic discipline): the page shows
     // EITHER >= 1 hydrated story card (a role=link card with an accessible
-    // name — the headline) OR one of the two explicit honest empty texts
-    // (the round-53 DELIV-4 wordings). A skeleton grid alone never
-    // satisfies the poll.
-    const honestEmpty = page.getByText(
-      /The news feed is unavailable right now\.|No headlines yet\./,
+    // name — the headline) OR one of the explicit honest empty texts.
+    // A skeleton grid alone never satisfies the poll.
+    //
+    // Round 54 + 55 (the CI race, caught 13 Oct): the bare "No headlines
+    // yet." line is ALSO the server-rendered FIRST BYTE (the NEWS-SSR
+    // change) — matching it let the poll pass on the transient pre-fetch
+    // state, and the visibility assertion below then raced the in-flight
+    // fetch (CI failure: element(s) not found while the skeleton showed).
+    // The poll now requires the POST-FETCH settled markers: the
+    // unavailable text (fetch failed) or the verified-empty subline
+    // ("The feed is empty right now" — hasFetched). The no-JS first-byte
+    // state is pinned separately by the SSR content spec (ssr-content).
+    const settledEmpty = page.getByText(
+      /The news feed is unavailable right now\.|The feed is empty right now/,
     );
     await expect(async () => {
       const cards = await page.locator("main [role='link'][aria-label]").count();
-      const empty = await honestEmpty.count();
+      const empty = await settledEmpty.count();
       expect(cards >= 1 || empty >= 1, `settled state expected, cards=${cards} empty=${empty}`).toBe(true);
     }).toPass({ timeout: 30_000 });
 
@@ -55,10 +64,13 @@ test.describe("HYD-PINS — hydrated-or-empty states on the real surfaces", () =
       expect((label ?? "").trim().length).toBeGreaterThan(10);
       // and the honest empty texts are NOT shown alongside data (the two
       // states are mutually exclusive by construction)
-      await expect(honestEmpty).toHaveCount(0);
+      await expect(settledEmpty).toHaveCount(0);
     } else {
-      // the honest branch: the empty state is VISIBLE content
-      await expect(honestEmpty.first()).toBeVisible();
+      // the honest branch: the settled empty state is VISIBLE content
+      await expect(settledEmpty.first()).toBeVisible();
+      // and the founder-named headline line rides with it (RESP-2: the
+      // exact words "No headlines yet." on the empty state).
+      await expect(page.getByText("No headlines yet.")).toBeVisible();
     }
   });
 

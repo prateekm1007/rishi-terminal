@@ -41,7 +41,9 @@ import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
 import { initialPriceSnapshot } from '@/lib/dashboardSnapshot';
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
-import { TodayPanel } from '@/components/dashboard/TodayPanel'; // DEMO-4: the honest Today view (server component, zero JS)
+import { TodayPanel } from '@/components/dashboard/TodayPanel';
+import { TopMoversPanel } from '@/components/dashboard/TopMoversPanel';
+import { loadTopMovers } from '@/lib/markets/topMoversLoader'; // DEMO-4: the honest Today view (server component, zero JS)
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { dashboard, dashboard2 } from '@/messages/en.json';
 
@@ -79,6 +81,9 @@ export default async function Page() {
       })()
     : null;
 
+  // Top movers (13 Oct 2026): ranked from the quote cache; the panel labels the NSE source.
+  const topMovers = await loadTopMovers();
+
   // U2: the SSR snapshot covers exactly the symbols the dashboard renders —
   // the list lives in lib/dashboardSymbols (one source of truth with the
   // client component), plus the rotating rankings symbols below.
@@ -94,6 +99,7 @@ export default async function Page() {
   return (
     <NamespaceProvider ns={{ dashboard, dashboard2 }}>
       <TodayPanel stockOfDay={stockOfDay} />
+      <TopMoversPanel result={topMovers} />
       <DashboardClient
         rankingsEnabled={rankings}
         rotatingStocks={rotatingStocks}

@@ -1,3 +1,89 @@
+# DEMO-APPROACH — superseded: the founder's direction (13 October 2026)
+
+> **STATUS: SUPERSEDED.** The option analysis below (#410, 12 Oct 2026) is
+> archived as the decision record's history. The founder's 13 October
+> direction supersedes it in full — **the demo record-class build is
+> stopped** and will not be started. No `/demo` route, no `demo` record
+> class, no fictional company, no seed-verdict surface of any kind.
+
+## The founder's direction, verbatim (13 Oct 2026)
+
+> "no hypothetical company, we use everything real"
+
+> "we will tell them the truth"
+
+And the scope sentence delivered with it:
+
+> The investor demo uses real companies, filings-based fundamentals with
+> source, page and date, and no prices.
+
+## What this means (the binding interpretation)
+
+1. **No fictional instrument.** Option A's `DEMO INDUSTRIES LIMITED` and
+   the P0-1 `demo` record-class amendment it needed are **dead**. The
+   guardrail stands unamended: seed verdicts on real companies are never
+   shown, and now no fictional company is created to route around it
+   either.
+2. **Everything on the demo path is real.** Real companies, real filings,
+   real surfaces, real labels. The demo walks the actual product — the
+   same pages an investor would open the day after the demo.
+3. **Fundamentals are filings-based, with full provenance.** Every
+   fundamental shown on the demo path cites its source document, the page
+   in that document, and the document's date. No uncited number renders;
+   a value we cannot cite does not appear.
+4. **No prices.** The exchange-data licence is pending, so the demo shows
+   no price, no price-derived score, and no price-based verdict. The
+   honest labels ("Licence pending", "no consensus exists yet") stay —
+   telling the investors the truth includes telling them exactly what is
+   licensed and what is not, and why.
+5. **The truth is the story.** Where the product is empty, the demo shows
+   the honest empty state and says so. This is the Option-B discipline
+   from the archived proposal, now the whole demo — plus filings-based
+   fundamentals with citations, which is new scope the archived options
+   did not have.
+
+## What the founder needs to confirm (the checkboxes)
+
+The founder's order leaves **scope and companies pending my proposal**:
+
+1. **Scope — what the demo walks** (my proposed default):
+   search → a real company's page → the honest record with filings-based
+   fundamentals (each value: source, page, date) → the Rishi roster with
+   the scorer-generated formulas → the Today view → the news surface →
+   the watchlist. The licence-pending labels are shown and explained in
+   one sentence, not hidden.
+2. **Companies — which real companies** (my proposed default): a small
+   set of large caps with current English annual reports and clean filing
+   trails — **RELIANCE, TCS, INFOSYS, ITC, HDFC Bank** — chosen so the
+   fundamentals are all citable from public annual reports and quarterly
+   results the investors in the room can recognize. The filings-based
+   fundamentals for these names are built as their own verified dataset
+   (each row: company, metric, value, source document, page, date) —
+   that build is the round-56+ work, sized by how many companies the
+   founder confirms.
+3. **The demo script date** stays as scheduled: rehearsal 21 Oct, demo
+   22 Oct, freeze 20 Oct 18:00 IST.
+
+## What this supersedes, explicitly
+
+- The §3A "demo record class that produces verdicts from seed data" —
+  **stopped, not paused.** Any future verdict-display demo requires
+  licensed live data (Option D's trigger), not a new record class.
+- The §6 build order (13–18 Oct) — replaced by the filings-provenance
+  build: the cited-fundamentals dataset + the surface that renders
+  citations, sized to the confirmed company list.
+- The FD-6 rider (RishiCouncil revive for the demo's flip-expand leg) —
+  no longer demo-blocked; it remains a product decision on its own merit.
+
+## Timeline on record (unchanged)
+
+20 Oct 18:00 IST freeze; 21 Oct rehearsal; 22 Oct demo, **from main,
+probe green**.
+
+---
+
+# ARCHIVED — the #410 proposal (12 Oct 2026), for the record
+
 # DEMO-APPROACH — the written proposal the founder asked for by 14 October
 
 Status: PROPOSAL — no `/demo` route is built, nothing here ships until the
@@ -47,7 +133,7 @@ Timeline on record: 20 Oct 18:00 IST freeze; 21 Oct rehearsal; 22 Oct demo,
 
 ## 3. The options
 
-### Option A — one fictional instrument, fully labelled (RECOMMENDED)
+### Option A — one fictional instrument, fully labelled (RECOMMENDED — superseded 13 Oct)
 
 A single hypothetical company — e.g. `DEMO INDUSTRIES LIMITED (DEMO)`, a
 fictional ISIN, a fictional sector — carrying a **complete illustrative
@@ -107,7 +193,7 @@ If licensed live data lands before 22 Oct, options A and B both improve
 automatically (the spec flips with the data contract). But the licence is
 FD-blocked and outside our control; the demo cannot hinge on it.
 
-## 4. Recommendation
+## 4. Recommendation (superseded 13 Oct)
 
 **A + B, one path:** the demo runs on the live site (probe green, from
 main, per the standing plan), walks the REAL honest product first (search →
@@ -119,7 +205,7 @@ writes itself: "this is what the product is today, honestly — and this is
 what it becomes the day licensed data lands, which you can tell because the
 banner disappears, not because we say so."
 
-## 5. What the founder needs to decide (the checkboxes)
+## 5. What the founder needs to decide (the checkboxes — superseded 13 Oct)
 
 1. **Approve option A+B** (or pick B-only: zero build, integrity-only story).
 2. **Sanction the P0-1 `demo` record-class amendment** as scoped in §3A
@@ -130,7 +216,7 @@ banner disappears, not because we say so."
    revive recommended (it is the most demo-worthy interaction: "every Rishi
    states what would change their mind").
 
-## 6. If approved: the build order (13–18 Oct, inside the freeze window)
+## 6. If approved: the build order (13–18 Oct, inside the freeze window) — superseded 13 Oct
 
 | Day | Work |
 |-----|------|
@@ -141,7 +227,7 @@ banner disappears, not because we say so."
 | 18 Oct | Dry run on a preview deployment + the demo script rehearsed |
 | 19 Oct | Slack; 20 Oct 18:00 IST freeze holds either way |
 
-## 7. Fallbacks
+## 7. Fallbacks (superseded 13 Oct)
 
 - If the founder picks B-only: no build; the rehearsal walks the existing
   spec; this document is archived as the decision record.

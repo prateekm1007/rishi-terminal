@@ -7,6 +7,15 @@ import SeedDataBanner from '@/components/shared/SeedDataBanner'; // N3: the pane
 import { MoversPanel } from '@/components/dashboard/MoversPanel'; // LIVE-TODAY: the live Top Winners / Top Losers view
 import type { MoversSnapshot } from '@/lib/movers/types';
 
+/** TODAY-MOVERS: the news state the page hands the panel — the
+ *  aggregation's top item (source + age disclosed), or null when the
+ *  feed returned nothing in its freshness window. */
+export interface TodayLatestNews {
+  headline: string;
+  source: string;
+  minutesAgo: number;
+}
+
 /**
  * DEMO-4 (founder order, 2026-10-12): the dashboard's "Today" view with
  * an HONEST empty state. LIVE-TODAY (founder order, 2026-10-13): "make
@@ -25,8 +34,12 @@ import type { MoversSnapshot } from '@/lib/movers/types';
  *   - verdicts produced today: NONE — the record set is seed data (P0-1:
  *     seed rows show no verdict; the count is a literal 0, not a
  *     computed one pretending to be observed);
- *   - news: the honest empty state the founder worded ("No headlines yet"
- *     — the /news surface's own wording, linked);
+ *   - news: TODAY-MOVERS (founder order, 2026-10-13): the live RSS
+ *     aggregation's ACTUAL state (lib/news/server — the ONE source the
+ *     /api/news route also serves). The real latest headline (publisher
+ *     · age) when the feed returned one; the founder's honest empty
+ *     wording ("No headlines yet") when it did not — the row reflects
+ *     the feed, never a static claim;
  *   - forward-return tracking: not started (DEMO-2, lib/demoState — the
  *     ONE source, shared with the methodology line).
  *
@@ -36,7 +49,15 @@ import type { MoversSnapshot } from '@/lib/movers/types';
  * page revalidates every 60 s, so the date rotates within a minute of
  * IST midnight).
  */
-export function TodayPanel({ stockOfDay, movers }: { stockOfDay: StockOfTheDay | null; movers: MoversSnapshot | null }) {
+export function TodayPanel({
+  stockOfDay,
+  movers,
+  latestNews,
+}: {
+  stockOfDay: StockOfTheDay | null;
+  movers: MoversSnapshot | null;
+  latestNews: TodayLatestNews | null;
+}) {
   const istDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
 
   return (
@@ -91,10 +112,26 @@ export function TodayPanel({ stockOfDay, movers }: { stockOfDay: StockOfTheDay |
           illustrative seed data, so no Rishi verdicts are produced (P0-1); the honest record renders on every stock page.
         </div>
 
-        <div style={{ color: "var(--text-muted)" }}>
-          News: <Link href="/news" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>No headlines yet</Link>{" "}
-          — the feed has honest empties until a real feed lands.
-        </div>
+        {/* TODAY-MOVERS: the news row renders the live aggregation's
+            ACTUAL state — the real headline (source + age) when the feed
+            returned one, the founder's honest empty wording when it did
+            not. Both states link to /news. */}
+        {latestNews ? (
+          <div style={{ color: "var(--text-muted)" }}>
+            News:{" "}
+            <Link href="/news" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>
+              {latestNews.headline}
+            </Link>{" "}
+            <span style={{ color: "var(--text-muted)" }}>
+              — {latestNews.source} · {latestNews.minutesAgo < 60 ? `${latestNews.minutesAgo} min ago` : `${Math.floor(latestNews.minutesAgo / 60)} h ago`}
+            </span>
+          </div>
+        ) : (
+          <div style={{ color: "var(--text-muted)" }}>
+            News: <Link href="/news" style={{ color: "var(--text-secondary)", textDecoration: "underline", textDecorationColor: "rgba(148,163,184,0.6)", textUnderlineOffset: 2 }}>No headlines yet</Link>{" "}
+            — the live feed returned nothing in its freshness window.
+          </div>
+        )}
 
         <div style={{ color: "var(--text-muted)" }}>
           Forward-return tracking: <strong data-tracking-status style={{ color: "var(--text-secondary)" }}>{TRACKING_STATUS}</strong>{" "}

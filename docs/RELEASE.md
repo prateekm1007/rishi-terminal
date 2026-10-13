@@ -696,3 +696,48 @@ live proofs ran immediately, all green (bare URL, no cache-buster):**
 Proofs pasted on PRs #401/#370/#404 (comments 6134584328/6134584503/
 6134584669). Every production merge of round 53 is now
 merged + deployed + live-proofed (C6 complete).
+
+## Round 54-55 (2026-10-13) — #414 and #415 recorded; the 52/52 claim withdrawn
+
+The round-54 session merged six PRs (23:21Z-07:21Z window) but closed
+before its ledger entries landed. Recorded here per the founder's
+round-55 order ("Record #414 and #415 in docs/RELEASE.md with SHAs and
+the live result, or 'pending' if not reproduced").
+
+- **#414 — fix(PROBE-MKT), the probe's state-vs-IST-clock rule.**
+  Merged: `7579fcb` (commit `ad894e3`). Deployed: in production
+  `938c1c3` (the #415 deploy carried it). Live result: the served
+  `/stock/RELIANCE` HTML carries NO market-state wording (0 occurrences
+  of "market open" and "market closed" on the bare-URL fetch — the
+  #399/#414 contract holds on the live build); the self-test
+  (`node scripts/ci/postDeploySmoke.mjs --self-test`) is 17/17, exit 0,
+  on the deployed-identical code. Full C6 evidence:
+  `docs/evidence/round55/r55-c6-stockpage-probe.md`.
+- **#415 — fix(FD22-AWAITING), the two named awaiting sections.**
+  Merged: `938c1c3` (commit `cbc7882`). Deployed: production
+  `/api/version` = `938c1c3`. Live result: REPRODUCED — the browser
+  capture (2026-10-13T08:17:45Z, headless, production bare URL): the
+  dashboard renders `🟢 Top Buy Signals` and `🔴 Short Radar` (both h2,
+  visible), each with the honest awaiting copy ("Rankings are on —
+  nothing qualifies yet ... no seed-derived ranking is shown");
+  `RANKINGS_ENABLED` confirmed true through the vault credential
+  (target=production, updated 2026-10-06); the flag-off copy does not
+  render. Screenshot + DOM dump in
+  `docs/evidence/round55/r55-c6-stockpage-probe.md` §4.
+- **THE 52/52 CLAIM IS WITHDRAWN** (the founder's own rule: "If it
+  fails, the 52/52 claim is withdrawn"): the 13 Oct 07:56Z live probe
+  run — open session, bare URL, production 938c1c3 — FAILED 4 checks
+  (48 PASS / 4 FAIL / exit 1): the SBIN and BANKBARODA open-session
+  freshness legs on both cache keys, serving 29-minute-old observation
+  lines at edge ages 1591/1592 (STALE). Root cause and fix recorded
+  below (#422 ISR60). The round-53 52/52 was true for f5286b8 at
+  23:35Z 12 Oct; it did not survive the traffic-driven regen gap.
+- **In flight at ledger time (round-55 session, owner
+  web-8e0cdc75):** #422 fix(ISR60) — the 60-second regeneration (warmer
+  minute tick + revalidate + self-ping; migration 030 re-pins pg_cron);
+  #423 fix(PROBE-NOSTATE) — the absolute no-state rule + the RELIANCE
+  fixtures. Live proofs ride their deploys.
+- **CI-corruption report RETRACTED** (founder order): the ci.yml
+  "corrupted push trigger" was a tool-rendering artifact, never in the
+  repository bytes (`od -c` proof, twice). The retraction is recorded in
+  the session worklog.

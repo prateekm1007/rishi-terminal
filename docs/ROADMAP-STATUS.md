@@ -562,3 +562,34 @@ Round-53 execution notes (coder, not the founder's words):
   market status from a render the viewer may read hours later.
 - Item 3's amendments ride #400 (same PROBE-LIVE token); item 4's amendment
   rides #401 (the founder sanctioned "in the same PR or a follow-up").
+
+## Round 54 — B3 (holidays): the circular-level check is INCOMPLETE — B3 OPEN
+
+Founder order 13 Oct 2026 (item "Holidays (B3)"): "Confirm
+docs/evidence/round55/r55-holidays-crosscheck.md records circular-level
+checks. If it only cross-checks datasets, mark B3 open."
+
+**Confirmed by reading the file: the verification it records is
+DATASET-level, not circular-level — B3 is OPEN.**
+
+- What the cross-check actually did: a three-way diff of two independent
+  datasets (the founder-designated in-app source GauravSh-7 vs the offline
+  cross-check pandas_market_calendars vs the adopted
+  `data/nse-holidays.json`) — 15 weekday closures agreed, one disputed
+  date (2026-01-15, Makar Sankranti) excluded fail-closed with a
+  documented error-direction analysis.
+- What the founder's round-55 condition required: "Check each 2026
+  holiday against NSE circulars before use." The file records that the
+  circular-level checks were ATTEMPTED from the build environment and
+  every channel was blocked (NSE's holiday page 403 behind Akamai cold
+  and cookie-warmed, web.archive.org timeout, the render proxy 401, web
+  search empty, Zerodha's circular feed reachable but carrying no January
+  2026 entry) — so the circular verification never completed. The file
+  itself carries `BLOCKED: NSE circular page unreachable from the build
+  environment — resolve 2026-01-15 …` as its status line.
+- Per the founder's rule, an attempted-but-blocked circular check leaves
+  B3 open. What closes it: any human browser visit to NSE's official
+  holiday list (or the December annual ritual) resolving 2026-01-15 —
+  recorded in the same evidence chain. The 15 agreed dates stand adopted
+  (two independent datasets agreeing); the disputed date stays excluded
+  (the fail-closed direction, pinned by test).

@@ -267,6 +267,26 @@ function runLivenessSelfTest() {
         "as of Mon 12 Oct, 09:45 IST · market open · intraday quote"),
       HOLIDAY_NOW,
     ).ok, false);
+  // Round 54 (founder item #400): the market-STATE claim is checked
+  // against the IST clock — the pre-fix gap was the label builder's OTHER
+  // open-session wording, "market open · stale — not from today's
+  // session", which passed a night probe because the line also contains
+  // "stale" (an honest-form marker). Both wordings must now FAIL at night.
+  expect("closed session: a 'market open · stale' wording fails (the round-54 gap, leg 1)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "Mon 12 Oct, 11:00 IST · market open · stale — not from today's session"),
+      CLOSED_NOW,
+    ).ok, false);
+  expect("closed session: a 'market open · stale — not from the last session' wording fails (the round-54 gap, leg 2)",
+    checkRenderFreshness(
+      NEW_STOCK.replace("Mon 12 Oct, 15:15 IST · market closed · last session quote",
+        "Mon 12 Oct, 11:00 IST · market open · stale — not from the last session"),
+      CLOSED_NOW,
+    ).ok, false);
+  // Positive control (B-18): the state rule does not overfire — the
+  // "fresh intraday passes" leg above proves an OPEN session still passes
+  // a market-open line on age alone (the open branch judges AGE only).
   const green = results.every(Boolean);
   console.log(green ? "self-test GREEN: liveness checks discriminate old vs current" : "self-test RED");
   process.exit(green ? 0 : 1);
@@ -605,10 +625,20 @@ function parseObsLines(html, nowMs) {
  *    the quote pipeline is not delivering during the session — the
  *    13:28-all-afternoon class — and the founder's rule is absolute. (The
  *    label WORDING honesty is pinned separately by the label unit tests.)
- *  - session closed → no intraday claim anywhere; the honest forms are
- *    closed-labelled lines, stale-disclosed lines, and the round-53
- *    server-render disclosure "(server render)" (the first byte carries
- *    no market claim by design — the client computes it after hydration).
+ *  - session closed → NO "market open" claim in ANY observation line,
+ *    whatever its suffix. Round 54 (founder order 13 Oct 2026, item #400,
+ *    words verbatim: "Its bare-cache leg must read the rendered observation
+ *    line and check 'market open' against IST time."): the pre-fix check
+ *    only failed the exact phrase "market open · intraday quote", so the
+ *    label builder's OTHER open-session wording — "market open · stale —
+ *    not from today's session" — passed a night probe because the line
+ *    also contains "stale" (an honest-form marker). The state claim
+ *    itself ("market open") is what the IST clock falsifies, so THAT is
+ *    what the check reads now.
+ *  - the honest closed-session forms are closed-labelled lines,
+ *    stale-disclosed lines, and the round-53 server-render disclosure
+ *    "(server render)" (the first byte carries no market claim by design —
+ *    the client computes it after hydration).
  *  - no observation line → pass-skipped (unavailable pages expose no
  *    age to check). */
 function checkRenderFreshness(html, nowMs) {
@@ -627,9 +657,14 @@ function checkRenderFreshness(html, nowMs) {
     }
     return { ok: true, detail: "open session: every observation line is ≤15 minutes old" };
   }
-  const hasIntraday = lines.some((l) => l.tail.includes("market open · intraday quote"));
-  if (hasIntraday) {
-    return { ok: false, detail: "closed session: an intraday claim still renders" };
+  // Round 54: the market-STATE claim is checked against the IST clock —
+  // any "market open" wording in a closed session fails, intraday or not.
+  const marketOpenLine = lines.find((l) => l.tail.includes("market open"));
+  if (marketOpenLine) {
+    return {
+      ok: false,
+      detail: `closed session: a "market open" claim still renders (the IST clock says closed) — "${marketOpenLine.tail.slice(0, 72)}"`,
+    };
   }
   const honest = lines.some((l) =>
     l.tail.includes("market closed") || l.tail.includes("stale") || l.tail.includes("server render"));

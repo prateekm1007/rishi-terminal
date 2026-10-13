@@ -321,8 +321,10 @@ export default function WatchlistTab({ rows }: Props) {
           {error && <div style={{ marginTop: 8, fontSize: 12, color: '#EF4444' }}>{error}</div>}
         </div>
         <div style={{ minWidth: 200 }}>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>SORT</div>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} style={inputStyle}>
+          {/* ENG-4 (round 55): the visible SORT text is the select's programmatic
+              label (axe select-name, WCAG 4.1.2) — same words, now associated. */}
+          <label htmlFor="watchlist-sort" style={{ display: 'block', fontSize: 10, color: 'var(--text-muted)', marginBottom: 6, letterSpacing: 1 }}>SORT</label>
+          <select id="watchlist-sort" value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)} style={inputStyle}>
             <option value="added">{t('lab.sort.recentlyAdded')}</option>
             <option value="score">{t('lab.sort.rishiScore')}</option>
             <option value="conviction">{t('lab.sort.convictionLevel')}</option>
@@ -382,6 +384,7 @@ export default function WatchlistTab({ rows }: Props) {
                             type="range" min={1} max={10}
                             value={i.userConviction}
                             onChange={e => updateField(i.symbol, 'conviction', Number(e.target.value))}
+                            aria-label="CONVICTION"
                             style={{ flex: 1, accentColor: convictionColor(i.combinedConviction) }}
                           />
                           <span style={{ fontFamily: 'monospace', fontWeight: 900, fontSize: 14, color: convictionColor(i.combinedConviction), minWidth: 18 }}>{i.combinedConviction}</span>

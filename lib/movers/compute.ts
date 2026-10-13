@@ -40,6 +40,10 @@ export interface MoverCacheRow {
 export interface ComputedMovers {
   gainers: MoverRow[];
   losers: MoverRow[];
+  /** TODAY-MOVERS: the biggest absolute swings across BOTH directions,
+   *  from the SAME gated pool (registry + session + usable price +
+   *  disclosed change) — deterministic |pct| desc, symbol asc. */
+  movers: MoverRow[];
   universeObserved: number;
 }
 
@@ -80,7 +84,7 @@ export function computeMoversFromRows(
     b.pct !== a.pct ? b.pct - a.pct : a.row.symbol.localeCompare(b.row.symbol),
   );
 
-  const toMover = (e: { row: MoverCacheRow; pct: number }, kind: "gainer" | "loser", rank: number): MoverRow => ({
+  const toMover = (e: { row: MoverCacheRow; pct: number }, kind: "gainer" | "loser" | "mover", rank: number): MoverRow => ({
     kind,
     rank,
     symbol: e.row.symbol,
@@ -98,7 +102,19 @@ export function computeMoversFromRows(
     .slice(0, limit)
     .map((e, i) => toMover(e, "loser", i + 1));
 
-  return { gainers, losers, universeObserved: eligible.length };
+  // TODAY-MOVERS: the third ranking over the SAME eligible pool — the
+  // biggest absolute swings, either direction; deterministic tie-break
+  // (|pct| desc, then symbol asc — Rule 18).
+  const movers = [...eligible]
+    .sort((a, b) =>
+      Math.abs(b.pct) !== Math.abs(a.pct)
+        ? Math.abs(b.pct) - Math.abs(a.pct)
+        : a.row.symbol.localeCompare(b.row.symbol),
+    )
+    .slice(0, limit)
+    .map((e, i) => toMover(e, "mover", i + 1));
+
+  return { gainers, losers, movers, universeObserved: eligible.length };
 }
 
 /**

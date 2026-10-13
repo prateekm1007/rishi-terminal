@@ -40,9 +40,10 @@ import { resolveStockMetrics, getQvps } from '@/lib/scoring'; // T10: single sco
 import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
 import { initialPriceSnapshot, isBuildPhase } from '@/lib/dashboardSnapshot';
 import { readMoversSnapshot } from '@/lib/movers/store'; // LIVE-TODAY: the Top Winners / Top Losers snapshot
+import { aggregateLiveNews } from '@/lib/news/server'; // TODAY-MOVERS: the ONE live-news source (the /api/news route shares it)
+import { TodayPanel, type TodayLatestNews } from '@/components/dashboard/TodayPanel'; // DEMO-4 + LIVE-TODAY + TODAY-MOVERS: the honest Today view (server component, zero JS)
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
 import DashboardClient from '@/components/dashboard/DashboardClient';
-import { TodayPanel } from '@/components/dashboard/TodayPanel'; // DEMO-4 + LIVE-TODAY: the honest Today view (server component, zero JS)
 import { NamespaceProvider } from '@/components/shared/NamespaceProvider';
 import { dashboard, dashboard2 } from '@/messages/en.json';
 
@@ -100,9 +101,22 @@ export default async function Page() {
   // regeneration after a warmer tick).
   const movers = isBuildPhase() ? null : await readMoversSnapshot();
 
+  // TODAY-MOVERS (founder order, 2026-10-13): the Today panel's news row
+  // renders the live aggregation's ACTUAL state (the same ONE source the
+  // /api/news route serves). Build stays hermetic: no RSS fetch during
+  // prerender (CI has no upstream network) — the honest empty wording
+  // covers the build bake.
+  const latestNews: TodayLatestNews | null = isBuildPhase()
+    ? null
+    : await aggregateLiveNews().then(items =>
+        items[0]
+          ? { headline: items[0].headline, source: items[0].source, minutesAgo: items[0].minutesAgo }
+          : null,
+      );
+
   return (
     <NamespaceProvider ns={{ dashboard, dashboard2 }}>
-      <TodayPanel stockOfDay={stockOfDay} movers={movers} />
+      <TodayPanel stockOfDay={stockOfDay} movers={movers} latestNews={latestNews} />
       <DashboardClient
         rankingsEnabled={rankings}
         rotatingStocks={rotatingStocks}

@@ -54,7 +54,12 @@ describe("R13 — the Today view and the tracking line", () => {
     // LIVE-TODAY (round 56): the mount now also passes the movers
     // snapshot (the live Top Winners / Top Losers view). The pin moves
     // WITH the contract — it still bites on the exact mount shape.
-    expect(page).toContain("<TodayPanel stockOfDay={stockOfDay} movers={movers} />");
+    // TODAY-MOVERS (founder order, 2026-10-13): the mount literal gains
+    // the live-news prop — the gate still pins the mounting AND the SOD
+    // and movers props (unchanged intent, updated shape).
+    expect(page).toContain(
+      "<TodayPanel stockOfDay={stockOfDay} movers={movers} latestNews={latestNews} />",
+    );
     expect(page).toContain("readMoversSnapshot");
   });
 

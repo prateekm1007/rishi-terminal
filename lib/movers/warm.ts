@@ -54,12 +54,22 @@ function withRegistryNames(rows: MoverRow[]): MoverRow[] {
 export async function refreshMovers(nowMs: number = Date.now()): Promise<MoversWarmOutcome> {
   const priorErrors: string[] = [];
 
+  // TODAY-MOVERS: the third panel's list is ALWAYS computed from the
+  // shared quote cache (NSE's endpoint ranks only its own gainers and
+  // losers — a movers list built from those rows would be a lie by
+  // omission). ONE read per tick: the computed path reuses these rows
+  // for its winners/losers too.
+  const computed = await computeMoversFromCache(MOVERS_LIMIT, nowMs);
+
   // Path 1: NSE's own movers ranking.
   const nse = await fetchNseMovers(MOVERS_LIMIT);
   if (nse.result) {
     const snap: MoversSnapshot = {
       gainers: withRegistryNames(nse.result.gainers),
       losers: withRegistryNames(nse.result.losers),
+      movers: computed ? computed.movers : [],
+      moversDerivation: computed ? "computed" : null,
+      moversUniverseObserved: computed ? computed.universeObserved : null,
       derivation: "nse",
       universeObserved: null,
       writtenAt: new Date(nowMs).toISOString(),
@@ -82,12 +92,15 @@ export async function refreshMovers(nowMs: number = Date.now()): Promise<MoversW
     priorErrors.push(`nse: ${nse.error}`);
   }
 
-  // Path 2: computed from the shared quote cache.
-  const computed = await computeMoversFromCache(MOVERS_LIMIT, nowMs);
+  // Path 2: computed from the shared quote cache (rows already read
+  // above for the movers list — ONE cache read per tick).
   if (computed) {
     const snap: MoversSnapshot = {
       gainers: computed.gainers,
       losers: computed.losers,
+      movers: computed.movers,
+      moversDerivation: "computed",
+      moversUniverseObserved: computed.universeObserved,
       derivation: "computed",
       universeObserved: computed.universeObserved,
       writtenAt: new Date(nowMs).toISOString(),

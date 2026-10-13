@@ -23,11 +23,13 @@ const META_ID = 1;
 interface MetaRow {
   derivation: MoversDerivation;
   universe_observed: number | null;
+  movers_derivation: string | null;
+  movers_universe_observed: number | null;
   written_at: string;
 }
 
 interface MoverDbRow {
-  kind: "gainer" | "loser";
+  kind: "gainer" | "loser" | "mover";
   rank: number;
   symbol: string;
   name: string | null;
@@ -57,7 +59,7 @@ function toDbRow(r: MoverRow): MoverDbRow {
  * snapshot whole. */
 export async function writeMoversSnapshot(snap: MoversSnapshot): Promise<void> {
   const db = getAdminSupabase();
-  const rows = [...snap.gainers, ...snap.losers].map((r) => ({ ...toDbRow(r), written_at: snap.writtenAt }));
+  const rows = [...snap.gainers, ...snap.losers, ...snap.movers].map((r) => ({ ...toDbRow(r), written_at: snap.writtenAt }));
   // Full replace, rows first then meta: a reader that sees new meta
   // always finds the matching rows already in place.
   const del = await db.from("market_movers").delete().neq("kind", ""); // all rows
@@ -72,6 +74,8 @@ export async function writeMoversSnapshot(snap: MoversSnapshot): Promise<void> {
       id: META_ID,
       derivation: snap.derivation,
       universe_observed: snap.universeObserved,
+      movers_derivation: snap.moversDerivation,
+      movers_universe_observed: snap.moversUniverseObserved,
       written_at: snap.writtenAt,
     });
   if (metaUpsert.error) throw new Error(metaUpsert.error.message);
@@ -87,7 +91,7 @@ export async function readMoversSnapshot(): Promise<MoversSnapshot | null> {
     const db = getAdminSupabase();
     const metaRes = await db
       .from("market_movers_meta")
-      .select("derivation, universe_observed, written_at")
+      .select("derivation, universe_observed, movers_derivation, movers_universe_observed, written_at")
       .eq("id", META_ID)
       .maybeSingle();
     if (metaRes.error) throw new Error(metaRes.error.message);
@@ -102,7 +106,7 @@ export async function readMoversSnapshot(): Promise<MoversSnapshot | null> {
     if (rowsRes.error) throw new Error(rowsRes.error.message);
 
     const toRow = (r: Record<string, unknown>): MoverRow => ({
-      kind: r.kind === "loser" ? "loser" : "gainer",
+      kind: r.kind === "loser" ? "loser" : r.kind === "mover" ? "mover" : "gainer",
       rank: Number(r.rank),
       symbol: String(r.symbol),
       name: r.name == null ? null : String(r.name),
@@ -117,6 +121,9 @@ export async function readMoversSnapshot(): Promise<MoversSnapshot | null> {
     return {
       gainers: all.filter((r) => r.kind === "gainer"),
       losers: all.filter((r) => r.kind === "loser"),
+      movers: all.filter((r) => r.kind === "mover"),
+      moversDerivation: meta.movers_derivation === "computed" ? "computed" : null,
+      moversUniverseObserved: meta.movers_universe_observed,
       derivation: meta.derivation === "nse" ? "nse" : "computed",
       universeObserved: meta.universe_observed,
       writtenAt: String(meta.written_at),

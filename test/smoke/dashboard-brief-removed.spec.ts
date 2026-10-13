@@ -53,7 +53,12 @@ test.describe("INT-C1 dashboard brief REMOVED per founder order (2026-10-11)", (
     // round-46 P0-1 verdict gate emptied the ranked pools, and the tail's
     // honest no-picks panel took over the settled-state role — under FD-22
     // with the flag on, that panel is the AWAITING state.)
-    await expect(page.getByText("Rankings are on")).toBeVisible({ timeout: 20_000 });
+    // Round 54 (#415): .first() — the awaiting state now renders TWO
+    // honest panels (one under "Top Buy Signals", one under "Short
+    // Radar", per the founder's 13 Oct order), so the marker text exists
+    // twice; the settled-state gate needs ONE visible, not a unique one
+    // (the B1 locator-scope precedent — the contract is unchanged).
+    await expect(page.getByText("Rankings are on").first()).toBeVisible({ timeout: 20_000 });
 
     // THE ABSENCE PINS: no brief section skeleton anywhere in the DOM.
     // (Pre-removal each was 1 — the hydrated tail skeleton and the

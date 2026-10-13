@@ -347,10 +347,29 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
         // pickStockOfTheDay() is null) — saying "switched off" here would
         // be false (C1). The honest state: rankings are on, nothing to
         // rank yet, the licence is the reason, no seed ranking is shown.
-        <RankingsDisabledPanel
-        title={t("dashboard2.rankingsAwaiting")}
-        note={t("dashboard2.rankingsAwaitingNote")}
-        />
+        // Round 54 (founder order 2026-10-13, #370 acceptance): the
+        // awaiting state SHOWS the two named sections — "Top Buy Signals"
+        // and "Short Radar" — each with the honest empty copy, instead of
+        // one merged panel that carried neither name. The names are the
+        // founder-kept FD-24 names; each section states the same honest
+        // reason (nothing qualifies; the licence is pending).
+        <>
+        <div style={{ marginBottom:"48px" }}>
+          <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/stocks" linkLabel={t("dashboard2.fullScreener")} />
+          <RankingsDisabledPanel
+          title={t("dashboard2.rankingsAwaiting")}
+          note={t("dashboard2.rankingsAwaitingNote")}
+          />
+        </div>
+        <Divider />
+        <div style={{ marginBottom:"48px" }}>
+          <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
+          <RankingsDisabledPanel
+          title={t("dashboard2.rankingsAwaiting")}
+          note={t("dashboard2.rankingsAwaitingNote")}
+          />
+        </div>
+        </>
       ) : (
         <RankingsDisabledPanel
         title={t("dashboard2.rankingsDisabled")}

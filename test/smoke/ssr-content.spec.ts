@@ -102,3 +102,35 @@ test("HYD-PINS: /pulse first byte carries the honest FX state, never a stranding
   // the honest no-JS state is present verbatim
   expect(html).toContain("Live currency rates unavailable right now");
 });
+
+// Round 54 (founder order 2026-10-13): "Render 'No headlines yet' in the
+// server HTML of the news body." The news list is client-fetched, but the
+// page is a server-rendered client component — the first byte used to
+// carry twelve skeleton cards (an animation that never resolves without
+// JS, the exact /pulse stranding class the HYD-PINS rule forbids). The
+// first-byte contract now: the honest empty state renders server-side,
+// with a subline that discloses the loading mechanism (never claiming a
+// feed state the server has not checked); the skeleton appears only
+// post-hydration, once a real fetch is in flight.
+test("round 54: /news first byte carries 'No headlines yet' — never a stranding skeleton", async ({ request }) => {
+  const res = await request.get("/news");
+  expect(res.status()).toBe(200);
+  const html = await res.text();
+  // positive control FIRST (B-18): the news body itself is in the first
+  // byte — the page heading rides the server-rendered shell.
+  expect(html).toContain("page-breadcrumb");
+  // the founder-named honest empty state is present verbatim
+  expect(html).toContain("No headlines yet.");
+  // the subline discloses the loading mechanism (the pre-fetch state —
+  // the server has not checked the feed, so it claims no feed state)
+  expect(html).toContain("Headlines load in the browser");
+  // the skeleton's animation marker must be ABSENT from the first byte
+  // (it exists only inside SkeletonCard's JSX)
+  expect(html).not.toContain("skp 1.4s");
+  // the region filter is BUILT (founder: "build the filters"): the ALL
+  // pill renders in the first byte (the region pills populate with the
+  // fetched feed; the ALL pill is the always-present control). React SSR
+  // may interleave comment markers between text children, so the pin
+  // matches the button's opening, not its closing tag.
+  expect(html).toMatch(/<button[^>]*aria-pressed="true"[^>]*>\s*ALL/);
+});

@@ -1,0 +1,48 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.0.2 /tmp/my-project/repo
+
+ ❯ test/stocksTableTanstack.test.ts (8 tests | 1 failed) 148ms
+   ❯ TANSTACK-STOCKS: the /stocks table over the full 896-row list (8)
+     ✓ the server-built slim index is the full list — 896 rows (the founder's number, T12 parity input) 1ms
+     ✓ default sort: consensus descending, nulls ALWAYS last (T11) 20ms
+     × sorting a numeric column ascending keeps nulls LAST (T11, both directions) 29ms
+     ✓ symbol sort is a real lexicographic sort over all 896 16ms
+     ✓ search matches symbol or company name, case-insensitive; no match -> honest zero rows 24ms
+     ✓ the sector filter filters by exact sector over the full list 25ms
+     ✓ pagination slices the sorted rows honestly (page count, page slices, tail page) 14ms
+     ✓ filters compose with pagination: filtered tail pages still align with the filtered order 16ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/stocksTableTanstack.test.ts > TANSTACK-STOCKS: the /stocks table over the full 896-row list > sorting a numeric column ascending keeps nulls LAST (T11, both directions)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/stocksTableTanstack.test.ts:88:64
+     86|     const firstNull = values.findIndex((v) => v === null);
+     87|     if (firstNull !== -1) {
+     88|       expect(values.slice(firstNull).every((v) => v === null)).toBe(tr…
+       |                                                                ^
+     89|       const head = values.slice(0, firstNull) as number[];
+     90|       for (let i = 1; i < head.length; i++) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  08:02:29
+   Duration  5.89s (transform 86%, import 8%, tests 3%, setup 3%)
+
+  Transform  transforming modules took 4.33s · 86% of tracked time, re-done on every run
+             persist transforms across runs with fsModuleCache: true
+             learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+

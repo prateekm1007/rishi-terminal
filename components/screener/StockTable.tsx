@@ -6,8 +6,23 @@
 // No scoring engine, no seed dataset in the bundle (the old topRishi /
 // topRishiScore enrichment was computed here and never rendered —
 // dropped as dead code).
-import { useState, useMemo } from "react";
+//
+// TANSTACK-STOCKS (round 56): the data flow (sorting, filtering,
+// pagination) now runs on @tanstack/react-table 8.21.3 — the founder's
+// batch-2 adoption (adoption record row 2), with the options shared with
+// the headless acceptance test through components/screener/
+// stocksTableOptions.ts (one source of truth, rule 14). Behavioural pins
+// carried unchanged: T11 nulls-last sorting, T14 seed-price-never-shown,
+// consensus-descending default sort, symbol-or-name search, exact sector
+// filter. NEW: client-side pagination (50/page) with an honest page
+// count. The markup, a11y labels and badge logic are untouched.
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  useReactTable,
+  type PaginationState,
+  type SortingState,
+} from "@tanstack/react-table";
 import type { ScreenerPickerRow } from '@/lib/transport/slimWire';
 
 import { useBulkFundamentals } from '@/hooks/useFundamentals';
@@ -16,6 +31,13 @@ import { DataValue } from '@/components/DataValue';
 import { overlaySourced, type Sourced } from '@/lib/types/sourced';
 import { verdictsAllowed } from '@/lib/dataQuality';
 import { IntelligenceBadge } from '@/components/screener/IntelligenceBadge';
+import {
+  stocksTableColumnFilters,
+  stocksTableDefaultState,
+  stocksTableOptions,
+  STOCKS_TABLE_PAGE_SIZE,
+  type StocksTableRow,
+} from './stocksTableOptions';
 
 interface Props {
   stocks: ScreenerPickerRow[];
@@ -25,14 +47,6 @@ interface Props {
    *  request happens on drawer open, ONE subject at a time, in the
    *  drawer ScreenerClient mounts once via next/dynamic ssr:false). */
   onOpenIntelligence?: (symbol: string) => void;
-}
-
-type SortKey = "symbol" | "livePrice" | "pe" | "roe" | "mktcap" | "consensus" | "change24h";
-
-interface Row extends ScreenerPickerRow {
-  /** null = no live quote — em dash shown; seed price is NEVER displayed (T14). */
-  livePrice: number | null;
-  change24h: number | null;
 }
 
 /**
@@ -68,8 +82,12 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
 
   const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
-  const [sortKey, setSortKey] = useState<SortKey>("consensus");
-  const [sortDesc, setSortDesc] = useState(true);
+  const [sorting, setSorting] = useState<SortingState>(
+    stocksTableDefaultState().sorting,
+  );
+  const [pagination, setPagination] = useState<PaginationState>(
+    stocksTableDefaultState().pagination,
+  );
 
   const stockSymbols = useMemo(() => stocks.map(s => s.symbol), [stocks]);
 
@@ -77,7 +95,7 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
 
   const { fundamentals: bulkFund } = useBulkFundamentals(stockSymbols);
 
-  const enrichedStocks = useMemo<Row[]>(() => {
+  const enrichedStocks = useMemo<StocksTableRow[]>(() => {
     return stocks.map(stock => {
       // T14: seed price is never rendered as live — null when feed is down
       const livePrice = prices[stock.symbol]?.price ?? null;
@@ -95,46 +113,39 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
     return ["All", ...Array.from(unique).sort()];
   }, [stocks]);
 
-  const filtered = useMemo(() => {
-    let result = [...enrichedStocks];
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(s =>
-        s.symbol.toLowerCase().includes(q) || s.name.toLowerCase().includes(q)
-      );
-    }
-    if (sectorFilter !== "All") {
-      result = result.filter(s => s.sector === sectorFilter);
-    }
-    result.sort((a, b) => {
-      if (sortKey === "symbol") {
-        return sortDesc
-          ? String(b.symbol).localeCompare(String(a.symbol))
-          : String(a.symbol).localeCompare(String(b.symbol));
-      }
-      // T11: null (Insufficient Data) values always sort last
-      const av = a[sortKey] as number | null;
-      const bv = b[sortKey] as number | null;
-      const aNull = av === null || !Number.isFinite(av);
-      const bNull = bv === null || !Number.isFinite(bv);
-      if (aNull && bNull) return 0;
-      if (aNull) return 1;   // nulls last
-      if (bNull) return -1;
-      return sortDesc ? (bv as number) - (av as number) : (av as number) - (bv as number);
-    });
-    return result;
-  }, [enrichedStocks, search, sectorFilter, sortKey, sortDesc]);
+  const table = useReactTable(
+    stocksTableOptions(enrichedStocks, {
+      sorting,
+      columnFilters: stocksTableColumnFilters(sectorFilter),
+      globalFilter: search,
+      pagination,
+    }),
+  );
 
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) setSortDesc(!sortDesc);
-    else {
-      setSortKey(key);
-      setSortDesc(true);
+  // The honest visible count: filtered rows, before pagination.
+  const filteredCount = table.getFilteredRowModel().rows.length;
+  const visibleRows = table.getRowModel().rows;
+  const pageCount = Math.max(1, table.getPageCount());
+
+  // Keep the page index inside bounds when filters shrink the result set
+  // (autoResetPageIndex covers filter-driven resets; this guards
+  // reducer-less edge cases without fabricating rows).
+  useEffect(() => {
+    if (pagination.pageIndex > pageCount - 1) {
+      setPagination(p => ({ ...p, pageIndex: Math.max(0, pageCount - 1) }));
+    }
+  }, [pagination.pageIndex, pageCount]);
+
+  const handleSort = (key: string) => {
+    if (sorting[0]?.id === key) {
+      setSorting([{ id: key, desc: !sorting[0].desc }]);
+    } else {
+      setSorting([{ id: key, desc: true }]);
     }
   };
 
-  const sortIcon = (key: SortKey) =>
-    sortKey !== key ? "↕" : sortDesc ? "↓" : "↑";
+  const sortIcon = (key: string) =>
+    sorting[0]?.id !== key ? "↕" : sorting[0].desc ? "↓" : "↑";
 
   const changeColor = (change: number) => {
     if (change > 0) return dark ? "text-emerald-400" : "text-green-700";
@@ -226,75 +237,116 @@ export function StockTable({ stocks, onOpenIntelligence }: Props) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((stock, idx) => (
-              <tr
-                key={stock.symbol}
-                className={`border-b transition ${
-                  dark
-                    ? "border-gray-800 hover:bg-gray-900/30"
-                    : "border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                <td className="px-4 py-3 font-mono font-bold text-yellow-500">
-                  <Link href={`/stock/${stock.symbol}`} className="hover:underline">
-                    {stock.symbol}
-                  </Link>
-                </td>
-                {/* INT-D2: the opener rides the row in its own cell —
-                    a 28 px touch target with 32 px clearance to the
-                    symbol link (the WCAG 2.2 target-size/offset gate).
-                    A row without a resolvable symbol renders no badge
-                    (defensive, honest). */}
-                <td className="px-2 py-3 text-left">
-                  {onOpenIntelligence && stock.symbol ? (
-                    <IntelligenceBadge symbol={stock.symbol} onOpen={onOpenIntelligence} />
-                  ) : null}
-                </td>
-                <td className={`px-4 py-3 font-mono text-sm ${dark ? "text-gray-300" : "text-gray-700"}`}>
-                  {stock.name}
-                </td>
-                <td
-                  className="px-4 py-3 text-right font-mono font-semibold text-yellow-500"
-                  title={stock.livePrice !== null ? "Live price" : "Live price unavailable \u2014 seed prices are never shown as current"}
+            {visibleRows.map((row) => {
+              const stock = row.original;
+              return (
+                <tr
+                  key={stock.symbol}
+                  className={`border-b transition ${
+                    dark
+                      ? "border-gray-800 hover:bg-gray-900/30"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
                 >
-                  {stock.livePrice !== null ? stock.livePrice.toFixed(2) : "\u2014"}
-                </td>
-                <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h ?? 0)}`} title={stock.change24h !== null ? "Live 24h change" : "Live change unavailable"}>
-                  {stock.change24h !== null ? (stock.change24h > 0 ? "+" : "") + stock.change24h.toFixed(2) + "%" : "\u2014"}
-                </td>
-                <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  <DataValue sourced={metricSourced(stock.pe, bulkFund[stock.symbol]?.pe, bulkFund[stock.symbol], "pe")} digits={1} unit="x" />
-                </td>
-                <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
-                  <DataValue sourced={metricSourced(stock.roe, bulkFund[stock.symbol]?.roe, bulkFund[stock.symbol], "roe")} digits={1} unit="%" />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  {verdictsAllowed(stock.dataQuality) ? (
-                    <span
-                      className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
-                    >
-                      <DataValue sourced={scoreSourced(stock.consensus)} digits={0} />
-                    </span>
-                  ) : (
-                    /* P0-1 (founder audit 2026-10-11): seed/missing rows show
-                       NO verdict — the badge reads the dataQuality field. */
-                    <span
-                      className="inline-block rounded-full px-3 py-1 text-xs font-mono font-semibold border bg-gray-100 text-gray-600 border-gray-300 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-600"
-                      title={stock.dataQuality === "missing" ? "No usable data — no verdict produced" : "Illustrative seed data — no verdict produced"}
-                    >
-                      {stock.dataQuality === "missing" ? "no data · no verdict" : "seed · no verdict"}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  <td className="px-4 py-3 font-mono font-bold text-yellow-500">
+                    <Link href={`/stock/${stock.symbol}`} className="hover:underline">
+                      {stock.symbol}
+                    </Link>
+                  </td>
+                  {/* INT-D2: the opener rides the row in its own cell —
+                      a 28 px touch target with 32 px clearance to the
+                      symbol link (the WCAG 2.2 target-size/offset gate).
+                      A row without a resolvable symbol renders no badge
+                      (defensive, honest). */}
+                  <td className="px-2 py-3 text-left">
+                    {onOpenIntelligence && stock.symbol ? (
+                      <IntelligenceBadge symbol={stock.symbol} onOpen={onOpenIntelligence} />
+                    ) : null}
+                  </td>
+                  <td className={`px-4 py-3 font-mono text-sm ${dark ? "text-gray-300" : "text-gray-700"}`}>
+                    {stock.name}
+                  </td>
+                  <td
+                    className="px-4 py-3 text-right font-mono font-semibold text-yellow-500"
+                    title={stock.livePrice !== null ? "Live price" : "Live price unavailable \u2014 seed prices are never shown as current"}
+                  >
+                    {stock.livePrice !== null ? stock.livePrice.toFixed(2) : "\u2014"}
+                  </td>
+                  <td className={`px-4 py-3 text-right font-mono font-semibold ${changeColor(stock.change24h ?? 0)}`} title={stock.change24h !== null ? "Live 24h change" : "Live change unavailable"}>
+                    {stock.change24h !== null ? (stock.change24h > 0 ? "+" : "") + stock.change24h.toFixed(2) + "%" : "\u2014"}
+                  </td>
+                  <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
+                    <DataValue sourced={metricSourced(stock.pe, bulkFund[stock.symbol]?.pe, bulkFund[stock.symbol], "pe")} digits={1} unit="x" />
+                  </td>
+                  <td className={`px-4 py-3 text-right font-mono ${dark ? "text-gray-400" : "text-gray-600"}`}>
+                    <DataValue sourced={metricSourced(stock.roe, bulkFund[stock.symbol]?.roe, bulkFund[stock.symbol], "roe")} digits={1} unit="%" />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {verdictsAllowed(stock.dataQuality) ? (
+                      <span
+                        className={`inline-block rounded-full px-3 py-1 text-xs font-mono font-bold border ${categoryBadge(stock.category)}`}
+                      >
+                        <DataValue sourced={scoreSourced(stock.consensus)} digits={0} />
+                      </span>
+                    ) : (
+                      /* P0-1 (founder audit 2026-10-11): seed/missing rows show
+                         NO verdict — the badge reads the dataQuality field. */
+                      <span
+                        className="inline-block rounded-full px-3 py-1 text-xs font-mono font-semibold border bg-gray-100 text-gray-600 border-gray-300 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-600"
+                        title={stock.dataQuality === "missing" ? "No usable data — no verdict produced" : "Illustrative seed data — no verdict produced"}
+                      >
+                        {stock.dataQuality === "missing" ? "no data · no verdict" : "seed · no verdict"}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {filtered.length === 0 && (
+      {visibleRows.length === 0 && (
         <div className={`text-center py-8 ${dark ? "text-gray-500" : "text-gray-400"}`}>
           No stocks found matching your criteria.
+        </div>
+      )}
+
+      {/* TANSTACK-STOCKS: client-side pagination over the filtered rows —
+          the count is the honest filtered count, never a padded total. */}
+      {filteredCount > 0 && (
+        <div className="mt-4 flex items-center justify-between gap-4">
+          <span className={`font-mono text-xs ${dark ? "text-gray-500" : "text-gray-500"}`}>
+            Page {pagination.pageIndex + 1} of {pageCount} · {filteredCount} matching rows · {STOCKS_TABLE_PAGE_SIZE}/page
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Previous page"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className={`rounded border px-3 py-1.5 font-mono text-xs transition disabled:opacity-40 ${
+                dark
+                  ? "border-gray-700 bg-gray-900/50 text-gray-300 hover:bg-gray-800"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              ← Prev
+            </button>
+            <button
+              type="button"
+              aria-label="Next page"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className={`rounded border px-3 py-1.5 font-mono text-xs transition disabled:opacity-40 ${
+                dark
+                  ? "border-gray-700 bg-gray-900/50 text-gray-300 hover:bg-gray-800"
+                  : "border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              Next →
+            </button>
+          </div>
         </div>
       )}
     </div>

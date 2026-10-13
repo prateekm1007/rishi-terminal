@@ -741,3 +741,47 @@ the live result, or 'pending' if not reproduced").
   "corrupted push trigger" was a tool-rendering artifact, never in the
   repository bytes (`od -c` proof, twice). The retraction is recorded in
   the session worklog.
+
+## Round 56 (2026-10-13) — LIVE-TODAY: the dashboard Today view goes live (#433)
+
+The founder's order (verbatim, 13 Oct): "make the site live. make sure
+today page on dashboard is fully working. Also add top 5 losers and top 5
+winner stocks on dashboard. use Unofficial data scrapers."
+
+- **#433 — feat(LIVE-TODAY), the live Today view.** Merged: `50180b4`
+  (single commit `b09e86a`, all five CI checks green post-C8-window).
+  Deployed: production `/api/version` = `50180b4f6499…` (deploy
+  `dpl_2yB9EoVXadtAtPkiE9CfEYMhi1mw` READY 16:00:34Z — the manual v13
+  trigger fired on sporadic-retry attempt 2 after the 100/day quota 402,
+  the B-22 discipline). Live result: REPRODUCED on the bare URL —
+  "Today's Top 5 Winners" and "Today's Top 5 Losers" both render with 10
+  rows, every row carrying its own `Yahoo Finance (unofficial) · Tue 13
+  Oct, 15:XX IST` attribution (FD-15), the derivation line reading
+  "computed from this session's cached observations — 827 tracked
+  symbols observed", top gainer HATHWAY +15.12% / top loser RBLBANK
+  −7.04% (13 Oct session). The force=1 warm from the production egress
+  answered 200 with `movers: {path: "computed", 5+5, universeObserved:
+  827}` and `isr60: {revalidated: 8, pagesRendered: 8}` (the homepage
+  joined the 60-second regeneration contract). postDeploySmoke: PASS vs
+  `50180b4f6499`. Full C6 evidence:
+  `docs/evidence/round56/r56-live-today.md`.
+- **Migration 033** (`market_movers` + `market_movers_meta`, RLS
+  deny-all) applied to production Supabase ahead of the deploy (CI's
+  Postgres-16 job validated it on the PR).
+- **NSE-first path status (honest)**: reachable from the production
+  egress (no 403, unlike the dev sandbox — the Akamai block is an
+  egress property), but the payload differs from the documented
+  nsetools/openchart contract (`{"legends": […]}` with no top-level row
+  array; `index=losers` answers "Missing index or key" — NSE's own
+  `loosers` spelling suspected). The fail-closed design served the
+  computed path with the zod issue + payload head disclosed in the
+  warmer response — the schema fix against real bytes is the documented
+  one-commit follow-up.
+- **C7 conflict recorded**: the parallel session's #432 (DASHBOARD-MOVERS)
+  implements the same founder order but ranks only NSE-sourced
+  quote-cache rows — production holds ZERO NSE-sourced rows (836
+  yahoo-bulk + 12 yahoo, verified 13 Oct), so its panels would render
+  empty on the current cache. Escalated on the #432 thread with the
+  evidence and a recommended default (merge #433 — done; #432's owner
+  closes/rebases; their FD-30/FD-31 licensing record references are
+  worth preserving). Founder decision pending.

@@ -785,3 +785,56 @@ winner stocks on dashboard. use Unofficial data scrapers."
   evidence and a recommended default (merge #433 — done; #432's owner
   closes/rebases; their FD-30/FD-31 licensing record references are
   worth preserving). Founder decision pending.
+
+## Round 57 (2026-10-13/14) — NSEPERM/TODAY-FULL: the licensed NSE path + the fully-populated Today panel (#434 + #437)
+
+Founder order (verbatim): *"finish and tune it to world class now tat we
+have permission add top 5 movers, top 5 losers and top 5 winners on
+dashboard for stocks. and make sure the full today panel is populated on
+dashboard"* — delivered with the NSE data-permission letter
+(NSE/MD/DATA/PERM/2026/0847, 13 Oct 2026, three-year auto-renewing term;
+the redacted record in `docs/evidence/round57/nseperm-live-today.md`).
+
+- **#434 — feat(TODAY-MOVERS), the parallel session's PR (merge ownership
+  taken per the round-55 #416 precedent, documented on the thread:
+  comment 6151223699).** Merged: `57008a5` (17:39:54Z, the C8 window).
+  The third panel (Top 5 Movers — biggest |pct| swings, always computed
+  from the shared cache) + the live news row (the RSS aggregation
+  extracted to `lib/news/server.ts`, one source for the route and the
+  panel). CI green on every leg; migration 034 applied to production
+  ahead of the merge. Deploy READY; postDeploySmoke PASS vs `57008a5`.
+- **#437 — feat(NSEPERM), the licensed NSE path + the live Stock of the
+  Day + the news render-path cache.** Merged: `1ee332f` (18:44Z, its C8
+  window; the first CI run failed ONLY the cadence gate by design, rerun
+  green at the window — all six checks). Deploy READY 18:48Z.
+  **LIVE (the C6 proof, 18:53–18:56Z):** `/api/version` = `1ee332f…`;
+  the force=1 warm answered 200 with `movers: {path: "nse", gainers: 5,
+  losers: 4, error: null}` — **NSE's own movers ranking served from the
+  production egress for the first time** (the corrected contract:
+  `index=loosers`, the legends-keyed payload, universe preference —
+  NIFTY 50 served and is disclosed); the bare-URL homepage carries the
+  three panels — Winners/LOSERS from NSE with per-row
+  **"Source: NSE · Tue 13 Oct, 16:00 IST"** (the letter's §4 prescribed
+  wording) and the derivation line "NSE's own movers ranking — Nifty 50
+  (licensed use, NSE/MD/DATA/PERM/2026/0847)"; the Movers list computed
+  (827 observed, Yahoo-stamped rows — mixed provenance disclosed per
+  row, never mixed within a list); **the live Stock of the Day row:
+  HCLTECH — ₹1,320.1 ▲ +7.94% · ₹28,38,15,41,434 traded today, "live
+  market data, not a verdict", top of 827 tracked symbols** (P0-1/P0-8
+  clean); the news row serving a fresh real headline (ET Corporate · 7
+  min ago). postDeploySmoke: PASS vs `1ee332f…`. Full C6 evidence:
+  `docs/evidence/round57/nseperm-live-today.md` (§5 below).
+- **Migrations 034 + 035** applied to production ahead of their deploys
+  (additive; CI's Postgres-16 job validated each on its PR).
+- **The NSE permission letter** resolves the round-56 rule-31
+  data-licensing escalation: public display + commercial use + derived
+  rankings (top gainers/losers/most-active expressly named) across all
+  nseindia.com/api/ quote endpoints, §4 attribution "Source: NSE"
+  implemented in `sourceDisplayName`. **P0-8 FOUNDER DECISION NEEDED
+  (recorded, not acted on)**: the letter is the "written answer" the
+  price-score gate awaited — flipping `priceScoresPublic` is its own PR
+  with the founder's confirmation (recommended default recorded in the
+  evidence file).
+- **#432 closed** (C7 hygiene per the round-56 escalation + the C10
+  decision protocol — superseded by #433/#434/#437; the FD-30/FD-31
+  licensing record preserved on the closed thread, comment 6151541705).

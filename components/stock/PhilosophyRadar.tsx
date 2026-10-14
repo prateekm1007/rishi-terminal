@@ -1,19 +1,20 @@
 'use client';
 
 import { RishiScore } from '../../lib/types';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 interface Props {
   scores: RishiScore[];
 }
 
 // Pure CSS/SVG radar chart — no recharts dependency issues
-export function PhilosophyRadar({ scores }: Props) {
-  const [mounted, setMounted] = useState(false);
+const noopSubscribe = () => () => {};
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export function PhilosophyRadar({ scores }: Props) {
+  // ENG-6: the mounted-flag pattern (setState-in-effect) replaced by the
+  // canonical hydration probe — the client snapshot is true, the server
+  // snapshot false, no effect, no cascade.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
 
   if (!scores || scores.length === 0) return null;
 

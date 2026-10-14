@@ -75,17 +75,22 @@ export function QuarterlyChart({ symbol, refreshMs = 3_600_000 }: Props) {
       const q: QuarterRow[] = Array.isArray(json?.quarters) ? json.quarters.slice(-8) : [];
       setRows(q);
       setError(null);
-    } catch (e: any) {
-      setError(e?.message ?? "Failed");
+    } catch (e) {
+      // ENG-6: unknown-typed catch — the message renders only when the
+      // thrown value actually carries one (a bare string throw included).
+      setError(e instanceof Error ? e.message : typeof e === "string" && e ? e : "Failed");
     } finally {
       setLoading(false);
     }
   }, [symbol]);
 
   useEffect(() => {
-    fetchData();
+    // ENG-6: the initial fetch is deferred one tick off the effect body —
+    // a synchronous setLoading(true) in the effect cascaded renders (the
+    // refetch interval is unchanged; the first paint keeps its state).
+    const first = setTimeout(fetchData, 0);
     const id = setInterval(fetchData, refreshMs);
-    return () => clearInterval(id);
+    return () => { clearTimeout(first); clearInterval(id); };
   }, [fetchData, refreshMs]);
 
   // Process data: sort, take latest 8

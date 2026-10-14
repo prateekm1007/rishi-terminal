@@ -27,7 +27,10 @@ export interface ScreenerFundamentals {
   fcf: number | null;
   roa: number | null;
   /** Null when the page exposes no parseable D/E (T11/H4: never a
-   *  fabricated constant, never 0). */
+   *  fabricated constant, never 0). TODAY-VERDICTS: on the current page
+   *  format this is DERIVED from the balance-sheet rows — latest-column
+   *  Borrowings / (Equity Capital + Reserves); an explicit text ratio
+   *  still wins verbatim when the page carries one. */
   debtToEquity: number | null;
   opm: number | null;
   revCagr3y: number | null;
@@ -96,6 +99,55 @@ function extractBalanceSheetDE(html: string): number | null {
   if (ratioMatch) {
     const parsed = parseFloat(ratioMatch[1].replace(/,/g, ""));
     if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+  }
+
+  // TODAY-VERDICTS (founder order, 2026-10-14): the captured live page
+  // (14 Oct 2026) exposes NO "Debt to equity" ratio anywhere — the
+  // top-ratios list and the #ratios section carry Debtor/Inventory/
+  // Payable days and ROCE only. The balance sheet DOES carry the raw
+  // rows (labels wrapped in <button> for the schedule drill-downs), so
+  // the ratio is DERIVED: latest-column Borrowings / (Equity Capital +
+  // Reserves). Derived from the page's own published figures — the
+  // method is disclosed here and in docs/DATA_SOURCES.md; per-field
+  // provenance still attributes the inputs to the screener transport.
+  const borrowings = latestBalanceSheetValue(html, "Borrowings");
+  const equityCapital = latestBalanceSheetValue(html, "Equity Capital");
+  const reserves = latestBalanceSheetValue(html, "Reserves");
+  if (borrowings === null || equityCapital === null || reserves === null) return null;
+  const equity = equityCapital + reserves;
+  // Negative or zero equity (accumulated losses) makes the ratio
+  // meaningless — null, never a fabricated number (T11/Rule 16).
+  if (!(equity > 0)) return null;
+  const de = borrowings / equity;
+  return Number.isFinite(de) && de >= 0 ? de : null;
+}
+
+/**
+ * TODAY-VERDICTS: the LAST numeric cell of a named balance-sheet row
+ * (the latest reported column — a human reads the same way). Blank or
+ * non-numeric cells are MISSING columns (skipped, never coerced to 0);
+ * a genuine "0" cell is a real observation and parses as 0.
+ */
+function latestBalanceSheetValue(html: string, rowLabel: string): number | null {
+  const section = html.match(/<section id="balance-sheet"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
+  const rows = section.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
+  for (const row of rows) {
+    const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
+      .map((c: string) => c.replace(/<[^>]*>/g, "").replace(/\u00a0/g, " ").trim());
+    if (cells.length === 0) continue;
+    // The label lives in the first cell (button-wrapped on rows with
+    // schedules — tag-stripped above, so "Borrowings +" / "Equity Capital").
+    const label = cells[0].replace(/\s+/g, " ").trim();
+    if (!label.toLowerCase().startsWith(rowLabel.toLowerCase())) continue;
+    let latest: number | null = null;
+    for (const cell of cells.slice(1)) {
+      // A numeric cell: optional minus, digits with commas, optional
+      // decimals. Anything else (blank, "—", text) is a missing column.
+      if (!/^-?[\d,]+(\.\d+)?$/.test(cell)) continue;
+      const v = parseFloat(cell.replace(/,/g, ""));
+      if (Number.isFinite(v)) latest = v;
+    }
+    return latest;
   }
   return null;
 }
@@ -279,8 +331,12 @@ function extractQuarters(html: string): {
 async function fetchPage(symbol: string, suffix = ""): Promise<string | null> {
   try {
     const url = `${BASE}/${encodeURIComponent(symbol)}/consolidated/${suffix}`;
+    // no-store: a live scrape must never be served from a response
+    // cache (the same semantic lib/movers/nse.ts established — the
+    // warmer's ISR60 pin asserts every tick fetch carries it).
     const res = await fetch(url, {
       headers: HEADERS,
+      cache: "no-store",
       signal: AbortSignal.timeout(15000),
     });
     if (res.ok) return res.text();
@@ -289,6 +345,7 @@ async function fetchPage(symbol: string, suffix = ""): Promise<string | null> {
     const url2 = `${BASE}/${encodeURIComponent(symbol)}/${suffix}`;
     const res2 = await fetch(url2, {
       headers: HEADERS,
+      cache: "no-store",
       signal: AbortSignal.timeout(15000),
     });
     if (res2.ok) return res2.text();

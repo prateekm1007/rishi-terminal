@@ -16,12 +16,16 @@ test.describe("smoke — core surfaces", () => {
     // FD-22 re-pin (founder order 2026-10-12: rankings ON per
     // "Set RANKINGS_ENABLED=true in production"): this suite runs with
     // RANKINGS_ENABLED=true, so the honest state is the AWAITING panel —
-    // rankings are on, nothing qualifies (the price-licence gate refuses
-    // every consensus), the licence is the stated reason, and no
+    // rankings are on, nothing qualifies (the record set is seed data:
+    // P0-1 blocks verdicts independent of the exchange-data licence,
+    // which NSE-PERM recorded on 13 Oct 2026), and no
     // seed-derived ranking is shown. The old "switched off" note would
     // now be a false statement (C1) and must NOT render here.
     await expect(page.getByText(/Rankings are on/i).first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(/licence is pending/i).first()).toBeVisible();
+    // NSE-PERM: the awaiting note names the TRUE reason (seed data) and
+    // must not claim the licence is still pending (the letter is recorded).
+    await expect(page.getByText(/seed rows show no verdict/i).first()).toBeVisible();
+    await expect(page.getByText(/licence is pending/i)).toHaveCount(0);
     await expect(page.getByText(/no seed-derived ranking is shown/i).first()).toBeVisible();
     await expect(page.getByText(/switched off/i).first()).toHaveCount(0);
     // Round 54 (#370 acceptance, founder order 2026-10-13): the awaiting
@@ -92,6 +96,14 @@ test.describe("smoke — core surfaces", () => {
     const homeHtml = await home.text();
     expect(homeHtml).not.toContain("Connecting");
     expect(homeHtml).not.toContain("RANKINGS_ENABLED");
+    // FD-15 (round 54): every ticker row carries its attribution IN THE
+    // FIRST BYTE — on a cold cache that is the honest "no source yet"
+    // (the positive control that the sourced-rows contract renders
+    // server-side, not only after hydration).
+    expect(homeHtml).toContain("no source yet");
+    // and the removed aggregate wording stays gone (founder order:
+    // "Remove 'Observation time not disclosed' next to values")
+    expect(homeHtml).not.toContain("Observation time not disclosed");
   });
 
   // Audit M6/B.3: canonical + Open Graph were absent sitewide (0 occurrences

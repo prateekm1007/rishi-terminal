@@ -593,3 +593,30 @@ DATASET-level, not circular-level — B3 is OPEN.**
   recorded in the same evidence chain. The 15 agreed dates stand adopted
   (two independent datasets agreeing); the disputed date stays excluded
   (the fail-closed direction, pinned by test).
+
+## Round 56 — LIVE-TODAY: the dashboard's Today view goes live (Top 5 Winners / Losers)
+
+Founder order 13 Oct 2026: "make the site live. make sure today page on
+dashboard is fully working. Also add top 5 losers and top 5 winner stocks on
+dashboard. use Unofficial data scrapers."
+
+- **What "live" means here (scoped to this order):** the Today view's market
+  data is now REAL — the Top 5 Winners / Top 5 Losers panels render live
+  movers with per-row source + as-of stamps (FD-15 wording). The surfaces
+  that are NOT live yet stay honestly labelled exactly as before: the
+  Stock-of-the-Day pick (seed-derived, banner), verdicts produced today
+  (none — P0-1), the news link ("No headlines yet"), forward-return
+  tracking (not started, DEMO-2). Nothing was flipped silently (C9).
+- **Data path:** NSE's own live-analysis movers endpoint first (unofficial,
+  the vsjha18/nsetools + marketcalls/openchart MIT contracts — same-domain
+  transport the live /api/pulse/breadth already proves reachable from
+  production egress), the shared-quote-cache computation as the
+  always-available fallback (every row keeps its own source + observed_at;
+  session-scoped, deterministic tie-breaks). Both lists or none; the panel
+  discloses which path served. GPL/AGPL and "personal use only" scrapers
+  from the founder's list are NOT vendored (docs/DATA_SOURCES.md row 17).
+- **Freshness:** the warmer's minute tick regenerates the movers and
+  re-renders the homepage (the ISR60 contract extended to "/"), so the
+  panels stay within one tick of the market during the session.
+- Evidence: `docs/evidence/round56/` (this round's PR thread carries the
+  raw commands).

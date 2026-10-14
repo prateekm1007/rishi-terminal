@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 // P0-8 (rule 17): NEWS_FEED, TICKER_ITEMS, TRENDING_TOPICS, IPL_TEAMS and
@@ -126,13 +126,11 @@ function NewsCard({ news, saved, toggleSave, t }: {
           <span>&bull;</span>
           <span>{timeAgoLabel(news.minutesAgo)}</span>
         </div>
-        {(news as any).tickers && (news as any).tickers.length > 0 && (
-          <div style={{ display: 'flex', gap: 4 }}>
-            {((news as any).tickers as string[]).slice(0, 3).map((ticker: string) => (
-              <span key={ticker} style={{ fontSize: 9, fontWeight: 700, fontFamily: 'monospace', background: 'var(--accent-gold)' + '20', color: 'var(--accent-gold)', padding: '2px 6px', borderRadius: 3 }}>{ticker}</span>
-            ))}
-          </div>
-        )}
+        {/* ENG-6 (round 54): the ticker-chips block that lived here was
+            DEAD CODE — the /api/news item shape carries no `tickers` field
+            (verified against the route's response type), so the `any`-cast
+            access was always undefined and the chips could never render.
+            Deleted, not typed (rule 17). */}
       </div>
     </div>
   );
@@ -178,15 +176,22 @@ export default function NewsPage() {
   }, [prices, tickerSymbols]);
 
   useEffect(() => {
+    // ENG-6: the restore is deferred one tick off the effect body —
+    // synchronous setState in the effect cascaded renders.
     const savedStr = localStorage.getItem('rishi_saved_news');
-    if (savedStr) {
+    if (!savedStr) return;
+    const restore = setTimeout(() => {
       try { setSaved(JSON.parse(savedStr)); }
       catch { setSaved([]); }
-    }
+    }, 0);
+    return () => clearTimeout(restore);
   }, []);
 
   useEffect(() => {
     let cancelled = false;
+    // ENG-6: deferred setState transitions registered here so both cleanup
+    // paths clear them (a late cache display after unmount would leak).
+    const pendingTimeouts: Array<() => void> = [];
 
     async function loadLive(silent: boolean = false) {
       if (!silent) setLoading(true);
@@ -220,12 +225,19 @@ export default function NewsPage() {
         const parsed = JSON.parse(cached);
         const age = Date.now() - (parsed.ts || 0);
         if (parsed.news && Array.isArray(parsed.news) && parsed.news.length > 0) {
-          setLiveNews(parsed.news);
-          setLoading(false);
+          // ENG-6: the cache display is deferred one tick off the effect
+          // body — synchronous setState in the effect cascaded renders.
+          const show = setTimeout(() => {
+            if (cancelled) return;
+            setLiveNews(parsed.news);
+            setLoading(false);
+          }, 0);
+          const showClear = () => clearTimeout(show);
+          pendingTimeouts.push(showClear);
           // Stale? Refresh silently in background
           if (age >= 120000) { loadLive(true); }
           const interval = setInterval(() => loadLive(true), 300000);
-          return () => { cancelled = true; clearInterval(interval); };
+          return () => { cancelled = true; clearInterval(interval); pendingTimeouts.forEach(clear => clear()); };
         }
       }
     } catch {}
@@ -233,7 +245,7 @@ export default function NewsPage() {
     // No cache — show skeleton, fetch fresh
     loadLive(false);
     const interval = setInterval(() => loadLive(true), 300000);
-    return () => { cancelled = true; clearInterval(interval); };
+    return () => { cancelled = true; clearInterval(interval); pendingTimeouts.forEach(clear => clear()); };
   }, []);
 
   const toggleSave = (id: string) => {

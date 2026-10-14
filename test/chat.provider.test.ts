@@ -46,7 +46,18 @@ beforeEach(() => {
       { status: 200 },
     );
   vi.stubGlobal("fetch", vi.fn(async (url: any, init: any) => {
-    calls.push({ url: String(url), headers: init.headers, body: JSON.parse(init.body) });
+    // FD8-AI-SDK: the transport now builds headers as a Headers instance —
+    // the stub normalises the observation shape; the pinned invariants
+    // (Bearer on the header, never the URL/body) are unchanged.
+    const observed: Record<string, string> = {};
+    new Headers(init.headers).forEach((v, k) => {
+      // HTTP header names are case-insensitive; the stub canonicalises to
+      // the Title-Case the pinned assertions read (the SDK emits the
+      // lowercased wire form).
+      const title = k.split("-").map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("-");
+      observed[title] = v;
+    });
+    calls.push({ url: String(url), headers: observed, body: JSON.parse(init.body) });
     return upstreamResponse(String(url));
   }) as any);
 });
@@ -150,7 +161,9 @@ describe("T7 — chat provider selection", () => {
     const res = await POST(makeReq(okBody, "10.7.0.7"));
     expect(res.status).toBe(200);
     expect(calls[0].url).toContain("generativelanguage.googleapis.com");
-    expect(calls[0].body.system_instruction.parts[0].text.length).toBeGreaterThan(50);
+    // FD8-AI-SDK: the SDK sends the camelCase JSON field name (the Google
+    // JSON API accepts either casing) — read both, invariant unchanged.
+    expect((calls[0].body.systemInstruction ?? calls[0].body.system_instruction).parts[0].text.length).toBeGreaterThan(50);
   });
 
   it("502s with a generic body when the OpenAI-compatible upstream fails", async () => {

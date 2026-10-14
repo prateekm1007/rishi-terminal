@@ -1,7 +1,9 @@
 import Link from 'next/link';
 
 import { listMethodologyDocs } from '@/lib/methodology';
-import { trackingLine, TRACKING_STATUS } from '@/lib/demoState'; // DEMO-2: the honest tracking line (one source with the Today panel)
+import { trackingLineFor, trackingStatusFor } from '@/lib/demoState'; // DEMO-2 + TODAY-VERDICTS: the honest tracking line (one wording source; the STATE is the verdicts ledger's)
+import { readTrackingState } from '@/lib/verdicts/store'; // TODAY-VERDICTS: the calibration track's state (one state source, shared with the Today panel)
+import { isBuildPhase } from '@/lib/dashboardSnapshot'; // the build bakes the honest not-started state — no reads, hermetic prerender
 import { routeMetadata } from "@/lib/seo/routeMetadata";
 
 export const metadata = routeMetadata({
@@ -10,12 +12,23 @@ export const metadata = routeMetadata({
   description: "How every Rishi score is computed: inputs, formulas, thresholds, rationale, failure modes and non-applicable sectors.",
 });
 
+// TODAY-VERDICTS: this page was fully static (build-time) while its
+// tracking line claimed a state that could change at runtime. The
+// calibration track's state now derives from the verdicts ledger
+// (migration 036), so the page regenerates hourly to carry the SAME
+// line the Today panel renders (rule 14: one state source) — never a
+// build-baked "not started" that outlives the first recorded baseline.
+export const revalidate = 3600;
+
 /**
  * S2-01 (Round 13): the public methodology index. Statically generated
- * from docs/methodology/*.md at build time — the runtime reads nothing.
+ * from docs/methodology/*.md at build time — the runtime reads nothing
+ * (TODAY-VERDICTS exception: the ONE tracking-state read above, a
+ * cheap ledger read, never a vendor fetch).
  */
 export default async function MethodologyPage() {
   const docs = await listMethodologyDocs();
+  const tracking = isBuildPhase() ? null : await readTrackingState();
 
   return (
     <main className="page-bg">
@@ -33,8 +46,9 @@ export default async function MethodologyPage() {
           data-methodology-tracking
           style={{ fontSize: 13, color: 'var(--text-secondary)', padding: '10px 14px', marginTop: 16, border: '1px solid rgba(212,175,55,0.2)', borderRadius: 12 }}
         >
-          Forward-return tracking: <strong style={{ color: 'var(--text-primary)' }}>{TRACKING_STATUS}</strong> ({trackingLine()}) — the
-          S2-03/S2-04 calibration track has not begun; this line retires when it does.
+          Forward-return tracking: <strong style={{ color: 'var(--text-primary)' }}>{trackingStatusFor(tracking)}</strong> ({trackingLineFor(tracking)}) — the
+          S2-03/S2-04 calibration track&apos;s day-0 baselines are recorded alongside each produced verdict on live fundamentals (the verdicts ledger);
+          forward-return measurements begin after the next session close.
         </div>
 
         <div className="card-unified" style={{ padding: 20, marginTop: 24 }}>

@@ -1,12 +1,21 @@
 /**
- * Gemini chat provider (T49 fallback). Key travels via the x-goog-api-key
- * header — never the URL.
+ * Gemini chat provider (T49 fallback) — now executed through the
+ * provider-agnostic vercel/ai layer (FD8-AI-SDK, round 56; the founder's
+ * batch-2 adoption record row 8). `@ai-sdk/google` builds and sends the
+ * request to the DOCUMENTED generative-language path (v1beta/models/
+ * {model}:generateContent — the hand-rolled adapter's non-models path is
+ * superseded by the SDK's); the key travels via the x-goog-api-key header
+ * — never the URL.
  *
- * W3 hard-cap audit (round-12): the exact serialized request body is
- * checked against the shared input bound (./serializedInputBound) BEFORE
- * the fetch — an oversized payload is refused fail-closed (it can never
- * silently spend input tokens the global reservation did not cover).
+ * W3 hard-cap audit (round-12): the exact serialized logical request body
+ * is checked against the shared input bound (./serializedInputBound)
+ * BEFORE the call — an oversized payload is refused fail-closed (it can
+ * never silently spend input tokens the global reservation did not
+ * cover; pinned by test/w3.inputBound.test.ts).
  */
+
+import { generateText } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
 import type { ChatTurn, ProviderCompletion } from "./openaiCompatible";
 import { assertSerializedInputWithinBound } from "./serializedInputBound";
@@ -28,19 +37,24 @@ export async function callGemini(
 ): Promise<ProviderCompletion> {
   const contents = [
     ...history.map(h => ({
-      role: h.role === "user" ? "user" : "model",
-      parts: [{ text: h.content }],
+      role: h.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: h.content,
     })),
-    { role: "user", parts: [{ text: message }] },
+    { role: "user" as const, content: message },
     // Commit L1: server-generated tool-loop turns (assistant tool request +
     // user TOOL RESULT/TOOL ERROR), in conversation order after the message.
     ...loopTurns.map(h => ({
-      role: h.role === "user" ? "user" : "model",
-      parts: [{ text: h.content }],
+      role: h.role === "user" ? ("user" as const) : ("assistant" as const),
+      content: h.content,
     })),
   ];
 
-  const body = {
+  // W3 hard-cap audit: refuse an oversized request BEFORE the provider
+  // call — the attempt fails (failover/502), it never overspends. The
+  // bound runs on the serialized logical request (system + contents +
+  // generation params) — the same payload basis the bound has always
+  // enforced.
+  const serialized = JSON.stringify({
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents,
     generationConfig: {
@@ -49,35 +63,44 @@ export async function callGemini(
       topP: 0.95,
       maxOutputTokens: PROVIDER_MAX_OUTPUT_TOKENS,
     },
-  };
-  // W3 hard-cap audit: refuse an oversized request BEFORE the provider
-  // call — the attempt fails (failover/502), it never overspends.
-  const serialized = JSON.stringify(body);
+  });
   assertSerializedInputWithinBound(serialized);
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
-    body: serialized,
-    signal: AbortSignal.timeout(timeoutMs),
+  const provider = createGoogleGenerativeAI({ apiKey });
+
+  const result = await generateText({
+    model: provider.languageModel(model),
+    system: systemPrompt,
+    messages: contents,
+    temperature: 0.9,
+    topP: 0.95,
+    topK: 40,
+    maxOutputTokens: PROVIDER_MAX_OUTPUT_TOKENS,
+    abortSignal: AbortSignal.timeout(timeoutMs),
+  }).catch((err: unknown) => {
+    // Preserve the router's error shape for the health circuit (the SDK's
+    // APICallError carries a status — mapped to the same generic message;
+    // details stay server-side, rule 10).
+    const status = (err as { statusCode?: number }).statusCode;
+    if (typeof status === "number") {
+      console.error("[ai/gemini] upstream error:", status, String((err as Error).message).slice(0, 500));
+      throw new Error(`gemini HTTP ${status}`);
+    }
+    throw err;
   });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    console.error("[ai/gemini] upstream error:", res.status, errText.slice(0, 500));
-    throw new Error(`gemini HTTP ${res.status}`);
-  }
-
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text || typeof text !== "string") {
-    console.error("[ai/gemini] empty completion:", JSON.stringify(data).slice(0, 500));
+  const text = typeof result.text === "string" ? result.text : "";
+  if (!text) {
+    console.error("[ai/gemini] empty completion:", JSON.stringify(result).slice(0, 500));
     throw new Error("gemini empty completion");
   }
-  // W3 (founder round-10): Gemini reports usageMetadata.totalTokenCount.
-  const usage = data?.usageMetadata?.totalTokenCount;
-  return { text, totalTokens: typeof usage === "number" && Number.isFinite(usage) ? usage : null };
+  // W3 (founder round-10): only observable usage counts. The provider's
+  // own total (usage.raw.totalTokenCount — the exact field the hand-rolled
+  // adapter read from usageMetadata) takes precedence; the SDK's
+  // normalised totalTokens is the fallback.
+  const rawTotal = (result.usage?.raw as { totalTokenCount?: unknown } | undefined)?.totalTokenCount;
+  const total = typeof rawTotal === "number" && Number.isFinite(rawTotal)
+    ? rawTotal
+    : result.usage?.totalTokens;
+  return { text, totalTokens: typeof total === "number" && Number.isFinite(total) ? total : null };
 }

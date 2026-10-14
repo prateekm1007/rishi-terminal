@@ -1,0 +1,14 @@
+=== URL ===
+https://generativelanguage.googleapis.com/v1beta/models/test-model:generateContent
+=== BODY KEYS ===
+[ 'generationConfig', 'contents', 'systemInstruction' ]
+=== systemInstruction (camel) ===
+{"parts":[{"text":"SERVER PERSONA PROMPT — never the client's"}]}
+=== system_instruction (snake) ===
+null
+=== last content ===
+{"role":"user","parts":[{"text":"My secret mark 42-XYZ"}]}
+=== generationConfig ===
+{"maxOutputTokens":2048,"temperature":0.9,"topK":40,"topP":0.95}
+=== result ===
+{"text":"{\"answer\":\"ok\",\"claims\":[],\"uncertainties\":[]}","totalTokens":42}

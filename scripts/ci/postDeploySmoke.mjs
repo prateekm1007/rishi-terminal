@@ -233,6 +233,18 @@ function runLivenessSelfTest() {
   // The current render passes: the stateless first byte (the round-53
   // server-render disclosure) in both sessions.
   expect("new stock carries the licence marker", hasLicenceLabel(NEW_STOCK), true);
+  // NSE-PERM: the licence-marker STATE gate bites in BOTH directions —
+  // the page must match the state recorded in lib/licensing.ts.
+  expect("licence gate: recorded=licensed + label absent is consistent",
+    licenceMarkerVerdict("licensed", 0) === null, true);
+  expect("licence gate: recorded=licensed + label present FAILS",
+    licenceMarkerVerdict("licensed", 2) !== null, true);
+  expect("licence gate: recorded=unresolved + label present is consistent",
+    licenceMarkerVerdict("unresolved", 1) === null, true);
+  expect("licence gate: recorded=unresolved + label absent FAILS",
+    licenceMarkerVerdict("unresolved", 0) !== null, true);
+  expect("licence gate: the recorded status parses to the closed vocabulary",
+    ["licensed", "unresolved"].includes(recordedLicenseStatus()), true);
   expect("new rishis carries CHAT-ONLY", hasChatOnlyTag(NEW_RISHIS), true);
   expect("new stock closed-session stateless line passes",
     checkRenderFreshness(NEW_STOCK, CLOSED_NOW).ok, true);
@@ -480,11 +492,14 @@ function checkStockPage(prefix, page, html) {
   report(priceUnavail === 0, `${prefix}price ${page} "PRICE UNAVAILABLE"`, `${priceUnavail} occurrence(s) (must be 0)`);
 
   // ── Release markers + render freshness (founder order 12 Oct 2026) ──
-  // DELIV-2 marker where it applies: the SBIN seed page carries
-  // price-based refusals, each labelled 'Licence pending' first.
+  // DELIV-2 marker, NSE-PERM state-consistency form: the page must match
+  // the licence state RECORDED in lib/licensing.ts (both directions bite;
+  // the self-test legs prove each mismatch fails).
   if (page === "/stock/SBIN") {
     const lic = countOccurrences(stripSsrComments(html), "Licence pending");
-    report(lic >= 1, `${prefix}release-marker ${page} "Licence pending"`, `${lic} occurrence(s) (must be >= 1 — DELIV-2)`);
+    const recorded = recordedLicenseStatus();
+    const verdict = licenceMarkerVerdict(recorded, lic);
+    report(verdict === null, `${prefix}release-marker ${page} "Licence pending" vs recorded state "${recorded}"`, verdict === null ? `${lic} occurrence(s) — consistent` : verdict);
   }
   // STALE-QUOTE liveness: the observation line must be recency-honest at
   // probe time — an intraday label on a >15-minute-old quote fails, on any
@@ -599,8 +614,14 @@ for (const leg of [
 // asserts, so an old build fails on absence (C5 positive control runs in
 // --self-test above):
 //   - RISHI-21 → the CHAT-ONLY chip on /rishis.
-//   - DELIV-2 → the 'Licence pending' label where price-based refusals
-//     render (/stock/SBIN seed page).
+//   - DELIV-2 → the 'Licence pending' label WHILE the exchange-data
+//     licence is unresolved; NSE-PERM (13 Oct 2026, the permission letter
+//     recorded on lib/licensing.ts) makes the gate STATE-CONSISTENT: the
+//     probe parses the RECORDED status from lib/licensing.ts (the deployed
+//     sha IS this repo per C6, so the recorded state IS the deployed
+//     state) and requires the page to match it in BOTH directions — a
+//     licensed deployment must NOT render the label, an unresolved one
+//     must. Either mismatch fails.
 //   - STALE-QUOTE → the observation line is recency-honest: a quote older
 //     than 15 minutes is never 'market open · intraday quote'.
 
@@ -609,9 +630,41 @@ function hasChatOnlyTag(html) {
   return html.includes("CHAT-ONLY");
 }
 
-/** Licence-label presence (DELIV-2 release marker). */
+/** Licence-label presence (the DELIV-2 marker, the UNLICENSED state's
+ *  wording). */
 function hasLicenceLabel(html) {
   return html.includes("Licence pending");
+}
+
+/**
+ * NSE-PERM — the RECORDED exchange-data licence status, parsed straight
+ * from lib/licensing.ts (the ONE license state, rule 14; the deployed
+ * build serves this repo per C6, so the recorded state IS the deployed
+ * state). Parse failure refuses (rule 6) — the gate never guesses.
+ */
+function recordedLicenseStatus() {
+  const src = readFileSync(new URL("../../lib/licensing.ts", import.meta.url), "utf8");
+  const m = src.match(/status:\s*"(unresolved|licensed)"/);
+  if (!m) {
+    throw new Error("postDeploySmoke: lib/licensing.ts carries no parseable status constant — the state gate refuses rather than guess (rule 6)");
+  }
+  return m[1];
+}
+
+/**
+ * The state-consistency verdict for the licence marker (pure — self-test
+ * covers both directions): the page must match the RECORDED state.
+ *   recorded=licensed   → the label is the unlicensed state's wording and
+ *                         must NOT render (0 occurrences); a lingering
+ *                         label means the flip did not deploy.
+ *   recorded=unresolved → the label MUST render (>= 1 — DELIV-2).
+ * Returns null when consistent, or the failure reason.
+ */
+function licenceMarkerVerdict(recorded, count) {
+  if (recorded === "licensed") {
+    return count === 0 ? null : `recorded state is "licensed" (NSE/MD/DATA/PERM/2026/0847) but the page renders the unlicensed label ${count} time(s) — the flip did not deploy or the state regressed`;
+  }
+  return count >= 1 ? null : `recorded state is "unresolved" but the page never renders the DELIV-2 label — the gate refuses while the written answer is absent`;
 }
 
 function istOpenAt(nowMs) {

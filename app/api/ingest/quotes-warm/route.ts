@@ -57,6 +57,8 @@ import {
   quickRefreshSymbols,
   serveQuote,
 } from "@/lib/quotePath";
+import { refreshMovers } from "@/lib/movers/warm";
+import { refreshVerdicts } from "@/lib/verdicts/warm"; // TODAY-VERDICTS: the verdicts-ledger step
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -191,33 +193,73 @@ export async function POST(req: NextRequest) {
   // ping is never counted as a refresh (Rule 3: label data by what it
   // is). The pings run in parallel; each is bounded by the fetch's own
   // abort so one slow page cannot eat the whole tick.
+  //
+  // LIVE-TODAY (round 56): the homepage joins the ping set — the Today
+  // view's Top Winners / Top Losers panels ride the same 60-second
+  // regeneration contract as the quick-set stock pages, so the
+  // dashboard never serves a movers list older than one tick during
+  // the session.
   const pageOutcomes: Record<string, number | string> = {};
   let pagesRendered = 0;
+  const revalidatePaths: string[] = [];
   if (quick.length > 0) {
     for (const sym of quick) {
-      revalidatePath(`/stock/${sym}`);
+      revalidatePaths.push(`/stock/${sym}`);
     }
+  }
+  revalidatePaths.push("/");
+  for (const p of revalidatePaths) {
+    revalidatePath(p);
+  }
+  const pingTargets: string[] = [
+    ...quick.map((sym) => `/stock/${encodeURIComponent(sym)}`),
+    "/",
+  ];
+  if (pingTargets.length > 0) {
     const origin = req.nextUrl.origin;
-    const pingOne = async (sym: string): Promise<void> => {
+    const pingOne = async (path: string): Promise<void> => {
       try {
         const abort = new AbortController();
         const timer = setTimeout(() => abort.abort(), 20_000);
         try {
-          const res = await fetch(`${origin}/stock/${encodeURIComponent(sym)}`, {
+          const res = await fetch(`${origin}${path}`, {
             cache: "no-store",
             signal: abort.signal,
           });
-          pageOutcomes[sym] = res.status;
+          pageOutcomes[path] = res.status;
           if (res.status === 200) pagesRendered++;
         } finally {
           clearTimeout(timer);
         }
       } catch (err) {
-        pageOutcomes[sym] = err instanceof Error ? err.message : String(err);
+        pageOutcomes[path] = err instanceof Error ? err.message : String(err);
       }
     };
-    await Promise.all(quick.map(pingOne));
+    await Promise.all(pingTargets.map(pingOne));
   }
+
+  // ── LIVE-TODAY: the movers step — Top Winners / Top Losers for the
+  // dashboard's Today view. NSE's own movers endpoint first (unofficial,
+  // the nsetools/openchart contract), the quote-cache computation as the
+  // always-available fallback; whichever won is written to market_movers
+  // (migration 033) and DISCLOSED here. A failure never fails the tick
+  // (the equity coverage above is the critical path); the panels keep
+  // serving the previous snapshot with its own stamps until a later
+  // tick succeeds.
+  const moversOutcome = await refreshMovers();
+
+  // ── TODAY-VERDICTS: the verdicts step — produces Rishi verdicts on
+  // LIVE fundamentals for the disclosed candidate set (Screener.in
+  // primary — with the balance-sheet D/E derivation — Yahoo+NSE
+  // fallback), through the SAME scoring surface the stock page runs
+  // (the P0-1 gate refuses seed-mixed records upstream). Produced
+  // verdicts + their day-0 baselines are written to verdicts_produced
+  // (migration 036) and DISCLOSED here. A candidate that already
+  // produced today is NOT re-fetched (fundamentals move quarterly —
+  // the (symbol, ist_date) key is the TTL); `force` re-produces for the
+  // operator's acceptance run. A failure never fails the tick (the
+  // same class as the movers step).
+  const verdictsOutcome = await refreshVerdicts({ force });
 
   // G6 (round 23): this slice IS a price ingestion — record it so
   // /api/health's price signal tracks the REAL freshness mechanism (the
@@ -247,10 +289,12 @@ export async function POST(req: NextRequest) {
     tiles: slice === 0 ? { upstreamWrites: tileWrites, served: tilesServed, misses: tileMisses } : { skipped: "non-zero slice" },
     isr60: {
       quick: { upstreamWrites: quickUpstreamWrites, served: quickServed, misses: quickMisses },
-      revalidated: quick.length,
+      revalidated: revalidatePaths.length,
       pagesRendered,
       pages: pageOutcomes,
     },
+    movers: moversOutcome,
+    verdicts: verdictsOutcome,
     market: ms,
     forced: force && !ms.open,
   });

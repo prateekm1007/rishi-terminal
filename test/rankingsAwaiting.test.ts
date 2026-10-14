@@ -73,10 +73,16 @@ describe("FD-22 — the flag-on-nothing-qualifies state is honest (round 49)", (
     expect(ternary.slice(0, awaitingIdx)).toMatch(/rankingsEnabled\s*\?/);
   });
 
-  it("the awaiting note states the licence reason and the no-seed-ranking promise (en)", () => {
+  it("the awaiting note states the truthful reason and the no-seed-ranking promise (en)", () => {
     const en = read("messages/en.json");
     expect(en).toContain("Rankings are on");
-    expect(en).toContain("licence is pending");
+    // NSE-PERM (13 Oct 2026): the licence is RECORDED (the permission
+    // letter) — the awaiting note must NOT claim it is still pending
+    // (C1: the UI never states what it has not verified). The truthful
+    // reason is the record set: seed rows show no verdict (P0-1).
+    expect(en).not.toContain("licence is pending");
+    expect(en).toContain("seed rows show no verdict");
+    expect(en).toContain("NSE permission letter");
     expect(en).toContain("no seed-derived ranking is shown");
   });
 

@@ -52,7 +52,10 @@ export default function NewsStory() {
 
   return (
     <div style={{ fontFamily:'JetBrains Mono, monospace', background:'#050508', color:'#E2E8F0', minHeight:'100vh', padding:24 }}>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap"/>
+      {/* ENG-6: the per-page Cinzel <link> was REDUNDANT — the root
+          stylesheet (app/globals.css) already imports the full Cinzel
+          family globally, and this page renders in JetBrains Mono; the
+          duplicate load only triggered no-page-custom-font. Deleted. */}
 
       <div style={{ maxWidth:900, margin:'0 auto' }}>
 

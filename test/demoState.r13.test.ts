@@ -42,16 +42,41 @@ describe("R13 — the Today view and the tracking line", () => {
     expect(page).toContain("from '@/lib/demoState'");
     expect(page).toContain("data-methodology-tracking");
     expect(page).toContain("S2-03/S2-04");
-    // the line is not hardcoded to a computed-looking state — the literal
-    // rides the import
-    expect(page).toContain("trackingLine()");
-    expect(page).toContain("TRACKING_STATUS");
+    // TODAY-VERDICTS (founder order, 2026-10-14): the line still rides
+    // the ONE source — now the state-derived pair (trackingLineFor /
+    // trackingStatusFor, both exported by lib/demoState) fed by the
+    // verdicts ledger's tracking state. The literal import retired WITH
+    // the state-dependence: a build-baked "not started" would outlive
+    // the first recorded baseline (rule 1).
+    expect(page).toContain("trackingLineFor");
+    expect(page).toContain("trackingStatusFor");
+    // the state comes from the ONE ledger read, not a local literal
+    expect(page).toContain("readTrackingState");
   });
 
   it("the homepage mounts the honest Today view", () => {
     const page = read("app/page.tsx");
     expect(page).toContain("TodayPanel");
-    expect(page).toContain("<TodayPanel stockOfDay={stockOfDay} />");
+    // LIVE-TODAY (round 56): the mount now also passes the movers
+    // snapshot (the live Top Winners / Top Losers view). The pin moves
+    // WITH the contract — it still bites on the exact mount shape.
+    // TODAY-MOVERS (founder order, 2026-10-13): the mount literal gains
+    // the live-news prop — the gate still pins the mounting AND the SOD
+    // and movers props (unchanged intent, updated shape).
+    // TODAY-FULL (founder order, 2026-10-14): the seed-gated stockOfDay
+    // prop is RETIRED from this mount (the SOD row renders the LIVE pick
+    // from the movers snapshot; the ranked trio's own SOD card in
+    // DashboardTail keeps its seed-gated semantics) — the gate still
+    // pins the mounting AND the movers/news props (updated shape).
+    // TODAY-VERDICTS (founder order, 2026-10-14): the mount gains the
+    // verdicts-ledger pair — the panel's verdicts row and tracking row
+    // render from the ledger (one read each, the movers read's class).
+    expect(page).toContain(
+      "<TodayPanel movers={movers} latestNews={latestNews} verdicts={verdicts} tracking={tracking} />",
+    );
+    expect(page).toContain("readMoversSnapshot");
+    expect(page).toContain("readVerdictsToday");
+    expect(page).toContain("readTrackingState");
   });
 
   it("the TodayPanel is a server component with honest literals (B-18 positive control)", () => {
@@ -62,12 +87,25 @@ describe("R13 — the Today view and the tracking line", () => {
     // the honest states are present as literals
     expect(panel).toContain("Verdicts produced today");
     expect(panel).toContain("none");
-    expect(panel).toContain("no verdict-allowed pick exists");
+    // TODAY-FULL (founder order, 2026-10-14): the SOD row went LIVE —
+    // the pick renders from the movers snapshot with the not-a-verdict
+    // label; the no-pick state is the honest live empty (the OLD
+    // seed-gated "no verdict-allowed pick exists" wording retired
+    // WITH the row's seed derivation).
+    expect(panel).toContain("no live pick yet");
+    expect(panel).toContain("not a verdict");
     expect(panel).toContain("No headlines yet");
     // the tracking status rides the ONE source, not a local literal
     expect(panel).toContain("from '@/lib/demoState'");
-    expect(panel).toContain("{TRACKING_STATUS}");
+    // TODAY-VERDICTS: the state-derived pair (lib/demoState exports
+    // both the literal fallback and the ledger-state wording — the
+    // panel renders the pair, never a local literal)
+    expect(panel).toContain("trackingStatusFor");
+    expect(panel).toContain("trackingLineFor");
     // the deterministic IST date renders (rule 18 class: fixed timezone)
     expect(panel).toContain("Asia/Kolkata");
+    // LIVE-TODAY: the movers view mounts inside the panel
+    expect(panel).toContain("MoversPanel");
+    expect(panel).toContain("movers");
   });
 });

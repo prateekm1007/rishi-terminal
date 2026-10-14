@@ -14,11 +14,14 @@ import {
   aggregatePresentationState,
   statusColor,
 } from "@/lib/pricePresentation";
+// FD-15: the sourced-rows builder lives in lib/markets/sourcedRow (its
+// bytes load with the dashboard chunk — pricePresentation is shared with
+// /stocks, and the bundle ratchet caught the first version there).
+import { tickerRowFace } from "@/lib/markets/sourcedRow";
 
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";
 import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
-import SeedDataBanner from "@/components/shared/SeedDataBanner"; // R1: honest placeholder-data label
 import dynamic from "next/dynamic";
 
 // Z5 (Round 13): the below-fold tail (crypto grid, explore-markets tiles,
@@ -26,24 +29,14 @@ import dynamic from "next/dynamic";
 // below the hero, market stats, world markets, stock-of-the-day, top
 // signals and shorts. The homepage's first-load JS stays lean.
 const DashboardTail = dynamic(() => import("./DashboardTail").then(m => m.DashboardTail), { ssr: false });
-import { DataValue } from "@/components/DataValue"; // P0-06: provenance for displayed metrics
-import { overlaySourced } from "@/lib/types/sourced";
 
 /* ── Constants ─────────────────────────────────────────────── */
 // U2: the dashboard's symbol surface moved to lib/dashboardSymbols.ts — the
 // server page builds the SSR initial-price snapshot from the SAME list
-// (Rule 14). MARKETS (nav tiles) stays here: it is presentation-only.
-import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS, STATS } from "@/lib/dashboardSymbols";
+// (Rule 14). The nav-tiles list lives with the Explore Markets section in
+// DashboardTail (Z5) — nothing presentation-only stays here.
 
-const MARKETS = [
-  { href:"/forex",       icon:"💱", label:"Forex",        desc:"10 currency pairs" },
-  { href:"/commodities", icon:"🥇", label:"Commodities",  desc:"Gold, Oil, Metals" },
-  { href:"/bonds",       icon:"📜", label:"Bonds",        desc:"G-Secs & Corporate" },
-  { href:"/pulse?tab=macro",       icon:"📡", label:"Economy Plus", desc:"Macro regime & rotation" },
-  // Commit O (#18): /compare never existed — the real compare surface is the Lab's Compare tab.
-  { href:"/lab",         icon:"⚖️", label:"Compare",     desc:"Side-by-side analysis" },
-  
-];
+import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS, STATS } from "@/lib/dashboardSymbols";
 
 /* ── Style Helpers ─────────────────────────────────────────── */
 
@@ -80,10 +73,6 @@ function card(extra?: object) {
     transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)",
     ...extra,
   };
-}
-
-function scoreColor(s: number) {
-  return s >= 80 ? C.green : s >= 65 ? C.amber : C.red;
 }
 
 /* ── Sub-Components ────────────────────────────────────────── */
@@ -135,22 +124,9 @@ interface DashboardProps {
   initialPrices?: Record<string, PriceData> | null;
 }
 
-/** U4 (founder round 7): the honest state shown when RANKINGS_ENABLED is
- *  off. No fake picks, no empty shells — the sections are gone and this
- *  panel says why. */
-function RankingsDisabledPanel({ title, note }: { title: string; note: string }) {
-  return (
-    <div style={{
-      marginBottom:"48px",
-      background:"rgba(17,24,39,0.6)",
-      border:"1px solid rgba(51,65,85,0.5)",
-      borderRadius:"14px", padding:"22px 26px",
-    }}>
-      <div style={{ fontSize:"15px", fontWeight:800, color:C.text, fontFamily:mono, marginBottom:"8px" }}>🚦 {title}</div>
-      <div style={{ fontSize:"13px", color:C.textSec, lineHeight:1.7 }}>{note}</div>
-    </div>
-  );
-}
+/* ENG-6 (round 54): the RankingsDisabledPanel that used to live here was
+ * dead in this file since Z5 moved the ranked sections to DashboardTail
+ * (which defines and renders its own); deleted with its last caller. */
 
 export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, rankingsEnabled, initialPrices }: DashboardProps) {
   const { t } = useLanguage();
@@ -164,7 +140,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     ...(stockOfDay ? [stockOfDay.symbol] : []),
   ], [rotatingStocks, rotatingShorts, stockOfDay]);
 
-  const { prices, loading, lastUpdated, observedAt } = useLivePrices(allSyms, 60000, initialPrices);
+  const { prices, loading, observedAt } = useLivePrices(allSyms, 60000, initialPrices);
 
   // Round 9 (directive 14 — dashboard provenance): the badge is DERIVED from
   // the actual entry statuses via the shared presentation contract. The old
@@ -176,7 +152,7 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
   const marketLabel = tickerEntries.length > 0 ? aggregateMarketLabel(tickerEntries) : null;
   // U4: no pick when rankings are off — the empty symbol skips the fetch.
   const { fundamentals: sodFund } = useFundamentals(stockOfDay?.symbol ?? "");
-  const { fundamentals: buyFund, loading: buyFundLoading } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
+  const { fundamentals: buyFund } = useBulkFundamentals(rotatingStocks.map(s => s.symbol));
 
   const [timeAgo, setTimeAgo] = useState("—");
 
@@ -194,15 +170,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
     return () => clearInterval(interval);
   }, [observedAt, t]);
 
-  // G6: null (unobserved) renders '—' / neutral — never a fabricated 0 or 0.00%.
-  const fmtINR = (n?: number | null) =>
-    n ? "" + n.toLocaleString("en-IN", { maximumFractionDigits: 2 }) : "—";
-  const fmtUSD = (n?: number | null) =>
-    n ? "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : "—";
-  const fmtPct = (n?: number | null) =>
-    n != null ? (n >= 0 ? "+" : "") + n.toFixed(2) + "%" : "—";
-  const upClr = (n?: number | null): React.CSSProperties =>
-    ({ color: n == null ? C.textMuted : n >= 0 ? C.green : C.red });
+  // FD-15 (round 54): the INR/USD/pct/direction formatters moved into
+  // tickerRowFace (lib/pricePresentation — one owner, Rule 14); every
+  // market-value row on this surface renders through the sourced-rows
+  // builder now.
 
   return (
     <div className="page-bg" style={{ minHeight:"100vh", background:"transparent", fontFamily:sans }}>
@@ -216,9 +187,15 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
       }}>
         <div className="animate-ticker" style={{ whiteSpace:"nowrap", display:"flex" }}>
           {[...TICKER_SYMS, ...TICKER_SYMS].map((sym, i) => {
-            const d = prices[sym];
-            const up = (d?.changePercent24h ?? 0) >= 0;
-            const useUSD = ["BTC","ETH","SOL","BNB","GOLD","SILVER","WTI"].includes(sym);
+            // FD-15 (founder order 2026-10-13): "Each row shows its source
+            // and as-of time, or '—' with 'no source yet'." The row face
+            // comes from the ONE pure builder (tickerRowFace — Rule 14):
+            // the value is gated on the SOURCE, so an unlabelled number
+            // can never render; a source that disclosed no time keeps its
+            // name with an em-dash as-of (Rule 3).
+            const face = tickerRowFace(prices[sym], {
+              usd: ["BTC","ETH","SOL","BNB","GOLD","SILVER","WTI"].includes(sym),
+            });
             return (
               <span key={i} style={{
                 display:"inline-flex", alignItems:"center", gap:"10px",
@@ -226,14 +203,21 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                 flexShrink:0,
               }}>
                 <span style={{ color:C.textMuted, fontSize:"11px", fontWeight:700, letterSpacing:"0.08em", fontFamily:mono }}>{sym}</span>
-                <span style={{ color:C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
-                  {d?.price ? (useUSD ? "$" : "") + d.price.toLocaleString("en-IN",{maximumFractionDigits:2}) : "—"}
+                <span style={{ color: face.positive == null ? C.textMuted : C.text, fontWeight:700, fontSize:"13px", fontFamily:mono }}>
+                  {face.value}
                 </span>
                 {/* Round-5 audit (finding 9): a missing quote used to render
                     "▼ 0.00%" — a fabricated direction and magnitude. No
-                    data -> no arrow, no number. */}
-                <span style={{ fontSize:"12px", fontWeight:600, color: up ? C.green : C.red, fontFamily:mono }}>
-                  {d?.changePercent24h == null ? "—" : `${up ? "▲" : "▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%`}
+                    data -> no arrow, no number. FD-15: the change renders
+                    only beside a sourced value. */}
+                <span style={{ fontSize:"12px", fontWeight:600, color: face.positive == null ? C.textMuted : face.positive ? C.green : C.red, fontFamily:mono }}>
+                  {face.change}
+                </span>
+                {/* FD-15: the row's attribution — "Source · as-of" or the
+                    founder's sourceless wording. Muted and small: it rides
+                    every scrolling row without competing with the value. */}
+                <span style={{ fontSize:"9px", color:C.textMuted, fontFamily:mono, letterSpacing:"0.02em" }}>
+                  {face.attribution}
                 </span>
               </span>
             );
@@ -265,14 +249,19 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
               <span style={{ color:C.textMuted, fontSize:"12px", fontWeight:600, letterSpacing:"0.03em" }}>{t("dashboard.priceUnavailable")}</span>
             )}
           </div>
-          <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
-            {/* Round 9: the age keys off the SERVER observation time; no
-                disclosed observation → the honest not-disclosed state,
-                never a bare dash that reads like a glitch (G4). */}
-            {observedAt
-              ? (t("dashboard.updatedPrefix") + timeAgo)
-              : (marketLabel ? t("dashboard.observationTimeNotDisclosed") : t("dashboard.priceUnavailable"))}
-          </span>
+          {/* FD-15 (founder order 2026-10-13): "Remove 'Observation time
+              not disclosed' next to values." Every ticker row now carries
+              its OWN source and as-of, so the aggregate not-disclosed
+              wording is gone; the aggregate age line renders only when an
+              observation was actually disclosed ("Updated …"), and the
+              no-quotes-at-all state is carried by the left side's honest
+              label alone. */}
+          {observedAt && (
+            <span style={{ color:C.textMuted, fontSize:"11px", fontFamily:mono }}>
+              {/* Round 9: the age keys off the SERVER observation time. */}
+              {t("dashboard.updatedPrefix") + timeAgo}
+            </span>
+          )}
         </div>
       </div>
 
@@ -351,8 +340,10 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           <SectionHeader title="Market Overview" />
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
             {STATS.map(({ label, sym, usd }) => {
-              const d  = prices[sym];
-              const up = (d?.changePercent24h ?? 0) >= 0;
+              // FD-15: the overview tiles follow the ticker's sourced-rows
+              // contract — same builder, same gate (value requires a
+              // source; attribution rides every tile).
+              const face = tickerRowFace(prices[sym], { usd });
               return (
                 <Link href="/pulse/markets" key={sym} style={{ textDecoration:"none" }}>
                   <div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
@@ -363,11 +354,16 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                     <div className="skeleton" style={{ height:"28px", marginBottom:"8px" }} />
                   ) : (
                     <>
-                      <div style={{ fontSize:"22px",fontWeight:800,color:C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
-                        {usd ? fmtUSD(d?.price) : fmtINR(d?.price)}
+                      <div style={{ fontSize:"22px",fontWeight:800,color: face.positive == null ? C.textMuted : C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
+                        {face.value}
                       </div>
-                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
+                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono, color: face.positive == null ? C.textMuted : face.positive ? C.green : C.red }}>
+                        {face.change}
+                      </div>
+                      {/* FD-15: the tile's source and as-of (or the honest
+                          sourceless wording) — same contract as the ticker. */}
+                      <div style={{ fontSize:"9px", color:C.textMuted, fontFamily:mono, marginTop:"6px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                        {face.attribution}
                       </div>
                     </>
                   )}
@@ -385,8 +381,8 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
           <Link href="/pulse?tab=markets" style={{ textDecoration:"none" }}><SectionHeader title="🌍 World Markets →" /></Link>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px,1fr))", gap:"14px" }}>
             {WORLD_MARKETS.map(({ label, sym }) => {
-              const d  = prices[sym];
-              const up = (d?.changePercent24h ?? 0) >= 0;
+              // FD-15: same sourced-rows contract as the ticker.
+              const face = tickerRowFace(prices[sym], { usd: true });
               return (
                 <Link href="/pulse?tab=markets" key={sym} style={{ textDecoration:"none" }}><div style={{ ...card(), padding:"18px", cursor:"pointer" }}>
                   <div style={{ fontSize:"10px",fontWeight:700,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px",fontFamily:sans }}>
@@ -396,11 +392,14 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
                     <div className="skeleton" style={{ height:"28px", marginBottom:"8px" }} />
                   ) : (
                     <>
-                      <div style={{ fontSize:"22px",fontWeight:800,color:C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
-                        {d?.price ? d.price.toLocaleString("en-US",{maximumFractionDigits:2}) : "—"}
+                      <div style={{ fontSize:"22px",fontWeight:800,color: face.positive == null ? C.textMuted : C.text,fontFamily:mono,marginBottom:"6px",lineHeight:1 }}>
+                        {face.value}
                       </div>
-                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono,...upClr(d?.changePercent24h) }}>
-                        {d?.changePercent24h != null ? `${up?"▲":"▼"} ${Math.abs(d.changePercent24h).toFixed(2)}%` : "—"}
+                      <div style={{ fontSize:"13px",fontWeight:700,fontFamily:mono, color: face.positive == null ? C.textMuted : face.positive ? C.green : C.red }}>
+                        {face.change}
+                      </div>
+                      <div style={{ fontSize:"9px", color:C.textMuted, fontFamily:mono, marginTop:"6px", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+                        {face.attribution}
                       </div>
                     </>
                   )}

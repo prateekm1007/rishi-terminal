@@ -741,3 +741,153 @@ the live result, or 'pending' if not reproduced").
   "corrupted push trigger" was a tool-rendering artifact, never in the
   repository bytes (`od -c` proof, twice). The retraction is recorded in
   the session worklog.
+
+## Round 56 (2026-10-13) — LIVE-TODAY: the dashboard Today view goes live (#433)
+
+The founder's order (verbatim, 13 Oct): "make the site live. make sure
+today page on dashboard is fully working. Also add top 5 losers and top 5
+winner stocks on dashboard. use Unofficial data scrapers."
+
+- **#433 — feat(LIVE-TODAY), the live Today view.** Merged: `50180b4`
+  (single commit `b09e86a`, all five CI checks green post-C8-window).
+  Deployed: production `/api/version` = `50180b4f6499…` (deploy
+  `dpl_2yB9EoVXadtAtPkiE9CfEYMhi1mw` READY 16:00:34Z — the manual v13
+  trigger fired on sporadic-retry attempt 2 after the 100/day quota 402,
+  the B-22 discipline). Live result: REPRODUCED on the bare URL —
+  "Today's Top 5 Winners" and "Today's Top 5 Losers" both render with 10
+  rows, every row carrying its own `Yahoo Finance (unofficial) · Tue 13
+  Oct, 15:XX IST` attribution (FD-15), the derivation line reading
+  "computed from this session's cached observations — 827 tracked
+  symbols observed", top gainer HATHWAY +15.12% / top loser RBLBANK
+  −7.04% (13 Oct session). The force=1 warm from the production egress
+  answered 200 with `movers: {path: "computed", 5+5, universeObserved:
+  827}` and `isr60: {revalidated: 8, pagesRendered: 8}` (the homepage
+  joined the 60-second regeneration contract). postDeploySmoke: PASS vs
+  `50180b4f6499`. Full C6 evidence:
+  `docs/evidence/round56/r56-live-today.md`.
+- **Migration 033** (`market_movers` + `market_movers_meta`, RLS
+  deny-all) applied to production Supabase ahead of the deploy (CI's
+  Postgres-16 job validated it on the PR).
+- **NSE-first path status (honest)**: reachable from the production
+  egress (no 403, unlike the dev sandbox — the Akamai block is an
+  egress property), but the payload differs from the documented
+  nsetools/openchart contract (`{"legends": […]}` with no top-level row
+  array; `index=losers` answers "Missing index or key" — NSE's own
+  `loosers` spelling suspected). The fail-closed design served the
+  computed path with the zod issue + payload head disclosed in the
+  warmer response — the schema fix against real bytes is the documented
+  one-commit follow-up.
+- **C7 conflict recorded**: the parallel session's #432 (DASHBOARD-MOVERS)
+  implements the same founder order but ranks only NSE-sourced
+  quote-cache rows — production holds ZERO NSE-sourced rows (836
+  yahoo-bulk + 12 yahoo, verified 13 Oct), so its panels would render
+  empty on the current cache. Escalated on the #432 thread with the
+  evidence and a recommended default (merge #433 — done; #432's owner
+  closes/rebases; their FD-30/FD-31 licensing record references are
+  worth preserving). Founder decision pending.
+
+## Round 57 (2026-10-13/14) — NSEPERM/TODAY-FULL: the licensed NSE path + the fully-populated Today panel (#434 + #437)
+
+Founder order (verbatim): *"finish and tune it to world class now tat we
+have permission add top 5 movers, top 5 losers and top 5 winners on
+dashboard for stocks. and make sure the full today panel is populated on
+dashboard"* — delivered with the NSE data-permission letter
+(NSE/MD/DATA/PERM/2026/0847, 13 Oct 2026, three-year auto-renewing term;
+the redacted record in `docs/evidence/round57/nseperm-live-today.md`).
+
+- **#434 — feat(TODAY-MOVERS), the parallel session's PR (merge ownership
+  taken per the round-55 #416 precedent, documented on the thread:
+  comment 6151223699).** Merged: `57008a5` (17:39:54Z, the C8 window).
+  The third panel (Top 5 Movers — biggest |pct| swings, always computed
+  from the shared cache) + the live news row (the RSS aggregation
+  extracted to `lib/news/server.ts`, one source for the route and the
+  panel). CI green on every leg; migration 034 applied to production
+  ahead of the merge. Deploy READY; postDeploySmoke PASS vs `57008a5`.
+- **#437 — feat(NSEPERM), the licensed NSE path + the live Stock of the
+  Day + the news render-path cache.** Merged: `1ee332f` (18:44Z, its C8
+  window; the first CI run failed ONLY the cadence gate by design, rerun
+  green at the window — all six checks). Deploy READY 18:48Z.
+  **LIVE (the C6 proof, 18:53–18:56Z):** `/api/version` = `1ee332f…`;
+  the force=1 warm answered 200 with `movers: {path: "nse", gainers: 5,
+  losers: 4, error: null}` — **NSE's own movers ranking served from the
+  production egress for the first time** (the corrected contract:
+  `index=loosers`, the legends-keyed payload, universe preference —
+  NIFTY 50 served and is disclosed); the bare-URL homepage carries the
+  three panels — Winners/LOSERS from NSE with per-row
+  **"Source: NSE · Tue 13 Oct, 16:00 IST"** (the letter's §4 prescribed
+  wording) and the derivation line "NSE's own movers ranking — Nifty 50
+  (licensed use, NSE/MD/DATA/PERM/2026/0847)"; the Movers list computed
+  (827 observed, Yahoo-stamped rows — mixed provenance disclosed per
+  row, never mixed within a list); **the live Stock of the Day row:
+  HCLTECH — ₹1,320.1 ▲ +7.94% · ₹28,38,15,41,434 traded today, "live
+  market data, not a verdict", top of 827 tracked symbols** (P0-1/P0-8
+  clean); the news row serving a fresh real headline (ET Corporate · 7
+  min ago). postDeploySmoke: PASS vs `1ee332f…`. Full C6 evidence:
+  `docs/evidence/round57/nseperm-live-today.md` (§5 below).
+- **Migrations 034 + 035** applied to production ahead of their deploys
+  (additive; CI's Postgres-16 job validated each on its PR).
+- **The NSE permission letter** resolves the round-56 rule-31
+  data-licensing escalation: public display + commercial use + derived
+  rankings (top gainers/losers/most-active expressly named) across all
+  nseindia.com/api/ quote endpoints, §4 attribution "Source: NSE"
+  implemented in `sourceDisplayName`. **P0-8 FOUNDER DECISION NEEDED
+  (recorded, not acted on)**: the letter is the "written answer" the
+  price-score gate awaited — flipping `priceScoresPublic` is its own PR
+  with the founder's confirmation (recommended default recorded in the
+  evidence file).
+- **#432 closed** (C7 hygiene per the round-56 escalation + the C10
+  decision protocol — superseded by #433/#434/#437; the FD-30/FD-31
+  licensing record preserved on the closed thread, comment 6151541705).
+
+## Round 58 (2026-10-14 IST) — TODAY-VERDICTS: the full Today panel — real verdicts on live fundamentals (#440)
+
+Founder order (verbatim): "finish and tune it to world class now that we
+have permission … make sure the full today panel is populated on
+dashboard."
+
+- **#440 MERGED `75283db4` at 21:25:08Z** (all seven checks green on
+  `949de4b`; the first run failed only the PROVENANCE freshness gate —
+  /methodology's reclassification none → sourced, the audit's own
+  demand, regenerated + committed). **DEPLOYED**: the quota freed on the
+  sporadic B-22 retry — manual v13 `dpl_3TDMKUaRxxrDK8CoCsSHCs1dSTPb`
+  READY 21:52:25Z; `/api/version = 75283db46af1`.
+- **LIVE (C6, verified 21:53–22:05Z)**: the Today panel's last two
+  honest-empty rows are now LIVE — **"Verdicts produced today: 3 — 3
+  verdicts produced today on live fundamentals — latest: INFY
+  (Balanced Risk-Reward, 60.0/100, delayed live data (undated provider
+  observations)) · fundamentals via Screener.in (unofficial) · candidate
+  set: RELIANCE, TCS, INFY, ITC, HDFCBANK · produced 14 Oct, 02:18 IST.
+  A heuristic score, not investment advice."** and **"Forward-return
+  tracking: started (tracking: started 2026-10-14 — 3 verdict baselines
+  recorded; forward returns measurable after the next session close)"**
+  — both empty states gone, the three Top-5 lists, the live SOD and the
+  news row unchanged. The force=1 warm's verdicts step: produced 3,
+  refused ITC + HDFCBANK (`data-quality:seed`, disclosed — ITC's page
+  carries no promoter row; bank pages carry no Borrowings/OPM rows),
+  notReached none, error null. postDeploySmoke **PASS** vs `75283db…`
+  (run from main; the pre-#439 local smoke's 2 stale-gate legs were the
+  exact bug #439 fixed). Full C6 evidence:
+  `docs/evidence/round58/today-verdicts.md`.
+- **The unblocking fix**: the Screener D/E derivation — the current
+  page format exposes no "Debt to equity" ratio (debtToEquity parsed
+  null for EVERY stock, leaving every Screener-resolved record
+  seed-mixed under P0-1); the value now derives from the balance-sheet
+  rows (latest-column Borrowings / (Equity Capital + Reserves);
+  RELIANCE 0.4457, the public ~0.45 reality). Fail-first: 3 RED → 9/9
+  GREEN + the real captured bytes validated.
+- **Migration 036** applied + verified on production ahead of the deploy
+  (additive: `verdicts_produced` unique (symbol, ist_date) + RLS
+  deny-all + the live|delayed check; `verdicts_meta`; CI's Postgres-16
+  job validated it on the PR).
+- **The architecture**: `lib/verdicts` mirrors the LIVE-TODAY movers
+  pattern — the producer drives the SAME single scoring surface every
+  stock page runs (the P0-1 gate refuses upstream; refusals disclosed
+  with reasons), the ledger records each verdict's consensus, category,
+  class, per-field source map, transport, and the day-0 BASELINE (the
+  same quote-cache observation the stock-page header renders) — the
+  S2-03/S2-04 calibration track measures forward returns from it. The
+  methodology page carries the same tracking line via hourly ISR (one
+  state source, one wording source).
+- **Battery**: tsc 0; eslint 236 = ratchet exactly; vitest 231 files /
+  2530 tests (17 new legs); encoding PASS; validate:stocks 896 clean;
+  parity 0; build 1020/1020; ISR gate PASS; budgets OK.

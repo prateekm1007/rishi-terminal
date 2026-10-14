@@ -82,20 +82,31 @@ describe("G4 — the aggregate badge describes the data actually present", () =>
   });
 });
 
-describe("G4 — a missing observation time is stated, never a bare dash", () => {
-  it("the dashboard time slot renders an explicit not-disclosed state (no '—' arm)", () => {
+describe("G4 — the aggregate not-disclosed badge is removed (founder round-54, FD-15)", () => {
+  it("no dashboard renderer references the removed aggregate wording", () => {
     const src = read("components/dashboard/DashboardClient.tsx");
-    expect(src).toContain("observationTimeNotDisclosed");
+    // Founder round-54: "Remove 'Observation time not disclosed' next to
+    // values." The aggregate slot and its key are deleted — each row now
+    // carries its own source and as-of (test/fd15.tickerSource.test.ts).
+    expect(src).not.toContain("observationTimeNotDisclosed");
+    // B-18 positive control: the top bar's disclosed-observation label
+    // still renders (proves the file parsed and the arm is the one we
+    // mean, not a missing component).
+    expect(src).toContain("dashboard.updatedPrefix");
     // The pre-fix arm rendered a bare em dash when a label existed but
-    // no observation time was disclosed.
+    // no observation time was disclosed — that arm stays dead.
     expect(src).not.toMatch(/marketLabel \? "—"/);
   });
 
-  it("the i18n keys exist in en and hi (hi completeness is a CI gate)", () => {
+  it("the dead i18n key is deleted from en and hi (parsing proven by positive control)", () => {
     const en = JSON.parse(read("messages/en.json"));
     const hi = JSON.parse(read("messages/hi.json"));
-    expect(en.dashboard.observationTimeNotDisclosed).toBeTruthy();
-    expect(hi.dashboard.observationTimeNotDisclosed).toBeTruthy();
+    expect(en.dashboard?.observationTimeNotDisclosed).toBeUndefined();
+    expect(hi.dashboard?.observationTimeNotDisclosed).toBeUndefined();
+    // B-18 positive controls: both locales parsed and keep the
+    // replacement wording the top bar renders.
+    expect(en.dashboard.updatedPrefix).toBeTruthy();
+    expect(hi.dashboard.updatedPrefix).toBeTruthy();
   });
 });
 

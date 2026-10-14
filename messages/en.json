@@ -41,7 +41,6 @@
     "notInvestmentAdvice": "NOT INVESTMENT ADVICE - EDUCATIONAL SIMULATION - RISHI TERMINAL v4.2 - 20 RISHIS ACTIVE",
     "heroWisdomSuffix": ". Dual-mode scoring, short thesis, philosophical insights.",
     "updatedPrefix": "Updated ",
-    "observationTimeNotDisclosed": "Observation time not disclosed",
     "timeAgoMinutesSuffix": "m ago",
     "timeAgoSecondsSuffix": "s ago",
     "priceUnavailable": "Price unavailable",
@@ -518,7 +517,7 @@
     "rankingsDisabled": "Ranked picks are disabled",
     "rankingsDisabledNote": "The ranked widgets (Stock of the Day, Top Buy Signals, Short Radar) are switched off. Everything else — market data where available, the stock list, chat — keeps working.",
     "rankingsAwaiting": "Rankings are on — nothing qualifies yet",
-    "rankingsAwaitingNote": "Rankings are enabled, but no record currently qualifies for a ranked pick — the exchange-data licence is pending, so no consensus exists yet. The ranked widgets appear the moment a record qualifies; no seed-derived ranking is shown."
+    "rankingsAwaitingNote": "Rankings are on, but no record currently qualifies for a ranked pick — the record set is illustrative seed data, and seed rows show no verdict (P0-1), so no consensus exists. The exchange-data licence is recorded (NSE permission letter, 13 October 2026). The ranked widgets appear the moment a live record qualifies; no seed-derived ranking is shown."
   },
   "chat": {
     "header": "Chat with Rishis",

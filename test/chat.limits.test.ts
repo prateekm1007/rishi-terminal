@@ -158,7 +158,12 @@ describe("T7 — injected prompts are ignored", () => {
     const res = await POST(makeReq({ ...okBody, systemPrompt: injected }, "10.8.8.1"));
     expect(res.status).toBe(200);
     expect(geminiCalls).toHaveLength(1);
-    const sys = (geminiCalls[0].body as { system_instruction: { parts: Array<{ text: string }> } }).system_instruction.parts[0].text;
+    // FD8-AI-SDK observation shape: the SDK emits the documented camelCase
+    // systemInstruction (the JSON API accepts either casing — probed
+    // 2026-10-13, docs/evidence/round56/fd8-ai-sdk.md); the invariant is
+    // unchanged: the SERVER persona is on the wire, the client's is not.
+    const wire = geminiCalls[0].body as { systemInstruction?: { parts: Array<{ text: string }> }; system_instruction?: { parts: Array<{ text: string }> } };
+    const sys = (wire.systemInstruction ?? wire.system_instruction)!.parts[0].text;
     expect(sys).not.toContain(injected);
     expect(sys.length).toBeGreaterThan(50);
   });
@@ -169,8 +174,10 @@ describe("T7 — injected prompts are ignored", () => {
       "10.8.8.2",
     ));
     expect(res.status).toBe(200);
-    const body = geminiCalls[0].body as { system_instruction: { parts: Array<{ text: string }> }; contents: Array<{ role: string; parts: Array<{ text: string }> }> };
-    const sys = body.system_instruction.parts[0].text;
+    // Same casing-normalised observation (see above): systemInstruction ??
+    // system_instruction — the pin stays on the invariant, not the casing.
+    const body = geminiCalls[0].body as { systemInstruction?: { parts: Array<{ text: string }> }; system_instruction?: { parts: Array<{ text: string }> }; contents: Array<{ role: string; parts: Array<{ text: string }> }> };
+    const sys = (body.systemInstruction ?? body.system_instruction)!.parts[0].text;
     expect(sys).not.toContain("42-XYZ");
     const lastTurn = body.contents.at(-1)!;
     expect(lastTurn.role).toBe("user");

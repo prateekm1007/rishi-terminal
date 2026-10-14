@@ -181,6 +181,83 @@ function extractPromoterFromMeta(html: string): number | null {
   return match ? parseFloat(match[1]) : null;
 }
 
+/**
+ * TODAY-NIFTY (founder order, 2026-10-14: "add the ITC
+ * promoter-shareholding fallback"): the promoter holding derived from
+ * the quarterly shareholding table when the meta description carries
+ * no figure.
+ *
+ * Two derivations, both from the page's OWN published figures (the
+ * same class as the balance-sheet D/E derivation — method disclosed
+ * here and in docs/DATA_SOURCES.md, per-field provenance still
+ * attributes the input to the screener transport):
+ *
+ *   1. a "Promoters" row present → its LATEST percent cell (the last
+ *      cell matching a percent pattern — the same column a human
+ *      reads);
+ *   2. NO Promoters row AND the other holder rows' latest columns sum
+ *      to within 0.5 of 100 → promoter = 0 — a WIDELY-HELD company
+ *      whose own published pattern accounts for the whole register
+ *      without a promoter category (the captured ITC reality, 14 Oct
+ *      2026: FIIs 33.22 + DIIs 49.81 + Government 0.04 + Public 16.93
+ *      = 100.00). Admissibility agrees: promo is inRange(0, 100) — "a
+ *      promoter stake can genuinely be 0" (the debt-free-0-D/E
+ *      class, G5). A residual > 0.5 means an unexplained category →
+ *      null (cannot derive, never a guess).
+ *
+ * Non-percent rows ("No. of Shareholders" — counts like 33,35,815) are
+ * excluded from the sum by shape, not by name: a cell qualifies only
+ * as `digits[.digits]%`.
+ */
+function extractPromoterFromShareholding(html: string): number | null {
+  const section = html.match(/<section id="shareholding"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
+  const quarterlyDiv = section.match(/<div id="quarterly-shp"[^>]*>([\s\S]*?)<\/div>/)?.[1] ?? "";
+  if (!quarterlyDiv) return null;
+
+  const rows = quarterlyDiv.match(/<tr[^>]*>([\s\S]*?)<\/tr>/g) ?? [];
+  const percentCell = /^\d+(\.\d+)?%$/;
+  let latestHolderSum: number | null = null;
+
+  for (const row of rows) {
+    const cells = (row.match(/<td[^>]*>([\s\S]*?)<\/td>/g) ?? [])
+      .map((c) => c.replace(/<[^>]*>/g, "").replace(/\u00a0/g, " ").trim());
+    if (cells.length === 0) continue;
+    const label = cells[0].replace(/\s+/g, " ").trim();
+
+    // The promoter row (labels observed: "Promoters", "Promoters &
+    // Promoter Group" — button-wrapped; "Foreign" rows are FIIs, not
+    // promoters, the same distinction extractShareholding draws).
+    if (label.toLowerCase().startsWith("promoters") && !label.toLowerCase().includes("foreign")) {
+      let latest: number | null = null;
+      for (const cell of cells.slice(1)) {
+        if (!percentCell.test(cell)) continue;
+        const v = parseFloat(cell);
+        if (Number.isFinite(v)) latest = v;
+      }
+      return latest; // null when the row exists but carries no percent cell
+    }
+
+    // A holder row for the nil-promoter derivation: every percent cell
+    // read, the LATEST column's value accumulated (rows are padded to
+    // the same column grid; the last percent cell IS the latest
+    // quarter's value).
+    const percents = cells.slice(1).filter((c) => percentCell.test(c)).map((c) => parseFloat(c));
+    if (percents.length > 0 && !/no\.? of shareholders/i.test(label)) {
+      const latest = percents[percents.length - 1];
+      if (Number.isFinite(latest)) {
+        latestHolderSum = (latestHolderSum ?? 0) + latest;
+      }
+    }
+  }
+
+  // No Promoters row at all: the nil-promoter derivation — the page's
+  // own non-promoter categories must account for the whole register.
+  if (latestHolderSum !== null && latestHolderSum >= 99.5 && latestHolderSum <= 100.5) {
+    return 0;
+  }
+  return null;
+}
+
 function extractMarketCap(html: string): number | null {
   const section = html.match(/<ul id="top-ratios"[^>]*>([\s\S]*?)<\/ul>/)?.[1] ?? "";
   const items = section.match(/<li[^>]*>([\s\S]*?)<\/li>/g) ?? [];
@@ -366,7 +443,11 @@ export async function fetchScreenerFundamentals(symbol: string): Promise<Screene
   const opm = extractOPM(html);
   const de = extractBalanceSheetDE(html);
   const { revCagr3y, epsCagr3y } = extractCAGR(html);
-  const promoter = extractPromoterFromMeta(html);
+  // TODAY-NIFTY: the meta description first (the primary, verbatim
+  // path), the shareholding table's derivation behind it — the ITC
+  // class (a widely-held company's nil promoter is a REAL observation,
+  // not a miss).
+  const promoter = extractPromoterFromMeta(html) ?? extractPromoterFromShareholding(html);
 
   return {
     pe: r["Stock P/E"] ?? null,

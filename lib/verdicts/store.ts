@@ -31,6 +31,25 @@ import type {
 
 const META_ID = 1;
 
+/** TODAY-NIFTY: a refusal row as the backoff gate reads it (the DB row
+ * plus the parsed attempt count). */
+export interface RefusedTodayRow {
+  symbol: string;
+  reason: string;
+  lastTriedAt: string;
+  attempts: number;
+}
+
+/** TODAY-NIFTY: the cached candidate set's provenance (verdicts_meta
+ * columns, migration 037) — the once-per-day cache the warm step
+ * consults before fetching the NSE constituent list. */
+export interface CandidateSetCache {
+  source: "nifty50-nse" | "founder-five";
+  fetchedOn: string;
+  symbols: string[];
+  universeSize: number | null;
+}
+
 /** The consensus is a number on every produced row (the gate refuses
  * null consensuses) — the DB numeric comes back as string; parse and
  * validate on read (zod at the trust boundary, rule 9). */
@@ -82,15 +101,20 @@ function parseVerdictRow(r: VerdictDbRow): z.infer<typeof verdictRowSchema> | nu
 }
 
 /**
- * Write one run: upsert every produced verdict (symbol, ist_date) and
- * the meta row. Throws on failure — the warmer catches and discloses;
- * a failed write leaves the previous ledger whole.
+ * Write one run: upsert every produced verdict (symbol, ist_date), the
+ * refusal rows (TODAY-NIFTY: the backoff ledger, attempts incremented
+ * read-modify-write from the gate's read — the warm tick is a serialized
+ * minute cadence, and `attempts` is a disclosure counter, not money),
+ * and the meta row. Throws on failure — the warmer catches and
+ * discloses; a failed write leaves the previous ledger whole.
  */
 export async function writeVerdictsRun(
   produced: ProducedVerdict[],
   refused: VerdictRefusal[],
   candidates: readonly string[],
   ranAtIso: string,
+  candidateMeta?: { source: "nifty50-nse" | "founder-five"; universeSize: number | null; fetchedOn: string },
+  refusedAttemptsBase?: ReadonlyMap<string, number>,
 ): Promise<void> {
   const db = getAdminSupabase();
 
@@ -115,6 +139,28 @@ export async function writeVerdictsRun(
     if (up.error) throw new Error(up.error.message);
   }
 
+  // TODAY-NIFTY: the refusal backoff ledger — every refusal THIS run
+  // actually attempted lands in verdicts_refused with its (incremented)
+  // attempt count; candidates skipped by the backoff or the same-day
+  // gate do not touch it.
+  if (refused.length > 0) {
+    const refusalRows = refused.map((r) => {
+      const istDate = istParts(Date.parse(ranAtIso)).isoDate;
+      const base = refusedAttemptsBase?.get(r.symbol) ?? 0;
+      return {
+        symbol: r.symbol,
+        ist_date: istDate,
+        reason: r.reason,
+        attempts: base + 1,
+        last_tried_at: ranAtIso,
+      };
+    });
+    const refusalUp = await db
+      .from("verdicts_refused")
+      .upsert(refusalRows, { onConflict: "symbol,ist_date" });
+    if (refusalUp.error) throw new Error(refusalUp.error.message);
+  }
+
   const metaUpsert = await db
     .from("verdicts_meta")
     .upsert({
@@ -127,8 +173,91 @@ export async function writeVerdictsRun(
         candidates: [...candidates],
         ranAt: ranAtIso,
       },
+      ...(candidateMeta
+        ? {
+            candidate_source: candidateMeta.source,
+            candidate_universe_size: candidateMeta.universeSize,
+            candidate_fetched_on: candidateMeta.fetchedOn,
+          }
+        : {}),
     });
   if (metaUpsert.error) throw new Error(metaUpsert.error.message);
+}
+
+/**
+ * TODAY-NIFTY: today's refusal rows (the backoff gate's read). One
+ * query, null-safe on failure (a read miss re-fetches refused
+ * candidates — the pre-backoff behavior, honest and disclosed — never
+ * blocks production).
+ */
+export async function readVerdictsRefusedToday(istDate: string): Promise<RefusedTodayRow[]> {
+  try {
+    const db = getAdminSupabase();
+    const res = await db
+      .from("verdicts_refused")
+      .select("symbol, reason, attempts, last_tried_at")
+      .eq("ist_date", istDate);
+    if (res.error) throw new Error(res.error.message);
+    const rows: RefusedTodayRow[] = [];
+    for (const r of (res.data ?? []) as Array<Record<string, unknown>>) {
+      const symbol = typeof r.symbol === "string" ? r.symbol : null;
+      const reason = typeof r.reason === "string" ? r.reason : null;
+      const lastTriedAt = typeof r.last_tried_at === "string" ? r.last_tried_at : null;
+      if (!symbol || !reason || !lastTriedAt) continue; // a malformed cell is skipped, never partially served
+      rows.push({
+        symbol,
+        reason,
+        lastTriedAt,
+        attempts: typeof r.attempts === "number" ? r.attempts : 1,
+      });
+    }
+    return rows;
+  } catch (e) {
+    console.error("[verdicts/store] readVerdictsRefusedToday failed:", e instanceof Error ? e.message : e);
+    return [];
+  }
+}
+
+/**
+ * TODAY-NIFTY: the cached candidate set (the once-per-day NSE list).
+ * Reads verdicts_meta's provenance columns; null when no NSE-sourced
+ * set has been recorded (the warm step then fetches fresh, or serves
+ * the founder-five floor when the transport misses).
+ */
+export async function readCandidateSetCache(): Promise<CandidateSetCache | null> {
+  try {
+    const db = getAdminSupabase();
+    const res = await db
+      .from("verdicts_meta")
+      .select("candidate_set, candidate_source, candidate_universe_size, candidate_fetched_on")
+      .eq("id", META_ID)
+      .maybeSingle();
+    if (res.error) throw new Error(res.error.message);
+    const meta = res.data as
+      | {
+          candidate_set: unknown;
+          candidate_source: unknown;
+          candidate_universe_size: unknown;
+          candidate_fetched_on: unknown;
+        }
+      | null;
+    if (!meta) return null;
+    if (meta.candidate_source !== "nifty50-nse") return null;
+    if (!Array.isArray(meta.candidate_set)) return null;
+    if (!meta.candidate_set.every((c) => typeof c === "string")) return null;
+    if (typeof meta.candidate_fetched_on !== "string") return null;
+    const universeSize =
+      typeof meta.candidate_universe_size === "number" ? meta.candidate_universe_size : null;
+    return {
+      source: "nifty50-nse",
+      fetchedOn: meta.candidate_fetched_on,
+      symbols: meta.candidate_set as string[],
+      universeSize,
+    };
+  } catch (e) {
+    console.error("[verdicts/store] readCandidateSetCache failed:", e instanceof Error ? e.message : e);
+    return null;
+  }
 }
 
 /**
@@ -165,12 +294,12 @@ export async function readVerdictsToday(nowMs: number): Promise<VerdictsTodayFac
 
     const metaRes = await db
       .from("verdicts_meta")
-      .select("candidate_set, last_run_at, last_outcome")
+      .select("candidate_set, last_run_at, last_outcome, candidate_source, candidate_universe_size")
       .eq("id", META_ID)
       .maybeSingle();
     if (metaRes.error) throw new Error(metaRes.error.message);
     const meta = metaRes.data as
-      | { candidate_set: unknown; last_run_at: string | null; last_outcome: unknown }
+      | { candidate_set: unknown; last_run_at: string | null; last_outcome: unknown; candidate_source: unknown; candidate_universe_size: unknown }
       | null;
 
     const candidates = Array.isArray(meta?.candidate_set)
@@ -178,6 +307,15 @@ export async function readVerdictsToday(nowMs: number): Promise<VerdictsTodayFac
         ? (meta!.candidate_set as string[])
         : null
       : null;
+
+    // TODAY-NIFTY: the candidate-set provenance (the row's disclosure —
+    // the licensed NSE list vs the founder-confirmed floor).
+    const candidateSource: "nifty50-nse" | "founder-five" | null =
+      meta?.candidate_source === "nifty50-nse" || meta?.candidate_source === "founder-five"
+        ? (meta!.candidate_source as "nifty50-nse" | "founder-five")
+        : null;
+    const candidateUniverseSize =
+      typeof meta?.candidate_universe_size === "number" ? meta!.candidate_universe_size : null;
 
     let lastRunSummary: string | null = null;
     const outcome = meta?.last_outcome as
@@ -201,6 +339,8 @@ export async function readVerdictsToday(nowMs: number): Promise<VerdictsTodayFac
       candidates,
       lastRunAt: meta?.last_run_at ?? null,
       lastRunSummary,
+      candidateSource,
+      candidateUniverseSize,
     };
   } catch (e) {
     console.error("[verdicts/store] readVerdictsToday failed:", e instanceof Error ? e.message : e);

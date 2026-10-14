@@ -19,6 +19,13 @@ import { DataValue } from '@/components/DataValue'; // P0-06: provenance for dis
 import { overlaySourced } from '@/lib/types/sourced';
 import SeedDataBanner from '@/components/shared/SeedDataBanner'; // R1: honest placeholder-data label
 import { shortRadarStatusLine } from '@/lib/modelStatus'; // round 20: the model-status contract is the ONLY wording source
+import type { VerdictRanking, RankedVerdictRow } from '@/lib/verdicts/rank'; // TODAY-NIFTY: the ledger-sourced panel rankings
+import {
+  verdictTopBuyBasis,
+  verdictShortRadarBasis,
+  verdictCoverageLine,
+} from '@/lib/verdicts/rank';
+import { verdictRowProvenance } from '@/lib/verdicts/presentation'; // TODAY-NIFTY: the row provenance line (one wording owner)
 
 const C = {
   text:      '#F8FAFC',
@@ -51,6 +58,78 @@ function RankingsDisabledPanel({ title, note }: { title: string; note: string })
       <div style={{ fontFamily: 'Cinzel, serif', fontSize: '16px', fontWeight: 700, color: C.text, marginBottom: '8px' }}>{title}</div>
       <div style={{ fontSize: '12px', color: C.textMuted, maxWidth: '420px', margin: '0 auto', lineHeight: 1.7 }}>{note}</div>
     </div>
+  );
+}
+
+/* TODAY-NIFTY (founder order, 2026-10-14: "eventually rank 'Top Buy
+ * Signals / Short Radar' from the verdicts ledger as coverage grows"):
+ * the basis/coverage note under (or instead of) a panel — the wording
+ * comes from lib/verdicts/rank (one wording owner), rendered as data,
+ * not chrome. */
+function VerdictRankingsNote({ line, negative }: { line: string; negative?: boolean }) {
+  return (
+    <div data-verdict-rankings-note style={{
+      fontSize: 11, color: negative ? 'var(--text-muted)' : C.textMuted,
+      marginTop: negative ? -34 : 10, marginBottom: negative ? 0 : 10,
+      textAlign: 'center', maxWidth: '560px', marginInline: 'auto', lineHeight: 1.6,
+    }}>{line}</div>
+  );
+}
+
+/* TODAY-NIFTY: one verdict-sourced ranked card — the LEDGER's own
+ * fields (consensus, category) + the live price the client hook
+ * already serves for the symbol + the per-row provenance line
+ * (fundamentals transport + production stamp). NO seed banner: the
+ * record is live-sourced by construction (the P0-1 gate refuses
+ * seed-mixed records upstream of the ledger). */
+function VerdictCard({ row, prices, kind }: { row: RankedVerdictRow; prices: Record<string, PriceData>; kind: 'buy' | 'short' }) {
+  const d = prices[row.symbol];
+  const sc = row.consensus === null ? 'var(--text-muted)' : scoreColor(row.consensus);
+  const short = kind === 'short';
+  return (
+    <Link href={'/stock/' + row.symbol} style={{ textDecoration: 'none' }} data-verdict-rank-row={row.symbol}>
+      <div style={{
+        ...card(), cursor: 'pointer',
+        ...(short
+          ? { background: 'linear-gradient(135deg,rgba(239,68,68,0.06),rgba(17,24,39,0.85))', border: '1px solid rgba(239,68,68,0.2)' }
+          : {}),
+      }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLDivElement).style.borderColor = short ? 'rgba(239,68,68,0.5)' : 'rgba(212,175,55,0.4)';
+          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLDivElement).style.borderColor = short ? 'rgba(239,68,68,0.2)' : C.border;
+          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: C.text, fontFamily: mono }}>{row.symbol}</div>
+            <div style={{ fontSize: '11px', color: C.textMuted, marginTop: '2px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name ?? 'untracked symbol'}</div>
+          </div>
+          <div style={{
+            background: sc + '18', border: '1px solid ' + sc + '40',
+            color: sc, padding: '3px 10px', borderRadius: '20px',
+            fontSize: '12px', fontWeight: 700, fontFamily: mono, flexShrink: 0,
+          }}>{row.consensus.toFixed(1)}/100</div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
+          <div>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: C.text, fontFamily: mono }}>{fmtINR(d?.price)}</div>
+            <div style={{ fontSize: '12px', fontWeight: 700, marginTop: '2px', fontFamily: mono, ...upClr(d?.changePercent24h) }}>{fmtPct(d?.changePercent24h)}</div>
+          </div>
+          <div style={{
+            fontSize: '10.5px', fontWeight: 700, padding: '3px 9px', borderRadius: '12px',
+            background: 'rgba(31,41,55,0.6)', border: '1px solid rgba(51,65,85,0.5)',
+            color: C.textSec, fontFamily: sans, textAlign: 'center',
+          }}>{row.category}</div>
+        </div>
+        <div style={{ fontSize: 10, color: C.textMuted, lineHeight: 1.5, borderTop: '1px solid rgba(51,65,85,0.35)', paddingTop: '8px' }}>
+          {verdictRowProvenance(row)}
+        </div>
+      </div>
+    </Link>
   );
 }
 
@@ -120,10 +199,14 @@ interface TailProps {
   sodFund: FullFundamentals | null | undefined;
   rotatingStocks: RankedStock[];
   rotatingShorts: ShortCandidate[];
+  /** TODAY-NIFTY: the ledger-sourced panel rankings (today's produced
+   *  verdicts, coverage-gated) — server-computed, rendered here. */
+  verdictBuy: VerdictRanking;
+  verdictShorts: VerdictRanking;
   buyFund: Record<string, FullFundamentals>;
 }
 
-export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommentary, sodFund, rotatingStocks, rotatingShorts, buyFund }: TailProps) {
+export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommentary, sodFund, rotatingStocks, rotatingShorts, verdictBuy, verdictShorts, buyFund }: TailProps) {
   const { t } = useLanguage();
   const wisdomBanner = useMemo(() => ({
     background: 'linear-gradient(135deg,rgba(212,175,55,0.08) 0%,rgba(17,24,39,0.9) 50%,rgba(139,92,246,0.06) 100%)',
@@ -138,8 +221,15 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
 
       {/* U4: the ranked trio (Stock of the Day / Top Buy Signals / Short
         Radar) exists only when the RANKINGS_ENABLED flag is on. Off →
-        one honest disabled panel; the ranking engine never ran. */}
-      {rankingsEnabled && stockOfDay ? (<>
+        one honest disabled panel; the ranking engine never ran.
+        TODAY-NIFTY: the two ranked panels populate per-section — the
+        registry path first (seed-gated, honestly empty today), then the
+        VERDICTS-LEDGER ranking (today's live-fundamentals verdicts,
+        coverage-gated), else the awaiting copy with the live coverage
+        count. The SOD card stays its own seed-gated self (the LIVE SOD
+        row — most-traded by value — renders in the Today panel). */}
+      {rankingsEnabled ? (<>
+      {stockOfDay && (<>
       {/* ── STOCK OF THE DAY ─────────────────────────────── */}
       <div style={{ marginBottom:"48px" }}>
         <SectionHeader title={"🌟 " + t("dashboard2.sections.stockOfTheDay")} link={"/stock/" + stockOfDay.symbol} linkLabel={t("dashboard2.fullAnalysis")} />
@@ -236,10 +326,12 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
         </div>
         </div>
       </div>
+      </>)}
 
       {/* ── TOP BUY SIGNALS ───────────────────────────────── */}
       <div style={{ marginBottom:"48px" }}>
         <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/stocks" linkLabel={t("dashboard2.fullScreener")} />
+        {rotatingStocks.length > 0 ? (<>
         <SeedDataBanner suffix="ranked by Rishi consensus among data-quality-OK stocks" />
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
         {rotatingStocks.map((stock) => {
@@ -292,6 +384,31 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
           );
         })}
         </div>
+        </>) : verdictBuy.eligible && verdictBuy.rows.length > 0 ? (
+        // TODAY-NIFTY: the LEDGER-SOURCED ranking — today's produced
+        // verdicts, highest consensus first, every card carrying its own
+        // provenance (transport + production stamp). No seed banner:
+        // the P0-1 gate refuses seed-mixed records upstream of the
+        // ledger, so every row here is live-sourced by construction.
+        <div data-verdict-buy-panel>
+          <VerdictRankingsNote line={verdictTopBuyBasis(verdictBuy)} />
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"14px" }}>
+            {verdictBuy.rows.map(row => (
+              <VerdictCard key={row.symbol} row={row} prices={prices} kind="buy" />
+            ))}
+          </div>
+        </div>
+        ) : (<>
+        {/* FD-22 (founder order 2026-10-12): the flag is ON but nothing
+            qualifies — the honest state, PLUS TODAY-NIFTY's live coverage
+            count (the awaiting copy is now explained by data, not by a
+            claim: N verdicts produced today against the coverage gate). */}
+        <RankingsDisabledPanel
+        title={t("dashboard2.rankingsAwaiting")}
+        note={t("dashboard2.rankingsAwaitingNote")}
+        />
+        <VerdictRankingsNote line={verdictCoverageLine(verdictBuy.coverage)} negative />
+        </>)}
       </div>
 
       <Divider />
@@ -299,6 +416,7 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
       {/* ── SHORT OF THE DAY ──────────────────────────────── */}
       <div style={{ marginBottom:"48px" }}>
         <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
+        {rotatingShorts.length > 0 ? (<>
         <SeedDataBanner suffix={shortRadarStatusLine()} />
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
         {rotatingShorts.map(short => (
@@ -339,37 +457,28 @@ export function DashboardTail({ prices, rankingsEnabled, stockOfDay, sodCommenta
           </Link>
         ))}
         </div>
+        </>) : verdictShorts.eligible && verdictShorts.rows.length > 0 ? (
+        // TODAY-NIFTY: the LEDGER-SOURCED short panel — the
+        // lowest-consensus verdicts among today's live-fundamentals
+        // records (the basis line states its own semantic; the QVPS
+        // trigger-flag screen remains the registry path's own above).
+        <div data-verdict-short-panel>
+          <VerdictRankingsNote line={verdictShortRadarBasis(verdictShorts)} />
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px,1fr))", gap:"14px" }}>
+            {verdictShorts.rows.map(row => (
+              <VerdictCard key={row.symbol} row={row} prices={prices} kind="short" />
+            ))}
+          </div>
+        </div>
+        ) : (<>
+        <RankingsDisabledPanel
+        title={t("dashboard2.rankingsAwaiting")}
+        note={t("dashboard2.rankingsAwaitingNote")}
+        />
+        <VerdictRankingsNote line={verdictCoverageLine(verdictShorts.coverage)} negative />
+        </>)}
       </div>
-      </>) : rankingsEnabled ? (
-        // FD-22 (founder order 2026-10-12): the flag is ON but nothing
-        // qualifies (the price-licence gate refuses every consensus, so
-        // pickStockOfTheDay() is null) — saying "switched off" here would
-        // be false (C1). The honest state: rankings are on, nothing to
-        // rank yet, the licence is the reason, no seed ranking is shown.
-        // Round 54 (founder order 2026-10-13, #370 acceptance): the
-        // awaiting state SHOWS the two named sections — "Top Buy Signals"
-        // and "Short Radar" — each with the honest empty copy, instead of
-        // one merged panel that carried neither name. The names are the
-        // founder-kept FD-24 names; each section states the same honest
-        // reason (nothing qualifies; the licence is pending).
-        <>
-        <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title={"🟢 " + t("dashboard2.sections.topBuySignals")} link="/stocks" linkLabel={t("dashboard2.fullScreener")} />
-          <RankingsDisabledPanel
-          title={t("dashboard2.rankingsAwaiting")}
-          note={t("dashboard2.rankingsAwaitingNote")}
-          />
-        </div>
-        <Divider />
-        <div style={{ marginBottom:"48px" }}>
-          <SectionHeader title={"🔴 " + t("dashboard2.sections.shortRadar")} />
-          <RankingsDisabledPanel
-          title={t("dashboard2.rankingsAwaiting")}
-          note={t("dashboard2.rankingsAwaitingNote")}
-          />
-        </div>
-        </>
-      ) : (
+      </>) : (
         <RankingsDisabledPanel
         title={t("dashboard2.rankingsDisabled")}
         note={t("dashboard2.rankingsDisabledNote")}

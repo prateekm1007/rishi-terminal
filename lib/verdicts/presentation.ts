@@ -63,8 +63,41 @@ export function verdictsRowText(face: VerdictsTodayFace): string {
   const transport = face.today[face.today.length - 1].fundamentalsSource;
   parts.push(`fundamentals via ${fundamentalsTransportLabel(transport)}`);
   if (face.candidates && face.candidates.length > 0) {
-    parts.push(`candidate set: ${face.candidates.join(", ")}`);
+    parts.push(candidateSetLabel(face));
   }
   parts.push(`produced ${producedAtLabel(face.today[face.today.length - 1].producedAt)}`);
   return `${parts.join(" · ")}. A heuristic score, not investment advice.`;
+}
+
+/**
+ * TODAY-NIFTY: the candidate set's disclosure line. The licensed NSE
+ * path summarizes (a 50-symbol list does not fit a sentence — the full
+ * list stays in verdicts_meta for the audit trail); the founder-confirmed
+ * floor names its five as before.
+ */
+export function candidateSetLabel(face: VerdictsTodayFace): string {
+  if (
+    face.candidateSource === "nifty50-nse" &&
+    face.candidates &&
+    face.candidates.length > 8
+  ) {
+    const universe = face.candidateUniverseSize ?? face.candidates.length;
+    return (
+      `candidate set: Nifty 50 constituents per NSE — ${face.candidates.length} tracked symbols ` +
+      `of ${universe} (licensed use)`
+    );
+  }
+  return `candidate set: ${(face.candidates ?? []).join(", ")}`;
+}
+
+/**
+ * TODAY-NIFTY: one ranked row's provenance line (the FD-15 class — the
+ * card states where its fundamentals came from and when the verdict was
+ * produced; the consensus number never travels without it).
+ */
+export function verdictRowProvenance(row: {
+  fundamentalsSource: string | null;
+  producedAt: string;
+}): string {
+  return `fundamentals via ${fundamentalsTransportLabel(row.fundamentalsSource)} · produced ${producedAtLabel(row.producedAt)}`;
 }

@@ -166,6 +166,37 @@ export const nseMoversResponseSchema = z
 export type NseMoverRow = z.infer<typeof nseMoverRowSchema>;
 export type NseMoversResponse = z.infer<typeof nseMoversResponseSchema>;
 
+// ── NSE index constituents (TODAY-NIFTY, founder order 2026-10-14) ───
+//
+// The verdicts candidate set derives from NSE's own Nifty-50 constituent
+// list — the index-browse endpoint the MIT scrapers document
+// (marketcalls/openchart's quotes-by-index; the same licence covers it —
+// the letter's scope is all nseindia.com/api/ quote and index endpoints):
+//   GET /api/equity-stockIndices?index=NIFTY%2050
+//     payload = { timestamp: "14-Oct-2026 12:10:30",
+//                 data: [ { symbol: "NIFTY 50", priority: 1, … },
+//                         { symbol: "RELIANCE", series: "EQ", … }, … ] }
+// Only the SYMBOL is declared — the quote fields ride through unread
+// (the constituent list is the product, not the quotes). The index row's
+// own symbol ("NIFTY 50") carries a space and is dropped downstream BY
+// THE SYMBOL SANITIZER, not by a name blacklist. NSE's error body for a
+// bad index ({"data":"Missing index or key."}) fails the data-array
+// requirement — the honest miss.
+export const nseConstituentRowSchema = z
+  .object({
+    symbol: z.string().min(1).max(40),
+  })
+  .passthrough();
+
+export const nseConstituentsResponseSchema = z
+  .object({
+    timestamp: z.string().optional(),
+    data: z.array(nseConstituentRowSchema).min(1),
+  })
+  .passthrough();
+
+export type NseConstituentsResponse = z.infer<typeof nseConstituentsResponseSchema>;
+
 // ── Google Gemini: generateContent completion ────────────────────────
 export const geminiCompletionSchema = z.object({
   candidates: z

@@ -22,6 +22,7 @@ import { tickerRowFace } from "@/lib/markets/sourcedRow";
 import { useFundamentals, useBulkFundamentals } from "@/hooks/useFundamentals";
 import { useLanguage } from "@/lib/language";
 import type { RankedStock, ShortCandidate, StockOfTheDay } from "@/lib/scoring/rankings";
+import type { VerdictRanking } from "@/lib/verdicts/rank"; // TODAY-NIFTY: the ledger-sourced panel rankings
 import dynamic from "next/dynamic";
 
 // Z5 (Round 13): the below-fold tail (crypto grid, explore-markets tiles,
@@ -115,6 +116,11 @@ interface DashboardProps {
    *  baseline — the QVPS engine no longer runs client-side). U4: null when
    *  the flag is off. */
   sodCommentary: string | null;
+  /** TODAY-NIFTY (founder order, 2026-10-14): the ledger-sourced panel
+   *  rankings (today's produced verdicts, coverage-gated) — computed on
+   *  the server from the SAME ledger read the Today row uses. */
+  verdictBuy: VerdictRanking;
+  verdictShorts: VerdictRanking;
   /** U4 (founder round 7): whether the ranked widgets run at all
    *  (RANKINGS_ENABLED via lib/featureFlags, fail-closed). */
   rankingsEnabled: boolean;
@@ -128,17 +134,19 @@ interface DashboardProps {
  * dead in this file since Z5 moved the ranked sections to DashboardTail
  * (which defines and renders its own); deleted with its last caller. */
 
-export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, rankingsEnabled, initialPrices }: DashboardProps) {
+export default function DashboardClient({ rotatingStocks, rotatingShorts, stockOfDay, sodCommentary, verdictBuy, verdictShorts, rankingsEnabled, initialPrices }: DashboardProps) {
   const { t } = useLanguage();
 
   const allSyms = useMemo(() => [
     ...TICKER_SYMS,
     ...rotatingStocks.map(s => s.symbol),
     ...rotatingShorts.map(s => s.symbol),
+    ...verdictBuy.rows.map(s => s.symbol),
+    ...verdictShorts.rows.map(s => s.symbol),
     ...WORLD_MARKETS.map(m => m.sym),
     ...TOP_CRYPTO.map(c => c.symbol),
     ...(stockOfDay ? [stockOfDay.symbol] : []),
-  ], [rotatingStocks, rotatingShorts, stockOfDay]);
+  ], [rotatingStocks, rotatingShorts, verdictBuy, verdictShorts, stockOfDay]);
 
   const { prices, loading, observedAt } = useLivePrices(allSyms, 60000, initialPrices);
 
@@ -421,6 +429,8 @@ export default function DashboardClient({ rotatingStocks, rotatingShorts, stockO
             sodFund={sodFund}
             rotatingStocks={rotatingStocks}
             rotatingShorts={rotatingShorts}
+            verdictBuy={verdictBuy}
+            verdictShorts={verdictShorts}
             buyFund={buyFund}
           />
 

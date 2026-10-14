@@ -41,36 +41,34 @@ describe("FD-22 — the flag-on-nothing-qualifies state is honest (round 49)", (
     expect(tail).toContain('t("dashboard2.rankingsDisabledNote")');
   });
 
-  it("round 54 (#370 acceptance): the awaiting state SHOWS the two named sections", () => {
+  it("round 54 (#370 acceptance) + TODAY-NIFTY: the awaiting state SHOWS the two named sections", () => {
     // Founder order 2026-10-13: "When it's on, the awaiting state must
     // show 'Top Buy Signals' and 'Short Radar' with the honest empty
-    // copy." The awaiting branch (not just the ranked branch) renders
-    // both section headers, each followed by the honest panel.
-    const awaiting = tail.slice(
-      tail.indexOf(") : rankingsEnabled ? ("),
-      tail.indexOf(") : (", tail.indexOf(") : rankingsEnabled ? (")),
-    );
-    expect(awaiting.length).toBeGreaterThan(0);
-    expect(awaiting).toContain('t("dashboard2.sections.topBuySignals")');
-    expect(awaiting).toContain('t("dashboard2.sections.shortRadar")');
-    expect(awaiting).toContain('t("dashboard2.rankingsAwaiting")');
-    expect(awaiting).toContain('t("dashboard2.rankingsAwaitingNote")');
-    // the awaiting branch must NOT claim the widgets are switched off
-    expect(awaiting).not.toContain("rankingsDisabled");
+    // copy." TODAY-NIFTY strengthened this: the sections are now
+    // PER-PANEL conditionals with the section header OUTSIDE them — the
+    // headers render in EVERY flag-on state (populated or awaiting),
+    // and each section's awaiting fallback carries the honest keys
+    // (two occurrences, one per named section).
+    expect(tail).toContain('t("dashboard2.sections.topBuySignals")');
+    expect(tail).toContain('t("dashboard2.sections.shortRadar")');
+    expect((tail.match(/t\("dashboard2\.rankingsAwaiting"\)/g) ?? []).length).toBe(2);
+    expect((tail.match(/t\("dashboard2\.rankingsAwaitingNote"\)/g) ?? []).length).toBe(2);
   });
 
   it("the switched-off note renders only in the flag-off branch (source structure)", () => {
-    // the awaiting branch must be reachable WITHOUT the disabled note:
-    // the ternary order is widgets ? ... : rankingsEnabled ? awaiting : disabled
-    const ternary = tail.slice(tail.indexOf("{rankingsEnabled && stockOfDay"));
-    const awaitingIdx = ternary.indexOf("rankingsAwaiting");
-    const disabledIdx = ternary.indexOf("rankingsDisabled");
+    // The flag-off branch is the outer ternary's final else: every
+    // awaiting occurrence sits BEFORE the disabled keys, and the
+    // disabled panel is preceded by the outer else (`</>) : (`).
+    const awaitingIdx = tail.indexOf('t("dashboard2.rankingsAwaiting")');
+    const disabledIdx = tail.indexOf('t("dashboard2.rankingsDisabled")');
     expect(awaitingIdx).toBeGreaterThan(-1);
     expect(disabledIdx).toBeGreaterThan(-1);
-    // the awaiting branch sits BEFORE the disabled branch in the else chain
-    expect(awaitingIdx).toBeLessThan(disabledIdx);
-    // the awaiting branch is guarded by the flag being on
-    expect(ternary.slice(0, awaitingIdx)).toMatch(/rankingsEnabled\s*\?/);
+    const lastAwaiting = tail.lastIndexOf('t("dashboard2.rankingsAwaiting")');
+    expect(lastAwaiting).toBeLessThan(disabledIdx);
+    expect(tail.slice(Math.max(0, disabledIdx - 120), disabledIdx)).toContain("</>) : (");
+    // the awaiting fallbacks are inside the flag-on branch (the outer
+    // guard) — the flag-off branch renders the disabled panel only.
+    expect(tail).toContain("{rankingsEnabled ? (<>");
   });
 
   it("the awaiting note states the truthful reason and the no-seed-ranking promise (en)", () => {

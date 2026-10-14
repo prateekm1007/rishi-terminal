@@ -37,9 +37,16 @@ const logIngestionMock = vi.fn();
 const revalidatePathMock = vi.fn();
 const pageFetchMock = vi.fn();
 
-vi.mock("@/lib/marketHours", () => ({
-  marketState: (...a: unknown[]) => marketStateMock(...a),
-}));
+// TODAY-NIFTY: the verdicts step imports istParts (the IST calendar
+// date for the candidate-set cache + refusal backoff) — the REAL pure
+// function rides through (only marketState is clock-mocked).
+vi.mock("@/lib/marketHours", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/marketHours")>();
+  return {
+    ...actual,
+    marketState: (...a: unknown[]) => marketStateMock(...a),
+  };
+});
 
 vi.mock("@/lib/services/ingestion", () => ({
   logIngestion: (...a: unknown[]) => logIngestionMock(...a),

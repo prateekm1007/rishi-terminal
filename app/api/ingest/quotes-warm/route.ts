@@ -249,16 +249,21 @@ export async function POST(req: NextRequest) {
   const moversOutcome = await refreshMovers();
 
   // ── TODAY-VERDICTS: the verdicts step — produces Rishi verdicts on
-  // LIVE fundamentals for the disclosed candidate set (Screener.in
-  // primary — with the balance-sheet D/E derivation — Yahoo+NSE
-  // fallback), through the SAME scoring surface the stock page runs
-  // (the P0-1 gate refuses seed-mixed records upstream). Produced
-  // verdicts + their day-0 baselines are written to verdicts_produced
-  // (migration 036) and DISCLOSED here. A candidate that already
-  // produced today is NOT re-fetched (fundamentals move quarterly —
-  // the (symbol, ist_date) key is the TTL); `force` re-produces for the
-  // operator's acceptance run. A failure never fails the tick (the
-  // same class as the movers step).
+  // LIVE fundamentals for the disclosed candidate set (TODAY-NIFTY: the
+  // set derives from NSE's OWN Nifty-50 constituent list — fetched once
+  // per IST day, cached in verdicts_meta; the founder-confirmed five
+  // are the floor any honest miss serves), through the SAME scoring
+  // surface the stock page runs (the P0-1 gate refuses seed-mixed
+  // records upstream). Screener.in primary — with the balance-sheet D/E
+  // derivation and the shareholding-table promoter fallback — Yahoo+NSE
+  // fallback. Produced verdicts + their day-0 baselines are written to
+  // verdicts_produced (migration 036) and DISCLOSED here. A candidate
+  // that already produced today is NOT re-fetched (fundamentals move
+  // quarterly — the (symbol, ist_date) key is the TTL); a candidate
+  // that refused within its reason-classed retry window is skipped
+  // (verdicts_refused, migration 037 — the coverage-expansion guard);
+  // `force` re-produces for the operator's acceptance run. A failure
+  // never fails the tick (the same class as the movers step).
   const verdictsOutcome = await refreshVerdicts({ force });
 
   // G6 (round 23): this slice IS a price ingestion — record it so

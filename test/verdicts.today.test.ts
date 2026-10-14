@@ -53,7 +53,7 @@ interface AdminState {
 }
 
 const adminState: AdminState = {
-  tables: { verdicts_produced: [], verdicts_meta: [] },
+  tables: { verdicts_produced: [], verdicts_meta: [], verdicts_refused: [] },
   upsertError: null,
 };
 
@@ -106,7 +106,7 @@ vi.mock("@/lib/services/supabaseAdmin", () => ({
 }));
 
 beforeEach(() => {
-  adminState.tables = { verdicts_produced: [], verdicts_meta: [] };
+  adminState.tables = { verdicts_produced: [], verdicts_meta: [], verdicts_refused: [] };
   adminState.upsertError = null;
 });
 
@@ -234,19 +234,29 @@ describe("TODAY-VERDICTS — the producer gate (the P0-1 gate upstream of every 
 // ---------------------------------------------------------------------
 
 describe("TODAY-VERDICTS — the warm step (gate, budget, disclosure)", () => {
+  // TODAY-NIFTY: the warm step now resolves its candidate set FIRST
+  // (the once-per-day NSE list, founder-five floor on a miss). These
+  // legs exercise the FLOOR path hermetically — the NSE derivation has
+  // its own suite (test/verdicts.nifty.test.ts); no test here touches
+  // the network.
+  const hermeticNiftyMiss = async () => null;
+
   it("the same-day gate skips candidates that already produced today (the (symbol, ist_date) TTL)", async () => {
     const outcome = await refreshVerdicts({
       nowMs: Date.now(),
+      niftySource: hermeticNiftyMiss,
       alreadyProducedToday: async (candidates) => candidates.slice(0, 2),
       deps: depsWith({ RELIANCE: RELIANCE_LIVE }),
     });
     expect(outcome.skippedAlreadyProduced.length).toBe(2);
     expect(outcome.error).toBeNull();
+    expect(outcome.candidateSource).toBe("founder-five");
   });
 
   it("force bypasses the same-day gate (the operator's acceptance run)", async () => {
     const outcome = await refreshVerdicts({
       nowMs: Date.now(),
+      niftySource: hermeticNiftyMiss,
       force: true,
       deps: depsWith({ RELIANCE: RELIANCE_LIVE }, { RELIANCE: RELIANCE_QUOTE }),
     });
@@ -257,6 +267,7 @@ describe("TODAY-VERDICTS — the warm step (gate, budget, disclosure)", () => {
   it("a zero budget reaches no candidate — notReached discloses every one, nothing produced, no error", async () => {
     const outcome = await refreshVerdicts({
       nowMs: Date.now(),
+      niftySource: hermeticNiftyMiss,
       force: true,
       budgetMs: 0,
       deps: depsWith({ RELIANCE: RELIANCE_LIVE }),
@@ -270,6 +281,7 @@ describe("TODAY-VERDICTS — the warm step (gate, budget, disclosure)", () => {
     adminState.upsertError = "simulated ledger outage";
     const outcome = await refreshVerdicts({
       nowMs: Date.now(),
+      niftySource: hermeticNiftyMiss,
       force: true,
       deps: depsWith({ RELIANCE: RELIANCE_LIVE }),
     });
@@ -373,6 +385,8 @@ describe("TODAY-VERDICTS — the Today panel rows", () => {
           candidates: [...VERDICT_CANDIDATES],
           lastRunAt: "2026-10-14T04:15:00.000Z",
           lastRunSummary: "1 produced, none refused",
+          candidateSource: "founder-five",
+          candidateUniverseSize: null,
         },
         tracking: { baselines: 1, startedOn: "2026-10-14" },
       }),

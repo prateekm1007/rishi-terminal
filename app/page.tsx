@@ -41,6 +41,7 @@ import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
 import { initialPriceSnapshot, isBuildPhase } from '@/lib/dashboardSnapshot';
 import { readMoversSnapshot } from '@/lib/movers/store'; // LIVE-TODAY: the Top Winners / Top Losers snapshot
 import { readVerdictsToday, readTrackingState } from '@/lib/verdicts/store'; // TODAY-VERDICTS: the verdicts ledger + the tracking state (one read each, the same cache-read class)
+import { rankVerdictTopBuy, rankVerdictShortRadar } from '@/lib/verdicts/rank'; // TODAY-NIFTY: the ledger-sourced panel rankings
 import { aggregateLiveNews } from '@/lib/news/server'; // TODAY-MOVERS: the ONE live-news source (the /api/news route shares it)
 import { TodayPanel, type TodayLatestNews } from '@/components/dashboard/TodayPanel'; // DEMO-4 + LIVE-TODAY + TODAY-MOVERS: the honest Today view (server component, zero JS)
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
@@ -120,6 +121,16 @@ export default async function Page() {
   const verdicts = isBuildPhase() ? null : await readVerdictsToday(isrRenderClock());
   const tracking = isBuildPhase() ? null : await readTrackingState();
 
+  // TODAY-NIFTY (founder order, 2026-10-14: "eventually rank 'Top Buy
+  // Signals / Short Radar' from the verdicts ledger as coverage
+  // grows"): the two ranked panels rank TODAY'S produced verdicts when
+  // the day's pool reaches the coverage gate (the registry path above
+  // stays the seed-gated engine it is — its pools are honestly empty,
+  // which is what the awaiting copy disclosed until now). The same ONE
+  // ledger read the Today row uses — no second query, no vendor fetch.
+  const verdictBuy = rankVerdictTopBuy(verdicts, 6);
+  const verdictShorts = rankVerdictShortRadar(verdicts, 3);
+
   // TODAY-MOVERS (founder order, 2026-10-13): the Today panel's news row
   // renders the live aggregation's ACTUAL state (the same ONE source the
   // /api/news route serves). Build stays hermetic: no RSS fetch during
@@ -142,6 +153,8 @@ export default async function Page() {
         rotatingShorts={rotatingShorts}
         stockOfDay={stockOfDay}
         sodCommentary={sodCommentary}
+        verdictBuy={verdictBuy}
+        verdictShorts={verdictShorts}
         initialPrices={initialPrices}
       />
     </NamespaceProvider>

@@ -92,6 +92,13 @@ export interface VerdictsTodayFace {
   lastRunAt: string | null;
   /** The last run's outcome summary (from verdicts_meta), or null. */
   lastRunSummary: string | null;
+  /** TODAY-NIFTY: where the candidate set derived from — the licensed
+   * NSE constituent list or the founder-confirmed floor — or null when
+   * no provenance is recorded yet (pre-037 meta rows). */
+  candidateSource: "nifty50-nse" | "founder-five" | null;
+  /** TODAY-NIFTY: NSE's own constituent count before the registry
+   * filter (the disclosure's universe size), or null. */
+  candidateUniverseSize: number | null;
 }
 
 /** The tracking-line state — one source for the Today row AND the

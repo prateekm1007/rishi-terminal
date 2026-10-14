@@ -48,7 +48,7 @@
 //     tracked symbols; untracked symbols still render (no fabricated
 //     name), just without a stock-page link.
 
-import { nseMoversResponseSchema, type NseMoverRow } from "@/lib/validation/schemas";
+import { nseConstituentsResponseSchema, nseMoversResponseSchema, type NseMoverRow } from "@/lib/validation/schemas";
 import type { MoverRow } from "./types";
 
 const NSE_MOVERS_BASE = "https://www.nseindia.com/api/live-analysis-variations";
@@ -245,4 +245,56 @@ export async function fetchNseMovers(
     result: { gainers: g.rows, losers: l.rows, observedAt, universe: g.universe ?? l.universe ?? "NIFTY" },
     error: null,
   };
+}
+
+// ── TODAY-NIFTY (founder order, 2026-10-14: "expand the candidate set
+// toward the licensed Nifty 50") ──────────────────────────────────────
+//
+// The index-constituents list — NSE's OWN Nifty-50 membership, the
+// licensed source (the same letter covers the endpoint family). Called
+// ONCE PER IST DAY by the verdicts warm step (cached in verdicts_meta —
+// index membership changes on semi-annual reviews, not intraday), NOT
+// every tick: gentle on the transport is a stated goal of the warmer.
+//
+// Honesty contract (the movers class above): zod-parsed BEFORE any field
+// is read; a mismatch, an error body, or an empty list is null (never a
+// partial list); symbols sanitized (Rule 9 — the index row "NIFTY 50"
+// dies on the space, by the sanitizer, not a blacklist); NSE's own
+// timestamp parses to ISO or null — never the fetch time. The output is
+// DEDUPED and SORTED (deterministic — the candidate order a run
+// processes must not depend on payload row order). The REGISTRY filter
+// is the caller's (candidates.ts) — this module is transport only.
+
+const NSE_CONSTITUENTS_URL = "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050";
+
+/**
+ * NSE's own Nifty-50 constituent symbols (sanitized, deduped, sorted) +
+ * NSE's own payload timestamp, or null on any honest miss.
+ */
+export async function fetchNiftyConstituents(
+  doFetch: NseFetchLike = (u, i) => fetch(u, i),
+): Promise<{ symbols: string[]; observedAt: string | null } | null> {
+  try {
+    const res = await doFetch(NSE_CONSTITUENTS_URL, {
+      headers: NSE_MOVERS_HEADERS,
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const body: unknown = await res.json();
+    const parsed = nseConstituentsResponseSchema.safeParse(body);
+    if (!parsed.success) return null;
+    const symbols: string[] = [];
+    for (const row of parsed.data.data) {
+      const s = sanitizeNseSymbol(row.symbol);
+      if (s && !symbols.includes(s)) symbols.push(s);
+    }
+    if (symbols.length === 0) return null;
+    symbols.sort();
+    return { symbols, observedAt: parseNseTimestamp(parsed.data.timestamp) };
+  } catch {
+    // A transport failure is an honest miss — the caller's fallback
+    // (the founder-confirmed five) serves, disclosed as such.
+    return null;
+  }
 }

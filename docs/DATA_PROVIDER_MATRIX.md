@@ -12,7 +12,7 @@ Vantage, Twelve Data, FMP, Finnhub, Gemini, Hugging Face, open-source TA libs
 | Provider | Dataset | Semantics | Health note |
 |---|---|---|---|
 | NSE (unofficial JSON) | IN equity quotes/indices/breadth | near-realtime snapshot | 2 schema-drift fixes shipped (50c986d, 47ab3f5); coercion + validation |
-| BSE | scrip header fallback | snapshot | fallback only |
+| BSE | scrip header fallback; realtime index (SENSEX, INDEXSTRIP FD-32) | snapshot | index-quotes dataset class added with the founder's option (b) order (FD-32); fail-closed zod parse; production-egress byte validation recorded post-merge |
 | Yahoo chart/quote | quotes, change, OHLC | delayed snapshot; never labelled realtime | `regularMarketChangePercent` trusted first |
 | CoinGecko | crypto price/24h change | realtime snapshot | 429-prone → 60 s cache mandatory |
 | ExchangeRate-API | FX reference | **daily reference**, not tradable | 30–43 ms |

@@ -41,6 +41,7 @@ import { rankingsEnabled } from '@/lib/featureFlags'; // U4: the ONE flag source
 import { initialPriceSnapshot, isBuildPhase } from '@/lib/dashboardSnapshot';
 import { readMoversSnapshot } from '@/lib/movers/store'; // LIVE-TODAY: the Top Winners / Top Losers snapshot
 import { readVerdictsToday, readTrackingState } from '@/lib/verdicts/store'; // TODAY-VERDICTS: the verdicts ledger + the tracking state (one read each, the same cache-read class)
+import { readIndexStripSnapshot } from '@/lib/markets/indexStripStore'; // INDEXSTRIP: the index strip's snapshot (the same cache-read class, Y1-safe)
 import { aggregateLiveNews } from '@/lib/news/server'; // TODAY-MOVERS: the ONE live-news source (the /api/news route shares it)
 import { TodayPanel, type TodayLatestNews } from '@/components/dashboard/TodayPanel'; // DEMO-4 + LIVE-TODAY + TODAY-MOVERS: the honest Today view (server component, zero JS)
 import { TICKER_SYMS, TOP_CRYPTO, WORLD_MARKETS } from '@/lib/dashboardSymbols';
@@ -120,6 +121,12 @@ export default async function Page() {
   const verdicts = isBuildPhase() ? null : await readVerdictsToday(isrRenderClock());
   const tracking = isBuildPhase() ? null : await readTrackingState();
 
+  // INDEXSTRIP: the strip's snapshot — ONE cheap read (migration 037),
+  // the same cache-read class as the movers read; the build phase
+  // fetches NOTHING (hermetic prerender — the strip renders its honest
+  // empty state until the first ISR regeneration after a warmer tick).
+  const indices = isBuildPhase() ? null : await readIndexStripSnapshot();
+
   // TODAY-MOVERS (founder order, 2026-10-13): the Today panel's news row
   // renders the live aggregation's ACTUAL state (the same ONE source the
   // /api/news route serves). Build stays hermetic: no RSS fetch during
@@ -135,7 +142,7 @@ export default async function Page() {
 
   return (
     <NamespaceProvider ns={{ dashboard, dashboard2 }}>
-      <TodayPanel movers={movers} latestNews={latestNews} verdicts={verdicts} tracking={tracking} />
+      <TodayPanel movers={movers} latestNews={latestNews} verdicts={verdicts} tracking={tracking} indices={indices} />
       <DashboardClient
         rankingsEnabled={rankings}
         rotatingStocks={rotatingStocks}

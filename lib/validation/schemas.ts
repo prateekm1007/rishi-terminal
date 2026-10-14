@@ -81,6 +81,12 @@ export const nseIndexSchema = z.object({
 
 export const nseAllIndicesSchema = z.object({
   data: z.array(nseIndexSchema).optional(),
+  // INDEXSTRIP: the payload's own top-level timestamp ("14-Oct-2026
+  // 13:44:00", IST) — optional + additive (zod stripped unknown keys
+  // before, so every existing consumer sees no change); the strip reads
+  // it for the row's as-of line. Parsed by parseNseTimestamp upstream
+  // consumers only; never trusted as the fetch time (Rule 1).
+  timestamp: z.string().optional(),
 });
 
 export type NseIndex = z.infer<typeof nseIndexSchema>;

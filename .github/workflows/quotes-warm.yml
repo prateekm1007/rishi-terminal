@@ -36,6 +36,20 @@ on:
     - cron: "7-52/15 3-10 * * 1-5" # weekdays 03:07-10:52 UTC, off the high-load :00/:15/:30/:45 boundaries (R16 C4)
   workflow_dispatch: {} # manual runs for verification (endpoint gates market hours)
 
+      - name: Index strip ingest (NIFTY 50 / SENSEX — INDEXSTRIP, FD-32)
+        # Non-fatal by design: a missing/failed leg renders the strip's
+        # honest empty state; the warning line keeps the miss visible.
+        run: |
+          set -uo pipefail
+          CODE=$(curl -s -o /tmp/indexstrip.json -w '%{http_code}' \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://rishi-terminal.vercel.app/api/ingest/index-strip") || CODE=000
+          echo "index-strip ingest HTTP $CODE"
+          cat /tmp/indexstrip.json 2>/dev/null || true
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::index-strip ingest HTTP $CODE — the strip renders its honest empty state (check the CRON_SECRET Actions secret; FD-32)"
+          fi
+
 concurrency:
   group: quotes-warm
   cancel-in-progress: false # overlapping runs are safe (claim mechanism) — serialize anyway

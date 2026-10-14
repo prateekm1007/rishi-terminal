@@ -1,0 +1,7 @@
+command: npx vitest run test/indexStrip.test.ts --reporter=dot
+exit: 1
+output (the fail-first red — the module under test did not exist):
+ FAIL  test/indexStrip.test.ts - Failed to resolve import "@/lib/markets/indexStrip"
+ Test Files  1 failed (1)
+      Tests  no tests
+   Duration  155ms

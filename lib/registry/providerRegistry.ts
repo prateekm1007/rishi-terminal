@@ -56,8 +56,11 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   },
   [PROVIDER_IDS.BSE]: {
     id: PROVIDER_IDS.BSE,
-    datasets: ["scrip-header"],
-    assetClasses: ["equity-in"],
+    // INDEXSTRIP (FD-32): the realtime index endpoint (SENSEX) is a NEW
+    // dataset class on this APPROVED host, authorized by the founder's
+    // option (b) order — the registry row extends in the same PR.
+    datasets: ["scrip-header", "index-quotes"],
+    assetClasses: ["equity-in", "index-in"],
     auth: "none",
     status: "APPROVED",
     termsUrl: "https://www.bseindia.com/",

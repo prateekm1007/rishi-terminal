@@ -1,0 +1,10 @@
+{
+  "id": "unfaithful-figure",
+  "question": "What is RELIANCE's return on equity?",
+  "answer": "RELIANCE returned 99 percent on equity and grew 4.5 percent.",
+  "contexts": [
+    "roe = 12 percent — live (observed/as-of 2026-09-30)"
+  ],
+  "expected": { "support_ratio": 0.0, "verdict": "fail" },
+  "note": "The gate MUST fail this: two numeric statements, zero supported. This fixture is what makes the threshold gate able to bite."
+}

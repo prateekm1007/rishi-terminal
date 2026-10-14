@@ -1,0 +1,59 @@
+# .github/workflows/evals-ragas.yml — the grounded-answers faithfulness
+# harness (RAGAS-CI, round 56; the founder's batch-2 adoption record row 15:
+# "vibrantlabsai/ragas — faithfulness scores for grounded answers; confirm
+# identity before adopting").
+#
+# IDENTITY CONFIRMED (the founder's condition, 2026-10-13):
+#   explodinggradients/ragas -> HTTP 301 -> vibrantlabsai/ragas
+#   (Apache-2.0, 16,005 stars) — the harness docstring records the API
+#   evidence (repository id 637924634).
+#
+# HONEST STATE (C1 — this workflow only gates what can actually bite):
+# - The PLUMBING leg runs in CI: fixture schema, support math, threshold
+#   gate over deterministic fixtures (zero spend, no network, no judge).
+# - The JUDGE leg (ragas Faithfulness) is BLOCKED ON UPSTREAM PACKAGING:
+#   ragas 0.4.3/0.3.9 cannot import against any installable langchain set
+#   (vertexai module needs community <= 0.3.x; ContextOverflowError needs
+#   core >= 1.4; the two lines are mutually exclusive). Evidence:
+#   docs/evidence/round56/ragas-import-check.txt. The --check-ragas gate
+#   in the harness flips GREEN the moment vibrantlabsai ships an
+#   installable release — it is deliberately NOT wired into CI while the
+#   import is impossible (a permanently red gate is noise, not a gate;
+#   the blocker is recorded here and in the harness docstring).
+# - The judge LLM itself is a provider decision (FD-8 open) — FOUNDER
+#   DECISION NEEDED recorded in the PR; no judge key exists in CI and no
+#   score is fabricated in its absence (rule 4).
+name: evals-ragas
+
+on:
+  pull_request:
+    paths:
+      - "scripts/ci/ragas/**"
+      - ".github/workflows/evals-ragas.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/ci/ragas/**"
+      - ".github/workflows/evals-ragas.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: evals-ragas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  faithfulness-plumbing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The scoring plumbing (fixtures, support math, threshold gate) is
+      # dependency-free by design: a regression in the harness or its
+      # fixtures fails HERE, before any judge exists.
+      - name: Faithfulness plumbing gate (deterministic stand-in — NOT a faithfulness measurement)
+        run: python3 scripts/ci/ragas/faithfulnessHarness.py --plumbing

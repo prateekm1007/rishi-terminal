@@ -3,9 +3,11 @@ import 'server-only';
 import Link from 'next/link';
 import { trackingStatusFor, trackingLineFor } from '@/lib/demoState';
 import { MoversPanel } from '@/components/dashboard/MoversPanel'; // LIVE-TODAY: the live Top Winners / Losers / Movers view
+import { IndexStripPanel } from '@/components/dashboard/IndexStripPanel'; // INDEXSTRIP: the NIFTY 50 / SENSEX strip (FD-32)
 import { livePickFace } from '@/lib/movers/presentation'; // TODAY-FULL: the live Stock of the Day's rendered face
 import { verdictsRowText } from '@/lib/verdicts/presentation'; // TODAY-VERDICTS: the verdicts row's ONE face owner
 import type { MoversSnapshot } from '@/lib/movers/types';
+import type { IndexStripSnapshot } from '@/lib/markets/indexStrip'; // INDEXSTRIP: the strip's snapshot type
 import type { TrackingState, VerdictsTodayFace } from '@/lib/verdicts/types';
 
 /** TODAY-MOVERS: the news state the page hands the panel — the
@@ -69,11 +71,13 @@ export function TodayPanel({
   latestNews,
   verdicts,
   tracking,
+  indices,
 }: {
   movers: MoversSnapshot | null;
   latestNews: TodayLatestNews | null;
   verdicts: VerdictsTodayFace | null;
   tracking: TrackingState | null;
+  indices: IndexStripSnapshot | null;
 }) {
   const istDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
   const pick = movers?.pick ? livePickFace(movers.pick) : null;
@@ -97,6 +101,11 @@ export function TodayPanel({
       {/* LIVE-TODAY: the live market view — Top 5 Winners / Top 5 Losers /
           Top 5 Movers, every row source + as-of stamped (FD-15 wording),
           the derivation line disclosing how the list was produced. */}
+      {/* INDEXSTRIP (FD-32): the NIFTY 50 / SENSEX strip — per-row source
+          and as-of stamped (the founder's "Source: BSE" requirement), the
+          honest empty slot when a leg has no observation. */}
+      <IndexStripPanel indices={indices} />
+
       <MoversPanel movers={movers} />
 
       <div style={{ display: "grid", gap: 8, marginTop: 14, fontSize: 13, lineHeight: 1.6 }}>

@@ -620,3 +620,5 @@ dashboard. use Unofficial data scrapers."
   panels stay within one tick of the market during the session.
 - Evidence: `docs/evidence/round56/` (this round's PR thread carries the
   raw commands).
+
+- FD-32 (INDEXSTRIP): the dashboard Today panel carries the NIFTY 50 / SENSEX index strip — NIFTY from the licensed NSE index endpoint, SENSEX from the BSE provider with per-row "Source: BSE" attribution (the founder option (b), 14 Oct 2026); migration 037 additive; the SENSEX schema validates against production bytes in the first post-merge smoke. Status: IN PROGRESS — PR pending the founder migration approval.

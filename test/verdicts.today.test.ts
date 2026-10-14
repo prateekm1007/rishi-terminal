@@ -375,6 +375,7 @@ describe("TODAY-VERDICTS — the Today panel rows", () => {
           lastRunSummary: "1 produced, none refused",
         },
         tracking: { baselines: 1, startedOn: "2026-10-14" },
+        indices: null,
       }),
     );
     expect(html).toContain("data-today-verdicts-row");
@@ -400,6 +401,7 @@ describe("TODAY-VERDICTS — the Today panel rows", () => {
         latestNews: null,
         verdicts: null,
         tracking: null,
+        indices: null,
       }),
     );
     expect(html).toContain("data-today-verdicts-empty");

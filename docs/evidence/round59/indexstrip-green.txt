@@ -1,0 +1,12 @@
+command: npx vitest run test/indexStrip.test.ts --reporter=dot
+exit: 0
+output (after lib/markets/indexStrip.ts landed; two initial fixture bugs in the
+TEST were corrected — the 13:44 IST instant is 08:14 UTC and parseNseTimestamp
+returns the UTC ISO instant per the movers contract; noted per the C5 rule):
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Duration  253ms
+invariants pinned: per-row source labels (BSE can never read "Source: NSE");
+null renders "—" never 0 (P0-2); absent legs drop their row (no fabrication);
+as-of is the upstream's own timestamp in IST or "as-of not disclosed"; both
+parsers fail closed on unparseable payloads (R4).

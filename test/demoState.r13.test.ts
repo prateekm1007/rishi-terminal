@@ -72,11 +72,13 @@ describe("R13 — the Today view and the tracking line", () => {
     // verdicts-ledger pair — the panel's verdicts row and tracking row
     // render from the ledger (one read each, the movers read's class).
     expect(page).toContain(
-      "<TodayPanel movers={movers} latestNews={latestNews} verdicts={verdicts} tracking={tracking} />",
+      "<TodayPanel movers={movers} latestNews={latestNews} verdicts={verdicts} tracking={tracking} indices={indices} />",
     );
     expect(page).toContain("readMoversSnapshot");
     expect(page).toContain("readVerdictsToday");
     expect(page).toContain("readTrackingState");
+    // INDEXSTRIP: the strip snapshot rides the same cache-read class.
+    expect(page).toContain("readIndexStripSnapshot");
   });
 
   it("the TodayPanel is a server component with honest literals (B-18 positive control)", () => {

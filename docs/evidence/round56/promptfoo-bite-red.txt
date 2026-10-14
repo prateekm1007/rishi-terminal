@@ -1,0 +1,80 @@
+
+========================================================================================================================
+⚠️ The current version of promptfoo 0.119.6 is lower than the latest available version 0.124.1.
+
+Please run npx promptfoo@latest or npm install -g promptfoo@latest to update.
+========================================================================================================================
+
+Cache is disabled.
+Starting evaluation eval-5tO-2026-10-13T08:37:03
+Running 7 test cases (up to 4 at a time)...
+Could not find any valid files in the command:  npx tsx --conditions react-server verifierProvider.ts
+Could not find any valid files in the command:  npx tsx --conditions react-server verifierProvider.ts
+Could not find any valid files in the command:  npx tsx --conditions react-server verifierProvider.ts
+Could not find any valid files in the command:  npx tsx --conditions react-server verifierProvider.ts
+Could not find any valid files in the command:  npx tsx --conditions react-server verifierProvider.ts
+Could not find any valid files in the command:  npx tsx --conditions react-server verifierProvider.ts
+Could not find any valid files in the command:  npx tsx --conditions react-server verifierProvider.ts
+
+┌────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────┐
+│ payload                                                    │ [exec: npx tsx --conditions react-server                   │
+│                                                            │ verifierProvider.ts] {{payload}}                           │
+├────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ {"evidence": [{"id":                                       │ [PASS] {"validatedClaims":[{"claim":"RELIANCE returned 12  │
+│ "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE",     │ percent on                                                 │
+│ "facts": [{"field": "roe", "value": 12, "unit": "percent", │ equity.","evidenceIds":["fundamental:RELIANCE:roe:2026-09… │
+│ "source": "live", "observedAt": "2026-09-30"}]}],          │                                                            │
+│ "claims": [{"claim": "RELIANCE returned 12 percent on      │                                                            │
+│ equity."...                                                │                                                            │
+├────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ {"evidence": [{"id":                                       │ [FAIL]                                                     │
+│ "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE",     │ {"validatedClaims":[],"grounded":true,"mode":"evidence-co… │
+│ "facts": [{"field": "roe", "value": 12, "unit": "percent", │ 1: unknown evidence id(s)                                  │
+│ "source": "live", "observedAt": "2026-09-30"}]}],          │ \"fundamental:RELIANCE:made-up-id\" —                      │
+│ "claims": [{"claim": "RELIANCE returned 12 percent on      │ rejected"],"verifiedAnswer":"laundered","unvalidatedProse… │
+│ equity."...                                                │                                                            │
+├────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ {"evidence": [{"id":                                       │ [FAIL]                                                     │
+│ "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE",     │ {"validatedClaims":[],"grounded":true,"mode":"evidence-co… │
+│ "facts": [{"field": "roe", "value": 12, "unit": "percent", │ 1: assertion roe=99 percent has no matching                │
+│ "source": "live", "observedAt": "2026-09-30"}]}],          │ field/value/unit fact among the claim's own cited evidence │
+│ "claims": [{"claim": "RELIANCE returned 99 percent on      │ — rejected                                                 │
+│ equity."...                                                │ (R4-02)"],"verifiedAnswer":"laundered","unvalida...        │
+├────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ {"evidence": [{"id":                                       │ [FAIL]                                                     │
+│ "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE",     │ {"validatedClaims":[],"grounded":true,"mode":"context-onl… │
+│ "facts": [{"field": "roe", "value": 12, "unit": "percent", │ 1: qualitative claim (no numeric statement) — classified   │
+│ "source": "live", "observedAt": "2026-09-30"}]}],          │ context-only, NOT grounded (evidenceIds alone are never    │
+│ "claims": [{"claim": "The business is strong.",            │ grounding) (G3)"],"verifiedAnswer":"laundered","unval...   │
+│ "evidenceIds":...                                          │                                                            │
+├────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ {"evidence": [{"id":                                       │ [FAIL]                                                     │
+│ "fundamental:RELIANCE:change:intraday", "label": "Change", │ {"validatedClaims":[],"grounded":true,"mode":"evidence-co… │
+│ "facts": [{"field": "change", "value": -1.401, "unit":     │ 1: claims change=\"1.401\" but the matched change          │
+│ "percent", "source": "live", "observedAt":                 │ assertion is -1.401 — rejected (audit                      │
+│ "2026-10-13"}]}], "claims": [{"claim": "The session change │ 2026-10-02)"],"verifiedAnswer":"laundered","unvalidatedPr… │
+│ of RELIANC...                                              │                                                            │
+├────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ {"mode": "deterministic-surface", "evidence": [{"id":      │ [PASS] {"surface":{"answer":"roe = 12 percent — live       │
+│ "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE",     │ (observed/as-of 2026-09-30)","claims":[{"claim":"roe = 12  │
+│ "facts": [{"field": "roe", "value": 12, "unit": "percent", │ percent — live (observed/as-of                             │
+│ "source": "live", "observedAt": "2026-09-30"}]}]}          │ 2026-09-30)","evidenceIds":["fundamental:RELIANCE:roe:202… │
+├────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ {"mode": "deterministic-surface", "evidence": [{"id":      │ [PASS] {"surface":null}                                    │
+│ "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE",     │                                                            │
+│ "facts": []}]}                                             │                                                            │
+└────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────┘
+========================================================================================================================
+✔ Evaluation complete. ID: eval-5tO-2026-10-13T08:37:03
+
+» Run promptfoo view to use the local web viewer
+» Do you want to share this with your team? Sign up for free at https://promptfoo.app
+» This project needs your feedback. What's one thing we can improve? https://promptfoo.dev/feedback
+========================================================================================================================
+Duration: 25s (concurrency: 4)
+Successes: 3
+Failures: 4
+Errors: 0
+Pass Rate: 42.86%
+========================================================================================================================
+bite exit: 100

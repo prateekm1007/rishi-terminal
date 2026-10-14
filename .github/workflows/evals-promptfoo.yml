@@ -1,0 +1,53 @@
+# .github/workflows/evals-promptfoo.yml — the grounded-answers regression
+# eval (PROMPTFOO-CI, round 56; the founder's batch-2 adoption record row 6:
+# "promptfoo — CI only").
+#
+# CI-ONLY BY CONSTRUCTION (the founder's condition):
+# - promptfoo never enters package.json — the version is pinned HERE
+#   (0.119.6), so no runtime dependency exists and none can drift in.
+# - The provider is the repo's OWN verifier over fixtures — ZERO provider
+#   spend: no network, no API key, no model call (the A4 no-model-surface
+#   pin is untouched). The eval gates the VERIFIER CONTRACT, not a model.
+# - Org watch (the founder's condition): promptfoo is now part of OpenAI —
+#   re-check the org before each version bump in this file.
+name: evals-promptfoo
+
+on:
+  pull_request:
+    paths:
+      - "scripts/ci/promptfoo/**"
+      - "lib/ai/evidence.ts"
+      - ".github/workflows/evals-promptfoo.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/ci/promptfoo/**"
+      - "lib/ai/evidence.ts"
+      - ".github/workflows/evals-promptfoo.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: evals-promptfoo-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  grounded-answers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install (the eval imports repo modules — tsx + zod from the lockfile)
+        run: npm ci
+
+      # The verifier import surface is pinned: the eval reads
+      # lib/ai/evidence.ts (validateGrounding + buildDeterministicVerifiedSurface).
+      # A regression in those exports (a renamed gate, a laundered grounded
+      # state, a changed verified statement) fails HERE, before merge.
+      - name: Grounded answers + verifier (stage 4) eval — zero spend, deterministic
+        run: npx --yes promptfoo@0.119.6 eval -c scripts/ci/promptfoo/promptfooconfig.yaml --no-cache

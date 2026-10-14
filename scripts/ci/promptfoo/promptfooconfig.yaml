@@ -1,0 +1,68 @@
+description: Grounded answers + verifier (stage 4) regression eval — deterministic, zero-spend, CI-only
+prompts:
+- '{{payload}}'
+providers:
+- id: 'exec: npx tsx --conditions react-server verifierProvider.ts'
+tests:
+- description: a fully assertion-backed claim grounds with the server-generated verified statement
+  vars:
+    payload: '{"evidence": [{"id": "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE", "facts": [{"field": "roe", "value": 12, "unit": "percent", "source": "live", "observedAt": "2026-09-30"}]}], "claims": [{"claim": "RELIANCE returned 12 percent on equity.", "evidenceIds": ["fundamental:RELIANCE:roe:2026-09-30"], "assertions": [{"field": "roe", "value": 12, "unit": "percent"}]}]}'
+  assert:
+  - type: javascript
+    value: JSON.parse(output).grounded === true
+  - type: javascript
+    value: JSON.parse(output).mode === "structured-claims"
+  - type: contains
+    value: roe = 12 percent — live (observed/as-of 2026-09-30)
+  - type: javascript
+    value: JSON.parse(output).rejections.length === 0
+- description: a fabricated evidence id fails the claim (fail closed)
+  vars:
+    payload: '{"evidence": [{"id": "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE", "facts": [{"field": "roe", "value": 12, "unit": "percent", "source": "live", "observedAt": "2026-09-30"}]}], "claims": [{"claim": "RELIANCE returned 12 percent on equity.", "evidenceIds": ["fundamental:RELIANCE:made-up-id"], "assertions": [{"field": "roe", "value": 12, "unit": "percent"}]}]}'
+  assert:
+  - type: javascript
+    value: JSON.parse(output).grounded === false
+  - type: javascript
+    value: JSON.parse(output).verifiedAnswer === ""
+  - type: javascript
+    value: JSON.parse(output).rejections.length > 0
+- description: an unsupported figure (value mismatch) is rejected, never shown
+  vars:
+    payload: '{"evidence": [{"id": "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE", "facts": [{"field": "roe", "value": 12, "unit": "percent", "source": "live", "observedAt": "2026-09-30"}]}], "claims": [{"claim": "RELIANCE returned 99 percent on equity.", "evidenceIds": ["fundamental:RELIANCE:roe:2026-09-30"], "assertions": [{"field": "roe", "value": 99, "unit": "percent"}]}], "answer": "RELIANCE returned 99 percent on equity."}'
+  assert:
+  - type: javascript
+    value: JSON.parse(output).grounded === false
+  - type: javascript
+    value: JSON.parse(output).verifiedAnswer === ""
+- description: evidenceIds alone NEVER ground — qualitative claim is context-only (G3)
+  vars:
+    payload: '{"evidence": [{"id": "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE", "facts": [{"field": "roe", "value": 12, "unit": "percent", "source": "live", "observedAt": "2026-09-30"}]}], "claims": [{"claim": "The business is strong.", "evidenceIds": ["fundamental:RELIANCE:roe:2026-09-30"]}]}'
+  assert:
+  - type: javascript
+    value: JSON.parse(output).grounded === false
+  - type: javascript
+    value: JSON.parse(output).mode === "context-only"
+- description: signed prose with unsigned numbers never grounds (L2 anti-upgrade)
+  vars:
+    payload: '{"evidence": [{"id": "fundamental:RELIANCE:change:intraday", "label": "Change", "facts": [{"field": "change", "value": -1.401, "unit": "percent", "source": "live", "observedAt": "2026-10-13"}]}], "claims": [{"claim": "The session change of RELIANCE declined 1.401 percent.", "evidenceIds": ["fundamental:RELIANCE:change:intraday"], "assertions": [{"field": "change", "value": -1.401, "unit": "percent"}]}], "answer": "RELIANCE trades at 1020.5 inr, down 1.401 percent in the session."}'
+  assert:
+  - type: javascript
+    value: JSON.parse(output).grounded === false
+  - type: javascript
+    value: JSON.parse(output).verifiedAnswer === ""
+- description: the deterministic surface renders one verified statement per typed fact
+  vars:
+    payload: '{"mode": "deterministic-surface", "evidence": [{"id": "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE", "facts": [{"field": "roe", "value": 12, "unit": "percent", "source": "live", "observedAt": "2026-09-30"}]}]}'
+  assert:
+  - type: javascript
+    value: JSON.parse(output).surface !== null
+  - type: contains
+    value: roe = 12 percent — live (observed/as-of 2026-09-30)
+  - type: javascript
+    value: JSON.parse(output).surface.claims.length === 1
+- description: no typed facts -> the honest null surface (never a fabricated answer)
+  vars:
+    payload: '{"mode": "deterministic-surface", "evidence": [{"id": "fundamental:RELIANCE:roe:2026-09-30", "label": "ROE", "facts": []}]}'
+  assert:
+  - type: javascript
+    value: JSON.parse(output).surface === null

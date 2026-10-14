@@ -17,7 +17,8 @@
  *   assertions in promptfooconfig.yaml and the CI job goes red.
  */
 
-import { validateGrounding, buildDeterministicVerifiedSurface, type AiEvidenceItem } from "../../../lib/ai/evidence";
+import { validateGrounding, buildDeterministicVerifiedSurface } from "../../../lib/ai/evidence";
+import type { AiEvidenceItem } from "../../../lib/ai/schemas";
 
 interface EvalPayload {
   mode?: "grounding" | "deterministic-surface";

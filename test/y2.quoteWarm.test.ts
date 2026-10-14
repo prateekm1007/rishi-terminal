@@ -22,15 +22,25 @@
  *   5. Honesty: symbols the upstream had nothing for are counted as
  *      misses in the response, never as warmed.
  */
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 
 const marketStateMock = vi.fn();
 const cachedQuoteBatchForEquitiesMock = vi.fn();
 const serveQuoteMock = vi.fn();
 const logIngestionMock = vi.fn();
+const revalidatePathMock = vi.fn();
+const pageFetchMock = vi.fn();
 
 vi.mock("@/lib/marketHours", () => ({
   marketState: (...a: unknown[]) => marketStateMock(...a),
+}));
+
+// LIVE-TODAY (round 56): the warmer now ALWAYS revalidates + self-pings
+// the homepage (the Today view's movers panels ride the 60 s contract),
+// so this suite carries the same next/cache + global-fetch mocks the
+// isr60 suite established for the same route — one harness discipline.
+vi.mock("next/cache", () => ({
+  revalidatePath: (...a: unknown[]) => revalidatePathMock(...a),
 }));
 
 vi.mock("@/lib/services/ingestion", () => ({
@@ -88,11 +98,21 @@ beforeEach(() => {
   cachedQuoteBatchForEquitiesMock.mockReset();
   serveQuoteMock.mockReset();
   logIngestionMock.mockReset();
+  revalidatePathMock.mockReset();
+  pageFetchMock.mockReset();
   process.env.QUOTES_WARM_SECRET = SECRET;
   process.env.CRON_SECRET = CRON; // present on purpose: the warm endpoint must IGNORE it (Z2)
   marketStateMock.mockReturnValue(openMarket());
   cachedQuoteBatchForEquitiesMock.mockResolvedValue({ quotes: {} });
   serveQuoteMock.mockResolvedValue(null);
+  // The homepage ping + the movers step's NSE transport both use global
+  // fetch — stubbed so no test leg ever touches the network.
+  pageFetchMock.mockResolvedValue({ status: 200 });
+  vi.stubGlobal("fetch", pageFetchMock);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe("Y2 — warmer auth (fail closed at the route level)", () => {

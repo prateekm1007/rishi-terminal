@@ -1,6 +1,24 @@
 /**
- * OpenAI-compatible chat provider (T49). Key travels via the Authorization
- * header — never the URL. User text only ever enters user/system messages.
+ * OpenAI-compatible chat provider (T49) — now executed through the
+ * provider-agnostic vercel/ai layer (FD8-AI-SDK, round 56; the founder's
+ * batch-2 adoption record row 8: "vercel/ai — provider-agnostic chat layer
+ * while FD-8 is open"). `@ai-sdk/openai-compatible` builds and sends the
+ * request; this module keeps the EXACT contract the router and the tests
+ * pin:
+ *
+ * - Key travels via the Authorization header — never the URL (the SDK
+ *   sends the configured apiKey as `Authorization: Bearer`).
+ * - User text only ever enters user/system messages.
+ * - E5 wire contract: response_format json_object on every request, sent
+ *   through the SDK's documented providerOptions passthrough (the
+ *   camelCase key rishiOpenaiCompatible — the SDK spreads named provider
+ *   options into the request body), with the bounded availability-only
+ *   retry WITHOUT json mode when the provider's 400 names response_format.
+ *   Any other 400 fails closed.
+ * - W3 hard-cap audit: the serialized logical request body is checked
+ *   against the shared input bound (./serializedInputBound) BEFORE the
+ *   call — an oversized payload is refused fail-closed; no network
+ *   attempt happens (pinned by test/w3.inputBound.test.ts).
  *
  * Commit L1: `loopTurns` carries the server-generated turns of the bounded
  * tool loop (assistant tool-request + user TOOL RESULT/TOOL ERROR), in
@@ -8,12 +26,11 @@
  * exclusively by executeAiTool — a client or the model can never inject a
  * tool result (the router builds them; the request contract has no field
  * that reaches here).
- *
- * W3 hard-cap audit (round-12): the exact serialized request body is
- * checked against the shared input bound (./serializedInputBound) BEFORE
- * the fetch — an oversized payload is refused fail-closed (it can never
- * silently spend input tokens the global reservation did not cover).
  */
+
+import { generateText } from "ai";
+import { APICallError } from "@ai-sdk/provider";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 import { assertSerializedInputWithinBound } from "./serializedInputBound";
 
@@ -36,18 +53,6 @@ export interface ProviderCompletion {
  *  the ceiling. */
 export const PROVIDER_MAX_OUTPUT_TOKENS = 2048;
 
-/** E5 (R16 fresh battery, 2026-10-05): 7 of 31 repairs were malformed-json
- *  — the model answered open-ended questions with markdown prose despite
- *  the in-prompt JSON contract. The wire-level fix is the OpenAI-compatible
- *  JSON mode: the API itself refuses to emit non-JSON, which enforces the
- *  contract at the earliest layer (the request) instead of catching it at
- *  validation. Accepted by the production provider (probe, 2026-10-05:
- *  HTTP 200 with response_format json_object; tool-request replies are
- *  JSON objects too, so the bounded tool loop is unaffected). The tool
- *  request and the final structured reply are BOTH single JSON objects,
- *  so one mode covers both — there is no non-JSON reply this loop wants. */
-const JSON_MODE: Record<string, unknown> = { type: "json_object" };
-
 export async function callOpenAiCompatible(
   baseUrl: string,
   apiKey: string,
@@ -58,71 +63,93 @@ export async function callOpenAiCompatible(
   timeoutMs: number,
   loopTurns: ChatTurn[] = [],
 ): Promise<ProviderCompletion> {
-  const messages = [
-    { role: "system" as const, content: systemPrompt },
+  const messages: { role: "user" | "assistant"; content: string }[] = [
     ...history.map(h => ({ role: h.role, content: h.content })),
-    { role: "user" as const, content: message },
+    { role: "user", content: message },
     ...loopTurns.map(h => ({ role: h.role, content: h.content })),
   ];
 
-  const baseParams = {
+  // W3 hard-cap audit: refuse an oversized request BEFORE the provider
+  // call — the attempt fails (failover/502), it never overspends. The
+  // bound runs on the serialized logical request (system + messages +
+  // generation params) — the same payload basis the bound has always
+  // enforced; the SDK's transport envelope is not part of the
+  // reservation's input estimate.
+  const logicalBody = JSON.stringify({
     model,
+    system: systemPrompt,
     messages,
     temperature: 0.9,
     top_p: 0.95,
     max_tokens: PROVIDER_MAX_OUTPUT_TOKENS,
-  };
-  const doFetch = (body: string) =>
-    fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body,
-      signal: AbortSignal.timeout(timeoutMs),
+    response_format: { type: "json_object" },
+  });
+  assertSerializedInputWithinBound(logicalBody);
+
+  const provider = createOpenAICompatible({
+    name: "rishi-openai-compatible",
+    baseURL: baseUrl,
+    apiKey,
+  });
+
+  // E5: json mode on the wire, retry-once-without on a naming 400. The
+  // json_object field rides the SDK's providerOptions passthrough (top-level
+  // generateText responseFormat does not reach the openai-compatible wire in
+  // ai v7 — verified against the installed package 2026-10-13).
+  const attempt = (jsonMode: boolean) =>
+    generateText({
+      model: provider.chatModel(model),
+      system: systemPrompt,
+      messages,
+      temperature: 0.9,
+      topP: 0.95,
+      maxOutputTokens: PROVIDER_MAX_OUTPUT_TOKENS,
+      ...(jsonMode
+        ? { providerOptions: { rishiOpenaiCompatible: { response_format: { type: "json_object" } } } }
+        : {}),
+      abortSignal: AbortSignal.timeout(timeoutMs),
+      maxRetries: 0,
     });
 
-  // W3 hard-cap audit: refuse an oversized request BEFORE the provider
-  // call — the attempt fails (failover/502), it never overspends.
-  let body = JSON.stringify({ ...baseParams, response_format: JSON_MODE });
-  assertSerializedInputWithinBound(body);
-  let res = await doFetch(body);
-  // Availability-only bounded fallback: if THIS provider build rejects the
-  // json_object param outright (a 400 naming response_format — a future
-  // model/base-URL swap), retry ONCE without it. Everything downstream
-  // (parse, zod, grounding) is unchanged, so this can never launder a bad
-  // reply — it only restores the pre-E5 request shape for that provider.
-  // Logged server-side (rule 10); any other 400 still fails closed.
-  if (res.status === 400) {
-    const errText = await res.text();
-    if (/response_format/i.test(errText)) {
+  let result;
+  try {
+    result = await attempt(true);
+  } catch (err) {
+    // Availability-only bounded fallback: if THIS provider build rejects
+    // the json_object param outright (a 400 naming response_format — a
+    // future model/base-URL swap), retry ONCE without it. Everything
+    // downstream (parse, zod, grounding) is unchanged, so this can never
+    // launder a bad reply — it only restores the pre-E5 request shape for
+    // that provider. Logged server-side (rule 10); any other 400 (or
+    // non-400) still fails closed with the router's error shape.
+    const status = err instanceof APICallError ? err.statusCode : undefined;
+    const detail = err instanceof APICallError ? (err.responseBody ?? err.message) : "";
+    if (status === 400 && /response_format/i.test(detail)) {
       console.error(
         "[ai/openai] provider rejected response_format (json mode) — one bounded retry without it; validation unchanged",
       );
-      body = JSON.stringify(baseParams);
-      assertSerializedInputWithinBound(body);
-      res = await doFetch(body);
+      result = await attempt(false);
     } else {
-      console.error("[ai/openai] upstream error:", res.status, errText.slice(0, 500));
-      throw new Error(`openai-compatible HTTP ${res.status}`);
+      if (status !== undefined) {
+        console.error("[ai/openai] upstream error:", status, String(detail).slice(0, 500));
+        throw new Error(`openai-compatible HTTP ${status}`);
+      }
+      throw err;
     }
   }
 
-  if (!res.ok) {
-    const errText = await res.text();
-    // Log details server-side only (key never in logs — it is not in the body).
-    console.error("[ai/openai] upstream error:", res.status, errText.slice(0, 500));
-    throw new Error(`openai-compatible HTTP ${res.status}`);
-  }
-
-  const data = await res.json();
-  const raw = data?.choices?.[0]?.message?.content;
-  const text = typeof raw === "string" ? raw.trim() : "";
+  const text = typeof result.text === "string" ? result.text.trim() : "";
   if (!text) {
-    console.error("[ai/openai] empty completion:", JSON.stringify(data).slice(0, 500));
+    console.error("[ai/openai] empty completion:", JSON.stringify(result).slice(0, 500));
     throw new Error("openai-compatible empty completion");
   }
-  const usage = data?.usage?.total_tokens;
-  return { text, totalTokens: typeof usage === "number" && Number.isFinite(usage) ? usage : null };
+  // W3 (founder round-10): only observable usage counts. The provider's
+  // own total (usage.raw.total_tokens — the exact field the hand-rolled
+  // adapter read) takes precedence; the SDK's normalised totalTokens is
+  // the fallback.
+  const rawTotal = (result.usage?.raw as { total_tokens?: unknown } | undefined)?.total_tokens;
+  const total = typeof rawTotal === "number" && Number.isFinite(rawTotal)
+    ? rawTotal
+    : result.usage?.totalTokens;
+  return { text, totalTokens: typeof total === "number" && Number.isFinite(total) ? total : null };
 }

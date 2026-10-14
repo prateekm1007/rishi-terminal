@@ -1,0 +1,7 @@
+ok: faithful-verified-surface ratio=1.0 verdict=pass
+ok: unfaithful-figure ratio=0.0 verdict=fail
+plumbing: all 2 fixtures pass (deterministic stand-in, threshold 0.5; NOT a faithfulness measurement — no judge ran)
+green exit: 0
+ok: faithful-verified-surface ratio=1.0 verdict=pass
+ok: unfaithful-figure ratio=0.0 verdict=fail
+plumbing: all 2 fixtures pass (deterministic stand-in, threshold 0.5; NOT a faithfulness measurement — no judge ran)

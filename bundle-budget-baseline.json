@@ -1,9 +1,9 @@
 {
- "note": "bundle ratchet baseline (E6-02, restored by C3). Values are gzip kB of first-load JS measured from the HTML script tags of a production build (module-capable browser, nomodule excluded — B4 measurement). Founder Round 16: the ratchet fails on any increase beyond +2 kB AND the 200 kB hard budget stays fatal alongside it. Re-lock only with --update-baseline after a passing, non-regressing run.",
+ "note": "bundle ratchet baseline (E6-02, restored by C3). Values are gzip kB of first-load JS measured from the HTML script tags of a production build (module-capable browser, nomodule excluded \u2014 B4 measurement). Founder Round 16: the ratchet fails on any increase beyond +2 kB AND the 200 kB hard budget stays fatal alongside it. Re-lock only with --update-baseline after a passing, non-regressing run. Round-56 re-lock (14 Oct 2026): /stocks := 178.9 kB for the founder-ordered TanStack Table adoption (TANSTACK-STOCKS; +16.0 kB measured on the PR, the 200 kB hard cap holds with 21.1 kB headroom). Proceeded as the C10 B-26 recommended default (reversible; logged on the PR thread) after the 13 Oct FOUNDER DECISION NEEDED went unanswered into the 14 Oct session. C9 paired guard: the 896-row list stays server-rendered in the RSC flight payload (PR evidence); the cap stays fatal.",
  "toleranceKb": 2,
  "measuredKb": {
   "/": 159.0908203125,
-  "/stocks": 162.859375,
+  "/stocks": 178.9,
   "/stock/[symbol]": 171.1845703125
  }
 }

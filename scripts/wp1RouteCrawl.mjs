@@ -72,7 +72,7 @@ const results = [];
 for (const r of ROUTES) {
   const res = await fetch(BASE + r, { redirect: "manual" });
   if (res.status >= 300 && res.status < 400) {
-    results.push({ route: r, redirect: res.headers.get("location") });
+    results.push({ route: r, redirect: res.headers.get("location"), status: res.status });
     console.log(`--   ${r} -> ${res.status} ${res.headers.get("location")}`);
     continue;
   }
@@ -134,9 +134,11 @@ for (const x of navRoutes) {
   if (x.nav.includes("/screener")) fail(`${x.route}: nav links /screener`);
 }
 
-// Gate 7: /screener permanently redirects to /stocks.
+// Gate 7: /screener permanently redirects to /stocks — with the literal
+// 301 the founder ordered (P1, 2026-10-11; the SR-era 308 superseded).
 const screener = results.find((x) => x.route === "/screener");
 if (!screener || screener.redirect === undefined) fail("/screener: expected a redirect");
+else if (screener.status !== 301) fail(`/screener: redirect status ${screener.status}, expected the literal 301`);
 else if (!/\/stocks$/.test(screener.redirect ?? "")) fail(`/screener: redirects to ${screener.redirect}, expected /stocks`);
 
 // Positive control: the crawl actually saw content (B-18).

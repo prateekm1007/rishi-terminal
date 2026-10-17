@@ -91,13 +91,16 @@ const nextConfig: NextConfig = {
     return [
       ...aliasRedirects,
       // SR (founder directive 6, 2026-10-06): the screener product surface
-      // is renamed to Stocks at /stocks; /screener 308-redirects (query
-      // strings are preserved by Next.js redirects). API routes under
-      // /api/screener/* are internal transport and keep their paths.
+      // is renamed to Stocks at /stocks (query strings are preserved by
+      // Next.js redirects). API routes under /api/screener/* are internal
+      // transport and keep their paths.
+      // P1 (founder order 2026-10-11): the redirect code is the literal
+      // 301 — statusCode replaces permanent (Next.js redirects API); the
+      // SR-era `permanent: true` (308) is superseded by this order.
       {
         source: '/screener',
         destination: '/stocks',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/crypto/MATIC',

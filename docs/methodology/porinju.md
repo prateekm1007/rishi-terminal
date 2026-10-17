@@ -1,6 +1,6 @@
 # Porinju Veliyath — Contrarian Deep Value (Porinju Veliyath)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/porinju.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 Contrarian value with a catalyst: cheap multiple, management with a stake,
 asset backing, and revenue that can turn.

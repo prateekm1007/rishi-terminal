@@ -103,6 +103,19 @@ export function parseMarkdown(src: string): MdBlock[] {
       continue;
     }
 
+    // P1 (round 47, founder order "finish the truncated sentences"): a
+    // non-blank line while a list is OPEN is a CONTINUATION of the last
+    // item — multi-line bullets must render whole. The pre-fix parser
+    // let continuations fall through to the paragraph buffer, which tore
+    // every multi-line bullet apart on the public pages (the item kept
+    // its first line; the tail rendered as a stray paragraph after the
+    // list). Only a blank line, a heading, a fence or a new item closes
+    // the list.
+    if (list !== null && list.length > 0) {
+      list[list.length - 1] += ` ${line.trim()}`;
+      continue;
+    }
+
     para.push(line.trim());
   }
   // EOF

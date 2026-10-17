@@ -1,6 +1,6 @@
 # Greenblatt — Magic Formula (Joel Greenblatt)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/greenblatt.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 The Magic Formula: high return on capital bought cheaply, equal-weighted.
 
@@ -42,16 +42,17 @@ rank with a steeper ramp, not a measured return on invested capital.
 
 ## Known failure modes
 
-- **The documented low-pile allow-list (scorerHealth):** 26.9% of the seed
-  universe scores ≤ 5. That pile is the shape of the PLACEHOLDER SEED —
-  many June net-profit placeholders are 0 (the Y4 unknown), which floors
-  BOTH pillars by the formula's own arithmetic. It is NOT a verified claim
-  about Indian small-cap earnings; re-examine when real fundamentals land
-  (FD-1). Re-tuning thresholds to cosmeticise the pile is the "blind
-  re-tune" the founder direction forbids.
+- **Placeholder net profits yield no verdict:** on the sample dataset,
+  unobserved net-profit values null the verdict rather than flooring both
+  pillars — a missing number is never scored as a bad one. That pile of
+  no-verdicts is the shape of the placeholder data, NOT a verified claim
+  about Indian small-cap earnings; re-examine when real fundamentals
+  land. Re-tuning thresholds to cosmeticise the pile is the "blind
+  re-tune" the founder's direction forbids.
 - `mktcap = 0` makes both yields undefined → the verdict is null.
-- 7 of the 246 low-end stocks have np = 0 with a positive mktcap (the
-  safeDiv guard does not fire): a known asymmetry, recorded for triage.
+- Net profit of exactly 0 with a positive market cap is computed (both
+  yields 0): for live data that is a real observation of a zero-profit
+  year; on the placeholder dataset such rows yield no verdict instead.
 
 ## Sectors where it does not apply
 

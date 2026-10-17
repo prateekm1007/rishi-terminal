@@ -1,6 +1,6 @@
 # George Soros — Reflexivity Macro (George Soros)
 
-Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/soros.ts`
+Tier: **Master** · consensus weight: **2.0**
 
 The contrarian-momentum pair: is the crowd wrong about value, and is the
 macro confirming?
@@ -38,14 +38,15 @@ score  = round(0.30*reflexS + 0.25*macroS + 0.15*deS + 0.20*momS + 0.10*liqS)
 
 Reflexivity is measured against a POSITIVE net current asset value only:
 when no asset anchor exists, the premise is unavailable and the component
-says so (rule 3) — the pre-W4 code masked this behind `max(1, ncav)` and
-fabricated a ratio. The momentum pillar is the trend-confirmation leg of
-the reflexivity pair.
+says so — the earlier implementation masked this behind a `max(1, ncav)`
+floor and fabricated a ratio. The momentum pillar is the trend-confirmation
+leg of the reflexivity pair.
 
 ## Known failure modes
 
-- 37 of 916 seed rows (4.0%) hit the NCAV ≤ 0 branch — the component
-  scores 0 and the detail says why (pinned by scorerBoundaries).
+- 37 of the 893 sample rows with observed current assets and total
+  liabilities (4.1%) hit the NCAV ≤ 0 branch — the component scores 0 and
+  the detail says why (the boundary is pinned by tests).
 - Reflexivity against NCAV is meaningless for asset-light businesses.
 
 ## Sectors where it does not apply

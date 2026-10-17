@@ -1,6 +1,6 @@
 # Lynch — GARP (Peter Lynch)
 
-Tier: **Legend** · consensus weight: **2.5** · code: `lib/scorers/lynch.ts`
+Tier: **Legend** · consensus weight: **2.5**
 
 Growth at a reasonable price: the PEG discipline with growth, cash generation
 and revenue follow-through.
@@ -41,9 +41,8 @@ margin magic alone.
 
 ## Known failure modes
 
-- `epscagr` placeholders (0 on the seed) push PEG toward the P/E itself —
-  the pillar then prices a no-growth story, which is honest arithmetic but
-  not a real observation (revisit under FD-1).
+- An unobserved EPS-CAGR nulls the verdict rather than pricing PEG as a
+  no-growth story — a missing growth rate is never an observation.
 - Cyclical peaks make trailing EPS CAGR flatter the PEG.
 
 ## Sectors where it does not apply

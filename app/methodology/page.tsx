@@ -73,7 +73,7 @@ export default async function MethodologyPage() {
         </div>
 
         <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 16 }}>
-          {docs.length} documents · generated from the repository at build time.
+          {docs.length} documents · one per framework.
         </p>
       </div>
     </main>

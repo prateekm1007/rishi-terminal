@@ -1,6 +1,6 @@
 # Munger — Mental Models (Charlie Munger)
 
-Tier: **Master** · consensus weight: **2.0** · code: `lib/scorers/munger.ts`
+Tier: **Master** · consensus weight: **2.0**
 
 Four filters in the Munger spirit: competence circle, inversion, lollapalooza
 quality convergence, and patience.
@@ -52,10 +52,8 @@ plausible to claim from the outside.
 
 ## Known failure modes
 
-- The seed's D/E placeholders (banks) make the inversion pillar read a
-  placeholder zero — treated as unknown by the X6 provenance contract only
-  for scorers that consume it as such; Munger's arithmetic still consumes the
-  numeric value (revisit under FD-1).
+- The sample data's bank D/E placeholders are unobserved values — they null
+  the verdict here exactly as they do everywhere else on the panel.
 - Binary pillars make the verdict jump near the boundaries; the score is
   honest but step-shaped there.
 

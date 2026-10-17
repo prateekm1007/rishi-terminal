@@ -50,7 +50,14 @@ function docDir(): string {
 /** Every methodology doc present in the repo (slugs + parsed blocks). */
 export async function listMethodologyDocs(): Promise<MethodologyDoc[]> {
   const dir = docDir();
-  const files = (await readdir(dir)).filter((f) => f.endsWith('.md')).sort();
+  const files = (await readdir(dir))
+    .filter((f) => f.endsWith('.md'))
+    // P1 (round 47): README.md is the INTERNAL contributor doc (test
+    // names, parser notes, repo layout) — never a public page. Listing
+    // it produced a dead /methodology/README link on the public index
+    // (uppercase fails the [scorer] slug regex -> 404).
+    .filter((f) => f !== 'README.md')
+    .sort();
   const docs = await Promise.all(
     files.map(async (f) => {
       const raw = await readFile(path.join(dir, f), 'utf-8');

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { listMethodologyDocs, getMethodologyDoc, METHODOLOGY_REQUIRED_HEADINGS } from '@/lib/methodology';
+import { listMethodologyDocs, getMethodologyDoc } from '@/lib/methodology';
 import { parseInline } from '@/lib/methodology/markdown';
 import { SITE_URL } from "@/lib/seo/site";
 
@@ -59,8 +59,6 @@ export default async function MethodologyDocPage({ params }: Props) {
   const { scorer } = await params;
   const doc = await getMethodologyDoc(scorer);
   if (!doc) notFound();
-
-  const covered = METHODOLOGY_REQUIRED_HEADINGS.filter((h) => doc.headings.includes(h));
 
   return (
     <main className="page-bg">
@@ -121,11 +119,6 @@ export default async function MethodologyDocPage({ params }: Props) {
             );
           })}
         </div>
-
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 14, fontFamily: 'var(--font-mono)' }}>
-          required sections present: {covered.length}/{METHODOLOGY_REQUIRED_HEADINGS.length}
-          {covered.length === METHODOLOGY_REQUIRED_HEADINGS.length ? ' ✓' : ''} · source: docs/methodology/{doc.slug}.md
-        </p>
       </div>
     </main>
   );

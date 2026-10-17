@@ -1,6 +1,6 @@
 # Basant Maheshwari — Consumption Growth
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/basant.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 Consumer-franchise growth: the sector trend, visible margins, and a
 valuation you can hold through.

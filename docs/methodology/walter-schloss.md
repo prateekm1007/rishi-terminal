@@ -1,6 +1,6 @@
 # Walter Schloss — Cigar Butt (Walter Schloss)
 
-Tier: **Specialist** · consensus weight: **1.0** · code: `lib/scorers/schloss.ts`
+Tier: **Specialist** · consensus weight: **1.0**
 
 Statistical cheapness on book, no debt, insider ownership, and a size band
 where neglect is likely.

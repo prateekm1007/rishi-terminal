@@ -61,8 +61,12 @@ export async function snapshotAllStocks(): Promise<{
         snapshot_date:     date,
         consensus_score:   consensus.consensus,
         score_engine_version: SCORE_ENGINE_VERSION,
-        signal:            consensus.consensus >= 75 ? "BUY"
-                          : consensus.consensus >= 45 ? "HOLD" : "SELL",
+        // R5-ADVICE-IDENTIFIERS (founder directive 2026-10-11: remove the
+        // BUY/HOLD/SELL identifiers) — the snapshot signal carries the
+        // neutral P0-6 nouns; the column is free text (no check
+        // constraint), the historical rows keep their recorded values.
+        signal:            consensus.consensus >= 75 ? "favorable"
+                          : consensus.consensus >= 45 ? "balanced" : "deterioration",
         disagreement:      0,
         philosopher_scores: philosopherScores,
         instability:       0,

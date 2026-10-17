@@ -7,15 +7,6 @@ export const sc = (s: number) =>
 export const lbl = (s: number) =>
   s >= 80 ? 'HIGH' : s >= 60 ? 'MOD' : s >= 40 ? 'LOW' : 'WEAK';
 
-export const getSig = (s: number) =>
-  s >= 72 ? 'BUY' : s >= 52 ? 'HOLD' : 'AVOID';
-
-export const SIG: Record<string, string> = {
-  BUY: '#10B981',
-  HOLD: '#F59E0B',
-  AVOID: '#EF4444',
-};
-
 // T11: finite-guard helpers. Scorers must never propagate NaN/Infinity.
 /** Returns v when finite, otherwise null ("insufficient data"). */
 export const fin = (v: number): number | null => (Number.isFinite(v) ? v : null);

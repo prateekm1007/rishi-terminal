@@ -1,5 +1,8 @@
 'use client';
 
+import { fnoEnabled } from '@/lib/featureFlags';
+import { notFound } from 'next/navigation';
+
 /**
  * Options Chain — data unavailable.
  *
@@ -10,6 +13,11 @@
  * renders an explicit empty state instead of synthetic numbers.
  */
 export default function OptionsChainPage() {
+// R5-ADVICE-IDENTIFIERS (founder directive 2026-10-11): the F&O strategy
+  // legs are HIDDEN until the founder decides (FOUNDER DECISION NEEDED,
+  // recommended default implemented) — fail-closed (rule 6).
+  if (!fnoEnabled()) notFound();
+
   return (
     <main style={{ minHeight: '100vh', background: 'var(--bg-primary)', padding: '32px 24px', color: 'var(--text-primary)' }}>
       <div style={{ maxWidth: 1300, margin: '0 auto' }}>

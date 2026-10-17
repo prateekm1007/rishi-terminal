@@ -1,0 +1,2 @@
+gate self-check GREEN (6 extractor fixtures + inventory parses, 19 declared hosts)
+unofficial-sources gate GREEN ΓÇö all runtime hosts declared (19 in inventory)
